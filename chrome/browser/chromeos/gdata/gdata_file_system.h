@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
 
+#include <sys/stat.h>
+
 #include <map>
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -124,6 +125,48 @@ class GDataFileSystem : public ProfileKeyedService {
   void FindFileByPath(const FilePath& file_path,
                       scoped_refptr<FindFileDelegate> delegate);
 
+  // Copies |src_file_path| to |dest_file_path| on the file system.
+  // |src_file_path| can be a hosted document (see limitations below).
+  // |dest_file_path| is expected to be of the same type of |src_file_path|
+  // (i.e. if |src_file_path| is a file, |dest_file_path| will be created as
+  // a file).
+  //
+  // This method also has the following assumptions/limitations that may be
+  // relaxed or addressed later:
+  // - |src_file_path| cannot be a regular file (i.e. non-hosted document)
+  //   or a directory.
+  // - |dest_file_path| must not exist.
+  // - The parent of |dest_file_path| must already exist.
+  //
+  // The file entries represented by |src_file_path| and the parent directory
+  // of |dest_file_path| need to be present in the in-memory representation
+  // of the file system.
+  //
+  // Can be called from any thread.
+  void Copy(const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const FileOperationCallback& callback);
+
+  // Moves |src_file_path| to |dest_file_path| on the file system.
+  // |src_file_path| can be a file (regular or hosted document) or a directory.
+  // |dest_file_path| is expected to be of the same type of |src_file_path|
+  // (i.e. if |src_file_path| is a file, |dest_file_path| will be created as
+  // a file).
+  //
+  // This method also has the following assumptions/limitations that may be
+  // relaxed or addressed later:
+  // - |dest_file_path| must not exist.
+  // - The parent of |dest_file_path| must already exist.
+  //
+  // The file entries represented by |src_file_path| and the parent directory
+  // of |dest_file_path| need to be present in the in-memory representation
+  // of the file system.
+  //
+  // Can be called from any thread.
+  void Move(const FilePath& src_file_path,
+            const FilePath& dest_file_path,
+            const FileOperationCallback& callback);
+
   // Removes |file_path| from the file system.  If |is_recursive| is set and
   // |file_path| represents a directory, we will also delete all of its
   // contained children elements. The file entry represented by |file_path|
@@ -218,8 +261,14 @@ class GDataFileSystem : public ProfileKeyedService {
     CACHE_TYPE_META,
   };
 
-  explicit GDataFileSystem(Profile* profile,
-                           DocumentsServiceInterface* documents_service);
+  // Callback similar to FileOperationCallback but with a given
+  // |file_path|.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              const FilePath& file_path)>
+      FilePathUpdateCallback;
+
+  GDataFileSystem(Profile* profile,
+                  DocumentsServiceInterface* documents_service);
   virtual ~GDataFileSystem();
 
   // Initiates upload operation of file defined with |file_name|,
@@ -256,6 +305,24 @@ class GDataFileSystem : public ProfileKeyedService {
                                  base::Value* data,
                                  base::PlatformFileError *error);
 
+  // Renames a file or directory at |file_path| to |new_name|.
+  void Rename(const FilePath& file_path,
+              const FilePath::StringType& new_name,
+              const FilePathUpdateCallback& callback);
+
+  // Adds a file or directory at |file_path| to the directory at |dir_path|.
+  void AddFileToDirectory(const FilePath& dir_path,
+                          const FileOperationCallback& callback,
+                          base::PlatformFileError error,
+                          const FilePath& file_path);
+
+  // Removes a file or directory at |file_path| from the directory at
+  // |dir_path| and moves it to the root directory.
+  void RemoveFileFromDirectory(const FilePath& dir_path,
+                               const FilePathUpdateCallback& callback,
+                               base::PlatformFileError error,
+                               const FilePath& file_path);
+
   // Callback for handling feed content fetching while searching for file info.
   // This callback is invoked after async feed fetch operation that was
   // invoked by StartDirectoryRefresh() completes. This callback will update
@@ -265,6 +332,41 @@ class GDataFileSystem : public ProfileKeyedService {
                       scoped_ptr<base::ListValue> feed_list,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
+
+  // A pass-through callback used for bridging from
+  // FilePathUpdateCallback to FileOperationCallback.
+  void OnFilePathUpdated(const FileOperationCallback& cllback,
+                         base::PlatformFileError error,
+                         const FilePath& file_path);
+
+  // Callback for handling resource rename attempt.
+  void OnRenameResourceCompleted(const FilePath& file_path,
+                                 const FilePath::StringType& new_name,
+                                 const FilePathUpdateCallback& callback,
+                                 GDataErrorCode status,
+                                 const GURL& document_url);
+
+  // Callback for handling document copy attempt.
+  void OnCopyDocumentCompleted(const FilePathUpdateCallback& callback,
+                               GDataErrorCode status,
+                               scoped_ptr<base::Value> data);
+
+  // Callback for handling an attempt to add a file or directory to another
+  // directory.
+  void OnAddFileToDirectoryCompleted(const FileOperationCallback& callback,
+                                     const FilePath& file_path,
+                                     const FilePath& dir_path,
+                                     GDataErrorCode status,
+                                     const GURL& document_url);
+
+  // Callback for handling an attempt to remove a file or directory from
+  // another directory.
+  void OnRemoveFileFromDirectoryCompleted(
+      const FilePathUpdateCallback& callback,
+      const FilePath& file_path,
+      const FilePath& dir_path,
+      GDataErrorCode status,
+      const GURL& document_url);
 
   // Callback for handling document remove attempt.
   void OnRemovedDocument(
@@ -300,6 +402,25 @@ class GDataFileSystem : public ProfileKeyedService {
       GDataErrorCode code,
       int64 start_range_received,
       int64 end_range_received);
+
+  // Renames a file or directory at |file_path| on in-memory snapshot
+  // of the file system. Returns PLATFORM_FILE_OK if successful.
+  base::PlatformFileError RenameFileOnFilesystem(
+      const FilePath& file_path, const FilePath::StringType& new_name,
+      FilePath* updated_file_path);
+
+  // Adds a file or directory at |file_path| to another directory at
+  // |dir_path| on in-memory snapshot of the file system.
+  // Returns PLATFORM_FILE_OK if successful.
+  base::PlatformFileError AddFileToDirectoryOnFilesystem(
+      const FilePath& file_path, const FilePath& dir_path);
+
+  // Removes a file or directory at |file_path| from another directory at
+  // |dir_path| on in-memory snapshot of the file system.
+  // Returns PLATFORM_FILE_OK if successful.
+  base::PlatformFileError RemoveFileFromDirectoryOnFilesystem(
+      const FilePath& file_path, const FilePath& dir_path,
+      FilePath* updated_file_path);
 
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // Return PLATFORM_FILE_OK if successful.

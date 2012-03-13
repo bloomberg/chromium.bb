@@ -81,13 +81,21 @@ void RemoteFileSystemOperation::CreateFile(const GURL& path,
 void RemoteFileSystemOperation::Copy(const GURL& src_path,
                                      const GURL& dest_path,
                                      const StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationCopy));
+
+  remote_proxy_->Copy(src_path, dest_path,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void RemoteFileSystemOperation::Move(const GURL& src_path,
                                      const GURL& dest_path,
-                  const StatusCallback& callback) {
-  NOTIMPLEMENTED();
+                                     const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationMove));
+
+  remote_proxy_->Move(src_path, dest_path,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void RemoteFileSystemOperation::Write(

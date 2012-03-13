@@ -319,6 +319,8 @@ class GDataFileSystemTestBase : public testing::Test {
       download_path_ = file_path;
     }
     virtual void FileOperationCallback(base::PlatformFileError error) {
+      DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
       last_error_ = error;
     }
 
@@ -355,7 +357,7 @@ class MockFindFileDelegate : public gdata::FindFileDelegate {
   }
 
   // gdata::FindFileDelegate overrides.
-  MOCK_METHOD1(OnFileFound, void(GDataFile*));
+  MOCK_METHOD1(OnFileFound, void(GDataFile* file));
   MOCK_METHOD2(OnDirectoryFound, void(const FilePath&, GDataDirectory* dir));
   MOCK_METHOD2(OnEnterDirectory, FindFileTraversalCommand(
       const FilePath&, GDataDirectory* dir));
@@ -537,6 +539,366 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")));
   FindAndTestFilePath(
       FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")));
+}
+
+TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) == NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Copy(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
+}
+
+TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Dummy"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Dummy/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+
+  EXPECT_EQ(src_file, FindFile(src_file_path));
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+
+  EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
+}
+
+// Test the case where the parent of |dest_file_path| is a existing file,
+// not a directory.
+TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL(
+      "gdata/Duplicate Name.txt/Document 1.gdoc"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  GDataFileBase* dest_parent = NULL;
+  EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
+  EXPECT_TRUE(dest_parent->AsGDataFile() != NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Copy(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            callback_helper_->last_error_);
+
+  EXPECT_EQ(src_file, FindFile(src_file_path));
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_EQ(dest_parent, FindFile(dest_parent_path));
+
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
+}
+
+TEST_F(GDataFileSystemTest, RenameFile) {
+  FilePath src_file_path(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(src_parent_path, "subdir_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_resource));
+
+  EXPECT_CALL(*mock_doc_service_,
+              RenameResource(src_file->self_url(),
+                             FILE_PATH_LITERAL("Test.log"), _));
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+
+  GDataFileBase* dest_file = NULL;
+  EXPECT_TRUE((dest_file = FindFile(dest_file_path)) != NULL);
+  EXPECT_EQ(dest_file, FindFileByResource(src_file_resource));
+  EXPECT_EQ(src_file, dest_file);
+}
+
+TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(dest_parent_path, "subdir_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  GDataFileBase* dest_parent = NULL;
+  EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
+  EXPECT_TRUE(dest_parent->AsGDataDirectory() != NULL);
+  EXPECT_FALSE(dest_parent->content_url().is_empty());
+
+  EXPECT_CALL(*mock_doc_service_,
+              RenameResource(src_file->self_url(),
+                             FILE_PATH_LITERAL("Test.log"), _));
+  EXPECT_CALL(*mock_doc_service_,
+              AddResourceToDirectory(dest_parent->content_url(),
+                                     src_file->self_url(), _));
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+
+  GDataFileBase* dest_file = NULL;
+  EXPECT_TRUE((dest_file = FindFile(dest_file_path)) != NULL);
+  EXPECT_EQ(dest_file, FindFileByResource(src_file_path_resource));
+  EXPECT_EQ(src_file, dest_file);
+}
+
+TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
+  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath src_file_path(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(src_parent_path, "subdir_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  GDataFileBase* src_parent = NULL;
+  EXPECT_TRUE((src_parent = FindFile(src_parent_path)) != NULL);
+  EXPECT_TRUE(src_parent->AsGDataDirectory() != NULL);
+  EXPECT_FALSE(src_parent->content_url().is_empty());
+
+  EXPECT_CALL(*mock_doc_service_,
+              RenameResource(src_file->self_url(),
+                             FILE_PATH_LITERAL("Test.log"), _));
+  EXPECT_CALL(*mock_doc_service_,
+              RemoveResourceFromDirectory(src_parent->content_url(),
+                                          src_file->self_url(),
+                                          src_file_path_resource, _));
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+
+  GDataFileBase* dest_file = NULL;
+  EXPECT_TRUE((dest_file = FindFile(dest_file_path)) != NULL);
+  EXPECT_EQ(dest_file, FindFileByResource(src_file_path_resource));
+  EXPECT_EQ(src_file, dest_file);
+}
+
+TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
+  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath src_file_path(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/New Folder 1/Test.log"));
+  FilePath interim_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(src_parent_path, "subdir_feed.json");
+  AddDirectoryFromFile(dest_parent_path, "directory_entry_atom.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  GDataFileBase* src_parent = NULL;
+  EXPECT_TRUE((src_parent = FindFile(src_parent_path)) != NULL);
+  EXPECT_TRUE(src_parent->AsGDataDirectory() != NULL);
+  EXPECT_FALSE(src_parent->content_url().is_empty());
+
+  GDataFileBase* dest_parent = NULL;
+  EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
+  EXPECT_TRUE(dest_parent->AsGDataDirectory() != NULL);
+  EXPECT_FALSE(dest_parent->content_url().is_empty());
+
+  EXPECT_TRUE(FindFile(interim_file_path) == NULL);
+
+  EXPECT_CALL(*mock_doc_service_,
+              RenameResource(src_file->self_url(),
+                             FILE_PATH_LITERAL("Test.log"), _));
+  EXPECT_CALL(*mock_doc_service_,
+              RemoveResourceFromDirectory(src_parent->content_url(),
+                                          src_file->self_url(),
+                                          src_file_path_resource, _));
+  EXPECT_CALL(*mock_doc_service_,
+              AddResourceToDirectory(dest_parent->content_url(),
+                                     src_file->self_url(), _));
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+  EXPECT_TRUE(FindFile(interim_file_path) == NULL);
+
+  GDataFileBase* dest_file = NULL;
+  EXPECT_TRUE((dest_file = FindFile(dest_file_path)) != NULL);
+  EXPECT_EQ(dest_file, FindFileByResource(src_file_path_resource));
+  EXPECT_EQ(src_file, dest_file);
+}
+
+TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) == NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+
+  EXPECT_TRUE(FindFile(src_file_path) == NULL);
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
+}
+
+TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Dummy"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Dummy/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+
+  EXPECT_EQ(src_file, FindFile(src_file_path));
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+
+  EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
+}
+
+// Test the case where the parent of |dest_file_path| is a existing file,
+// not a directory.
+TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
+  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL(
+      "gdata/Duplicate Name.txt/Test.log"));
+
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* src_file = NULL;
+  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  EXPECT_TRUE(src_file->AsGDataFile() != NULL);
+  std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_FALSE(src_file->self_url().is_empty());
+
+  GDataFileBase* dest_parent = NULL;
+  EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
+  EXPECT_TRUE(dest_parent->AsGDataFile() != NULL);
+
+  GDataFileSystem::FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            callback_helper_->last_error_);
+
+  EXPECT_EQ(src_file, FindFile(src_file_path));
+  EXPECT_EQ(src_file, FindFileByResource(src_file_path_resource));
+  EXPECT_EQ(dest_parent, FindFile(dest_parent_path));
+
+  EXPECT_TRUE(FindFile(dest_file_path) == NULL);
 }
 
 TEST_F(GDataFileSystemTest, RemoveFiles) {

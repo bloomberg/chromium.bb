@@ -24,6 +24,12 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   virtual void GetFileInfo(const GURL& path,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback) OVERRIDE;
+  virtual void Copy(const GURL& src_path, const GURL& dest_path,
+      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+          OVERRIDE;
+  virtual void Move(const GURL& src_path, const GURL& dest_path,
+      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+          OVERRIDE;
   virtual void ReadDirectory(const GURL& path,
      const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
          callback) OVERRIDE;

@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -334,9 +335,12 @@ class UrlFetchOperation : public GDataOperationInterface,
   // Overridden from GDataOperationInterface.
   virtual void Start(const std::string& auth_token) OVERRIDE {
     DCHECK(!auth_token.empty());
+
     GURL url = GetURL();
-    url_fetcher_.reset(URLFetcher::Create(
-        url, GetRequestType(), this));
+    DCHECK(!url.is_empty());
+    DVLOG(1) << "URL: " << url.spec();
+
+    url_fetcher_.reset(URLFetcher::Create(url, GetRequestType(), this));
     url_fetcher_->SetRequestContext(profile_->GetRequestContext());
     // Always set flags to neither send nor save cookies.
     url_fetcher_->SetLoadFlags(
@@ -356,7 +360,7 @@ class UrlFetchOperation : public GDataOperationInterface,
     std::vector<std::string> headers = GetExtraRequestHeaders();
     for (size_t i = 0; i < headers.size(); ++i) {
       url_fetcher_->AddExtraRequestHeader(headers[i]);
-      DVLOG(1) << "Extra header " << headers[i];
+      DVLOG(1) << "Extra header: " << headers[i];
     }
 
     // Set upload data if available.
@@ -382,14 +386,21 @@ class UrlFetchOperation : public GDataOperationInterface,
 
  protected:
   virtual ~UrlFetchOperation() {}
-  // Gets URL for GET request.
+  // Gets URL for the request.
   virtual GURL GetURL() const = 0;
+  // Returns the request type. A derived class should override this method
+  // for a request type other than HTTP GET.
   virtual URLFetcher::RequestType GetRequestType() const {
     return URLFetcher::GET;
   }
+  // Returns the extra HTTP headers for the request. A derived class should
+  // override this method to specify any extra headers needed for the request.
   virtual std::vector<std::string> GetExtraRequestHeaders() const {
     return std::vector<std::string>();
   }
+  // Used by a derived class to add any content data to the request.
+  // Returns true if |upload_content_type| and |upload_content| are updated
+  // with the content type and data for the request.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) {
     return false;
@@ -782,6 +793,258 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
   DVLOG(1) << "CreateDirectory data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
+}
+
+//=========================== CopyDocumentOperation ============================
+
+// Operation for making a copy of a document.
+class CopyDocumentOperation : public GetDataOperation {
+ public:
+  CopyDocumentOperation(GDataOperationRegistry* registry,
+                        Profile* profile,
+                        const GetDataCallback& callback,
+                        const GURL& document_url,
+                        const FilePath::StringType& new_name);
+  virtual ~CopyDocumentOperation() {}
+
+ private:
+  // Overridden from GetDataOperation.
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
+
+  // Overridden from UrlFetchOperation.
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+  GURL document_url_;
+  FilePath::StringType new_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopyDocumentOperation);
+};
+
+CopyDocumentOperation::CopyDocumentOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const GetDataCallback& callback,
+    const GURL& document_url,
+    const FilePath::StringType& new_name)
+    : GetDataOperation(registry, profile, callback),
+      document_url_(document_url),
+      new_name_(new_name) {
+}
+
+URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
+  return URLFetcher::POST;
+}
+
+GURL CopyDocumentOperation::GetURL() const {
+  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+}
+
+bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
+  upload_content_type->assign("application/atom+xml");
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("entry");
+  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
+
+  xml_writer.WriteElement("id", document_url_.spec());
+  xml_writer.WriteElement("title", new_name_);
+
+  xml_writer.EndElement();  // Ends "entry" element.
+  xml_writer.StopWriting();
+  upload_content->assign(xml_writer.GetWrittenString());
+  DVLOG(1) << "CopyDocumentOperation data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+//=========================== RenameResourceOperation ==========================
+
+class RenameResourceOperation : public EntryActionOperation {
+ public:
+  RenameResourceOperation(GDataOperationRegistry* registry,
+                          Profile* profile,
+                          const EntryActionCallback& callback,
+                          const GURL& document_url,
+                          const FilePath::StringType& new_name);
+  virtual ~RenameResourceOperation() {}
+
+ private:
+  // Overridden from EntryActionOperation.
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+  // Overridden from UrlFetchOperation.
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+  FilePath::StringType new_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+};
+
+RenameResourceOperation::RenameResourceOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const EntryActionCallback& callback,
+    const GURL& document_url,
+    const FilePath::StringType& new_name)
+    : EntryActionOperation(registry, profile, callback, document_url),
+      new_name_(new_name) {
+}
+
+URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
+  return URLFetcher::PUT;
+}
+
+std::vector<std::string>
+RenameResourceOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kIfMatchAllHeader);
+  return headers;
+}
+
+bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
+                                             std::string* upload_content) {
+  upload_content_type->assign("application/atom+xml");
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("entry");
+  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
+
+  xml_writer.WriteElement("title", new_name_);
+
+  xml_writer.EndElement();  // Ends "entry" element.
+  xml_writer.StopWriting();
+  upload_content->assign(xml_writer.GetWrittenString());
+  DVLOG(1) << "RenameResourceOperation data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+//=========================== AddResourceToDirectoryOperation ==================
+
+class AddResourceToDirectoryOperation : public EntryActionOperation {
+ public:
+  AddResourceToDirectoryOperation(GDataOperationRegistry* registry,
+                                  Profile* profile,
+                                  const EntryActionCallback& callback,
+                                  const GURL& parent_content_url,
+                                  const GURL& document_url);
+  virtual ~AddResourceToDirectoryOperation() {}
+
+ private:
+  // Overridden from EntryActionOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+  // Overridden from UrlFetchOperation.
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+  const GURL parent_content_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);
+};
+
+AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const EntryActionCallback& callback,
+    const GURL& parent_content_url,
+    const GURL& document_url)
+    : EntryActionOperation(registry, profile, callback, document_url),
+      parent_content_url_(parent_content_url) {
+}
+
+GURL AddResourceToDirectoryOperation::GetURL() const {
+  if (!parent_content_url_.is_empty())
+    return AddStandardUrlParams(parent_content_url_);
+
+  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+}
+
+URLFetcher::RequestType
+AddResourceToDirectoryOperation::GetRequestType() const {
+  return URLFetcher::POST;
+}
+
+bool AddResourceToDirectoryOperation::GetContentData(
+    std::string* upload_content_type, std::string* upload_content) {
+  upload_content_type->assign("application/atom+xml");
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("entry");
+  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
+
+  xml_writer.WriteElement("id", document_url_.spec());
+
+  xml_writer.EndElement();  // Ends "entry" element.
+  xml_writer.StopWriting();
+  upload_content->assign(xml_writer.GetWrittenString());
+  DVLOG(1) << "AddResourceToDirectoryOperation data: " << *upload_content_type
+           << ", [" << *upload_content << "]";
+  return true;
+}
+
+//=========================== RemoveResourceFromDirectoryOperation =============
+
+class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
+ public:
+  RemoveResourceFromDirectoryOperation(GDataOperationRegistry* registry,
+                                       Profile* profile,
+                                       const EntryActionCallback& callback,
+                                       const GURL& parent_content_url,
+                                       const GURL& document_url,
+                                       const std::string& resource_id);
+  virtual ~RemoveResourceFromDirectoryOperation() {}
+
+ private:
+  // Overridden from EntryActionOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+  // Overridden from UrlFetchOperation.
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+
+  const std::string resource_id_;
+  const GURL parent_content_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
+};
+
+RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const EntryActionCallback& callback,
+    const GURL& parent_content_url,
+    const GURL& document_url,
+    const std::string& document_resource_id)
+    : EntryActionOperation(registry, profile, callback, document_url),
+      resource_id_(document_resource_id),
+      parent_content_url_(parent_content_url) {
+}
+
+GURL RemoveResourceFromDirectoryOperation::GetURL() const {
+  std::string escaped_resource_id = net::EscapePath(resource_id_);
+  GURL edit_url(base::StringPrintf("%s/%s",
+                                   parent_content_url_.spec().c_str(),
+                                   escaped_resource_id.c_str()));
+  return AddStandardUrlParams(edit_url);
+}
+
+URLFetcher::RequestType
+RemoveResourceFromDirectoryOperation::GetRequestType() const {
+  return URLFetcher::DELETE_REQUEST;
+}
+
+std::vector<std::string>
+RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kIfMatchAllHeader);
+  return headers;
 }
 
 //=========================== InitiateUploadOperation ==========================
@@ -1201,6 +1464,48 @@ void DocumentsService::CreateDirectory(
       new CreateDirectoryOperation(operation_registry_.get(), profile_,
                                    callback, parent_content_url,
                                    directory_name));
+}
+
+void DocumentsService::CopyDocument(const GURL& document_url,
+                                    const FilePath::StringType& new_name,
+                                    const GetDataCallback& callback) {
+  StartOperationOnUIThread(
+      new CopyDocumentOperation(operation_registry_.get(), profile_, callback,
+                                document_url, new_name));
+}
+
+void DocumentsService::RenameResource(const GURL& resource_url,
+                                      const FilePath::StringType& new_name,
+                                      const EntryActionCallback& callback) {
+  StartOperationOnUIThread(
+      new RenameResourceOperation(operation_registry_.get(), profile_, callback,
+                                  resource_url, new_name));
+}
+
+void DocumentsService::AddResourceToDirectory(
+    const GURL& parent_content_url,
+    const GURL& resource_url,
+    const EntryActionCallback& callback) {
+  StartOperationOnUIThread(
+      new AddResourceToDirectoryOperation(operation_registry_.get(),
+                                          profile_,
+                                          callback,
+                                          parent_content_url,
+                                          resource_url));
+}
+
+void DocumentsService::RemoveResourceFromDirectory(
+    const GURL& parent_content_url,
+    const GURL& resource_url,
+    const std::string& resource_id,
+    const EntryActionCallback& callback) {
+  StartOperationOnUIThread(
+      new RemoveResourceFromDirectoryOperation(operation_registry_.get(),
+                                               profile_,
+                                               callback,
+                                               parent_content_url,
+                                               resource_url,
+                                               resource_id));
 }
 
 void DocumentsService::InitiateUpload(const InitiateUploadParams& params,

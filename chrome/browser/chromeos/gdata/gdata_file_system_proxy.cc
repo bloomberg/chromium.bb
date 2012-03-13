@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
@@ -71,7 +73,6 @@ class GetFileInfoDelegate : public FindFileDelegateReplyBase {
   }
 
  private:
-
   // Relays reply back to the callback on calling thread.
   void Reply(base::PlatformFileError result,
              const base::PlatformFileInfo& file_info,
@@ -151,7 +152,6 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
   }
 
  private:
-
   // Relays reply back to the callback on calling thread.
   void Reply(base::PlatformFileError result,
              const std::vector<base::FileUtilProxy::Entry>& file_list,
@@ -207,6 +207,33 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
       file_path, new GetFileInfoDelegate(file_system_, file_path, callback));
 }
 
+void GDataFileSystemProxy::Copy(const GURL& src_file_url,
+    const GURL& dest_file_url,
+    const FileSystemOperationInterface::StatusCallback& callback) {
+  FilePath src_file_path, dest_file_path;
+  if (!ValidateUrl(src_file_url, &src_file_path) ||
+      !ValidateUrl(dest_file_url, &dest_file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  file_system_->Copy(src_file_path, dest_file_path, callback);
+}
+
+void GDataFileSystemProxy::Move(const GURL& src_file_url,
+    const GURL& dest_file_url,
+    const FileSystemOperationInterface::StatusCallback& callback) {
+  FilePath src_file_path, dest_file_path;
+  if (!ValidateUrl(src_file_url, &src_file_path) ||
+      !ValidateUrl(dest_file_url, &dest_file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  file_system_->Move(src_file_path, dest_file_path, callback);
+}
 
 void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {

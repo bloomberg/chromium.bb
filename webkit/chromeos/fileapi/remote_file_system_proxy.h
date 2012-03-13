@@ -23,6 +23,22 @@ class RemoteFileSystemProxyInterface :
   virtual void GetFileInfo(const GURL& path,
       const FileSystemOperationInterface::GetMetadataCallback& callback) = 0;
 
+  // Copies a file or directory from |src_path| to |dest_path|. If
+  // |src_path| is a directory, the contents of |src_path| are copied to
+  // |dest_path| recursively. A new file or directory is created at
+  // |dest_path| as needed.
+  virtual void Copy(
+      const GURL& src_path,
+      const GURL& dest_path,
+      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+
+  // Moves a file or directory from |src_path| to |dest_path|. A new file
+  // or directory is created at |dest_path| as needed.
+  virtual void Move(
+      const GURL& src_path,
+      const GURL& dest_path,
+      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+
   // Reads contents of a directory at |path|.
   virtual void ReadDirectory(const GURL& path,
       const FileSystemOperationInterface::ReadDirectoryCallback& callback) = 0;

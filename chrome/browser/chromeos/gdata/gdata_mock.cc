@@ -50,6 +50,16 @@ MockDocumentsService::MockDocumentsService() {
       .WillByDefault(Invoke(this, &MockDocumentsService::DeleteDocumentStub));
   ON_CALL(*this, DownloadDocument(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadDocumentStub));
+  ON_CALL(*this, CopyDocument(_, _, _))
+      .WillByDefault(Invoke(this, &MockDocumentsService::CopyDocumentStub));
+  ON_CALL(*this, RenameResource(_, _, _))
+      .WillByDefault(Invoke(this, &MockDocumentsService::RenameResourceStub));
+  ON_CALL(*this, AddResourceToDirectory(_, _, _))
+      .WillByDefault(
+          Invoke(this, &MockDocumentsService::AddResourceToDirectoryStub));
+  ON_CALL(*this, RemoveResourceFromDirectory(_, _, _, _))
+      .WillByDefault(
+          Invoke(this, &MockDocumentsService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, CreateDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CreateDirectoryStub));
   ON_CALL(*this, DownloadFile(_, _))
@@ -93,6 +103,43 @@ void MockDocumentsService::DownloadDocumentStub(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS, content_url,
                  FilePath(content_url.host() + content_url.path())));
+}
+
+void MockDocumentsService::CopyDocumentStub(
+    const GURL& document_url,
+    const FilePath::StringType& new_name,
+    const GetDataCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&document_data_)));
+}
+
+void MockDocumentsService::RenameResourceStub(
+    const GURL& resource_url,
+    const FilePath::StringType& new_name,
+    const EntryActionCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, resource_url));
+}
+
+void MockDocumentsService::AddResourceToDirectoryStub(
+    const GURL& parent_content_url,
+    const GURL& resource_url,
+    const EntryActionCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, resource_url));
+}
+
+void MockDocumentsService::RemoveResourceFromDirectoryStub(
+    const GURL& parent_content_url,
+    const GURL& resource_url,
+    const std::string& resource_id,
+    const EntryActionCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, resource_url));
 }
 
 void MockDocumentsService::CreateDirectoryStub(

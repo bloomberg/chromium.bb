@@ -14,16 +14,15 @@
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -535,7 +534,6 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 }
 
-
 // GDataFileSystem class implementatsion.
 
 GDataFileSystem::GDataFileSystem(Profile* profile,
@@ -606,6 +604,230 @@ void GDataFileSystem::RefreshDirectoryAndContinueSearch(
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
   ContinueDirectoryRefresh(params, feed_list.Pass());
+}
+
+void GDataFileSystem::Copy(const FilePath& src_file_path,
+                           const FilePath& dest_file_path,
+                           const FileOperationCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath dest_parent_path = dest_file_path.DirName();
+
+  base::AutoLock lock(lock_);
+  GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
+  GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
+  if (!src_file || !dest_parent) {
+    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  } else {
+    // TODO(benchan): Implement copy for regular files and directories.
+    // To copy a regular file, we need to first download the file and
+    // then upload it, which is not yet implemented. Also, in the interim,
+    // we handle recursive directory copy in the file manager.
+    if (!src_file->AsGDataFile() ||
+        !src_file->AsGDataFile()->is_hosted_document()) {
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    } else if (!dest_parent->AsGDataDirectory()) {
+      error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
+
+    return;
+  }
+
+  FilePathUpdateCallback add_file_to_directory_callback =
+      base::Bind(&GDataFileSystem::AddFileToDirectory,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dest_parent_path,
+                 callback);
+
+  documents_service_->CopyDocument(
+      src_file->self_url(),
+      // Drop the document extension, which should not be in the document title.
+      dest_file_path.BaseName().RemoveExtension().value(),
+      base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 add_file_to_directory_callback));
+}
+
+void GDataFileSystem::Rename(const FilePath& file_path,
+                             const FilePath::StringType& new_name,
+                             const FilePathUpdateCallback& callback) {
+  // It is a no-op if the file is renamed to the same name.
+  if (file_path.BaseName().value() == new_name) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, base::PLATFORM_FILE_OK, file_path));
+    }
+    return;
+  }
+
+  base::AutoLock lock(lock_);
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
+  if (!file) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND, file_path));
+    }
+    return;
+  }
+
+  // Drop the .g<something> extension from |new_name| if the file being
+  // renamed is a hosted document and |new_name| has the same .g<something>
+  // extension as the file.
+  FilePath::StringType file_name = new_name;
+  if (file->AsGDataFile() && file->AsGDataFile()->is_hosted_document()) {
+    FilePath new_file(file_name);
+    if (new_file.Extension() == file->AsGDataFile()->document_extension()) {
+      file_name = new_file.RemoveExtension().value();
+    }
+  }
+
+  documents_service_->RenameResource(
+      file->self_url(),
+      file_name,
+      base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
+                 file_name,
+                 callback));
+}
+
+void GDataFileSystem::Move(const FilePath& src_file_path,
+                           const FilePath& dest_file_path,
+                           const FileOperationCallback& callback) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath dest_parent_path = dest_file_path.DirName();
+
+  {
+    // This scoped lock needs to be released before calling Rename() below.
+    base::AutoLock lock(lock_);
+    GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
+    GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
+    if (!src_file || !dest_parent) {
+      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    } else {
+      if (!dest_parent->AsGDataDirectory())
+        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    }
+
+    if (error != base::PLATFORM_FILE_OK) {
+      if (!callback.is_null()) {
+        MessageLoop::current()->PostTask(FROM_HERE,
+            base::Bind(callback, error));
+      }
+      return;
+    }
+  }
+
+  // If the file/directory is moved to the same directory, just rename it.
+  if (src_file_path.DirName() == dest_parent_path) {
+    FilePathUpdateCallback final_file_path_update_callback =
+        base::Bind(&GDataFileSystem::OnFilePathUpdated,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback);
+
+    Rename(src_file_path, dest_file_path.BaseName().value(),
+           final_file_path_update_callback);
+    return;
+  }
+
+  // Otherwise, the move operation involves three steps:
+  // 1. Renames the file at |src_file_path| to basename(|dest_file_path|)
+  //    within the same directory. The rename operation is a no-op if
+  //    basename(|src_file_path|) equals to basename(|dest_file_path|).
+  // 2. Removes the file from its parent directory (the file is not deleted),
+  //    which effectively moves the file to the root directory.
+  // 3. Adds the file to the parent directory of |dest_file_path|, which
+  //    effectively moves the file from the root directory to the parent
+  //    directory of |dest_file_path|.
+  FilePathUpdateCallback add_file_to_directory_callback =
+      base::Bind(&GDataFileSystem::AddFileToDirectory,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 dest_file_path.DirName(),
+                 callback);
+
+  FilePathUpdateCallback remove_file_from_directory_callback =
+      base::Bind(&GDataFileSystem::RemoveFileFromDirectory,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 src_file_path.DirName(),
+                 add_file_to_directory_callback);
+
+  Rename(src_file_path, dest_file_path.BaseName().value(),
+         remove_file_from_directory_callback);
+}
+
+void GDataFileSystem::AddFileToDirectory(const FilePath& dir_path,
+                                         const FileOperationCallback& callback,
+                                         base::PlatformFileError error,
+                                         const FilePath& file_path) {
+  base::AutoLock lock(lock_);
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
+  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
+  if (error == base::PLATFORM_FILE_OK) {
+    if (!file || !dir) {
+      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    } else {
+      if (!dir->AsGDataDirectory())
+        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    }
+  }
+
+  // Returns if there is an error or |dir_path| is the root directory.
+  if (error != base::PLATFORM_FILE_OK || dir->AsGDataRootDirectory()) {
+    if (!callback.is_null())
+      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
+
+    return;
+  }
+
+  documents_service_->AddResourceToDirectory(
+      dir->content_url(),
+      file->self_url(),
+      base::Bind(&GDataFileSystem::OnAddFileToDirectoryCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 file_path,
+                 dir_path));
+}
+
+void GDataFileSystem::RemoveFileFromDirectory(
+    const FilePath& dir_path,
+    const FilePathUpdateCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& file_path) {
+  base::AutoLock lock(lock_);
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
+  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
+  if (error == base::PLATFORM_FILE_OK) {
+    if (!file || !dir) {
+      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    } else {
+      if (!dir->AsGDataDirectory())
+        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    }
+  }
+
+  // Returns if there is an error or |dir_path| is the root directory.
+  if (error != base::PLATFORM_FILE_OK || dir->AsGDataRootDirectory()) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(callback, error, file_path));
+    }
+    return;
+  }
+
+  documents_service_->RemoveResourceFromDirectory(
+      dir->content_url(),
+      file->self_url(),
+      file->resource_id(),
+      base::Bind(&GDataFileSystem::OnRemoveFileFromDirectoryCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 file_path,
+                 dir_path));
 }
 
 void GDataFileSystem::Remove(const FilePath& file_path,
@@ -999,6 +1221,109 @@ void GDataFileSystem::OnGetDocuments(
                  params.delegate);
 }
 
+void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
+                                        base::PlatformFileError error,
+                                        const FilePath& file_path) {
+  if (!callback.is_null())
+    callback.Run(error);
+}
+
+void GDataFileSystem::OnRenameResourceCompleted(
+    const FilePath& file_path,
+    const FilePath::StringType& new_name,
+    const FilePathUpdateCallback& callback,
+    GDataErrorCode status,
+    const GURL& document_url) {
+  FilePath updated_file_path;
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error == base::PLATFORM_FILE_OK)
+    error = RenameFileOnFilesystem(file_path, new_name, &updated_file_path);
+
+  if (!callback.is_null())
+    callback.Run(error, updated_file_path);
+}
+
+void GDataFileSystem::OnCopyDocumentCompleted(
+    const FilePathUpdateCallback& callback,
+    GDataErrorCode status,
+    scoped_ptr<base::Value> data) {
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, FilePath());
+
+    return;
+  }
+
+  base::DictionaryValue* dict_value = NULL;
+  base::Value* entry_value = NULL;
+  if (data.get() && data->GetAsDictionary(&dict_value) && dict_value)
+    dict_value->Get("entry", &entry_value);
+
+  if (!entry_value) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+
+    return;
+  }
+
+  scoped_ptr<DocumentEntry> entry(DocumentEntry::CreateFrom(entry_value));
+  if (!entry.get()) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+
+    return;
+  }
+
+  FilePath file_path;
+  {
+    base::AutoLock lock(lock_);
+    GDataFileBase* file =
+        GDataFileBase::FromDocumentEntry(root_.get(), entry.get());
+    if (!file) {
+      if (!callback.is_null())
+        callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+
+      return;
+    }
+    root_->AddFile(file);
+    file_path = file->GetFilePath();
+  }
+
+  if (!callback.is_null())
+    callback.Run(error, file_path);
+}
+
+void GDataFileSystem::OnAddFileToDirectoryCompleted(
+    const FileOperationCallback& callback,
+    const FilePath& file_path,
+    const FilePath& dir_path,
+    GDataErrorCode status,
+    const GURL& document_url) {
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error == base::PLATFORM_FILE_OK)
+    error = AddFileToDirectoryOnFilesystem(file_path, dir_path);
+
+  if (!callback.is_null())
+    callback.Run(error);
+}
+
+void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
+    const FilePathUpdateCallback& callback,
+    const FilePath& file_path,
+    const FilePath& dir_path,
+    GDataErrorCode status,
+    const GURL& document_url) {
+  FilePath updated_file_path = file_path;
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error == base::PLATFORM_FILE_OK)
+    error = RemoveFileFromDirectoryOnFilesystem(file_path, dir_path,
+                                                &updated_file_path);
+
+  if (!callback.is_null())
+    callback.Run(error, updated_file_path);
+}
+
 void GDataFileSystem::SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector) {
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(&GDataFileSystem::SaveRootFeedsOnIOThreadPool,
@@ -1061,6 +1386,98 @@ void GDataFileSystem::OnFileDownloaded(
   if (!callback.is_null()) {
     callback.Run(error, file_path);
   }
+}
+
+base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
+    const FilePath& file_path,
+    const FilePath::StringType& new_name,
+    FilePath* updated_file_path) {
+  DCHECK(updated_file_path);
+
+  base::AutoLock lock(lock_);
+
+  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(file_path, find_file_delegate);
+
+  GDataFileBase* file = find_file_delegate->file();
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  DCHECK(file->parent());
+  file->set_title(new_name);
+  // After changing the title of the file, call TakeFile() to remove the
+  // file from its parent directory and then add it back in order to go
+  // through the file name de-duplication.
+  if (!file->parent()->TakeFile(file))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  *updated_file_path = file->GetFilePath();
+  return base::PLATFORM_FILE_OK;
+}
+
+base::PlatformFileError GDataFileSystem::AddFileToDirectoryOnFilesystem(
+    const FilePath& file_path, const FilePath& dir_path) {
+  base::AutoLock lock(lock_);
+
+  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(file_path, find_file_delegate);
+
+  GDataFileBase* file = find_file_delegate->file();
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  DCHECK_EQ(root_.get(), file->parent());
+
+  scoped_refptr<ReadOnlyFindFileDelegate> find_dir_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(dir_path, find_dir_delegate);
+  GDataFileBase* dir = find_dir_delegate->file();
+  if (!dir)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  if (!dir->AsGDataDirectory())
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  if (!dir->AsGDataDirectory()->TakeFile(file))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  return base::PLATFORM_FILE_OK;
+}
+
+base::PlatformFileError GDataFileSystem::RemoveFileFromDirectoryOnFilesystem(
+    const FilePath& file_path, const FilePath& dir_path,
+    FilePath* updated_file_path) {
+  DCHECK(updated_file_path);
+
+  base::AutoLock lock(lock_);
+
+  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(file_path, find_file_delegate);
+
+  GDataFileBase* file = find_file_delegate->file();
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  scoped_refptr<ReadOnlyFindFileDelegate> find_dir_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(dir_path, find_dir_delegate);
+  GDataFileBase* dir = find_dir_delegate->file();
+  if (!dir)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  if (!dir->AsGDataDirectory())
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  DCHECK_EQ(dir->AsGDataDirectory(), file->parent());
+
+  if (!root_->TakeFile(file))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  *updated_file_path = file->GetFilePath();
+  return base::PLATFORM_FILE_OK;
 }
 
 base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(

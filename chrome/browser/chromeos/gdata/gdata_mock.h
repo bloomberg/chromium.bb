@@ -8,6 +8,8 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
 #pragma once
 
+#include <string>
+
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
@@ -25,7 +27,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   virtual ~MockDocumentsService();
 
   // DocumentServiceInterface overrides.
-  MOCK_METHOD1(Initialize, void(Profile*));
+  MOCK_METHOD1(Initialize, void(Profile* profile));
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD2(GetDocuments, void(const GURL& feed_url,
@@ -35,6 +37,21 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_METHOD3(DownloadDocument, void(const GURL& content_url,
                                       DocumentExportFormat format,
                                       const DownloadActionCallback& callback));
+  MOCK_METHOD3(CopyDocument, void(const GURL& document_url,
+                                  const FilePath::StringType& new_name,
+                                  const GetDataCallback& callback));
+  MOCK_METHOD3(RenameResource, void(const GURL& resource_url,
+                                    const FilePath::StringType& new_name,
+                                    const EntryActionCallback& callback));
+  MOCK_METHOD3(AddResourceToDirectory,
+               void(const GURL& parent_content_url,
+                    const GURL& resource_url,
+                    const EntryActionCallback& callback));
+  MOCK_METHOD4(RemoveResourceFromDirectory,
+               void(const GURL& parent_content_url,
+                    const GURL& resource_url,
+                    const std::string& resource_id,
+                    const EntryActionCallback& callback));
   MOCK_METHOD3(CreateDirectory,
                void(const GURL& parent_content_url,
                     const FilePath::StringType& directory_name,
@@ -70,6 +87,28 @@ class MockDocumentsService : public DocumentsServiceInterface {
                             const DownloadActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of
+  // |document_data_|.
+  void CopyDocumentStub(const GURL& document_url,
+                        const FilePath::StringType& new_name,
+                        const GetDataCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the |document_url|.
+  void RenameResourceStub(const GURL& document_url,
+                          const FilePath::StringType& new_name,
+                          const EntryActionCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the |resource_url|.
+  void AddResourceToDirectoryStub(const GURL& parent_content_url,
+                                  const GURL& resource_url,
+                                  const EntryActionCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the |resource_url|.
+  void RemoveResourceFromDirectoryStub(const GURL& parent_content_url,
+                                       const GURL& resource_url,
+                                       const std::string& resource_id,
+                                       const EntryActionCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the current value of
   // |directory_data_|.
   void CreateDirectoryStub(const GURL& parent_content_url,
                            const FilePath::StringType& directory_name,
@@ -94,6 +133,9 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Feed data to be returned from CreateDirectory.
   scoped_ptr<base::Value> directory_data_;
+
+  // Feed data to be returned from CopyDocument.
+  scoped_ptr<base::Value> document_data_;
 };
 
 }  // namespace gdata
