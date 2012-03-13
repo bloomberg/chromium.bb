@@ -875,8 +875,9 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
 
-// PPAPITest.Audio_Creation fails on Linux try servers. http://crbug.com/114712
-#if defined(OS_LINUX)
+// PPAPITest.Audio_Creation fails on Linux & Mac try servers.
+// http://crbug.com/114712
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_Audio_Creation DISABLED_Audio_Creation
 #else
 #define MAYBE_Audio_Creation Audio_Creation
