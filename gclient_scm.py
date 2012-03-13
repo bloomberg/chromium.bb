@@ -219,7 +219,9 @@ class GitWrapper(SCMWrapper):
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
 
-    if not os.path.exists(self.checkout_path):
+    if not os.path.exists(self.checkout_path) or (
+        os.path.isdir(self.checkout_path) and
+        not os.listdir(self.checkout_path)):
       gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       self._Clone(revision, url, options)
       files = self._Capture(['ls-files']).splitlines()
