@@ -90,7 +90,10 @@ class JSChecker(object):
     for f in affected_js_files:
       error_lines = []
 
-      # check for getElementById() and "const"
+      # Check for the following:
+      # * getElementById()
+      # * the |const| keyword
+      # * Passing an empty array to |chrome.send()|
       for i, line in enumerate(f.NewContents(), start=1):
         if 'getElementById' in line:
           error_lines.append('  line %d: %s\n%s' % (
@@ -101,6 +104,11 @@ class JSChecker(object):
           error_lines.append('  line %d: %s\n%s' % (
               i,
               "Use var instead of const.",
+              line))
+        if self.input_api.re.search(r"chrome\.send\('[^']+', \[\]\)", line):
+          error_lines.append('  line %d: %s\n%s' % (
+              i,
+              'Passing an empty array to chrome.send is unnecessary.',
               line))
 
       # Use closure_linter to check for several different errors
