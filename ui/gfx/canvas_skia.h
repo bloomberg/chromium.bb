@@ -298,12 +298,8 @@ class UI_EXPORT CanvasSkia {
       const gfx::Rect& display_rect);
 #endif
 
-  // TODO(tfarina): Remove these. And stick with sk_canvas() only.
-  SkCanvas* GetSkCanvas();
-  const SkCanvas* GetSkCanvas() const;
-  SkCanvas* sk_canvas() const { return canvas_; }
-
   skia::PlatformCanvas* platform_canvas() const { return owned_canvas_.get(); }
+  SkCanvas* sk_canvas() const { return canvas_; }
 
  private:
   // Test whether the provided rectangle intersects the current clip rect.

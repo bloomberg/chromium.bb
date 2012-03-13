@@ -38,7 +38,7 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gradient_shader->unref();
 
   InfoBarView* infobar = static_cast<InfoBarView*>(view);
-  SkCanvas* canvas_skia = canvas->GetSkCanvas();
+  SkCanvas* canvas_skia = canvas->sk_canvas();
   canvas_skia->drawPath(infobar->fill_path(), paint);
 
   paint.setShader(NULL);

@@ -127,7 +127,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    canvas->GetSkCanvas()->drawColor(color_);
+    canvas->sk_canvas()->drawColor(color_);
   }
 
  private:
@@ -963,7 +963,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
       schedule_paint_rect_ = gfx::Rect();
     }
     SkRect sk_clip_rect;
-    if (canvas->GetSkCanvas()->getClipBounds(&sk_clip_rect))
+    if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
       last_clip_rect_ = gfx::SkRectToRect(sk_clip_rect);
   }
 

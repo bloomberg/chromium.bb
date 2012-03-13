@@ -100,7 +100,7 @@ class TitleBackgroundPainter : public views::Painter {
     paint.setShader(s);
     // Need to unref shader, otherwise never deleted.
     s->unref();
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 
   PanelController* panel_controller_;

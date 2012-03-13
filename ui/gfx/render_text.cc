@@ -172,7 +172,7 @@ namespace gfx {
 namespace internal {
 
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
-    : canvas_skia_(canvas->GetSkCanvas()) {
+    : canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
   paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint_.setStyle(SkPaint::kFill_Style);

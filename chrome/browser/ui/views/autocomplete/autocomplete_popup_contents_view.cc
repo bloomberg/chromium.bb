@@ -575,7 +575,7 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
 
   gfx::Path path;
   MakeContentsPath(&path, GetContentsBounds());
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop
@@ -641,7 +641,7 @@ void AutocompletePopupContentsView::MakeCanvasTransparent(
   // Allow the window blur effect to show through the popup background.
   SkAlpha alpha = GetThemeProvider()->ShouldUseNativeFrame() ?
       kGlassPopupAlpha : kOpaquePopupAlpha;
-  canvas->GetSkCanvas()->drawColor(SkColorSetA(
+  canvas->sk_canvas()->drawColor(SkColorSetA(
       AutocompleteResultView::GetColor(AutocompleteResultView::NORMAL,
       AutocompleteResultView::BACKGROUND), alpha), SkXfermode::kDstIn_Mode);
 }

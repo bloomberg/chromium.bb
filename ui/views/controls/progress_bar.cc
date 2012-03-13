@@ -87,7 +87,7 @@ void FillRoundRect(gfx::Canvas* canvas,
   // Need to unref shader, otherwise never deleted.
   s->unref();
 
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 
 void FillRoundRect(gfx::Canvas* canvas,
@@ -108,7 +108,7 @@ void FillRoundRect(gfx::Canvas* canvas,
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(gradient_start_color);
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 }
 
@@ -126,7 +126,7 @@ void StrokeRoundRect(gfx::Canvas* canvas,
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStrokeWidth(SkIntToScalar(stroke_width));
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 
 }  // namespace
@@ -252,7 +252,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
 
     // Draw inner stroke and shadow if wide enough.
     if (progress_width > 2 * kBorderWidth) {
-      canvas->GetSkCanvas()->save();
+      canvas->sk_canvas()->save();
 
       SkPath inner_path;
       AddRoundRectPathWithPadding(
@@ -260,7 +260,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
           kCornerRadius,
           SkIntToScalar(kBorderWidth),
           &inner_path);
-      canvas->GetSkCanvas()->clipPath(inner_path);
+      canvas->sk_canvas()->clipPath(inner_path);
 
       // Draw bar inner stroke
       StrokeRoundRect(canvas,
@@ -278,7 +278,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                       bar_inner_shadow_color,
                       kBorderWidth);
 
-      canvas->GetSkCanvas()->restore();
+      canvas->sk_canvas()->restore();
     }
 
     // Draw bar stroke

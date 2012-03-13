@@ -98,7 +98,7 @@ void ColorTestWindowDelegate::OnWindowDestroyed() {
   delete this;
 }
 void ColorTestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
-  canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
+  canvas->sk_canvas()->drawColor(color_, SkXfermode::kSrc_Mode);
 }
 
 }  // namespace test

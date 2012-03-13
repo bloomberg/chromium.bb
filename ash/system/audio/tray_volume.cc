@@ -81,7 +81,7 @@ class VolumeButton : public views::ToggleImageButton {
     SkPaint paint;
     paint.setColor(SkColorSetARGB(63, 0, 0, 0));
     paint.setStrokeWidth(SkIntToScalar(3));
-    canvas->GetSkCanvas()->drawLine(SkIntToScalar(width() - 10),
+    canvas->sk_canvas()->drawLine(SkIntToScalar(width() - 10),
         SkIntToScalar(10), SkIntToScalar(10), SkIntToScalar(height() - 10),
         paint);
   }

@@ -95,14 +95,9 @@ gfx::Size ScrollBarButton::GetPreferredSize() {
 
 void ScrollBarButton::OnPaint(gfx::Canvas* canvas) {
   const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
-  gfx::Rect bounds;
-  bounds.set_size(GetPreferredSize());
-
-  native_theme->Paint(canvas->GetSkCanvas(),
-                      GetNativeThemePart(),
-                      GetNativeThemeState(),
-                      bounds,
-                      GetNativeThemeParams());
+  gfx::Rect bounds(GetPreferredSize());
+  native_theme->Paint(canvas->sk_canvas(), GetNativeThemePart(),
+                      GetNativeThemeState(), bounds, GetNativeThemeParams());
 }
 
 gfx::NativeTheme::ExtraParams
@@ -183,7 +178,7 @@ gfx::Size ScrollBarThumb::GetPreferredSize() {
 void ScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
   const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
 
-  native_theme->Paint(canvas->GetSkCanvas(),
+  native_theme->Paint(canvas->sk_canvas(),
                       GetNativeThemePart(),
                       GetNativeThemeState(),
                       GetLocalBounds(),
@@ -302,12 +297,7 @@ void NativeScrollBarViews::OnPaint(gfx::Canvas* canvas) {
   params_.scrollbar_track.track_width = bounds.width();
   params_.scrollbar_track.track_height = bounds.height();
 
-
-  native_theme->Paint(canvas->GetSkCanvas(),
-                      part_,
-                      state_,
-                      bounds,
-                      params_);
+  native_theme->Paint(canvas->sk_canvas(), part_, state_, bounds, params_);
 }
 
 gfx::Size NativeScrollBarViews::GetPreferredSize() {

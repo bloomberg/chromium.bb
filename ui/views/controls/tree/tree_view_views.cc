@@ -516,7 +516,7 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
   int min_y, max_y;
   {
     SkRect sk_clip_rect;
-    if (canvas->GetSkCanvas()->getClipBounds(&sk_clip_rect)) {
+    if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect)) {
       gfx::Rect clip_rect = gfx::SkRectToRect(sk_clip_rect);
       min_y = clip_rect.y();
       max_y = clip_rect.bottom();

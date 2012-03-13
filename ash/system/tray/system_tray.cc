@@ -138,12 +138,12 @@ class SystemTrayBubbleBorder : public views::Border {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(kBackgroundColor);
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
 
     // Now the draw the outline.
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setColor(kDarkColor);
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
@@ -173,7 +173,7 @@ class SystemTrayBackground : public views::Background {
     gfx::Rect bounds(view->GetContentsBounds());
     SkScalar radius = SkIntToScalar(4);
     path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 
   bool hovering_;

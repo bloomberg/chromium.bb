@@ -176,7 +176,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   rc.fTop = 0;
   rc.fRight = SkIntToScalar(ps.width());
   rc.fBottom = SkIntToScalar(ps.height());
-  canvas->GetSkCanvas()->drawRect(rc, paint);
+  canvas->sk_canvas()->drawRect(rc, paint);
 }
 
 void DraggedTabView::PaintFocusRect(gfx::Canvas* canvas) {

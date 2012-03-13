@@ -10,11 +10,11 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/aura/root_window.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
@@ -60,7 +60,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual bool CanFocus() OVERRIDE { return true; }
   virtual void OnCaptureLost() OVERRIDE {}
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->GetSkCanvas()->drawColor(color_, SkXfermode::kSrc_Mode);
+    canvas->sk_canvas()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}

@@ -11,9 +11,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/brush.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
@@ -368,14 +368,6 @@ void CanvasSkia::EndPlatformPaint() {
 
 void CanvasSkia::Transform(const ui::Transform& transform) {
   canvas_->concat(transform.matrix());
-}
-
-SkCanvas* CanvasSkia::GetSkCanvas() {
-  return canvas_;
-}
-
-const SkCanvas* CanvasSkia::GetSkCanvas() const {
-  return canvas_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

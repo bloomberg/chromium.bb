@@ -239,15 +239,15 @@ void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
     SkSafeUnref(paint.getShader());
     SkRect color_rect;
     color_rect.iset(0, 0, width() - 1, height() - 1);
-    canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                         kBoxCornerRadius, paint);
+    canvas->sk_canvas()->drawRoundRect(color_rect, kBoxCornerRadius,
+                                       kBoxCornerRadius, paint);
     SkPaint outer_paint;
     outer_paint.setStyle(SkPaint::kStroke_Style);
     outer_paint.setColor(kBorderColor);
     color_rect.inset(SkIntToScalar(kEdgeThickness),
                      SkIntToScalar(kEdgeThickness));
-    canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                         kBoxCornerRadius, outer_paint);
+    canvas->sk_canvas()->drawRoundRect(color_rect, kBoxCornerRadius,
+                                       kBoxCornerRadius, outer_paint);
   } else {
     views::ImageView::OnPaintBackground(canvas);
     return;

@@ -50,7 +50,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             height());
     AdjustBoundsForRTLUI(&gutter_bounds);
     NativeTheme::ExtraParams extra;
-    NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
+    NativeTheme::instance()->Paint(canvas->sk_canvas(),
                                    NativeTheme::kMenuPopupGutter,
                                    NativeTheme::kNormal,
                                    gutter_bounds,
@@ -63,7 +63,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     NativeTheme::ExtraParams extra;
     extra.menu_item.is_selected = render_selection;
     AdjustBoundsForRTLUI(&item_bounds);
-    NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
+    NativeTheme::instance()->Paint(canvas->sk_canvas(),
         NativeTheme::kMenuItemBackground, control_state, item_bounds, extra);
   }
 
@@ -127,7 +127,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     gfx::NativeTheme::ExtraParams extra;
     extra.menu_arrow.pointing_right = !base::i18n::IsRTL();
     extra.menu_arrow.is_selected = render_selection;
-    gfx::NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
+    gfx::NativeTheme::instance()->Paint(canvas->sk_canvas(),
         gfx::NativeTheme::kMenuPopupArrow, control_state, arrow_bounds, extra);
   }
 }
@@ -157,13 +157,13 @@ void MenuItemView::PaintCheck(gfx::Canvas* canvas,
   // Draw the background.
   gfx::Rect bg_bounds(0, 0, icon_x + icon_width, height());
   AdjustBoundsForRTLUI(&bg_bounds);
-  NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
+  NativeTheme::instance()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuCheckBackground, state, bg_bounds, extra);
 
   // And the check.
   gfx::Rect icon_bounds(icon_x / 2, icon_y, icon_width, icon_height);
   AdjustBoundsForRTLUI(&icon_bounds);
-  NativeTheme::instance()->Paint(canvas->GetSkCanvas(),
+  NativeTheme::instance()->Paint(canvas->sk_canvas(),
       NativeTheme::kMenuCheck, state, bg_bounds, extra);
 }
 

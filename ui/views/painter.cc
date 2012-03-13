@@ -47,9 +47,9 @@ class GradientPainter : public Painter {
     // Need to unref shader, otherwise never deleted.
     s->unref();
 
-    canvas->GetSkCanvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
-                                          SkIntToScalar(size.width()),
-                                          SkIntToScalar(size.height()), paint);
+    canvas->sk_canvas()->drawRectCoords(SkIntToScalar(0), SkIntToScalar(0),
+                                        SkIntToScalar(size.width()),
+                                        SkIntToScalar(size.height()), paint);
   }
 
  private:

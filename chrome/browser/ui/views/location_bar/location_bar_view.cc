@@ -60,8 +60,8 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/button_drag_utils.h"
+#include "ui/views/controls/label.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
@@ -773,8 +773,8 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     const SkScalar radius(SkIntToScalar(
         views::BubbleBorder::GetCornerRadius()));
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
-    canvas->GetSkCanvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
-                                         radius, paint);
+    canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
+                                       radius, paint);
   } else {
     canvas->FillRect(bounds, color);
   }

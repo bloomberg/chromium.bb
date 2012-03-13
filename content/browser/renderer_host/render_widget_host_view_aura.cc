@@ -339,7 +339,7 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
   gfx::Rect clip_rect;
   if (paint_canvas_) {
     SkRect sk_clip_rect;
-    if (paint_canvas_->GetSkCanvas()->getClipBounds(&sk_clip_rect))
+    if (paint_canvas_->sk_canvas()->getClipBounds(&sk_clip_rect))
       clip_rect = gfx::SkRectToRect(sk_clip_rect);
   }
 

@@ -585,7 +585,7 @@ TEST_F(ViewTest, GestureEvent) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestView::Paint(gfx::Canvas* canvas) {
-  canvas->GetSkCanvas()->getClipBounds(&last_clip_);
+  canvas->sk_canvas()->getClipBounds(&last_clip_);
 }
 
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {

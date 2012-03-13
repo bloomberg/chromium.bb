@@ -84,11 +84,11 @@ class DockView : public views::View {
     SkPaint paint;
     paint.setColor(SkColorSetRGB(108, 108, 108));
     paint.setStyle(SkPaint::kFill_Style);
-    canvas->GetSkCanvas()->drawRoundRect(
+    canvas->sk_canvas()->drawRoundRect(
         outer_rect, SkIntToScalar(kRoundedRectRadius),
         SkIntToScalar(kRoundedRectRadius), paint);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     SkBitmap* high_icon = rb.GetBitmapNamed(IDR_DOCK_HIGH);
     SkBitmap* wide_icon = rb.GetBitmapNamed(IDR_DOCK_WIDE);

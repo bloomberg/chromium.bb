@@ -21,8 +21,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -178,8 +178,8 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   border_paint.setAntiAlias(true);
   border_paint.setARGB(0xFF, 0xC8, 0xC8, 0xC8);
 
-  canvas->GetSkCanvas()->drawRoundRect(
-      border_rect, SkIntToScalar(2), SkIntToScalar(2), border_paint);
+  canvas->sk_canvas()->drawRoundRect(border_rect, SkIntToScalar(2),
+                                     SkIntToScalar(2), border_paint);
 
   SkRect inner_rect = {
     border_rect.fLeft + SkDoubleToScalar(0.5),
@@ -191,8 +191,8 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
   SkPaint inner_paint;
   inner_paint.setAntiAlias(true);
   inner_paint.setARGB(0xFF, 0xF8, 0xF8, 0xF8);
-  canvas->GetSkCanvas()->drawRoundRect(
-      inner_rect, SkDoubleToScalar(1.5), SkDoubleToScalar(1.5), inner_paint);
+  canvas->sk_canvas()->drawRoundRect(inner_rect, SkDoubleToScalar(1.5),
+                                     SkDoubleToScalar(1.5), inner_paint);
 }
 
 }  // namespace

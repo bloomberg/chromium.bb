@@ -83,7 +83,7 @@ void TileRoundRect(gfx::Canvas* canvas,
   // CreateBitmapShader returns a Shader with a reference count of one, we
   // need to unref after paint takes ownership of the shader.
   shader->unref();
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 }  // namespace
 

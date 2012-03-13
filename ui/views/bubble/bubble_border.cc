@@ -490,7 +490,7 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
   else
     path.lineTo(SkIntToScalar(tip_x + shift_x), SkIntToScalar(tip_y - shift_y));
   path.close();
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 
 /////////////////////////
@@ -499,7 +499,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // Clip out the client bounds to prevent overlapping transparent widgets.
   if (!border_->client_bounds().IsEmpty()) {
     SkRect client_rect(gfx::RectToSkRect(border_->client_bounds()));
-    canvas->GetSkCanvas()->clipRect(client_rect, SkRegion::kDifference_Op);
+    canvas->sk_canvas()->clipRect(client_rect, SkRegion::kDifference_Op);
   }
 
   // The border of this view creates an anti-aliased round-rect region for the
@@ -515,7 +515,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   bounds.Inset(-border_->border_thickness(), -border_->border_thickness());
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
-  canvas->GetSkCanvas()->drawPath(path, paint);
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 
 }  // namespace views

@@ -46,7 +46,8 @@ void DrawRoundedRect(gfx::Canvas* canvas,
   } else {
     paint.setColor(top_color);
   }
-  canvas->GetSkCanvas()->drawPath(path, paint);
+
+  canvas->sk_canvas()->drawPath(path, paint);
 }
 
 void DrawRoundedRectShadow(gfx::Canvas* canvas,
@@ -63,7 +64,7 @@ void DrawRoundedRectShadow(gfx::Canvas* canvas,
   paint.setMaskFilter(filter)->unref();
   SkRect inset_rect(rect);
   inset_rect.inset(SkIntToScalar(shadow / 2), SkIntToScalar(shadow / 2));
-  canvas->GetSkCanvas()->drawRoundRect(
+  canvas->sk_canvas()->drawRoundRect(
       inset_rect,
       SkIntToScalar(corner_radius), SkIntToScalar(corner_radius),
       paint);
@@ -77,7 +78,7 @@ void DrawRectWithBorder(gfx::Canvas* canvas,
   if (border->padding > 0) {
     SkPaint paint;
     paint.setColor(border->padding_color);
-    canvas->GetSkCanvas()->drawRect(rect, paint);
+    canvas->sk_canvas()->drawRect(rect, paint);
     rect.inset(SkIntToScalar(border->padding), SkIntToScalar(border->padding));
   }
   if (border->shadow > 0) {
@@ -163,12 +164,12 @@ class RoundedBackground : public views::Background {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(get_color());
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
     // Redraw boundary region with correspoinding color.
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(SkIntToScalar(stroke_width_));
     paint.setColor(stroke_color_);
-    canvas->GetSkCanvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 
  private:

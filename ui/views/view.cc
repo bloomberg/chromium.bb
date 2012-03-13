@@ -1123,8 +1123,8 @@ void View::OnPaint(gfx::Canvas* canvas) {
 void View::OnPaintBackground(gfx::Canvas* canvas) {
   if (background_.get()) {
     TRACE_EVENT2("views", "View::OnPaintBackground",
-                 "width", canvas->GetSkCanvas()->getDevice()->width(),
-                 "height", canvas->GetSkCanvas()->getDevice()->height());
+                 "width", canvas->sk_canvas()->getDevice()->width(),
+                 "height", canvas->sk_canvas()->getDevice()->height());
     background_->Paint(canvas, this);
   }
 }
@@ -1132,8 +1132,8 @@ void View::OnPaintBackground(gfx::Canvas* canvas) {
 void View::OnPaintBorder(gfx::Canvas* canvas) {
   if (border_.get()) {
     TRACE_EVENT2("views", "View::OnPaintBorder",
-                 "width", canvas->GetSkCanvas()->getDevice()->width(),
-                 "height", canvas->GetSkCanvas()->getDevice()->height());
+                 "width", canvas->sk_canvas()->getDevice()->width(),
+                 "height", canvas->sk_canvas()->getDevice()->height());
     border_->Paint(*this, canvas);
   }
 }
@@ -1141,8 +1141,8 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 void View::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     TRACE_EVENT2("views", "views::OnPaintFocusBorder",
-                 "width", canvas->GetSkCanvas()->getDevice()->width(),
-                 "height", canvas->GetSkCanvas()->getDevice()->height());
+                 "width", canvas->sk_canvas()->getDevice()->width(),
+                 "height", canvas->sk_canvas()->getDevice()->height());
     canvas->DrawFocusRect(GetLocalBounds());
   }
 }
@@ -1232,7 +1232,7 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
   if (!layer() || !layer()->fills_bounds_opaquely())
-    canvas->GetSkCanvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+    canvas->sk_canvas()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
 }
 

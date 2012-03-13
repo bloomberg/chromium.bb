@@ -132,7 +132,7 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
   paint.setColor(kButtonColor);
-  canvas->GetSkCanvas()->drawCircle(button_cx, button_cy, kButtonRadius, paint);
+  canvas->sk_canvas()->drawCircle(button_cx, button_cy, kButtonRadius, paint);
   View::OnPaint(canvas);
 }
 
