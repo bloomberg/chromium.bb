@@ -2089,8 +2089,12 @@ libelf-host() {
   StepBanner "LIBELF-HOST" "Building and installing libelf"
 
   local extra_headers=false
+  local ranlib="${RANLIB}"
   if ${BUILD_PLATFORM_MAC}; then
     extra_headers=true
+    # There is a common symbol that must be treated as a definition.
+    # In particular "__libelf_fill_byte".
+    ranlib="${RANLIB} -c"
   fi
 
   RunWithLog "libelf-host" \
@@ -2099,7 +2103,7 @@ libelf-host() {
       DEST_DIR="${TC_BUILD_LIBELF}" \
       CC="${CC}" \
       AR="${AR}" \
-      RANLIB="${RANLIB}" \
+      RANLIB="${ranlib}" \
       EXTRA_HEADERS=${extra_headers} \
       "${PNACL_ROOT}"/libelf/build-libelf.sh
 }
