@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1086,12 +1088,11 @@ void RenderWidgetHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
 }
 
 void RenderWidgetHostImpl::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
-  PaintAtSizeAckDetails details = {tag, size};
-  gfx::Size size_details = size;
+  std::pair<int, gfx::Size> details = std::make_pair(tag, size);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
       Source<RenderWidgetHost>(this),
-      Details<PaintAtSizeAckDetails>(&details));
+      Details<std::pair<int, gfx::Size> >(&details));
 }
 
 void RenderWidgetHostImpl::OnMsgUpdateRect(

@@ -218,16 +218,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
 
-  // Used as the details object for a
-  // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification.
-  // TODO(joi): Switch out for a std::pair.
-  struct PaintAtSizeAckDetails {
-    // The tag that was passed to the PaintAtSize() call that triggered this
-    // ack.
-    int tag;
-    gfx::Size size;
-  };
-
   // This tells the renderer to paint into a bitmap and return it,
   // regardless of whether the tab is hidden or not.  It resizes the
   // web widget to match the |page_size| and then returns the bitmap

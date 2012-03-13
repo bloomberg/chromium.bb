@@ -330,13 +330,12 @@ void ThumbnailGenerator::Observe(int type,
       break;
 
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK: {
-      RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
-          content::Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).
-              ptr();
+      std::pair<int, gfx::Size>* size_ack_details =
+          content::Details<std::pair<int, gfx::Size> >(details).ptr();
       WidgetDidReceivePaintAtSizeAck(
           content::Source<RenderWidgetHost>(source).ptr(),
-          size_ack_details->tag,
-          size_ack_details->size);
+          size_ack_details->first,
+          size_ack_details->second);
       break;
     }
 

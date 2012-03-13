@@ -11,12 +11,12 @@
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -242,14 +242,13 @@ class MockPaintingObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) {
     if (type ==
         content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
-      RenderWidgetHostImpl::PaintAtSizeAckDetails* size_ack_details =
-          content::Details<RenderWidgetHostImpl::PaintAtSizeAckDetails>(
-              details).ptr();
+      std::pair<int, gfx::Size>* size_ack_details =
+          content::Details<std::pair<int, gfx::Size> >(details).ptr();
       WidgetDidReceivePaintAtSizeAck(
           RenderWidgetHostImpl::From(
               content::Source<RenderWidgetHost>(source).ptr()),
-          size_ack_details->tag,
-          size_ack_details->size);
+          size_ack_details->first,
+          size_ack_details->second);
     }
   }
 

@@ -301,7 +301,7 @@ enum NotificationType {
 
   // This notifies the observer that a PaintAtSizeACK was received. The source
   // is the RenderWidgetHost, the details are an instance of
-  // RenderWidgetHost::PaintAtSizeAckDetails.
+  // std::pair<int, gfx::Size>.
   NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
 
   // This notifies the observer that a HandleInputEventACK was received. The
