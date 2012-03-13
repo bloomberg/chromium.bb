@@ -151,7 +151,9 @@ class ProfileManager : public base::NonThreadSafe,
       bool always_create);
 
   // Profile::Delegate implementation:
-  virtual void OnProfileCreated(Profile* profile, bool success) OVERRIDE;
+  virtual void OnProfileCreated(Profile* profile,
+                                bool success,
+                                bool is_new_profile) OVERRIDE;
 
   // Add or remove a profile launcher to/from the list of launchers waiting for
   // new profiles to be created from the multi-profile menu.

@@ -632,12 +632,14 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 }
 
 Profile* ProfileManager::CreateProfileHelper(const FilePath& path) {
-  return Profile::CreateProfile(path);
+  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
 Profile* ProfileManager::CreateProfileAsyncHelper(const FilePath& path,
                                                   Delegate* delegate) {
-  return Profile::CreateProfileAsync(path, delegate);
+  return Profile::CreateProfile(path,
+                                delegate,
+                                Profile::CREATE_MODE_ASYNCHRONOUS);
 }
 
 #if defined(OS_WIN)
@@ -646,7 +648,9 @@ ProfileShortcutManagerWin* ProfileManager::CreateShortcutManager() {
 }
 #endif
 
-void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
+void ProfileManager::OnProfileCreated(Profile* profile,
+                                      bool success,
+                                      bool is_new_profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfilesInfoMap::iterator iter = profiles_info_.find(profile->GetPath());

@@ -124,10 +124,17 @@ class Profile : public content::BrowserContext {
     CREATE_STATUS_INITIALIZED,
   };
 
+  enum CreateMode {
+    CREATE_MODE_SYNCHRONOUS,
+    CREATE_MODE_ASYNCHRONOUS
+  };
+
   class Delegate {
    public:
     // Called when creation of the profile is finished.
-    virtual void OnProfileCreated(Profile* profile, bool success) = 0;
+    virtual void OnProfileCreated(Profile* profile,
+                                  bool success,
+                                  bool is_new_profile) = 0;
   };
 
   // Whitelist access to deprecated API in order to prevent new regressions.
@@ -165,12 +172,11 @@ class Profile : public content::BrowserContext {
   // time.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Create a new profile given a path.
-  static Profile* CreateProfile(const FilePath& path);
-
-  // Same as above, but uses async initialization.
-  static Profile* CreateProfileAsync(const FilePath& path,
-                                     Delegate* delegate);
+  // Create a new profile given a path. If |async| is true then the profile is
+  // initialized asynchronously.
+  static Profile* CreateProfile(const FilePath& path,
+                                Delegate* delegate,
+                                CreateMode create_mode);
 
   // Returns the profile corresponding to the given browser context.
   static Profile* FromBrowserContext(content::BrowserContext* browser_context);

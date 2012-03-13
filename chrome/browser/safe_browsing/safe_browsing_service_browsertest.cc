@@ -734,7 +734,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   // Add a new Profile. SBS should keep running.
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_ptr<Profile> profile2(Profile::CreateProfile(temp_dir.path()));
+  scoped_ptr<Profile> profile2(Profile::CreateProfile(
+      temp_dir.path(), NULL, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile2.get() != NULL);
   PrefService* pref_service2 = profile2->GetPrefs();
   EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));

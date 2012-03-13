@@ -2782,6 +2782,7 @@
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/print_dialog_cloud_uitest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
+        'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
         'browser/protector/default_search_provider_change_browsertest.cc',
         'browser/protector/protector_service_browsertest.cc',

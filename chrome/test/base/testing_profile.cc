@@ -211,7 +211,7 @@ void TestingProfile::FinishInit() {
       content::NotificationService::NoDetails());
 
   if (delegate_)
-    delegate_->OnProfileCreated(this, true);
+    delegate_->OnProfileCreated(this, true, false);
 }
 
 TestingProfile::~TestingProfile() {

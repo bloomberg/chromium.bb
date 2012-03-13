@@ -144,10 +144,11 @@ class ProfileImpl : public Profile,
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, ProfilesLaunchedAfterCrash);
 
   ProfileImpl(const FilePath& path,
-              Profile::Delegate* delegate);
+              Delegate* delegate,
+              CreateMode create_mode);
 
   // Does final initialization. Should be called after prefs were loaded.
-  void DoFinalInit();
+  void DoFinalInit(bool is_new_profile);
 
   void InitHostZoomMap();
 

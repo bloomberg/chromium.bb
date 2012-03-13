@@ -172,27 +172,28 @@ FilePath GetMediaCachePath(const FilePath& base) {
 }  // namespace
 
 // static
-Profile* Profile::CreateProfile(const FilePath& path) {
-  if (!file_util::PathExists(path)) {
-    // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
-    // profile directory.  We should eventually be able to run in this
-    // situation.
-    if (!file_util::CreateDirectory(path))
-      return NULL;
+Profile* Profile::CreateProfile(const FilePath& path,
+                                Delegate* delegate,
+                                CreateMode create_mode) {
+  if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
+    DCHECK(delegate);
+    // This is safe while all file operations are done on the FILE thread.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CreateDirectoryNoResult, path));
+  } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
+    if (!file_util::PathExists(path)) {
+      // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
+      // profile directory.  We should eventually be able to run in this
+      // situation.
+      if (!file_util::CreateDirectory(path))
+        return NULL;
+    }
+  } else {
+    NOTREACHED();
   }
-  return new ProfileImpl(path, NULL);
-}
 
-// static
-Profile* Profile::CreateProfileAsync(const FilePath& path,
-                                     Profile::Delegate* delegate) {
-  DCHECK(delegate);
-  // This is safe while all file operations are done on the FILE thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateDirectoryNoResult, path));
-  // Async version.
-  return new ProfileImpl(path, delegate);
+  return new ProfileImpl(path, delegate, create_mode);
 }
 
 // static
@@ -226,7 +227,8 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path,
-                         Profile::Delegate* delegate)
+                         Delegate* delegate,
+                         CreateMode create_mode)
     : path_(path),
       ALLOW_THIS_IN_INITIALIZER_LIST(visited_link_event_listener_(
           new VisitedLinkEventListener(this))),
@@ -260,7 +262,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 
   session_restore_enabled_ =
       !command_line->HasSwitch(switches::kDisableRestoreSessionState);
-  if (delegate_) {
+  if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
@@ -269,17 +271,19 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     // not).
     registrar_.Add(this, chrome::NOTIFICATION_PREF_INITIALIZATION_COMPLETED,
                    content::Source<PrefService>(prefs_.get()));
-  } else {
+  } else if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     // Load prefs synchronously.
     prefs_.reset(PrefService::CreatePrefService(
         GetPrefFilePath(),
         new ExtensionPrefStore(GetExtensionPrefValueMap(), false),
         false));
     OnPrefsLoaded(true);
+  } else {
+    NOTREACHED();
   }
 }
 
-void ProfileImpl::DoFinalInit() {
+void ProfileImpl::DoFinalInit(bool is_new_profile) {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kSpeechRecognitionFilterProfanities, this);
@@ -293,16 +297,10 @@ void ProfileImpl::DoFinalInit() {
   // the cache directory depends on the profile directory, which isn't available
   // to PathService.
   chrome::GetUserCacheDirectory(path_, &base_cache_path_);
-  if (!delegate_) {
-    if (!file_util::CreateDirectory(base_cache_path_))
-      LOG(FATAL) << "Failed to create " << base_cache_path_.value();
-  } else {
-    // Async profile loading is used, so call this on the FILE thread instead.
-    // It is safe since all other file operations should also be done there.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CreateDirectoryNoResult, base_cache_path_));
-  }
+  // Always create the cache directory asynchronously.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateDirectoryNoResult, base_cache_path_));
 
   // Now that the profile is hooked up to receive pref change notifications to
   // kGoogleServicesUsername, initialize components that depend on it to reflect
@@ -396,7 +394,7 @@ void ProfileImpl::DoFinalInit() {
 
   // Creation has been finished.
   if (delegate_)
-    delegate_->OnProfileCreated(this, true);
+    delegate_->OnProfileCreated(this, true, is_new_profile);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
@@ -724,8 +722,8 @@ ExtensionSpecialStoragePolicy*
 
 void ProfileImpl::OnPrefsLoaded(bool success) {
   if (!success) {
-    DCHECK(delegate_);
-    delegate_->OnProfileCreated(this, false);
+    if (delegate_)
+      delegate_->OnProfileCreated(this, false, false);
     return;
   }
 
@@ -766,7 +764,13 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
       prerender::PrerenderManagerFactory::GetForProfile(this),
       predictor_));
 
-  DoFinalInit();
+  bool is_new_profile = prefs_->GetInitializationStatus() ==
+      PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
+  if (is_new_profile) {
+    // TODO(caitkp): Set chrome version here.
+  }
+
+  DoFinalInit(is_new_profile);
 }
 
 PrefService* ProfileImpl::GetPrefs() {
