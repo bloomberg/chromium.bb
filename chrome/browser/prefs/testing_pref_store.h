@@ -39,6 +39,7 @@ class TestingPrefStore : public PersistentPrefStore {
                                 base::Value* value) OVERRIDE;
   virtual void RemoveValue(const std::string& key) OVERRIDE;
   virtual bool ReadOnly() const OVERRIDE;
+  virtual PrefReadError GetReadError() const OVERRIDE;
   virtual PersistentPrefStore::PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
   virtual void CommitPendingWrite() OVERRIDE {}

@@ -105,6 +105,10 @@ bool OverlayUserPrefStore::ReadOnly() const {
   return false;
 }
 
+PersistentPrefStore::PrefReadError OverlayUserPrefStore::GetReadError() const {
+  return PersistentPrefStore::PREF_READ_ERROR_NONE;
+}
+
 PersistentPrefStore::PrefReadError OverlayUserPrefStore::ReadPrefs() {
   // We do not read intentionally.
   OnInitializationCompleted(true);

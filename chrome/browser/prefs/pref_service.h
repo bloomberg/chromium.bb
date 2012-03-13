@@ -50,6 +50,13 @@ class PrefService : public base::NonThreadSafe {
     SYNCABLE_PREF
   };
 
+  enum PrefInitializationStatus {
+    INITIALIZATION_STATUS_WAITING,
+    INITIALIZATION_STATUS_SUCCESS,
+    INITIALIZATION_STATUS_CREATED_NEW_PROFILE,
+    INITIALIZATION_STATUS_ERROR
+  };
+
   // A helper class to store all the information associated with a preference.
   class Preference {
    public:
@@ -292,6 +299,8 @@ class PrefService : public base::NonThreadSafe {
   const Preference* FindPreference(const char* pref_name) const;
 
   bool ReadOnly() const;
+
+  PrefInitializationStatus GetInitializationStatus() const;
 
   // SyncableService getter.
   // TODO(zea): Have PrefService implement SyncableService directly.

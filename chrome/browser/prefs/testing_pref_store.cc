@@ -57,6 +57,10 @@ bool TestingPrefStore::ReadOnly() const {
   return read_only_;
 }
 
+PersistentPrefStore::PrefReadError TestingPrefStore::GetReadError() const {
+  return PersistentPrefStore::PREF_READ_ERROR_NONE;
+}
+
 PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
   prefs_.Clear();
   NotifyInitializationCompleted();

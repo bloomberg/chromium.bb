@@ -679,6 +679,21 @@ bool PrefService::ReadOnly() const {
   return user_pref_store_->ReadOnly();
 }
 
+PrefService::PrefInitializationStatus PrefService::GetInitializationStatus()
+    const {
+  if (!user_pref_store_->IsInitializationComplete())
+    return INITIALIZATION_STATUS_WAITING;
+
+  switch (user_pref_store_->GetReadError()) {
+    case PersistentPrefStore::PREF_READ_ERROR_NONE:
+      return INITIALIZATION_STATUS_SUCCESS;
+    case PersistentPrefStore::PREF_READ_ERROR_NO_FILE:
+      return INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
+    default:
+      return INITIALIZATION_STATUS_ERROR;
+  }
+}
+
 bool PrefService::IsManagedPreference(const char* pref_name) const {
   const Preference* pref = FindPreference(pref_name);
   return pref && pref->IsManaged();

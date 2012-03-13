@@ -50,6 +50,7 @@ class JsonPrefStore : public PersistentPrefStore,
                                 base::Value* value) OVERRIDE;
   virtual void RemoveValue(const std::string& key) OVERRIDE;
   virtual bool ReadOnly() const OVERRIDE;
+  virtual PrefReadError GetReadError() const OVERRIDE;
   virtual PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
   virtual void CommitPendingWrite() OVERRIDE;
@@ -80,6 +81,7 @@ class JsonPrefStore : public PersistentPrefStore,
   scoped_ptr<ReadErrorDelegate> error_delegate_;
 
   bool initialized_;
+  PrefReadError read_error_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };

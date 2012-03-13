@@ -46,6 +46,7 @@ class OverlayUserPrefStore : public PersistentPrefStore,
                                 base::Value* value) OVERRIDE;
   virtual void RemoveValue(const std::string& key) OVERRIDE;
   virtual bool ReadOnly() const OVERRIDE;
+  virtual PrefReadError GetReadError() const OVERRIDE;
   virtual PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* delegate) OVERRIDE;
   virtual void CommitPendingWrite() OVERRIDE;
