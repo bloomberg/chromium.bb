@@ -25,9 +25,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -205,7 +205,7 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
   if (flags_ & FLAG_INLINE_INSTALL)
     referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
 
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.file_path = file;
 
   // The download url for the given extension is contained in |download_url_|.

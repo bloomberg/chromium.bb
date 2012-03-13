@@ -62,7 +62,7 @@ class CONTENT_EXPORT DownloadManagerImpl
                            const std::string& referrer_encoding,
                            bool prefer_cache,
                            int64 post_id,
-                           const DownloadSaveInfo& save_info,
+                           const content::DownloadSaveInfo& save_info,
                            content::WebContents* web_contents,
                            const OnStartedCallback& callback) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;

@@ -38,9 +38,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_state_info.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -452,7 +452,7 @@ bool DownloadsDownloadFunction::RunInternal() {
 void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << __FUNCTION__ << " " << iodata_->url.spec();
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   // TODO(benjhayden) Ensure that this filename is interpreted as a path
   // relative to the default downloads directory without allowing '..'.
   save_info.suggested_name = iodata_->filename;

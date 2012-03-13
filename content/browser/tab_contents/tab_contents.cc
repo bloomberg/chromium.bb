@@ -2488,7 +2488,7 @@ void TabContents::SaveURL(const GURL& url,
     if (entry)
       post_id = entry->GetPostID();
   }
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
   dlm->DownloadUrl(url,
                    referrer,

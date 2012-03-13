@@ -38,7 +38,6 @@ class ResourceHandler;
 class ResourceMessageFilter;
 class SaveFileManager;
 class TabContents;
-struct DownloadSaveInfo;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
@@ -55,6 +54,7 @@ namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceRequestInfoImpl;
+struct DownloadSaveInfo;
 struct GlobalRequestID;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl

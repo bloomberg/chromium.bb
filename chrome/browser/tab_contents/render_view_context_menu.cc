@@ -60,9 +60,9 @@
 #include "chrome/common/print_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -1515,7 +1515,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.link_url;
-      DownloadSaveInfo save_info;
+      content::DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = true;
       DownloadManager* dlm =
           DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
@@ -1537,7 +1537,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url = params_.src_url;
-      DownloadSaveInfo save_info;
+      content::DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = true;
       int64 post_id = -1;
       if (url == source_web_contents_->GetURL()) {

@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_status_updater.h"
-#include "content/browser/download/download_types.h"
 #include "content/test/mock_download_item.h"
 #include "content/test/mock_download_manager.h"
 #include "content/test/test_browser_thread.h"

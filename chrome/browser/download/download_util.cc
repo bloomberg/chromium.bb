@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"

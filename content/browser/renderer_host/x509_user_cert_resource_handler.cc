@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 
 #include "base/string_util.h"
-#include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_response.h"

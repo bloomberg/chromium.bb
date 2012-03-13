@@ -49,13 +49,13 @@ class GURL;
 class TabContents;
 struct DownloadCreateInfo;
 struct DownloadRetrieveInfo;
-struct DownloadSaveInfo;
 
 namespace content {
 class BrowserContext;
 class DownloadManagerDelegate;
 class DownloadQuery;
 class WebContents;
+struct DownloadSaveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
@@ -119,7 +119,7 @@ class CONTENT_EXPORT DownloadManager
                                DownloadVector* result) = 0;
 
   // Returns true if initialized properly.
-  virtual bool Init(content::BrowserContext* browser_context) = 0;
+  virtual bool Init(BrowserContext* browser_context) = 0;
 
   // Notifications sent from the download thread to the UI thread
   virtual void StartDownload(int32 id) = 0;
@@ -149,7 +149,7 @@ class CONTENT_EXPORT DownloadManager
       int32 download_id,
       int64 size,
       const std::string& hash_state,
-      content::DownloadInterruptReason reason) = 0;
+      DownloadInterruptReason reason) = 0;
 
   // Called when the download is renamed to its final name.
   // |uniquifier| is a number used to make unique names for the file.  It is
@@ -191,7 +191,7 @@ class CONTENT_EXPORT DownloadManager
                            bool prefer_cache,
                            int64 post_id,
                            const DownloadSaveInfo& save_info,
-                           content::WebContents* web_contents,
+                           WebContents* web_contents,
                            const OnStartedCallback& callback) = 0;
 
   // Allow objects to observe the download creation process.
@@ -213,7 +213,7 @@ class CONTENT_EXPORT DownloadManager
   // The number of in progress (including paused) downloads.
   virtual int InProgressCount() const = 0;
 
-  virtual content::BrowserContext* GetBrowserContext() const = 0;
+  virtual BrowserContext* GetBrowserContext() const = 0;
 
   virtual FilePath LastDownloadPath() = 0;
 
@@ -261,18 +261,17 @@ class CONTENT_EXPORT DownloadManager
 
   virtual bool GenerateFileHash() = 0;
 
-  virtual content::DownloadManagerDelegate* delegate() const = 0;
+  virtual DownloadManagerDelegate* delegate() const = 0;
 
   // For testing only.  May be called from tests indirectly (through
   // other for testing only methods).
   virtual void SetDownloadManagerDelegate(
-      content::DownloadManagerDelegate* delegate) = 0;
+      DownloadManagerDelegate* delegate) = 0;
 
  private:
   friend class base::RefCountedThreadSafe<
-      DownloadManager, content::BrowserThread::DeleteOnUIThread>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
+      DownloadManager, BrowserThread::DeleteOnUIThread>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<DownloadManager>;
 };
 

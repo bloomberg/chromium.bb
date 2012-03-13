@@ -7,10 +7,10 @@
 #pragma once
 
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_save_info.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

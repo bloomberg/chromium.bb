@@ -8,11 +8,11 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_save_info.h"
 #include "net/base/file_stream.h"
 
 using content::BrowserThread;
@@ -129,7 +129,7 @@ void DragDownloadFile::InitiateDownload() {
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.file_path = file_path_;
   save_info.file_stream = file_stream_;
 

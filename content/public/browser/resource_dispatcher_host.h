@@ -10,8 +10,6 @@
 #include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 
-struct DownloadSaveInfo;
-
 namespace net {
 class URLRequest;
 }
@@ -19,6 +17,7 @@ class URLRequest;
 namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+struct DownloadSaveInfo;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:

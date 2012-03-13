@@ -13,9 +13,9 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "content/browser/download/download_file.h"
-#include "content/browser/download/download_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
@@ -98,7 +98,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   std::string referrer_charset;
 
   // The download file save info.
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
 
   // The remote IP address where the download was fetched from.  Copied from
   // UrlRequest::GetSocketAddress().

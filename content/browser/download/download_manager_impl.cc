@@ -74,7 +74,7 @@ struct RenderParams {
 
 void BeginDownload(
     const URLParams& url_params,
-    const DownloadSaveInfo& save_info,
+    const content::DownloadSaveInfo& save_info,
     ResourceDispatcherHostImpl* resource_dispatcher_host,
     const RenderParams& render_params,
     content::ResourceContext* context,
@@ -859,7 +859,7 @@ void DownloadManagerImpl::DownloadUrl(
     const std::string& referrer_charset,
     bool prefer_cache,
     int64 post_id,
-    const DownloadSaveInfo& save_info,
+    const content::DownloadSaveInfo& save_info,
     WebContents* web_contents,
     const OnStartedCallback& callback) {
   ResourceDispatcherHostImpl* resource_dispatcher_host =

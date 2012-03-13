@@ -59,7 +59,7 @@ DownloadResourceHandler::DownloadResourceHandler(
     DownloadFileManager* download_file_manager,
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
-    const DownloadSaveInfo& save_info)
+    const content::DownloadSaveInfo& save_info)
     : download_id_(DownloadId::Invalid()),
       global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_TYPES_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_TYPES_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
+#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 #pragma once
 
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "content/common/content_export.h"
 #include "net/base/file_stream.h"
+
+namespace content {
 
 // Holds the information about how to save a download file.
 // In the case of download continuation, |file_path| is set to the current file
@@ -45,4 +47,6 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   bool prompt_for_save_location;
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_TYPES_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_

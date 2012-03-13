@@ -11,10 +11,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
 
@@ -45,7 +45,7 @@ class DownloadResourceHandler : public ResourceHandler {
                           DownloadFileManager* download_file_manager,
                           net::URLRequest* request,
                           const OnStartedCallback& started_cb,
-                          const DownloadSaveInfo& save_info);
+                          const content::DownloadSaveInfo& save_info);
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -116,7 +116,7 @@ class DownloadResourceHandler : public ResourceHandler {
   net::URLRequest* request_;
   // This is used only on the UI thread.
   OnStartedCallback started_cb_;
-  DownloadSaveInfo save_info_;
+  content::DownloadSaveInfo save_info_;
   scoped_refptr<content::DownloadBuffer> buffer_;
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;

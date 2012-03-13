@@ -32,7 +32,6 @@ include_rules = [
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/download/download_state_info.h",
-  "+content/browser/download/download_types.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/renderer_host/mock_render_process_host.h",
   "+content/browser/renderer_host/render_process_host_browsertest.h",

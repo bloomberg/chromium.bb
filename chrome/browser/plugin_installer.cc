@@ -15,11 +15,11 @@
 #include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -48,7 +48,7 @@ void BeginDownload(
       render_process_host_id,
       render_view_host_routing_id,
       true,  // prefer_cache
-      DownloadSaveInfo(),
+      content::DownloadSaveInfo(),
       callback);
 
   if (error != net::OK) {

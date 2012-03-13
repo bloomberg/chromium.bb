@@ -11,10 +11,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -360,7 +360,7 @@ void Downloader::OnFileStreamCreated(const GURL& url,
   if (file_stream) {
     DownloadManager* download_manager =
         web_contents->GetBrowserContext()->GetDownloadManager();
-    DownloadSaveInfo save_info;
+    content::DownloadSaveInfo save_info;
     save_info.file_path = file_path;
     save_info.file_stream = linked_ptr<net::FileStream>(file_stream);
     DownloadStarted(true, url);

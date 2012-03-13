@@ -43,10 +43,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_types.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -666,7 +666,7 @@ class DownloadTest : public InProcessBrowserTest {
       // Go directly to download.
       WebContents* web_contents = browser()->GetSelectedWebContents();
       ASSERT_TRUE(web_contents);
-      DownloadSaveInfo save_info;
+      content::DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = false;
 
       scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
@@ -1834,7 +1834,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
           DownloadManagerForBrowser(browser()), 1,
           false,                   // Ignore select file.
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
   DownloadManagerForBrowser(browser())->DownloadUrl(
       url, GURL(""), "", false, -1, save_info, web_contents,
@@ -1862,7 +1862,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   ASSERT_TRUE(other_directory.CreateUniqueTempDir());
   FilePath target_file_full_path
       = other_directory.path().Append(file.BaseName());
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.file_path = target_file_full_path;
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));

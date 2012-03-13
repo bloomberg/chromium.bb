@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_types.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_save_info.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/render_view_host_delegate.h"
@@ -688,7 +688,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const GURL& referrer,
                                         const string16& suggested_name) {
-  DownloadSaveInfo save_info;
+  content::DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
   request->set_referrer(referrer.spec());
