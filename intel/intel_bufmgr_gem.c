@@ -2647,6 +2647,7 @@ get_pci_device_id(drm_intel_bufmgr_gem *bufmgr_gem)
 		}
 	}
 
+	VG_CLEAR(devid);
 	VG_CLEAR(gp);
 	gp.param = I915_PARAM_CHIPSET_ID;
 	gp.value = &devid;
@@ -2790,6 +2791,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		bufmgr_gem->gtt_size -= 256*1024*1024;
 	}
 
+	VG_CLEAR(gp);
 	gp.value = &tmp;
 
 	gp.param = I915_PARAM_HAS_EXECBUF2;
