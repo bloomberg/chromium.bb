@@ -25,12 +25,24 @@ class RootWindowEventFilter;
 // attempt to restore the old height.
 class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
  public:
+  // Used when the window is dragged against the edge of the screen.
+  enum EdgeType {
+    LEFT_EDGE,
+    RIGHT_EDGE
+  };
+
   // When dragging an attached window this is the min size we'll make sure is
   // visibile. In the vertical direction we take the max of this and that from
   // the delegate.
   static const int kMinOnscreenSize;
 
   virtual ~WorkspaceWindowResizer();
+
+  // Returns the bounds for a window along the specified edge.
+  static gfx::Rect GetBoundsForWindowAlongEdge(
+      aura::Window* window,
+      EdgeType edge,
+      int grid_size);
 
   static WorkspaceWindowResizer* Create(
       aura::Window* window,
@@ -56,6 +68,23 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
+  // Location of the phanton window.
+  enum PhantomType {
+    TYPE_LEFT_EDGE,
+    TYPE_RIGHT_EDGE,
+    TYPE_DESTINATION,
+    TYPE_NONE
+  };
+
+  // Type and bounds of the phantom window.
+  struct PhantomPlacement {
+    PhantomPlacement();
+    ~PhantomPlacement();
+
+    PhantomType type;
+    gfx::Rect bounds;
+  };
+
   // Returns the final bounds to place the window at. This differs from
   // the current if there is a grid.
   gfx::Rect GetFinalBounds() const;
@@ -85,7 +114,16 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   int PrimaryAxisCoordinate(int x, int y) const;
 
   // Updates the bounds of the phantom window.
-  void UpdatePhantomWindow();
+  void UpdatePhantomWindow(const gfx::Point& location);
+
+  // Updates |phantom_placement_| when type is one of TYPE_LEFT_EDGE or
+  // TYPE_RIGHT_EDGE.
+  void UpdatePhantomWindowBoundsAlongEdge(
+      const PhantomPlacement& last_placement);
+
+  // Returns a PhantomPlacement for the specified point. TYPE_NONE is used if
+  // the location doesn't have a valid phantom location.
+  PhantomPlacement GetPhantomPlacement(const gfx::Point& location);
 
   aura::Window* window() const { return details_.window; }
 
@@ -123,6 +161,14 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Gives a previews of where the the window will end up. Only used if there
   // is a grid and the caption is being dragged.
   scoped_ptr<PhantomWindowController> phantom_window_controller_;
+
+  // Last PhantomPlacement.
+  PhantomPlacement phantom_placement_;
+
+  // Number of mouse moves since the last bounds change. Only used for phantom
+  // placement to track when the mouse is moved while pushed against the edge of
+  // the screen.
+  int num_mouse_moves_since_bounds_change_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

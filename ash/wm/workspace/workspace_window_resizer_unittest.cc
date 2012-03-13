@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/property_util.h"
 #include "base/string_number_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
@@ -198,7 +199,7 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkWithGrid) {
       window_.get(), gfx::Point(), HTCAPTION, 5, empty_windows()));
   ASSERT_TRUE(resizer.get());
   // Drag down 8 pixels.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 8));
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 8));
   resizer->CompleteDrag();
   EXPECT_EQ(310, window_->bounds().y());
   EXPECT_EQ(kRootHeight - 310, window_->bounds().height());
@@ -633,9 +634,33 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_RememberHeight) {
     EXPECT_EQ("300,400 200x150", window2_->bounds().ToString());
     EXPECT_EQ("300,550 200x100", window3_->bounds().ToString());
   }
+}
 
+// Assertions around dragging to the left/right edge of the screen.
+TEST_F(WorkspaceWindowResizerTest, Edge) {
+  window_->SetBounds(gfx::Rect(20, 30, 50, 60));
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 10));
+    resizer->CompleteDrag();
+    EXPECT_EQ("0,0 400x600", window_->bounds().ToString());
+    ASSERT_TRUE(GetRestoreBounds(window_.get()));
+    EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
+  }
+
+  // Try the same with the right side.
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, 0, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 800, 10));
+  resizer->CompleteDrag();
+  EXPECT_EQ("400,0 400x600", window_->bounds().ToString());
+  ASSERT_TRUE(GetRestoreBounds(window_.get()));
+  EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
 }
 
 }  // namespace
 }  // namespace test
-}  // namespace aura
+}  // namespace ash

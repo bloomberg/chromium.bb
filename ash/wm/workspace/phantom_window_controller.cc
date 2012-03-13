@@ -21,12 +21,10 @@ namespace internal {
 
 namespace {
 
-const int kRoundRectSize = 3;
-
-// Paints the background of the phantom window.
-class BackgroundPainter : public views::Painter {
+// Paints the background of the phantom window for TYPE_DESTINATION.
+class DestinationPainter : public views::Painter {
  public:
-  BackgroundPainter() {}
+  DestinationPainter() {}
 
   // views::Painter overrides:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
@@ -34,7 +32,53 @@ class BackgroundPainter : public views::Painter {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
+  DISALLOW_COPY_AND_ASSIGN(DestinationPainter);
+};
+
+// Amount to inset from the bounds for EdgePainter.
+const int kInsetSize = 4;
+
+// Size of the round rect used by EdgePainter.
+const int kRoundRectSize = 4;
+
+// Paints the background of the phantom window for TYPE_EDGE.
+class EdgePainter : public views::Painter {
+ public:
+  EdgePainter() {}
+
+  // views::Painter overrides:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    int x = kInsetSize;
+    int y = kInsetSize;
+    int w = size.width() - kInsetSize * 2;
+    int h = size.height() - kInsetSize * 2;
+    bool inset = (w > 0 && h > 0);
+    if (w < 0 || h < 0) {
+      x = 0;
+      y = 0;
+      w = size.width();
+      h = size.height();
+    }
+    SkPaint paint;
+    paint.setColor(SkColorSetARGB(100, 0, 0, 0));
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
+    canvas->sk_canvas()->drawRoundRect(
+        gfx::RectToSkRect(gfx::Rect(x, y, w, h)),
+        SkIntToScalar(kRoundRectSize), SkIntToScalar(kRoundRectSize), paint);
+    if (!inset)
+      return;
+
+    paint.setColor(SkColorSetARGB(200, 255, 255, 255));
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(SkIntToScalar(2));
+    canvas->sk_canvas()->drawRoundRect(
+        gfx::RectToSkRect(gfx::Rect(x, y, w, h)), SkIntToScalar(kRoundRectSize),
+        SkIntToScalar(kRoundRectSize), paint);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EdgePainter);
 };
 
 // Used to delete the widget after a delay, or if the window is deleted.
@@ -79,10 +123,11 @@ class DelayedWidgetDeleter : public aura::WindowObserver {
 }  // namespace
 
 PhantomWindowController::PhantomWindowController(aura::Window* window,
+                                                 Type type,
                                                  int delay_ms)
     : window_(window),
-      delay_ms_(delay_ms),
-      phantom_widget_(NULL) {
+      type_(type),
+      delay_ms_(delay_ms) {
 }
 
 PhantomWindowController::~PhantomWindowController() {
@@ -92,9 +137,14 @@ PhantomWindowController::~PhantomWindowController() {
 void PhantomWindowController::Show(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
-  if (phantom_widget_.get())
-    phantom_widget_->Hide();
   bounds_ = bounds;
+  if (phantom_widget_.get()) {
+    if (type_ == TYPE_EDGE) {
+      phantom_widget_->SetBounds(bounds);
+      return;
+    }
+    phantom_widget_->Hide();
+  }
   show_timer_.Stop();
   show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms_),
                     this, &PhantomWindowController::ShowNow);
@@ -103,6 +153,10 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
 void PhantomWindowController::Hide() {
   phantom_widget_.reset();
   show_timer_.Stop();
+}
+
+bool PhantomWindowController::IsShowing() const {
+  return phantom_widget_.get() != NULL;
 }
 
 void PhantomWindowController::DelayedClose(int delay_ms) {
@@ -129,12 +183,17 @@ void PhantomWindowController::ShowNow() {
     phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
     phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
     views::View* content_view = new views::View;
+    views::Painter* painter = type_ == TYPE_DESTINATION ?
+        static_cast<views::Painter*>(new DestinationPainter) :
+        static_cast<views::Painter*>(new EdgePainter);
     content_view->set_background(
-        views::Background::CreateBackgroundPainter(true,
-                                                   new BackgroundPainter));
+        views::Background::CreateBackgroundPainter(true, painter));
     phantom_widget_->SetContentsView(content_view);
     phantom_widget_->SetBounds(bounds_);
-    phantom_widget_->StackBelow(window_);
+    if (type_ == TYPE_DESTINATION)
+      phantom_widget_->StackBelow(window_);
+    else
+      phantom_widget_->StackAbove(window_);
     phantom_widget_->Show();
     return;
   }

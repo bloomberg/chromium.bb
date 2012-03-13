@@ -24,12 +24,25 @@ namespace internal {
 
 // PhantomWindowController is responsible for showing a phantom beneath an
 // existing window. PhantomWindowController is used during dragging a window to
-// give an indication where on a grid the window will land.
+// give an indication of where the window will land.
 class ASH_EXPORT PhantomWindowController {
  public:
+  enum Type {
+    // Used for showing an indication of where on the grid the window will land.
+    TYPE_DESTINATION,
+
+    // Used when the window is placed along the edge of the screen.
+    TYPE_EDGE,
+  };
+
   // |delay_ms| specifies the delay before the phantom is shown.
-  PhantomWindowController(aura::Window* window, int delay_ms);
+  PhantomWindowController(aura::Window* window, Type type, int delay_ms);
   ~PhantomWindowController();
+
+  Type type() const { return type_; }
+
+  // Bounds last passed to Show().
+  const gfx::Rect& bounds() const { return bounds_; }
 
   // Shows the phantom window at the specified location (coordinates of the
   // parent). This does not immediately show the window.
@@ -37,6 +50,9 @@ class ASH_EXPORT PhantomWindowController {
 
   // Hides the phantom.
   void Hide();
+
+  // Returns true if the phantom is showing.
+  bool IsShowing() const;
 
   // Closes the phantom window after a delay (in milliseconds).
   void DelayedClose(int delay_ms);
@@ -47,6 +63,8 @@ class ASH_EXPORT PhantomWindowController {
 
   // Window the phantom is placed beneath.
   aura::Window* window_;
+
+  const Type type_;
 
   // Delay before closing.
   const int delay_ms_;

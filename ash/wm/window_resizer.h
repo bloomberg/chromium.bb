@@ -41,6 +41,12 @@ class ASH_EXPORT WindowResizer {
   // |grid_size|.
   static int AlignToGrid(int location, int grid_size);
 
+  // Variant of AlignToGrid that rounds up.
+  static int AlignToGridRoundUp(int location, int grid_size);
+
+  // Variant of AlignToGrid that rounds down.
+  static int AlignToGridRoundDown(int location, int grid_size);
+
   // Invoked to drag/move/resize the window. |location| is in the coordinates
   // of the window supplied to the constructor.
   virtual void Drag(const gfx::Point& location) = 0;

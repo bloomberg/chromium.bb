@@ -82,14 +82,6 @@ bool IsRightEdge(int window_component) {
       window_component == HTGROWBOX;
 }
 
-// Returns the closest location to |location| that is aligned to fall on
-// increments of |grid_size|.
-int AlignToGridRoundUp(int location, int grid_size) {
-  if (grid_size <= 1 || location % grid_size == 0)
-    return location;
-  return (location / grid_size + 1) * grid_size;
-}
-
 }  // namespace
 
 // static
@@ -175,6 +167,20 @@ int WindowResizer::AlignToGrid(int location, int grid_size) {
     return location;
   return floor(static_cast<float>(location) / static_cast<float>(grid_size) +
                .5f) * grid_size;
+}
+
+// static
+int WindowResizer::AlignToGridRoundUp(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return (location / grid_size + 1) * grid_size;
+}
+
+// static
+int WindowResizer::AlignToGridRoundDown(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return location / grid_size * grid_size;
 }
 
 // static
