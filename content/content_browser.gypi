@@ -594,6 +594,8 @@
     'browser/sensors/sensors_provider_impl.h',
     'browser/site_instance_impl.cc',
     'browser/site_instance_impl.h',
+    'browser/speech/audio_buffer.cc',
+    'browser/speech/audio_buffer.h',
     'browser/speech/audio_encoder.cc',
     'browser/speech/audio_encoder.h',
     'browser/speech/endpointer/endpointer.cc',

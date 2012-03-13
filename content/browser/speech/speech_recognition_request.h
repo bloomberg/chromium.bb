@@ -27,6 +27,8 @@ class URLRequestContextGetter;
 
 namespace speech {
 
+class AudioChunk;
+
 // Provides a simple interface for sending recorded speech data to the server
 // and get back recognition results.
 class SpeechRecognitionRequest : public content::URLFetcherDelegate {
@@ -61,7 +63,7 @@ class SpeechRecognitionRequest : public content::URLFetcherDelegate {
                             const std::string& content_type);
 
   // Send a single chunk of audio immediately to the server.
-  CONTENT_EXPORT void UploadAudioChunk(const std::string& audio_data,
+  CONTENT_EXPORT void UploadAudioChunk(const AudioChunk& audio_chunk,
                                        bool is_last_chunk);
 
   CONTENT_EXPORT bool HasPendingRequest() { return url_fetcher_ != NULL; }

@@ -9,10 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "content/browser/speech/audio_buffer.h"
 #include "third_party/flac/flac.h"
 #include "third_party/speex/speex.h"
 
 using std::string;
+using speech::AudioChunk;
 
 namespace {
 
@@ -25,8 +27,8 @@ class FLACEncoder : public speech::AudioEncoder {
  public:
   FLACEncoder(int sampling_rate, int bits_per_sample);
   virtual ~FLACEncoder();
-  virtual void Encode(const short* samples, int num_samples);
-  virtual void Flush();
+  virtual void Encode(const AudioChunk& raw_audio) OVERRIDE;
+  virtual void Flush() OVERRIDE;
 
  private:
   static FLAC__StreamEncoderWriteStatus WriteCallback(
@@ -52,13 +54,14 @@ FLAC__StreamEncoderWriteStatus FLACEncoder::WriteCallback(
     void* client_data) {
   FLACEncoder* me = static_cast<FLACEncoder*>(client_data);
   DCHECK(me->encoder_ == encoder);
-  me->AppendToBuffer(new string(reinterpret_cast<const char*>(buffer), bytes));
+  me->encoded_audio_buffer_.Enqueue(buffer, bytes);
   return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
 }
 
 FLACEncoder::FLACEncoder(int sampling_rate, int bits_per_sample)
     : AudioEncoder(std::string(kContentTypeFLAC) +
-                   base::IntToString(sampling_rate)),
+                   base::IntToString(sampling_rate),
+                   bits_per_sample),
       encoder_(FLAC__stream_encoder_new()),
       is_encoder_initialized_(false) {
   FLAC__stream_encoder_set_channels(encoder_, 1);
@@ -75,20 +78,22 @@ FLACEncoder::~FLACEncoder() {
   FLAC__stream_encoder_delete(encoder_);
 }
 
-void FLACEncoder::Encode(const short* samples, int num_samples) {
+void FLACEncoder::Encode(const AudioChunk& raw_audio) {
+  DCHECK_EQ(raw_audio.bytes_per_sample(), 2);
   if (!is_encoder_initialized_) {
     const FLAC__StreamEncoderInitStatus encoder_status =
         FLAC__stream_encoder_init_stream(encoder_, WriteCallback, NULL, NULL,
                                          NULL, this);
-    DCHECK(encoder_status == FLAC__STREAM_ENCODER_INIT_STATUS_OK);
+    DCHECK_EQ(encoder_status, FLAC__STREAM_ENCODER_INIT_STATUS_OK);
     is_encoder_initialized_ = true;
   }
 
   // FLAC encoder wants samples as int32s.
+  const int num_samples = raw_audio.NumSamples();
   scoped_array<FLAC__int32> flac_samples(new FLAC__int32[num_samples]);
   FLAC__int32* flac_samples_ptr = flac_samples.get();
   for (int i = 0; i < num_samples; ++i)
-    flac_samples_ptr[i] = samples[i];
+    flac_samples_ptr[i] = static_cast<FLAC__int32>(raw_audio.GetSample16(i));
 
   FLAC__stream_encoder_process(encoder_, &flac_samples_ptr, num_samples);
 }
@@ -109,10 +114,10 @@ COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
 class SpeexEncoder : public speech::AudioEncoder {
  public:
-  explicit SpeexEncoder(int sampling_rate);
+  explicit SpeexEncoder(int sampling_rate, int bits_per_sample);
   virtual ~SpeexEncoder();
-  virtual void Encode(const short* samples, int num_samples);
-  virtual void Flush() {}
+  virtual void Encode(const AudioChunk& raw_audio) OVERRIDE;
+  virtual void Flush() OVERRIDE {}
 
  private:
   void* encoder_state_;
@@ -122,9 +127,10 @@ class SpeexEncoder : public speech::AudioEncoder {
   DISALLOW_COPY_AND_ASSIGN(SpeexEncoder);
 };
 
-SpeexEncoder::SpeexEncoder(int sampling_rate)
+SpeexEncoder::SpeexEncoder(int sampling_rate, int bits_per_sample)
     : AudioEncoder(std::string(kContentTypeSpeex) +
-                   base::IntToString(sampling_rate)) {
+                   base::IntToString(sampling_rate),
+                   bits_per_sample) {
    // speex_bits_init() does not initialize all of the |bits_| struct.
    memset(&bits_, 0, sizeof(bits_));
    speex_bits_init(&bits_);
@@ -144,20 +150,23 @@ SpeexEncoder::~SpeexEncoder() {
   speex_encoder_destroy(encoder_state_);
 }
 
-void SpeexEncoder::Encode(const short* samples, int num_samples) {
+void SpeexEncoder::Encode(const AudioChunk& raw_audio) {
+  spx_int16_t* src_buffer =
+      const_cast<spx_int16_t*>(raw_audio.SamplesData16());
+  int num_samples = raw_audio.NumSamples();
   // Drop incomplete frames, typically those which come in when recording stops.
   num_samples -= (num_samples % samples_per_frame_);
   for (int i = 0; i < num_samples; i += samples_per_frame_) {
     speex_bits_reset(&bits_);
-    speex_encode_int(encoder_state_, const_cast<spx_int16_t*>(samples + i),
-                     &bits_);
+    speex_encode_int(encoder_state_, src_buffer + i, &bits_);
 
     // Encode the frame and place the size of the frame as the first byte. This
     // is the packet format for MIME type x-speex-with-header-byte.
     int frame_length = speex_bits_write(&bits_, encoded_frame_data_ + 1,
                                         kMaxSpeexFrameLength);
     encoded_frame_data_[0] = static_cast<char>(frame_length);
-    AppendToBuffer(new string(encoded_frame_data_, frame_length + 1));
+    encoded_audio_buffer_.Enqueue(
+        reinterpret_cast<uint8*>(&encoded_frame_data_[0]), frame_length + 1);
   }
 }
 
@@ -170,39 +179,20 @@ AudioEncoder* AudioEncoder::Create(Codec codec,
                                    int bits_per_sample) {
   if (codec == CODEC_FLAC)
     return new FLACEncoder(sampling_rate, bits_per_sample);
-  return new SpeexEncoder(sampling_rate);
+  return new SpeexEncoder(sampling_rate, bits_per_sample);
 }
 
-AudioEncoder::AudioEncoder(const std::string& mime_type)
-    : mime_type_(mime_type) {
+AudioEncoder::AudioEncoder(const std::string& mime_type, int bits_per_sample)
+    : encoded_audio_buffer_(1), /* Byte granularity of encoded samples. */
+      mime_type_(mime_type),
+      bits_per_sample_(bits_per_sample) {
 }
 
 AudioEncoder::~AudioEncoder() {
-  STLDeleteElements(&audio_buffers_);
 }
 
-bool AudioEncoder::GetEncodedDataAndClear(std::string* encoded_data) {
-  if (!audio_buffers_.size())
-    return false;
-
-  int audio_buffer_length = 0;
-  for (AudioBufferQueue::iterator it = audio_buffers_.begin();
-       it != audio_buffers_.end(); ++it) {
-    audio_buffer_length += (*it)->length();
-  }
-  encoded_data->reserve(audio_buffer_length);
-  for (AudioBufferQueue::iterator it = audio_buffers_.begin();
-       it != audio_buffers_.end(); ++it) {
-    encoded_data->append(*(*it));
-  }
-
-  STLDeleteElements(&audio_buffers_);
-
-  return true;
-}
-
-void AudioEncoder::AppendToBuffer(std::string* item) {
-  audio_buffers_.push_back(item);
+scoped_ptr<AudioChunk> AudioEncoder::GetEncodedDataAndClear() {
+  return encoded_audio_buffer_.DequeueAll();
 }
 
 }  // namespace speech

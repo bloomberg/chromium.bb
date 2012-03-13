@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/speech_recognition_request.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -39,7 +40,11 @@ void SpeechRecognitionRequestTest::CreateAndTestRequest(
   SpeechRecognitionRequest request(NULL, this);
   request.Start(std::string(), std::string(), false, std::string(),
                 std::string(), std::string());
-  request.UploadAudioChunk(std::string(" "), true);
+  unsigned char dummy_audio_buffer_data[2] = {'\0', '\0'};
+  AudioChunk dummy_audio_chunk(&dummy_audio_buffer_data[0],
+                               sizeof(dummy_audio_buffer_data),
+                               2 /* bytes per sample */);
+  request.UploadAudioChunk(dummy_audio_chunk, true);
   TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 

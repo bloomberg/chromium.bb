@@ -75,8 +75,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.
 
-  // Handles OnData in the IO thread. Takes ownership of |data|.
-  void HandleOnData(std::string* data);
+  // Handles OnData in the IO thread. Takes ownership of |raw_audio|.
+  void HandleOnData(AudioChunk* raw_audio);
 
   // Helper method which closes the audio controller and blocks until done.
   void CloseAudioControllerSynchronously();

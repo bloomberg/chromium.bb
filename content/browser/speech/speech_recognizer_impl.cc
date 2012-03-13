@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/time.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/speech/audio_buffer.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -38,9 +39,11 @@ const float kAudioMeterDbRange = kAudioMeterMaxDb - kAudioMeterMinDb;
 const float kAudioMeterRangeMaxUnclipped = 47.0f / 48.0f;
 
 // Returns true if more than 5% of the samples are at min or max value.
-bool Clipping(const int16* samples, int num_samples) {
-  int clipping_samples = 0;
+bool DetectClipping(const speech::AudioChunk& chunk) {
+  const int num_samples = chunk.NumSamples();
+  const int16* samples = chunk.SamplesData16();
   const int kThreshold = num_samples / 20;
+  int clipping_samples = 0;
   for (int i = 0; i < num_samples; ++i) {
     if (samples[i] <= -32767 || samples[i] >= 32767) {
       if (++clipping_samples > kThreshold)
@@ -174,11 +177,13 @@ void SpeechRecognizerImpl::StopRecording() {
   // of silence in case encoder had no data already.
   std::vector<short> samples((kAudioSampleRate * kAudioPacketIntervalMs) /
                              1000);
-  encoder_->Encode(&samples[0], samples.size());
+  AudioChunk dummy_chunk(reinterpret_cast<uint8*>(&samples[0]),
+                         samples.size() * sizeof(short),
+                         encoder_->bits_per_sample() / 8);
+  encoder_->Encode(dummy_chunk);
   encoder_->Flush();
-  string encoded_data;
-  encoder_->GetEncodedDataAndClear(&encoded_data);
-  DCHECK(!encoded_data.empty());
+  scoped_ptr<AudioChunk> encoded_data(encoder_->GetEncodedDataAndClear());
+  DCHECK(!encoded_data->IsEmpty());
   encoder_.reset();
 
   // If we haven't got any audio yet end the recognition sequence here.
@@ -187,7 +192,7 @@ void SpeechRecognizerImpl::StopRecording() {
     scoped_refptr<SpeechRecognizerImpl> me(this);
     delegate_->DidCompleteRecognition(caller_id_);
   } else {
-    request_->UploadAudioChunk(encoded_data, true /* is_last_chunk */);
+    request_->UploadAudioChunk(*encoded_data, true /* is_last_chunk */);
   }
 }
 
@@ -215,33 +220,28 @@ void SpeechRecognizerImpl::OnData(AudioInputController* controller,
                                   const uint8* data, uint32 size) {
   if (size == 0)  // This could happen when recording stops and is normal.
     return;
-
-  string* str_data = new string(reinterpret_cast<const char*>(data), size);
+  AudioChunk* raw_audio = new AudioChunk(data, static_cast<size_t>(size),
+                                         kNumBitsPerAudioSample / 8);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::HandleOnData,
-                                     this, str_data));
+                                     this, raw_audio));
 }
 
-void SpeechRecognizerImpl::HandleOnData(string* data) {
+void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
+  scoped_ptr<AudioChunk> free_raw_audio_on_return(raw_audio);
   // Check if we are still recording and if not discard this buffer, as
   // recording might have been stopped after this buffer was posted to the queue
   // by |OnData|.
-  if (!audio_controller_.get()) {
-    delete data;
+  if (!audio_controller_.get())
     return;
-  }
 
   bool speech_was_heard_before_packet = endpointer_.DidStartReceivingSpeech();
 
-  const short* samples = reinterpret_cast<const short*>(data->data());
-  DCHECK_EQ((data->length() % sizeof(short)), 0U);
-  int num_samples = data->length() / sizeof(short);
-  encoder_->Encode(samples, num_samples);
+  encoder_->Encode(*raw_audio);
   float rms;
-  endpointer_.ProcessAudio(samples, num_samples, &rms);
-  bool did_clip = Clipping(samples, num_samples);
-  delete data;
-  num_samples_recorded_ += num_samples;
+  endpointer_.ProcessAudio(*raw_audio, &rms);
+  bool did_clip = DetectClipping(*raw_audio);
+  num_samples_recorded_ += raw_audio->NumSamples();
 
   if (request_ == NULL) {
     // This was the first audio packet recorded, so start a request to the
@@ -252,10 +252,9 @@ void SpeechRecognizerImpl::HandleOnData(string* data) {
                     hardware_info_, origin_url_, encoder_->mime_type());
   }
 
-  string encoded_data;
-  encoder_->GetEncodedDataAndClear(&encoded_data);
-  DCHECK(!encoded_data.empty());
-  request_->UploadAudioChunk(encoded_data, false /* is_last_chunk */);
+  scoped_ptr<AudioChunk> encoded_data(encoder_->GetEncodedDataAndClear());
+  DCHECK(!encoded_data->IsEmpty());
+  request_->UploadAudioChunk(*encoded_data, false /* is_last_chunk */);
 
   if (endpointer_.IsEstimatingEnvironment()) {
     // Check if we have gathered enough audio for the endpointer to do

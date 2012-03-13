@@ -9,6 +9,8 @@
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/fake_audio_input_stream.h"
+#include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -20,6 +22,48 @@ using media::AudioInputController;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
+namespace {
+
+class MockAudioManager : public AudioManager {
+ public:
+  MockAudioManager() {
+    audio_thread_.reset(new base::Thread("MockAudioThread"));
+    CHECK(audio_thread_->Start());
+  }
+  virtual bool HasAudioOutputDevices() OVERRIDE { return true; }
+  virtual bool HasAudioInputDevices() OVERRIDE { return true; }
+  virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }
+  virtual bool CanShowAudioInputSettings() OVERRIDE { return false; }
+  virtual void ShowAudioInputSettings() OVERRIDE {}
+  virtual void GetAudioInputDeviceNames(
+      media::AudioDeviceNames* device_names) OVERRIDE {}
+  virtual AudioOutputStream* MakeAudioOutputStream(
+        const AudioParameters& params) OVERRIDE {
+    return FakeAudioOutputStream::MakeFakeStream(params);
+  }
+  virtual AudioOutputStream* MakeAudioOutputStreamProxy(
+        const AudioParameters& params) OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+  virtual AudioInputStream* MakeAudioInputStream(
+        const AudioParameters& params, const std::string& device_id) OVERRIDE {
+    return FakeAudioInputStream::MakeFakeStream(params);
+  }
+  virtual void MuteAll() OVERRIDE {}
+  virtual void UnMuteAll() OVERRIDE {}
+  virtual bool IsRecordingInProcess() OVERRIDE { return false; }
+  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
+    return audio_thread_->message_loop_proxy();
+  }
+  virtual void Init() OVERRIDE {};
+ private:
+  scoped_ptr<base::Thread> audio_thread_;
+  DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
+};
+}  // namespace
+
+
 namespace speech {
 
 class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
@@ -27,7 +71,7 @@ class SpeechRecognizerTest : public content::SpeechRecognizerDelegate,
  public:
   SpeechRecognizerTest()
       : io_thread_(BrowserThread::IO, &message_loop_),
-        audio_manager_(AudioManager::Create()),
+        audio_manager_(new MockAudioManager()),
         recording_complete_(false),
         recognition_complete_(false),
         result_received_(false),

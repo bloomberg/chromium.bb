@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/browser/speech/audio_buffer.h"
 
 namespace speech {
-
+class AudioChunk;
 // Provides a simple interface to encode raw audio using the various speech
 // codecs.
 class AudioEncoder {
@@ -27,30 +29,28 @@ class AudioEncoder {
 
   virtual ~AudioEncoder();
 
-  // Encodes each frame of raw audio in |samples| to the internal buffer. Use
-  // |GetEncodedData| to read the result after this call or when recording
-  // completes.
-  virtual void Encode(const short* samples, int num_samples) = 0;
+  // Encodes |raw audio| to the internal buffer. Use
+  // |GetEncodedDataAndClear| to read the result after this call or when
+  // audio capture completes.
+  virtual void Encode(const AudioChunk& raw_audio) = 0;
 
   // Finish encoding and flush any pending encoded bits out.
   virtual void Flush() = 0;
 
-  // Copies the encoded audio to the given string. Returns true if the output
-  // is not empty.
-  bool GetEncodedDataAndClear(std::string* encoded_data);
+  // Merges, retrieves and clears all the accumulated encoded audio chunks.
+  scoped_ptr<AudioChunk> GetEncodedDataAndClear();
 
   const std::string& mime_type() { return mime_type_; }
+  int bits_per_sample() { return bits_per_sample_; }
 
  protected:
-  AudioEncoder(const std::string& mime_type);
-
-  void AppendToBuffer(std::string* item);
+  AudioEncoder(const std::string& mime_type, int bits_per_sample);
+  AudioBuffer encoded_audio_buffer_;
 
  private:
-  // Buffer holding the recorded audio. Owns the strings inside the list.
-  typedef std::list<std::string*> AudioBufferQueue;
-  AudioBufferQueue audio_buffers_;
   std::string mime_type_;
+  int bits_per_sample_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
 

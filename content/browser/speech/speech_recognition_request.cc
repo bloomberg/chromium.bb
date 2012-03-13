@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "content/browser/speech/audio_buffer.h"
 #include "content/common/net/url_fetcher_impl.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/base/escape.h"
@@ -201,10 +202,10 @@ void SpeechRecognitionRequest::Start(const std::string& language,
   url_fetcher_->Start();
 }
 
-void SpeechRecognitionRequest::UploadAudioChunk(const std::string& audio_data,
+void SpeechRecognitionRequest::UploadAudioChunk(const AudioChunk& audio_chunk,
                                                 bool is_last_chunk) {
   DCHECK(url_fetcher_.get());
-  url_fetcher_->AppendChunkToUpload(audio_data, is_last_chunk);
+  url_fetcher_->AppendChunkToUpload(audio_chunk.AsString(), is_last_chunk);
 }
 
 void SpeechRecognitionRequest::OnURLFetchComplete(
