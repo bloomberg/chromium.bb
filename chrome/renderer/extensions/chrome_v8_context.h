@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/renderer/module_system.h"
 #include "v8/include/v8.h"
 
 namespace WebKit {
@@ -58,6 +59,10 @@ class ChromeV8Context {
 
   ContextType context_type() const {
     return context_type_;
+  }
+
+  void set_module_system(scoped_ptr<ModuleSystem> module_system) {
+    module_system_ = module_system.Pass();
   }
 
   // Returns a special Chrome-specific hidden object that is associated with a
@@ -112,6 +117,9 @@ class ChromeV8Context {
 
   // The type of context.
   ContextType context_type_;
+
+  // Owns and structures the JS that is injected to set up extension bindings.
+  scoped_ptr<ModuleSystem> module_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };

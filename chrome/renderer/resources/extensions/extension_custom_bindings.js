@@ -4,13 +4,11 @@
 
 // Custom bindings for the extension API.
 
-(function() {
+var extensionNatives = requireNative('extension');
+var GetExtensionViews = extensionNatives.GetExtensionViews;
+var OpenChannelToExtension = extensionNatives.OpenChannelToExtension;
 
-native function GetChromeHidden();
-native function GetExtensionViews();
-native function OpenChannelToExtension(sourceId, targetId, name);
-
-var chromeHidden = GetChromeHidden();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 // This should match chrome.windows.WINDOW_ID_NONE.
 //
@@ -144,5 +142,3 @@ chromeHidden.registerCustomHook('extension',
     throw new Error('Error connecting to extension ' + targetId);
   });
 });
-
-})();

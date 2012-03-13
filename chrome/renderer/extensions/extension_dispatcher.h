@@ -15,8 +15,10 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
+#include "chrome/renderer/resource_bundle_source_map.h"
 #include "v8/include/v8.h"
 
+class ModuleSystem;
 class GURL;
 class URLPattern;
 class UserScriptSlave;
@@ -55,12 +57,18 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool IsApplicationActive(const std::string& extension_id) const;
   bool IsExtensionActive(const std::string& extension_id) const;
 
+  // Whether or not we should set up custom bindings for this api.
+  bool AllowCustomAPI(WebKit::WebFrame* frame,
+                      const std::string& custom_binding_api_name,
+                      int world_id);
+
   // See WebKit::WebPermissionClient::allowScriptExtension
   // TODO(koz): Remove once WebKit no longer calls this.
   bool AllowScriptExtension(WebKit::WebFrame* frame,
                             const std::string& v8_extension_name,
                             int extension_group);
 
+  // TODO(koz): Remove once WebKit no longer calls this.
   bool AllowScriptExtension(WebKit::WebFrame* frame,
                             const std::string& v8_extension_name,
                             int extension_group,
@@ -137,6 +145,12 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
                                const Extension* extension,
                                const URLPatternSet& origins);
 
+  void RegisterNativeHandlers(ModuleSystem* module_system,
+                              ChromeV8Context* context);
+
+  // Inserts static source code into |source_map_|.
+  void PopulateSourceMap();
+
   // Finds the extension ID for the current context. This is determined from
   // |world_id| if it's non-zero, or the URL in |frame| if it is.
   std::string GetExtensionID(WebKit::WebFrame* frame, int world_id);
@@ -181,6 +195,8 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool webrequest_adblock_;
   bool webrequest_adblock_plus_;
   bool webrequest_other_;
+
+  ResourceBundleSourceMap source_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

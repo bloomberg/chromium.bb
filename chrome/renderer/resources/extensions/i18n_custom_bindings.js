@@ -4,12 +4,12 @@
 
 // Custom bindings for the i18n API.
 
-(function() {
+var i18nNatives = requireNative('i18n');
+var GetL10nMessage = i18nNatives.GetL10nMessage;
 
-native function GetChromeHidden();
-native function GetL10nMessage();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-GetChromeHidden().registerCustomHook('i18n',
+chromeHidden.registerCustomHook('i18n',
                                      function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
@@ -18,5 +18,3 @@ GetChromeHidden().registerCustomHook('i18n',
     return GetL10nMessage(messageName, substitutions, extensionId);
   });
 });
-
-})();
