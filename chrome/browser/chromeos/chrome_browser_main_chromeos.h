@@ -14,10 +14,6 @@ class ResumeObserver;
 class ScreenLockObserver;
 class SessionManagerObserver;
 
-#if defined(USE_ASH)
-class DesktopBackgroundObserver;
-#endif
-
 #if defined(USE_AURA)
 class InitialBrowserWindowObserver;
 class PowerButtonObserver;
@@ -50,10 +46,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;
   scoped_ptr<chromeos::ScreenLockObserver> screen_lock_observer_;
   scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
-
-#if defined(USE_ASH)
-  scoped_ptr<chromeos::DesktopBackgroundObserver> desktop_background_observer_;
-#endif
 
 #if defined(USE_AURA)
   scoped_ptr<chromeos::InitialBrowserWindowObserver>

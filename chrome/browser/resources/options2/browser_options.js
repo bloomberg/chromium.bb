@@ -101,12 +101,6 @@ cr.define('options', function() {
             self.onHomePagePrefChanged_.bind(self));
       });
 
-      if ($('set-wallpaper')) {
-        $('set-wallpaper').onclick = function(event) {
-          OptionsPage.navigateToPage('setWallpaper');
-        };
-      }
-
       $('themes-gallery').onclick = function(event) {
         window.open(localStrings.getString('themesGalleryURL'));
       };

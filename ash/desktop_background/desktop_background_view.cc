@@ -28,18 +28,13 @@ static int RoundPositive(double x) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopBackgroundView, public:
 
-DesktopBackgroundView::DesktopBackgroundView(const SkBitmap& wallpaper) {
-  wallpaper_ = wallpaper;
+DesktopBackgroundView::DesktopBackgroundView() {
+  wallpaper_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_AURA_WALLPAPER_1).ToSkBitmap();
   wallpaper_.buildMipMap(false);
 }
 
 DesktopBackgroundView::~DesktopBackgroundView() {
-}
-
-void DesktopBackgroundView::SetWallpaper(const SkBitmap& wallpaper) {
-  wallpaper_ = wallpaper;
-  wallpaper_.buildMipMap(false);
-  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,11 +88,11 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
     Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
-views::Widget* CreateDesktopBackground(const SkBitmap& wallpaper) {
+views::Widget* CreateDesktopBackground() {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper);
+  DesktopBackgroundView* view = new DesktopBackgroundView;
   params.delegate = view;
   params.parent =
       Shell::GetInstance()->GetContainer(

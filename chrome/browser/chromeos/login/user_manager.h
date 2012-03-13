@@ -37,9 +37,6 @@ class UserManager {
   // A vector pref of the users who have logged into the device.
   static const char kLoggedInUsers[];
 
-  // A dictionary that maps usernames to file paths to their wallpapers.
-  static const char kUserWallpapers[];
-
   // A dictionary that maps usernames to file paths to their images.
   static const char kUserImages[];
 
@@ -113,17 +110,6 @@ class UserManager {
   // Otherwise, returns |username| itself.
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
-
-  // Returns the index of the default wallpapers saved in local state for user
-  // |username| if it is known (was previousely set by
-  // |SaveWallpaperToLocalState| call).
-  // Otherwise, returns default wallpaper index.
-  virtual int GetUserWallpaper(const std::string& username) = 0;
-
-  // Sets user wallpaper to the default wallpaper with index |wallpaper_index|,
-  // updates Local State.
-  virtual void SaveWallpaperDefaultIndex(const std::string& username,
-                                         int wallpaper_index) = 0;
 
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.

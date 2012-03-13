@@ -164,13 +164,6 @@ function load() {
                                   LanguageOptions.getInstance());
     }
   }
-
-  if (SetWallpaperOptions) {
-    OptionsPage.registerOverlay(SetWallpaperOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('set-wallpaper')]);
-  }
-
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
                                 CertificateManager.getInstance());

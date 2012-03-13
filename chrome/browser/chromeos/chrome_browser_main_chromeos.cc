@@ -69,10 +69,6 @@
 #include <gtk/gtk.h>
 #endif
 
-#if defined(USE_ASH)
-#include "chrome/browser/chromeos/background/desktop_background_observer.h"
-#endif
-
 #if defined(USE_AURA)
 #include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
@@ -413,12 +409,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
-
-#if defined(USE_ASH)
-  // Initialize desktop background observer so that it can receive
-  // LOGIN_USER_CHANGED notification from UserManager.
-  desktop_background_observer_.reset(new chromeos::DesktopBackgroundObserver);
-#endif
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {

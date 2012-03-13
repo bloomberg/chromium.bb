@@ -5,7 +5,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime_control_delegate.h"
@@ -91,13 +90,11 @@ bool HandleRotateScreen() {
 }
 
 bool HandleToggleDesktopBackgroundMode() {
-  ash::DesktopBackgroundController* desktop_background_controller =
-      ash::Shell::GetInstance()->desktop_background_controller();
-  if (desktop_background_controller->desktop_background_mode() ==
-      ash::DesktopBackgroundController::BACKGROUND_IMAGE)
-    desktop_background_controller->SetDesktopBackgroundSolidColorMode();
+  ash::Shell* shell = ash::Shell::GetInstance();
+  if (shell->desktop_background_mode() == ash::Shell::BACKGROUND_IMAGE)
+    shell->SetDesktopBackgroundMode(ash::Shell::BACKGROUND_SOLID_COLOR);
   else
-    desktop_background_controller->SetPreviousDesktopBackgroundImage();
+    shell->SetDesktopBackgroundMode(ash::Shell::BACKGROUND_IMAGE);
   return true;
 }
 
