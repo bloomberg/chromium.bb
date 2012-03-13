@@ -403,3 +403,77 @@ LRESULT TabContentsViewWin::OnReflectedMessage(
   }
   return 0;
 }
+
+LRESULT TabContentsViewWin::OnNCCalcSize(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  // Hack for ThinkPad mouse wheel driver. We have set the fake scroll bars
+  // to receive scroll messages from ThinkPad touch-pad driver. Suppress
+  // painting of scrollbars by returning 0 size for them.
+  return 0;
+}
+
+LRESULT TabContentsViewWin::OnScroll(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  int scroll_type = LOWORD(wparam);
+  short position = HIWORD(wparam);
+  HWND scrollbar = reinterpret_cast<HWND>(lparam);
+  // This window can receive scroll events as a result of the ThinkPad's
+  // touch-pad scroll wheel emulation.
+  // If ctrl is held, zoom the UI.  There are three issues with this:
+  // 1) Should the event be eaten or forwarded to content?  We eat the event,
+  //    which is like Firefox and unlike IE.
+  // 2) Should wheel up zoom in or out?  We zoom in (increase font size), which
+  //    is like IE and Google maps, but unlike Firefox.
+  // 3) Should the mouse have to be over the content area?  We zoom as long as
+  //    content has focus, although FF and IE require that the mouse is over
+  //    content.  This is because all events get forwarded when content has
+  //    focus.
+  if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+    int distance = 0;
+    switch (scroll_type) {
+      case SB_LINEUP:
+        distance = WHEEL_DELTA;
+        break;
+      case SB_LINEDOWN:
+        distance = -WHEEL_DELTA;
+        break;
+        // TODO(joshia): Handle SB_PAGEUP, SB_PAGEDOWN, SB_THUMBPOSITION,
+        // and SB_THUMBTRACK for completeness
+      default:
+        break;
+    }
+
+    tab_contents_->GetDelegate()->ContentsZoomChange(distance > 0);
+    return 0;
+  }
+
+  // Reflect scroll message to the view() to give it a chance
+  // to process scrolling.
+  SendMessage(GetContentNativeView(), message, wparam, lparam);
+  return 0;
+}
+
+LRESULT TabContentsViewWin::OnSize(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  // NOTE: Because we handle OnWindowPosChanged without calling DefWindowProc,
+  // OnSize is NOT called on window resize. This handler is called only once
+  // when the window is created.
+  // Don't call base class OnSize to avoid useless layout for 0x0 size.
+  // We will get OnWindowPosChanged later and layout root view in WasSized.
+
+  // Hack for ThinkPad touch-pad driver.
+  // Set fake scrollbars so that we can get scroll messages,
+  SCROLLINFO si = {0};
+  si.cbSize = sizeof(si);
+  si.fMask = SIF_ALL;
+
+  si.nMin = 1;
+  si.nMax = 100;
+  si.nPage = 10;
+  si.nPos = 50;
+
+  ::SetScrollInfo(hwnd(), SB_HORZ, &si, FALSE);
+  ::SetScrollInfo(hwnd(), SB_VERT, &si, FALSE);
+
+  return 1;
+}

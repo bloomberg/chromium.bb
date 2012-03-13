@@ -40,6 +40,11 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
     MESSAGE_HANDLER(WM_RBUTTONDOWN, OnMouseDown)
     MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
     MESSAGE_HANDLER(base::win::kReflectedMessage, OnReflectedMessage)
+    // Hacks for old ThinkPad touchpads/scroll points.
+    MESSAGE_HANDLER(WM_NCCALCSIZE, OnNCCalcSize)
+    MESSAGE_HANDLER(WM_HSCROLL, OnScroll)
+    MESSAGE_HANDLER(WM_VSCROLL, OnScroll)
+    MESSAGE_HANDLER(WM_SIZE, OnSize)
   END_MSG_MAP()
 
   // Overridden from WebContentsView:
@@ -110,6 +115,12 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
   LRESULT OnMouseMove(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnReflectedMessage(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnNCCalcSize(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnScroll(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnSize(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
   gfx::Size initial_size_;

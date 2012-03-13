@@ -69,7 +69,6 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   // one it is.
   void ScrollCommon(UINT message, int scroll_type, short position,
                     HWND scrollbar);
-  bool ScrollZoom(int scroll_type);
 
   void EndDragging();
 

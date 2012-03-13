@@ -215,10 +215,6 @@ LRESULT NativeTabContentsViewWin::OnReflectedMessage(UINT msg,
         return 1;
       }
       break;
-    case WM_HSCROLL:
-    case WM_VSCROLL:
-      if (ScrollZoom(LOWORD(message->wParam)))
-        return 1;
     default:
       break;
   }
@@ -301,16 +297,6 @@ void NativeTabContentsViewWin::ScrollCommon(UINT message, int scroll_type,
                                             short position, HWND scrollbar) {
   // This window can receive scroll events as a result of the ThinkPad's
   // touch-pad scroll wheel emulation.
-  if (!ScrollZoom(scroll_type)) {
-    // Reflect scroll message to the view() to give it a chance
-    // to process scrolling.
-    SendMessage(delegate_->GetWebContents()->GetView()->GetContentNativeView(),
-                message, MAKELONG(scroll_type, position),
-                reinterpret_cast<LPARAM>(scrollbar));
-  }
-}
-
-bool NativeTabContentsViewWin::ScrollZoom(int scroll_type) {
   // If ctrl is held, zoom the UI.  There are three issues with this:
   // 1) Should the event be eaten or forwarded to content?  We eat the event,
   //    which is like Firefox and unlike IE.
@@ -336,9 +322,14 @@ bool NativeTabContentsViewWin::ScrollZoom(int scroll_type) {
     }
 
     delegate_->OnNativeTabContentsViewWheelZoom(distance > 0);
-    return true;
+    return;
   }
-  return false;
+
+  // Reflect scroll message to the view() to give it a chance
+  // to process scrolling.
+  SendMessage(delegate_->GetWebContents()->GetView()->GetContentNativeView(),
+              message, MAKELONG(scroll_type, position),
+              reinterpret_cast<LPARAM>(scrollbar));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
