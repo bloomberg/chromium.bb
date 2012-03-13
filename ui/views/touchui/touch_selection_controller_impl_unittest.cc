@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
 
   // Test cursor at run boundary and with empty selection.
   textfield_->SelectSelectionModel(
-      gfx::SelectionModel(3, 2, gfx::SelectionModel::TRAILING));
+      gfx::SelectionModel(3, gfx::CURSOR_BACKWARD));
   VerifySelectionHandlePositions(false);
 
   // Test selection range inside one run and starts or ends at run boundary.

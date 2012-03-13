@@ -67,10 +67,8 @@ class RenderTextWin : public RenderText {
 
   // Overridden from RenderText:
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
-  virtual int GetStringWidth() OVERRIDE;
+  virtual Size GetStringSize() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
-  virtual Rect GetCursorBounds(const SelectionModel& selection,
-                               bool insert_mode) OVERRIDE;
 
  protected:
   // Overridden from RenderText:
@@ -80,9 +78,10 @@ class RenderTextWin : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
-  virtual SelectionModel EdgeSelectionModel(
-      VisualCursorDirection direction) OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
+  virtual void GetGlyphBounds(size_t index,
+                              ui::Range* xspan,
+                              int* height) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(ui::Range range) OVERRIDE;
   virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
@@ -102,7 +101,7 @@ class RenderTextWin : public RenderText {
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
-  size_t GetRunContainingPosition(size_t position) const;
+  size_t GetRunContainingCaret(const SelectionModel& caret) const;
   size_t GetRunContainingPoint(const Point& point) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first

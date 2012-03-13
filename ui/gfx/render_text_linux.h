@@ -21,10 +21,8 @@ class RenderTextLinux : public RenderText {
 
   // Overridden from RenderText:
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
-  virtual int GetStringWidth() OVERRIDE;
+  virtual Size GetStringSize() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
-  virtual Rect GetCursorBounds(const SelectionModel& position,
-                               bool insert_mode) OVERRIDE;
 
  protected:
   // Overridden from RenderText:
@@ -34,9 +32,10 @@ class RenderTextLinux : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
-  virtual SelectionModel EdgeSelectionModel(
-      VisualCursorDirection direction) OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
+  virtual void GetGlyphBounds(size_t index,
+                              ui::Range* xspan,
+                              int* height) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(ui::Range range) OVERRIDE;
   virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
@@ -48,8 +47,9 @@ class RenderTextLinux : public RenderText {
       size_t index,
       LogicalCursorDirection direction) OVERRIDE;
 
-  // Returns the run that contains |position|. Return NULL if not found.
-  GSList* GetRunContainingPosition(size_t position) const;
+  // Returns the run that contains the character attached to the caret in the
+  // given selection model. Return NULL if not found.
+  GSList* GetRunContainingCaret(const SelectionModel& caret) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
@@ -73,9 +73,9 @@ class RenderTextLinux : public RenderText {
   size_t TextIndexToLayoutIndex(size_t index) const;
   size_t LayoutIndexToTextIndex(size_t index) const;
 
-  // Calculate the visual bounds containing the logical substring within |from|
-  // to |to|.
-  std::vector<Rect> CalculateSubstringBounds(size_t from, size_t to);
+  // Calculate the visual bounds containing the logical substring within the
+  // given range.
+  std::vector<Rect> CalculateSubstringBounds(ui::Range range);
 
   // Get the visual bounds of the logical selection.
   std::vector<Rect> GetSelectionBounds();

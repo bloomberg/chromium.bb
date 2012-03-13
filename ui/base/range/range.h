@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,8 @@ class UI_EXPORT Range {
   bool Contains(const Range& range) const;
 
   // Computes the intersection of this range with the given |range|.
-  // If they don't intersects, it returns an InvalidRange().
+  // If they don't intersect, it returns an InvalidRange().
+  // The returned range is always empty or forward (never reversed).
   Range Intersect(const Range& range) const;
 
 #if defined(OS_MACOSX)

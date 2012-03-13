@@ -197,8 +197,7 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
 
-  // TODO(msw): Remove final reference to FindCursorPosition.
-  gfx::SelectionModel drop_destination =
+  gfx::SelectionModel drop_destination_model =
       GetRenderText()->FindCursorPosition(event.location());
   string16 text;
   event.data().GetString(&text);
@@ -210,20 +209,12 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
     gfx::SelectionModel selected;
     model_->GetSelectionModel(&selected);
     // Adjust the drop destination if it is on or after the current selection.
-    size_t max_of_selected_range = std::max(selected.selection_start(),
-                                            selected.selection_end());
-    size_t min_of_selected_range = std::min(selected.selection_start(),
-                                            selected.selection_end());
-    size_t selected_range_length = max_of_selected_range -
-                                   min_of_selected_range;
-    size_t drop_destination_end = drop_destination.selection_end();
-    if (max_of_selected_range <= drop_destination_end)
-      drop_destination_end -= selected_range_length;
-    else if (min_of_selected_range <= drop_destination_end)
-      drop_destination_end = min_of_selected_range;
-    model_->DeleteSelectionAndInsertTextAt(text, drop_destination_end);
+    size_t drop_destination = drop_destination_model.caret_pos();
+    drop_destination -=
+        selected.selection().Intersect(ui::Range(0, drop_destination)).length();
+    model_->DeleteSelectionAndInsertTextAt(text, drop_destination);
   } else {
-    model_->MoveCursorTo(drop_destination);
+    model_->MoveCursorTo(drop_destination_model);
     // Drop always inserts text even if the textfield is not in insert mode.
     model_->InsertText(text);
   }
@@ -259,19 +250,14 @@ void NativeTextfieldViews::SelectRect(const gfx::Point& start,
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
-  gfx::SelectionModel start_pos = GetRenderText()->FindCursorPosition(start);
-  gfx::SelectionModel end_pos = GetRenderText()->FindCursorPosition(end);
+  gfx::SelectionModel start_caret = GetRenderText()->FindCursorPosition(start);
+  gfx::SelectionModel end_caret = GetRenderText()->FindCursorPosition(end);
+  gfx::SelectionModel selection(
+      ui::Range(start_caret.caret_pos(), end_caret.caret_pos()),
+      end_caret.caret_affinity());
 
   OnBeforeUserAction();
-  // Merge selection models of "start_pos" and "end_pos" so that
-  // selection start is the value from "start_pos", while selection end,
-  // caret position, and caret placement are values from "end_pos".
-  if (start_pos.selection_start() == end_pos.selection_end())
-    model_->SelectSelectionModel(end_pos);
-  else
-    model_->SelectRange(ui::Range(start_pos.selection_start(),
-                                  end_pos.selection_end()));
-
+  model_->SelectSelectionModel(selection);
   OnCaretBoundsChanged();
   SchedulePaint();
   OnAfterUserAction();
@@ -478,7 +464,7 @@ bool NativeTextfieldViews::IsIMEComposing() const {
 }
 
 void NativeTextfieldViews::GetSelectedRange(ui::Range* range) const {
-  model_->GetSelectedRange(range);
+  *range = GetRenderText()->selection();
 }
 
 void NativeTextfieldViews::SelectRange(const ui::Range& range) {
@@ -748,11 +734,7 @@ bool NativeTextfieldViews::GetCompositionTextRange(ui::Range* range) {
 bool NativeTextfieldViews::GetSelectionRange(ui::Range* range) {
   if (!ImeEditingAllowed())
     return false;
-
-  gfx::SelectionModel sel;
-  model_->GetSelectionModel(&sel);
-  range->set_start(sel.selection_start());
-  range->set_end(sel.selection_end());
+  GetSelectedRange(range);
   return true;
 }
 

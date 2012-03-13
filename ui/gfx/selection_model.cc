@@ -1,50 +1,36 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/gfx/selection_model.h"
 
+#include <ostream>
+
 namespace gfx {
 
-SelectionModel::SelectionModel() {
-  Init(0, 0, 0, LEADING);
+SelectionModel::SelectionModel()
+  : selection_(0), caret_affinity_(CURSOR_BACKWARD) {}
+
+SelectionModel::SelectionModel(size_t position, LogicalCursorDirection affinity)
+  : selection_(position), caret_affinity_(affinity) {}
+
+SelectionModel::SelectionModel(ui::Range selection,
+                               LogicalCursorDirection affinity)
+  : selection_(selection), caret_affinity_(affinity) {}
+
+bool SelectionModel::operator==(const SelectionModel& sel) const {
+  return selection_ == sel.selection() &&
+         caret_affinity_ == sel.caret_affinity();
 }
 
-SelectionModel::SelectionModel(size_t pos) {
-  Init(pos, pos, pos, LEADING);
-}
-
-SelectionModel::SelectionModel(size_t end,
-                               size_t pos,
-                               CaretPlacement placement) {
-  Init(end, end, pos, placement);
-}
-
-SelectionModel::SelectionModel(size_t start,
-                               size_t end,
-                               size_t pos,
-                               CaretPlacement placement) {
-  Init(start, end, pos, placement);
-}
-
-SelectionModel::~SelectionModel() {
-}
-
-bool SelectionModel::Equals(const SelectionModel& sel) const {
-  return selection_start_ == sel.selection_start() &&
-         selection_end_ == sel.selection_end() &&
-         caret_pos_ == sel.caret_pos() &&
-         caret_placement_ == sel.caret_placement();
-}
-
-void SelectionModel::Init(size_t start,
-                          size_t end,
-                          size_t pos,
-                          CaretPlacement placement) {
-  selection_start_ = start;
-  selection_end_ = end;
-  caret_pos_ = pos;
-  caret_placement_ = placement;
+std::ostream& operator<<(std::ostream& out, const SelectionModel& sel) {
+  out << '{';
+  if (sel.selection().is_empty())
+    out << sel.caret_pos();
+  else
+    out << sel.selection();
+  bool backward = sel.caret_affinity() == CURSOR_BACKWARD;
+  return out << (backward ? ",BACKWARD}" : ",FORWARD}");
 }
 
 }  // namespace gfx

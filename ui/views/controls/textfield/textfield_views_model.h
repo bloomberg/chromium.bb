@@ -141,9 +141,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Returns the selected text.
   string16 GetSelectedText() const;
 
-  // Gets the selected range.
-  void GetSelectedRange(ui::Range* range) const;
-
   // The current composition text will be confirmed. The selection starts with
   // the range's start position, and ends with the range's end position,
   // therefore the cursor position becomes the end position.
@@ -259,7 +256,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   void ClearRedoHistory();
 
   // Executes and records edit operations.
-  void ExecuteAndRecordDelete(size_t from, size_t to, bool mergeable);
+  void ExecuteAndRecordDelete(ui::Range range, bool mergeable);
   void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
                                         const string16& text);
   void ExecuteAndRecordReplace(internal::MergeType merge_type,

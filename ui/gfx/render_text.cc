@@ -338,7 +338,7 @@ void RenderText::SetText(const string16& text) {
 
   // Reset selection model. SetText should always followed by SetSelectionModel
   // or SetCursorPosition in upper layer.
-  SetSelectionModel(SelectionModel(0, 0, SelectionModel::LEADING));
+  SetSelectionModel(SelectionModel());
 
   UpdateLayout();
 }
@@ -391,10 +391,6 @@ void RenderText::SetDisplayRect(const Rect& r) {
   UpdateLayout();
 }
 
-size_t RenderText::GetCursorPosition() const {
-  return selection_model_.selection_end();
-}
-
 void RenderText::SetCursorPosition(size_t position) {
   MoveCursorTo(position, false);
 }
@@ -402,10 +398,9 @@ void RenderText::SetCursorPosition(size_t position) {
 void RenderText::MoveCursor(BreakType break_type,
                             VisualCursorDirection direction,
                             bool select) {
-  SelectionModel position(selection_model());
-  position.set_selection_start(GetCursorPosition());
+  SelectionModel position(cursor_position(), selection_model_.caret_affinity());
   // Cancelling a selection moves to the edge of the selection.
-  if (break_type != LINE_BREAK && !EmptySelection() && !select) {
+  if (break_type != LINE_BREAK && !selection().is_empty() && !select) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
     int start_x = GetCursorBounds(selection_start, true).x();
     int cursor_x = GetCursorBounds(position, true).x();
@@ -421,90 +416,63 @@ void RenderText::MoveCursor(BreakType break_type,
     position = GetAdjacentSelectionModel(position, break_type, direction);
   }
   if (select)
-    position.set_selection_start(GetSelectionStart());
+    position.set_selection_start(selection().start());
   MoveCursorTo(position);
 }
 
 bool RenderText::MoveCursorTo(const SelectionModel& model) {
-  SelectionModel sel(model);
-  size_t text_length = text().length();
   // Enforce valid selection model components.
-  if (sel.selection_start() > text_length)
-    sel.set_selection_start(text_length);
-  if (sel.selection_end() > text_length)
-    sel.set_selection_end(text_length);
+  size_t text_length = text().length();
+  ui::Range range(std::min(model.selection().start(), text_length),
+                  std::min(model.caret_pos(), text_length));
   // The current model only supports caret positions at valid character indices.
-  if (text_length == 0) {
-    sel.set_caret_pos(0);
-    sel.set_caret_placement(SelectionModel::LEADING);
-  } else if (sel.caret_pos() >= text_length) {
-    SelectionModel end_selection =
-        EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
-    sel.set_caret_pos(end_selection.caret_pos());
-    sel.set_caret_placement(end_selection.caret_placement());
-  }
-
-  if (!IsCursorablePosition(sel.selection_start()) ||
-      !IsCursorablePosition(sel.selection_end()) ||
-      !IsCursorablePosition(sel.caret_pos()))
+  if (!IsCursorablePosition(range.start()) ||
+      !IsCursorablePosition(range.end()))
     return false;
-
-  bool changed = !sel.Equals(selection_model_);
+  SelectionModel sel(range, model.caret_affinity());
+  bool changed = sel != selection_model_;
   SetSelectionModel(sel);
   return changed;
 }
 
 bool RenderText::MoveCursorTo(const Point& point, bool select) {
-  SelectionModel selection = FindCursorPosition(point);
+  SelectionModel position = FindCursorPosition(point);
   if (select)
-    selection.set_selection_start(GetSelectionStart());
-  return MoveCursorTo(selection);
+    position.set_selection_start(selection().start());
+  return MoveCursorTo(position);
 }
 
 bool RenderText::SelectRange(const ui::Range& range) {
-  size_t text_length = text().length();
-  size_t start = std::min(range.start(), text_length);
-  size_t end = std::min(range.end(), text_length);
-
-  if (!IsCursorablePosition(start) || !IsCursorablePosition(end))
+  ui::Range sel(std::min(range.start(), text().length()),
+                std::min(range.end(), text().length()));
+  if (!IsCursorablePosition(sel.start()) || !IsCursorablePosition(sel.end()))
     return false;
-
-  size_t pos = end;
-  SelectionModel::CaretPlacement placement = SelectionModel::LEADING;
-  if (start < end) {
-    pos = IndexOfAdjacentGrapheme(end, CURSOR_BACKWARD);
-    DCHECK_LT(pos, end);
-    placement = SelectionModel::TRAILING;
-  } else if (end == text_length) {
-    SelectionModel end_selection =
-        EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
-    pos = end_selection.caret_pos();
-    placement = end_selection.caret_placement();
-  }
-  SetSelectionModel(SelectionModel(start, end, pos, placement));
+  LogicalCursorDirection affinity =
+      (sel.is_reversed() || sel.is_empty()) ? CURSOR_FORWARD : CURSOR_BACKWARD;
+  SetSelectionModel(SelectionModel(sel, affinity));
   return true;
 }
 
 bool RenderText::IsPointInSelection(const Point& point) {
-  if (EmptySelection())
+  if (selection().is_empty())
     return false;
-  // TODO(xji): should this check whether the point is inside the visual
-  // selection bounds? In case of "abcFED", if "ED" is selected, |point| points
-  // to the right half of 'c', is the point in selection?
-  size_t pos = FindCursorPosition(point).selection_end();
-  return (pos >= MinOfSelection() && pos < MaxOfSelection());
+  SelectionModel cursor = FindCursorPosition(point);
+  return RangeContainsCaret(
+      selection(), cursor.caret_pos(), cursor.caret_affinity());
 }
 
 void RenderText::ClearSelection() {
-  SelectionModel sel(selection_model());
-  sel.set_selection_start(GetCursorPosition());
-  SetSelectionModel(sel);
+  SetSelectionModel(SelectionModel(cursor_position(),
+                                   selection_model_.caret_affinity()));
 }
 
 void RenderText::SelectAll() {
-  SelectionModel sel = EdgeSelectionModel(CURSOR_RIGHT);
-  sel.set_selection_start(EdgeSelectionModel(CURSOR_LEFT).selection_start());
-  SetSelectionModel(sel);
+  SelectionModel all;
+  if (GetTextDirection() == base::i18n::LEFT_TO_RIGHT)
+    all = SelectionModel(ui::Range(0, text().length()), CURSOR_FORWARD);
+  else
+    all = SelectionModel(ui::Range(text().length(), 0), CURSOR_BACKWARD);
+  SetSelectionModel(all);
 }
 
 void RenderText::SelectWord() {
@@ -513,7 +481,7 @@ void RenderText::SelectWord() {
     return;
   }
 
-  size_t cursor_position = GetCursorPosition();
+  size_t cursor_pos = cursor_position();
 
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
@@ -521,24 +489,22 @@ void RenderText::SelectWord() {
   if (!success)
     return;
 
-  size_t selection_start = cursor_position;
+  size_t selection_start = cursor_pos;
   for (; selection_start != 0; --selection_start) {
     if (iter.IsStartOfWord(selection_start) ||
         iter.IsEndOfWord(selection_start))
       break;
   }
 
-  if (selection_start == cursor_position)
-    ++cursor_position;
+  if (selection_start == cursor_pos)
+    ++cursor_pos;
 
-  for (; cursor_position < text().length(); ++cursor_position) {
-    if (iter.IsEndOfWord(cursor_position) ||
-        iter.IsStartOfWord(cursor_position))
+  for (; cursor_pos < text().length(); ++cursor_pos)
+    if (iter.IsEndOfWord(cursor_pos) || iter.IsStartOfWord(cursor_pos))
       break;
-  }
 
   MoveCursorTo(selection_start, false);
-  MoveCursorTo(cursor_position, true);
+  MoveCursorTo(cursor_pos, true);
 }
 
 const ui::Range& RenderText::GetCompositionRange() const {
@@ -604,24 +570,51 @@ void RenderText::Draw(Canvas* canvas) {
   canvas->Restore();
 }
 
+Rect RenderText::GetCursorBounds(const SelectionModel& caret,
+                                 bool insert_mode) {
+  EnsureLayout();
+
+  size_t caret_pos = caret.caret_pos();
+  // In overtype mode, ignore the affinity and always indicate that we will
+  // overtype the next character.
+  LogicalCursorDirection caret_affinity =
+      insert_mode ? caret.caret_affinity() : CURSOR_FORWARD;
+  int x = 0, width = 0, height = 0;
+  if (caret_pos == (caret_affinity == CURSOR_BACKWARD ? 0 : text().length())) {
+    // The caret is attached to the boundary. Always return a zero-width caret,
+    // since there is nothing to overtype.
+    Size size = GetStringSize();
+    if ((GetTextDirection() == base::i18n::RIGHT_TO_LEFT) == (caret_pos == 0))
+      x = size.width();
+    height = size.height();
+  } else {
+    size_t grapheme_start = (caret_affinity == CURSOR_FORWARD) ?
+        caret_pos : IndexOfAdjacentGrapheme(caret_pos, CURSOR_BACKWARD);
+    ui::Range xspan;
+    GetGlyphBounds(grapheme_start, &xspan, &height);
+    if (insert_mode) {
+      x = (caret_affinity == CURSOR_BACKWARD) ? xspan.end() : xspan.start();
+    } else {  // overtype mode
+      x = xspan.GetMin();
+      width = xspan.length();
+    }
+  }
+  height = std::min(height, display_rect().height());
+  int y = (display_rect().height() - height) / 2;
+  return Rect(ToViewPoint(Point(x, y)), Size(width, height));
+}
+
 const Rect& RenderText::GetUpdatedCursorBounds() {
   UpdateCachedBoundsAndOffset();
   return cursor_bounds_;
 }
 
 SelectionModel RenderText::GetSelectionModelForSelectionStart() {
-  size_t selection_start = GetSelectionStart();
-  size_t selection_end = GetCursorPosition();
-  if (selection_start < selection_end)
-    return SelectionModel(selection_start,
-                          selection_start,
-                          SelectionModel::LEADING);
-  else if (selection_start > selection_end)
-    return SelectionModel(
-        selection_start,
-        IndexOfAdjacentGrapheme(selection_start, CURSOR_BACKWARD),
-        SelectionModel::TRAILING);
-  return selection_model_;
+  const ui::Range& sel = selection();
+  if (sel.is_empty())
+    return selection_model_;
+  return SelectionModel(sel.start(),
+                        sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
 RenderText::RenderText()
@@ -658,15 +651,16 @@ SelectionModel RenderText::GetAdjacentSelectionModel(
   return AdjacentWordSelectionModel(current, direction);
 }
 
-void RenderText::SetSelectionModel(const SelectionModel& model) {
-  DCHECK_LE(model.selection_start(), text().length());
-  selection_model_.set_selection_start(model.selection_start());
-  DCHECK_LE(model.selection_end(), text().length());
-  selection_model_.set_selection_end(model.selection_end());
-  DCHECK_LT(model.caret_pos(), std::max<size_t>(text().length(), 1));
-  selection_model_.set_caret_pos(model.caret_pos());
-  selection_model_.set_caret_placement(model.caret_placement());
+SelectionModel RenderText::EdgeSelectionModel(
+    VisualCursorDirection direction) {
+  if (direction == GetVisualDirectionOfLogicalEnd())
+    return SelectionModel(text().length(), CURSOR_FORWARD);
+  return SelectionModel(0, CURSOR_BACKWARD);
+}
 
+void RenderText::SetSelectionModel(const SelectionModel& model) {
+  DCHECK_LE(model.selection().GetMax(), text().length());
+  selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
 }
 
@@ -686,17 +680,16 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   if (composition_range_.IsValid() && !composition_range_.is_empty()) {
     StyleRange composition_style(default_style_);
     composition_style.underline = true;
-    composition_style.range.set_start(composition_range_.start());
-    composition_style.range.set_end(composition_range_.end());
+    composition_style.range = composition_range_;
     ApplyStyleRangeImpl(style_ranges, composition_style);
   }
   // Apply a selection style override to a copy of the style ranges.
-  if (!EmptySelection()) {
+  if (!selection().is_empty()) {
     StyleRange selection_style(default_style_);
     selection_style.foreground = NativeTheme::instance()->GetSystemColor(
         NativeTheme::kColorId_TextfieldSelectionColor);
-    selection_style.range.set_start(MinOfSelection());
-    selection_style.range.set_end(MaxOfSelection());
+    selection_style.range = ui::Range(selection().GetMin(),
+                                      selection().GetMax());
     ApplyStyleRangeImpl(style_ranges, selection_style);
   }
   // Apply replacement-mode style override to a copy of the style ranges.
@@ -711,7 +704,7 @@ void RenderText::ApplyCompositionAndSelectionStyles(
     StyleRange replacement_mode_style(default_style_);
     replacement_mode_style.foreground = NativeTheme::instance()->GetSystemColor(
         NativeTheme::kColorId_TextfieldSelectionColor);
-    size_t cursor = GetCursorPosition();
+    size_t cursor = cursor_position();
     replacement_mode_style.range.set_start(cursor);
     replacement_mode_style.range.set_end(
         IndexOfAdjacentGrapheme(cursor, CURSOR_FORWARD));
@@ -735,7 +728,7 @@ Point RenderText::ToViewPoint(const Point& point) {
 }
 
 int RenderText::GetContentWidth() {
-  return GetStringWidth() + (cursor_enabled_ ? 1 : 0);
+  return GetStringSize().width() + (cursor_enabled_ ? 1 : 0);
 }
 
 Point RenderText::GetAlignmentOffset() {
@@ -765,7 +758,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   if (!fade_head() && !fade_tail())
     return;
 
-  const int text_width = GetStringWidth();
+  const int text_width = GetStringSize().width();
   const int display_width = display_rect().width();
 
   // If the text fits as-is, no need to fade.
@@ -808,16 +801,22 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   }
 }
 
+// static
+bool RenderText::RangeContainsCaret(const ui::Range& range,
+                                    size_t caret_pos,
+                                    LogicalCursorDirection caret_affinity) {
+  // NB: exploits unsigned wraparound (WG14/N1124 section 6.2.5 paragraph 9).
+  size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
+      caret_pos - 1 : caret_pos + 1;
+  return range.Contains(ui::Range(caret_pos, adjacent));
+}
+
 void RenderText::MoveCursorTo(size_t position, bool select) {
   size_t cursor = std::min(position, text().length());
-  size_t caret_pos = IndexOfAdjacentGrapheme(cursor, CURSOR_BACKWARD);
-  SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
-      SelectionModel::LEADING : SelectionModel::TRAILING;
-  size_t selection_start = select ? GetSelectionStart() : cursor;
-  if (IsCursorablePosition(cursor)) {
-    SelectionModel sel(selection_start, cursor, caret_pos, placement);
-    SetSelectionModel(sel);
-  }
+  if (IsCursorablePosition(cursor))
+    SetSelectionModel(SelectionModel(
+        ui::Range(select ? selection().start() : cursor, cursor),
+        (cursor == 0) ? CURSOR_FORWARD : CURSOR_BACKWARD));
 }
 
 void RenderText::UpdateCachedBoundsAndOffset() {
@@ -866,8 +865,7 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
-  std::vector<Rect> sel = GetSubstringBounds(
-      GetSelectionStart(), GetCursorPosition());
+  std::vector<Rect> sel = GetSubstringBounds(selection());
   NativeTheme::ColorId color_id = focused() ?
       NativeTheme::kColorId_TextfieldSelectionBackgroundFocused :
       NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused;

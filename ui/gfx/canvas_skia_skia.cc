@@ -206,7 +206,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
     for (size_t i = 0; i < strings.size(); ++i) {
       StripAcceleratorChars(flags, &strings[i]);
       render_text->SetText(strings[i]);
-      w = std::max(w, render_text->GetStringWidth());
+      w = std::max(w, render_text->GetStringSize().width());
       h += font.GetHeight();
     }
     *width = w;
@@ -223,7 +223,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
       string16 adjusted_text = text;
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
-      *width = render_text->GetStringWidth();
+      *width = render_text->GetStringSize().width();
     }
     *height = font.GetHeight();
   }

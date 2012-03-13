@@ -138,6 +138,26 @@ TextRun::~TextRun() {
   ScriptFreeCache(&script_cache);
 }
 
+// Returns the X coordinate of the leading or |trailing| edge of the glyph
+// starting at |index|, relative to the left of the text (not the view).
+int GetGlyphXBoundary(internal::TextRun* run, size_t index, bool trailing) {
+  DCHECK_GE(index, run->range.start());
+  DCHECK_LT(index, run->range.end() + (trailing ? 0 : 1));
+  int x = 0;
+  HRESULT hr = ScriptCPtoX(
+      index - run->range.start(),
+      trailing,
+      run->range.length(),
+      run->glyph_count,
+      run->logical_clusters.get(),
+      run->visible_attributes.get(),
+      run->advance_widths.get(),
+      &run->script_analysis,
+      &x);
+  DCHECK(SUCCEEDED(hr));
+  return run->preceding_run_widths + x;
+}
+
 }  // namespace internal
 
 // static
@@ -169,9 +189,10 @@ base::i18n::TextDirection RenderTextWin::GetTextDirection() {
   return base::i18n::LEFT_TO_RIGHT;
 }
 
-int RenderTextWin::GetStringWidth() {
+Size RenderTextWin::GetStringSize() {
   EnsureLayout();
-  return string_width_;
+  // TODO(msw): Use the largest font instead of the default font?
+  return Size(string_width_, GetFont().GetHeight());
 }
 
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
@@ -197,106 +218,53 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
                            &position,
                            &trailing);
   DCHECK(SUCCEEDED(hr));
+  DCHECK_GE(trailing, 0);
   position += run->range.start();
-
   size_t cursor = position + trailing;
-  DCHECK_GE(cursor, 0U);
   DCHECK_LE(cursor, text().length());
-  return SelectionModel(cursor, position,
-      (trailing > 0) ? SelectionModel::TRAILING : SelectionModel::LEADING);
-}
-
-Rect RenderTextWin::GetCursorBounds(const SelectionModel& selection,
-                                    bool insert_mode) {
-  EnsureLayout();
-
-  // Highlight the logical cursor (selection end) when not in insert mode.
-  size_t pos = insert_mode ? selection.caret_pos() : selection.selection_end();
-  size_t run_index = GetRunContainingPosition(pos);
-  internal::TextRun* run = run_index == runs_.size() ? NULL : runs_[run_index];
-
-  int start_x = 0, end_x = 0;
-  if (run) {
-    HRESULT hr = 0;
-    hr = ScriptCPtoX(pos - run->range.start(),
-                     false,
-                     run->range.length(),
-                     run->glyph_count,
-                     run->logical_clusters.get(),
-                     run->visible_attributes.get(),
-                     run->advance_widths.get(),
-                     &(run->script_analysis),
-                     &start_x);
-    DCHECK(SUCCEEDED(hr));
-    hr = ScriptCPtoX(pos - run->range.start(),
-                     true,
-                     run->range.length(),
-                     run->glyph_count,
-                     run->logical_clusters.get(),
-                     run->visible_attributes.get(),
-                     run->advance_widths.get(),
-                     &(run->script_analysis),
-                     &end_x);
-    DCHECK(SUCCEEDED(hr));
-  }
-  // TODO(msw): Use the last visual run's font instead of the default font?
-  int height = run ? run->font.GetHeight() : GetFont().GetHeight();
-  Rect rect(std::min(start_x, end_x), 0, std::abs(end_x - start_x), height);
-  // Offset to the run start or the right/left end for an out of bounds index.
-  // Also center the rect vertically in the display area.
-  int text_end_offset = base::i18n::IsRTL() ? 0 : GetStringWidth();
-  rect.Offset((run ? run->preceding_run_widths : text_end_offset),
-              (display_rect().height() - rect.height()) / 2);
-  // Adjust for leading/trailing in insert mode.
-  if (insert_mode && run) {
-    bool leading = selection.caret_placement() == SelectionModel::LEADING;
-    // Adjust the x value for right-side placement.
-    if (run->script_analysis.fRTL == leading)
-      rect.set_x(rect.right());
-    rect.set_width(0);
-  }
-  rect.set_origin(ToViewPoint(rect.origin()));
-  return rect;
+  return SelectionModel(cursor, trailing ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
 SelectionModel RenderTextWin::AdjacentCharSelectionModel(
-    const SelectionModel& selection, VisualCursorDirection direction) {
+    const SelectionModel& selection,
+    VisualCursorDirection direction) {
   DCHECK(!needs_layout_);
-  size_t caret = selection.caret_pos();
-  SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
-  size_t run_index = GetRunContainingPosition(caret);
-  DCHECK(run_index < runs_.size());
-  internal::TextRun* run = runs_[run_index];
-
-  bool forward_motion = run->script_analysis.fRTL == (direction == CURSOR_LEFT);
-  if (forward_motion) {
-    if (caret_placement == SelectionModel::LEADING) {
-      size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    } else if (selection.selection_end() < run->range.end()) {
-      caret = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
-      size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
-      return SelectionModel(cursor, caret, SelectionModel::TRAILING);
-    }
+  internal::TextRun* run;
+  size_t run_index = GetRunContainingCaret(selection);
+  if (run_index == runs_.size()) {
+    // The cursor is not in any run: we're at the visual and logical edge.
+    SelectionModel edge = EdgeSelectionModel(direction);
+    if (edge.caret_pos() == selection.caret_pos())
+      return edge;
+    run = direction == CURSOR_RIGHT ? runs_.front() : runs_.back();
   } else {
-    if (caret_placement == SelectionModel::TRAILING)
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
-    else if (caret > run->range.start()) {
-      caret = IndexOfAdjacentGrapheme(caret, CURSOR_BACKWARD);
-      return SelectionModel(caret, caret, SelectionModel::LEADING);
+    // If the cursor is moving within the current run, just move it by one
+    // grapheme in the appropriate direction.
+    run = runs_[run_index];
+    size_t caret = selection.caret_pos();
+    bool forward_motion =
+        run->script_analysis.fRTL == (direction == CURSOR_LEFT);
+    if (forward_motion) {
+      if (caret < run->range.end()) {
+        caret = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
+        return SelectionModel(caret, CURSOR_BACKWARD);
+      }
+    } else {
+      if (caret > run->range.start()) {
+        caret = IndexOfAdjacentGrapheme(caret, CURSOR_BACKWARD);
+        return SelectionModel(caret, CURSOR_FORWARD);
+      }
     }
+    // The cursor is at the edge of a run; move to the visually adjacent run.
+    int visual_index = logical_to_visual_[run_index];
+    visual_index += (direction == CURSOR_LEFT) ? -1 : 1;
+    if (visual_index < 0 || visual_index >= static_cast<int>(runs_.size()))
+      return EdgeSelectionModel(direction);
+    run = runs_[visual_to_logical_[visual_index]];
   }
-
-  // The character is at the beginning/end of its run; go to the previous/next
-  // visual run.
-  size_t visual_index = logical_to_visual_[run_index];
-  if (visual_index == (direction == CURSOR_LEFT ? 0 : runs_.size() - 1))
-    return EdgeSelectionModel(direction);
-  internal::TextRun* adjacent = runs_[visual_to_logical_[
-      direction == CURSOR_LEFT ? visual_index - 1 : visual_index + 1]];
-  forward_motion = adjacent->script_analysis.fRTL == (direction == CURSOR_LEFT);
-  return forward_motion ? FirstSelectionModelInsideRun(adjacent) :
-                          LastSelectionModelInsideRun(adjacent);
+  bool forward_motion = run->script_analysis.fRTL == (direction == CURSOR_LEFT);
+  return forward_motion ? FirstSelectionModelInsideRun(run) :
+                          LastSelectionModelInsideRun(run);
 }
 
 // TODO(msw): Implement word breaking for Windows.
@@ -311,10 +279,10 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
 
   size_t pos;
   if (direction == CURSOR_RIGHT) {
-    pos = std::min(selection.selection_end() + 1, text().length());
+    pos = std::min(selection.caret_pos() + 1, text().length());
     while (iter.Advance()) {
       pos = iter.pos();
-      if (iter.IsWord() && pos > selection.selection_end())
+      if (iter.IsWord() && pos > selection.caret_pos())
         break;
     }
   } else {  // direction == CURSOR_LEFT
@@ -322,15 +290,15 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
     // This is probably fast enough for our usage, but we may
     // want to modify WordIterator so that it can start from the
     // middle of string and advance backwards.
-    pos = std::max<int>(selection.selection_end() - 1, 0);
+    pos = std::max<int>(selection.caret_pos() - 1, 0);
     while (iter.Advance()) {
       if (iter.IsWord()) {
         size_t begin = iter.pos() - iter.GetString().length();
-        if (begin == selection.selection_end()) {
+        if (begin == selection.caret_pos()) {
           // The cursor is at the beginning of a word.
           // Move to previous word.
           break;
-        } else if (iter.pos() >= selection.selection_end()) {
+        } else if (iter.pos() >= selection.caret_pos()) {
           // The cursor is in the middle or at the end of a word.
           // Move to the top of current word.
           pos = begin;
@@ -341,40 +309,29 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
       }
     }
   }
-  return SelectionModel(pos, pos, SelectionModel::LEADING);
+  return SelectionModel(pos, CURSOR_FORWARD);
 }
 
-SelectionModel RenderTextWin::EdgeSelectionModel(
-    VisualCursorDirection direction) {
-  if (text().empty())
-    return SelectionModel(0, 0, SelectionModel::LEADING);
-
-  EnsureLayout();
-  size_t cursor = (direction == GetVisualDirectionOfLogicalEnd()) ?
-      text().length() : 0;
-  internal::TextRun* run = runs_[
-      visual_to_logical_[direction == CURSOR_RIGHT ? runs_.size() - 1 : 0]];
-  size_t caret;
-  SelectionModel::CaretPlacement placement;
-  if (run->script_analysis.fRTL == (direction == CURSOR_RIGHT)) {
-    caret = run->range.start();
-    placement = SelectionModel::LEADING;
-  } else {
-    caret = IndexOfAdjacentGrapheme(run->range.end(), CURSOR_BACKWARD);
-    placement = SelectionModel::TRAILING;
-  }
-  return SelectionModel(cursor, caret, placement);
+void RenderTextWin::GetGlyphBounds(size_t index,
+                                   ui::Range* xspan,
+                                   int* height) {
+  size_t run_index =
+      GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
+  DCHECK_LT(run_index, runs_.size());
+  internal::TextRun* run = runs_[run_index];
+  xspan->set_start(GetGlyphXBoundary(run, index, false));
+  xspan->set_end(GetGlyphXBoundary(run, index, true));
+  *height = run->font.GetHeight();
 }
 
-std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
+std::vector<Rect> RenderTextWin::GetSubstringBounds(ui::Range range) {
   DCHECK(!needs_layout_);
-  ui::Range range(from, to);
   DCHECK(ui::Range(0, text().length()).Contains(range));
   Point display_offset(GetUpdatedDisplayOffset());
   HRESULT hr = 0;
 
   std::vector<Rect> bounds;
-  if (from == to)
+  if (range.is_empty())
     return bounds;
 
   // Add a Rect for each run/selection intersection.
@@ -384,32 +341,9 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
     ui::Range intersection = run->range.Intersect(range);
     if (intersection.IsValid()) {
       DCHECK(!intersection.is_reversed());
-      int start_offset = 0;
-      hr = ScriptCPtoX(intersection.start() - run->range.start(),
-                       false,
-                       run->range.length(),
-                       run->glyph_count,
-                       run->logical_clusters.get(),
-                       run->visible_attributes.get(),
-                       run->advance_widths.get(),
-                       &(run->script_analysis),
-                       &start_offset);
-      DCHECK(SUCCEEDED(hr));
-      int end_offset = 0;
-      hr = ScriptCPtoX(intersection.end() - run->range.start(),
-                       false,
-                       run->range.length(),
-                       run->glyph_count,
-                       run->logical_clusters.get(),
-                       run->visible_attributes.get(),
-                       run->advance_widths.get(),
-                       &(run->script_analysis),
-                       &end_offset);
-      DCHECK(SUCCEEDED(hr));
-      if (start_offset > end_offset)
-        std::swap(start_offset, end_offset);
-      Rect rect(run->preceding_run_widths + start_offset, 0,
-                end_offset - start_offset, run->font.GetHeight());
+      ui::Range range(GetGlyphXBoundary(run, intersection.start(), false),
+                      GetGlyphXBoundary(run, intersection.end(), false));
+      Rect rect(range.GetMin(), 0, range.length(), run->font.GetHeight());
       // Center the rect vertically in the display area.
       rect.Offset(0, (display_rect().height() - rect.height()) / 2);
       rect.set_origin(ToViewPoint(rect.origin()));
@@ -439,7 +373,8 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
     return true;
 
   EnsureLayout();
-  size_t run_index = GetRunContainingPosition(position);
+  size_t run_index =
+      GetRunContainingCaret(SelectionModel(position, CURSOR_FORWARD));
   if (run_index >= runs_.size())
     return false;
 
@@ -539,7 +474,8 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(
     }
   }
 
-  size_t run_index = GetRunContainingPosition(index);
+  size_t run_index =
+      GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   DCHECK(run_index < runs_.size());
   internal::TextRun* run = runs_[run_index];
   size_t start = run->range.start();
@@ -788,13 +724,13 @@ const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {
   return linked_fonts;
 }
 
-size_t RenderTextWin::GetRunContainingPosition(size_t position) const {
+size_t RenderTextWin::GetRunContainingCaret(const SelectionModel& caret) const {
   DCHECK(!needs_layout_);
-  // Find the text run containing the argument position.
+  size_t position = caret.caret_pos();
+  LogicalCursorDirection affinity = caret.caret_affinity();
   size_t run = 0;
   for (; run < runs_.size(); ++run)
-    if (runs_[run]->range.start() <= position &&
-        runs_[run]->range.end() > position)
+    if (RangeContainsCaret(runs_[run]->range, position, affinity))
       break;
   return run;
 }
@@ -812,15 +748,14 @@ size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
 
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(
     internal::TextRun* run) {
-  size_t caret = run->range.start();
-  size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
-  return SelectionModel(cursor, caret, SelectionModel::TRAILING);
+  size_t cursor = IndexOfAdjacentGrapheme(run->range.start(), CURSOR_FORWARD);
+  return SelectionModel(cursor, CURSOR_BACKWARD);
 }
 
 SelectionModel RenderTextWin::LastSelectionModelInsideRun(
     internal::TextRun* run) {
   size_t caret = IndexOfAdjacentGrapheme(run->range.end(), CURSOR_BACKWARD);
-  return SelectionModel(caret, caret, SelectionModel::LEADING);
+  return SelectionModel(caret, CURSOR_FORWARD);
 }
 
 RenderText* RenderText::CreateRenderText() {

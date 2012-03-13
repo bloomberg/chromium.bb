@@ -91,23 +91,6 @@ enum HorizontalAlignment {
   ALIGN_RIGHT,
 };
 
-// VisualCursorDirection and LogicalCursorDirection represent directions of
-// motion of the cursor in BiDi text. The combinations that make sense are:
-//
-//  base::i18n::TextDirection  VisualCursorDirection  LogicalCursorDirection
-//       LEFT_TO_RIGHT             CURSOR_LEFT           CURSOR_BACKWARD
-//       LEFT_TO_RIGHT             CURSOR_RIGHT          CURSOR_FORWARD
-//       RIGHT_TO_LEFT             CURSOR_RIGHT          CURSOR_BACKWARD
-//       RIGHT_TO_LEFT             CURSOR_LEFT           CURSOR_FORWARD
-enum VisualCursorDirection {
-  CURSOR_LEFT,
-  CURSOR_RIGHT
-};
-enum LogicalCursorDirection {
-  CURSOR_BACKWARD,
-  CURSOR_FORWARD
-};
-
 // RenderText represents an abstract model of styled text and its corresponding
 // visual layout. Support is built in for a cursor, a selection, simple styling,
 // complex scripts, and bi-directional text. Implementations provide mechanisms
@@ -135,8 +118,6 @@ class UI_EXPORT RenderText {
 
   // Get the first font in |font_list_|.
   const Font& GetFont() const;
-
-  const SelectionModel& selection_model() const { return selection_model_; }
 
   bool cursor_enabled() const { return cursor_enabled_; }
   void SetCursorEnabled(bool cursor_enabled);
@@ -173,11 +154,11 @@ class UI_EXPORT RenderText {
     background_is_transparent_ = transparent;
   }
 
-  // This cursor position corresponds to SelectionModel::selection_end. In
-  // addition to representing the selection end, it's also where logical text
-  // edits take place, and doesn't necessarily correspond to
-  // SelectionModel::caret_pos.
-  size_t GetCursorPosition() const;
+  const SelectionModel& selection_model() const { return selection_model_; }
+
+  const ui::Range& selection() const { return selection_model_.selection(); }
+
+  size_t cursor_position() const { return selection_model_.caret_pos(); }
   void SetCursorPosition(size_t position);
 
   // Moves the cursor left or right. Cursor movement is visual, meaning that
@@ -188,11 +169,10 @@ class UI_EXPORT RenderText {
                   bool select);
 
   // Set the selection_model_ to the value of |selection|.
-  // The selection model components are modified if invalid.
+  // The selection range is clamped to text().length() if out of range.
   // Returns true if the cursor position or selection range changed.
-  // If |selectin_start_| or |selection_end_| or |caret_pos_| in
-  // |selection_model| is not a cursorable position (not on grapheme boundary),
-  // it is a NO-OP and returns false.
+  // If any index in |selection_model| is not a cursorable position (not on a
+  // grapheme boundary), it is a no-op and returns false.
   bool MoveCursorTo(const SelectionModel& selection_model);
 
   // Move the cursor to the position associated with the clicked point.
@@ -206,19 +186,6 @@ class UI_EXPORT RenderText {
   // If the |range| start or end is not a cursorable position (not on grapheme
   // boundary), it is a NO-OP and returns false. Otherwise, returns true.
   bool SelectRange(const ui::Range& range);
-
-  size_t GetSelectionStart() const {
-    return selection_model_.selection_start();
-  }
-  size_t MinOfSelection() const {
-    return std::min(GetSelectionStart(), GetCursorPosition());
-  }
-  size_t MaxOfSelection() const {
-    return std::max(GetSelectionStart(), GetCursorPosition());
-  }
-  bool EmptySelection() const {
-    return GetSelectionStart() == GetCursorPosition();
-  }
 
   // Returns true if the local point is over selected text.
   bool IsPointInSelection(const Point& point);
@@ -245,8 +212,8 @@ class UI_EXPORT RenderText {
   // |GetTextDirection()|, not the direction of a particular run.
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
 
-  // Get the width of the entire string.
-  virtual int GetStringWidth() = 0;
+  // Get the size in pixels of the entire string.
+  virtual Size GetStringSize() = 0;
 
   void Draw(Canvas* canvas);
 
@@ -258,8 +225,7 @@ class UI_EXPORT RenderText {
   // bounds of the associated glyph. These bounds are in local coordinates, but
   // may be outside the visible region if the text is longer than the textfield.
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
-  virtual Rect GetCursorBounds(const SelectionModel& selection,
-                               bool insert_mode) = 0;
+  Rect GetCursorBounds(const SelectionModel& selection, bool insert_mode);
 
   // Compute the current cursor bounds, panning the text to show the cursor in
   // the display rect if necessary. These bounds are in local coordinates.
@@ -310,19 +276,24 @@ class UI_EXPORT RenderText {
 
   // Get the SelectionModels corresponding to visual text ends.
   // The returned value represents a cursor/caret position without a selection.
-  virtual SelectionModel EdgeSelectionModel(
-      VisualCursorDirection direction) = 0;
+  SelectionModel EdgeSelectionModel(VisualCursorDirection direction);
 
   // Sets the selection model, the argument is assumed to be valid.
   virtual void SetSelectionModel(const SelectionModel& model);
 
-  // Get the visual bounds containing the logical substring within |from| to
-  // |to|. If |from| equals |to|, the result is empty. These bounds could be
-  // visually discontinuous if the substring is split by a LTR/RTL level change.
+  // Get the height and horizontal bounds (relative to the left of the text, not
+  // the view) of the glyph starting at |index|. If the glyph is RTL then
+  // xspan->is_reversed(). This does not return a Rect because a Rect can't have
+  // a negative width.
+  virtual void GetGlyphBounds(size_t index, ui::Range* xspan, int* height) = 0;
+
+  // Get the visual bounds containing the logical substring within the |range|.
+  // If |range| is empty, the result is empty. These bounds could be visually
+  // discontinuous if the substring is split by a LTR/RTL level change.
   // These bounds are in local coordinates, but may be outside the visible
   // region if the text is longer than the textfield. Subsequent text, cursor,
   // or bounds changes may invalidate returned values.
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) = 0;
+  virtual std::vector<Rect> GetSubstringBounds(ui::Range range) = 0;
 
   // Return true if cursor can appear in front of the character at |position|,
   // which means it is a grapheme boundary or the first character in the text.
@@ -367,6 +338,12 @@ class UI_EXPORT RenderText {
   // Applies fade effects to |renderer|.
   void ApplyFadeEffects(internal::SkiaTextRenderer* renderer);
 
+  // A convenience function to check whether the glyph attached to the caret
+  // is within the given range.
+  static bool RangeContainsCaret(const ui::Range& range,
+                                 size_t caret_pos,
+                                 LogicalCursorDirection caret_affinity);
+
  private:
   friend class RenderTextTest;
 
@@ -376,7 +353,7 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PasswordCensorship);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SelectionModels);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForSkiaDrawing);
 
   // Set the cursor to |position|, with the caret trailing the previous

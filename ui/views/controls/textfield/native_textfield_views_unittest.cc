@@ -257,7 +257,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   int GetCursorPositionX(int cursor_pos) {
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
     return render_text->GetCursorBounds(
-        gfx::SelectionModel(cursor_pos), false).x();
+        gfx::SelectionModel(cursor_pos, gfx::CURSOR_FORWARD), false).x();
   }
 
   // Get the current cursor bounds.
@@ -1357,32 +1357,32 @@ TEST_F(NativeTextfieldViewsTest, HitInsideTextAreaTest) {
   std::vector<gfx::Rect> cursor_bounds;
 
   // Save each cursor bound.
-  gfx::SelectionModel sel(0, 0, gfx::SelectionModel::LEADING);
+  gfx::SelectionModel sel(0, gfx::CURSOR_FORWARD);
   cursor_bounds.push_back(GetCursorBounds(sel));
 
-  sel = gfx::SelectionModel(1, 0, gfx::SelectionModel::TRAILING);
+  sel = gfx::SelectionModel(1, gfx::CURSOR_BACKWARD);
   gfx::Rect bound = GetCursorBounds(sel);
-  sel = gfx::SelectionModel(1, 1, gfx::SelectionModel::LEADING);
+  sel = gfx::SelectionModel(1, gfx::CURSOR_FORWARD);
   EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
   // Check that a cursor at the end of the Latin portion of the text is at the
   // same position as a cursor placed at the end of the RTL Hebrew portion.
-  sel = gfx::SelectionModel(2, 1, gfx::SelectionModel::TRAILING);
+  sel = gfx::SelectionModel(2, gfx::CURSOR_BACKWARD);
   bound = GetCursorBounds(sel);
-  sel = gfx::SelectionModel(4, 3, gfx::SelectionModel::TRAILING);
+  sel = gfx::SelectionModel(4, gfx::CURSOR_BACKWARD);
   EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
-  sel = gfx::SelectionModel(3, 2, gfx::SelectionModel::TRAILING);
+  sel = gfx::SelectionModel(3, gfx::CURSOR_BACKWARD);
   bound = GetCursorBounds(sel);
-  sel = gfx::SelectionModel(3, 3, gfx::SelectionModel::LEADING);
+  sel = gfx::SelectionModel(3, gfx::CURSOR_FORWARD);
   EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
-  sel = gfx::SelectionModel(2, 2, gfx::SelectionModel::LEADING);
+  sel = gfx::SelectionModel(2, gfx::CURSOR_FORWARD);
   bound = GetCursorBounds(sel);
-  sel = gfx::SelectionModel(4, 2, gfx::SelectionModel::LEADING);
+  sel = gfx::SelectionModel(4, gfx::CURSOR_FORWARD);
   EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
