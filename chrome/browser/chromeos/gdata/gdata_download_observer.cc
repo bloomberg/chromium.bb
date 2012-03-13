@@ -78,6 +78,7 @@ void GDataDownloadObserver::Initialize(GDataUploader* gdata_uploader,
     download_manager_->AddObserver(this);
 }
 
+// static
 void GDataDownloadObserver::SetGDataPath(DownloadItem* download,
                                          const FilePath& path) {
   if (download)
@@ -85,6 +86,7 @@ void GDataDownloadObserver::SetGDataPath(DownloadItem* download,
                                 new GDataExternalData(path));
 }
 
+// static
 FilePath GDataDownloadObserver::GetGDataPath(DownloadItem* download) {
   GDataExternalData* data = static_cast<GDataExternalData*>(
       download->GetExternalData(&kGDataPathKey));
@@ -187,7 +189,7 @@ void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
 
   gdata_uploader_->UpdateUpload(external_data->file_url(),
                                 download->GetReceivedBytes(),
-                                download->IsComplete());
+                                download->AllDataSaved());
 }
 
 bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
@@ -219,10 +221,10 @@ UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
   upload_file_info->title = upload_file_info->gdata_path.BaseName().value();
   upload_file_info->content_type = download->GetMimeType();
   // GData api handles -1 as unknown file length.
-  upload_file_info->content_length = download->IsInProgress() ?
-                                     -1 : download->GetReceivedBytes();
+  upload_file_info->content_length = download->AllDataSaved() ?
+                                     download->GetReceivedBytes() : -1;
 
-  upload_file_info->download_complete = !download->IsInProgress();
+  upload_file_info->download_complete = download->AllDataSaved();
 
   return upload_file_info;
 }
