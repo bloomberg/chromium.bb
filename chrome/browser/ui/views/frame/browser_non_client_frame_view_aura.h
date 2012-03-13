@@ -29,7 +29,8 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
-  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const OVERRIDE;
+  virtual int GetHorizontalTabStripVerticalOffset(
+      bool force_restored) const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // views::NonClientFrameView overrides:
@@ -59,7 +60,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
 
  private:
   // Distance between top of window and client area.
-  int NonClientTopBorderHeight(bool restored) const;
+  int NonClientTopBorderHeight(bool force_restored) const;
 
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);

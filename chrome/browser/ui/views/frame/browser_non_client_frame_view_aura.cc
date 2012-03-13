@@ -88,8 +88,8 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
 }
 
 int BrowserNonClientFrameViewAura::GetHorizontalTabStripVerticalOffset(
-    bool restored) const {
-  return NonClientTopBorderHeight(restored);
+    bool force_restored) const {
+  return NonClientTopBorderHeight(force_restored);
 }
 
 void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
@@ -144,7 +144,8 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
                               GetThemeFrameBitmap(),
                               GetThemeFrameOverlayBitmap());
   frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
-  PaintToolbarBackground(canvas);
+  if (browser_view()->IsToolbarVisible())
+    PaintToolbarBackground(canvas);
 }
 
 void BrowserNonClientFrameViewAura::Layout() {
@@ -229,13 +230,13 @@ SkBitmap BrowserNonClientFrameViewAura::GetFaviconForTabIconView() {
 
 
 int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
-    bool restored) const {
+    bool force_restored) const {
   if (frame()->widget_delegate() &&
       frame()->widget_delegate()->ShouldShowWindowTitle()) {
     // For popups ensure we have enough space to see the full window buttons.
     return close_button_->bounds().bottom();
   }
-  if (restored)
+  if (!frame()->IsMaximized() || force_restored)
     return kTabstripTopSpacingRestored;
   return kTabstripTopSpacingMaximized;
 }
