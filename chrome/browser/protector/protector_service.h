@@ -113,6 +113,10 @@ class ProtectorService : public ProfileKeyedService,
   // Profile which settings we are protecting.
   Profile* profile_;
 
+  // True if there is a change that has been shown and not yet accepted or
+  // discarded by user.
+  bool has_active_change_;
+
   DISALLOW_COPY_AND_ASSIGN(ProtectorService);
 };
 

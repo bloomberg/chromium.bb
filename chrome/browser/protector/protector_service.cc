@@ -20,7 +20,8 @@
 namespace protector {
 
 ProtectorService::ProtectorService(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      has_active_change_(false) {
 }
 
 ProtectorService::~ProtectorService() {
@@ -40,7 +41,9 @@ void ProtectorService::ShowChange(BaseSettingChange* change) {
       new SettingsChangeGlobalError(change, this);
   new_item.error.reset(error);
   items_.push_back(new_item);
-  error->ShowForProfile(profile_);
+  // Do not show the bubble immediately if another one is active.
+  error->AddToProfile(profile_, !has_active_change_);
+  has_active_change_ = true;
 }
 
 bool ProtectorService::IsShowingChange() const {
@@ -80,12 +83,14 @@ void ProtectorService::OnApplyChange(SettingsChangeGlobalError* error,
                                      Browser* browser) {
   DVLOG(1) << "Apply change";
   error->change()->Apply(browser);
+  has_active_change_ = false;
 }
 
 void ProtectorService::OnDiscardChange(SettingsChangeGlobalError* error,
                                        Browser* browser) {
   DVLOG(1) << "Discard change";
   error->change()->Discard(browser);
+  has_active_change_ = false;
 }
 
 void ProtectorService::OnDecisionTimeout(SettingsChangeGlobalError* error) {
@@ -98,6 +103,17 @@ void ProtectorService::OnRemovedFromProfile(SettingsChangeGlobalError* error) {
       std::find_if(items_.begin(), items_.end(), MatchItemByError(error));
   DCHECK(item != items_.end());
   items_.erase(item);
+
+  if (!has_active_change_) {
+    // If there are changes that haven't been shown yet, show the first one.
+    for (item = items_.begin(); item != items_.end(); ++item) {
+      if (!item->error->HasShownBubbleView()) {
+        item->error->ShowBubble();
+        has_active_change_ = true;
+        return;
+      }
+    }
+  }
 }
 
 BaseSettingChange* ProtectorService::GetLastChange() {

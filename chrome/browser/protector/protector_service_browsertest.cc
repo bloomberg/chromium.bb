@@ -154,7 +154,6 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, BubbleClosedInsideApply) {
   ASSERT_TRUE(bubble_view);
   EXPECT_CALL(*mock_change_, Apply(browser())).WillOnce(InvokeWithoutArgs(
       bubble_view, &GlobalErrorBubbleViewBase::CloseBubbleView));
-
   // Pressing Cancel applies the change.
   error->BubbleViewCancelButtonPressed(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -236,6 +235,11 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest,
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
 
+  // The first bubble view has been displayed.
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
+  ASSERT_TRUE(error->HasShownBubbleView());
+
   // ProtectService will own this change instance as well.
   MockSettingChange* mock_change2 = new NiceMock<MockSettingChange>();
   // Show the second change.
@@ -246,27 +250,73 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest,
   EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
   EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
 
+  // The second bubble view hasn't been displayed because the first is still
+  // shown.
+  GlobalError* error2 = GetGlobalError(mock_change2);
+  ASSERT_TRUE(error2);
+  EXPECT_FALSE(error2->HasShownBubbleView());
+
   // Apply the first change, mimicking a button click; the second should still
   // be active.
   EXPECT_CALL(*mock_change_, Apply(browser()));
-  GlobalError* error = GetGlobalError(mock_change_);
-  ASSERT_TRUE(error);
-  error->ShowBubbleView(browser());
   error->BubbleViewCancelButtonPressed(browser());
   error->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
   EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
 
+  // Now the second bubble view should be shown.
+  ASSERT_TRUE(error2->HasShownBubbleView());
+
   // Finally apply the second change.
   EXPECT_CALL(*mock_change2, Apply(browser()));
-  GlobalError* error2 = GetGlobalError(mock_change2);
-  ASSERT_TRUE(error);
-  error2->ShowBubbleView(browser());
   error2->BubbleViewCancelButtonPressed(browser());
   error2->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change2));
+}
+
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest,
+                       ShowMultipleChangesAndApplyManuallyBeforeOther) {
+  // Show the first change.
+  EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change_);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+
+  // The first bubble view has been displayed.
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
+  ASSERT_TRUE(error->HasShownBubbleView());
+
+  // Apply the first change, mimicking a button click.
+  EXPECT_CALL(*mock_change_, Apply(browser()));
+  error->BubbleViewCancelButtonPressed(browser());
+  error->GetBubbleView()->CloseBubbleView();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+
+  // ProtectService will own this change instance as well.
+  MockSettingChange* mock_change2 = new NiceMock<MockSettingChange>();
+  // Show the second change.
+  EXPECT_CALL(*mock_change2, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change2);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // The second bubble view has been displayed.
+  GlobalError* error2 = GetGlobalError(mock_change2);
+  ASSERT_TRUE(error2);
+  ASSERT_TRUE(error2->HasShownBubbleView());
+
+  // Finally apply the second change.
+  EXPECT_CALL(*mock_change2, Apply(browser()));
+  error2->BubbleViewCancelButtonPressed(browser());
+  error2->GetBubbleView()->CloseBubbleView();
+  ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsGlobalErrorActive(mock_change2));
 }
 

@@ -34,12 +34,15 @@ class SettingsChangeGlobalError : public GlobalError,
                             SettingsChangeGlobalErrorDelegate* delegate);
   virtual ~SettingsChangeGlobalError();
 
-  // Displays a global error bubble for the given browser profile.
-  // Can be called from any thread.
-  void ShowForProfile(Profile* profile);
+  // Adds a global error to the given browser profile and shows a bubble
+  // immediately if |show_bubble| is |true|.
+  void AddToProfile(Profile* profile, bool show_bubble);
 
   // Removes global error from its profile.
   void RemoveFromProfile();
+
+  // Displays the bubble in the last active tabbed browser.
+  void ShowBubble();
 
   // Returns the change instance to which this error refers.
   BaseSettingChange* change() { return change_; }
@@ -68,17 +71,8 @@ class SettingsChangeGlobalError : public GlobalError,
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE {}
   virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
 
-  // Helper called on the UI thread to add this global error to the default
-  // profile (stored in |profile_|).
-  void AddToProfile(Profile* profile);
-
-  // Displays the bubble in the last active tabbed browser. Must be called
-  // on the UI thread.
-  void Show();
-
-  // Displays the bubble in |browser|'s window. Must be called
-  // on the UI thread.
-  void ShowInBrowser(Browser* browser);
+  // Displays the bubble in |browser|'s window.
+  void ShowBubbleInBrowser(Browser* browser);
 
   // Called when the wrench menu item has been displayed for enough time
   // without user interaction.

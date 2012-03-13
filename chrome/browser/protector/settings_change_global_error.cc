@@ -67,6 +67,46 @@ SettingsChangeGlobalError::~SettingsChangeGlobalError() {
     menu_ids.Get().reset(menu_id_ - IDC_SHOW_SETTINGS_CHANGE_FIRST);
 }
 
+void SettingsChangeGlobalError::AddToProfile(Profile* profile,
+                                             bool show_bubble) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  profile_ = profile;
+  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
+  BrowserList::AddObserver(this);
+  if (show_bubble) {
+    ShowBubble();
+  } else {
+    // Start inactivity timer.
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&SettingsChangeGlobalError::OnInactiveTimeout,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kMenuItemDisplayPeriodMs));
+  }
+}
+
+void SettingsChangeGlobalError::RemoveFromProfile() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (profile_) {
+    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
+    profile_ = NULL;
+  }
+  BrowserList::RemoveObserver(this);
+  // This will delete |this|.
+  delegate_->OnRemovedFromProfile(this);
+}
+
+void SettingsChangeGlobalError::ShowBubble() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile_);
+  Browser* browser = BrowserList::FindTabbedBrowser(
+      profile_,
+      // match incognito
+      true);
+  if (browser)
+    ShowBubbleInBrowser(browser);
+}
+
 bool SettingsChangeGlobalError::HasBadge() {
   return true;
 }
@@ -92,7 +132,7 @@ int SettingsChangeGlobalError::MenuItemIconResourceID() {
 }
 
 void SettingsChangeGlobalError::ExecuteMenuItem(Browser* browser) {
-  ShowInBrowser(browser);
+  ShowBubbleInBrowser(browser);
 }
 
 bool SettingsChangeGlobalError::HasBubbleView() {
@@ -124,45 +164,6 @@ string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
   return change_->GetApplyButtonText();
 }
 
-void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed(
-    Browser* browser) {
-  closed_by_button_ = true;
-  delegate_->OnDiscardChange(this, browser);
-}
-
-void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
-    Browser* browser) {
-  closed_by_button_ = true;
-  delegate_->OnApplyChange(this, browser);
-}
-
-void SettingsChangeGlobalError::OnBrowserSetLastActive(
-    const Browser* browser) {
-  if (show_on_browser_activation_ && browser && browser->is_type_tabbed()) {
-    // A tabbed browser window got activated, show the error bubble again.
-    // Calling Show() immediately from here does not always work because the
-    // old browser window may still have focus.
-    // Multiple posted Show() calls are fine since the first successful one
-    // will invalidate all the weak pointers.
-    // Note that Show() will display the bubble in the last active browser
-    // (which may not be |browser| at the moment Show() is executed).
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&SettingsChangeGlobalError::Show,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void SettingsChangeGlobalError::RemoveFromProfile() {
-  if (profile_) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
-    profile_ = NULL;
-  }
-  BrowserList::RemoveObserver(this);
-  // This will delete |this|.
-  delegate_->OnRemovedFromProfile(this);
-}
-
 void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
   if (!closed_by_button_) {
     BrowserThread::PostDelayedTask(
@@ -185,38 +186,36 @@ void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
   }
 }
 
-void SettingsChangeGlobalError::ShowForProfile(Profile* profile) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    AddToProfile(profile);
-  } else {
+void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed(
+    Browser* browser) {
+  closed_by_button_ = true;
+  delegate_->OnDiscardChange(this, browser);
+}
+
+void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
+    Browser* browser) {
+  closed_by_button_ = true;
+  delegate_->OnApplyChange(this, browser);
+}
+
+void SettingsChangeGlobalError::OnBrowserSetLastActive(
+    const Browser* browser) {
+  if (show_on_browser_activation_ && browser && browser->is_type_tabbed()) {
+    // A tabbed browser window got activated, show the error bubble again.
+    // Calling ShowBubble() immediately from here does not always work because
+    // the old browser window may still have focus.
+    // Multiple posted ShowBubble() calls are fine since the first successful
+    // one will invalidate all the weak pointers.
+    // Note that ShowBubble() will display the bubble in the last active browser
+    // (which may not be |browser| at the moment ShowBubble() is executed).
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SettingsChangeGlobalError::AddToProfile,
-                   base::Unretained(this),
-                   profile));
+        base::Bind(&SettingsChangeGlobalError::ShowBubble,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
-void SettingsChangeGlobalError::AddToProfile(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  profile_ = profile;
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(this);
-  BrowserList::AddObserver(this);
-  Show();
-}
-
-void SettingsChangeGlobalError::Show() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
-  Browser* browser = BrowserList::FindTabbedBrowser(
-      profile_,
-      // match incognito
-      true);
-  if (browser)
-    ShowInBrowser(browser);
-}
-
-void SettingsChangeGlobalError::ShowInBrowser(Browser* browser) {
+void SettingsChangeGlobalError::ShowBubbleInBrowser(Browser* browser) {
   show_on_browser_activation_ = false;
   // Cancel any previously posted tasks so that the global error
   // does not get removed on timeout while still showing the bubble.
