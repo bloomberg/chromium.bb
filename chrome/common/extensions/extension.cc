@@ -1841,26 +1841,40 @@ bool Extension::LoadWebIntentAction(const std::string& action_name,
     }
   }
 
-  if (!href.empty()) {
-    GURL service_url(href);
+  // For packaged/hosted apps, empty href implies the respective launch URLs.
+  if (href.empty()) {
     if (is_hosted_app()) {
-      // Hosted apps require an absolute URL for intents.
-      if (!service_url.is_valid() ||
-          !(web_extent().MatchesURL(service_url))) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIntentPageInHostedApp, action_name);
-        return false;
-      }
-      service.service_url = service_url;
-    } else {
-      // We do not allow absolute intent URLs in non-hosted apps.
-      if (service_url.is_valid()) {
-        *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kCannotAccessPage, href);
-        return false;
-      }
-      service.service_url = GetResourceURL(href);
+      href = launch_web_url();
+    } else if (is_packaged_app()) {
+      href = launch_local_path();
     }
+  }
+
+  // If we still don't have an href, the manifest is malformed.
+  if (href.empty()) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidIntentHrefEmpty, action_name);
+    return false;
+  }
+
+  GURL service_url(href);
+  if (is_hosted_app()) {
+    // Hosted apps require an absolute URL for intents.
+    if (!service_url.is_valid() ||
+        !(web_extent().MatchesURL(service_url))) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIntentPageInHostedApp, action_name);
+      return false;
+    }
+    service.service_url = service_url;
+  } else {
+    // We do not allow absolute intent URLs in non-hosted apps.
+    if (service_url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kCannotAccessPage, href);
+      return false;
+    }
+    service.service_url = GetResourceURL(href);
   }
 
   if (intent_service.HasKey(keys::kIntentTitle) &&

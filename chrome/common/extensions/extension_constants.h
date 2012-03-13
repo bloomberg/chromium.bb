@@ -207,6 +207,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidIntent[];
   extern const char kInvalidIntentDisposition[];
   extern const char kInvalidIntentHref[];
+  extern const char kInvalidIntentHrefEmpty[];
   extern const char kInvalidIntentHrefOldAndNewKey[];
   extern const char kInvalidIntentPageInHostedApp[];
   extern const char kInvalidIntents[];

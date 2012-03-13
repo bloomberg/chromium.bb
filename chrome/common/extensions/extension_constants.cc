@@ -267,6 +267,8 @@ const char kInvalidIntentDisposition[] =
     "Invalid value for intents[*].disposition";
 const char kInvalidIntentHref[] =
     "Invalid value for intents[*].href";
+const char kInvalidIntentHrefEmpty[] =
+    "Missing value for intents[*].href";
 const char kInvalidIntentHrefOldAndNewKey[] =
     "intents[*]: Key \"*\" is deprecated.  Key \"*\" has the same meaning. "
     "You can not use both.";

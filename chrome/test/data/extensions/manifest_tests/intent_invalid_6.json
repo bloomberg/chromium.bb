@@ -4,6 +4,7 @@
   "intents": {
     "http://webintents.org/intent/share" : {
       "title" : { "shouldBeA" : "string" },
+      "href" : "main.html",
       "type" : [ "*" ]
     }
   }

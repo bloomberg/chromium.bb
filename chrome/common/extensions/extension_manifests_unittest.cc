@@ -820,7 +820,6 @@ TEST_F(ExtensionManifestTest, WebIntents) {
   EXPECT_EQ("*", UTF16ToUTF8(extension->intents_services()[0].type));
   EXPECT_EQ("http://webintents.org/share",
             UTF16ToUTF8(extension->intents_services()[0].action));
-  EXPECT_TRUE(extension->intents_services()[0].service_url.is_empty());
   EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].title));
   EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW,
             extension->intents_services()[0].disposition);
@@ -899,6 +898,25 @@ TEST_F(ExtensionManifestTest, WebIntentsMultiHref) {
   EXPECT_EQ("chrome-extension", intents[1].service_url.scheme());
   EXPECT_EQ("//services/shareimage.html",intents[1].service_url.path());
   EXPECT_EQ("image/*",UTF16ToUTF8(intents[1].type));
+}
+
+TEST_F(ExtensionManifestTest, WebIntentsBlankHref) {
+  LoadAndExpectError("intent_invalid_blank_action_extension.json",
+                     errors::kInvalidIntentHrefEmpty);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("intent_valid_blank_action_hosted.json"));
+  ASSERT_TRUE(extension.get() != NULL);
+  ASSERT_EQ(1u, extension->intents_services().size());
+  EXPECT_EQ("http://www.cloudfilepicker.com/",
+      extension->intents_services()[0].service_url.spec());
+
+  extension = LoadAndExpectSuccess("intent_valid_blank_action_packaged.json");
+  ASSERT_TRUE(extension.get() != NULL);
+  ASSERT_EQ(1u, extension->intents_services().size());
+  EXPECT_EQ("chrome-extension",
+      extension->intents_services()[0].service_url.scheme());
+  EXPECT_EQ("/main.html",extension->intents_services()[0].service_url.path());
 }
 
 TEST_F(ExtensionManifestTest, PortsInPermissions) {

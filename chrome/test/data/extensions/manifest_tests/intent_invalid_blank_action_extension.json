@@ -1,0 +1,9 @@
+{
+  "name": "Local File Picker",
+  "version": "1.0.0.1",
+  "intents": {
+    "http://webintents.org/pick" : {
+      "type" : ["image/*"]
+    }
+  }
+}

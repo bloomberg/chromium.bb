@@ -4,6 +4,7 @@
   "intents": {
     "http://webintents.org/intent/share" : {
       "disposition" : "gibberish",
+      "href" : "main.html",
       "type" : [ "*" ]
     }
   }
