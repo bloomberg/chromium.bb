@@ -10,7 +10,7 @@
 #include <queue>
 #include "../../gpu_export.h"
 #if defined(__native_client__)
-  #include <map>
+  #include <tr1/unordered_map>
 #else
   #include "base/hash_tables.h"
 #endif
@@ -149,8 +149,7 @@ class GPU_EXPORT QueryTracker {
 
  private:
   #if defined(__native_client__)
-    // TODO(gman): Figure out something for NaCl
-    typedef std::map<GLuint, Query*> QueryMap;
+    typedef std::tr1::unordered_map<GLuint, Query*> QueryMap;
   #else
     typedef base::hash_map<GLuint, Query*> QueryMap;
   #endif

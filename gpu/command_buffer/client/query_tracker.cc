@@ -10,8 +10,6 @@
 #include "../client/cmd_buffer_helper.h"
 #include "../client/mapped_memory.h"
 
-#include <map>
-
 namespace gpu {
 namespace gles2 {
 
