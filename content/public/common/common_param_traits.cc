@@ -515,15 +515,15 @@ void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
 }
 
 void ParamTraits<ui::Range>::Write(Message* m, const ui::Range& r) {
-  m->WriteSize(r.start());
-  m->WriteSize(r.end());
+  m->WriteUInt64(r.start());
+  m->WriteUInt64(r.end());
 }
 
 bool ParamTraits<ui::Range>::Read(const Message* m,
                                   PickleIterator* iter,
                                   ui::Range* r) {
-  size_t start, end;
-  if (!m->ReadSize(iter, &start) || !m->ReadSize(iter, &end))
+  uint64 start, end;
+  if (!m->ReadUInt64(iter, &start) || !m->ReadUInt64(iter, &end))
     return false;
   r->set_start(start);
   r->set_end(end);
