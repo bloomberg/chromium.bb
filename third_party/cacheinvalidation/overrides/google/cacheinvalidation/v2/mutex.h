@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_CACHEINVALIDATION_DEPS_MUTEX_H_
-#define GOOGLE_CACHEINVALIDATION_DEPS_MUTEX_H_
+#ifndef GOOGLE_CACHEINVALIDATION_V2_MUTEX_H_
+#define GOOGLE_CACHEINVALIDATION_V2_MUTEX_H_
 
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
@@ -23,4 +23,4 @@ class MutexLock {
 
 }  // namespace invalidation
 
-#endif  // GOOGLE_CACHEINVALIDATION_DEPS_MUTEX_H_
+#endif  // GOOGLE_CACHEINVALIDATION_V2_MUTEX_H_

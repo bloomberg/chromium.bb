@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "google/cacheinvalidation/include/invalidation-client.h"
+#include "google/cacheinvalidation/v2/invalidation-client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_notifier {

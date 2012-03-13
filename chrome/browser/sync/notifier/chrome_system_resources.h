@@ -20,7 +20,7 @@
 #include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
-#include "google/cacheinvalidation/include/system-resources.h"
+#include "google/cacheinvalidation/v2/system-resources.h"
 
 namespace sync_notifier {
 

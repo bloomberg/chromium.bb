@@ -7,15 +7,15 @@
 #include "base/base64.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "google/cacheinvalidation/deps/callback.h"
-#include "google/cacheinvalidation/include/system-resources.h"
+#include "google/cacheinvalidation/v2/callback.h"
 #include "google/cacheinvalidation/v2/client_gateway.pb.h"
+#include "google/cacheinvalidation/v2/system-resources.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/listener/notification_defines.h"
-#include "talk/base/task.h"
-#include "talk/xmpp/asyncsocket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "talk/base/task.h"
+#include "talk/xmpp/asyncsocket.h"
 
 namespace sync_notifier {
 

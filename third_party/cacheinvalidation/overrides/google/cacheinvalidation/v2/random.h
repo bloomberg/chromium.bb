@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_CACHEINVALIDATION_DEPS_RANDOM_H_
-#define GOOGLE_CACHEINVALIDATION_DEPS_RANDOM_H_
+#ifndef GOOGLE_CACHEINVALIDATION_V2_RANDOM_H_
+#define GOOGLE_CACHEINVALIDATION_V2_RANDOM_H_
 
 #include "base/rand_util.h"
 
@@ -14,14 +14,12 @@ class Random {
   // We don't actually use the seed.
   explicit Random(int64 seed) {}
 
-  virtual ~Random() {}
-
   // Returns a pseudorandom value between(inclusive) and(exclusive).
-  virtual double RandDouble() {
+  double RandDouble() {
     return base::RandDouble();
   }
 };
 
 }  // namespace invalidation
 
-#endif  // GOOGLE_CACHEINVALIDATION_DEPS_RANDOM_H_
+#endif  // GOOGLE_CACHEINVALIDATION_V2_RANDOM_H_

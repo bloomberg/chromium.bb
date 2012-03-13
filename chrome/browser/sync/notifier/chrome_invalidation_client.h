@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
-#include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "google/cacheinvalidation/v2/invalidation-listener.h"
 
 // TODO(akalin): Move invalidation::InvalidationListener into its own
 // file and include that instead of invalidation-client.h (which

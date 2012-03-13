@@ -4,14 +4,14 @@
 
 // Interface to SHA1 digest computation.
 
-#ifndef GOOGLE_CACHEINVALIDATION_DEPS_SHA1_DIGEST_FUNCTION_H_
-#define GOOGLE_CACHEINVALIDATION_DEPS_SHA1_DIGEST_FUNCTION_H_
+#ifndef GOOGLE_CACHEINVALIDATION_V2_SHA1_DIGEST_FUNCTION_H_
+#define GOOGLE_CACHEINVALIDATION_V2_SHA1_DIGEST_FUNCTION_H_
 
 #include <string>
 
 #include "base/sha1.h"
-#include "google/cacheinvalidation/deps/digest-function.h"
-#include "google/cacheinvalidation/deps/stl-namespace.h"
+#include "google/cacheinvalidation/v2/digest-function.h"
+#include "google/cacheinvalidation/v2/stl-namespace.h"
 
 namespace invalidation {
 
@@ -44,4 +44,4 @@ class Sha1DigestFunction : public DigestFunction {
 
 }  // namespace invalidation
 
-#endif  // GOOGLE_CACHEINVALIDATION_DEPS_SHA1_DIGEST_FUNCTION_H_
+#endif  // GOOGLE_CACHEINVALIDATION_V2_SHA1_DIGEST_FUNCTION_H_
