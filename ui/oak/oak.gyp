@@ -29,11 +29,16 @@
       'sources': [
         # All .cc, .h under oak, except unittests
         'oak.h',
+        'oak_aura_window_display.cc',
+        'oak_aura_window_display.h',
         'oak_export.h',
+        'oak_pretty_print.cc',
+        'oak_pretty_print.h',
         'oak_tree_model.cc',
         'oak_tree_model.h',
         'oak_window.cc',
         'oak_window.h',
+        'oak_details_model.h',
       ],
     },
   ],

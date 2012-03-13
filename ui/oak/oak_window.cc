@@ -10,6 +10,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/oak/oak_aura_window_display.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -17,23 +19,7 @@
 namespace oak {
 namespace internal {
 namespace {
-
 const SkColor kBorderColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
-
-class DetailsView : public views::View {
- public:
-  DetailsView() {}
-  virtual ~DetailsView() {}
-
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->sk_canvas()->drawColor(SK_ColorYELLOW);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DetailsView);
-};
-
 }  // namespace
 
 // static
@@ -46,8 +32,9 @@ OakWindow::OakWindow() : tree_(NULL), tree_container_(NULL), details_(NULL) {
 }
 
 OakWindow::~OakWindow() {
-  // The tree needs to be destroyed before the model.
+  // The tree/table need to be destroyed before the model.
   tree_.reset();
+  details_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,14 +103,14 @@ void OakWindow::Layout() {
   details_bounds.set_y(
       separator_rect_.bottom() + views::kRelatedControlVerticalSpacing);
   details_bounds.set_height(content_bounds.bottom() - details_bounds.y());
-  details_->SetBoundsRect(details_bounds);
+  details_container_->SetBoundsRect(details_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OakWindow, views::TreeViewController implementation:
 
 void OakWindow::OnTreeViewSelectionChanged(views::TreeView* tree) {
-  NOTIMPLEMENTED();
+  details_model_->SetValue(tree_model_->AsNode(tree->GetSelectedNode())->value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,8 +125,22 @@ void OakWindow::Init() {
   tree_->SetModel(tree_model_.get());
   tree_container_ = tree_->CreateParentIfNecessary();
   AddChildView(tree_container_);
-  details_ = new DetailsView;
-  AddChildView(details_);
+
+  details_model_.reset(new OakAuraWindowDisplay);
+  std::vector<ui::TableColumn> columns;
+  columns.push_back(ui::TableColumn());
+  details_.reset(new views::TableView(details_model_.get(),
+                                      columns,
+                                      views::TEXT_ONLY,
+                                      true,
+                                      false,
+                                      false));
+  details_->set_parent_owned(false);
+  details_container_ = details_->CreateParentIfNecessary();
+  details_->SetModel(details_model_.get());
+  AddChildView(details_container_);
+
+  OnTreeViewSelectionChanged(tree_.get());
 }
 
 }  // namespace internal

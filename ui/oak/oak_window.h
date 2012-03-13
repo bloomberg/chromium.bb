@@ -10,10 +10,15 @@
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace views {
+class TableView;
+}
+
 namespace oak {
 namespace internal {
 
 class OakTreeModel;
+class OakDetailsModel;
 
 class OakWindow : public views::WidgetDelegateView,
                   public views::TreeViewController {
@@ -51,7 +56,9 @@ class OakWindow : public views::WidgetDelegateView,
 
   gfx::Rect separator_rect_;
 
-  views::View* details_;
+  scoped_ptr<views::TableView> details_;
+  scoped_ptr<OakDetailsModel> details_model_;
+  views::View* details_container_;
 
   DISALLOW_COPY_AND_ASSIGN(OakWindow);
 };

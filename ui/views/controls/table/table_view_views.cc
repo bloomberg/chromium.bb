@@ -37,7 +37,7 @@ TableView::TableView(ui::TableModel* model,
                      bool single_selection,
                      bool resizable_columns,
                      bool autosize_columns)
-    : model_(model),
+    : model_(NULL),
       table_type_(table_type),
       table_view_observer_(NULL),
       selected_row_(-1),
@@ -48,6 +48,7 @@ TableView::TableView(ui::TableModel* model,
   DCHECK(table_type == TEXT_ONLY || table_type == ICON_AND_TEXT);
   set_focusable(true);
   set_background(Background::CreateSolidBackground(SK_ColorWHITE));
+  SetModel(model);
 }
 
 TableView::~TableView() {
