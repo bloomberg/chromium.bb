@@ -245,7 +245,7 @@ void FileWriterDelegate::Write() {
       file_stream_->Write(cursor_,
                           static_cast<int>(bytes_to_write),
                           base::Bind(&FileWriterDelegate::OnDataWritten,
-                                     base::Unretained(this)));
+                                     weak_factory_.GetWeakPtr()));
   if (write_response > 0)
     MessageLoop::current()->PostTask(
         FROM_HERE,
