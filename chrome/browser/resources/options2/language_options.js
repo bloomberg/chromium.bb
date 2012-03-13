@@ -610,7 +610,8 @@ cr.define('options', function() {
       this.spellCheckDictionary_ = languageCode;
       var languageOptionsList = $('language-options-list');
       var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
-      this.updateSpellCheckLanguageButton_(selectedLanguageCode);
+      if (!cr.isMac)
+        this.updateSpellCheckLanguageButton_(selectedLanguageCode);
     },
 
     /**

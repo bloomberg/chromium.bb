@@ -36,7 +36,6 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("searchbutton", IDS_DOWNLOAD_SEARCH_BUTTON);
-  source->AddLocalizedString("no_results", IDS_DOWNLOAD_SEARCH_BUTTON);
   source->AddLocalizedString("searchresultsfor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
   source->AddLocalizedString("clear_all", IDS_DOWNLOAD_LINK_CLEAR_ALL);

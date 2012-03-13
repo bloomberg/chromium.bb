@@ -315,8 +315,11 @@ cr.define('options', function() {
         if (cr.isChromeOS)
           $('passwords-and-autofill-section').hidden = true;
       }
-      $('mac-passwords-warning').hidden =
-          !(localStrings.getString('macPasswordsWarning'));
+
+      if (cr.isMac) {
+        $('mac-passwords-warning').hidden =
+            !(localStrings.getString('macPasswordsWarning'));
+      }
 
       // Network section.
       if (!cr.isChromeOS) {

@@ -395,8 +395,10 @@
           i18n-content="managePasswords"
           pref="profile.password_manager_enabled"></button>
     </div>
+<if expr="is_macosx">
     <div id="mac-passwords-warning" i18n-content="macPasswordsWarning" hidden>
-    </div> 
+    </div>
+</if>
     <!-- This makes the managed-banner appear when the "pref" is configured by
          the IT administrator. -->
     <input name="password_allow_show_hidden" type="text"

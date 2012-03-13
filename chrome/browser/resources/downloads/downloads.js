@@ -122,10 +122,6 @@ Downloads.prototype.updateSummary = function() {
     hasDownloads = true;
     break;
   }
-
-  if (!hasDownloads) {
-    this.node_.textContent = localStrings.getString('noresults');
-  }
 };
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,12 @@ LocalStrings.prototype = {
    */
   getString: function(id) {
     // TODO(arv): We should not rely on a global variable here.
-    return (this.templateData || window.templateData)[id] || '';
+    var templateData = this.templateData || window.templateData;
+    var str = templateData[id];
+    // TODO(jhawkins): Change to console.error when all errors are fixed.
+    if (!str)
+      console.warn('Missing string for id: ' + id);
+    return str;
   },
 
   /**
