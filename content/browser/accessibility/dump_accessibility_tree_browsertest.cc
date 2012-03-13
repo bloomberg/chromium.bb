@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -32,6 +33,7 @@ using content::Referrer;
 namespace {
 // Required to enter html content into a url.
   static const std::string kUrlPreamble = "data:text/html,\n<!doctype html>";
+  static const char kCommentToken = '#';
 } // namespace
 
 // This test takes a snapshot of the platform BrowserAccessibility tree and
@@ -46,6 +48,29 @@ namespace {
 //    exactly match.
 class DumpAccessibilityTreeTest : public InProcessBrowserTest {
  public:
+  // Utility helper that does a comment aware equality check.
+  bool EqualsWithComments(std::string& expected, std::string& actual) {
+    std::vector<std::string> actual_lines, expected_lines;
+    int actual_lines_count = Tokenize(actual, "\n", &actual_lines);
+    int expected_lines_count = Tokenize(expected, "\n", &expected_lines);
+    int i = actual_lines_count - 1, j = expected_lines_count - 1;
+    while (i >= 0 && j >= 0) {
+      if (expected_lines[j].size() > 0 &&
+          expected_lines[j][0] == kCommentToken) {
+        --j;
+        continue;
+      }
+
+      if (actual_lines[i] != expected_lines[j])
+        return false;
+      --i;
+      --j;
+    }
+
+    // Actual file has been fully checked.
+    return i < 0;
+  }
+
   DumpAccessibilityTreeHelper helper_;
 };
 
@@ -119,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
         host_view->GetBrowserAccessibilityManager()->GetRoot(),
         &actual_contents_utf16);
     std::string actual_contents = UTF16ToUTF8(actual_contents_utf16);
-    EXPECT_TRUE(expected_contents == actual_contents);
+    EXPECT_TRUE(EqualsWithComments(expected_contents, actual_contents));
     if (expected_contents != actual_contents) {
       printf("*** EXPECTED: ***\n%s\n", expected_contents.c_str());
       printf("*** ACTUAL: ***\n%s\n", actual_contents.c_str());
@@ -139,3 +164,4 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     }
   } while (!(html_file = file_enumerator.Next()).empty());
 }
+
