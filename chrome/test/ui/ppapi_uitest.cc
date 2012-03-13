@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/common/pepper_plugin_registry.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -276,7 +275,7 @@ class PPAPITest : public PPAPITestBase {
 class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest() {
-    
+
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

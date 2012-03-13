@@ -19,6 +19,9 @@ class TestRenderViewHost;
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts
 // and does not do anything involving views.
+//
+// TODO(joi): Rename TestWebContents.
+// TODO(joi): Move to content namespace.
 class TestTabContents : public TabContents {
  public:
   TestTabContents(content::BrowserContext* browser_context,

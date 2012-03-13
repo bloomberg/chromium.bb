@@ -13,7 +13,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/appcache/chrome_appcache_service.h"
 
 namespace content {
 class MockResourceContext;

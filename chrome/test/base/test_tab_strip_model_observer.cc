@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 using content::NavigationController;
 
