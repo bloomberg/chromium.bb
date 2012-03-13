@@ -88,7 +88,7 @@ ClipboardMessageFilter::~ClipboardMessageFilter() {
 }
 
 void ClipboardMessageFilter::OnWriteObjectsSync(
-    ui::Clipboard::ObjectMap objects,
+    const ui::Clipboard::ObjectMap& objects,
     base::SharedMemoryHandle bitmap_handle) {
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
@@ -110,8 +110,10 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
       base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
 #else
   // Splice the shared memory handle into the clipboard data.
-  ui::Clipboard::ReplaceSharedMemHandle(&objects, bitmap_handle, peer_handle());
-  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
+  ui::Clipboard::ObjectMap objects_copy(objects);
+  ui::Clipboard::ReplaceSharedMemHandle(&objects_copy,
+      bitmap_handle, peer_handle());
+  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects_copy);
 #endif
 }
 

@@ -27,7 +27,7 @@ class ClipboardMessageFilter : public content::BrowserMessageFilter {
   virtual ~ClipboardMessageFilter();
 
   void OnWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
-  void OnWriteObjectsSync(ui::Clipboard::ObjectMap objects,
+  void OnWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
                           base::SharedMemoryHandle bitmap_handle);
 
   void OnGetSequenceNumber(const ui::Clipboard::Buffer buffer,
