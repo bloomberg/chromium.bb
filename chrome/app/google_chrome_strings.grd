@@ -572,8 +572,8 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
         Google Chrome is up to date.
       </message>
-      <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating in the background">
-        Updating Google Chrome in the background...
+      <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating">
+        Updating Google Chrome...
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
