@@ -82,8 +82,6 @@ extern const FilePath::CharType kLoginDataFileName[];
 extern const FilePath::CharType kJumpListIconDirname[];
 extern const FilePath::CharType kWebAppDirname[];
 extern const FilePath::CharType kServiceStateFileName[];
-extern const FilePath::CharType kReadmeFilename[];
-
 #if defined(OS_CHROMEOS)
 extern const FilePath::CharType kGDataCacheDirname[];
 #endif  // defined(OS_CHROMEOS)

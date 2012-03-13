@@ -156,8 +156,6 @@ const FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
-const FilePath::CharType kReadmeFilename[] = FPL("README");
-
 #if defined(OS_CHROMEOS)
 const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
 #endif  // defined(OS_CHROMEOS)

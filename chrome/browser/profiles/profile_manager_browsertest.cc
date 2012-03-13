@@ -1,12 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -26,12 +24,12 @@ void OnUnblockOnProfileCreation(Profile* profile,
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
 
-class ProfileManagerBrowserTest : public InProcessBrowserTest {
-};
-
 // TODO(jeremy): crbug.com/103355 - These tests should be enabled on all
 // platforms.
 #if defined(OS_MACOSX)
+class ProfileManagerBrowserTest : public InProcessBrowserTest {
+};
+
 // Delete single profile and make sure a new one is created.
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -104,25 +102,4 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   Profile* last_used = ProfileManager::GetLastUsedProfile();
   EXPECT_EQ(new_profile_path, last_used->GetPath());
 }
-#endif  // OS_MACOSX
-
-// Ensure that README file is created for a new profile.
-// TODO(ivankr): this test probably should belong to profile_browsertest.cc.
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, ProfileReadmeCreated) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // No delay before README creation.
-  ProfileImpl::create_readme_delay_ms = 0;
-
-  // Create an additional profile.
-  FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
-  profile_manager->CreateProfileAsync(new_path,
-                                      base::Bind(&OnUnblockOnProfileCreation));
-
-  // Spin to allow profile creation to take place, loop is terminated
-  // by OnUnblockOnProfileCreation when the profile is created.
-  ui_test_utils::RunMessageLoop();
-
-  // Verify that README exists.
-  EXPECT_TRUE(file_util::PathExists(new_path.Append(chrome::kReadmeFilename)));
-}
+#endif // OS_MACOSX
