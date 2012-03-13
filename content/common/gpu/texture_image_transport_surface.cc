@@ -219,6 +219,13 @@ bool TextureImageTransportSurface::PostSubBuffer(
 
   const gfx::Rect new_damage_rect(x, y, width, height);
   if (surfaces_same_size) {
+    // TODO(backer): Remove temporary sanity checking once we verified that this
+    // is not causing the black rects with --enable-partial-swap.
+    CHECK_GE(x, 0);
+    CHECK_GE(y, 0);
+    CHECK_LE(x + width, expected_size.width());
+    CHECK_LE(y + height, expected_size.height());
+
     std::vector<gfx::Rect> regions_to_copy;
     GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
 
@@ -239,7 +246,9 @@ bool TextureImageTransportSurface::PostSubBuffer(
       }
     }
   } else {
-    DCHECK(new_damage_rect == gfx::Rect(expected_size));
+    // TODO(backer): Remove temporary sanity checking once we verified that this
+    // is not causing the black rects with --enable-partial-swap.
+    CHECK(new_damage_rect == gfx::Rect(expected_size));
   }
 
   glFlush();
