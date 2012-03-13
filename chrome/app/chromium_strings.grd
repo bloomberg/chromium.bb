@@ -708,9 +708,6 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_HEADING" desc="The heading of the reverse auto-login dialog.">
           Sign in to Chromium?
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the reverse auto-login dialog.">
-          Chromium will now sync all your data with Google servers, so you'll be able to have the same bookmarks, history, and other settings when you sign in to Chromium on any device.
-        </message>
       </if>
 
       <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">

@@ -111,8 +111,9 @@ string16 OneClickLoginInfoBarDelegate::GetMessageText() const {
 
 string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_OK : IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON);
+  return l10n_util::GetStringUTF16(
+      (button == BUTTON_OK) ? IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON
+                            : IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON);
 }
 
 bool OneClickLoginInfoBarDelegate::Accept() {

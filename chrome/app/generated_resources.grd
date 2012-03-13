@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <!--
 This file contains definitions of resources that will be translated for each
@@ -8880,16 +8880,22 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <!-- One click sign in infobar -->
+      <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to accept one click sign in.">
+        OK, sync
+      </message>
       <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
         No thanks
       </message>
-      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use reverse auto-login.">
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
         Sign in
       </message>
-      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON" desc="The text of the OK button of the reverse auto-login dialog.">
-        Start
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the one click sign in dialog.">
+        Signing in will sync your data with your Google Account so you can access your bookmarks, history, and other settings on any device.
       </message>
-      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_CHECKBOX" desc="The text of checkbox in the reverse auto-login dialog indicating that default sync settings will be used.">
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON" desc="The text of the OK button of the one click sign in dialog.">
+        Start syncing
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_CHECKBOX" desc="The text of checkbox in the one click sign in dialog indicating that default sync settings will be used.">
         Use default settings
       </message>
 
