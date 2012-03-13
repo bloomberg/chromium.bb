@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -384,27 +384,29 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc *vself) {
   return -NACL_ABI_EINVAL;
 }
 
-ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
-                                      struct NaClMessageHeader const *dgram,
-                                      int                            flags) {
+ssize_t NaClDescLowLevelSendMsgNotImplemented(
+    struct NaClDesc                *vself,
+    struct NaClMessageHeader const *dgram,
+    int                            flags) {
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
 
   NaClLog(LOG_ERROR,
-          "SendMsg method is not implemented for object of type %s\n",
+          "LowLevelSendMsg method is not implemented for object of type %s\n",
           NaClDescTypeString(((struct NaClDescVtbl const *)
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
-                                      struct NaClMessageHeader  *dgram,
-                                      int                       flags) {
+ssize_t NaClDescLowLevelRecvMsgNotImplemented(
+    struct NaClDesc           *vself,
+    struct NaClMessageHeader  *dgram,
+    int                       flags) {
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
 
   NaClLog(LOG_ERROR,
-          "RecvMsg method is not implemented for object of type %s\n",
+          "LowLevelRecvMsg method is not implemented for object of type %s\n",
           NaClDescTypeString(((struct NaClDescVtbl const *)
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
@@ -609,8 +611,8 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
-  NaClDescSendMsgNotImplemented,
-  NaClDescRecvMsgNotImplemented,
+  NaClDescLowLevelSendMsgNotImplemented,
+  NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnectAddrNotImplemented,
   NaClDescAcceptConnNotImplemented,
   NaClDescPostNotImplemented,

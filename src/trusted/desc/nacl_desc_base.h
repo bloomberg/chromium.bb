@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -294,13 +294,13 @@ struct NaClDescVtbl {
   int (*Broadcast)(struct NaClDesc  *vself) NACL_WUR;
 
 
-  ssize_t (*SendMsg)(struct NaClDesc                *vself,
-                     struct NaClMessageHeader const *dgram,
-                     int                            flags) NACL_WUR;
+  ssize_t (*LowLevelSendMsg)(struct NaClDesc                *vself,
+                             struct NaClMessageHeader const *dgram,
+                             int                            flags) NACL_WUR;
 
-  ssize_t (*RecvMsg)(struct NaClDesc          *vself,
-                     struct NaClMessageHeader *dgram,
-                     int                      flags) NACL_WUR;
+  ssize_t (*LowLevelRecvMsg)(struct NaClDesc          *vself,
+                             struct NaClMessageHeader *dgram,
+                             int                      flags) NACL_WUR;
 
   /*
    * ConnectAddr() and AcceptConn():
@@ -453,13 +453,15 @@ int NaClDescSignalNotImplemented(struct NaClDesc  *vself);
 
 int NaClDescBroadcastNotImplemented(struct NaClDesc *vself);
 
-ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
-                                      struct NaClMessageHeader const *dgram,
-                                      int                            flags);
+ssize_t NaClDescLowLevelSendMsgNotImplemented(
+    struct NaClDesc                *vself,
+    struct NaClMessageHeader const *dgram,
+    int                            flags);
 
-ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
-                                      struct NaClMessageHeader  *dgram,
-                                      int                       flags);
+ssize_t NaClDescLowLevelRecvMsgNotImplemented(
+    struct NaClDesc           *vself,
+    struct NaClMessageHeader  *dgram,
+    int                       flags);
 
 int NaClDescConnectAddrNotImplemented(struct NaClDesc *vself,
                                       struct NaClDesc **out_desc);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -124,9 +124,9 @@ int NaClDescExternalizeToXferBuffer(struct NaClDescXferState  *xferp,
   /*
    * Externalize should expose the object as NaClHandles that must
    * be sent, but no ownership is transferred.  The NaClHandle
-   * objects cannot be deallocated until after the actual SendMsg
-   * completes, so multithreaded code beware!  By using
-   * NaClDescRef and NaClDescUnref properly, there shouldn't be
+   * objects cannot be deallocated until after the actual
+   * LowLevelSendMsg completes, so multithreaded code beware!  By
+   * using NaClDescRef and NaClDescUnref properly, there shouldn't be
    * any problems, since all entries in the ndescv should have had
    * their refcount incremented, and the NaClHandles will not be
    * closed until the NaClDesc objects' refcount goes to zero.
@@ -364,11 +364,11 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     kern_msg_hdr.handle_count = sys_handles;
   }
 
-  NaClLog(4, "Invoking SendMsg, flags 0x%x\n", flags);
+  NaClLog(4, "Invoking LowLevelSendMsg, flags 0x%x\n", flags);
 
   retval = (*((struct NaClDescVtbl const *) channel->base.vtbl)->
-            SendMsg)(channel, &kern_msg_hdr, flags);
-  NaClLog(4, "SendMsg returned %"NACL_PRIdS"\n", retval);
+            LowLevelSendMsg)(channel, &kern_msg_hdr, flags);
+  NaClLog(4, "LowLevelSendMsg returned %"NACL_PRIdS"\n", retval);
   if (NaClSSizeIsNegErrno(&retval)) {
     /*
      * NaClWouldBlock uses TSD (for both the errno-based and
@@ -526,11 +526,12 @@ ssize_t NaClImcRecvTypedMessage(
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
   total_recv_bytes = (*((struct NaClDescVtbl const *) channel->base.vtbl)->
-                      RecvMsg)(channel,
-                               &recv_hdr,
-                               flags);
+                      LowLevelRecvMsg)(channel,
+                                       &recv_hdr,
+                                       flags);
   if (NaClSSizeIsNegErrno(&total_recv_bytes)) {
-    NaClLog(1, "RecvMsg failed, returned %"NACL_PRIdS"\n", total_recv_bytes);
+    NaClLog(1, "LowLevelRecvMsg failed, returned %"NACL_PRIdS"\n",
+            total_recv_bytes);
     retval = total_recv_bytes;
     goto cleanup;
   }

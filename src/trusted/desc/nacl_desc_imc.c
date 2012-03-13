@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -161,7 +161,7 @@ static int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
 
 
 /*
- * In the level of NaClDescImcDescSendMsg, we do not know what
+ * In the level of NaClDescImcDescLowLevelSendMsg, we do not know what
  * protocol is implemented by NaClSendDatagram (and indeed, in the
  * Windows implementation, the access rights transfer involves a more
  * complex protocol to get the peer process id).  Because the
@@ -180,9 +180,10 @@ static int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
  * multi-threaded scenario, where a sender race cause receiver
  * confusion.
  */
-static ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
-                                      struct NaClMessageHeader const *dgram,
-                               int                            flags) {
+static ssize_t NaClDescImcDescLowLevelSendMsg(
+    struct NaClDesc                *vself,
+    struct NaClMessageHeader const *dgram,
+    int                            flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
@@ -205,7 +206,7 @@ static ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
 
 
 /*
- * NaClDescXferableDataDescSendMsg implements imc_sendmsg For
+ * NaClDescXferableDataDescLowLevelSendMsg implements imc_sendmsg For
  * data-only descriptors.  We assume that whatever protocol exists at
  * the NaClSendDatagram level is still not thread safe, but that the
  * lack of thread safety will not have a significant impact on
@@ -224,9 +225,9 @@ static ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
  * modules) simultaneously.
  */
 static ssize_t
-NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
-                                struct NaClMessageHeader const *dgram,
-                                int                            flags) {
+NaClDescXferableDataDescLowLevelSendMsg(struct NaClDesc                *vself,
+                                        struct NaClMessageHeader const *dgram,
+                                        int                            flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int result;
@@ -237,7 +238,7 @@ NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
      * descriptors.
      */
     NaClLog(2,
-            ("NaClDescXferableDataDescSendMsg: tranferable and"
+            ("NaClDescXferableDataDescLowLevelSendMsg: tranferable and"
              " non-zero handle_count\n"));
     return -NACL_ABI_EINVAL;
   }
@@ -258,18 +259,18 @@ NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
 
 
 /*
- * See discussion at NaClDescImcDescSendMsg for details.  An
+ * See discussion at NaClDescImcDescLowLevelSendMsg for details.  An
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-static ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
-                                      struct NaClMessageHeader *dgram,
-                                      int                      flags) {
+static ssize_t NaClDescImcDescLowLevelRecvMsg(struct NaClDesc          *vself,
+                                              struct NaClMessageHeader *dgram,
+                                              int                      flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
 
-  NaClLog(4, "Entered NaClDescImcDescRecvMsg, h=%d\n", self->base.h);
+  NaClLog(4, "Entered NaClDescImcDescLowLevelRecvMsg, h=%d\n", self->base.h);
   NaClXMutexLock(&self->recvmsg_mu);
   result = NaClReceiveDatagram(self->base.h, dgram, flags);
   NaClXMutexUnlock(&self->recvmsg_mu);
@@ -288,25 +289,27 @@ static ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
 
 
 /*
- * See discussion at NaClDescXferableDataDescSendMsg for details.  An
+ * See discussion at NaClDescXferableDataDescLowLevelSendMsg for details.  An
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-static ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
-                                               struct NaClMessageHeader *dgram,
-                                               int                      flags) {
+static ssize_t NaClDescXferableDataDescLowLevelRecvMsg(
+    struct NaClDesc          *vself,
+    struct NaClMessageHeader *dgram,
+    int                      flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int                             result;
 
-  NaClLog(4, "Entered NaClDescXferableDataDescRecvMsg, h = %d\n", self->base.h);
+  NaClLog(4, "Entered NaClDescXferableDataDescLowLevelRecvMsg, h = %d\n",
+          self->base.h);
   if (0 != dgram->handle_count) {
     /*
      * A transferable descriptor is data-only, and it is an error to
      * try to receive any I/O descriptors with it.
      */
     NaClLog(2,
-            "NaClDescXferableDataDescRecvMsg:"
+            "NaClDescXferableDataDescLowLevelRecvMsg:"
             " tranferable and non-zero handle_count\n");
     return -NACL_ABI_EINVAL;
   }
@@ -349,8 +352,8 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
-  NaClDescSendMsgNotImplemented,
-  NaClDescRecvMsgNotImplemented,
+  NaClDescLowLevelSendMsgNotImplemented,
+  NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnectAddrNotImplemented,
   NaClDescAcceptConnNotImplemented,
   NaClDescPostNotImplemented,
@@ -382,8 +385,8 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
-  NaClDescImcDescSendMsg,  /* diff */
-  NaClDescImcDescRecvMsg,  /* diff */
+  NaClDescImcDescLowLevelSendMsg,  /* diff */
+  NaClDescImcDescLowLevelRecvMsg,  /* diff */
   NaClDescConnectAddrNotImplemented,
   NaClDescAcceptConnNotImplemented,
   NaClDescPostNotImplemented,
@@ -415,8 +418,8 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
-  NaClDescXferableDataDescSendMsg,  /* diff */
-  NaClDescXferableDataDescRecvMsg,  /* diff */
+  NaClDescXferableDataDescLowLevelSendMsg,  /* diff */
+  NaClDescXferableDataDescLowLevelRecvMsg,  /* diff */
   NaClDescConnectAddrNotImplemented,
   NaClDescAcceptConnNotImplemented,
   NaClDescPostNotImplemented,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,12 +176,12 @@ class DescWrapper {
 
   // Send a message.
   // Returns bytes sent on success, negative NaCl ABI errno on failure.
-  ssize_t SendMsg(const MsgHeader* dgram, int flags);
+  ssize_t LowLevelSendMsg(const MsgHeader* dgram, int flags);
 
   // Receive a message.
   // Returns bytes received on success, negative NaCl ABI errno on failure.
-  ssize_t RecvMsg(MsgHeader* dgram, int flags,
-                  struct NaClDescQuotaInterface *quota_interface);
+  ssize_t LowLevelRecvMsg(MsgHeader* dgram, int flags,
+                          struct NaClDescQuotaInterface *quota_interface);
 
   // Connect to a socket address.
   // Returns a valid DescWrapper on success, NULL on failure.
