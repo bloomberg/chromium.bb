@@ -52,6 +52,9 @@ TBDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 599888a48040f4086c9086aae958b7231b37afcc
   thakis: Fixes yasm alignment issue for text sections.
 
+revert c98c1f434eed06390f4990dd23f7ec15dbe53703:
+  dalecurtis: Fixes a webm parsing regression.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
