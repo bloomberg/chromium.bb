@@ -604,13 +604,31 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._parsed_url = parsed_url
     self._processed = True
 
-  def RunHooksRecursively(self, options):
-    """Evaluates all hooks, running actions as needed. run()
-    must have been called before to load the DEPS."""
-    assert self.hooks_ran == False
+  @staticmethod
+  def GetHookAction(hook_dict, matching_file_list):
+    """Turns a parsed 'hook' dict into an executable command."""
+    logging.debug(hook_dict)
+    logging.debug(matching_file_list)
+    command = hook_dict['action'][:]
+    if command[0] == 'python':
+      # If the hook specified "python" as the first item, the action is a
+      # Python script.  Run it by starting a new copy of the same
+      # interpreter.
+      command[0] = sys.executable
+    if '$matching_files' in command:
+      splice_index = command.index('$matching_files')
+      command[splice_index:splice_index + 1] = matching_file_list
+    return command
+
+  def GetHooks(self, options):
+    """Evaluates all hooks, and return them in a flat list.
+
+    RunOnDeps() must have been called before to load the DEPS.
+    """
+    result = []
     if not self.should_process or not self.recursion_limit:
       # Don't run the hook when it is above recursion_limit.
-      return
+      return result
     # If "--force" was specified, run all hooks regardless of what files have
     # changed.
     if self.deps_hooks:
@@ -622,7 +640,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
           os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
         for hook_dict in self.deps_hooks:
-          self._RunHookAction(hook_dict, [])
+          result.append(self.GetHookAction(hook_dict, []))
       else:
         # Run hooks on the basis of whether the files from the gclient operation
         # match each hook's pattern.
@@ -632,38 +650,24 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               f for f in self.file_list_and_children if pattern.search(f)
           ]
           if matching_file_list:
-            self._RunHookAction(hook_dict, matching_file_list)
+            result.append(self.GetHookAction(hook_dict, matching_file_list))
     for s in self.dependencies:
-      s.RunHooksRecursively(options)
+      result.extend(s.GetHooks(options))
+    return result
 
-  def _RunHookAction(self, hook_dict, matching_file_list):
-    """Runs the action from a single hook."""
-    # A single DEPS file can specify multiple hooks so this function can be
-    # called multiple times on a single Dependency.
-    #assert self.hooks_ran == False
+  def RunHooksRecursively(self, options):
+    assert self.hooks_ran == False
     self._hooks_ran = True
-    logging.debug(hook_dict)
-    logging.debug(matching_file_list)
-    command = hook_dict['action'][:]
-    if command[0] == 'python':
-      # If the hook specified "python" as the first item, the action is a
-      # Python script.  Run it by starting a new copy of the same
-      # interpreter.
-      command[0] = sys.executable
-
-    if '$matching_files' in command:
-      splice_index = command.index('$matching_files')
-      command[splice_index:splice_index + 1] = matching_file_list
-
-    try:
-      gclient_utils.CheckCallAndFilterAndHeader(
-          command, cwd=self.root.root_dir, always=True)
-    except (gclient_utils.Error, subprocess2.CalledProcessError), e:
-      # Use a discrete exit status code of 2 to indicate that a hook action
-      # failed.  Users of this script may wish to treat hook action failures
-      # differently from VC failures.
-      print >> sys.stderr, 'Error: %s' % str(e)
-      sys.exit(2)
+    for hook in self.GetHooks(options):
+      try:
+        gclient_utils.CheckCallAndFilterAndHeader(
+            hook, cwd=self.root.root_dir, always=True)
+      except (gclient_utils.Error, subprocess2.CalledProcessError), e:
+        # Use a discrete exit status code of 2 to indicate that a hook action
+        # failed.  Users of this script may wish to treat hook action failures
+        # differently from VC failures.
+        print >> sys.stderr, 'Error: %s' % str(e)
+        sys.exit(2)
 
   def subtree(self, include_all):
     """Breadth first recursion excluding root node."""
@@ -1451,6 +1455,18 @@ def CMDrevinfo(parser, args):
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
   client.PrintRevInfo()
+  return 0
+
+
+def CMDhookinfo(parser, args):
+  """Output the hooks that would be run by `gclient runhooks`"""
+  (options, args) = parser.parse_args(args)
+  options.force = True
+  client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
+  client.RunOnDeps(None, [])
+  print '; '.join(' '.join(hook) for hook in client.GetHooks(options))
   return 0
 
 

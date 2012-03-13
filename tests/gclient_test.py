@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -245,6 +245,36 @@ class GclientTest(trial_dir.TestCase):
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
     self.assertEquals(471, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+
+  def testHooks(self):
+    topdir = self.root_dir
+    gclient_fn = os.path.join(topdir, '.gclient')
+    fh = open(gclient_fn, 'w')
+    print >> fh, 'solutions = [{"name":"top","url":"svn://svn.top.com/top"}]'
+    fh.close()
+    subdir_fn = os.path.join(topdir, 'top')
+    os.mkdir(subdir_fn)
+    deps_fn = os.path.join(subdir_fn, 'DEPS')
+    fh = open(deps_fn, 'w')
+    hooks = [{'pattern':'.', 'action':['cmd1', 'arg1', 'arg2']}]
+    print >> fh, 'hooks = %s' % repr(hooks)
+    fh.close()
+
+    fh = open(os.path.join(subdir_fn, 'fake.txt'), 'w')
+    print >> fh, 'bogus content'
+    fh.close()
+
+    os.chdir(topdir)
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args([])
+    options.force = True
+    client = gclient.GClient.LoadCurrentConfig(options)
+    work_queue = gclient_utils.ExecutionQueue(options.jobs, None)
+    for s in client.dependencies:
+      work_queue.enqueue(s)
+    work_queue.flush({}, None, [], options=options)
+    self.assertEqual(client.GetHooks(options), [x['action'] for x in hooks])
 
 
 if __name__ == '__main__':
