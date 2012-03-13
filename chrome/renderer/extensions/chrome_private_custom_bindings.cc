@@ -18,10 +18,15 @@
 namespace extensions {
 
 ChromePrivateCustomBindings::ChromePrivateCustomBindings(
+    int dependency_count,
+    const char** dependencies,
     ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
-  RouteStaticFunction("DecodeJPEG", &DecodeJPEG);
-}
+    : ChromeV8Extension(
+          "extensions/chrome_private_custom_bindings.js",
+          IDR_CHROME_PRIVATE_CUSTOM_BINDINGS_JS,
+          dependency_count,
+          dependencies,
+          extension_dispatcher) {}
 
 // static
 v8::Handle<v8::Value> ChromePrivateCustomBindings::DecodeJPEG(
@@ -80,6 +85,14 @@ v8::Handle<v8::Value> ChromePrivateCustomBindings::DecodeJPEG(
                       v8::Integer::New(pixels[i] & 0xFFFFFF));
   }
   return bitmap_array;
+}
+
+v8::Handle<v8::FunctionTemplate> ChromePrivateCustomBindings::GetNativeFunction(
+    v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("DecodeJPEG")))
+    return v8::FunctionTemplate::New(DecodeJPEG, v8::External::New(this));
+
+  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // namespace extensions

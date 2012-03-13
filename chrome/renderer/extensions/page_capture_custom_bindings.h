@@ -13,11 +13,12 @@ namespace extensions {
 // Implements custom bindings for the pageCapture API.
 class PageCaptureCustomBindings : public ChromeV8Extension {
  public:
-  PageCaptureCustomBindings();
+  PageCaptureCustomBindings(int dependency_count, const char** dependencies);
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) OVERRIDE;
 
  private:
-  // Creates a Blob with the content of the specified file.
-  static v8::Handle<v8::Value> CreateBlob(const v8::Arguments& args);
   static v8::Handle<v8::Value> SendResponseAck(const v8::Arguments& args);
 };
 

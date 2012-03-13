@@ -4,15 +4,17 @@
 
 // Custom bindings for the chromePrivate API.
 
-var chromePrivate = requireNative('chrome_private');
-var DecodeJPEG = chromePrivate.DecodeJPEG;
+(function() {
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+native function GetChromeHidden();
+native function DecodeJPEG(jpegImage);
 
-chromeHidden.registerCustomHook('chromePrivate', function(bindingsAPI) {
+GetChromeHidden().registerCustomHook('chromePrivate', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('decodeJPEG', function(jpeg_image) {
     return DecodeJPEG(jpeg_image);
   });
 });
+
+})();

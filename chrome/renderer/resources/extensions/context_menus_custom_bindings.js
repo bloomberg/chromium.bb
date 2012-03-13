@@ -4,10 +4,12 @@
 
 // Custom bindings for the contextMenus API.
 
-var contextMenus = requireNative('context_menus');
-var GetNextContextMenuId = contextMenus.GetNextContextMenuId;
+(function() {
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+native function GetChromeHidden();
+native function GetNextContextMenuId();
+
+var chromeHidden = GetChromeHidden();
 
 chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -85,3 +87,5 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     chromeHidden.contextMenus.handlers = {};
   });
 });
+
+})();

@@ -15,8 +15,13 @@ namespace extensions {
 // Implements custom bindings for the chromePrivate API.
 class ChromePrivateCustomBindings : public ChromeV8Extension {
  public:
-  explicit ChromePrivateCustomBindings(
+  ChromePrivateCustomBindings(
+      int dependency_count,
+      const char** dependencies,
       ExtensionDispatcher* extension_dispatcher);
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) OVERRIDE;
 
  private:
   // Decodes supplied JPEG byte array to image pixel array.

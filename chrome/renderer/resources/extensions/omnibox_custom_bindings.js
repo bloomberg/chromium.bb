@@ -5,7 +5,9 @@
 // Custom bindings for the omnibox API. Only injected into the v8 contexts
 // for extensions which have permission for the omnibox API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+(function() {
+
+native function GetChromeHidden();
 
 // Remove invalid characters from |text| so that it is suitable to use
 // for |AutocompleteMatch::contents|.
@@ -77,7 +79,7 @@ function parseOmniboxDescription(input) {
   return result;
 }
 
-chromeHidden.registerCustomHook('omnibox', function(bindingsAPI) {
+GetChromeHidden().registerCustomHook('omnibox', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var sendRequest = bindingsAPI.sendRequest;
 
@@ -106,3 +108,5 @@ chromeHidden.registerCustomHook('omnibox', function(bindingsAPI) {
     chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
   };
 });
+
+})();

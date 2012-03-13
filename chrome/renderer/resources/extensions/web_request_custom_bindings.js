@@ -4,10 +4,12 @@
 
 // Custom bindings for the webRequest API.
 
-var webRequestNatives = requireNative('web_request');
-var GetUniqueSubEventName = webRequestNatives.GetUniqueSubEventName;
+(function() {
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+native function GetChromeHidden();
+native function GetUniqueSubEventName(eventName);
+
+var chromeHidden = GetChromeHidden();
 
 // WebRequestEvent object. This is used for special webRequest events with
 // extra parameters. Each invocation of addListener creates a new named
@@ -170,3 +172,5 @@ chromeHidden.registerCustomHook('webRequest', function(api) {
                 {forIOThread: true});
   });
 });
+
+})();

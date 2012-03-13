@@ -24,6 +24,9 @@ namespace extensions {
 // bindings.
 namespace custom_bindings_util {
 
+// Creates V8 extensions for all custom bindings.
+std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher);
+
 // Extracts the name of an API from the name of the V8 extension which contains
 // custom bindings for it.
 // Returns an empty string if the extension is not for a custom binding.

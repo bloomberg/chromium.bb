@@ -13,7 +13,11 @@ namespace extensions {
 // Implements custom bindings for the experimental.socket API.
 class ExperimentalSocketCustomBindings : public ChromeV8Extension {
  public:
-  ExperimentalSocketCustomBindings();
+  ExperimentalSocketCustomBindings(
+      int dependency_count, const char** dependencies);
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) OVERRIDE;
 };
 
 }  // extensions
