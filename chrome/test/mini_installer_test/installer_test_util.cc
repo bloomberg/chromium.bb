@@ -56,28 +56,24 @@ bool DeleteInstallDirectory(bool system_level,
   if (version.empty())
     return false;
   FilePath path;
-  if (!GetInstallDirectory(system_level,
-                           ToBrowserDistributionType(type), &path) ||
-      !file_util::PathExists(path))
+  bool has_install_dir = GetInstallDirectory(system_level,
+                                             ToBrowserDistributionType(type),
+                                             &path);
+  if (!has_install_dir || !file_util::PathExists(path))
     return false;
   path = path.AppendASCII(version);
-  if (!file_util::Delete(path, true))
-    return false;
-  return true;
+  return file_util::Delete(path, true);
 }
 
 bool DeleteRegistryKey(bool system_level,
                        InstallationValidator::InstallationType type) {
-  FilePath::StringType key(google_update::kRegPathClients);
   BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
       ToBrowserDistributionType(type));
-  file_util::AppendToPath(&key, dist->GetAppGuid());
-  HKEY root = HKEY_CURRENT_USER;
-  if (system_level)
-    root = HKEY_LOCAL_MACHINE;
-  if (InstallUtil::DeleteRegistryKey(root, key))
-    return true;
-  return false;
+  FilePath::StringType key(google_update::kRegPathClients);
+  key.push_back(FilePath::kSeparators[0]);
+  key.append(dist->GetAppGuid());
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  return InstallUtil::DeleteRegistryKey(root, key);
 }
 
 bool GetChromeInstallDirectory(bool system_level, FilePath* path) {
@@ -303,4 +299,3 @@ bool RunAndWaitForCommandToFinish(CommandLine command) {
 }
 
 }  // namespace
-

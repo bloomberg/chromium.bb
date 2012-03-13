@@ -30,10 +30,6 @@ namespace file_util {
 BASE_EXPORT FILE* OpenFile(const std::string& filename, const char* mode);
 BASE_EXPORT FILE* OpenFile(const std::wstring& filename, const char* mode);
 
-// Appends new_ending to path, adding a separator between the two if necessary.
-BASE_EXPORT void AppendToPath(std::wstring* path,
-                              const std::wstring& new_ending);
-
 // Use version that takes a FilePath.
 BASE_EXPORT int ReadFile(const std::wstring& filename, char* data, int size);
 BASE_EXPORT int WriteFile(const std::wstring& filename,

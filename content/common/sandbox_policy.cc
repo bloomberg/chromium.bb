@@ -290,11 +290,11 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (long_path_return_value == 0 || long_path_return_value >= MAX_PATH)
     return false;
 
-  string16 debug_message(long_path_buf);
-  file_util::AppendToPath(&debug_message, L"debug_message.exe");
+  FilePath debug_message(long_path_buf);
+  debug_message = debug_message.AppendASCII("debug_message.exe");
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_PROCESS,
                            sandbox::TargetPolicy::PROCESS_MIN_EXEC,
-                           debug_message.c_str());
+                           debug_message.value().c_str());
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 #endif  // NDEBUG
@@ -580,7 +580,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_DISABLED)) {
     const SIZE_T kOneGigabyte = 1 << 30;
-    void *nacl_mem = VirtualAllocEx(target.hProcess,
+    void* nacl_mem = VirtualAllocEx(target.hProcess,
                                     NULL,
                                     kOneGigabyte,
                                     MEM_RESERVE,

@@ -60,18 +60,14 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
       return 100.;
     }
 
-    std::wstring verification_file(test_data_directory_.value());
-    file_util::AppendToPath(&verification_file, L"printing");
-    file_util::AppendToPath(&verification_file, verification_name);
-    FilePath emf(verification_file + L".emf");
-    FilePath png(verification_file + L".png");
+    FilePath base_path(test_data_directory_.AppendASCII("printing"));
+    FilePath emf(base_path.Append(verification_name + L".emf"));
+    FilePath png(base_path.Append(verification_name + L".png"));
 
+    FilePath cleartype(base_path.Append(verification_name + L"_cleartype.png"));
     // Looks for Cleartype override.
-    if (file_util::PathExists(
-            FilePath::FromWStringHack(verification_file + L"_cleartype.png")) &&
-        IsClearTypeEnabled()) {
-      png = FilePath(verification_file + L"_cleartype.png");
-    }
+    if (file_util::PathExists(cleartype) && IsClearTypeEnabled())
+      png = cleartype;
 
     if (GenerateFiles()) {
       // Copy the .emf and generate an .png.
@@ -92,8 +88,8 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
           " result size:" << test_content.size().ToString();
       if (diff_emf) {
         // Backup the result emf file.
-        file_util::CopyFile(test_result, FilePath(
-              verification_file + L"_failed.emf"));
+        FilePath failed(base_path.Append(verification_name + L"_failed.emf"));
+        file_util::CopyFile(test_result, failed);
       }
 
       // This verification is only to know that the EMF rendering stays
@@ -104,7 +100,9 @@ class PrintingLayoutTest : public PrintingTest<UITest> {
           " result size:" << test_content.size().ToString();
       if (diff_png) {
         // Backup the rendered emf file to detect the rendering difference.
-        emf_content.SaveToPng(FilePath(verification_file + L"_rendering.png"));
+        FilePath rendering(
+            base_path.Append(verification_name + L"_rendering.png"));
+        emf_content.SaveToPng(rendering);
       }
       return std::max(diff_png, diff_emf);
     }
