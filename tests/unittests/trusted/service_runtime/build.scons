@@ -6,9 +6,6 @@
 
 Import('env')
 
-if env.Bit('linux'):
-  env.Append(LIBS=['dl'])
-
 nacl_memory_test_exe = env.ComponentProgram(
     'nacl_memory_test',
     'nacl_memory_test.c',

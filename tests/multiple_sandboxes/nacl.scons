@@ -22,9 +22,6 @@ if trusted_env.Bit('target_x86'):
 elif trusted_env.Bit('target_arm'):
   VALIDATOR_LIBS += ['ncvalidate_arm_v2']
 
-if trusted_env.Bit('linux'):
-  trusted_env.Append(LIBS=['dl'])
-
 runner = trusted_env.ComponentProgram(
     'multidomain_test_host', ['multidomain_test_host.c'],
     EXTRA_LIBS=['sel',
