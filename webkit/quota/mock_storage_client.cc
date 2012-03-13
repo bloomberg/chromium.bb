@@ -4,7 +4,6 @@
 
 #include "webkit/quota/mock_storage_client.h"
 
-#include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,8 +12,6 @@
 #include "base/stl_util.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_manager.h"
-
-using base::AtomicSequenceNumber;
 
 namespace quota {
 

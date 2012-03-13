@@ -25,16 +25,16 @@ struct WaitableEventLazyInstanceTraits
   }
 };
 
-static base::LazyInstance<base::WaitableEvent, WaitableEventLazyInstanceTraits>
+base::LazyInstance<base::WaitableEvent, WaitableEventLazyInstanceTraits>
     dummy_event = LAZY_INSTANCE_INITIALIZER;
 
-}
+base::StaticAtomicSequenceNumber g_next_id;
+
+}  // namespace
 
 namespace IPC {
 
 #define kSyncMessageHeaderSize 4
-
-static base::AtomicSequenceNumber g_next_id(base::LINKER_INITIALIZED);
 
 SyncMessage::SyncMessage(
     int32 routing_id,

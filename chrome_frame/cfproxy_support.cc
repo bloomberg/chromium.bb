@@ -266,7 +266,7 @@ void SyncMsgSender::OnChannelClosed() {
   messages_sent.clear();
 }
 
-static base::AtomicSequenceNumber g_proxy_channel_id(base::LINKER_INITIALIZED);
+static base::StaticAtomicSequenceNumber g_proxy_channel_id;
 std::string GenerateChannelId() {
   return StringPrintf("ChromeTestingInterface:%u.%d",
       base::GetCurrentProcId(), g_proxy_channel_id.GetNext() + 0xC000);

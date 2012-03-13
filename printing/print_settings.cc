@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,7 @@ bool isColorModelSelected(int model) {
 }
 
 // Global SequenceNumber used for generating unique cookie values.
-static base::AtomicSequenceNumber cookie_seq(base::LINKER_INITIALIZED);
+static base::StaticAtomicSequenceNumber cookie_seq;
 
 PrintSettings::PrintSettings()
     : min_shrink(1.25),

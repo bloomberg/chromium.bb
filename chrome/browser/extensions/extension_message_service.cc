@@ -58,7 +58,7 @@ const char ExtensionMessageService::kDispatchOnDisconnect[] =
 
 namespace {
 
-static base::AtomicSequenceNumber g_next_channel_id(base::LINKER_INITIALIZED);
+static base::StaticAtomicSequenceNumber g_next_channel_id;
 
 static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
                               int dest_port_id,
