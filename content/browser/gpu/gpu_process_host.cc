@@ -320,10 +320,12 @@ GpuProcessHost::~GpuProcessHost() {
       }
     } else {
       if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
+#if !defined(OS_CHROMEOS)
         // The gpu process is too unstable to use. Disable it for current
         // session.
         hardware_gpu_enabled_ = false;
         GpuDataManagerImpl::GetInstance()->BlacklistCard();
+#endif
       }
     }
   }
