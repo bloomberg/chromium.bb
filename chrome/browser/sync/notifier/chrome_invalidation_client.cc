@@ -14,8 +14,9 @@
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 #include "chrome/browser/sync/notifier/registration_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "google/cacheinvalidation/v2/invalidation-client.h"
-#include "google/cacheinvalidation/v2/invalidation-client-factory.h"
+#include "google/cacheinvalidation/include/invalidation-client-factory.h"
+#include "google/cacheinvalidation/include/invalidation-client.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
 
 namespace {
