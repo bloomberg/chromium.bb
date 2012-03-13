@@ -106,15 +106,9 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
 }
 #endif  // OS_MACOSX
 
-#if defined(OS_MACOSX)
-#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
-#else
-#define MAYBE_ProfileReadmeCreated DISABLED_ProfileReadmeCreated
-#endif
-
 // Ensure that README file is created for a new profile.
 // TODO(ivankr): this test probably should belong to profile_browsertest.cc.
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_ProfileReadmeCreated) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, ProfileReadmeCreated) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // No delay before README creation.
