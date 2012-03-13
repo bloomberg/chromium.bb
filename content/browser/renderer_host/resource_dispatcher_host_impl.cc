@@ -1684,9 +1684,9 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   // If enqueing/starting this request will exceed our per-process memory
   // bound, abort it right away.
   if (memory_cost > max_outstanding_requests_cost_per_process_) {
-    // We call "SimulateError()" as a way of setting the net::URLRequest's
+    // We call "CancelWithError()" as a way of setting the net::URLRequest's
     // status -- it has no effect beyond this, since the request hasn't started.
-    request->SimulateError(net::ERR_INSUFFICIENT_RESOURCES);
+    request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
 
     // TODO(eroman): this is kinda funky -- we insert the unstarted request into
     // |pending_requests_| simply to please ResponseCompleted().
@@ -1969,12 +1969,10 @@ void ResourceDispatcherHostImpl::CancelSSLRequest(
   if (!request || !request->is_pending())
     return;
   DVLOG(1) << "CancelSSLRequest() url: " << request->url().spec();
-  // TODO(toyoshim): Following method names SimulateSSLError() and
-  // SimulateError() looks inconsistent with other Cancel methods.
   if (ssl_info)
-    request->SimulateSSLError(error, *ssl_info);
+    request->CancelWithSSLError(error, *ssl_info);
   else
-    request->SimulateError(error);
+    request->CancelWithError(error);
 }
 
 void ResourceDispatcherHostImpl::ContinueSSLRequest(

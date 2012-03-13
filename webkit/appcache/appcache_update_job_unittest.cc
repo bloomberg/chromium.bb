@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -703,7 +703,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     update->StartUpdate(host, GURL());
     EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_fetcher_->request()->SimulateError(-100);
+    update->manifest_fetcher_->request()->CancelWithError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -735,7 +735,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     update->StartUpdate(NULL, GURL());
     EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_fetcher_->request()->SimulateError(-100);
+    update->manifest_fetcher_->request()->CancelWithError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1910,7 +1910,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     update->StartUpdate(host, host->new_master_entry_url_);
     EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
-    update->manifest_fetcher_->request()->SimulateError(-100);
+    update->manifest_fetcher_->request()->CancelWithError(-100);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;

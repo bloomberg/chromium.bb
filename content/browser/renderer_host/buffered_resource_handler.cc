@@ -277,7 +277,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
       // certificate.
       // TODO(abarth): We should abstract the response_code test, but this kind
       //               of check is scattered throughout our codebase.
-      request_->SimulateError(net::ERR_FILE_NOT_FOUND);
+      request_->CancelWithError(net::ERR_FILE_NOT_FOUND);
       return false;
     }
 
@@ -300,7 +300,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
       // own error page instead of triggering a download.
       // TODO(abarth): We should abstract the response_code test, but this kind
       //               of check is scattered throughout our codebase.
-      request_->SimulateError(net::ERR_FILE_NOT_FOUND);
+      request_->CancelWithError(net::ERR_FILE_NOT_FOUND);
       return false;
     }
 
