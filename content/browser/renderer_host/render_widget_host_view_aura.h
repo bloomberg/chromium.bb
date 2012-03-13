@@ -275,6 +275,10 @@ class RenderWidgetHostViewAura
   // events vs. normal mouse move events.
   bool synthetic_move_sent_;
 
+  // Signals we need to switch off the external texture as soon as the software
+  // backing store is updated.
+  bool needs_update_texture_;
+
   // Used to prevent further resizes while a resize is pending.
   class ResizeLock;
   std::vector<linked_ptr<ResizeLock> > resize_locks_;

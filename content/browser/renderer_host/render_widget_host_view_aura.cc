@@ -177,7 +177,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       has_composition_text_(false),
       current_surface_(0),
       paint_canvas_(NULL),
-      synthetic_move_sent_(false) {
+      synthetic_move_sent_(false),
+      needs_update_texture_(false) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());
@@ -332,6 +333,9 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
   if (!window_->IsVisible())
     return;
 
+  if (needs_update_texture_)
+    UpdateExternalTexture();
+
   gfx::Rect clip_rect;
   if (paint_canvas_) {
     SkRect sk_clip_rect;
@@ -391,10 +395,17 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
-  UpdateExternalTexture();
+  // Delay UpdateExternalTexture until we actually got a software frame.
+  // Sometimes (e.g. on a page load) the renderer will spuriously disable then
+  // re-enable accelerated compositing, causing us to flash.
+  // TODO(piman): factor the enable/disable accelerated compositing message into
+  // the UpdateRect/AcceleratedSurfaceBuffersSwapped messages so that we have
+  // fewer inconsistent temporary states.
+  needs_update_texture_ = true;
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
+  needs_update_texture_ = false;
   if (current_surface_ != 0 &&
       host_->is_accelerated_compositing_active()) {
 
