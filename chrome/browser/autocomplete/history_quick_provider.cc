@@ -191,7 +191,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this, score, !!info.visit_count(),
       history_match.url_matches.empty() ?
-          AutocompleteMatch::HISTORY_URL : AutocompleteMatch::HISTORY_TITLE);
+          AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_URL);
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
 
