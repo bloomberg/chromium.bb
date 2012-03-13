@@ -1,0 +1,2 @@
+This is a test file to be used in the TYPE_GDATA testserver.py.
+See also: chrome/browser/chromeos/gdata/gdata_browsertest.cc

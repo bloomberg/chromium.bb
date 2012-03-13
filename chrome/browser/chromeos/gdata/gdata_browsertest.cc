@@ -27,14 +27,15 @@ class GDataTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(gdata_test_server_.Start());
-    service_.Initialize(browser()->profile());
-    service_.gdata_auth_service()->set_oauth2_auth_token_for_testing(
+    service_.reset(new gdata::DocumentsService);
+    service_->Initialize(browser()->profile());
+    service_->gdata_auth_service()->set_oauth2_auth_token_for_testing(
         net::TestServer::kGDataAuthToken);
   }
 
  protected:
   net::TestServer gdata_test_server_;
-  gdata::DocumentsService service_;
+  scoped_ptr<gdata::DocumentsService> service_;
 };
 
 // The test callback for DocumentsService::DownloadFile().
@@ -61,10 +62,10 @@ void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_Download) {
+IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string contents;
-  service_.DownloadFile(
+  service_->DownloadFile(
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents));
   ui_test_utils::RunMessageLoop();
@@ -77,10 +78,10 @@ IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_Download) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_NonExistingDownload) {
+IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string dummy_contents;
-  service_.DownloadFile(
+  service_->DownloadFile(
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents));
   ui_test_utils::RunMessageLoop();
@@ -89,10 +90,10 @@ IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_NonExistingDownload) {
   // Do not verify the not found message.
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_GetDocuments) {
+IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
-  service_.GetDocuments(
+  service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   ui_test_utils::RunMessageLoop();
@@ -109,12 +110,12 @@ IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_GetDocuments) {
   delete result_data;
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_GetDocumentsFailure) {
+IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
-  service_.GetDocuments(
+  service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   ui_test_utils::RunMessageLoop();
