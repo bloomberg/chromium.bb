@@ -145,6 +145,10 @@ bool QueryManager::ProcessPendingQueries(CommonDecoder* decoder) {
   return true;
 }
 
+bool QueryManager::HavePendingQueries() {
+  return !pending_queries_.empty();
+}
+
 void QueryManager::AddPendingQuery(Query* query, uint32 submit_count) {
   DCHECK(query);
   DCHECK(query->IsInitialized());

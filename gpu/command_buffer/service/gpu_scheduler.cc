@@ -135,7 +135,8 @@ bool GpuScheduler::IsScheduled() {
 }
 
 bool GpuScheduler::HasMoreWork() {
-  return !unschedule_fences_.empty();
+  return !unschedule_fences_.empty() ||
+         (decoder_ && decoder_->ProcessPendingQueries());
 }
 
 void GpuScheduler::SetScheduledCallback(

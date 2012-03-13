@@ -552,6 +552,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual gfx::GLSurface* GetGLSurface() { return surface_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
   virtual QueryManager* GetQueryManager() { return query_manager_.get(); }
+  virtual bool ProcessPendingQueries();
 
   virtual void SetGLError(GLenum error, const char* msg);
   virtual void SetResizeCallback(
@@ -3160,16 +3161,12 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
 
 void GLES2DecoderImpl::DoFinish() {
   glFinish();
-  if (!query_manager_->ProcessPendingQueries(this)) {
-    current_decoder_error_ = error::kOutOfBounds;
-  }
+  ProcessPendingQueries();
 }
 
 void GLES2DecoderImpl::DoFlush() {
   glFlush();
-  if (!query_manager_->ProcessPendingQueries(this)) {
-    current_decoder_error_ = error::kOutOfBounds;
-  }
+  ProcessPendingQueries();
 }
 
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
@@ -5232,9 +5229,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(bool instanced,
       } else {
         glDrawArraysInstancedANGLE(mode, first, count, primcount);
       }
-      if (!query_manager_->ProcessPendingQueries(this)) {
-        current_decoder_error_ = error::kOutOfBounds;
-      }
+      ProcessPendingQueries();
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
       }
@@ -5345,9 +5340,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(bool instanced,
       } else {
         glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
       }
-      if (!query_manager_->ProcessPendingQueries(this)) {
-        current_decoder_error_ = error::kOutOfBounds;
-      }
+      ProcessPendingQueries();
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
       }
@@ -7959,6 +7952,16 @@ void GLES2DecoderImpl::DeleteQueriesEXTHelper(
       query_manager_->RemoveQuery(client_ids[ii]);
     }
   }
+}
+
+bool GLES2DecoderImpl::ProcessPendingQueries() {
+  if (query_manager_.get() == NULL) {
+    return false;
+  }
+  if (!query_manager_->ProcessPendingQueries(this)) {
+    current_decoder_error_ = error::kOutOfBounds;
+  }
+  return query_manager_->HavePendingQueries();
 }
 
 error::Error GLES2DecoderImpl::HandleBeginQueryEXT(

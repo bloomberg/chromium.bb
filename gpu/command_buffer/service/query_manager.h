@@ -138,6 +138,9 @@ class GPU_EXPORT QueryManager {
   // to invalid shared memory.
   bool ProcessPendingQueries(CommonDecoder* decoder);
 
+  // True if there are pending queries.
+  bool HavePendingQueries();
+
  private:
   void StartTracking(Query* query);
   void StopTracking(Query* query);

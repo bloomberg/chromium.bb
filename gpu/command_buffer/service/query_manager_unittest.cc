@@ -132,6 +132,7 @@ TEST_F(QueryManagerTest, Basic) {
   const GLuint kService1Id = 11;
   const GLuint kClient2Id = 2;
 
+  EXPECT_FALSE(manager_->HavePendingQueries());
   // Check we can create a Query.
   QueryManager::Query::Ref query(
       manager_->CreateQuery(kClient1Id, kService1Id));
@@ -142,6 +143,7 @@ TEST_F(QueryManagerTest, Basic) {
   GLuint client_id = -1;
   EXPECT_TRUE(manager_->GetClientId(kService1Id, &client_id));
   EXPECT_EQ(kClient1Id, client_id);
+  EXPECT_FALSE(manager_->HavePendingQueries());
   // Check we get nothing for a non-existent query.
   EXPECT_TRUE(manager_->GetQuery(kClient2Id) == NULL);
   // Check we can delete the query.
@@ -150,6 +152,7 @@ TEST_F(QueryManagerTest, Basic) {
   EXPECT_TRUE(manager_->GetQuery(kClient1Id) == NULL);
   // Check query is deleted
   EXPECT_TRUE(query->IsDeleted());
+  EXPECT_FALSE(manager_->HavePendingQueries());
 }
 
 TEST_F(QueryManagerTest, Destroy) {
@@ -231,6 +234,7 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
   // Queue it
   manager_->AddPendingQuery(query.get(), kSubmitCount);
   EXPECT_TRUE(query->pending());
+  EXPECT_TRUE(manager_->HavePendingQueries());
 
   // Process with return not available.
   // Expect 1 GL command.
@@ -257,6 +261,7 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
   EXPECT_FALSE(query->pending());
   EXPECT_EQ(kSubmitCount, sync->process_count);
   EXPECT_EQ(kResult, sync->result);
+  EXPECT_FALSE(manager_->HavePendingQueries());
 
   // Process with no queries.
   // Expect no GL commands/
@@ -288,6 +293,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   ASSERT_TRUE(query1.get() != NULL);
   ASSERT_TRUE(query2.get() != NULL);
   ASSERT_TRUE(query3.get() != NULL);
+  EXPECT_FALSE(manager_->HavePendingQueries());
 
   // Setup shared memory like client would.
   QuerySync* sync1 = decoder_->GetSharedMemoryAs<QuerySync*>(
@@ -313,6 +319,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   EXPECT_TRUE(query1->pending());
   EXPECT_TRUE(query2->pending());
   EXPECT_TRUE(query3->pending());
+  EXPECT_TRUE(manager_->HavePendingQueries());
 
   // Process with return available for first 2 queries.
   // Expect 4 GL commands.
@@ -349,6 +356,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   EXPECT_EQ(kResult2, sync2->result);
   EXPECT_EQ(0u, sync3->process_count);
   EXPECT_EQ(0u, sync3->result);
+  EXPECT_TRUE(manager_->HavePendingQueries());
 
   // Process with renaming query. No result.
   // Expect 1 GL commands.
@@ -360,6 +368,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   EXPECT_TRUE(query3->pending());
   EXPECT_EQ(0u, sync3->process_count);
   EXPECT_EQ(0u, sync3->result);
+  EXPECT_TRUE(manager_->HavePendingQueries());
 
   // Process with renaming query. With result.
   // Expect 2 GL commands.
@@ -375,6 +384,7 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   EXPECT_FALSE(query3->pending());
   EXPECT_EQ(kSubmitCount3, sync3->process_count);
   EXPECT_EQ(kResult3, sync3->result);
+  EXPECT_FALSE(manager_->HavePendingQueries());
 }
 
 TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryId) {

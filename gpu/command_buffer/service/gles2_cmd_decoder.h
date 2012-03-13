@@ -130,6 +130,9 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 
+  // Process any pending queries. Returns false if there are no pending queries.
+  virtual bool ProcessPendingQueries() = 0;
+
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.
   virtual void SetResizeCallback(
