@@ -215,6 +215,7 @@ class ProfileManager : public base::NonThreadSafe,
  private:
   friend class TestingProfileManager;
   FRIEND_TEST_ALL_PREFIXES(ProfileManagerBrowserTest, DeleteAllProfiles);
+  FRIEND_TEST_ALL_PREFIXES(ProfileManagerBrowserTest, ProfileReadmeCreated);
 
   // This struct contains information about profiles which are being loaded or
   // were loaded.
