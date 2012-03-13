@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
+#include "content/common/resource_messages.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
-#include "content/common/resource_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -54,7 +54,7 @@ void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
            << " max_pending_send_allowed=" << max_pending_send_allowed;
-  if (socket_id == content_common::kNoSocketId) {
+  if (socket_id == content::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnConnected";
     return;
   }
@@ -70,7 +70,7 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
            << " amount_sent=" << amount_sent;
-  if (socket_id == content_common::kNoSocketId) {
+  if (socket_id == content::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnSentData";
     return;
   }
@@ -85,7 +85,7 @@ void SocketStreamDispatcherHost::OnReceivedData(
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
            << socket_id;
-  if (socket_id == content_common::kNoSocketId) {
+  if (socket_id == content::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
   }
@@ -99,7 +99,7 @@ void SocketStreamDispatcherHost::OnReceivedData(
 void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
-  if (socket_id == content_common::kNoSocketId) {
+  if (socket_id == content::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnClose";
     return;
   }
@@ -111,7 +111,7 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
   DVLOG(1) << "SocketStreamDispatcherHost::OnSSLCertificateError socket_id="
            << socket_id;
-  if (socket_id == content_common::kNoSocketId) {
+  if (socket_id == content::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnSSLCertificateError";
     return;
   }
@@ -137,7 +137,7 @@ bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
 void SocketStreamDispatcherHost::OnConnect(const GURL& url, int socket_id) {
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnect url=" << url
            << " socket_id=" << socket_id;
-  DCHECK_NE(content_common::kNoSocketId, socket_id);
+  DCHECK_NE(content::kNoSocketId, socket_id);
   if (hosts_.Lookup(socket_id)) {
     LOG(ERROR) << "socket_id=" << socket_id << " already registered.";
     return;

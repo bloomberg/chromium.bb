@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ SocketStreamHost::SocketStreamHost(
     int socket_id)
     : delegate_(delegate),
       socket_id_(socket_id) {
-  DCHECK_NE(socket_id_, content_common::kNoSocketId);
+  DCHECK_NE(socket_id_, content::kNoSocketId);
   VLOG(1) << "SocketStreamHost: socket_id=" << socket_id_;
 }
 
@@ -36,7 +36,7 @@ int SocketStreamHost::SocketIdFromSocketStream(net::SocketStream* socket) {
     SocketStreamId* socket_stream_id = static_cast<SocketStreamId*>(d);
     return socket_stream_id->socket_id();
   }
-  return content_common::kNoSocketId;
+  return content::kNoSocketId;
 }
 
 SocketStreamHost::~SocketStreamHost() {

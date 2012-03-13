@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class URLRequestContext;
 
 // Host of SocketStreamHandle.
 // Each SocketStreamHandle will have an unique socket_id assigned by
-// SocketStreamHost constructor. If socket id is chrome_common_net::kNoSocketId,
+// SocketStreamHost constructor. If socket id is content::kNoSocketId,
 // there is no SocketStreamHost.
 // Each SocketStreamHost has SocketStream to manage bi-directional
 // communication over socket stream.
