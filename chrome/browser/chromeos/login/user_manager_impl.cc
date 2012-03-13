@@ -401,7 +401,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
-                             RemoveUserDelegate* delegate) {
+                                 RemoveUserDelegate* delegate) {
   if (!IsKnownUser(email))
     return;
 
@@ -566,19 +566,19 @@ std::string UserManagerImpl::GetUserDisplayEmail(
 }
 
 void UserManagerImpl::SaveUserDefaultImageIndex(const std::string& username,
-                                            int image_index) {
+                                                int image_index) {
   DCHECK(image_index >= 0 && image_index < kDefaultImagesCount);
   SetUserImage(username, image_index, GetDefaultImage(image_index));
   SaveImageToLocalState(username, "", image_index, false);
 }
 
 void UserManagerImpl::SaveUserImage(const std::string& username,
-                                const SkBitmap& image) {
+                                    const SkBitmap& image) {
   SaveUserImageInternal(username, User::kExternalImageIndex, image);
 }
 
 void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
-                                        const FilePath& path) {
+                                            const FilePath& path) {
   image_loader_->Start(
       path.value(), login::kUserImageSize,
       base::Bind(&UserManagerImpl::SaveUserImage,
@@ -616,8 +616,8 @@ void UserManagerImpl::DownloadProfileImage(const std::string& reason) {
 }
 
 void UserManagerImpl::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED:
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -838,8 +838,8 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
-                               int image_index,
-                               const SkBitmap& image) {
+                                   int image_index,
+                                   const SkBitmap& image) {
   User* user = const_cast<User*>(FindUser(username));
   // User may have been removed by now.
   if (user) {
@@ -868,8 +868,8 @@ void UserManagerImpl::SetUserImage(const std::string& username,
 }
 
 void UserManagerImpl::SaveUserImageInternal(const std::string& username,
-                                        int image_index,
-                                        const SkBitmap& image) {
+                                            int image_index,
+                                            const SkBitmap& image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SetUserImage(username, image_index, image);
@@ -888,9 +888,9 @@ void UserManagerImpl::SaveUserImageInternal(const std::string& username,
 }
 
 void UserManagerImpl::SaveImageToFile(const std::string& username,
-                                  const SkBitmap& image,
-                                  const FilePath& image_path,
-                                  int image_index) {
+                                      const SkBitmap& image,
+                                      const FilePath& image_path,
+                                      int image_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<unsigned char> encoded_image;
@@ -915,9 +915,9 @@ void UserManagerImpl::SaveImageToFile(const std::string& username,
 }
 
 void UserManagerImpl::SaveImageToLocalState(const std::string& username,
-                                        const std::string& image_path,
-                                        int image_index,
-                                        bool is_async) {
+                                            const std::string& image_path,
+                                            int image_index,
+                                            bool is_async) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(ivankr): use unique filenames for user images each time
@@ -1005,7 +1005,7 @@ std::string UserManagerImpl::GetCachedPictureURL() const {
 }
 
 void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
-                                     bool success) {
+                                         bool success) {
   // Make sure that |ProfileDownloader| gets deleted after return.
   scoped_ptr<ProfileDownloader> profile_image_downloader(
       profile_image_downloader_.release());
