@@ -3310,7 +3310,7 @@ FileManager.prototype = {
     this.checkFreeSpace_(this.getCurrentDirectory());
 
     // TODO(dgozman): title may be better than this.
-    this.document_.title = this.getCurrentDirectory();
+    this.document_.title = this.getCurrentDirectory().substr(1);
 
     var self = this;
 
