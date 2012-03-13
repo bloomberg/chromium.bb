@@ -236,7 +236,8 @@ void EventPrinter::OnTraceEvent(const EVENT_TRACE* event,
                                 DWORD stack_depth,
                                 const intptr_t* backtrace) {
   PrintEventContext(event, GetTraceTypeString(type), base::StringPiece());
-  *out_ << name << " (id=" << std::hex << id << ") " << extra << std::endl;
+  *out_ << name << " (id=0x" << std::hex << id << std::dec << ") " << extra
+        << std::endl;
 }
 
 }  // namespace
