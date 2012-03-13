@@ -584,6 +584,10 @@ FileManager.prototype = {
     this.fileContextMenu_ = this.dialogDom_.querySelector('.file-context-menu');
     cr.ui.Menu.decorate(this.fileContextMenu_);
 
+    this.rootsContextMenu_ =
+        this.dialogDom_.querySelector('.roots-context-menu');
+    cr.ui.Menu.decorate(this.rootsContextMenu_);
+
     this.document_.addEventListener('canExecute',
                                     this.onCanExecute_.bind(this));
     this.document_.addEventListener('command', this.onCommand_.bind(this));
@@ -1137,7 +1141,24 @@ FileManager.prototype = {
         return !readonly &&
                (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ||
                 this.dialogType_ == FileManager.DialogType.FULL_PAGE);
+
+      case 'unmount':
+        return true;
+
+      case 'format':
+        var entry =
+            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
+
+        return DirectoryModel.getRootType(entry.fullPath) ==
+               DirectoryModel.RootType.REMOVABLE;
     }
+  };
+
+  FileManager.prototype.getRootEntry_ = function(index) {
+    if (index == -1)
+      return null;
+
+    return this.rootsList_.dataModel.item(index);
   };
 
   FileManager.prototype.updateCommonActionButtons_ = function() {
@@ -1204,8 +1225,7 @@ FileManager.prototype = {
 
     this.grid_.addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
-    cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
-    this.grid_.contextMenu = this.fileContextMenu_;
+    cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
     this.grid_.addEventListener('mousedown',
                                 this.onGridOrTableMouseDown_.bind(this));
   };
@@ -1247,9 +1267,8 @@ FileManager.prototype = {
     this.table_.querySelector('.list').addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
 
-    cr.ui.contextMenuHandler.addContextMenuProperty(
-        this.table_.querySelector('.list'));
-    this.table_.querySelector('.list').contextMenu = this.fileContextMenu_;
+    cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
+        this.fileContextMenu_);
 
     this.table_.addEventListener('mousedown',
                                  this.onGridOrTableMouseDown_.bind(this));
@@ -1382,6 +1401,23 @@ FileManager.prototype = {
 
       case 'newfolder':
         this.onNewFolderCommand_(event);
+        return;
+
+      case 'unmount':
+        var entry =
+            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
+
+        this.unmountVolume_(entry.toURL());
+        return;
+
+      case 'format':
+        var entry =
+            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
+
+        this.confirm.show(str('FORMATTING_WARNING'), function() {
+          chrome.fileBrowserPrivate.formatDevice(entry.toURL());
+        });
+
         return;
     }
   };
@@ -1749,8 +1785,11 @@ FileManager.prototype = {
 
       var eject = this.document_.createElement('div');
       eject.className = 'root-eject';
-      eject.addEventListener('click', this.onEjectClick_.bind(this, entry));
+      eject.addEventListener('click',
+          this.unmountVolume_.bind(this, entry.toURL()));
       li.appendChild(eject);
+
+      cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
     }
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
@@ -1771,13 +1810,12 @@ FileManager.prototype = {
   };
 
   /**
-   * Handler for eject button clicked.
-   * @param {Entry} entry Entry to eject.
-   * @param {Event} event The event.
+   * Unmounts device.
+   * @param {string} url The url of removable storage to unmount.
    */
-  FileManager.prototype.onEjectClick_ = function(entry, event) {
-    this.unmountRequests_.push(entry.toURL());
-    chrome.fileBrowserPrivate.removeMount(entry.toURL());
+  FileManager.prototype.unmountVolume_ = function(url) {
+    this.unmountRequests_.push(url);
+    chrome.fileBrowserPrivate.removeMount(url);
   };
 
   /**
@@ -2282,9 +2320,6 @@ FileManager.prototype = {
       selection.dispatchDefault = false;
       this.dispatchDefaultTask_(selection);
     }
-    // These are done in separate functions, as the checks require
-    // asynchronous function calls.
-    this.maybeRenderFormattingTask_(selection);
   };
 
   FileManager.prototype.renderTaskItem_ = function(task) {
@@ -2301,47 +2336,6 @@ FileManager.prototype = {
     item.appendChild(label);
 
     this.taskItems_.addItem(item);
-  };
-
-  /**
-   * Checks whether formatting task should be displayed and if the answer is
-   * affirmative renders it. Includes asynchronous calls, so it's splitted into
-   * three parts.
-   * @param {Object} selection Selected files object.
-   */
-  FileManager.prototype.maybeRenderFormattingTask_ = function(selection) {
-    var dm = this.directoryModel_;
-    if (!dm || dm.rootPath != '/' + DirectoryModel.REMOVABLE_DIRECTORY)
-      return;
-
-    // Format task is not supported for multiple selection.
-    if (selection.entries.length != 1)
-      return;
-    var self = this;
-    var initialSelection = this.selection;
-
-    chrome.fileBrowserPrivate.getVolumeMetadata(selection.entries[0].toURL(),
-        function (volumeMetadata) {
-          // We can format only USB and SD devices.
-          if (!volumeMetadata ||
-              (volumeMetadata.deviceType != "usb" &&
-               volumeMetadata.deviceType != "sd")) {
-            return;
-          }
-
-          // We don't want to render button if selection has changed.
-          if (initialSelection != self.selection)
-            return;
-
-          var task = {
-            taskId: self.getExtensionId_() + '|format-device',
-            iconUrl: chrome.extension.getURL('images/filetype_generic.png'),
-            title: str('FORMAT_DEVICE'),
-            internal: true
-          };
-          self.renderTaskItem_(task);
-        }
-    );
   };
 
   FileManager.prototype.getExtensionId_ = function() {
@@ -2449,8 +2443,11 @@ FileManager.prototype = {
       if (event.eventType == 'unmount') {
         // Unmount request finished - remove it.
         var index = self.unmountRequests_.indexOf(event.sourceUrl);
-        if (index != -1)
+        if (index != -1) {
           self.unmountRequests_.splice(index, 1);
+          if (event.status != 'success')
+            self.alert.show(strf('UNMOUNT_FAILED', event.status));
+        }
       }
 
       if (event.eventType == 'mount' && event.status != 'success' &&
@@ -2460,11 +2457,6 @@ FileManager.prototype = {
             event.sourceUrl.lastIndexOf('/') + 1);
         self.alert.show(strf('ARCHIVE_MOUNT_FAILED', fileName,
                              event.status));
-      }
-
-      if (event.eventType == 'unmount' && event.status != 'success') {
-        // Report unmount error.
-        // TODO(dgozman): introduce string and show alert here.
       }
 
       if (event.eventType == 'unmount' && event.status == 'success' &&

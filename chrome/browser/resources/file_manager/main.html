@@ -123,7 +123,13 @@
       <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"></command>
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"></command>
       <command id="delete" i18n-values="label:DELETE_BUTTON_LABEL"></command>
-      <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"></command>
+      <command id="newfolder" i18n-values="label:NEW_FOLDER_BUTTON_LABEL"
+      ></command>
+
+      <command id="unmount" i18n-values="label:UNMOUNT_DEVICE_BUTTON_LABEL"
+      ></command>
+      <command id="format" i18n-values="label:FORMAT_DEVICE_BUTTON_LABEL"
+      ></command>
     </commands>
 
     <menu class=file-context-menu>
@@ -138,6 +144,11 @@
       <menuitem command='#newfolder'
           visibleif='this.dialogType_ == "saveas-file" ||
                      this.dialogType_ == "full-page"'></menuitem>
+    </menu>
+
+    <menu class=roots-context-menu>
+      <menuitem command='#unmount'></menuitem>
+      <menuitem command='#format'></menuitem>
     </menu>
 
     <!-- TODO(bshe): Remove isAura flag after all chromeos use aura. -->

@@ -10064,9 +10064,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         $1 x $2
       </message>
 
-      <message name="IDS_FILE_BROWSER_EJECT_BUTTON" desc="Button label.">
-        Eject
-      </message>
       <message name="IDS_FILE_BROWSER_IMAGE_DIMENSIONS" desc="Dimensions of a selected image.">
         Image Dimensions
       </message>
@@ -10078,13 +10075,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_ARCHIVE_MOUNT_FAILED" desc="Title of the error dialog when file mount operation failed.">
-        Unable to open open "$1": $2
+        Unable to open "$1": $2
+      </message>
+      <message name="IDS_FILE_BROWSER_UNMOUNT_FAILED" desc="Title of the error dialog when device unmount operation failed.">
+        Unable to eject: $1
       </message>
       <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
         Open
       </message>
-      <message name="IDS_FILE_BROWSER_FORMAT_DEVICE" desc="Title of the action for formatting removable device.">
+      <message name="IDS_FILE_BROWSER_FORMAT_DEVICE_BUTTON_LABEL" desc="Title of the action for formatting removable device.">
         Format device
+      </message>
+      <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
+        Eject device
       </message>
 
       <message name="IDS_FILE_BROWSER_ACTION_VIEW" desc="Title of the action to view (no edit) a file.">
