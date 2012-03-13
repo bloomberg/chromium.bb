@@ -283,7 +283,6 @@ static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
                                             int index) {
   int memory_address;
   NaClExpVector* vector = NaClInstStateExpVector(state);
-  assert(ExprSegmentAddress == node->kind);
   /* If segment register is default. If so, do not print. */
   if (IsSegmentAddressDsRegPair(state, index) ||
       IsSegmentAddressEsRegPair(state, index)) {
