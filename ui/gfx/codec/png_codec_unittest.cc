@@ -24,11 +24,11 @@ namespace gfx {
 
 namespace {
 
-void MakeRGBImage(int w, int h, std::vector<unsigned char>* dat) {
-  dat->resize(w * h * 3);
+void MakeRGBImage(int w, int h, std::vector<unsigned char>* data) {
+  data->resize(w * h * 3);
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      unsigned char* org_px = &(*dat)[(y * w + x) * 3];
+      unsigned char* org_px = &(*data)[(y * w + x) * 3];
       org_px[0] = x * 3;      // r
       org_px[1] = x * 3 + 1;  // g
       org_px[2] = x * 3 + 2;  // b
@@ -41,11 +41,11 @@ void MakeRGBImage(int w, int h, std::vector<unsigned char>* dat) {
 // same image as MakeRGBImage above, so the code below can make reference
 // images for conversion testing.
 void MakeRGBAImage(int w, int h, bool use_transparency,
-                   std::vector<unsigned char>* dat) {
-  dat->resize(w * h * 4);
+                   std::vector<unsigned char>* data) {
+  data->resize(w * h * 4);
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      unsigned char* org_px = &(*dat)[(y * w + x) * 4];
+      unsigned char* org_px = &(*data)[(y * w + x) * 4];
       org_px[0] = x * 3;      // r
       org_px[1] = x * 3 + 1;  // g
       org_px[2] = x * 3 + 2;  // b
@@ -53,6 +53,56 @@ void MakeRGBAImage(int w, int h, bool use_transparency,
         org_px[3] = x*3 + 3;  // a
       else
         org_px[3] = 0xFF;     // a (opaque)
+    }
+  }
+}
+
+// Creates a palette-based image.
+void MakePaletteImage(int w, int h,
+                      std::vector<unsigned char>* data,
+                      std::vector<png_color>* palette,
+                      std::vector<unsigned char>* trans_chunk = 0) {
+  data->resize(w * h);
+  palette->resize(w);
+  for (int i = 0; i < w; ++i) {
+    png_color& color = (*palette)[i];
+    color.red = i * 3;
+    color.green = color.red + 1;
+    color.blue = color.red + 2;
+  }
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      (*data)[y * w + x] = x;  // palette index
+    }
+  }
+  if (trans_chunk) {
+    trans_chunk->resize(palette->size());
+    for (std::size_t i = 0; i < trans_chunk->size(); ++i) {
+      (*trans_chunk)[i] = i % 256;
+    }
+  }
+}
+
+// Creates a grayscale image without an alpha channel.
+void MakeGrayscaleImage(int w, int h,
+                        std::vector<unsigned char>* data) {
+  data->resize(w * h);
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      (*data)[y * w + x] = x;  // gray value
+    }
+  }
+}
+
+// Creates a grayscale image with an alpha channel.
+void MakeGrayscaleAlphaImage(int w, int h,
+                             std::vector<unsigned char>* data) {
+  data->resize(w * h * 2);
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      unsigned char* px = &(*data)[(y * w + x) * 2];
+      px[0] = x;        // gray value
+      px[1] = x % 256;  // alpha
     }
   }
 }
@@ -307,6 +357,321 @@ TEST(PNGCodec, EncodeDecodeBGRA) {
   ASSERT_TRUE(original == decoded);
 }
 
+TEST(PNGCodec, DecodePalette) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  std::vector<png_color> original_palette;
+  std::vector<unsigned char> original_trans_chunk;
+  MakePaletteImage(w, h, &original, &original_palette, &original_trans_chunk);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_PALETTE,
+                          &encoded,
+                          PNG_INTERLACE_NONE,
+                          &original_palette,
+                          &original_trans_chunk));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), w * h * 4U);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char palette_pixel = original[y * w + x];
+      png_color& palette_color = original_palette[palette_pixel];
+      int alpha = original_trans_chunk[palette_pixel];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 4];
+
+      EXPECT_EQ(palette_color.red, rgba_pixel[0]);
+      EXPECT_EQ(palette_color.green, rgba_pixel[1]);
+      EXPECT_EQ(palette_color.blue, rgba_pixel[2]);
+      EXPECT_EQ(alpha, rgba_pixel[3]);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodePaletteDiscardAlpha) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  std::vector<png_color> original_palette;
+  std::vector<unsigned char> original_trans_chunk;
+  MakePaletteImage(w, h, &original, &original_palette, &original_trans_chunk);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_PALETTE,
+                          &encoded,
+                          PNG_INTERLACE_NONE,
+                          &original_palette,
+                          &original_trans_chunk));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGB, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), w * h * 3U);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char palette_pixel = original[y * w + x];
+      png_color& palette_color = original_palette[palette_pixel];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 3];
+
+      EXPECT_EQ(palette_color.red, rgba_pixel[0]);
+      EXPECT_EQ(palette_color.green, rgba_pixel[1]);
+      EXPECT_EQ(palette_color.blue, rgba_pixel[2]);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeInterlacedPalette) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  std::vector<png_color> original_palette;
+  std::vector<unsigned char> original_trans_chunk;
+  MakePaletteImage(w, h, &original, &original_palette, &original_trans_chunk);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_PALETTE,
+                          &encoded,
+                          PNG_INTERLACE_ADAM7,
+                          &original_palette,
+                          &original_trans_chunk));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), w * h * 4U);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char palette_pixel = original[y * w + x];
+      png_color& palette_color = original_palette[palette_pixel];
+      int alpha = original_trans_chunk[palette_pixel];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 4];
+
+      EXPECT_EQ(palette_color.red, rgba_pixel[0]);
+      EXPECT_EQ(palette_color.green, rgba_pixel[1]);
+      EXPECT_EQ(palette_color.blue, rgba_pixel[2]);
+      EXPECT_EQ(alpha, rgba_pixel[3]);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeGrayscale) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  MakeGrayscaleImage(w, h, &original);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original, w, h, COLOR_TYPE_GRAY, &encoded));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGB, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), original.size() * 3);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char gray_pixel = original[(y * w + x)];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 3];
+      EXPECT_EQ(rgba_pixel[0], gray_pixel);
+      EXPECT_EQ(rgba_pixel[1], gray_pixel);
+      EXPECT_EQ(rgba_pixel[2], gray_pixel);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeGrayscaleWithAlpha) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  MakeGrayscaleAlphaImage(w, h, &original);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_GRAY_ALPHA,
+                          &encoded));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), original.size() * 2);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char* gray_pixel = &original[(y * w + x) * 2];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 4];
+      EXPECT_EQ(rgba_pixel[0], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[1], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[2], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[3], gray_pixel[1]);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeGrayscaleWithAlphaDiscardAlpha) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  MakeGrayscaleAlphaImage(w, h, &original);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_GRAY_ALPHA,
+                          &encoded));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGB, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), w * h * 3U);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char* gray_pixel = &original[(y * w + x) * 2];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 3];
+      EXPECT_EQ(rgba_pixel[0], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[1], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[2], gray_pixel[0]);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeInterlacedGrayscale) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  MakeGrayscaleImage(w, h, &original);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_GRAY,
+                          &encoded,
+                          PNG_INTERLACE_ADAM7));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), original.size() * 4);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char gray_pixel = original[(y * w + x)];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 4];
+      EXPECT_EQ(rgba_pixel[0], gray_pixel);
+      EXPECT_EQ(rgba_pixel[1], gray_pixel);
+      EXPECT_EQ(rgba_pixel[2], gray_pixel);
+      EXPECT_EQ(rgba_pixel[3], 0xFF);
+    }
+  }
+}
+
+TEST(PNGCodec, DecodeInterlacedGrayscaleWithAlpha) {
+  const int w = 20, h = 20;
+
+  // create an image with known values
+  std::vector<unsigned char> original;
+  MakeGrayscaleAlphaImage(w, h, &original);
+
+  // encode
+  std::vector<unsigned char> encoded;
+  ASSERT_TRUE(EncodeImage(original,
+                          w, h,
+                          COLOR_TYPE_GRAY_ALPHA,
+                          &encoded,
+                          PNG_INTERLACE_ADAM7));
+
+  // decode
+  std::vector<unsigned char> decoded;
+  int outw, outh;
+  ASSERT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
+                               &outw, &outh));
+  ASSERT_EQ(w, outw);
+  ASSERT_EQ(h, outh);
+  ASSERT_EQ(decoded.size(), original.size() * 2);
+
+  // Images must be equal
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      unsigned char* gray_pixel = &original[(y * w + x) * 2];
+      unsigned char* rgba_pixel = &decoded[(y * w + x) * 4];
+      EXPECT_EQ(rgba_pixel[0], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[1], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[2], gray_pixel[0]);
+      EXPECT_EQ(rgba_pixel[3], gray_pixel[1]);
+    }
+  }
+}
+
 TEST(PNGCodec, DecodeInterlacedRGB) {
   const int w = 20, h = 20;
 
@@ -395,9 +760,9 @@ TEST(PNGCodec, DecodeInterlacedRGBADiscardAlpha) {
     for (int y = 0; y < h; y++) {
       unsigned char* orig_px = &original[(y * w + x) * 4];
       unsigned char* dec_px = &decoded[(y * w + x) * 3];
-      ASSERT_EQ(dec_px[0], orig_px[0]);
-      ASSERT_EQ(dec_px[1], orig_px[1]);
-      ASSERT_EQ(dec_px[2], orig_px[2]);
+      EXPECT_EQ(dec_px[0], orig_px[0]);
+      EXPECT_EQ(dec_px[1], orig_px[1]);
+      EXPECT_EQ(dec_px[2], orig_px[2]);
     }
   }
 }
@@ -432,9 +797,9 @@ TEST(PNGCodec, DecodeInterlacedBGR) {
     for (int y = 0; y < h; y++) {
       unsigned char* orig_px = &original[(y * w + x) * 3];
       unsigned char* dec_px = &decoded[(y * w + x) * 4];
-      ASSERT_EQ(dec_px[0], orig_px[0]);
-      ASSERT_EQ(dec_px[1], orig_px[1]);
-      ASSERT_EQ(dec_px[2], orig_px[2]);
+      EXPECT_EQ(dec_px[0], orig_px[0]);
+      EXPECT_EQ(dec_px[1], orig_px[1]);
+      EXPECT_EQ(dec_px[2], orig_px[2]);
     }
   }
 }
@@ -498,7 +863,7 @@ TEST(PNGCodec, DecodeInterlacedRGBtoSkBitmap) {
                                                       original_pixel[1],
                                                       original_pixel[2]);
       const uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
-      ASSERT_EQ(original_pixel_sk, decoded_pixel);
+      EXPECT_EQ(original_pixel_sk, decoded_pixel);
     }
   }
 }
@@ -531,7 +896,7 @@ TEST(PNGCodec, DecodeInterlacedRGBAtoSkBitmap) {
                                                       original_pixel[1],
                                                       original_pixel[2]);
       const uint32_t decoded_pixel = decoded_bitmap.getAddr32(0, y)[x];
-      ASSERT_EQ(original_pixel_sk, decoded_pixel);
+      EXPECT_EQ(original_pixel_sk, decoded_pixel);
     }
   }
 }
