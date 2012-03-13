@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -83,18 +84,65 @@ bool BrowserActionSetBadgeTextFunction::RunBrowserAction() {
   return true;
 }
 
-bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
-  ListValue* list = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
-  EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
+bool BrowserActionFunction::ParseCSSColorString(const std::string& color_string,
+                                                SkColor* result) {
+  std::string formatted_color = "#";
+  // Check the string for incorrect formatting.
+  if (color_string[0] != '#')
+    return false;
 
-  int color_array[4] = {0};
-  for (size_t i = 0; i < arraysize(color_array); ++i) {
-    EXTENSION_FUNCTION_VALIDATE(list->GetInteger(i, &color_array[i]));
+  // Convert the string from #FFF format to #FFFFFF format.
+  if (color_string.length() == 4) {
+    for (size_t i = 1; i < color_string.length(); i++) {
+      formatted_color += color_string[i];
+      formatted_color += color_string[i];
+    }
+  } else {
+    formatted_color = color_string;
   }
 
-  SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
-                                 color_array[2]);
+  if (formatted_color.length() != 7)
+    return false;
+
+  // Convert the string to an integer and make sure it is in the correct value
+  // range.
+  int color_ints[3] = {0};
+  for (int i = 0; i < 3; i++) {
+    if (!base::HexStringToInt(formatted_color.substr(1 + (2 * i), 2),
+                              color_ints + i))
+      return false;
+    if (color_ints[i] > 255 || color_ints[i] < 0)
+      return false;
+  }
+
+  *result = SkColorSetARGB(255, color_ints[0], color_ints[1], color_ints[2]);
+  return true;
+}
+
+bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
+  Value* color_value = NULL;
+  details_->Get("color", &color_value);
+  SkColor color = 0;
+  if (color_value->IsType(Value::TYPE_LIST)) {
+    ListValue* list = NULL;
+    EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
+    EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
+
+    int color_array[4] = {0};
+    for (size_t i = 0; i < arraysize(color_array); ++i) {
+      EXTENSION_FUNCTION_VALIDATE(list->GetInteger(i, &color_array[i]));
+    }
+
+    color = SkColorSetARGB(color_array[3], color_array[0],
+                           color_array[1], color_array[2]);
+
+  } else if (color_value->IsType(Value::TYPE_STRING)) {
+    std::string color_string;
+    EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
+    if (!ParseCSSColorString(color_string, &color))
+      return false;
+  }
+
   browser_action_->SetBadgeBackgroundColor(tab_id_, color);
 
   return true;

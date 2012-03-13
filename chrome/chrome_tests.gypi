@@ -1452,6 +1452,7 @@
         'browser/extensions/component_loader_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
+        'browser/extensions/extension_browser_actions_api_unittest.cc',
         'browser/extensions/extension_content_settings_store_unittest.cc',
         'browser/extensions/extension_content_settings_unittest.cc',
         'browser/extensions/extension_cookies_unittest.cc',

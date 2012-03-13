@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,12 @@ class DictionaryValue;
 
 // Base class for chrome.browserAction.* APIs.
 class BrowserActionFunction : public SyncExtensionFunction {
+ public:
+  // This function converts a CSS value string of the format #FFF or #FFFFFF
+  // to an SkColor
+  static bool ParseCSSColorString(const std::string& color_string,
+                                  SkColor* result);
+
  protected:
   BrowserActionFunction()
       : details_(NULL),

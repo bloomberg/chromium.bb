@@ -410,3 +410,38 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension->id()));
   ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("browser_action/color")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Test that there is a browser action in the toolbar.
+  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+
+  // Test that CSS values (#FF0000) set color correctly.
+  ExtensionAction* action = extension->browser_action();
+  ASSERT_EQ(SkColorSetARGB(255, 255, 0, 0),
+            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+
+  // Tell the extension to update the browser action state.
+  ResultCatcher catcher;
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Test that CSS values (#0F0) set color correctly.
+  action = extension->browser_action();
+  ASSERT_EQ(SkColorSetARGB(255, 0, 255, 0),
+            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update2.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Test that array values set color correctly.
+  action = extension->browser_action();
+  ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
+            action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
+}
