@@ -537,8 +537,8 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
-// Enables the menu on the NTP for accessing sessions from other devices.
-const char kEnableNTPOtherSessionsMenu[]    = "enable-ntp-other-sessions-menu";
+// Disables the menu on the NTP for accessing sessions from other devices.
+const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";

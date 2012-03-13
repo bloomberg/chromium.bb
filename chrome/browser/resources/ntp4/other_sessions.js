@@ -41,9 +41,6 @@ cr.define('ntp', function() {
       this.anchorType = cr.ui.AnchorType.ABOVE;
       this.invertLeftRight = true;
 
-      this.classList.remove('invisible');
-      this.showPromo_();
-
       chrome.send('getForeignSessions');
       this.recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
     },
@@ -141,7 +138,9 @@ cr.define('ntp', function() {
       }
 
       if (sessionList.length == 0)
-        this.showPromo();
+        this.classList.add('invisible');
+      else
+        this.classList.remove('invisible');
 
       this.sessions_ = sessionList;
     },

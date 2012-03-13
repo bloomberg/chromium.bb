@@ -568,11 +568,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kWebUITaskManager)
   },
   {
-    "enable-ntp-other-sessions-menu",
+    "disable-ntp-other-sessions-menu",
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME,
     IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableNTPOtherSessionsMenu)
+    SINGLE_VALUE_TYPE(switches::kDisableNTPOtherSessionsMenu)
   },
 #if defined(USE_AURA)
   {
