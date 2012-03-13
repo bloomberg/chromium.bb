@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,9 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import pyauto_utils
 import chromeos_network
+
+
+MAX_WAIT_TIME_IN_MSEC = 15 * 60 * 1000
 
 
 class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
@@ -137,15 +140,22 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     start = time.time()
     # Make a copy of the download directory now to work around segfault
     downloads_dir = self.GetDownloadDirectory().value()
-    self.DownloadAndWaitForStart(download_url)
-    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms())
+    try:
+      self.DownloadAndWaitForStart(download_url)
+    except AssertionError:
+      # We need to redo this since the external server may not respond the
+      # first time.
+      logging.info('Could not start download. Retrying ...')
+      self.DownloadAndWaitForStart(download_url)
+    # Maximum wait time is set as 15 mins as an 100MB file may take somewhere
+    # between 8-12 mins to download.
+    self.WaitForAllDownloadsToComplete(timeout=MAX_WAIT_TIME_IN_MSEC)
     end = time.time()
     logging.info('Download took %2.2f seconds to complete' % (end - start))
     downloaded_files = os.listdir(downloads_dir)
-    self.assertEqual(len(downloaded_files), 1, msg='Expected only one file in '
-                    'the Downloads folder, there are more.')
-    self.assertFalse(len(downloaded_files) == 0, msg='Expected only one file in'
-                    ' the Downloads folder, there are none.')
+    self.assertEquals(len(downloaded_files), 1,
+                      msg='Expected only one file in the Downloads folder. '
+                      'but got this instead: %s' % ', '.join(downloaded_files))
     filename = os.path.splitext(downloaded_files[0])[0]
     file_path = os.path.join(self.GetDownloadDirectory().value(),
                              downloaded_files[0])
@@ -153,7 +163,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
     md5_url = download_url[:-4] + '.md5'  # replacing .slf with .md5
     md5_file = urllib2.urlopen(md5_url).readlines()[0]
     self.assertTrue(md5_file.rstrip().endswith(md5_sum.encode()), 
-                    msg='Unexpected checksum.  The download is incomplete.')
+                    msg='Unexpected checksum. The download is incomplete.')
     return end - start
 
   def testDownload1MBFile(self):
@@ -169,7 +179,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
   def testDownload10MBFile(self):
     """Test downloading a 10MB file from a wireless router."""
     download_url = 'http://172.22.12.98:80/downloads/10M.slf'
-    router_name = 'Belkin_N+'
+    router_name = 'Linksys_WRT54G2'
     self._ConnectToRouterAndVerify(router_name)
     download_time = self._DownloadAndVerifyFile(download_url)
     self._WriteTimeToFile(self.log_file_path, router_name, '10MB',
@@ -179,7 +189,7 @@ class WifiDownloadsTest(chromeos_network.PyNetworkUITest):
   def testDownload100MBFile(self):
     """Test downloading a 100MB file from a wireless router."""
     download_url = 'http://172.22.12.98:80/downloads/100M.slf'
-    router_name = 'Trendnet_639gr'
+    router_name = 'Trendnet_639gr_4'
     self._ConnectToRouterAndVerify(router_name)
     download_time = self._DownloadAndVerifyFile(download_url)
     self._WriteTimeToFile(self.log_file_path, router_name, '100MB',
