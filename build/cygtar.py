@@ -147,7 +147,8 @@ class CygTar(object):
   """ CygTar is an object which represents a Win32 and Cygwin aware tarball."""
   def __init__(self, filename, mode='r', verbose=False):
     self.size_map = {}
-    self.tar = tarfile.open(filename, mode)
+    # Set errorlevel=1 so that fatal errors actually raise!
+    self.tar = tarfile.open(filename, mode, errorlevel=1)
     self.verbose = verbose
 
   def __DumpInfo(self, tarinfo):
