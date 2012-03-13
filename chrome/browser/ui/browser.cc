@@ -64,7 +64,6 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
-#include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -2852,46 +2851,6 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
 }
 
 // static
-void Browser::RegisterIntentHandlerHelper(WebContents* tab,
-                                          const string16& action,
-                                          const string16& type,
-                                          const string16& href,
-                                          const string16& title,
-                                          const string16& disposition) {
-  if (!web_intents::IsWebIntentsEnabled())
-    return;
-
-  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab);
-  if (!tcw || tcw->profile()->IsOffTheRecord())
-    return;
-
-  FaviconService* favicon_service =
-      tcw->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
-
-  // |href| can be relative to originating URL. Resolve if necessary.
-  GURL service_url(href);
-  if (!service_url.is_valid()) {
-    const GURL& url = tab->GetURL();
-    service_url = url.Resolve(href);
-  }
-
-  webkit_glue::WebIntentServiceData service;
-  service.service_url = service_url;
-  service.action = action;
-  service.type = type;
-  service.title = title;
-  service.setDisposition(disposition);
-
-  RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
-      tcw->infobar_tab_helper(),
-      WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
-      service,
-      favicon_service,
-      tab->GetURL());
-}
-
-// static
 void Browser::FindReplyHelper(WebContents* tab,
                               int request_id,
                               int number_of_matches,
@@ -4211,11 +4170,14 @@ void Browser::RegisterIntentHandler(WebContents* tab,
                                     const string16& href,
                                     const string16& title,
                                     const string16& disposition) {
+#if defined(ENABLE_WEB_INTENTS)
   RegisterIntentHandlerHelper(tab, action, type, href, title, disposition);
+#endif
 }
 
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
+#if defined(ENABLE_WEB_INTENTS)
   if (!web_intents::IsWebIntentsEnabled())
     return;
 
@@ -4226,6 +4188,7 @@ void Browser::WebIntentDispatch(
       this,
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
+#endif // defined(ENABLE_WEB_INTENTS)
 }
 
 void Browser::FindReply(WebContents* tab,

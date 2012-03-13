@@ -191,7 +191,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ThemeServiceFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
   TokenServiceFactory::GetInstance();
+#if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
+#endif
 
   built_factories_ = true;
 }

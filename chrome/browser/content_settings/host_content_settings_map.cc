@@ -323,9 +323,14 @@ bool HostContentSettingsMap::IsValueAllowedForType(
 bool HostContentSettingsMap::IsSettingAllowedForType(
     ContentSetting setting, ContentSettingsType content_type) {
   // Intents content settings are hidden behind a switch for now.
-  if (content_type == CONTENT_SETTINGS_TYPE_INTENTS &&
-      !web_intents::IsWebIntentsEnabled())
+  if (content_type == CONTENT_SETTINGS_TYPE_INTENTS) {
+#if defined(ENABLE_WEB_INTENTS)
+    if (!web_intents::IsWebIntentsEnabled())
+      return false;
+#else
     return false;
+#endif
+  }
 
   // BLOCK semantics are not implemented for fullscreen.
   if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN &&

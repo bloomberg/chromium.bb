@@ -741,6 +741,7 @@ TEST_F(WebDataServiceTest, WebIntentsGetAll) {
   EXPECT_EQ(service, consumer.services_[1]);
 }
 
+#if defined(ENABLE_WEB_INTENTS)
 TEST_F(WebDataServiceTest, WebIntentsDefaultsTest) {
   WebIntentsDefaultsConsumer consumer;
 
@@ -786,6 +787,7 @@ TEST_F(WebDataServiceTest, WebIntentsDefaultsTest) {
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ("service_url_2", consumer.services_[0].service_url);
 }
+#endif // defined(ENABLE_WEB_INTENTS)
 
 TEST_F(WebDataServiceTest, DidDefaultSearchProviderChangeOnNewProfile) {
   KeywordsConsumer consumer;
