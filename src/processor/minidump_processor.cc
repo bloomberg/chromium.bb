@@ -643,6 +643,12 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
         case MD_EXCEPTION_MAC_SOFTWARE:
           reason = "EXC_SOFTWARE / ";
           switch (exception_flags) {
+            case MD_EXCEPTION_CODE_MAC_ABORT:
+              reason.append("SIGABRT");
+              break;
+            case MD_EXCEPTION_CODE_MAC_NS_EXCEPTION:
+              reason.append("UNCAUGHT_NS_EXCEPTION");
+              break;
             // These are ppc only but shouldn't be a problem as they're
             // unused on x86
             case MD_EXCEPTION_CODE_MAC_PPC_TRAP:

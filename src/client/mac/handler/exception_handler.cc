@@ -38,6 +38,7 @@
 #include "client/mac/handler/minidump_generator.h"
 #include "common/mac/macho_utilities.h"
 #include "common/mac/scoped_task_suspend-inl.h"
+#include "google_breakpad/common/minidump_exception_mac.h"
 
 #ifndef USE_PROTECTED_ALLOCATIONS
 #if TARGET_OS_IPHONE
@@ -580,12 +581,13 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
 //static
 void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
-  gProtectedData.handler->WriteMinidumpWithException(EXC_CRASH,
-                                                     0xDEADBEEF,
-                                                     0,
-                                                     mach_thread_self(),
-                                                     true,
-                                                     true);
+  gProtectedData.handler->WriteMinidumpWithException(
+      EXC_SOFTWARE,
+      MD_EXCEPTION_CODE_MAC_ABORT,
+      0,
+      mach_thread_self(),
+      true,
+      true);
 }
 
 bool ExceptionHandler::InstallHandler() {
@@ -609,7 +611,7 @@ bool ExceptionHandler::InstallHandler() {
     old_handler_.swap(old);
     gProtectedData.handler = this;
 #if USE_PROTECTED_ALLOCATIONS
-    assert(((size_t)(*gProtectedData.protected_buffer) & PAGE_MASK) == 0);
+    assert(((size_t)(gProtectedData.protected_buffer) & PAGE_MASK) == 0);
     mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ);
 #endif
   }

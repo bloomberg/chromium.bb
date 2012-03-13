@@ -29,6 +29,7 @@
 
 #include "client/ios/handler/ios_exception_minidump_generator.h"
 
+#include "google_breakpad/common/minidump_exception_mac.h"
 #include "client/minidump_file_writer-inl.h"
 #include "processor/scoped_ptr.h"
 
@@ -37,7 +38,7 @@ namespace {
 const uint32_t kExpectedFinalFp = 4;
 const uint32_t kExpectedFinalSp = 0;
 const int kExceptionType = EXC_SOFTWARE;
-const int kExceptionCode = 0xDEADBEEF;
+const int kExceptionCode = MD_EXCEPTION_CODE_MAC_NS_EXCEPTION;
 
 // Append the given 4 bytes value to the sp position of the stack represented
 // by memory.
