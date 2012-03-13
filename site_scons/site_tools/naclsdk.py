@@ -215,7 +215,7 @@ def _SetEnvForPnacl(env, root):
   assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
 
   arch_flag = ' -arch %s' % arch
-  if env.Bit('pnacl_stop_with_pexe'):
+  if env.Bit('pnacl_generate_pexe'):
     ld_arch_flag = ''
   else:
     ld_arch_flag = arch_flag
@@ -345,7 +345,7 @@ def _SetEnvForSdkManually(env):
 
 def PNaClForceNative(env):
   assert(env.Bit('bitcode'))
-  if env.Bit('pnacl_stop_with_pexe'):
+  if env.Bit('pnacl_generate_pexe'):
     env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
                 CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
     return
@@ -384,7 +384,7 @@ def PNaClGetNNaClEnv(env):
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
   native_env = native_env.Clone(tools=['naclsdk'])
-  if native_env.Bit('pnacl_stop_with_pexe'):
+  if native_env.Bit('pnacl_generate_pexe'):
     native_env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
                        CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
   else:
@@ -404,7 +404,7 @@ def AddBiasForPNaCl(env, temporarily_allow=True):
   assert(env.Bit('bitcode'))
   # re: the temporarily_allow flag -- that is for:
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1248
-  if env.Bit('pnacl_stop_with_pexe') and not temporarily_allow:
+  if env.Bit('pnacl_generate_pexe') and not temporarily_allow:
     env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
                 CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
     return
@@ -531,7 +531,7 @@ def generate(env):
   env.Tool('ar')
   env.Tool('as')
 
-  if env.Bit('pnacl_stop_with_pexe'):
+  if env.Bit('pnacl_generate_pexe'):
     suffix = '.pexe'
   else:
     suffix = '.nexe'

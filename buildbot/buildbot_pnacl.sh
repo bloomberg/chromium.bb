@@ -28,7 +28,7 @@ relevant() {
       do_not_run_tests=1)
         echo $i
         ;;
-      pnacl_stop_with_pexe=1)
+      pnacl_generate_pexe=1)
         echo $i
         ;;
       --nacl_glibc)
@@ -232,10 +232,10 @@ browser-tests() {
     # specific tests will force scons to try and download/run.
     # Also skip for x86-64 --nacl_glibc, since we can't run these specific
     # tests yet.
-    echo "@@@BUILD_STEP -- SKIP pnacl_stop_with_pexe: ${platform} ${extra}@@@"
+    echo "@@@BUILD_STEP -- SKIP pnacl_generate_pexe: ${platform} ${extra}@@@"
   else
     local pexe_tests="run_pnacl_example_browser_test run_pnacl_bad_browser_test"
-    local pexe_mode="pnacl_stop_with_pexe=1"
+    local pexe_mode="pnacl_generate_pexe=1"
     single-browser-test ${platform} "${extra} do_not_run_tests=1 ${pexe_mode}" \
       "${pexe_tests}"
     single-browser-test ${platform} "${extra} ${pexe_mode}" "${pexe_tests}"

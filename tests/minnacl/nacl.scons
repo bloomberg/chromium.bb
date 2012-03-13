@@ -53,7 +53,7 @@ test_prog = env.ComponentProgram(
     EXTRA_LINKFLAGS=['-nostdlib'])
 
 extra_deps = []
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   env.Replace(TRANSLATEFLAGS=['-nostdlib'])
   nexe_name, pexe_node = env.GetTranslatedNexe(test_prog)
   test_prog = nexe_name

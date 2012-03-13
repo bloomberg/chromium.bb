@@ -24,7 +24,7 @@ if env.Bit('use_sandboxed_translator'):
   Return()
 
 # target_pexe case is similar
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   Return()
 
 # ----------------------------------------------------------

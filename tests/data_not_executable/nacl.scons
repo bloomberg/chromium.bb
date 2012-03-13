@@ -7,7 +7,7 @@ Import('env')
 
 # Do not run these tests with pexes, assuming they are portable, since
 # they use inline assembler.
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   Return()
 
 prog_env = env.Clone()

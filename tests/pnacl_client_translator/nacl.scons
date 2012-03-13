@@ -1,4 +1,3 @@
-# -*- python -*-
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,7 +5,7 @@
 Import('env')
 
 # Browser tests for the pnacl translator. This requires starting with a pexe.
-if not (env.Bit('bitcode') and env.Bit('pnacl_stop_with_pexe')):
+if not (env.Bit('bitcode') and env.Bit('pnacl_generate_pexe')):
   Return()
 
 # The PNaCl coordinator cannot yet handle GLibC-based pexe.

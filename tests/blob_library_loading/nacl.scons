@@ -14,7 +14,7 @@ if env.Bit('nacl_glibc'):
 # generated from assembly code, the sandboxed version cannot.
 if env.Bit('use_sandboxed_translator'):
   Return()
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   Return()
 
 if env.Bit('bitcode'):

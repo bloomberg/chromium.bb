@@ -317,8 +317,8 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
-  BitFromArgument(env, 'pnacl_stop_with_pexe', default=False,
-    desc='use pnacl to generate just pexes instead of nexes')
+  BitFromArgument(env, 'pnacl_generate_pexe', default=False,
+    desc='use pnacl to generate pexes and translate in a separate step')
 
   # This only controls whether the sandboxed translator is itself dynamically
   # linked, not whether it generates dynamic nexes (or links against glibc)
@@ -1192,7 +1192,7 @@ def CommandValidatorTestNacl(env, name, image,
   if validator_flags is None:
     validator_flags = []
 
-  if env.Bit('pnacl_stop_with_pexe'):
+  if env.Bit('pnacl_generate_pexe'):
     return []
 
   command = [validator] + validator_flags + [image]
@@ -1987,7 +1987,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  if (env.Bit('pnacl_stop_with_pexe') and env['NACL_BUILD_FAMILY'] != 'TRUSTED'):
+  if (env.Bit('pnacl_generate_pexe') and env['NACL_BUILD_FAMILY'] != 'TRUSTED'):
     # The nexe is actually a pexe. translate it before we run it
     nexe_name, pexe_node = GetTranslatedNexe(env, nexe)
     command = [nexe_name]
@@ -3137,6 +3137,7 @@ target_variant_map = [
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
+    ('pnacl_generate_pexe', 'pexe')
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
@@ -3476,7 +3477,7 @@ nacl_irt_env.ClearBits('nacl_pic')
 if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
   nacl_irt_env.ClearBits('bitcode')
 # The irt is not subject to the pexe contraint!
-nacl_irt_env.ClearBits('pnacl_stop_with_pexe')
+nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.

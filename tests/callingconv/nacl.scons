@@ -6,7 +6,7 @@
 Import('env')
 
 # This test does not make any sense for pure pnacl
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   Return()
 
 # If this test is failing on the bots, you can find the seed

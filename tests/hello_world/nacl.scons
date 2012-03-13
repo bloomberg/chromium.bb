@@ -45,7 +45,7 @@ def AddNonPortableTests():
                          ['small_tests', 'performance_tests'],
                          'run_hello_world_size_test')
 
-if not env.Bit('pnacl_stop_with_pexe'):
+if not env.Bit('pnacl_generate_pexe'):
   AddNonPortableTests()
 
 at_exit_nexe = env.ComponentProgram('at_exit', 'at_exit.c',

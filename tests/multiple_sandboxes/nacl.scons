@@ -48,7 +48,7 @@ test_prog = env.ComponentProgram(
 
 # If we are generating a pexe, translate it first
 extra_deps = []
-if env.Bit('pnacl_stop_with_pexe'):
+if env.Bit('pnacl_generate_pexe'):
   nexe_name, pexe_node = env.GetTranslatedNexe(test_prog)
   test_prog = nexe_name
   extra_deps = [pexe_node]
