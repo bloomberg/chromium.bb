@@ -1429,6 +1429,14 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
       UnsetSavedKeyState(np_event.wParam);
   }
 
+  // Allow this plug-in to access this IME emulator through IMM32 API while the
+  // plug-in is processing this event.
+  if (GetQuirks() & PLUGIN_QUIRK_EMULATE_IME) {
+    if (!plugin_ime_.get())
+      plugin_ime_.reset(new WebPluginIMEWin);
+  }
+  WebPluginIMEWin::ScopedLock lock(plugin_ime_.get());
+
   HWND last_focus_window = NULL;
 
   if (ShouldTrackEventForModalLoops(&np_event)) {

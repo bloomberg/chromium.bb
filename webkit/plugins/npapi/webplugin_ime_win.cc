@@ -147,13 +147,9 @@ bool WebPluginIMEWin::SendEvents(PluginInstance* instance) {
 }
 
 bool WebPluginIMEWin::GetStatus(int* input_type, gfx::Rect* caret_rect) {
-  bool status_updated = status_updated_;
-  if (status_updated) {
-    *input_type = input_type_;
-    *caret_rect = caret_rect_;
-    status_updated_ = false;
-  }
-  return status_updated;
+  *input_type = input_type_;
+  *caret_rect = caret_rect_;
+  return true;
 }
 
 // static
@@ -199,6 +195,13 @@ WebPluginIMEWin* WebPluginIMEWin::GetInstance(HIMC context) {
 BOOL WINAPI WebPluginIMEWin::ImmAssociateContextEx(HWND window,
                                                    HIMC context,
                                                    DWORD flags) {
+  WebPluginIMEWin* instance = GetInstance(context);
+  if (!instance)
+    return ::ImmAssociateContextEx(window, context, flags);
+
+  int input_type = !context && !flags;
+  instance->input_type_ = input_type;
+  instance->status_updated_ = true;
   return TRUE;
 }
 

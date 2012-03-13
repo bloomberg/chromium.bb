@@ -245,6 +245,10 @@ void WebPluginDelegateStub::OnDidFinishLoadWithReason(
 
 void WebPluginDelegateStub::OnSetFocus(bool focused) {
   delegate_->SetFocus(focused);
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (focused)
+    webplugin_->UpdateIMEStatus();
+#endif
 }
 
 void WebPluginDelegateStub::OnHandleInputEvent(
