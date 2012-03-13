@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -17,7 +18,7 @@
 namespace ppapi {
 class StringVar;
 class Var;
-}
+}  // namespace ppapi
 
 namespace webkit {
 namespace ppapi {
@@ -34,6 +35,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   static PP_Resource Create(PP_Instance instance);
 
   // Resource overrides.
+  // Returns the pointer to the thunk::PPB_WebSocket_API if it's supported.
   virtual ::ppapi::thunk::PPB_WebSocket_API* AsPPB_WebSocket_API() OVERRIDE;
 
   // PPB_WebSocket_API implementation.
@@ -45,7 +47,7 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
                         PP_Var reason,
                         PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t ReceiveMessage(PP_Var* message,
-                                 PP_CompletionCallback callbac) OVERRIDE;
+                                 PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t SendMessage(PP_Var message) OVERRIDE;
   virtual uint64_t GetBufferedAmount() OVERRIDE;
   virtual uint16_t GetCloseCode() OVERRIDE;
@@ -68,28 +70,77 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
                         unsigned short code,
                         const WebKit::WebString& reason);
  private:
+  // Picks up a received message and moves it to user receiving buffer. This
+  // function is used in both ReceiveMessage for fast returning path and
+  // didReceiveMessage callback.
   int32_t DoReceive();
 
+  // Keeps the WebKit side WebSocket object. This is used for calling WebKit
+  // side functions via WebKit API.
   scoped_ptr<WebKit::WebSocket> websocket_;
+
+  // Represents readyState described in the WebSocket API specification. It can
+  // be read via GetReadyState().
   PP_WebSocketReadyState state_;
+
+  // Becomes true if any error is detected. Incoming data will be disposed
+  // if this variable is true, then ReceiveMessage() returns PP_ERROR_FAILED
+  // after returning all received data.
   bool error_was_received_;
 
+  // Keeps a completion callback for asynchronous Connect().
   scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;
 
+  // Keeps a completion callback for asynchronous ReceiveMessage().
   scoped_refptr< ::ppapi::TrackedCallback> receive_callback_;
+
+  // Keeps a pointer to PP_Var which is provided via ReceiveMessage().
+  // Received data will be copied to this PP_Var on ready.
   PP_Var* receive_callback_var_;
+
+  // Becomes true when asynchronous ReceiveMessage() is processed.
   bool wait_for_receive_;
+
+  // Keeps received data until ReceiveMessage() requests.
   std::queue< scoped_refptr< ::ppapi::Var> > received_messages_;
 
+  // Keeps a completion callback for asynchronous Close().
   scoped_refptr< ::ppapi::TrackedCallback> close_callback_;
+
+  // Keeps the status code field of closing handshake. It can be read via
+  // GetCloseCode().
   uint16_t close_code_;
+
+  // Keeps the reason field of closing handshake. It can be read via
+  // GetCloseReason().
   scoped_refptr< ::ppapi::StringVar> close_reason_;
+
+  // Becomes true when closing handshake is performed successfully. It can be
+  // read via GetCloseWasClean().
   PP_Bool close_was_clean_;
 
+  // Keeps empty string for functions to return empty string.
   scoped_refptr< ::ppapi::StringVar> empty_string_;
+
+  // Represents extensions described in the WebSocket API specification. It can
+  // be read via GetExtensions().
+  scoped_refptr< ::ppapi::StringVar> extensions_;
+
+  // Represents url described in the WebSocket API specification. It can be
+  // read via GetURL().
   scoped_refptr< ::ppapi::StringVar> url_;
 
+  // Keeps the number of bytes of application data that have been queued using
+  // SendMessage(). WebKit side implementation calculates the actual amount.
+  // This is a cached value which is notified through a WebKit callback.
+  // This value is used to calculate bufferedAmount in the WebSocket API
+  // specification. The calculated value can be read via GetBufferedAmount().
   uint64_t buffered_amount_;
+
+  // Keeps the number of bytes of application data that have been ignored
+  // because the connection was already closed.
+  // This value is used to calculate bufferedAmount in the WebSocket API
+  // specification. The calculated value can be read via GetBufferedAmount().
   uint64_t buffered_amount_after_close_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_WebSocket_Impl);

@@ -17,13 +17,13 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -144,23 +144,22 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
     // TODO(toyoshim): Similar function exist in WebKit::WebSocket.
     // We must rearrange them into WebKit::WebChannel and share its protocol
     // related implementation via WebKit API.
-    scoped_refptr<StringVar> string_var;
-    string_var = StringVar::FromPPVar(protocols[i]);
-
-    // Check duplicated protocol entries.
-    if (protocol_set.find(string_var->value()) != protocol_set.end())
-      return PP_ERROR_BADARGUMENT;
-    protocol_set.insert(string_var->value());
+    scoped_refptr<StringVar> protocol(StringVar::FromPPVar(protocols[i]));
 
     // Check invalid and empty entries.
-    if (!string_var || !string_var->value().length())
+    if (!protocol || !protocol->value().length())
       return PP_ERROR_BADARGUMENT;
 
+    // Check duplicated protocol entries.
+    if (protocol_set.find(protocol->value()) != protocol_set.end())
+      return PP_ERROR_BADARGUMENT;
+    protocol_set.insert(protocol->value());
+
     // Check containing characters.
-    for (std::string::const_iterator it = string_var->value().begin();
-        it != string_var->value().end();
+    for (std::string::const_iterator it = protocol->value().begin();
+        it != protocol->value().end();
         ++it) {
-      uint8_t character = static_cast<uint8_t>(*it);
+      uint8_t character = *it;
       // WebSocket specification says "(Subprotocol string must consist of)
       // characters in the range U+0021 to U+007E not including separator
       // characters as defined in [RFC2616]."
@@ -178,7 +177,7 @@ int32_t PPB_WebSocket_Impl::Connect(PP_Var url,
     // Join protocols with the comma separator.
     if (i != 0)
       protocol_string.append(",");
-    protocol_string.append(string_var->value());
+    protocol_string.append(protocol->value());
   }
   WebString web_protocols = WebString::fromUTF8(protocol_string);
 
@@ -485,8 +484,7 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
                                   const WebString& reason) {
   // Store code and reason.
   close_code_ = code;
-  std::string reason_string = reason.utf8();
-  close_reason_ = new StringVar(reason_string);
+  close_reason_ = new StringVar(reason.utf8());
 
   // Set close_was_clean_.
   bool was_clean =

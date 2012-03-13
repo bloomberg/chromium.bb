@@ -11,7 +11,6 @@ label Chrome {
   M18 = 1.0
 };
 
-
 /**
  * This enumeration contains the types representing the WebSocket ready state
  * and these states are based on the JavaScript WebSocket API specification.
@@ -23,6 +22,7 @@ enum PP_WebSocketReadyState {
    * Ready state is queried on an invalid resource.
    */
   PP_WEBSOCKETREADYSTATE_INVALID = -1,
+
   /**
    * Ready state that the connection has not yet been established.
    */
