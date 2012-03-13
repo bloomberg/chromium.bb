@@ -65,14 +65,6 @@ class VIEWS_EXPORT FrameBackground {
                        const SkBitmap* bottom_left,
                        const SkBitmap* bottom_right);
 
-  // Sets attributes to paint top-left and top-right corners for maximized
-  // windows.  Use 0 and NULL if you don't want special corners.
-  // TODO(jamescook): This is the remnant of a ChromeOS window hack, and should
-  // be removed.
-  void SetMaximizedCorners(SkBitmap* top_left,
-                           SkBitmap* top_right,
-                           int top_offset);
-
   // Paints the border for a standard, non-maximized window.  Also paints the
   // background of the title bar area, since the top frame border and the
   // title bar background are a contiguous component.

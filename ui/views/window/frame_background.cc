@@ -55,14 +55,6 @@ void FrameBackground::SetCornerImages(const SkBitmap* top_left,
   bottom_right_corner_ = bottom_right;
 }
 
-void FrameBackground::SetMaximizedCorners(SkBitmap* top_left,
-                                          SkBitmap* top_right,
-                                          int top_offset) {
-  maximized_top_left_ = top_left;
-  maximized_top_right_ = top_right;
-  maximized_top_offset_ = top_offset;
-}
-
 void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
   // Fill with the frame color first so we have a constant background for
   // areas not covered by the theme image.
