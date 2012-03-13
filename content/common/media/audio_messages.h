@@ -25,6 +25,7 @@ IPC_ENUM_TRAITS(ChannelLayout)
 IPC_STRUCT_TRAITS_BEGIN(AudioBuffersState)
   IPC_STRUCT_TRAITS_MEMBER(pending_bytes)
   IPC_STRUCT_TRAITS_MEMBER(hardware_delay_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(AudioParameters)
