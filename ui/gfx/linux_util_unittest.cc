@@ -28,4 +28,23 @@ TEST(LinuxUtilTest, ConvertAcceleratorsFromWindowsStyle) {
   }
 }
 
+TEST(LinuxUtilTest, RemoveWindowsStyleAccelerators) {
+  static const struct {
+    const char* input;
+    const char* output;
+  } cases[] = {
+    { "", "" },
+    { "nothing", "nothing" },
+    { "foo &bar", "foo bar" },
+    { "foo &&bar", "foo &bar" },
+    { "foo &&&bar", "foo &bar" },
+    { "&foo &&bar", "foo &bar" },
+    { "&foo &bar", "foo bar" },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    std::string result = RemoveWindowsStyleAccelerators(cases[i].input);
+    EXPECT_EQ(cases[i].output, result);
+  }
+}
+
 }  // namespace gfx
