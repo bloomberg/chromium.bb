@@ -33,19 +33,55 @@
 #ifndef _GOOGLEINIT_H
 #define _GOOGLEINIT_H
 
+#include "base/logging.h"
+
 class GoogleInitializer {
  public:
-  typedef void (*void_function)(void);
-  GoogleInitializer(const char* name, void_function f) {
-    f();
+  typedef void (*VoidFunction)(void);
+  GoogleInitializer(const char* name, VoidFunction ctor, VoidFunction dtor)
+      : name_(name), destructor_(dtor) {
+    // TODO(dmikurube): Re-enable the commented-out code.
+    // We commented out the following line, since Chromium does not have the
+    // proper includes to log using these macros.
+    //
+    // Commended-out code:
+    //   RAW_VLOG(10, "<GoogleModuleObject> constructing: %s\n", name_);
+    //
+    // This googleinit.h is included from out of third_party/tcmalloc, such as
+    // net/tools/flip_server/balsa_headers.cc.
+    // "base/logging.h" (included above) indicates Chromium's base/logging.h
+    // when this googleinit.h is included from out of third_party/tcmalloc.
+    if (ctor)
+      ctor();
   }
+  ~GoogleInitializer() {
+    // TODO(dmikurube): Re-enable the commented-out code.
+    // The same as above.  The following line is commented out in Chromium.
+    //
+    // Commended-out code:
+    //   RAW_VLOG(10, "<GoogleModuleObject> destroying: %s\n", name_);
+    if (destructor_)
+      destructor_();
+  }
+
+ private:
+  const char* const name_;
+  const VoidFunction destructor_;
 };
 
 #define REGISTER_MODULE_INITIALIZER(name, body)                 \
   namespace {                                                   \
     static void google_init_module_##name () { body; }          \
     GoogleInitializer google_initializer_module_##name(#name,   \
-            google_init_module_##name);                         \
+            google_init_module_##name, NULL);                   \
   }
+
+#define REGISTER_MODULE_DESTRUCTOR(name, body)                  \
+  namespace {                                                   \
+    static void google_destruct_module_##name () { body; }      \
+    GoogleInitializer google_destructor_module_##name(#name,    \
+            NULL, google_destruct_module_##name);               \
+  }
+
 
 #endif /* _GOOGLEINIT_H */

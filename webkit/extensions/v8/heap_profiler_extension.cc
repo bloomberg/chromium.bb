@@ -8,7 +8,7 @@
 #include "v8/include/v8.h"
 
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)
-#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
 namespace extensions_v8 {

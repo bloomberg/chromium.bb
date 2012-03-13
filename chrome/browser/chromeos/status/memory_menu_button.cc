@@ -24,7 +24,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
 #if defined(USE_TCMALLOC)

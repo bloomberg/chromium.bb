@@ -22,7 +22,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

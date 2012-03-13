@@ -38,7 +38,7 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>                     // for uint64_t, int64_t, uint16_t
 #endif
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_extension.h>
 #include "base/basictypes.h"
 #include "common.h"
 #include "packed-cache-inl.h"
@@ -61,10 +61,9 @@
   // We use #define so code compiles even if you #include stacktrace.h somehow.
 # define GetStackTrace(stack, depth, skip)  (0)
 #else
-# include <google/stacktrace.h>
+# include <gperftools/stacktrace.h>
 #endif
 
-class TCMalloc_Printer;
 namespace base {
 struct MallocRange;
 }
@@ -145,9 +144,6 @@ class PERFTOOLS_DLL_DECL PageHeap {
     return reinterpret_cast<Span*>(pagemap_.get(p));
   }
 
-  // Dump state to stderr
-  void Dump(TCMalloc_Printer* out);
-
   // If this page heap is managing a range with starting page # >= start,
   // store info about the range in *r and return true.  Else return false.
   bool GetNextRange(PageID start, base::MallocRange* r);
@@ -162,10 +158,22 @@ class PERFTOOLS_DLL_DECL PageHeap {
 
   };
   inline Stats stats() const { return stats_; }
-  void GetClassSizes(int64 class_sizes_normal[kMaxPages],
-                     int64 class_sizes_returned[kMaxPages],
-                     int64* normal_pages_in_spans,
-                     int64* returned_pages_in_spans);
+
+  struct SmallSpanStats {
+    // For each free list of small spans, the length (in spans) of the
+    // normal and returned free lists for that size.
+    int64 normal_length[kMaxPages];
+    int64 returned_length[kMaxPages];
+  };
+  void GetSmallSpanStats(SmallSpanStats* result);
+
+  // Stats for free large spans (i.e., spans with more than kMaxPages pages).
+  struct LargeSpanStats {
+    int64 spans;           // Number of such spans
+    int64 normal_pages;    // Combined page length of normal large spans
+    int64 returned_pages;  // Combined page length of unmapped spans
+  };
+  void GetLargeSpanStats(LargeSpanStats* result);
 
   bool Check();
   // Like Check() but does some more comprehensive checking.

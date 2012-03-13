@@ -47,20 +47,29 @@
 
 #include "base/basictypes.h"   // make sure we get the def for int64
 #include "base/arm_instruction_set_select.h"
+// base/sysinfo.h is really big and we don't want to include it unless
+// it is necessary.
+#if defined(__arm__) || defined(__mips__)
+# include "base/sysinfo.h"
+#endif
 #if defined(__MACH__) && defined(__APPLE__)
 # include <mach/mach_time.h>
 #endif
-// For MSVC, we want the __rdtsc intrinsic, declared in <intrin.h>.
-// Unfortunately, in some environments, <windows.h> and <intrin.h> have
-// conflicting declarations of some other intrinsics, breaking compilation.
+// For MSVC, we want to use '_asm rdtsc' when possible (since it works
+// with even ancient MSVC compilers), and when not possible the
+// __rdtsc intrinsic, declared in <intrin.h>.  Unfortunately, in some
+// environments, <windows.h> and <intrin.h> have conflicting
+// declarations of some other intrinsics, breaking compilation.
 // Therefore, we simply declare __rdtsc ourselves. See also
 // http://connect.microsoft.com/VisualStudio/feedback/details/262047
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(_M_IX86)
 extern "C" uint64 __rdtsc();
 #pragma intrinsic(__rdtsc)
 #endif
+#if defined(ARMV3) || defined(__mips__)
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #endif
 
 // NOTE: only i386 and x86_64 have been well tested.
@@ -108,6 +117,12 @@ struct CycleClock {
     int64 itc;
     asm("mov %0 = ar.itc" : "=r" (itc));
     return itc;
+#elif defined(_MSC_VER) && defined(_M_IX86)
+    // Older MSVC compilers (like 7.x) don't seem to support the
+    // __rdtsc intrinsic properly, so I prefer to use _asm instead
+    // when I know it will work.  Otherwise, I'll use __rdtsc and hope
+    // the code is being compiled with a non-ancient compiler.
+    _asm rdtsc
 #elif defined(_MSC_VER)
     return __rdtsc();
 #elif defined(ARMV3)
@@ -116,11 +131,11 @@ struct CycleClock {
     uint32 pmuseren;
     uint32 pmcntenset;
     // Read the user mode perf monitor counter access permissions.
-    asm("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
+    asm volatile ("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
     if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
-      asm("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
+      asm volatile ("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
       if (pmcntenset & 0x80000000ul) {  // Is it counting?
-        asm("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
+        asm volatile ("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
         // The counter is set up to count every 64th cycle
         return static_cast<int64>(pmccntr) * 64;  // Should optimize to << 6
       }
@@ -128,7 +143,15 @@ struct CycleClock {
 #endif
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return static_cast<int64>(tv.tv_sec) * 1000000 + tv.tv_usec;
+    return static_cast<int64>((tv.tv_sec + tv.tv_usec * 0.000001)
+                              * CyclesPerSecond());
+#elif defined(__mips__)
+    // mips apparently only allows rdtsc for superusers, so we fall
+    // back to gettimeofday.  It's possible clock_gettime would be better.
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return static_cast<int64>((tv.tv_sec + tv.tv_usec * 0.000001)
+                              * CyclesPerSecond());
 #else
 // The soft failover to a generic implementation is automatic only for ARM.
 // For other platforms the developer is expected to make an attempt to create
