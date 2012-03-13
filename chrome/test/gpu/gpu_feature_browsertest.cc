@@ -376,8 +376,7 @@ IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, DISABLED_ThreadedCompositor) {
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
-// TODO(jbates) unmark FLAKY once it's verified to not be flaky.
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, FLAKY_RafNoDamage) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
   trace_categories_ = "-test_*";
   const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
   RunTest(url, GpuResultFlags(0));
@@ -404,6 +403,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, FLAKY_RafNoDamage) {
   // indicate that the renderer is not simply spinning on RAF.
   EXPECT_GT(stats.mean_us, 15000.0);
 
+  // Print out the trace events upon error to debug failures.
   if (stats.mean_us <= 15000.0) {
     fprintf(stderr, "\n\nTRACE JSON:\n\n%s\n\n", trace_events_json_.c_str());
   }
