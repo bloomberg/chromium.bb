@@ -20,7 +20,7 @@ using content::BrowserThread;
 namespace {
 
 // Google Documents List API requires uploading in chunks of 512kB.
-const size_t kUploadChunkSize = 512 * 1024;
+const int64 kUploadChunkSize = 512 * 1024;
 
 }  // namespace
 
@@ -63,7 +63,7 @@ void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
 }
 
 void GDataUploader::UpdateUpload(const GURL& file_url,
-                                 size_t file_size,
+                                 int64 file_size,
                                  bool download_complete) {
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -74,6 +74,15 @@ void GDataUploader::UpdateUpload(const GURL& file_url,
            << " to " << file_size;
   upload_file_info->file_size = file_size;
   upload_file_info->download_complete = download_complete;
+
+  // Resume upload if necessary and possible.
+  if (upload_file_info->upload_paused &&
+      (upload_file_info->download_complete ||
+      upload_file_info->SizeRemaining() >= kUploadChunkSize)) {
+    DVLOG(1) << "Resuming upload " << upload_file_info->title;
+    upload_file_info->upload_paused = false;
+    UploadNextChunk(upload_file_info);
+  }
 }
 
 UploadFileInfo* GDataUploader::GetUploadFileInfo(const GURL& file_url) {
@@ -131,6 +140,7 @@ void GDataUploader::OnUploadLocationReceived(
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
     RemovePendingUpload(upload_file_info);
+    NOTREACHED();
     return;
   }
 
@@ -148,18 +158,17 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
-  // Note that end_range = uploaded_bytes - 1.
-  const size_t size_remaining = upload_file_info->file_size -
-                                upload_file_info->end_range - 1;
-  const int bytes_to_read = std::min(size_remaining,
+  const int bytes_to_read = std::min(upload_file_info->SizeRemaining(),
                                      upload_file_info->buf_len);
 
   // Update the content length if the file_size is known.
-  // TODO(achuith): Handle the case where the upload catches up to the download.
   if (upload_file_info->download_complete)
     upload_file_info->content_length = upload_file_info->file_size;
-  else
-    DCHECK(size_remaining > kUploadChunkSize);
+  else if (bytes_to_read < kUploadChunkSize) {
+    DVLOG(1) << "Paused upload " << upload_file_info->title;
+    upload_file_info->upload_paused = true;
+    return;
+  }
 
   upload_file_info->file_stream->Read(
       upload_file_info->buf,

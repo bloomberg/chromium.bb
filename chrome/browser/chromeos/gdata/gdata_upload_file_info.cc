@@ -15,10 +15,17 @@ UploadFileInfo::UploadFileInfo()
       buf_len(0),
       start_range(0),
       end_range(-1),
-      download_complete(false) {
+      download_complete(false),
+      upload_paused(false) {
 }
 
 UploadFileInfo::~UploadFileInfo() {
+}
+
+int64 UploadFileInfo::SizeRemaining() const {
+  DCHECK(file_size > end_range);
+  // Note that uploaded_bytes = end_range + 1;
+  return file_size - end_range - 1;
 }
 
 std::string UploadFileInfo::DebugString() const {

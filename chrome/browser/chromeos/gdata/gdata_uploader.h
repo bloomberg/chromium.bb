@@ -31,7 +31,7 @@ class GDataUploader {
 
   // Updates size and download_completed of streaming upload.
   void UpdateUpload(const GURL& file_url,
-                    size_t file_size,
+                    int64 file_size,
                     bool download_complete);
 
  private:

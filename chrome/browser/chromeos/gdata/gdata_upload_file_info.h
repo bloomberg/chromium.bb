@@ -29,6 +29,9 @@ struct UploadFileInfo {
   UploadFileInfo();
   ~UploadFileInfo();
 
+  // Bytes left to upload.
+  int64 SizeRemaining() const;
+
   // Useful for printf debugging.
   std::string DebugString() const;
 
@@ -36,7 +39,7 @@ struct UploadFileInfo {
   // URL of physical file to be uploaded, used as main identifier in callbacks.
   FilePath file_path;  // The path of the file to be uploaded.
   GURL file_url;  // file: url of the file to the uploaded.
-  size_t file_size;  // Last known size of the file.
+  int64 file_size;  // Last known size of the file.
 
   // TODO(zelirag, achuith): Make this string16.
   std::string title;  // Title to be used for file to be uploaded.
@@ -56,7 +59,7 @@ struct UploadFileInfo {
   scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
   // Size of |buf|, max is 512KB; Google Docs requires size of each upload chunk
   // to be a multiple of 512KB.
-  size_t buf_len;
+  int64 buf_len;
 
   // Data to be updated by caller before sending each ResumeUpload request.
   // Note that end_range is inclusive, so start_range=0, end_range=8 is 9 bytes.
@@ -64,6 +67,7 @@ struct UploadFileInfo {
   int64 end_range;  // End of range of contents currently stored in |buf|.
 
   bool download_complete;  // Whether this file has finished downloading.
+  bool upload_paused;  // Whether this file's upload has been paused.
 };
 
 }  // namespace gdata
