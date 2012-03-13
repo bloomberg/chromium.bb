@@ -55,6 +55,86 @@ void RunUrlTest(Testcase* testcases, size_t num_testcases) {
 
 }  // namespace
 
+TEST(TextEliderTest, ElideEmail) {
+  const std::string kEllipsisStr(kEllipsis);
+
+  // Test emails and their expected elided forms (from which the available
+  // widths will be derived).
+  // For elided forms in which both the username and domain must be elided:
+  // the result (how many characters are left on each side) can be font
+  // dependent. To avoid this, the username is prefixed with the characters
+  // expected to remain in the domain.
+  Testcase testcases[] = {
+      {"g@g.c", "g@g.c"},
+      {"g@g.c", kEllipsisStr},
+      {"ga@co.ca", "ga@c" + kEllipsisStr + "a"},
+      {"short@small.com", "s" + kEllipsisStr + "@s" + kEllipsisStr},
+      {"short@small.com", "s" + kEllipsisStr + "@small.com"},
+      {"short@longbutlotsofspace.com", "short@longbutlotsofspace.com"},
+      {"short@longbutnotverymuchspace.com",
+       "short@long" + kEllipsisStr + ".com"},
+      {"la_short@longbutverytightspace.ca",
+       "la" + kEllipsisStr + "@l" + kEllipsisStr + "a"},
+      {"longusername@gmail.com", "long" + kEllipsisStr + "@gmail.com"},
+      {"elidetothemax@justfits.com", "e" + kEllipsisStr + "@justfits.com"},
+      {"thatom_somelongemail@thatdoesntfit.com",
+       "thatom" + kEllipsisStr + "@tha" + kEllipsisStr + "om"},
+      {"namefits@butthedomaindoesnt.com",
+       "namefits@butthedo" + kEllipsisStr + "snt.com"},
+      {"widthtootight@nospace.com", kEllipsisStr},
+      {"nospaceforusername@l", kEllipsisStr},
+      {"little@littlespace.com", "l" + kEllipsisStr + "@l" + kEllipsisStr},
+      {"l@lllllllll.com", "l@lllll" + kEllipsisStr + ".com"},
+      {"messed\"up@whyanat\"++@notgoogley.com",
+       "messed\"up@whyanat\"++@notgoogley.com"},
+      {"messed\"up@whyanat\"++@notgoogley.com",
+       "messed\"up@why" + kEllipsisStr + "@notgoogley.com"},
+      {"noca_messed\"up@whyanat\"++@notgoogley.ca",
+       "noca" + kEllipsisStr + "@no" + kEllipsisStr + "ca"},
+      {"at\"@@@@@@@@@...@@.@.@.@@@\"@madness.com",
+       "at\"@@@@@@@@@...@@.@." + kEllipsisStr + "@madness.com"},
+      // Special case: "m..." takes more than half of the available width; thus
+      // the domain must elide to "l..." and not "l...l" as it must allow enough
+      // space for the minimal username elision although its half of the
+      // available width would normally allow it to elide to "l...l".
+      {"mmmmm@llllllllll", "m" + kEllipsisStr + "@l" + kEllipsisStr},
+  };
+
+  const gfx::Font font;
+  for (size_t i = 0; i < arraysize(testcases); ++i) {
+    const string16 expected_output = UTF8ToUTF16(testcases[i].output);
+    EXPECT_EQ(expected_output,
+              ElideEmail(UTF8ToUTF16(testcases[i].input),
+                         font,
+                         font.GetStringWidth(expected_output)));
+  }
+}
+
+TEST(TextEliderTest, ElideEmailMoreSpace) {
+  const int test_width_factors[] = {
+      100,
+      10000,
+      1000000,
+  };
+  const std::string test_emails[] = {
+      "a@c",
+      "test@email.com",
+      "short@verysuperdupperlongdomain.com",
+      "supermegalongusername@withasuperlonnnggggdomain.gouv.qc.ca",
+  };
+
+  const gfx::Font font;
+  for (size_t i = 0; i < arraysize(test_width_factors); ++i) {
+    const int test_width = test_width_factors[i] *
+                           font.GetAverageCharacterWidth();
+    for (size_t j = 0; j < arraysize(test_emails); ++j) {
+      // Extra space is available: the email should not be elided.
+      const string16 test_email = UTF8ToUTF16(test_emails[j]);
+      EXPECT_EQ(test_email, ElideEmail(test_email, font, test_width));
+    }
+  }
+}
+
 // Test eliding of commonplace URLs.
 TEST(TextEliderTest, TestGeneralEliding) {
   const std::string kEllipsisStr(kEllipsis);
