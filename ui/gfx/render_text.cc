@@ -340,7 +340,7 @@ void RenderText::SetText(const string16& text) {
   // or SetCursorPosition in upper layer.
   SetSelectionModel(SelectionModel());
 
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
@@ -354,13 +354,13 @@ void RenderText::SetHorizontalAlignment(HorizontalAlignment alignment) {
 void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
   cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::SetFontSize(int size) {
   font_list_ = font_list_.DeriveFontListWithSize(size);
   cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::SetCursorEnabled(bool cursor_enabled) {
@@ -381,14 +381,14 @@ void RenderText::SetObscured(bool obscured) {
   if (obscured != obscured_) {
     obscured_ = obscured;
     cached_bounds_and_offset_valid_ = false;
-    UpdateLayout();
+    ResetLayout();
   }
 }
 
 void RenderText::SetDisplayRect(const Rect& r) {
   display_rect_ = r;
   cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::SetCursorPosition(size_t position) {
@@ -516,7 +516,7 @@ void RenderText::SetCompositionRange(const ui::Range& composition_range) {
         ui::Range(0, text_.length()).Contains(composition_range));
   composition_range_.set_end(composition_range.end());
   composition_range_.set_start(composition_range.start());
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::ApplyStyleRange(const StyleRange& style_range) {
@@ -531,7 +531,7 @@ void RenderText::ApplyStyleRange(const StyleRange& style_range) {
 #endif
   // TODO(xji): only invalidate if font or underline changes.
   cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
+  ResetLayout();
 }
 
 void RenderText::ApplyDefaultStyle() {
@@ -540,7 +540,7 @@ void RenderText::ApplyDefaultStyle() {
   style.range.set_end(text_.length());
   style_ranges_.push_back(style);
   cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
+  ResetLayout();
 }
 
 VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {

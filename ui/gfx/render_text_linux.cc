@@ -218,8 +218,26 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
   return (offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position);
 }
 
-void RenderTextLinux::UpdateLayout() {
-  ResetLayout();
+void RenderTextLinux::ResetLayout() {
+  // set_cached_bounds_and_offset_valid(false) is done in RenderText for every
+  // operation that triggers ResetLayout().
+  if (layout_) {
+    g_object_unref(layout_);
+    layout_ = NULL;
+  }
+  if (current_line_) {
+    pango_layout_line_unref(current_line_);
+    current_line_ = NULL;
+  }
+  if (log_attrs_) {
+    g_free(log_attrs_);
+    log_attrs_ = NULL;
+    num_log_attrs_ = 0;
+  }
+  if (!selection_visual_bounds_.empty())
+    selection_visual_bounds_.clear();
+  layout_text_ = NULL;
+  layout_text_len_ = 0;
 }
 
 void RenderTextLinux::EnsureLayout() {
@@ -446,28 +464,6 @@ SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
   size_t caret = IndexOfAdjacentGrapheme(
       LayoutIndexToTextIndex(item->offset + item->length), CURSOR_BACKWARD);
   return SelectionModel(caret, CURSOR_FORWARD);
-}
-
-void RenderTextLinux::ResetLayout() {
-  // set_cached_bounds_and_offset_valid(false) is done in RenderText for every
-  // operation that triggers ResetLayout().
-  if (layout_) {
-    g_object_unref(layout_);
-    layout_ = NULL;
-  }
-  if (current_line_) {
-    pango_layout_line_unref(current_line_);
-    current_line_ = NULL;
-  }
-  if (log_attrs_) {
-    g_free(log_attrs_);
-    log_attrs_ = NULL;
-    num_log_attrs_ = 0;
-  }
-  if (!selection_visual_bounds_.empty())
-    selection_visual_bounds_.clear();
-  layout_text_ = NULL;
-  layout_text_len_ = 0;
 }
 
 size_t RenderTextLinux::TextIndexToLayoutIndex(size_t text_index) const {

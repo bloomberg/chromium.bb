@@ -38,7 +38,7 @@ class RenderTextLinux : public RenderText {
   virtual std::vector<Rect> GetSubstringBounds(ui::Range range) OVERRIDE;
   virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
-  virtual void UpdateLayout() OVERRIDE;
+  virtual void ResetLayout() OVERRIDE;
   virtual void EnsureLayout() OVERRIDE;
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
@@ -56,9 +56,6 @@ class RenderTextLinux : public RenderText {
   // The returned value represents a cursor/caret position without a selection.
   SelectionModel FirstSelectionModelInsideRun(const PangoItem* run);
   SelectionModel LastSelectionModelInsideRun(const PangoItem* run);
-
-  // Unref |layout_| and |pango_line_|. Set them to NULL.
-  void ResetLayout();
 
   // Setup pango attribute: foreground, background, font, strike.
   void SetupPangoAttributes(PangoLayout* layout);

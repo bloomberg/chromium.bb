@@ -365,7 +365,7 @@ void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
   // foreground, to be picked up. Eventually, we should separate styles from
   // layout by applying foreground, strike, and underline styles during
   // DrawVisualText as what RenderTextLinux does.
-  UpdateLayout();
+  ResetLayout();
 }
 
 bool RenderTextWin::IsCursorablePosition(size_t position) {
@@ -386,7 +386,7 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
          run->logical_clusters[position - start - 1];
 }
 
-void RenderTextWin::UpdateLayout() {
+void RenderTextWin::ResetLayout() {
   // Layout is performed lazily as needed for drawing/metrics.
   needs_layout_ = true;
 }

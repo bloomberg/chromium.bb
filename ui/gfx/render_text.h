@@ -299,9 +299,8 @@ class UI_EXPORT RenderText {
   // which means it is a grapheme boundary or the first character in the text.
   virtual bool IsCursorablePosition(size_t position) = 0;
 
-  // Update the layout so that the next draw request can correctly
-  // render the text and its attributes.
-  virtual void UpdateLayout() = 0;
+  // Reset the layout to be invalid.
+  virtual void ResetLayout() = 0;
 
   // Ensure the text is laid out.
   virtual void EnsureLayout() = 0;
