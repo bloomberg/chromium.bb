@@ -139,7 +139,7 @@ def _ParallelSteps(steps):
     for bg in bg_steps:
       while not bg.Empty():
         error = bg.WaitForStep()
-        if error:
+        if error is not None:
           tracebacks.append(error)
       bg.join()
 

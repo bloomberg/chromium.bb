@@ -391,8 +391,6 @@ class SimpleBuilder(Builder):
           # Kick off task(board) in the background.
           queue.put([board])
 
-    return True
-
 
 class DistributedBuilder(SimpleBuilder):
   """Build class that has special logic to handle distributed builds.
@@ -448,7 +446,8 @@ class DistributedBuilder(SimpleBuilder):
     """Runs simple builder logic and publishes information to overlays."""
     was_build_successful = False
     try:
-      was_build_successful = super(DistributedBuilder, self).RunStages()
+      super(DistributedBuilder, self).RunStages()
+      was_build_successful = results_lib.Results.BuildSucceededSoFar()
     except SystemExit as ex:
       # If a stage calls sys.exit(0), it's exiting with success, so that means
       # we should mark ourselves as successful.
@@ -457,8 +456,6 @@ class DistributedBuilder(SimpleBuilder):
       raise
     finally:
       self.Publish(was_build_successful)
-
-    return was_build_successful
 
 
 def _ConfirmBuildRoot(buildroot):
