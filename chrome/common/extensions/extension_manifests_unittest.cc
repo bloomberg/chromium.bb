@@ -79,9 +79,7 @@ class ExtensionManifestTest : public testing::Test {
   // to a manifest or the manifest itself.
   class Manifest {
    public:
-    // Purposely not marked explicit for convenience. The vast majority of
-    // callers pass string literal.
-    Manifest(const char* name)
+    explicit Manifest(const char* name)
         : name_(name), manifest_(NULL) {
     }
     Manifest(DictionaryValue* manifest, const char* name)
@@ -143,6 +141,12 @@ class ExtensionManifestTest : public testing::Test {
     EXPECT_EQ("", error) << manifest.name();
     return extension;
   }
+  scoped_refptr<Extension> LoadAndExpectSuccess(
+      const char* manifest_name,
+      Extension::Location location = Extension::INTERNAL,
+      int flags = Extension::NO_FLAGS) {
+    return LoadAndExpectSuccess(Manifest(manifest_name), location, flags);
+  }
 
   void VerifyExpectedError(Extension* extension,
                            const std::string& name,
@@ -164,6 +168,13 @@ class ExtensionManifestTest : public testing::Test {
         LoadExtension(manifest, &error, location, flags));
     VerifyExpectedError(extension.get(), manifest.name(), error,
                         expected_error);
+  }
+  void LoadAndExpectError(const char* manifest_name,
+                          const std::string& expected_error,
+                          Extension::Location location = Extension::INTERNAL,
+                          int flags = Extension::NO_FLAGS) {
+    return LoadAndExpectError(
+        Manifest(manifest_name), expected_error, location, flags);
   }
 
   struct Testcase {
@@ -555,7 +566,7 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   std::string error;
   scoped_refptr<Extension> extension;
   extension = LoadExtension(
-      "permission_chrome_resources_url.json",
+      Manifest("permission_chrome_resources_url.json"),
       &error,
       Extension::COMPONENT,
       Extension::STRICT_ERROR_CHECKS);
@@ -1010,7 +1021,7 @@ TEST_F(ExtensionManifestTest, FileManagerURLOverride) {
   std::string error;
   scoped_refptr<Extension> extension;
   extension = LoadExtension(
-      "filebrowser_url_override.json",
+      Manifest("filebrowser_url_override.json"),
       &error,
       Extension::COMPONENT,
       Extension::STRICT_ERROR_CHECKS);
