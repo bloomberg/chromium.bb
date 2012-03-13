@@ -15,7 +15,8 @@ is_glibc = env.Bit('nacl_glibc')
 
 env.Replace(LIBS=[],
             EXTRA_LIBS=[],
-            LINKFLAGS=['-nostdlib'])
+            LINKFLAGS=['-nostdlib'],
+            TRANSLATEFLAGS=['-nostdlib'])
 
 # This setting will affect the barebones_regs.c test
 if env.Bit('build_arm'):

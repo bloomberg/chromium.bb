@@ -1192,6 +1192,9 @@ def CommandValidatorTestNacl(env, name, image,
   if validator_flags is None:
     validator_flags = []
 
+  if env.Bit('pnacl_stop_with_pexe'):
+    return []
+
   command = [validator] + validator_flags + [image]
   return CommandTest(env, name, command, size, **extra)
 
@@ -1950,6 +1953,19 @@ def ShouldUseVerboseOptions(extra):
 # ----------------------------------------------------------
 DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
 
+# Translate the given pexe. Return the name of the translated nexe and
+def GetTranslatedNexe(env, pexe):
+  pexe_name = pexe.abspath
+  nexe_name = pexe_name[:pexe_name.index('.pexe')] + '.nexe'
+  trans_flags = []
+  trans_cmd = ('${TRANSLATE} ${TRANSLATEFLAGS} -Wl,-L${LIB_DIR} %s -o %s' %
+               (pexe_name, nexe_name))
+
+  pexe_node = env.Command(nexe_name, pexe_name, trans_cmd)
+  return nexe_name, pexe_node
+
+pre_base_env.AddMethod(GetTranslatedNexe)
+
 def CommandSelLdrTestNacl(env, name, nexe,
                           args = None,
                           log_verbosity=2,
@@ -1971,7 +1987,15 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  command = [nexe]
+  if (env.Bit('pnacl_stop_with_pexe') and env['NACL_BUILD_FAMILY'] != 'TRUSTED'):
+    # The nexe is actually a pexe. translate it before we run it
+    nexe_name, pexe_node = GetTranslatedNexe(env, nexe)
+    command = [nexe_name]
+    extra_deps = [pexe_node]
+  else:
+    command = [nexe]
+    extra_deps = []
+
   if args is not None:
     command += args
 
@@ -2025,7 +2049,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
   node = CommandTest(env, name, command, size, posix_path=True,
-                     wrapper_program_prefix=wrapper_program_prefix, **extra)
+                     wrapper_program_prefix=wrapper_program_prefix,
+                     extra_deps=extra_deps, **extra)
   if env.Bit('tests_use_irt'):
     env.Alias('irt_tests', node)
   return node

@@ -214,10 +214,12 @@ def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
 
+  arch_flag = ' -arch %s' % arch
   if env.Bit('pnacl_stop_with_pexe'):
-    arch_flag = ''
+    ld_arch_flag = ''
   else:
-    arch_flag = ' -arch %s' % arch
+    ld_arch_flag = arch_flag
+
 
   if env.Bit('nacl_glibc'):
     subroot = root + '/glibc'
@@ -248,6 +250,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_as = binprefix + 'as' + binext
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
+  pnacl_translate = binprefix + 'translate' + binext
 
   frontend = env['PNACL_FRONTEND']
   if frontend == 'clang':
@@ -273,6 +276,7 @@ def _SetEnvForPnacl(env, root):
   pnacl_cxx_flags = ''
   pnacl_cc_flags = ' -std=gnu99'
   pnacl_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
+  pnacl_translate_flags = ''
 
   if env.Bit('nacl_pic'):
     pnacl_cc_flags += ' -fPIC'
@@ -280,11 +284,14 @@ def _SetEnvForPnacl(env, root):
     # NOTE: this is a special hack for the pnacl backend which
     #       does more than linking
     pnacl_ld_flags += ' -fPIC'
+    pnacl_translate_flags += ' -fPIC'
 
   if env.Bit('use_sandboxed_translator'):
-    pnacl_ld_flags += ' --pnacl-sb --pnacl-default-command-line'
+    sb_flags = ' --pnacl-sb --pnacl-default-command-line'
     if env.Bit('sandboxed_translator_is_dynamic'):
-      pnacl_ld_flags += ' --pnacl-sb-dynamic'
+      sb_flags += ' --pnacl-sb-dynamic'
+    pnacl_ld_flags += sb_flags
+    pnacl_translate_flags += sb_flags
 
   if pnacl_extra_lib:
     env.Prepend(LIBPATH=pnacl_extra_lib)
@@ -301,21 +308,22 @@ def _SetEnvForPnacl(env, root):
               SHLIBPREFIX="lib",
               SHLIBSUFFIX=".so",
               OBJSUFFIX=".bc",
-              LINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
+              LINK=pnacl_cxx + ld_arch_flag + pnacl_ld_flags,
               # Although we are currently forced to produce native output
               # for LINK, we are free to produce bitcode for SHLINK
               # (SharedLibrary linking) because scons doesn't do anything
               # with shared libraries except use them with the toolchain.
-              SHLINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
+              SHLINK=pnacl_cxx + ld_arch_flag + pnacl_ld_flags,
               LD=pnacl_ld,
               NATIVELD=pnacl_nativeld,
               AR=pnacl_ar,
-              AS=pnacl_as + arch_flag,
+              AS=pnacl_as + ld_arch_flag,
               RANLIB=pnacl_ranlib,
               DISASS=pnacl_disass,
               OBJDUMP=pnacl_disass,
               STRIP=pnacl_strip,
               GENNMF=pnacl_nmf,
+              TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               )
 
 

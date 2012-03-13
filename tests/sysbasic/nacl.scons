@@ -5,7 +5,7 @@
 
 Import('env')
 
-sysbasic_nexe = env.ComponentProgram('sysbasic.nexe',
+sysbasic_nexe = env.ComponentProgram('sysbasic',
                                      'sysbasic.c',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
                                                  '${NONIRT_LIBS}',

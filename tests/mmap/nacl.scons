@@ -29,7 +29,7 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.Bit('target_arm') and env.UsingEmulator())
 
 mmap_atomicity_nexe = env.ComponentProgram(
-    'mmap_atomicity.nexe', 'mmap_atomicity.c',
+    'mmap_atomicity', 'mmap_atomicity.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'mmap_atomicity_test.out', mmap_atomicity_nexe)

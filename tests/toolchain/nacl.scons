@@ -30,7 +30,7 @@ nexe = env.ComponentProgram('dummy', 'dummy.c',
                             LIBS=DEP_LIBS,
                             _LIBFLAGS='')
 node = env.CommandValidatorTestNacl('whole_archive_test.out',
-                                    image=[nexe])
+                                    image=nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_whole_archive_test')

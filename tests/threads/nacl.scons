@@ -184,7 +184,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_create_test')
 # If we find this test fails in practice, it should be disabled until
 # the races are fixed.
 node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
-                                 [many_threads_sequential_nexe])
+                                 many_threads_sequential_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_many_threads_sequential_test',
