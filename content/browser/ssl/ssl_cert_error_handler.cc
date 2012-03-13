@@ -5,6 +5,7 @@
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
@@ -12,16 +13,19 @@
 using content::ResourceDispatcherHostImpl;
 
 SSLCertErrorHandler::SSLCertErrorHandler(
-    ResourceDispatcherHostImpl* host,
-    net::URLRequest* request,
+    Delegate* delegate,
+    const content::GlobalRequestID& id,
     ResourceType::Type resource_type,
+    const GURL& url,
+    int render_process_id,
+    int render_view_id,
     const net::SSLInfo& ssl_info,
     bool fatal)
-    : SSLErrorHandler(host, request, resource_type),
+    : SSLErrorHandler(delegate, id, resource_type, url, render_process_id,
+          render_view_id),
       ssl_info_(ssl_info),
       cert_error_(net::MapCertStatusToNetError(ssl_info.cert_status)),
       fatal_(fatal) {
-  DCHECK(request == resource_dispatcher_host_->GetURLRequest(request_id_));
 }
 
 SSLCertErrorHandler* SSLCertErrorHandler::AsSSLCertErrorHandler() {

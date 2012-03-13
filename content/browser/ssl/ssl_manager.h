@@ -11,7 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/ssl/ssl_policy_backend.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -30,7 +32,6 @@ class NavigationEntryImpl;
 
 namespace net {
 class SSLInfo;
-class URLRequest;
 }  // namespace net
 
 // The SSLManager SSLManager controls the SSL UI elements in a TabContents.  It
@@ -45,11 +46,16 @@ class SSLManager : public content::NotificationObserver {
  public:
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
-  // will adjust the security UI and either call |Cancel| or
-  // |ContinueDespiteLastError| on the net::URLRequest.
+  // will adjust the security UI and either call |CancelSSLRequest| or
+  // |ContinueSSLRequest| of |delegate| with |id| as the first argument.
   //
   // Called on the IO thread.
-  static void OnSSLCertificateError(net::URLRequest* request,
+  static void OnSSLCertificateError(SSLErrorHandler::Delegate* delegate,
+                                    const content::GlobalRequestID& id,
+                                    ResourceType::Type resource_type,
+                                    const GURL& url,
+                                    int render_process_id,
+                                    int render_view_id,
                                     const net::SSLInfo& ssl_info,
                                     bool fatal);
 

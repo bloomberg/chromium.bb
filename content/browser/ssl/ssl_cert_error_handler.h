@@ -17,9 +17,12 @@
 class SSLCertErrorHandler : public SSLErrorHandler {
  public:
   // Construct on the IO thread.
-  SSLCertErrorHandler(content::ResourceDispatcherHostImpl* host,
-                      net::URLRequest* request,
+  SSLCertErrorHandler(Delegate* delegate,
+                      const content::GlobalRequestID& id,
                       ResourceType::Type resource_type,
+                      const GURL& url,
+                      int render_process_id,
+                      int render_view_id,
                       const net::SSLInfo& ssl_info,
                       bool fatal);
 

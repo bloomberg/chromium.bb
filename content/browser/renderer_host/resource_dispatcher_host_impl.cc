@@ -1492,7 +1492,16 @@ void ResourceDispatcherHostImpl::OnSSLCertificateError(
     const net::SSLInfo& ssl_info,
     bool is_hsts_host) {
   DCHECK(request);
-  SSLManager::OnSSLCertificateError(request, ssl_info, is_hsts_host);
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+  DCHECK(info);
+  GlobalRequestID request_id(info->GetChildID(), info->GetRequestID());
+  int render_process_id;
+  int render_view_id;
+  if(!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
+    NOTREACHED();
+  SSLManager::OnSSLCertificateError(this, request_id, info->GetResourceType(),
+      request->url(), render_process_id, render_view_id, ssl_info,
+      is_hsts_host);
 }
 
 void ResourceDispatcherHostImpl::OnResponseStarted(net::URLRequest* request) {
@@ -1945,6 +1954,39 @@ void ResourceDispatcherHostImpl::CallResponseCompleted(int child_id,
       GlobalRequestID(child_id, request_id));
   if (i != pending_requests_.end())
     ResponseCompleted(i->second);
+}
+
+// SSLErrorHandler::Delegate ---------------------------------------------------
+
+void ResourceDispatcherHostImpl::CancelSSLRequest(
+    const GlobalRequestID& id,
+    int error,
+    const net::SSLInfo* ssl_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequest* request = GetURLRequest(id);
+  // The request can be NULL if it was cancelled by the renderer (as the
+  // request of the user navigating to a new page from the location bar).
+  if (!request || !request->is_pending())
+    return;
+  DVLOG(1) << "CancelSSLRequest() url: " << request->url().spec();
+  // TODO(toyoshim): Following method names SimulateSSLError() and
+  // SimulateError() looks inconsistent with other Cancel methods.
+  if (ssl_info)
+    request->SimulateSSLError(error, *ssl_info);
+  else
+    request->SimulateError(error);
+}
+
+void ResourceDispatcherHostImpl::ContinueSSLRequest(
+    const GlobalRequestID& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::URLRequest* request = GetURLRequest(id);
+  // The request can be NULL if it was cancelled by the renderer (as the
+  // request of the user navigating to a new page from the location bar).
+  if (!request)
+    return;
+  DVLOG(1) << "ContinueSSLRequest() url: " << request->url().spec();
+  request->ContinueDespiteLastError();
 }
 
 void ResourceDispatcherHostImpl::OnUserGesture(TabContents* tab) {

@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_types.h"
@@ -58,7 +59,8 @@ struct GlobalRequestID;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
-      public net::URLRequest::Delegate {
+      public net::URLRequest::Delegate,
+      public SSLErrorHandler::Delegate {
  public:
   ResourceDispatcherHostImpl();
   virtual ~ResourceDispatcherHostImpl();
@@ -171,7 +173,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // acts like CancelRequestsForProcess when route_id is -1.
   void CancelRequestsForRoute(int child_id, int route_id);
 
-  // net::URLRequest::Delegate
+  // net::URLRequest::Delegate:
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
                                   bool* defer_redirect) OVERRIDE;
@@ -186,6 +188,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE;
+
+  // SSLErrorHandler::Delegate:
+  virtual void CancelSSLRequest(const content::GlobalRequestID& id,
+                                int error,
+                                const net::SSLInfo* ssl_info) OVERRIDE;
+  virtual void ContinueSSLRequest(const content::GlobalRequestID& id) OVERRIDE;
 
   void OnUserGesture(TabContents* tab);
 
