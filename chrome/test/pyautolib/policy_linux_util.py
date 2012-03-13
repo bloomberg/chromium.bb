@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Helper script to copy policy files into the correct managed policy location
-in the machine.
-"""
+"""Helper script to copy policy files into the correct onn the machine."""
 
 import os
 import sys
