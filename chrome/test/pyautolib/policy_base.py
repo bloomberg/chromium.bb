@@ -30,7 +30,6 @@ change in the future, but tests relying on SetPolicies will keep working.
 import json
 import logging
 import os
-import subprocess
 import tempfile
 import urllib
 import urllib2
@@ -42,6 +41,7 @@ import pyauto_utils
 
 if pyauto.PyUITest.IsChromeOS():
   import sys
+
   # Find the path to the pyproto and add it to sys.path.
   # Prepend it so that google.protobuf is loaded from here.
   for path in pyauto_paths.GetBuildDirs():
@@ -51,12 +51,11 @@ if pyauto.PyUITest.IsChromeOS():
                                   'proto')] + sys.path
       break
   sys.path.append('/usr/local')  # to import autotest libs.
+
   import device_management_local_pb2 as dml
   import device_management_backend_pb2 as dmb
   from autotest.cros import constants
   from autotest.cros import cros_ui
-elif pyauto.PyUITest.IsWin():
-  import _winreg as winreg
 
 
 class PolicyTestBase(pyauto.PyUITest):
@@ -75,16 +74,38 @@ class PolicyTestBase(pyauto.PyUITest):
 
   def _GetTestServerPoliciesFilePath(self):
     """Returns the path of the cloud policy configuration file."""
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     return os.path.join(self._temp_data_dir, 'device_management')
 
   def _GetHttpURLForDeviceManagement(self):
-    assert self.IsChromeOS()
     return self._http_server.GetURL('device_management').spec()
+
+  def _SetCloudPolicies(self, user_mandatory=None, user_recommended=None,
+                        device=None):
+    """Exports the policies passed as dictionaries in the arguments to the
+    configuration file of the TestServer. The TestServer will serve these
+    policies after this function returns.
+
+    Args:
+      user_mandatory: user policies of mandatory level
+      user_recommended: user policies of recommended level
+      device: device policies
+    """
+    assert pyauto.PyUITest.IsChromeOS()
+    policy_dict = {
+      'google/chromeos/device': device or {},
+      'google/chromeos/user': {
+        'mandatory': user_mandatory or {},
+        'recommended': user_recommended or {},
+      },
+      'managed_users': ['*'],
+    }
+    self._WriteFile(self._GetTestServerPoliciesFilePath(),
+                    json.dumps(policy_dict, sort_keys=True, indent=2) + '\n')
 
   def _WriteUserPolicyToken(self, token):
     """Writes the given token to the user device management cache."""
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     blob = dml.DeviceCredentials()
     blob.device_token = token
     blob.device_id = '123'
@@ -96,7 +117,7 @@ class PolicyTestBase(pyauto.PyUITest):
 
     Also writes the owner key, used to verify the signature.
     """
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     self._WriteFile(constants.SIGNED_POLICY_FILE,
                     fetch_response.SerializeToString())
     self._WriteFile(constants.OWNER_KEY_FILE,
@@ -108,7 +129,7 @@ class PolicyTestBase(pyauto.PyUITest):
     |request_type| is the value of the 'request' HTTP parameter.
     Returns the response's body.
     """
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     url = self._GetHttpURLForDeviceManagement()
     url += '?' + urllib.urlencode({
       'deviceid': '123',
@@ -122,7 +143,7 @@ class PolicyTestBase(pyauto.PyUITest):
 
   def _PostRegisterRequest(self, type):
     """Sends a device register request to the TestServer, of the given type."""
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     request = dmb.DeviceManagementRequest()
     register = request.register_request
     register.machine_id = '789'
@@ -135,7 +156,7 @@ class PolicyTestBase(pyauto.PyUITest):
     Registers for device policy if device is True. Otherwise registers for
     user policy.
     """
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     type = device and dmb.DeviceRegisterRequest.DEVICE \
                    or dmb.DeviceRegisterRequest.USER
     rstring = self._PostRegisterRequest(type)
@@ -149,7 +170,7 @@ class PolicyTestBase(pyauto.PyUITest):
     Policy is fetched for the given type. If want_signature is True, the
     request will ask for a signed response. Returns the response body.
     """
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     request = dmb.DeviceManagementRequest()
     policy = request.policy_request
     prequest = policy.request.add()
@@ -169,7 +190,7 @@ class PolicyTestBase(pyauto.PyUITest):
     This method also verifies the response, and returns the first policy fetch
     response.
     """
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     type = device and 'google/chromeos/device' or 'google/chromeos/user'
     rstring = self._PostPolicyRequest(token=token, type=type,
                                       want_signature=device)
@@ -183,7 +204,7 @@ class PolicyTestBase(pyauto.PyUITest):
 
   def _WriteDevicePolicyWithSessionManagerStopped(self, policy):
     """Writes the device policy blob while the Session Manager is stopped."""
-    assert self.IsChromeOS()
+    assert pyauto.PyUITest.IsChromeOS()
     logging.debug('Stopping session manager')
     cros_ui.stop(allow_fail=True)
     logging.debug('Writing device policy cache')
@@ -223,8 +244,8 @@ class PolicyTestBase(pyauto.PyUITest):
   def setUp(self):
     """Sets up the platform for policy testing.
 
-    On ChromeOS, part of the set up involves restarting the session_manager and
-    logging in with the $default account.
+    Part of the set up involves restarting the session_manager and logging in
+    with the $default account.
     """
     if self.IsChromeOS():
       # Setup a temporary data dir and a TestServer serving files from there.
@@ -264,10 +285,7 @@ class PolicyTestBase(pyauto.PyUITest):
       self.RestartBrowser(clear_profile=False)
 
   def tearDown(self):
-    """Cleans up the files created by setUp and policies added in tests."""
-    # Clear the policies.
-    self.SetPolicies()
-
+    """Cleans up the files created by setUp."""
     if self.IsChromeOS():
       pyauto.PyUITest.Logout(self)
 
@@ -277,130 +295,20 @@ class PolicyTestBase(pyauto.PyUITest):
       self.StopHTTPServer(self._http_server)
       pyauto_utils.RemovePath(self._temp_data_dir)
 
-  def _SetCloudPolicies(self, user_mandatory=None, user_recommended=None,
-                        device=None):
-    """Exports the policies to the configuration file of the TestServer.
-
-    The TestServer will serve these policies after this function returns.
-
-    Args:
-      user_mandatory: user policies of mandatory level
-      user_recommended: user policies of recommended level
-      device: device policies
-    """
-    assert self.IsChromeOS()
-    policy_dict = {
-      'google/chromeos/device': device or {},
-      'google/chromeos/user': {
-        'mandatory': user_mandatory or {},
-        'recommended': user_recommended or {},
-      },
-      'managed_users': ['*'],
-    }
-    self._WriteFile(self._GetTestServerPoliciesFilePath(),
-                    json.dumps(policy_dict, sort_keys=True, indent=2) + '\n')
-
-  def _SetPoliciesWin(self, user_policy=None):
-    """Exports the policies as dictionary in the argument to Window registry.
-
-    Removes the registry key and its subkeys if they exist.
-
-    Args:
-      user_policy: A dictionary representing the user policies. Clear the
-        registry if None.
-
-    Raises:
-      TypeError: If an unexpected value is found in the policy dictionary.
-    """
-
-    def SetValueEx(key, sub_key, value):
-      if isinstance(value, int):
-        winreg.SetValueEx(key, sub_key, 0, winreg.REG_DWORD, int(value))
-      elif isinstance(value, basestring):
-        winreg.SetValueEx(key, sub_key, 0, winreg.REG_SZ, value.encode('ascii'))
-      elif isinstance(value, list):
-        k = winreg.CreateKey(key, sub_key)
-        for index, v in list(enumerate(value)):
-          SetValueEx(k, str(index + 1), v)
-        winreg.CloseKey(k)
-      else:
-        raise TypeError('Unsupported data type: "%s"' % value)
-
-    assert self.IsWin()
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
-      reg_base = r'SOFTWARE\Policies\Google\Chrome'
-    else:
-      reg_base = r'SOFTWARE\Policies\Chromium'
-
-    if subprocess.call(
-        r'reg query HKEY_LOCAL_MACHINE\%s' % reg_base) == 0:
-      logging.debug(r'Removing %s' % reg_base)
-      subprocess.call(r'reg delete HKLM\%s /f' % reg_base)
-
-    if user_policy is not None:
-      root_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, reg_base)
-      for k, v in user_policy.iteritems():
-        SetValueEx(root_key, k, v)
-      winreg.CloseKey(root_key)
-
-  def _SetPoliciesLinux(self, user_policy=None):
-    """Exports the policies as dictionary in the argument to a JSON file.
-
-    Removes the JSON file if it exists.
-
-    Args:
-      user_policy: A dictionary representing the user policies. Remove the
-        JSON file if None
-    """
-    assert self.IsLinux()
-    sudo_cmd_file = os.path.join(os.path.dirname(__file__),
-                                 'policy_linux_util.py')
-
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
-      policies_location_base = '/etc/opt/chrome'
-    else:
-      policies_location_base = '/etc/chromium'
-
-    if os.path.isdir(policies_location_base):
-      logging.debug('Removing directory %s' % policies_location_base)
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'remove_dir', policies_location_base])
-
-    if user_policy is not None:
-      self._WriteFile('/tmp/chrome.json',
-                      json.dumps(user_policy, sort_keys=True, indent=2) + '\n')
-
-      policies_location = '%s/policies/managed' % policies_location_base
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'setup_dir', policies_location])
-      # Copy chrome.json file to the managed directory
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'copy', '/tmp/chrome.json', policies_location])
-      os.remove('/tmp/chrome.json')
-
   def SetPolicies(self, user_policy=None, device_policy=None):
     """Enforces the policies given in the arguments as dictionaries.
 
-    These policies will have been installed after this call returns.
+    device_policy will be applied on ChromeOS only, and ignored on other
+    platforms.
 
-    Args:
-      user_policy: A dictionary representing the user policies.
-      device_policy: A dictionary representing the device policies on Chrome OS.
+    On other platforms, this call is only available on non-official builds.
 
-    Raises:
-      NotImplementedError if the platform is not supported.
+    This policies will have been installed after this call returns.
     """
     if self.IsChromeOS():
       self._SetCloudPolicies(user_mandatory=user_policy, device=device_policy)
+      self.RefreshPolicies()
+    elif not self.GetBrowserInfo()['properties']['is_official']:
+      pyauto.PyUITest.SetPolicies(self, managed_platform=user_policy)
     else:
-      if device_policy is not None:
-        raise NotImplementedError('Device policy is only available on ChromeOS')
-      if self.IsWin():
-        self._SetPoliciesWin(user_policy=user_policy)
-      elif self.IsLinux():
-        self._SetPoliciesLinux(user_policy=user_policy)
-      else:
-        raise NotImplementedError('Not available on this platform.')
-
-    self.RefreshPolicies()
-
+      raise AssertionError('Not available on this platform and build.')
