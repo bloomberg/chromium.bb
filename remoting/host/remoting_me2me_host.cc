@@ -55,8 +55,19 @@ const char kApplicationName[] = "remoting_me2me_host";
 const char kAuthConfigSwitchName[] = "auth-config";
 const char kHostConfigSwitchName[] = "host-config";
 
+// TODO(lambroslambrou): The default locations should depend on whether Chrome
+// branding is enabled - this means also modifying the Python daemon script.
+// The actual location of the files is ultimately determined by the service
+// daemon and NPAPI implementation - these defaults are only used in case the
+// command-line switches are absent.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 const FilePath::CharType kDefaultConfigDir[] =
-    FILE_PATH_LITERAL(".config/chrome-remote-desktop");
+    FILE_PATH_LITERAL("Chrome Remote Desktop");
+#else
+const FilePath::CharType kDefaultConfigDir[] =
+    FILE_PATH_LITERAL("chrome-remote-desktop");
+#endif
+
 const FilePath::CharType kDefaultAuthConfigFile[] =
     FILE_PATH_LITERAL("auth.json");
 const FilePath::CharType kDefaultHostConfigFile[] =
@@ -69,9 +80,12 @@ FilePath GetDefaultConfigDir() {
   FilePath default_config_dir;
 
 #if defined(OS_WIN)
-  PathService::Get(base::DIR_PROFILE, &default_config_dir);
+  PathService::Get(base::DIR_LOCAL_APP_DATA, &default_config_dir);
+#elif defined(OS_MACOSX)
+  PathService::Get(base::DIR_APP_DATA, &default_config_dir);
 #else
-  default_config_dir = file_util::GetHomeDir();
+  default_config_dir = file_util::GetHomeDir().Append(FILE_PATH_LITERAL(
+      ".config"));
 #endif
 
   return default_config_dir.Append(kDefaultConfigDir);

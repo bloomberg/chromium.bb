@@ -6,21 +6,26 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/system_event_logger.h"
+
+// Included here, since the #define for LOG_USER in syslog.h conflicts with the
+// constants in base/logging.h, and this source file should use the version in
+// syslog.h.
+#include <syslog.h>
 
 namespace remoting {
 
 namespace {
 
-class HostEventLoggerLinux : public HostEventLogger, public HostStatusObserver {
+class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  public:
-  HostEventLoggerLinux(ChromotingHost* host,
+  HostEventLoggerPosix(ChromotingHost* host,
                        const std::string& application_name);
 
-  virtual ~HostEventLoggerLinux();
+  virtual ~HostEventLoggerPosix();
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
@@ -38,59 +43,61 @@ class HostEventLoggerLinux : public HostEventLogger, public HostStatusObserver {
   void Log(const std::string& message);
 
   scoped_refptr<ChromotingHost> host_;
-  scoped_ptr<SystemEventLogger> system_event_logger_;
+  std::string application_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostEventLoggerLinux);
+  DISALLOW_COPY_AND_ASSIGN(HostEventLoggerPosix);
 };
 
 } //namespace
 
-HostEventLoggerLinux::HostEventLoggerLinux(ChromotingHost* host,
+HostEventLoggerPosix::HostEventLoggerPosix(ChromotingHost* host,
                                            const std::string& application_name)
     : host_(host),
-      system_event_logger_(SystemEventLogger::Create(application_name)) {
+      application_name_(application_name) {
+  openlog(application_name_.c_str(), 0, LOG_USER);
   host_->AddStatusObserver(this);
 }
 
-HostEventLoggerLinux::~HostEventLoggerLinux() {
+HostEventLoggerPosix::~HostEventLoggerPosix() {
   host_->RemoveStatusObserver(this);
+  closelog();
 }
 
-void HostEventLoggerLinux::OnClientAuthenticated(const std::string& jid) {
+void HostEventLoggerPosix::OnClientAuthenticated(const std::string& jid) {
   Log("Client connected: " + jid);
 }
 
-void HostEventLoggerLinux::OnClientDisconnected(const std::string& jid) {
+void HostEventLoggerPosix::OnClientDisconnected(const std::string& jid) {
   Log("Client disconnected: " + jid);
 }
 
-void HostEventLoggerLinux::OnAccessDenied(const std::string& jid) {
+void HostEventLoggerPosix::OnAccessDenied(const std::string& jid) {
   Log("Access denied for client: " + jid);
 }
 
-void HostEventLoggerLinux::OnClientRouteChange(
+void HostEventLoggerPosix::OnClientRouteChange(
     const std::string& jid,
     const std::string& channel_name,
     const net::IPEndPoint& remote_end_point,
     const net::IPEndPoint& local_end_point) {
-  Log("Channel IP for client: " + jid +
-      " ip='" + remote_end_point.ToString() +
-      "' host_ip='" + local_end_point.ToString() +
-      "' channel='" + channel_name + "'");
+  Log(base::StringPrintf(
+      "Channel IP for client: %s ip='%s' host_ip='%s' channel='%s'",
+      jid.c_str(), remote_end_point.ToString().c_str(),
+      local_end_point.ToString().c_str(), channel_name.c_str()));
 }
 
-void HostEventLoggerLinux::OnShutdown() {
+void HostEventLoggerPosix::OnShutdown() {
 }
 
-void HostEventLoggerLinux::Log(const std::string& message) {
-  system_event_logger_->Log(message);
+void HostEventLoggerPosix::Log(const std::string& message) {
+  syslog(LOG_USER | LOG_NOTICE, "%s", message.c_str());
 }
 
 // static
 scoped_ptr<HostEventLogger> HostEventLogger::Create(
     ChromotingHost* host, const std::string& application_name) {
   return scoped_ptr<HostEventLogger>(
-      new HostEventLoggerLinux(host, application_name));
+      new HostEventLoggerPosix(host, application_name));
 }
 
 }  // namespace remoting

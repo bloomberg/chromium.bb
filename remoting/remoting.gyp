@@ -198,81 +198,11 @@
             }],  # 'linux_dump_symbols==1'
           ],  # end of 'conditions'
         },  # end of target 'linux_symbols'
-
-        {
-          'target_name': 'remoting_me2me_host',
-          'type': 'executable',
-          'dependencies': [
-            'remoting_base',
-            'remoting_host',
-            'remoting_jingle_glue',
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
-          ],
-          'sources': [
-            'host/host_event_logger_linux.cc',
-            'host/host_event_logger.h',
-            'host/remoting_me2me_host.cc',
-            'host/system_event_logger_linux.cc',
-            'host/system_event_logger.h',
-          ],
-        },  # end of target 'remoting_me2me_host'
-
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
 
     ['OS=="win"', {
       'targets': [
-        {
-          'target_name': 'remoting_me2me_host',
-          'type': 'executable',
-          'dependencies': [
-            'remoting_base',
-            'remoting_host',
-            'remoting_jingle_glue',
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
-            '../ipc/ipc.gyp:ipc',
-          ],
-          'sources': [
-            'host/host_event_logger_win.cc',
-            'host/host_event_logger.h',
-            'host/remoting_host_messages.mc',
-            'host/remoting_me2me_host.cc',
-            'host/system_event_logger.h',
-          ],
-          'include_dirs': [
-            '<(INTERMEDIATE_DIR)',
-          ],
-          # Rule to run the message compiler.
-          'rules': [
-            {
-              'rule_name': 'message_compiler',
-              'extension': 'mc',
-              'inputs': [ ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/remoting_host_messages.h',
-                '<(INTERMEDIATE_DIR)/remoting_host_messages.rc',
-              ],
-              'msvs_cygwin_shell': 0,
-              'msvs_quote_cmd': 0,
-              'action': [
-                'mc.exe -h <(INTERMEDIATE_DIR) -r <(INTERMEDIATE_DIR) <(RULE_INPUT_PATH)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
-            },
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              # 2 == /SUBSYSTEM:WINDOWS
-              'SubSystem': '2',
-            },
-          },
-        },  # end of target 'remoting_me2me_host'
-
         {
           'target_name': 'remoting_service',
           'type': 'executable',
@@ -770,13 +700,75 @@
         'host/simple_host_process.cc',
       ],
       'conditions': [
-        [ 'OS=="win"', {
+        ['OS=="win"', {
           'dependencies': [
             '../ipc/ipc.gyp:ipc'
           ],
         }],
       ],
     },  # end of target 'remoting_simple_host'
+
+    {
+      'target_name': 'remoting_me2me_host',
+      'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'dependencies': [
+        'remoting_base',
+        'remoting_host',
+        'remoting_jingle_glue',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../media/media.gyp:media',
+      ],
+      'sources': [
+        'host/host_event_logger.h',
+        'host/remoting_me2me_host.cc',
+      ],
+      'conditions': [
+        ['os_posix==1', {
+          'sources': [
+            'host/host_event_logger_posix.cc',
+          ],
+	}],
+        ['OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+          'sources': [
+            'host/host_event_logger_win.cc',
+            'host/remoting_host_messages.mc',
+          ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
+          # Rule to run the message compiler.
+          'rules': [
+            {
+              'rule_name': 'message_compiler',
+              'extension': 'mc',
+              'inputs': [ ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/remoting_host_messages.h',
+                '<(INTERMEDIATE_DIR)/remoting_host_messages.rc',
+              ],
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                'mc.exe -h <(INTERMEDIATE_DIR) -r <(INTERMEDIATE_DIR) <(RULE_INPUT_PATH)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
+            },
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        }],
+      ],  # end of 'conditions'
+    },  # end of target 'remoting_me2me_host'
 
     {
       'target_name': 'remoting_host_keygen',
