@@ -64,6 +64,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"pctavhook.dll",               // PC Tools Antivirus.
   L"pctgmhk.dll",                 // PC Tools Spyware Doctor.
   L"prntrack.dll",                // Pharos Systems.
+  L"protector.dll"                // Unknown.
   L"radhslib.dll",                // Radiant Naomi Internet Filter.
   L"radprlib.dll",                // Radiant Naomi Internet Filter.
   L"rapportnikko.dll",            // Trustware Rapport.
