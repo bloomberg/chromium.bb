@@ -77,6 +77,10 @@ FilePath GDataFileBase::GetFilePath() {
   return path;
 }
 
+void GDataFileBase::SetFileNameFromTitle() {
+  file_name_ = EscapeUtf8FileName(title_);
+}
+
 // static.
 GDataFileBase* GDataFileBase::FromDocumentEntry(GDataDirectory* parent,
                                                 DocumentEntry* doc) {
@@ -91,8 +95,6 @@ GDataFileBase* GDataFileBase::FromDocumentEntry(GDataDirectory* parent,
 }
 
 // static.
-// Escapes forward slashes from file names with magic unicode character \u2215
-// pretty much looks the same in UI.
 std::string GDataFileBase::EscapeUtf8FileName(const std::string& input) {
   std::string output;
   if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
@@ -102,7 +104,6 @@ std::string GDataFileBase::EscapeUtf8FileName(const std::string& input) {
 }
 
 // static.
-// Unescapes what was escaped in EScapeUtf8FileName.
 std::string GDataFileBase::UnescapeUtf8FileName(const std::string& input) {
   std::string output = input;
   ReplaceSubstringsAfterOffset(&output, 0, std::string(kEscapedSlash), kSlash);
@@ -125,27 +126,36 @@ GDataFile* GDataFile::AsGDataFile() {
   return this;
 }
 
+void GDataFile::SetFileNameFromTitle() {
+  if (is_hosted_document_) {
+    file_name_ = EscapeUtf8FileName(title_ + document_extension_);
+  } else {
+    GDataFileBase::SetFileNameFromTitle();
+  }
+}
+
 GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
                                             DocumentEntry* doc) {
   DCHECK(doc->is_hosted_document() || doc->is_file());
   GDataFile* file = new GDataFile(parent);
+
+  // For regular files, the 'filename' and 'title' attribute in the metadata
+  // may be different (e.g. due to rename). To be consistent with the web
+  // interface and other client to use the 'title' attribute, instead of
+  // 'filename', as the file name in the local snapshot.
+  file->title_ = UTF16ToUTF8(doc->title());
+
   // Check if this entry is a true file, or...
   if (doc->is_file()) {
-    file->original_file_name_ = UTF16ToUTF8(doc->filename());
-    file->file_name_ =
-        GDataFileBase::EscapeUtf8FileName(file->original_file_name_);
     file->file_info_.size = doc->file_size();
     file->file_md5_ = doc->file_md5();
   } else {
-    DCHECK(doc->is_hosted_document());
     // ... a hosted document.
-    file->original_file_name_ = UTF16ToUTF8(doc->title());
     // Attach .g<something> extension to hosted documents so we can special
     // case their handling in UI.
     // TODO(zelidrag): Figure out better way how to pass entry info like kind
     // to UI through the File API stack.
-    file->file_name_ = GDataFileBase::EscapeUtf8FileName(
-        file->original_file_name_ + doc->GetHostedDocumentExtension());
+    file->document_extension_ = doc->GetHostedDocumentExtension();
     // We don't know the size of hosted docs and it does not matter since
     // is has no effect on the quota.
     file->file_info_.size = 0;
@@ -164,6 +174,10 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   file->file_info_.last_accessed = doc->updated_time();
   file->file_info_.creation_time = doc->published_time();
 
+  // SetFileNameFromTitle() must be called after |title_|,
+  // |is_hosted_document_| and |document_extension_| are set.
+  file->SetFileNameFromTitle();
+
   const Link* thumbnail_link = doc->GetLinkByType(Link::THUMBNAIL);
   if (thumbnail_link)
     file->thumbnail_url_ = thumbnail_link->href();
@@ -176,7 +190,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
 }
 
 int GDataFile::GetCacheState() {
-  return root_->GetCacheState(resource(), file_md5());
+  return root_->GetCacheState(resource_id(), file_md5());
 }
 
 // GDataDirectory class implementation.
@@ -200,14 +214,20 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   DCHECK(parent);
   DCHECK(doc->is_folder());
   GDataDirectory* dir = new GDataDirectory(parent);
-  dir->original_file_name_ = UTF16ToUTF8(doc->title());
-  dir->file_name_ = GDataFileBase::EscapeUtf8FileName(dir->original_file_name_);
+  dir->title_ = UTF16ToUTF8(doc->title());
+  // SetFileNameFromTitle() must be called after |title_| is set.
+  dir->SetFileNameFromTitle();
   dir->file_info_.last_modified = doc->updated_time();
   dir->file_info_.last_accessed = doc->updated_time();
   dir->file_info_.creation_time = doc->published_time();
   // Extract feed link.
   dir->start_feed_url_ = doc->content_url();
+  dir->resource_id_ = doc->resource_id();
   dir->content_url_ = doc->content_url();
+
+  const Link* self_link = doc->GetLinkByType(Link::SELF);
+  if (self_link)
+    dir->self_url_ = self_link->href();
 
   const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
@@ -260,18 +280,48 @@ void GDataDirectory::AddFile(GDataFileBase* file) {
   root_->AddFileToResourceMap(file);
 }
 
+bool GDataDirectory::TakeFile(GDataFileBase* file) {
+  DCHECK(file);
+  DCHECK(file->parent());
+
+  file->parent()->RemoveFileFromChildrenList(file);
+
+  // The file name may have been changed due to prior name de-duplication.
+  // We need to first restore the file name based on the title before going
+  // through name de-duplication again when it is added to another directory.
+  file->SetFileNameFromTitle();
+  AddFile(file);
+
+  // Use GDataFileBase::set_parent() to change the parent of GDataFileBase
+  // as GDataDirectory:AddFile() does not do that.
+  file->set_parent(this);
+  return true;
+}
+
 bool GDataDirectory::RemoveFile(GDataFileBase* file) {
+  DCHECK(file);
+
+  if (!RemoveFileFromChildrenList(file))
+    return false;
+
+  delete file;
+  return true;
+}
+
+bool GDataDirectory::RemoveFileFromChildrenList(GDataFileBase* file) {
+  DCHECK(file);
+
   GDataFileCollection::iterator iter = children_.find(file->file_name());
   if (iter == children_.end())
     return false;
 
   DCHECK(iter->second);
+  DCHECK_EQ(file, iter->second);
 
   // Remove file from resource map first.
   root_->RemoveFileFromResourceMap(file);
 
   // Then delete it from tree.
-  delete iter->second;
   children_.erase(iter);
 
   return true;
@@ -300,14 +350,14 @@ void GDataRootDirectory::AddFileToResourceMap(GDataFileBase* file) {
   // Only files have resource.
   if (file->AsGDataFile()) {
     resource_map_.insert(
-        std::make_pair(file->AsGDataFile()->resource(), file));
+        std::make_pair(file->AsGDataFile()->resource_id(), file));
   }
 }
 
 void GDataRootDirectory::RemoveFileFromResourceMap(GDataFileBase* file) {
   // GDataFileSystem has already locked.
   if (file->AsGDataFile())
-    resource_map_.erase(file->AsGDataFile()->resource());
+    resource_map_.erase(file->AsGDataFile()->resource_id());
 }
 
 void GDataRootDirectory::RemoveFilesFromResourceMap(
@@ -323,7 +373,7 @@ void GDataRootDirectory::RemoveFilesFromResourceMap(
 
     // Only files have resource.
     if (iter->second->AsGDataFile())
-      resource_map_.erase(iter->second->AsGDataFile()->resource());
+      resource_map_.erase(iter->second->AsGDataFile()->resource_id());
   }
 }
 

@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 
-#include <map>
 #include <sys/stat.h>
+
+#include <map>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,16 +41,27 @@ class GDataFileBase {
   // Converts DocumentEntry into GDataFileBase.
   static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc);
+
+  // Escapes forward slashes from file names with magic unicode character
+  // \u2215 pretty much looks the same in UI.
   static std::string EscapeUtf8FileName(const std::string& input);
+
+  // Unescapes what was escaped in EScapeUtf8FileName.
   static std::string UnescapeUtf8FileName(const std::string& input);
 
   GDataDirectory* parent() { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
   const FilePath::StringType& file_name() const { return file_name_; }
-  const FilePath::StringType& original_file_name() const {
-    return original_file_name_;
+  const FilePath::StringType& title() const {
+    return title_;
+  }
+  void set_title(const FilePath::StringType& title) {
+    title_ = title;
   }
   void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
+
+  // The unique resource ID associated with this file system entry.
+  const std::string& resource_id() const { return resource_id_; }
 
   // The content URL is used for downloading regular files as is.
   const GURL& content_url() const { return content_url_; }
@@ -61,12 +74,30 @@ class GDataFileBase {
   // class.
   FilePath GetFilePath();
 
+  // Sets |file_name_| based on the value of |title_| without name
+  // de-duplication (see AddFile() for details on de-duplication).
+  virtual void SetFileNameFromTitle();
+
  protected:
+  // GDataDirectory::TakeFile() needs to call GDataFileBase::set_parent().
+  friend class GDataDirectory;
+
+  // Sets the parent directory of this file system entry.
+  // It is intended to be used by GDataDirectory::TakeFile() only.
+  void set_parent(GDataDirectory* parent) { parent_ = parent; }
+
   base::PlatformFileInfo file_info_;
+  // Name of this file in the gdata virtual file system.
   FilePath::StringType file_name_;
-  FilePath::StringType original_file_name_;
-  // Files with the same original name will be uniquely identified with this
-  // field so we can represent them with unique URLs/paths in File API layer.
+  // Title of this file (i.e. the 'title' attribute associated with a regular
+  // file, hosted document, or collection). The title is used to derive
+  // |file_name_| but may be different from |file_name_|. For example,
+  // |file_name_| has an added .g<something> extension for hosted documents or
+  // may have an extra suffix for name de-duplication on the gdata file system.
+  FilePath::StringType title_;
+  std::string resource_id_;
+  // Files with the same title will be uniquely identified with this field
+  // so we can represent them with unique URLs/paths in File API layer.
   // For example, two files in the same directory with the same name "Foo"
   // will show up in the virtual directory as "Foo" and "Foo (2)".
   GURL self_url_;
@@ -104,12 +135,17 @@ class GDataFile : public GDataFileBase {
   const GURL& edit_url() const { return edit_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
-  const std::string& resource() const { return resource_id_; }
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
   // Returns a bitmask of CacheState enum values.
   int GetCacheState();
+  const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
+
+  // Overrides GDataFileBase::SetFileNameFromTitle() to set |file_name_| based
+  // on the value of |title_| as well as |is_hosted_document_| and
+  // |document_extension_| for hosted documents.
+  virtual void SetFileNameFromTitle() OVERRIDE;
 
  private:
   // Content URL for files.
@@ -118,9 +154,9 @@ class GDataFile : public GDataFileBase {
   GURL edit_url_;
   std::string content_mime_type_;
   std::string etag_;
-  std::string resource_id_;
   std::string id_;
   std::string file_md5_;
+  std::string document_extension_;
   bool is_hosted_document_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataFile);
@@ -138,12 +174,18 @@ class GDataDirectory : public GDataFileBase {
                                           DocumentEntry* doc);
 
   // Adds child file to the directory and takes over the ownership of |file|
-  // object. The method will also do name deduplication to ensure that the
+  // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
   void AddFile(GDataFileBase* file);
 
-  // Removes the file from its children list.
+  // Takes the ownership of |file| from its current parent. If this directory
+  // is already the current parent of |file|, this method effectively goes
+  // through the name de-duplication for |file| based on the current state of
+  // the file system.
+  bool TakeFile(GDataFileBase* file);
+
+  // Removes the file from its children list and destroys the file instance.
   bool RemoveFile(GDataFileBase* file);
 
   // Removes children elements.
@@ -170,6 +212,10 @@ class GDataDirectory : public GDataFileBase {
   const GDataFileCollection& children() const { return children_; }
 
  private:
+  // Removes the file from its children list without destroying the
+  // file instance.
+  bool RemoveFileFromChildrenList(GDataFileBase* file);
+
   base::Time refresh_time_;
   // Url for this feed.
   GURL start_feed_url_;

@@ -553,14 +553,14 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
   GDataFileBase* file = NULL;
   EXPECT_TRUE((file = FindFile(file_in_root)) != NULL);
   EXPECT_TRUE(file->AsGDataFile() != NULL);
-  std::string file_in_root_resource = file->AsGDataFile()->resource();
+  std::string file_in_root_resource = file->AsGDataFile()->resource_id();
   EXPECT_EQ(file, FindFileByResource(file_in_root_resource));
 
   EXPECT_TRUE(FindFile(dir_in_root) != NULL);
 
   EXPECT_TRUE((file = FindFile(file_in_subdir)) != NULL);
   EXPECT_TRUE(file->AsGDataFile() != NULL);
-  std::string file_in_subdir_resource = file->AsGDataFile()->resource();
+  std::string file_in_subdir_resource = file->AsGDataFile()->resource_id();
   EXPECT_EQ(file, FindFileByResource(file_in_subdir_resource));
 
   // Remove first file in root.
@@ -761,12 +761,13 @@ TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
 
   // Store a file corresponding to resource and md5 of "gdata/File 1.txt" to
   // cache.
-  TestStoreToCache(file->resource(), file->file_md5(),
+  TestStoreToCache(file->resource_id(), file->file_md5(),
                    GetTestFilePath("root_feed.json"));
 
   // Now the file should exist in cache.
   cache_file_path = file_system_->GetFromCacheForPath(gdata_file_path);
-  EXPECT_EQ(file_system_->GetCacheFilePath(file->resource(), file->file_md5()),
+  EXPECT_EQ(file_system_->GetCacheFilePath(file->resource_id(),
+                                           file->file_md5()),
             cache_file_path);
 
   // A file that doesn't exist in gdata.

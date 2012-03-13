@@ -873,7 +873,7 @@ FilePath GDataFileSystem::GetFromCacheForPath(const FilePath& gdata_file_path) {
       return cache_file_path;
 
     GDataFile* file = file_base->AsGDataFile();
-    resource = file->resource();
+    resource = file->resource_id();
     md5 = file->file_md5();
   }
 
@@ -1081,7 +1081,7 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
 
   // If it's a file (only files have resource), remove it from cache.
   if (file->AsGDataFile()) {
-    RemoveFromCache(file->AsGDataFile()->resource(),
+    RemoveFromCache(file->AsGDataFile()->resource_id(),
                     base::Bind(&GDataFileSystem::OnRemovedFromCache,
                                weak_ptr_factory_.GetWeakPtr()));
   }
