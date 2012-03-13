@@ -80,6 +80,7 @@
       <include name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SYNC" file="infobar_sync.png" type="BINDATA" />
       <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
       <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />

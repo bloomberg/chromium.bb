@@ -77,6 +77,7 @@
       <include name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore_2x.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword_2x.png" type="BINDATA" />
       <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure_2x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SYNC" file="infobar_sync_2x.png" type="BINDATA" />
       <include name="IDR_INFOBAR_THEME" file="infobar_theme_2x.png" type="BINDATA" />
       <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate_2x.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier_2x.png" type="BINDATA" />

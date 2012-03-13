@@ -97,7 +97,7 @@ void OneClickLoginInfoBarDelegate::InfoBarDismissed() {
 
 gfx::Image* OneClickLoginInfoBarDelegate::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_AUTOLOGIN);
+      IDR_INFOBAR_SYNC);
 }
 
 InfoBarDelegate::Type OneClickLoginInfoBarDelegate::GetInfoBarType() const {
