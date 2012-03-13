@@ -39,18 +39,24 @@ using content::SiteInstance;
 
 namespace {
 
-// An accessor for an extension's lazy_keepalive_count.
-// TODO(mpcomplete): Should we store this on ExtensionHost instead?
+// Accessors for an extension's lazy_keepalive_count - one for each virtual
+// profile.
 static base::LazyInstance<base::PropertyAccessor<int> >
     g_property_accessor = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::PropertyAccessor<int> >
+    g_property_accessor_incognito = LAZY_INSTANCE_INITIALIZER;
 
 int& GetLazyKeepaliveCount(Profile* profile, const Extension* extension) {
   base::PropertyBag* bag =
       profile->GetExtensionService()->GetPropertyBag(extension);
-  int* count = g_property_accessor.Get().GetProperty(bag);
+
+  base::LazyInstance<base::PropertyAccessor<int> >& accessor =
+      profile->IsOffTheRecord() ?
+          g_property_accessor_incognito : g_property_accessor;
+  int* count = accessor.Get().GetProperty(bag);
   if (!count) {
-    g_property_accessor.Get().SetProperty(bag, 0);
-    count = g_property_accessor.Get().GetProperty(bag);
+    accessor.Get().SetProperty(bag, 0);
+    count = accessor.Get().GetProperty(bag);
   }
   return *count;
 }

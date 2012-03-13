@@ -106,7 +106,7 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 content::Source<Profile>(profile_));
+                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -231,7 +231,7 @@ void ExtensionEventRouter::DispatchEventToRenderers(
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
                          restrict_to_profile, "", USER_GESTURE_UNKNOWN));
-  DispatchEventImpl("", event, false);
+  DispatchEventImpl("", event);
 }
 
 void ExtensionEventRouter::DispatchEventToExtension(
@@ -244,7 +244,7 @@ void ExtensionEventRouter::DispatchEventToExtension(
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
                          restrict_to_profile, "", USER_GESTURE_UNKNOWN));
-  DispatchEventImpl(extension_id, event, false);
+  DispatchEventImpl(extension_id, event);
 }
 
 void ExtensionEventRouter::DispatchEventToExtension(
@@ -258,7 +258,7 @@ void ExtensionEventRouter::DispatchEventToExtension(
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
                          restrict_to_profile, "", user_gesture));
-  DispatchEventImpl(extension_id, event, false);
+  DispatchEventImpl(extension_id, event);
 }
 
 void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
@@ -271,101 +271,93 @@ void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
       new ExtensionEvent(event_name, event_args, event_url,
                          restrict_to_profile, cross_incognito_args,
                          USER_GESTURE_UNKNOWN));
-  DispatchEventImpl("", event, false);
-}
-
-bool ExtensionEventRouter::CanDispatchEventNow(const Extension* extension) {
-  DCHECK(extension);
-  if (extension->has_background_page() &&
-      !extension->background_page_persists()) {
-    ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-    ExtensionHost* background_host =
-        pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading())
-      return false;
-  }
-
-  return true;
+  DispatchEventImpl("", event);
 }
 
 void ExtensionEventRouter::DispatchEventImpl(
     const std::string& extension_id,
-    const linked_ptr<ExtensionEvent>& event,
-    bool was_pending) {
-  // Ensure we are only dispatching pending events to a particular extension.
-  if (was_pending)
-    CHECK(!extension_id.empty());
-
-  if (!profile_)
-    return;
-
+    const linked_ptr<ExtensionEvent>& event) {
   // We don't expect to get events from a completely different profile.
   DCHECK(!event->restrict_to_profile ||
          profile_->IsSameProfile(event->restrict_to_profile));
 
-  if (!was_pending)
-    LoadLazyBackgroundPagesForEvent(extension_id, event);
+  LoadLazyBackgroundPagesForEvent(extension_id, event);
 
   ListenerMap::iterator it = listeners_.find(event->event_name);
   if (it == listeners_.end())
     return;
 
   std::set<ListenerProcess>& listeners = it->second;
-  ExtensionService* service = profile_->GetExtensionService();
-
-  // Send the event only to renderers that are listening for it.
   for (std::set<ListenerProcess>::iterator listener = listeners.begin();
        listener != listeners.end(); ++listener) {
     if (!extension_id.empty() && extension_id != listener->extension_id)
       continue;
 
-    const Extension* extension = service->extensions()->GetByID(
-        listener->extension_id);
-
-    // The extension could have been removed, but we do not unregister it until
-    // the extension process is unloaded.
-    if (!extension)
-      continue;
-
-    Profile* listener_profile = Profile::FromBrowserContext(
-        listener->process->GetBrowserContext());
-    extensions::ProcessMap* process_map =
-        listener_profile->GetExtensionService()->process_map();
-    // If the event is privileged, only send to extension processes. Otherwise,
-    // it's OK to send to normal renderers (e.g., for content scripts).
-    if (ExtensionAPI::GetInstance()->IsPrivileged(event->event_name) &&
-        !process_map->Contains(extension->id(), listener->process->GetID())) {
-      continue;
-    }
-
-    // Is this event from a different profile than the renderer (ie, an
-    // incognito tab event sent to a normal process, or vice versa).
-    bool cross_incognito = event->restrict_to_profile &&
-        listener_profile != event->restrict_to_profile;
-    // Send the event with different arguments to extensions that can't
-    // cross incognito, if necessary.
-    if (cross_incognito && !service->CanCrossIncognito(extension)) {
-      if (!event->cross_incognito_args.empty()) {
-        DispatchEvent(listener->process, listener->extension_id,
-                      event->event_name, event->cross_incognito_args,
-                      event->event_url, event->user_gesture);
-        IncrementInFlightEvents(extension);
-      }
-      continue;
-    }
-
-    DispatchEvent(listener->process, listener->extension_id,
-                  event->event_name, event->event_args,
-                  event->event_url, event->user_gesture);
-    IncrementInFlightEvents(extension);
+    DispatchEventToListener(*listener, event);
   }
+}
+
+void ExtensionEventRouter::DispatchEventToListener(
+    const ListenerProcess& listener,
+    const linked_ptr<ExtensionEvent>& event) {
+  ExtensionService* service = profile_->GetExtensionService();
+  const Extension* extension = service->extensions()->GetByID(
+      listener.extension_id);
+
+  // The extension could have been removed, but we do not unregister it until
+  // the extension process is unloaded.
+  if (!extension)
+    return;
+
+  Profile* listener_profile = Profile::FromBrowserContext(
+      listener.process->GetBrowserContext());
+  extensions::ProcessMap* process_map =
+      listener_profile->GetExtensionService()->process_map();
+  // If the event is privileged, only send to extension processes. Otherwise,
+  // it's OK to send to normal renderers (e.g., for content scripts).
+  if (ExtensionAPI::GetInstance()->IsPrivileged(event->event_name) &&
+      !process_map->Contains(extension->id(), listener.process->GetID())) {
+    return;
+  }
+
+  const std::string* event_args;
+  if (!CanDispatchEventToProfile(listener_profile, extension,
+                                 event, &event_args))
+    return;
+
+  DispatchEvent(listener.process, listener.extension_id,
+                event->event_name, *event_args,
+                event->event_url, event->user_gesture);
+  IncrementInFlightEvents(listener_profile, extension);
+}
+
+bool ExtensionEventRouter::CanDispatchEventToProfile(
+    Profile* profile,
+    const Extension* extension,
+    const linked_ptr<ExtensionEvent>& event,
+    const std::string** event_args) {
+  *event_args = &event->event_args;
+
+  // Is this event from a different profile than the renderer (ie, an
+  // incognito tab event sent to a normal process, or vice versa).
+  bool cross_incognito = event->restrict_to_profile &&
+      profile != event->restrict_to_profile;
+  if (cross_incognito &&
+      !profile->GetExtensionService()->CanCrossIncognito(extension)) {
+    if (event->cross_incognito_args.empty())
+      return false;
+    // Send the event with different arguments to extensions that can't
+    // cross incognito.
+    *event_args = &event->cross_incognito_args;
+  }
+
+  return true;
 }
 
 void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
     const std::string& extension_id,
     const linked_ptr<ExtensionEvent>& event) {
   ExtensionService* service = profile_->GetExtensionService();
-  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
 
   ListenerMap::iterator it = lazy_listeners_.find(event->event_name);
   if (it == lazy_listeners_.end())
@@ -377,45 +369,85 @@ void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
     if (!extension_id.empty() && extension_id != listener->extension_id)
       continue;
 
+    // Check both the original and the incognito profile to see if we
+    // should load a lazy bg page to handle the event. The latter case
+    // occurs in the case of split-mode extensions.
     const Extension* extension = service->extensions()->GetByID(
         listener->extension_id);
-
-    if (extension && !CanDispatchEventNow(extension)) {
-      AppendEvent(extension->id(), event);
-      if (!pm->GetBackgroundHostForExtension(extension->id())) {
-        // Balanced in DispatchPendingEvents, after the page has loaded.
-        pm->IncrementLazyKeepaliveCount(extension);
-        pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+    if (extension) {
+      MaybeLoadLazyBackgroundPage(profile_, extension, event);
+      if (profile_->HasOffTheRecordProfile() &&
+          extension->incognito_split_mode()) {
+        MaybeLoadLazyBackgroundPage(
+            profile_->GetOffTheRecordProfile(), extension, event);
       }
     }
   }
 }
 
-void ExtensionEventRouter::IncrementInFlightEvents(const Extension* extension) {
+void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
+    Profile* profile,
+    const Extension* extension,
+    const linked_ptr<ExtensionEvent>& event) {
+  const std::string* event_args;
+  if (!CanDispatchEventToProfile(profile, extension, event, &event_args))
+    return;
+
+  ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+
+  if (!CanDispatchEventNow(profile, extension)) {
+    AppendEvent(profile, extension->id(), event);
+    if (!pm->GetBackgroundHostForExtension(extension->id())) {
+      // Balanced in DispatchPendingEvents, after the page has loaded.
+      pm->IncrementLazyKeepaliveCount(extension);
+      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+    }
+  }
+}
+
+bool ExtensionEventRouter::CanDispatchEventNow(
+     Profile* profile, const Extension* extension) {
+  DCHECK(extension);
+  if (extension->has_background_page() &&
+      !extension->background_page_persists()) {
+    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionHost* background_host =
+        pm->GetBackgroundHostForExtension(extension->id());
+    if (!background_host || !background_host->did_stop_loading())
+      return false;
+  }
+
+  return true;
+}
+
+void ExtensionEventRouter::IncrementInFlightEvents(
+    Profile* profile, const Extension* extension) {
   if (!extension->background_page_persists()) {
-    profile_->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
+    profile->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
         extension);
   }
 }
 
 void ExtensionEventRouter::OnExtensionEventAck(
-    const std::string& extension_id) {
+    Profile* profile, const std::string& extension_id) {
   const Extension* extension =
-      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
+      profile->GetExtensionService()->extensions()->GetByID(extension_id);
   if (extension && !extension->background_page_persists()) {
-    profile_->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
+    profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
         extension);
   }
 }
 
 void ExtensionEventRouter::AppendEvent(
+    Profile* profile,
     const std::string& extension_id,
     const linked_ptr<ExtensionEvent>& event) {
   PendingEventsList* events_list = NULL;
-  PendingEventsPerExtMap::iterator it = pending_events_.find(extension_id);
+  PendingEventsKey key(extension_id, profile);
+  PendingEventsPerExtMap::iterator it = pending_events_.find(key);
   if (it == pending_events_.end()) {
     events_list = new PendingEventsList();
-    pending_events_[extension_id] = linked_ptr<PendingEventsList>(events_list);
+    pending_events_[key] = linked_ptr<PendingEventsList>(events_list);
   } else {
     events_list = it->second.get();
   }
@@ -424,28 +456,30 @@ void ExtensionEventRouter::AppendEvent(
 }
 
 void ExtensionEventRouter::DispatchPendingEvents(
-    const std::string& extension_id) {
-  CHECK(!extension_id.empty());
-  PendingEventsPerExtMap::const_iterator map_it =
-      pending_events_.find(extension_id);
+    content::RenderProcessHost* process, const Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
+  DCHECK(profile);
+
+  PendingEventsPerExtMap::iterator map_it =
+      pending_events_.find(PendingEventsKey(extension->id(), profile));
   if (map_it == pending_events_.end()) {
     NOTREACHED();  // lazy page should not load without any pending events
     return;
   }
 
+  ListenerProcess listener(process, extension->id());
   PendingEventsList* events_list = map_it->second.get();
   for (PendingEventsList::const_iterator it = events_list->begin();
-       it != events_list->end(); ++it)
-    DispatchEventImpl(extension_id, *it, true);
+       it != events_list->end(); ++it) {
+    if (listeners_[(*it)->event_name].count(listener) > 0u)
+      DispatchEventToListener(listener, *it);
+  }
 
   events_list->clear();
-  pending_events_.erase(extension_id);
+  pending_events_.erase(map_it);
 
   // Balance the keepalive addref in LoadLazyBackgroundPagesForEvent.
-  const Extension* extension =
-      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
-  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-  pm->DecrementLazyKeepaliveCount(extension);
+  profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(extension);
 }
 
 void ExtensionEventRouter::Observe(
@@ -457,7 +491,7 @@ void ExtensionEventRouter::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       content::RenderProcessHost* renderer =
           content::Source<content::RenderProcessHost>(source).ptr();
-      // Remove all event listeners associated with this renderer
+      // Remove all event listeners associated with this renderer.
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
         ListenerMap::iterator current_it = it++;
@@ -478,11 +512,12 @@ void ExtensionEventRouter::Observe(
       // If an on-demand background page finished loading, dispatch queued up
       // events for it.
       ExtensionHost* eh = content::Details<ExtensionHost>(details).ptr();
-      if (eh->extension_host_type() ==
+      if (profile_->IsSameProfile(eh->profile()) &&
+          eh->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
           !eh->extension()->background_page_persists()) {
         CHECK(eh->did_stop_loading());
-        DispatchPendingEvents(eh->extension_id());
+        DispatchPendingEvents(eh->render_process_host(), eh->extension());
       }
       break;
     }
@@ -509,6 +544,14 @@ void ExtensionEventRouter::Observe(
            it != lazy_listeners_.end(); ++it) {
         it->second.erase(lazy_listener);
       }
+
+      // Clear pending events as well.
+      pending_events_.erase(PendingEventsKey(
+          unloaded->extension->id(), profile_));
+      if (profile_->HasOffTheRecordProfile())
+        pending_events_.erase(PendingEventsKey(
+            unloaded->extension->id(), profile_->GetOffTheRecordProfile()));
+
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {

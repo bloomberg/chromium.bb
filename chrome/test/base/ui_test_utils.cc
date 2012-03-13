@@ -952,6 +952,7 @@ void WindowedNotificationObserver::Wait() {
 
   running_ = true;
   ui_test_utils::RunMessageLoop();
+  running_ = false;
 }
 
 void WindowedNotificationObserver::Observe(

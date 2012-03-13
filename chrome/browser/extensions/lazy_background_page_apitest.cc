@@ -4,12 +4,17 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -24,21 +29,66 @@
 namespace {
 // Helper class to wait for a lazy background page to load and close again.
 class LazyBackgroundObserver {
-public:
+ public:
   LazyBackgroundObserver()
       : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
                       content::NotificationService::AllSources()),
         page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                      content::NotificationService::AllSources()) {
   }
+  explicit LazyBackgroundObserver(Profile* profile)
+      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+                      content::NotificationService::AllSources()),
+        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                     content::Source<Profile>(profile)) {
+  }
   void Wait() {
     page_created_.Wait();
     page_closed_.Wait();
   }
-private:
+
+ private:
   ui_test_utils::WindowedNotificationObserver page_created_;
   ui_test_utils::WindowedNotificationObserver page_closed_;
 };
+
+// This unfortunate bit of silliness is necessary when loading an extension in
+// incognito. The goal is to load the extension, enable incognito, then wait
+// for both background pages to load and close. The problem is that enabling
+// incognito involves reloading the extension - and the background pages may
+// have already loaded once before then. So we wait until the extension is
+// unloaded before listening to the background page notifications.
+class LoadedIncognitoObserver : public content::NotificationObserver {
+ public:
+  explicit LoadedIncognitoObserver(Profile* profile) : profile_(profile) {
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::Source<Profile>(profile));
+  }
+
+  void Wait() {
+    ASSERT_TRUE(original_complete_.get());
+    original_complete_->Wait();
+    incognito_complete_->Wait();
+  }
+
+ private:
+
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) {
+    original_complete_.reset(new LazyBackgroundObserver(profile_));
+    incognito_complete_.reset(
+        new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
+  }
+
+  Profile* profile_;
+  content::NotificationRegistrar registrar_;
+  scoped_ptr<LazyBackgroundObserver> original_complete_;
+  scoped_ptr<LazyBackgroundObserver> incognito_complete_;
+};
+
+
 }  // namespace
 
 class LazyBackgroundPageApiTest : public ExtensionApiTest {
@@ -207,6 +257,74 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 
   // Lazy Background Page has been shut down.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+}
+
+// Tests that an incognito split mode extension gets 2 lazy background pages,
+// and they each load and unload at the proper times.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {
+  // Open incognito window.
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(), GURL("about:blank"));
+  Browser* incognito_browser = BrowserList::FindTabbedBrowser(
+      browser()->profile()->GetOffTheRecordProfile(), false);
+  ASSERT_TRUE(incognito_browser);
+
+  // Load the extension with incognito enabled.
+  {
+    LoadedIncognitoObserver loaded(browser()->profile());
+    FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+        AppendASCII("incognito_split");
+    ASSERT_TRUE(LoadExtensionIncognito(extdir));
+    loaded.Wait();
+  }
+
+  // Lazy Background Page doesn't exist yet.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  ExtensionProcessManager* pmi =
+      incognito_browser->profile()->GetExtensionProcessManager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+  EXPECT_FALSE(pmi->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Trigger a browserAction event in the original profile and ensure only
+  // the original event page received it (since the event is scoped to the
+  // profile).
+  {
+    ExtensionTestMessageListener listener("waiting", false);
+    ExtensionTestMessageListener listener_incognito("waiting_incognito", false);
+
+    LazyBackgroundObserver page_complete(browser()->profile());
+    BrowserActionTestUtil(browser()).Press(0);
+    page_complete.Wait();
+
+    // Only the original event page received the message.
+    EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+    EXPECT_FALSE(pmi->GetBackgroundHostForExtension(last_loaded_extension_id_));
+    EXPECT_TRUE(listener.was_satisfied());
+    EXPECT_FALSE(listener_incognito.was_satisfied());
+  }
+
+  // Trigger a bookmark created event and ensure both pages receive it.
+  {
+    ExtensionTestMessageListener listener("waiting", false);
+    ExtensionTestMessageListener listener_incognito("waiting_incognito", false);
+
+    LazyBackgroundObserver page_complete(browser()->profile()),
+                           page2_complete(incognito_browser->profile());
+    BookmarkModel* bookmark_model = browser()->profile()->GetBookmarkModel();
+    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
+    const BookmarkNode* parent = bookmark_model->bookmark_bar_node();
+    bookmark_model->AddURL(
+        parent, 0, ASCIIToUTF16("Title"), GURL("about:blank"));
+    page_complete.Wait();
+    page2_complete.Wait();
+
+    // Both pages received the message.
+    EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+    EXPECT_FALSE(pmi->GetBackgroundHostForExtension(last_loaded_extension_id_));
+    EXPECT_TRUE(listener.was_satisfied());
+    EXPECT_TRUE(listener_incognito.was_satisfied());
+  }
 }
 
 // TODO: background page with timer.

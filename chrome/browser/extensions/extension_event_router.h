@@ -120,37 +120,12 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const GURL& event_url);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
-  void OnExtensionEventAck(const std::string& extension_id);
+  void OnExtensionEventAck(Profile* profile, const std::string& extension_id);
 
- protected:
+ private:
   // The details of an event to be dispatched.
   struct ExtensionEvent;
 
-  // Shared by DispatchEvent*. If |extension_id| is empty, the event is
-  // broadcast.
-  // An event that just came off the pending list may not be delayed again.
-  void DispatchEventImpl(const std::string& extension_id,
-                         const linked_ptr<ExtensionEvent>& event,
-                         bool was_pending);
-
-  // Ensures that all lazy background pages that are interested in the given
-  // event are loaded, and queues the event if the page is not ready yet.
-  // If |extension_id| is non-empty, we load only that extension's page
-  // (assuming it is interested in the event).
-  void LoadLazyBackgroundPagesForEvent(
-      const std::string& extension_id,
-      const linked_ptr<ExtensionEvent>& event);
-
-  // Dispatch may be delayed if the extension has a lazy background page.
-  bool CanDispatchEventNow(const Extension* extension);
-
-  // Store the event so that it can be dispatched (in order received)
-  // when the background page is done loading.
-  void AppendEvent(const std::string& extension_id,
-                   const linked_ptr<ExtensionEvent>& event);
-  void DispatchPendingEvents(const std::string& extension_id);
-
- private:
   // The extension and process that contains the event listener for a given
   // event.
   struct ListenerProcess;
@@ -170,6 +145,58 @@ class ExtensionEventRouter : public content::NotificationObserver {
                             const std::string& extension_id,
                             const std::string& event_name);
 
+  // Shared by DispatchEvent*. If |extension_id| is empty, the event is
+  // broadcast. If |process| is non-NULL, the event is only dispatched to that
+  // particular process.
+  // An event that just came off the pending list may not be delayed again.
+  void DispatchEventImpl(const std::string& extension_id,
+                         const linked_ptr<ExtensionEvent>& event);
+
+  // Dispatches the event to a single listener process.
+  void DispatchEventToListener(const ListenerProcess& listener,
+                               const linked_ptr<ExtensionEvent>& event);
+
+  // Returns false when the event is scoped to a profile and the listening
+  // extension does not have access to events from that profile. Also fills
+  // |event_args| with the proper arguments to send, which may differ if
+  // the event crosses the incognito boundary.
+  bool CanDispatchEventToProfile(
+      Profile* profile,
+      const Extension* extension,
+      const linked_ptr<ExtensionEvent>& event,
+      const std::string** event_args);
+
+  // Ensures that all lazy background pages that are interested in the given
+  // event are loaded, and queues the event if the page is not ready yet.
+  // If |extension_id| is non-empty, we load only that extension's page
+  // (assuming it is interested in the event).
+  void LoadLazyBackgroundPagesForEvent(
+      const std::string& extension_id,
+      const linked_ptr<ExtensionEvent>& event);
+
+  // Possibly loads given extension's background page in preparation to
+  // dispatch an event.
+  void MaybeLoadLazyBackgroundPage(
+      Profile* profile,
+      const Extension* extension,
+      const linked_ptr<ExtensionEvent>& event);
+
+  // Dispatch may be delayed if the extension has a lazy background page.
+  bool CanDispatchEventNow(Profile* profile,
+                           const Extension* extension);
+
+  // Track of the number of dispatched events that have not yet sent an
+  // ACK from the renderer.
+  void IncrementInFlightEvents(Profile* profile, const Extension* extension);
+
+  // Store the event so that it can be dispatched (in order received)
+  // when the background page is done loading.
+  void AppendEvent(Profile* profile,
+                   const std::string& extension_id,
+                   const linked_ptr<ExtensionEvent>& event);
+  void DispatchPendingEvents(content::RenderProcessHost* process,
+                             const Extension* extension);
+
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
@@ -184,16 +211,13 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // stored on disk in the extension prefs.
   ListenerMap lazy_listeners_;
 
-  // A map between an extension id and the queue of events pending
-  // the load of it's background page.
+  // A map between an extension_id,Profile pair and the queue of events pending
+  // the load of its background page.
+  typedef std::pair<std::string, Profile*> PendingEventsKey;
   typedef std::vector<linked_ptr<ExtensionEvent> > PendingEventsList;
-  typedef std::map<std::string,
+  typedef std::map<PendingEventsKey,
                    linked_ptr<PendingEventsList> > PendingEventsPerExtMap;
   PendingEventsPerExtMap pending_events_;
-
-  // Track of the number of dispatched events that have not yet sent an
-  // ACK from the renderer.
-  void IncrementInFlightEvents(const Extension* extension);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouter);
 };

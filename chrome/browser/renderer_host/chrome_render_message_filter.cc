@@ -373,7 +373,8 @@ void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
 void ChromeRenderMessageFilter::OnExtensionEventAck(
     const std::string& extension_id) {
   if (profile_->GetExtensionEventRouter())
-    profile_->GetExtensionEventRouter()->OnExtensionEventAck(extension_id);
+    profile_->GetExtensionEventRouter()->OnExtensionEventAck(
+        profile_, extension_id);
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
