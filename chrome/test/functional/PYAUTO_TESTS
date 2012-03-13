@@ -100,6 +100,10 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
+      # crbug.com/115427
+      '-policy.PolicyTest.testAlwaysAuthorizePlugins',
+      # crbug.com/117977
+      '-policy.PolicyTest.testApplicationLocaleValue',
       # crbug.com/82629 - real bug.
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/47935
