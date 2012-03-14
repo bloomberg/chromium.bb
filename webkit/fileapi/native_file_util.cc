@@ -27,6 +27,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
   virtual FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
+  virtual base::Time LastModifiedTime() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
   virtual bool IsLink() OVERRIDE;
 
@@ -44,6 +45,10 @@ FilePath NativeFileEnumerator::Next() {
 
 int64 NativeFileEnumerator::Size() {
   return file_util::FileEnumerator::GetFilesize(file_util_info_);
+}
+
+base::Time NativeFileEnumerator::LastModifiedTime() {
+  return file_util::FileEnumerator::GetLastModifiedTime(file_util_info_);
 }
 
 bool NativeFileEnumerator::IsDirectory() {

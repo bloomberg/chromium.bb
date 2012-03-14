@@ -176,6 +176,10 @@ class ObfuscatedFileEnumerator
     return file_info.size;
   }
 
+  virtual base::Time LastModifiedTime() OVERRIDE {
+    return current_.file_info.modification_time;
+  }
+
   virtual bool IsDirectory() OVERRIDE {
     return current_.file_info.is_directory();
   }
