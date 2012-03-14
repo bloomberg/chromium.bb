@@ -116,7 +116,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void didInvalidateRect(const WebKit::WebRect&);
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
   virtual void didAutoResize(const WebKit::WebSize& new_size);
-  virtual void didActivateCompositor(int compositorIdentifier);
+  virtual void didActivateCompositor(int input_handler_identifier);
   virtual void didDeactivateCompositor();
   virtual void didCommitAndDrawCompositorFrame();
   virtual void didCompleteSwapBuffers();

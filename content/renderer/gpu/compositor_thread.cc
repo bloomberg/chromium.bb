@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,34 +8,38 @@
 #include "content/renderer/gpu/input_event_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandler.h"
 
-using WebKit::WebCompositor;
+using WebKit::WebCompositorInputHandler;
 using WebKit::WebInputEvent;
 
 //------------------------------------------------------------------------------
 
-class CompositorThread::CompositorWrapper : public WebKit::WebCompositorClient {
+class CompositorThread::InputHandlerWrapper
+    : public WebKit::WebCompositorClient {
  public:
-  CompositorWrapper(CompositorThread* compositor_thread,
-                    int routing_id,
-                    WebKit::WebCompositor* compositor)
+  InputHandlerWrapper(CompositorThread* compositor_thread,
+                      int routing_id,
+                      WebKit::WebCompositorInputHandler* input_handler)
       : compositor_thread_(compositor_thread),
         routing_id_(routing_id),
-        compositor_(compositor) {
-    compositor_->setClient(this);
+        input_handler_(input_handler) {
+    input_handler_->setClient(this);
   }
 
-  virtual ~CompositorWrapper() {
-    compositor_->setClient(NULL);
+  virtual ~InputHandlerWrapper() {
+    input_handler_->setClient(NULL);
   }
 
   int routing_id() const { return routing_id_; }
-  WebKit::WebCompositor* compositor() const { return compositor_; }
+  WebKit::WebCompositorInputHandler* input_handler() const {
+    return input_handler_;
+  }
 
   // WebCompositorClient methods:
 
   virtual void willShutdown() {
-    compositor_thread_->RemoveCompositor(routing_id_);
+    compositor_thread_->RemoveInputHandler(routing_id_);
   }
 
   virtual void didHandleInputEvent() {
@@ -49,9 +53,9 @@ class CompositorThread::CompositorWrapper : public WebKit::WebCompositorClient {
  private:
   CompositorThread* compositor_thread_;
   int routing_id_;
-  WebKit::WebCompositor* compositor_;
+  WebKit::WebCompositorInputHandler* input_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorWrapper);
+  DISALLOW_COPY_AND_ASSIGN(InputHandlerWrapper);
 };
 
 //------------------------------------------------------------------------------
@@ -72,37 +76,38 @@ IPC::ChannelProxy::MessageFilter* CompositorThread::GetMessageFilter() const {
   return filter_;
 }
 
-void CompositorThread::AddCompositor(int routing_id, int compositor_id) {
+void CompositorThread::AddInputHandler(int routing_id, int input_handler_id) {
   if (thread_.message_loop() != MessageLoop::current()) {
     thread_.message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&CompositorThread::AddCompositor, base::Unretained(this),
-                   routing_id, compositor_id));
+        base::Bind(&CompositorThread::AddInputHandler, base::Unretained(this),
+                   routing_id, input_handler_id));
     return;
   }
 
-  WebCompositor* compositor = WebCompositor::fromIdentifier(compositor_id);
-  if (!compositor)
+  WebCompositorInputHandler* input_handler =
+      WebCompositorInputHandler::fromIdentifier(input_handler_id);
+  if (!input_handler)
     return;
 
-  if (compositors_.count(routing_id) != 0) {
-    // It's valid to call AddCompositor() for the same routing id with the same
-    // compositor many times, but it's not valid to change the compositor for
-    // a route.
-    DCHECK_EQ(compositors_[routing_id]->compositor(), compositor);
+  if (input_handlers_.count(routing_id) != 0) {
+    // It's valid to call AddInputHandler() for the same routing id with the
+    // same input_handler many times, but it's not valid to change the
+    // input_handler for a route.
+    DCHECK_EQ(input_handlers_[routing_id]->input_handler(), input_handler);
     return;
   }
 
   filter_->AddRoute(routing_id);
-  compositors_[routing_id] =
-      make_linked_ptr(new CompositorWrapper(this, routing_id, compositor));
+  input_handlers_[routing_id] =
+      make_linked_ptr(new InputHandlerWrapper(this, routing_id, input_handler));
 }
 
-void CompositorThread::RemoveCompositor(int routing_id) {
+void CompositorThread::RemoveInputHandler(int routing_id) {
   DCHECK(thread_.message_loop() == MessageLoop::current());
 
   filter_->RemoveRoute(routing_id);
-  compositors_.erase(routing_id);
+  input_handlers_.erase(routing_id);
 }
 
 void CompositorThread::HandleInputEvent(
@@ -110,12 +115,12 @@ void CompositorThread::HandleInputEvent(
     const WebInputEvent* input_event) {
   DCHECK_EQ(MessageLoop::current(), thread_.message_loop());
 
-  CompositorMap::iterator it = compositors_.find(routing_id);
-  if (it == compositors_.end()) {
-    // Oops, we no longer have an interested compositor.
+  InputHandlerMap::iterator it = input_handlers_.find(routing_id);
+  if (it == input_handlers_.end()) {
+    // Oops, we no longer have an interested input handler..
     filter_->DidNotHandleInputEvent(true);
     return;
   }
 
-  it->second->compositor()->handleInputEvent(*input_event);
+  it->second->input_handler()->handleInputEvent(*input_event);
 }

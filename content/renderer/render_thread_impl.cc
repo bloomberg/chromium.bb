@@ -267,12 +267,10 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (file_thread_.get())
     file_thread_->Stop();
 
-#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
   if (compositor_initialized_) {
     WebKit::WebCompositor::shutdown();
     compositor_initialized_ = false;
   }
-#endif
   if (compositor_thread_.get()) {
     RemoveFilter(compositor_thread_->GetMessageFilter());
     compositor_thread_.reset();
@@ -465,16 +463,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       switches::kEnableThreadedCompositing)) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
-#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
     WebKit::WebCompositor::initialize(compositor_thread_->GetWebThread());
-#else
-    WebKit::WebCompositor::setThread(compositor_thread_->GetWebThread());
-#endif
-  } else {
-#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+  } else
     WebKit::WebCompositor::initialize(NULL);
-#endif
-  }
   compositor_initialized_ = true;
 
   WebScriptController::enableV8SingleThreadMode();

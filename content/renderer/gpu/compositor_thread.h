@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,24 +32,24 @@ class CompositorThread {
   IPC::ChannelProxy::MessageFilter* GetMessageFilter() const;
 
   // Callable from the main thread or the compositor's thread.
-  void AddCompositor(int routing_id, int compositor_id);
+  void AddInputHandler(int routing_id, int input_handler_id);
 
   webkit_glue::WebThreadImpl* GetWebThread() { return &thread_; }
 
  private:
   // Callback only from the compositor's thread.
-  void RemoveCompositor(int routing_id);
+  void RemoveInputHandler(int routing_id);
 
   // Called from the compositor's thread.
   void HandleInputEvent(int routing_id,
                         const WebKit::WebInputEvent* input_event);
 
-  class CompositorWrapper;
-  friend class CompositorWrapper;
+  class InputHandlerWrapper;
+  friend class InputHandlerWrapper;
 
   typedef std::map<int,  // routing_id
-                   linked_ptr<CompositorWrapper> > CompositorMap;
-  CompositorMap compositors_;
+                   linked_ptr<InputHandlerWrapper> > InputHandlerMap;
+  InputHandlerMap input_handlers_;
 
   webkit_glue::WebThreadImpl thread_;
   scoped_refptr<InputEventFilter> filter_;

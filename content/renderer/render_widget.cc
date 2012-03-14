@@ -1066,13 +1066,13 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
   size_ = new_size;
 }
 
-void RenderWidget::didActivateCompositor(int compositor_identifier) {
+void RenderWidget::didActivateCompositor(int input_handler_identifier) {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 
   CompositorThread* compositor_thread =
       RenderThreadImpl::current()->compositor_thread();
   if (compositor_thread)
-    compositor_thread->AddCompositor(routing_id_, compositor_identifier);
+    compositor_thread->AddInputHandler(routing_id_, input_handler_identifier);
 
   if (!is_accelerated_compositing_active_) {
     // When not in accelerated compositing mode, in certain cases (e.g. waiting
