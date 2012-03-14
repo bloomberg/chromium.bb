@@ -294,6 +294,8 @@ void RenderWidget::Resize(const gfx::Size& new_size,
       if (resize_ack == SEND_RESIZE_ACK)
         set_next_paint_is_resize_ack();
     }
+  } else {
+    resize_ack = NO_RESIZE_ACK;
   }
 
   if (fullscreen_change)

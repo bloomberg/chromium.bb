@@ -1154,6 +1154,7 @@ void RenderViewHostImpl::OnMsgContextMenu(
 void RenderViewHostImpl::OnMsgToggleFullscreen(bool enter_fullscreen) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   delegate_->ToggleFullscreenMode(enter_fullscreen);
+  WasResized();
 }
 
 void RenderViewHostImpl::OnMsgOpenURL(const GURL& url,

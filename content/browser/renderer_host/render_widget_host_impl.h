@@ -555,6 +555,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Indicates whether a page is hidden or not.
   bool is_hidden_;
 
+  // Indicates whether a page is fullscreen or not.
+  bool is_fullscreen_;
+
   // True when a page is rendered directly via the GPU process.
   bool is_accelerated_compositing_active_;
 

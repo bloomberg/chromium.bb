@@ -4150,7 +4150,7 @@ void Browser::ToggleFullscreenModeForTab(WebContents* tab,
 }
 
 bool Browser::IsFullscreenForTab(const WebContents* tab) const {
-  return fullscreen_controller_->IsFullscreenForTab(tab);
+  return fullscreen_controller_->IsFullscreenForTabOrPending(tab);
 }
 
 void Browser::JSOutOfMemory(WebContents* tab) {

@@ -120,6 +120,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
       surface_id_(0),
       is_loading_(false),
       is_hidden_(false),
+      is_fullscreen_(false),
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
@@ -425,21 +426,26 @@ void RenderWidgetHostImpl::WasResized() {
 #endif
   gfx::Size new_size(view_bounds.size());
 
+  bool was_fullscreen = is_fullscreen_;
+  is_fullscreen_ = IsFullscreen();
+  bool fullscreen_changed = was_fullscreen != is_fullscreen_;
+  bool size_changed = new_size != current_size_;
+
   // Avoid asking the RenderWidget to resize to its current size, since it
   // won't send us a PaintRect message in that case.
-  if (new_size == current_size_)
+  if (!size_changed && !fullscreen_changed)
     return;
 
-  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_) {
+  if (in_flight_size_ != gfx::Size() && new_size == in_flight_size_ &&
+      !fullscreen_changed)
     return;
-  }
 
   // We don't expect to receive an ACK when the requested size is empty.
-  if (!new_size.IsEmpty())
+  if (!new_size.IsEmpty() && size_changed)
     resize_ack_pending_ = true;
 
   if (!Send(new ViewMsg_Resize(routing_id_, new_size,
-          GetRootWindowResizerRect(), IsFullscreen()))) {
+          GetRootWindowResizerRect(), is_fullscreen_))) {
     resize_ack_pending_ = false;
   } else {
     in_flight_size_ = new_size;
