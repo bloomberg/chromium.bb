@@ -123,7 +123,7 @@ cr.define('tracing', function() {
       this.classList.add('timeline-thread-track');
     },
 
-    get thread(thread) {
+    get thread() {
       return this.thread_;
     },
 
@@ -212,7 +212,7 @@ cr.define('tracing', function() {
       this.classList.add('timeline-thread-track');
     },
 
-    get cpu(cpu) {
+    get cpu() {
       return this.cpu_;
     },
 
