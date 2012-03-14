@@ -222,9 +222,17 @@
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_maximized_close_normal.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_maximized_close_hot.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_maximized_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_maximized_snap_left_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_maximized_snap_minimize_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_maximized_snap_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_maximized_snap_right_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_maximized_restore_normal.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_maximized_restore_hot.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_maximized_restore_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_LEFT_P" file="aura/window_maximized_restore_snap_left_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_MINIMIZE_P" file="aura/window_maximized_restore_snap_minimize_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_P" file="aura/window_maximized_restore_snap_p.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_RIGHT_P" file="aura/window_maximized_restore_snap_right_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/system_update.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="aura/status_volume_all.png" type="BINDATA" />
