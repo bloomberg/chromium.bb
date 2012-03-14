@@ -38,22 +38,18 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
   return new ShellBrowserMainParts(parameters);
 }
 
-WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
+WebContentsView* ShellContentBrowserClient::OverrideCreateWebContentsView(
     WebContents* web_contents) {
   ShellDevToolsDelegate* devtools_delegate =
       shell_browser_main_parts_->devtools_delegate();
   if (devtools_delegate)
     devtools_delegate->AddWebContents(web_contents);
-
-#if defined(OS_WIN)
-  return new TabContentsViewWin(web_contents, NULL);
-#elif defined(OS_LINUX)
-  return new TabContentsViewGtk(web_contents, NULL);
-#elif defined(OS_MACOSX)
-  return web_contents_view_mac::CreateWebContentsView(web_contents, NULL);
-#else
   return NULL;
-#endif
+}
+
+WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
+    content::WebContents* web_contents) {
+  return NULL;
 }
 
 void ShellContentBrowserClient::RenderViewHostCreated(

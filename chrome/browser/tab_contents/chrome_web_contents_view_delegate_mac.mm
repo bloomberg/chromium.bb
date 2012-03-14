@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
+#import "chrome/browser/tab_contents/chrome_web_contents_view_delegate_mac.h"
 
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
@@ -11,34 +11,35 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
-namespace chrome_web_contents_view_mac_delegate {
-content::WebContentsViewMacDelegate* CreateWebContentsViewMacDelegate(
+namespace chrome_web_contents_view_delegate_mac {
+content::WebContentsViewDelegate* CreateWebContentsViewDelegateMac(
     content::WebContents* web_contents) {
-  return new ChromeWebContentsViewMacDelegate(web_contents);
+  return new ChromeWebContentsViewDelegateMac(web_contents);
 }
 }
 
-ChromeWebContentsViewMacDelegate::ChromeWebContentsViewMacDelegate(
+ChromeWebContentsViewDelegateMac::ChromeWebContentsViewDelegateMac(
     content::WebContents* web_contents)
     : bookmark_handler_(new WebDragBookmarkHandlerMac),
       web_contents_(web_contents) {
 }
 
-ChromeWebContentsViewMacDelegate::~ChromeWebContentsViewMacDelegate() {
+ChromeWebContentsViewDelegateMac::~ChromeWebContentsViewDelegateMac() {
 }
 
 NSObject<RenderWidgetHostViewMacDelegate>*
-ChromeWebContentsViewMacDelegate::CreateRenderWidgetHostViewDelegate(
+ChromeWebContentsViewDelegateMac::CreateRenderWidgetHostViewDelegate(
     content::RenderWidgetHost* render_widget_host) {
   return [[ChromeRenderWidgetHostViewMacDelegate alloc]
       initWithRenderWidgetHost:render_widget_host];
 }
 
-content::WebDragDestDelegate* ChromeWebContentsViewMacDelegate::DragDelegate() {
-  return static_cast<content::WebDragDestDelegate*>(bookmark_handler_.get());
+content::WebDragDestDelegate*
+    ChromeWebContentsViewDelegateMac::GetDragDestDelegate() {
+  return bookmark_handler_.get();
 }
 
-void ChromeWebContentsViewMacDelegate::ShowContextMenu(
+void ChromeWebContentsViewDelegateMac::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // The renderer may send the "show context menu" message multiple times, one
   // for each right click mouse event it receives. Normally, this doesn't happen
@@ -59,10 +60,10 @@ void ChromeWebContentsViewMacDelegate::ShowContextMenu(
   context_menu_->Init();
 }
 
-void ChromeWebContentsViewMacDelegate::NativeViewCreated(NSView* view) {
+void ChromeWebContentsViewDelegateMac::NativeViewCreated(NSView* view) {
   view_id_util::SetID(view, VIEW_ID_TAB_CONTAINER);
 }
 
-void ChromeWebContentsViewMacDelegate::NativeViewDestroyed(NSView* view) {
+void ChromeWebContentsViewDelegateMac::NativeViewDestroyed(NSView* view) {
   view_id_util::UnsetID(view);
 }

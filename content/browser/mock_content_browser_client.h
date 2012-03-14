@@ -23,7 +23,9 @@ class MockContentBrowserClient : public ContentBrowserClient {
 
   virtual BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters) OVERRIDE;
-  virtual WebContentsView* CreateWebContentsView(
+  virtual WebContentsView* OverrideCreateWebContentsView(
+      WebContents* web_contents) OVERRIDE;
+  virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
       RenderViewHost* render_view_host) OVERRIDE;

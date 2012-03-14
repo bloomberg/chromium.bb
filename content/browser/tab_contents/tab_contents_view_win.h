@@ -20,7 +20,7 @@ class WebDragDest;
 class WebContentsDragWin;
 
 namespace content {
-class WebContentsViewWinDelegate;
+class WebContentsViewDelegate;
 }
 
 // An implementation of WebContentsView for Windows.
@@ -29,7 +29,7 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
  public:
   // TODO(jam): make this take a TabContents once it's created from content.
   TabContentsViewWin(content::WebContents* web_contents,
-                     content::WebContentsViewWinDelegate* delegate);
+                     content::WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewWin();
 
   BEGIN_MSG_MAP_EX(TabContentsViewWin)
@@ -130,7 +130,7 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
 
   RenderWidgetHostViewWin* view_;
 
-  scoped_ptr<content::WebContentsViewWinDelegate> delegate_;
+  scoped_ptr<content::WebContentsViewDelegate> delegate_;
 
   // The helper object that handles drag destination related interactions with
   // Windows.

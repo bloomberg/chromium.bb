@@ -19,7 +19,7 @@
 #import "content/browser/tab_contents/web_drag_source_mac.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view_mac_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -59,14 +59,14 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 namespace web_contents_view_mac {
 content::WebContentsView* CreateWebContentsView(
     WebContents* web_contents,
-    content::WebContentsViewMacDelegate* delegate) {
+    content::WebContentsViewDelegate* delegate) {
   return new WebContentsViewMac(web_contents, delegate);
 }
 }
 
 WebContentsViewMac::WebContentsViewMac(
     WebContents* web_contents,
-    content::WebContentsViewMacDelegate* delegate)
+    content::WebContentsViewDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       delegate_(delegate) {
 }
@@ -408,7 +408,8 @@ void WebContentsViewMac::CloseTab() {
               object:nil];
 
     if (webContentsView_->delegate()) {
-      [dragDest_ setDragDelegate:webContentsView_->delegate()->DragDelegate()];
+      [dragDest_ setDragDelegate:webContentsView_->delegate()->
+          GetDragDestDelegate()];
       webContentsView_->delegate()->NativeViewCreated(self);
     }
   }

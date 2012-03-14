@@ -13,13 +13,13 @@
 #include "content/browser/tab_contents/web_contents_drag_win.h"
 #include "content/browser/tab_contents/web_drag_dest_win.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view_win_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/gfx/screen.h"
 
 using content::RenderViewHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
-using content::WebContentsViewWinDelegate;
+using content::WebContentsViewDelegate;
 
 namespace {
 
@@ -57,7 +57,7 @@ class TempParent : public ui::WindowImpl {
 }  // namespace namespace
 
 TabContentsViewWin::TabContentsViewWin(WebContents* web_contents,
-                                       WebContentsViewWinDelegate* delegate)
+                                       WebContentsViewDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       view_(NULL),
       delegate_(delegate),

@@ -21,7 +21,7 @@
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view_gtk_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -80,7 +80,7 @@ namespace content {
 
 TabContentsViewGtk::TabContentsViewGtk(
     content::WebContents* web_contents,
-    content::WebContentsViewGtkDelegate* delegate)
+    content::WebContentsViewDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       expanded_(gtk_expanded_container_new()),
       delegate_(delegate) {
@@ -94,7 +94,7 @@ TabContentsViewGtk::TabContentsViewGtk(
   drag_source_.reset(new content::WebDragSourceGtk(web_contents));
 
   if (delegate_.get())
-    delegate_->WrapView(this);
+    delegate_->Initialize(expanded_.get());
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -136,7 +136,7 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   drag_dest_.reset(new content::WebDragDestGtk(tab_contents_, content_view));
 
   if (delegate_.get())
-    delegate_->OnCreateViewForWidget();
+    drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
 
   return view;
 }
@@ -283,11 +283,6 @@ void TabContentsViewGtk::TakeFocus(bool reverse) {
     gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
-}
-
-void TabContentsViewGtk::SetDragDestDelegate(
-    content::WebDragDestDelegate* delegate) {
-  drag_dest_->set_delegate(delegate);
 }
 
 void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {

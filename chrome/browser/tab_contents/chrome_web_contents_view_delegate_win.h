@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_
+#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/web_contents_view_win_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 
 class ConstrainedWindowViews;
 class RenderViewContextMenuViews;
@@ -26,13 +26,13 @@ class Widget;
 
 // A chrome specific class that extends TabContentsViewWin with features like
 // constrained windows, which live in chrome.
-class ChromeWebContentsViewWinDelegate
-    : public content::WebContentsViewWinDelegate {
+class ChromeWebContentsViewDelegateWin
+    : public content::WebContentsViewDelegate {
  public:
-  explicit ChromeWebContentsViewWinDelegate(content::WebContents* web_contents);
-  virtual ~ChromeWebContentsViewWinDelegate();
+  explicit ChromeWebContentsViewDelegateWin(content::WebContents* web_contents);
+  virtual ~ChromeWebContentsViewDelegateWin();
 
-  // Overridden from WebContentsViewWinDelegate:
+  // Overridden from WebContentsViewDelegate:
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
   virtual void RestoreFocus() OVERRIDE;
@@ -59,7 +59,7 @@ class ChromeWebContentsViewWinDelegate
 
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewWinDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateWin);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_WIN_H_

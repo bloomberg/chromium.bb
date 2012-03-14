@@ -25,7 +25,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
-  virtual content::WebContentsView* CreateWebContentsView(
+  virtual content::WebContentsView* OverrideCreateWebContentsView(
+      content::WebContents* web_contents) OVERRIDE;
+  virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;

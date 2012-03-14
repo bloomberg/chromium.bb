@@ -65,9 +65,16 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "content/browser/tab_contents/tab_contents_view_win.h"
+#elif defined(TOOLKIT_GTK)
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/tab_contents/web_contents_view_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
-#endif  // defined(OS_MACOSX)
+#elif defined(OS_ANDROID)
+#include "content/browser/tab_contents/web_contents_view_android.h"
+#endif
 
 // Cross-Site Navigations
 //
@@ -239,8 +246,6 @@ TabContents::TabContents(content::BrowserContext* browser_context,
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(view_(
-          content::GetContentClient()->browser()->CreateWebContentsView(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
@@ -269,6 +274,24 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       view_type_(content::VIEW_TYPE_TAB_CONTENTS),
       has_opener_(false) {
   render_manager_.Init(browser_context, site_instance, routing_id);
+
+  view_.reset(content::GetContentClient()->browser()->
+      OverrideCreateWebContentsView(this));
+  if (!view_.get()) {
+    content::WebContentsViewDelegate* delegate =
+        content::GetContentClient()->browser()->GetWebContentsViewDelegate(
+            this);
+#if defined(OS_WIN) && !defined(USE_AURA)
+    view_.reset(new TabContentsViewWin(this, delegate));
+#elif defined(TOOLKIT_GTK)
+    view_.reset(new content::TabContentsViewGtk(this, delegate));
+#elif defined(OS_MACOSX)
+    view_.reset(web_contents_view_mac::CreateWebContentsView(this, delegate));
+#elif defined(OS_ANDROID)
+    view_.reset(new WebContentsViewAndroid(this));
+#endif
+  }
+  CHECK(view_.get());
 
   // We have the initial size of the view be based on the size of the passed in
   // tab contents (normally a tab from the same window).

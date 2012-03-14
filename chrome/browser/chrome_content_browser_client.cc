@@ -92,11 +92,11 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
-#include "chrome/browser/tab_contents/chrome_web_contents_view_win_delegate.h"
-#include "content/browser/tab_contents/tab_contents_view_win.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -112,6 +112,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/chrome_browser_main_extra_parts_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #endif
 
 #if defined(USE_AURA)
@@ -123,18 +124,9 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_gtk_delegate.h"
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
-#include "content/browser/tab_contents/web_contents_view_mac.h"
-#elif defined(OS_ANDROID)
-#include "content/browser/tab_contents/web_contents_view_android.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #endif
-
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
@@ -350,25 +342,28 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   return main_parts;
 }
 
-content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
-    WebContents* web_contents) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return new TabContentsViewWin(
-      web_contents, new ChromeWebContentsViewWinDelegate(web_contents));
-#elif defined(TOOLKIT_VIEWS)
+content::WebContentsView*
+    ChromeContentBrowserClient::OverrideCreateWebContentsView(
+        WebContents* web_contents) {
+#if defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(web_contents);
-#elif defined(TOOLKIT_USES_GTK)
-  return new content::TabContentsViewGtk(web_contents,
-                                         new ChromeWebContentsViewGtkDelegate);
+#endif
+  return NULL;
+}
+
+content::WebContentsViewDelegate*
+    ChromeContentBrowserClient::GetWebContentsViewDelegate(
+        content::WebContents* web_contents) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  return new ChromeWebContentsViewDelegateWin(web_contents);
+#elif defined(TOOLKIT_GTK)
+  return new ChromeWebContentsViewDelegateGtk(web_contents);
 #elif defined(OS_MACOSX)
-  return web_contents_view_mac::CreateWebContentsView(
-      web_contents,
-      chrome_web_contents_view_mac_delegate::CreateWebContentsViewMacDelegate(
-          web_contents));
-#elif defined(OS_ANDROID)
-  return new WebContentsViewAndroid(web_contents);
+  return
+      chrome_web_contents_view_delegate_mac::CreateWebContentsViewDelegateMac(
+          web_contents);
 #else
-#error Need to create your platform WebContentsView here.
+  return NULL;
 #endif
 }
 

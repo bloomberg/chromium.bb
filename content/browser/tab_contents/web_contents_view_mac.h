@@ -27,7 +27,7 @@ class WebContentsViewMac;
 @class WebDragSource;
 
 namespace content {
-class WebContentsViewMacDelegate;
+class WebContentsViewDelegate;
 }
 
 namespace gfx {
@@ -54,7 +54,7 @@ class WebContentsViewMac : public content::WebContentsView {
   // because that's what was easiest when they were split.
   // TODO(jam): make this take a WebContents once it's created from content.
   WebContentsViewMac(content::WebContents* web_contents,
-                     content::WebContentsViewMacDelegate* delegate);
+                     content::WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewMac();
 
   // WebContentsView implementation --------------------------------------------
@@ -116,7 +116,7 @@ class WebContentsViewMac : public content::WebContentsView {
   void CloseTab();
 
   TabContents* tab_contents() { return tab_contents_; }
-  content::WebContentsViewMacDelegate* delegate() { return delegate_.get(); }
+  content::WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
   // The TabContents whose contents we display.
@@ -133,7 +133,7 @@ class WebContentsViewMac : public content::WebContentsView {
   scoped_nsobject<FocusTracker> focus_tracker_;
 
   // Our optional delegate.
-  scoped_ptr<content::WebContentsViewMacDelegate> delegate_;
+  scoped_ptr<content::WebContentsViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };
@@ -144,14 +144,14 @@ class WebContentsViewMac : public content::WebContentsView {
 namespace content {
 class WebContents;
 class WebContentsView;
-class WebContentsViewMacDelegate;
+class WebContentsViewDelegate;
 }
 
 namespace web_contents_view_mac {
 // Creates a WebContentsViewMac. Takes ownership of |delegate|.
 CONTENT_EXPORT content::WebContentsView* CreateWebContentsView(
     content::WebContents* web_contents,
-    content::WebContentsViewMacDelegate* delegate);
+    content::WebContentsViewDelegate* delegate);
 }
 
 #endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_win_delegate.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
@@ -20,14 +20,14 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
 
-ChromeWebContentsViewWinDelegate::ChromeWebContentsViewWinDelegate(
+ChromeWebContentsViewDelegateWin::ChromeWebContentsViewDelegateWin(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
 
-ChromeWebContentsViewWinDelegate::~ChromeWebContentsViewWinDelegate() {
+ChromeWebContentsViewDelegateWin::~ChromeWebContentsViewDelegateWin() {
   // Makes sure to remove any stored view we may still have in the ViewStorage.
   //
   // It is possible the view went away before us, so we only do this if the
@@ -39,14 +39,14 @@ ChromeWebContentsViewWinDelegate::~ChromeWebContentsViewWinDelegate() {
 }
 
 content::WebDragDestDelegate*
-    ChromeWebContentsViewWinDelegate::GetDragDestDelegate() {
+    ChromeWebContentsViewDelegateWin::GetDragDestDelegate() {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
   bookmark_handler_.reset(new WebDragBookmarkHandlerWin);
   return bookmark_handler_.get();
 }
 
-bool ChromeWebContentsViewWinDelegate::Focus() {
+bool ChromeWebContentsViewDelegateWin::Focus() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   if (wrapper) {
@@ -71,11 +71,11 @@ bool ChromeWebContentsViewWinDelegate::Focus() {
   return false;
 }
 
-void ChromeWebContentsViewWinDelegate::TakeFocus(bool reverse) {
+void ChromeWebContentsViewDelegateWin::TakeFocus(bool reverse) {
   GetFocusManager()->AdvanceFocus(reverse);
 }
 
-void ChromeWebContentsViewWinDelegate::StoreFocus() {
+void ChromeWebContentsViewDelegateWin::StoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
 
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
@@ -86,7 +86,7 @@ void ChromeWebContentsViewWinDelegate::StoreFocus() {
     view_storage->StoreView(last_focused_view_storage_id_, focused_view);
 }
 
-void ChromeWebContentsViewWinDelegate::RestoreFocus() {
+void ChromeWebContentsViewDelegateWin::RestoreFocus() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
@@ -109,7 +109,7 @@ void ChromeWebContentsViewWinDelegate::RestoreFocus() {
   }
 }
 
-void ChromeWebContentsViewWinDelegate::ShowContextMenu(
+void ChromeWebContentsViewDelegateWin::ShowContextMenu(
     const content::ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuViews(web_contents_, params));
   context_menu_->Init();
@@ -130,7 +130,7 @@ void ChromeWebContentsViewWinDelegate::ShowContextMenu(
   context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point);
 }
 
-void ChromeWebContentsViewWinDelegate::SizeChanged(const gfx::Size& size) {
+void ChromeWebContentsViewDelegateWin::SizeChanged(const gfx::Size& size) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   if (!wrapper)
@@ -140,7 +140,7 @@ void ChromeWebContentsViewWinDelegate::SizeChanged(const gfx::Size& size) {
     sad_tab->SetBounds(gfx::Rect(size));
 }
 
-views::Widget* ChromeWebContentsViewWinDelegate::GetTopLevelWidget() {
+views::Widget* ChromeWebContentsViewDelegateWin::GetTopLevelWidget() {
   HWND top_level_window = web_contents_->GetView()->GetTopLevelNativeWindow();
   if (!top_level_window)
     return NULL;
@@ -148,12 +148,12 @@ views::Widget* ChromeWebContentsViewWinDelegate::GetTopLevelWidget() {
 }
 
 views::FocusManager*
-    ChromeWebContentsViewWinDelegate::GetFocusManager() {
+    ChromeWebContentsViewDelegateWin::GetFocusManager() {
   views::Widget* toplevel_widget = GetTopLevelWidget();
   return toplevel_widget ? toplevel_widget->GetFocusManager() : NULL;
 }
 
-void ChromeWebContentsViewWinDelegate::SetInitialFocus() {
+void ChromeWebContentsViewDelegateWin::SetInitialFocus() {
   if (web_contents_->FocusLocationBarByDefault()) {
     web_contents_->SetFocusToLocationBar(false);
   } else {

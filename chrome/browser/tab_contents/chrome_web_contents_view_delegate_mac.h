@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_MAC_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_MAC_DELEGATE_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
+#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_
 #pragma once
 
 #if defined(__OBJC__)
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/web_contents_view_mac_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 
 class RenderViewContextMenuMac;
 class WebDragBookmarkHandlerMac;
@@ -21,17 +21,17 @@ class WebContents;
 
 // A chrome/ specific class that extends WebContentsViewMac with features that
 // live in chrome/.
-class ChromeWebContentsViewMacDelegate
-    : public content::WebContentsViewMacDelegate {
+class ChromeWebContentsViewDelegateMac
+    : public content::WebContentsViewDelegate {
  public:
-  explicit ChromeWebContentsViewMacDelegate(content::WebContents* web_contents);
-  virtual ~ChromeWebContentsViewMacDelegate();
+  explicit ChromeWebContentsViewDelegateMac(content::WebContents* web_contents);
+  virtual ~ChromeWebContentsViewDelegateMac();
 
-  // Overridden from WebContentsViewMacDelegate:
+  // Overridden from WebContentsViewDelegate:
   virtual NSObject<RenderWidgetHostViewMacDelegate>*
       CreateRenderWidgetHostViewDelegate(
           content::RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual content::WebDragDestDelegate* DragDelegate() OVERRIDE;
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void NativeViewCreated(NSView* view) OVERRIDE;
@@ -47,7 +47,7 @@ class ChromeWebContentsViewMacDelegate
   // The WebContents that owns the view.
   content::WebContents* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewMacDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebContentsViewDelegateMac);
 };
 
 #endif  // __OBJC__
@@ -57,10 +57,10 @@ class WebContents;
 class WebContentsViewMacDelegate;
 }
 
-namespace chrome_web_contents_view_mac_delegate {
-// Creates a ChromeWebContentsViewMacDelegate.
-content::WebContentsViewMacDelegate* CreateWebContentsViewMacDelegate(
+namespace chrome_web_contents_view_delegate_mac {
+// Creates a ChromeWebContentsViewDelegateMac.
+content::WebContentsViewDelegate* CreateWebContentsViewDelegateMac(
     content::WebContents* web_contents);
 }
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_MAC_DELEGATE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_MAC_H_

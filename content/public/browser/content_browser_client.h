@@ -70,6 +70,7 @@ class SiteInstance;
 class SpeechInputManagerDelegate;
 class WebContents;
 class WebContentsView;
+class WebContentsViewDelegate;
 class WebUIControllerFactory;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
@@ -95,7 +96,16 @@ class ContentBrowserClient {
   virtual BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) = 0;
 
-  virtual WebContentsView* CreateWebContentsView(WebContents* web_contents) = 0;
+  // Allows an embedder to return their own WebContentsView implementation.
+  // Return NULL to let the default one for the platform be created.
+  virtual WebContentsView* OverrideCreateWebContentsView(
+      WebContents* web_contents) = 0;
+
+  // If content creates the WebContentsView implementation, it will ask the
+  // embedder to return an (optional) delegate to customize it. The view will
+  // own the delegate.
+  virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
+      WebContents* web_contents) = 0;
 
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(

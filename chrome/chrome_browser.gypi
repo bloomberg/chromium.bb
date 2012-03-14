@@ -2167,12 +2167,12 @@
         'browser/tab_closeable_state_watcher.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
-        'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
-        'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
-        'browser/tab_contents/chrome_web_contents_view_mac_delegate.h',
-        'browser/tab_contents/chrome_web_contents_view_mac_delegate.mm',
-        'browser/tab_contents/chrome_web_contents_view_win_delegate.cc',
-        'browser/tab_contents/chrome_web_contents_view_win_delegate.h',
+        'browser/tab_contents/chrome_web_contents_view_delegate_gtk.cc',
+        'browser/tab_contents/chrome_web_contents_view_delegate_gtk.h',
+        'browser/tab_contents/chrome_web_contents_view_delegate_mac.h',
+        'browser/tab_contents/chrome_web_contents_view_delegate_mac.mm',
+        'browser/tab_contents/chrome_web_contents_view_delegate_win.cc',
+        'browser/tab_contents/chrome_web_contents_view_delegate_win.h',
         'browser/tab_contents/confirm_infobar_delegate.cc',
         'browser/tab_contents/confirm_infobar_delegate.h',
         'browser/tab_contents/insecure_content_infobar_delegate.cc',
@@ -4258,8 +4258,8 @@
             ['exclude', '^browser/google/google_update.h'],
             ['exclude', '^browser/hang_monitor/'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
-            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.cc'],
-            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.h'],
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_delegate_win.cc'],
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_delegate_win.h'],
             ['exclude', '^browser/ui/gesture_prefs.cc'],
             ['exclude', '^browser/ui/panels/display_settings_provider_win.cc'],
             ['exclude', '^browser/ui/tabs/dock_info_win.cc'],
@@ -4422,13 +4422,6 @@
                 '../build/linux/system.gyp:gnome_keyring',
               ],
             }],
-          ],
-        }, {
-        'sources!': [
-            # The rules only catch files that start or end with gtk, but these
-            # files would be incorrectly named if we forced the gtk at the end.
-            'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
-            'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
           ],
         }],
         ['input_speech==0', {
@@ -4699,11 +4692,6 @@
             # Exclude try chrome dialog.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
-
-            # The rules only catch files that start or end with win, but these
-            # files would be incorrectly named if we forced the win at the end.
-            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.cc'],
-            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.h'],
           ],
           'conditions': [
             ['use_aura==1',{

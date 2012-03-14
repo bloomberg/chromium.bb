@@ -2,33 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_web_contents_view_gtk_delegate.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
-ChromeWebContentsViewGtkDelegate::ChromeWebContentsViewGtkDelegate()
+ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
+    content::WebContents* web_contents)
     : floating_(gtk_floating_container_new()),
-      view_(NULL),
-      constrained_window_(NULL) {
+      constrained_window_(NULL),
+      web_contents_(web_contents) {
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-wrapper-view");
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
 }
 
-ChromeWebContentsViewGtkDelegate::~ChromeWebContentsViewGtkDelegate() {
+ChromeWebContentsViewDelegateGtk::~ChromeWebContentsViewDelegateGtk() {
   floating_.Destroy();
 }
 
-void ChromeWebContentsViewGtkDelegate::AttachConstrainedWindow(
+void ChromeWebContentsViewDelegateGtk::AttachConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   DCHECK(constrained_window_ == NULL);
 
@@ -37,7 +38,7 @@ void ChromeWebContentsViewGtkDelegate::AttachConstrainedWindow(
                                       constrained_window->widget());
 }
 
-void ChromeWebContentsViewGtkDelegate::RemoveConstrainedWindow(
+void ChromeWebContentsViewDelegateGtk::RemoveConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   DCHECK(constrained_window == constrained_window_);
 
@@ -46,35 +47,29 @@ void ChromeWebContentsViewGtkDelegate::RemoveConstrainedWindow(
                        constrained_window->widget());
 }
 
-void ChromeWebContentsViewGtkDelegate::WrapView(
-    content::TabContentsViewGtk* view) {
-  view_ = view;
-
-  gtk_container_add(GTK_CONTAINER(floating_.get()),
-                    view_->expanded_container());
-  gtk_widget_show(floating_.get());
-}
-
-gfx::NativeView ChromeWebContentsViewGtkDelegate::GetNativeView() const {
-  return floating_.get();
-}
-
-void ChromeWebContentsViewGtkDelegate::OnCreateViewForWidget() {
+void ChromeWebContentsViewDelegateGtk::Initialize(
+    GtkWidget* expanded_container) {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
   bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
-  view_->SetDragDestDelegate(bookmark_handler_gtk_.get());
+
+  gtk_container_add(GTK_CONTAINER(floating_.get()), expanded_container);
+  gtk_widget_show(floating_.get());
 }
 
-void ChromeWebContentsViewGtkDelegate::Focus() {
+gfx::NativeView ChromeWebContentsViewDelegateGtk::GetNativeView() const {
+  return floating_.get();
+}
+
+void ChromeWebContentsViewDelegateGtk::Focus() {
   if (!constrained_window_) {
-    GtkWidget* widget = view_->GetContentNativeView();
+    GtkWidget* widget = web_contents_->GetView()->GetContentNativeView();
     if (widget)
       gtk_widget_grab_focus(widget);
   }
 }
 
-gboolean ChromeWebContentsViewGtkDelegate::OnNativeViewFocusEvent(
+gboolean ChromeWebContentsViewDelegateGtk::OnNativeViewFocusEvent(
     GtkWidget* widget,
     GtkDirectionType type,
     gboolean* return_value) {
@@ -96,7 +91,7 @@ gboolean ChromeWebContentsViewGtkDelegate::OnNativeViewFocusEvent(
   return FALSE;
 }
 
-void ChromeWebContentsViewGtkDelegate::ShowContextMenu(
+void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
@@ -106,7 +101,7 @@ void ChromeWebContentsViewGtkDelegate::ShowContextMenu(
   if (params.custom_context.render_widget_id !=
       content::CustomContextMenuContext::kCurrentRenderWidget) {
     IPC::Channel::Listener* listener =
-        view_->web_contents()->GetRenderProcessHost()->GetListenerByID(
+        web_contents_->GetRenderProcessHost()->GetListenerByID(
             params.custom_context.render_widget_id);
     if (!listener) {
       NOTREACHED();
@@ -115,21 +110,26 @@ void ChromeWebContentsViewGtkDelegate::ShowContextMenu(
     view =
         content::RenderWidgetHost::FromIPCChannelListener(listener)->GetView();
   } else {
-    view = view_->web_contents()->GetRenderWidgetHostView();
+    view = web_contents_->GetRenderWidgetHostView();
   }
 
   context_menu_.reset(
-      new RenderViewContextMenuGtk(view_->web_contents(), params, view));
+      new RenderViewContextMenuGtk(web_contents_, params, view));
   context_menu_->Init();
 
   gfx::Rect bounds;
-  view_->GetContainerBounds(&bounds);
+  web_contents_->GetView()->GetContainerBounds(&bounds);
   gfx::Point point = bounds.origin();
   point.Offset(params.x, params.y);
   context_menu_->Popup(point);
 }
 
-void ChromeWebContentsViewGtkDelegate::OnSetFloatingPosition(
+content::WebDragDestDelegate*
+    ChromeWebContentsViewDelegateGtk::GetDragDestDelegate() {
+  return bookmark_handler_gtk_.get();
+}
+
+void ChromeWebContentsViewDelegateGtk::OnSetFloatingPosition(
     GtkWidget* floating_container, GtkAllocation* allocation) {
   if (!constrained_window_)
     return;

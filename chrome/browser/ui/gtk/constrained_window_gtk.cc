@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
-#include "chrome/browser/tab_contents/chrome_web_contents_view_gtk_delegate.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
 
