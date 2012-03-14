@@ -20,7 +20,6 @@ var expectedVolume1 = {
 
 var expectedVolume2 = {
   devicePath: 'device_path2',
-  mountPath: 'mount_path2',
   mountPath: 'removable/mount_path2',
   systemPath: 'system_path2',
   filePath: 'file_path2',
@@ -36,7 +35,6 @@ var expectedVolume2 = {
 
 var expectedVolume3 = {
   devicePath: 'device_path3',
-  mountPath: 'mount_path3',
   mountPath: 'removable/mount_path3',
   systemPath: 'system_path3',
   filePath: 'file_path3',
