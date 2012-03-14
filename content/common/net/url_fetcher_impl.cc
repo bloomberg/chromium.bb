@@ -36,6 +36,7 @@
 #include "net/url_request/url_request_throttler_manager.h"
 
 static const int kBufferSize = 4096;
+static const int kUploadProgressTimerInterval = 100;
 
 class URLFetcherImpl::Core
     : public base::RefCountedThreadSafe<URLFetcherImpl::Core>,
@@ -228,7 +229,9 @@ class URLFetcherImpl::Core
   // Drop ownership of any file managed by |file_path_|.
   void DisownFile();
 
-  // Notify Delegate about the progress of downloading.
+  // Notify Delegate about the progress of upload/download.
+  void InformDelegateUploadProgress();
+  void InformDelegateUploadProgressInDelegateThread(int64 current, int64 total);
   void InformDelegateDownloadProgress();
   void InformDelegateDownloadProgressInDelegateThread(int64 current,
                                                       int64 total);
@@ -312,7 +315,11 @@ class URLFetcherImpl::Core
   // Back-off time delay. 0 by default.
   base::TimeDelta backoff_delay_;
 
-  // Length of bytes received so far.
+  // Timer to poll the progress of uploading for POST and PUT requests.
+  base::RepeatingTimer<Core> upload_progress_checker_timer_;
+  // Number of bytes sent so far.
+  int64 current_upload_bytes_;
+  // Number of bytes received so far.
   int64 current_response_bytes_;
   // Total expected bytes to receive (-1 if it cannot be determined).
   int64 total_response_bytes_;
@@ -600,6 +607,7 @@ URLFetcherImpl::Core::Core(URLFetcherImpl* fetcher,
       response_destination_(STRING),
       automatically_retry_on_5xx_(true),
       max_retries_(0),
+      current_upload_bytes_(-1),
       current_response_bytes_(0),
       total_response_bytes_(-1) {
 }
@@ -891,6 +899,15 @@ void URLFetcherImpl::Core::StartURLRequest() {
         request_->AppendBytesToUpload(
             upload_content_.data(), static_cast<int>(upload_content_.length()));
       }
+
+      current_upload_bytes_ = -1;
+      // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
+      // net:: layer and avoid using timer here.
+      upload_progress_checker_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kUploadProgressTimerInterval),
+          this,
+          &Core::InformDelegateUploadProgress);
       break;
 
     case HEAD:
@@ -971,6 +988,28 @@ void URLFetcherImpl::Core::OnCompletedURLRequest(
   }
 }
 
+void URLFetcherImpl::Core::InformDelegateUploadProgress() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  if (request_.get()) {
+    int64 current = request_->GetUploadProgress();
+    if (current_upload_bytes_ != current) {
+      current_upload_bytes_ = current;
+      int64 total = (is_chunked_upload_ ? -1 : upload_content_.size());
+      delegate_loop_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(&Core::InformDelegateUploadProgressInDelegateThread,
+                     this, current, total));
+    }
+  }
+}
+
+void URLFetcherImpl::Core::InformDelegateUploadProgressInDelegateThread(
+    int64 current, int64 total) {
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_)
+    delegate_->OnURLFetchUploadProgress(fetcher_, current, total);
+}
+
 void URLFetcherImpl::Core::InformDelegateDownloadProgress() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   delegate_loop_proxy_->PostTask(
@@ -1011,6 +1050,7 @@ void URLFetcherImpl::Core::NotifyMalformedContent() {
 void URLFetcherImpl::Core::ReleaseRequest() {
   request_.reset();
   g_registry.Get().RemoveURLFetcherCore(this);
+  upload_progress_checker_timer_.Stop();
 }
 
 base::TimeTicks URLFetcherImpl::Core::GetBackoffReleaseTime() {
