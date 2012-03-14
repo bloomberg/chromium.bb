@@ -360,13 +360,15 @@ bool TryOpeningFileBrowser(const FilePath& full_path) {
   if (!browser)
     return false;
 
+  Profile* profile = browser->profile();
+
   GURL url;
-  if (!ConvertFileToFileSystemUrl(browser->profile(), full_path,
+  if (!ConvertFileToFileSystemUrl(profile, full_path,
       GetFileBrowserExtensionUrl().GetOrigin(), &url))
     return false;
 
   const FileBrowserHandler* handler;
-  if (!file_handler_util::GetDefaultTask(browser->profile(), url, &handler))
+  if (!file_handler_util::GetDefaultTask(profile, url, &handler))
     return false;
 
   std::string extension_id = handler->extension_id();
@@ -380,10 +382,21 @@ bool TryOpeningFileBrowser(const FilePath& full_path) {
       return true;
     }
   } else {
+    // We are executing the task on behalf of File Browser extension.
+    const GURL source_url(kBaseFileBrowserUrl);
+
+    // If File Browser has not been open yet then it did not request access
+    // to the file system. Do it now.
+    fileapi::ExternalFileSystemMountPointProvider* external_provider =
+        BrowserContext::GetFileSystemContext(profile)->external_provider();
+    if (!external_provider)
+      return false;
+    external_provider->GrantFullAccessToExtension(source_url.host());
+
     std::vector<GURL> urls;
     urls.push_back(url);
     scoped_refptr<StandaloneExecutor> executor = new StandaloneExecutor(
-        browser->profile(), GURL(kBaseFileBrowserUrl), extension_id, action_id);
+        profile, source_url, extension_id, action_id);
     executor->Execute(urls);
     return true;
   }
