@@ -214,8 +214,9 @@ void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
         switches::kPpapiFlashVersion);
   } else {
     // Use the bundled Pepper Flash if it's enabled and available.
-    // It's currently only enabled by default on Linux x64.
-#if defined(FLAPPER_AVAILABLE) && defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
+    // It's currently only enabled by default on Linux ia32 and x64.
+#if defined(FLAPPER_AVAILABLE) && defined(OS_LINUX) && \
+    (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
     bool bundled_flapper_enabled = true;
 #else
     bool bundled_flapper_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
