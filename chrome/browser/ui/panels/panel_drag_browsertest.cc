@@ -77,6 +77,699 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   }
 };
 
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, NotDraggable) {
+  Panel* panel = CreatePanel("panel");
+  // This is used to simulate making a docked panel not draggable.
+  panel->set_has_temporary_layout(true);
+  Panel* panel2 = CreatePanel("panel2");
+
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  gfx::Rect bounds = panel->GetBounds();
+  gfx::Point mouse_location = bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+  mouse_location.Offset(-50, 10);
+  panel_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(bounds.x(), panel->GetBounds().x());
+
+  // Reset the simulation hack so that the panel can be closed correctly.
+  panel->set_has_temporary_layout(false);
+  panel->Close();
+  panel2->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDockedPanel) {
+  static const int big_delta_x = 70;
+  static const int big_delta_y = 30;  // Do not exceed the threshold to detach.
+
+  Panel* panel = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  gfx::Rect panel_old_bounds = panel->GetBounds();
+
+  // Drag left.
+  gfx::Point mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(-big_delta_x, 0);
+  panel_testing->DragTitlebar(mouse_location);
+  gfx::Rect panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(-big_delta_x, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  // Drag left and cancel.
+  mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(-big_delta_x, 0);
+  panel_testing->DragTitlebar(mouse_location);
+  panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(-big_delta_x, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+
+  panel_testing->CancelDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  // Drag right.
+  mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(big_delta_x, 0);
+  panel_testing->DragTitlebar(mouse_location);
+  panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(big_delta_x, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  // Drag right and up.  Expect no vertical movement.
+  mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(big_delta_x, big_delta_y);
+  panel_testing->DragTitlebar(mouse_location);
+  panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(big_delta_x, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  // Drag up.  Expect no movement on drag.
+  mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(0, -big_delta_y);
+  panel_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  // Drag down.  Expect no movement on drag.
+  mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  mouse_location.Offset(0, big_delta_y);
+  panel_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragTwoDockedPanels) {
+  static const gfx::Point small_delta(10, 0);
+
+  Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 = CreateDockedPanel("2", gfx::Rect(0, 0, 100, 100));
+  scoped_ptr<NativePanelTesting> panel1_testing(
+      NativePanelTesting::Create(panel1->native_panel()));
+  scoped_ptr<NativePanelTesting> panel2_testing(
+      NativePanelTesting::Create(panel2->native_panel()));
+  gfx::Point position1 = panel1->GetBounds().origin();
+  gfx::Point position2 = panel2->GetBounds().origin();
+
+  // Drag right panel towards left with small delta.
+  // Expect no shuffle: P1 P2
+  gfx::Point mouse_location = position1;
+  panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  mouse_location = mouse_location.Subtract(small_delta);
+  panel1_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  panel1_testing->FinishDragTitlebar();
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  // Drag right panel towards left with big delta.
+  // Expect shuffle: P2 P1
+  mouse_location = position1;
+  panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  mouse_location = position2.Add(gfx::Point(1, 0));
+  panel1_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  panel1_testing->FinishDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  // Drag left panel towards right with small delta.
+  // Expect no shuffle: P2 P1
+  mouse_location = position2;
+  panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  mouse_location = mouse_location.Add(small_delta);
+  panel1_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  panel1_testing->FinishDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  // Drag left panel towards right with big delta.
+  // Expect shuffle: P1 P2
+  mouse_location = position2;
+  panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  mouse_location = position1.Add(gfx::Point(1, 0));
+  panel1_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  panel1_testing->FinishDragTitlebar();
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  // Drag right panel towards left with big delta and then cancel the drag.
+  // Expect shuffle after drag:   P2 P1
+  // Expect shuffle after cancel: P1 P2
+  mouse_location = position1;
+  panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  mouse_location = position2.Add(gfx::Point(1, 0));
+  panel1_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(mouse_location, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+
+  panel1_testing->CancelDragTitlebar();
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragThreeDockedPanels) {
+  Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 = CreateDockedPanel("2", gfx::Rect(0, 0, 100, 100));
+  Panel* panel3 = CreateDockedPanel("3", gfx::Rect(0, 0, 100, 100));
+  scoped_ptr<NativePanelTesting> panel2_testing(
+      NativePanelTesting::Create(panel2->native_panel()));
+  scoped_ptr<NativePanelTesting> panel3_testing(
+      NativePanelTesting::Create(panel3->native_panel()));
+  gfx::Point position1 = panel1->GetBounds().origin();
+  gfx::Point position2 = panel2->GetBounds().origin();
+  gfx::Point position3 = panel3->GetBounds().origin();
+
+  // Drag leftmost panel to become the rightmost in 2 drags. Each drag will
+  // shuffle one panel.
+  // Expect shuffle after 1st drag: P1 P3 P2
+  // Expect shuffle after 2nd drag: P3 P1 P2
+  gfx::Point mouse_location = position3;
+  panel3_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+  EXPECT_EQ(position3, panel3->GetBounds().origin());
+
+  mouse_location = position2.Add(gfx::Point(1, 0));
+  panel3_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel3->GetBounds().origin());
+
+  mouse_location = position1.Add(gfx::Point(1, 0));
+  panel3_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel3->GetBounds().origin());
+
+  panel3_testing->FinishDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  // Drag rightmost panel to become the leftmost in 2 drags and then cancel the
+  // drag. Each drag will shuffle one panel and the cancellation will restore
+  // all panels.
+  // Expect shuffle after 1st drag: P1 P3 P2
+  // Expect shuffle after 2nd drag: P1 P2 P3
+  // Expect shuffle after cancel:   P3 P1 P2
+  mouse_location = position1;
+  panel3_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  mouse_location = position2.Add(gfx::Point(1, 0));
+  panel3_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel3->GetBounds().origin());
+
+  mouse_location = position3.Add(gfx::Point(1, 0));
+  panel3_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel3->GetBounds().origin());
+
+  panel3_testing->CancelDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  // Drag leftmost panel to become the rightmost in a single drag. The drag will
+  // shuffle 2 panels at a time.
+  // Expect shuffle: P2 P3 P1
+  mouse_location = position3;
+  panel2_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  mouse_location = position1.Add(gfx::Point(1, 0));
+  panel2_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position3, panel1->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel2->GetBounds().origin());
+  EXPECT_EQ(position2, panel3->GetBounds().origin());
+
+  panel2_testing->FinishDragTitlebar();
+  EXPECT_EQ(position3, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+  EXPECT_EQ(position2, panel3->GetBounds().origin());
+
+  // Drag rightmost panel to become the leftmost in a single drag. The drag will
+  // shuffle 2 panels at a time.
+  // Expect shuffle: P3 P1 P2
+  mouse_location = position1;
+  panel2_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position3, panel1->GetBounds().origin());
+  EXPECT_EQ(position1, panel2->GetBounds().origin());
+  EXPECT_EQ(position2, panel3->GetBounds().origin());
+
+  mouse_location = position3.Add(gfx::Point(1, 0));
+  panel2_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  panel2_testing->FinishDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  // Drag rightmost panel to become the leftmost in a single drag and then
+  // cancel the drag. The drag will shuffle 2 panels and the cancellation will
+  // restore all panels.
+  // Expect shuffle after drag:   P1 P2 P3
+  // Expect shuffle after cancel: P3 P1 P2
+  mouse_location = position1;
+  panel3_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  mouse_location = position3.Add(gfx::Point(1, 0));
+  panel3_testing->DragTitlebar(mouse_location);
+  EXPECT_EQ(position1, panel1->GetBounds().origin());
+  EXPECT_EQ(position2, panel2->GetBounds().origin());
+  EXPECT_EQ(mouse_location, panel3->GetBounds().origin());
+
+  panel3_testing->CancelDragTitlebar();
+  EXPECT_EQ(position2, panel1->GetBounds().origin());
+  EXPECT_EQ(position3, panel2->GetBounds().origin());
+  EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  PanelDragController* drag_controller = panel_manager->drag_controller();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+
+  // Create 4 docked panels.
+  // We have:  P4  P3  P2  P1
+  Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 100, 100));
+  Panel* panel3 = CreatePanelWithBounds("Panel3", gfx::Rect(0, 0, 100, 100));
+  Panel* panel4 = CreatePanelWithBounds("Panel4", gfx::Rect(0, 0, 100, 100));
+  ASSERT_EQ(4, docked_strip->num_panels());
+
+  scoped_ptr<NativePanelTesting> panel1_testing(
+      NativePanelTesting::Create(panel1->native_panel()));
+  gfx::Point position1 = panel1->GetBounds().origin();
+  gfx::Point position2 = panel2->GetBounds().origin();
+  gfx::Point position3 = panel3->GetBounds().origin();
+  gfx::Point position4 = panel4->GetBounds().origin();
+
+  // Test the scenario: drag a panel, close another panel, cancel the drag.
+  {
+    std::vector<Panel*> panels;
+    gfx::Point panel1_new_position = position1;
+    panel1_new_position.Offset(-500, 0);
+
+    // Start dragging a panel.
+    // We have:  P1*  P4  P3  P2
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(4, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel2, panels[0]);
+    EXPECT_EQ(panel3, panels[1]);
+    EXPECT_EQ(panel4, panels[2]);
+    EXPECT_EQ(panel1, panels[3]);
+    EXPECT_EQ(position1, panel2->GetBounds().origin());
+    EXPECT_EQ(position2, panel3->GetBounds().origin());
+    EXPECT_EQ(position3, panel4->GetBounds().origin());
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+
+    // Closing another panel while dragging in progress will keep the dragging
+    // panel intact.
+    // We have:  P1*  P4  P3
+    CloseWindowAndWait(panel2->browser());
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(3, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel3, panels[0]);
+    EXPECT_EQ(panel4, panels[1]);
+    EXPECT_EQ(panel1, panels[2]);
+    EXPECT_EQ(position1, panel3->GetBounds().origin());
+    EXPECT_EQ(position2, panel4->GetBounds().origin());
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+
+    // Cancel the drag.
+    // We have:  P4  P3  P1
+    panel1_testing->CancelDragTitlebar();
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(3, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel1, panels[0]);
+    EXPECT_EQ(panel3, panels[1]);
+    EXPECT_EQ(panel4, panels[2]);
+    EXPECT_EQ(position1, panel1->GetBounds().origin());
+    EXPECT_EQ(position2, panel3->GetBounds().origin());
+    EXPECT_EQ(position3, panel4->GetBounds().origin());
+  }
+
+  // Test the scenario: drag a panel, close another panel, end the drag.
+  {
+    std::vector<Panel*> panels;
+    gfx::Point panel1_new_position = position1;
+    panel1_new_position.Offset(-500, 0);
+
+    // Start dragging a panel.
+    // We have:  P1*  P4  P3
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(3, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel3, panels[0]);
+    EXPECT_EQ(panel4, panels[1]);
+    EXPECT_EQ(panel1, panels[2]);
+    EXPECT_EQ(position1, panel3->GetBounds().origin());
+    EXPECT_EQ(position2, panel4->GetBounds().origin());
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+
+    // Closing another panel while dragging in progress will keep the dragging
+    // panel intact.
+    // We have:  P1*  P4
+    CloseWindowAndWait(panel3->browser());
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(2, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel4, panels[0]);
+    EXPECT_EQ(panel1, panels[1]);
+    EXPECT_EQ(position1, panel4->GetBounds().origin());
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+
+    // Finish the drag.
+    // We have:  P1  P4
+    panel1_testing->FinishDragTitlebar();
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(2, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel4, panels[0]);
+    EXPECT_EQ(panel1, panels[1]);
+    EXPECT_EQ(position1, panel4->GetBounds().origin());
+    EXPECT_EQ(position2, panel1->GetBounds().origin());
+  }
+
+  // Test the scenario: drag a panel and close the dragging panel.
+  {
+    std::vector<Panel*> panels;
+    gfx::Point panel1_new_position = position2;
+    panel1_new_position.Offset(-500, 0);
+
+    // Start dragging a panel again.
+    // We have:  P1*  P4
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+
+    ASSERT_EQ(2, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel4, panels[0]);
+    EXPECT_EQ(panel1, panels[1]);
+    EXPECT_EQ(position1, panel4->GetBounds().origin());
+
+    // Closing the dragging panel should end the drag.
+    // We have:  P4
+    CloseWindowAndWait(panel1->browser());
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(1, docked_strip->num_panels());
+    panels = PanelManager::GetInstance()->panels();
+    EXPECT_EQ(panel4, panels[0]);
+    EXPECT_EQ(position1, panel4->GetBounds().origin());
+  }
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDetachedPanel) {
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+
+  // Test that the detached panel can be dragged almost anywhere except getting
+  // close to the bottom of the docked area to trigger the attach.
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  gfx::Point origin = panel->GetBounds().origin();
+
+  panel_testing->PressLeftMouseButtonTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  origin.Offset(-51, -102);
+  panel_testing->DragTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  origin.Offset(37, 45);
+  panel_testing->DragTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  // Test that cancelling the drag will return the panel the the original
+  // position.
+  gfx::Point original_position = panel->GetBounds().origin();
+  origin = original_position;
+
+  panel_testing->PressLeftMouseButtonTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  origin.Offset(-51, -102);
+  panel_testing->DragTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  origin.Offset(37, 45);
+  panel_testing->DragTitlebar(origin);
+  EXPECT_EQ(origin, panel->GetBounds().origin());
+
+  panel_testing->CancelDragTitlebar();
+  WaitForBoundsAnimationFinished(panel);
+  EXPECT_EQ(original_position, panel->GetBounds().origin());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  PanelDragController* drag_controller = panel_manager->drag_controller();
+  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
+
+  // Create 4 detached panels.
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 210, 110, 110));
+  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 220, 120, 120));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 230, 130, 130));
+  ASSERT_EQ(4, detached_strip->num_panels());
+
+  scoped_ptr<NativePanelTesting> panel1_testing(
+      NativePanelTesting::Create(panel1->native_panel()));
+  gfx::Point panel1_old_position = panel1->GetBounds().origin();
+  gfx::Point panel2_position = panel2->GetBounds().origin();
+  gfx::Point panel3_position = panel3->GetBounds().origin();
+  gfx::Point panel4_position = panel4->GetBounds().origin();
+
+  // Test the scenario: drag a panel, close another panel, cancel the drag.
+  {
+    gfx::Point panel1_new_position = panel1_old_position;
+    panel1_new_position.Offset(-51, -102);
+
+    // Start dragging a panel.
+    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    panel1_testing->DragTitlebar(panel1_new_position);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(4, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel2));
+    EXPECT_TRUE(detached_strip->HasPanel(panel3));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel2_position, panel2->GetBounds().origin());
+    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Closing another panel while dragging in progress will keep the dragging
+    // panel intact.
+    CloseWindowAndWait(panel2->browser());
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(3, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel3));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Cancel the drag.
+    panel1_testing->CancelDragTitlebar();
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(3, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel3));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_old_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+  }
+
+  // Test the scenario: drag a panel, close another panel, end the drag.
+  {
+    gfx::Point panel1_new_position = panel1_old_position;
+    panel1_new_position.Offset(-51, -102);
+
+    // Start dragging a panel.
+    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    panel1_testing->DragTitlebar(panel1_new_position);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(3, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel3));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel3_position, panel3->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Closing another panel while dragging in progress will keep the dragging
+    // panel intact.
+    CloseWindowAndWait(panel3->browser());
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(2, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Finish the drag.
+    panel1_testing->FinishDragTitlebar();
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(2, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+  }
+
+  // Test the scenario: drag a panel and close the dragging panel.
+  {
+    gfx::Point panel1_new_position = panel1->GetBounds().origin();
+    panel1_new_position.Offset(-51, -102);
+
+    // Start dragging a panel again.
+    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
+    panel1_testing->DragTitlebar(panel1_new_position);
+    EXPECT_TRUE(drag_controller->IsDragging());
+    EXPECT_EQ(panel1, drag_controller->dragging_panel());
+
+    ASSERT_EQ(2, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel1));
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+
+    // Closing the dragging panel should end the drag.
+    CloseWindowAndWait(panel1->browser());
+    EXPECT_FALSE(drag_controller->IsDragging());
+
+    ASSERT_EQ(1, detached_strip->num_panels());
+    EXPECT_TRUE(detached_strip->HasPanel(panel4));
+    EXPECT_EQ(panel4_position, panel4->GetBounds().origin());
+  }
+
+  panel_manager->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
