@@ -30,94 +30,6 @@ class GLES2DecoderTestBase : public testing::Test {
   GLES2DecoderTestBase();
   virtual ~GLES2DecoderTestBase();
 
- protected:
-  static const GLint kMaxTextureSize = 2048;
-  static const GLint kMaxCubeMapTextureSize = 256;
-  static const GLint kNumVertexAttribs = 16;
-  static const GLint kNumTextureUnits = 8;
-  static const GLint kMaxTextureImageUnits = 8;
-  static const GLint kMaxVertexTextureImageUnits = 2;
-  static const GLint kMaxFragmentUniformVectors = 16;
-  static const GLint kMaxVaryingVectors = 8;
-  static const GLint kMaxVertexUniformVectors = 128;
-
-  static const GLuint kServiceAttrib0BufferId = 801;
-  static const GLuint kServiceFixedAttribBufferId = 802;
-
-  static const GLuint kServiceBufferId = 301;
-  static const GLuint kServiceFramebufferId = 302;
-  static const GLuint kServiceRenderbufferId = 303;
-  static const GLuint kServiceTextureId = 304;
-  static const GLuint kServiceProgramId = 305;
-  static const GLuint kServiceShaderId = 306;
-  static const GLuint kServiceElementBufferId = 308;
-  static const GLuint kServiceQueryId = 309;
-
-  static const int32 kSharedMemoryId = 401;
-  static const size_t kSharedBufferSize = 2048;
-  static const uint32 kSharedMemoryOffset = 132;
-  static const int32 kInvalidSharedMemoryId = 402;
-  static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
-  static const uint32 kInitialResult = 0xBDBDBDBDu;
-  static const uint8 kInitialMemoryValue = 0xBDu;
-
-  static const uint32 kNewClientId = 501;
-  static const uint32 kNewServiceId = 502;
-  static const uint32 kInvalidClientId = 601;
-
-  static const int kBackBufferWidth = 128;
-  static const int kBackBufferHeight = 64;
-
-  static const GLuint kServiceVertexShaderId = 321;
-  static const GLuint kServiceFragmentShaderId = 322;
-
-  static const GLsizei kNumVertices = 100;
-  static const GLsizei kNumIndices = 10;
-  static const int kValidIndexRangeStart = 1;
-  static const int kValidIndexRangeCount = 7;
-  static const int kInvalidIndexRangeStart = 0;
-  static const int kInvalidIndexRangeCount = 7;
-  static const int kOutOfRangeIndexRangeEnd = 10;
-  static const GLuint kMaxValidIndex = 7;
-
-  static const GLint kMaxAttribLength = 10;
-  static const char* kAttrib1Name;
-  static const char* kAttrib2Name;
-  static const char* kAttrib3Name;
-  static const GLint kAttrib1Size = 1;
-  static const GLint kAttrib2Size = 1;
-  static const GLint kAttrib3Size = 1;
-  static const GLint kAttrib1Location = 0;
-  static const GLint kAttrib2Location = 1;
-  static const GLint kAttrib3Location = 2;
-  static const GLenum kAttrib1Type = GL_FLOAT_VEC4;
-  static const GLenum kAttrib2Type = GL_FLOAT_VEC2;
-  static const GLenum kAttrib3Type = GL_FLOAT_VEC3;
-  static const GLint kInvalidAttribLocation = 30;
-  static const GLint kBadAttribIndex = kNumVertexAttribs;
-
-  static const GLint kMaxUniformLength = 12;
-  static const char* kUniform1Name;
-  static const char* kUniform2Name;
-  static const char* kUniform3Name;
-  static const GLint kUniform1Size = 1;
-  static const GLint kUniform2Size = 3;
-  static const GLint kUniform3Size = 2;
-  static const GLint kUniform1RealLocation = 3;
-  static const GLint kUniform2RealLocation = 10;
-  static const GLint kUniform2ElementRealLocation = 12;
-  static const GLint kUniform3RealLocation = 20;
-  static const GLint kUniform1FakeLocation = 0;               // These are
-  static const GLint kUniform2FakeLocation = 1;               // hardcoded
-  static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
-  static const GLint kUniform3FakeLocation = 2;               // ProgramManager.
-  static const GLenum kUniform1Type = GL_SAMPLER_2D;
-  static const GLenum kUniform2Type = GL_INT_VEC2;
-  static const GLenum kUniform3Type = GL_FLOAT_VEC3;
-  static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
-  static const GLint kInvalidUniformLocation = 30;
-  static const GLint kBadUniformIndex = 1000;
-
   // Template to call glGenXXX functions.
   template <typename T>
   void GenHelper(GLuint client_id) {
@@ -232,6 +144,14 @@ class GLES2DecoderTestBase : public testing::Test {
 
   const ContextGroup& group() const {
     return *group_.get();
+  }
+
+  ::testing::StrictMock< ::gfx::MockGLInterface>* GetGLMock() const {
+    return gl_.get();
+  }
+
+  GLES2Decoder* GetDecoder() const {
+    return decoder_.get();
   }
 
   struct AttribInfo {
@@ -404,6 +324,94 @@ class GLES2DecoderTestBase : public testing::Test {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
     return isObject;
   }
+
+ protected:
+  static const GLint kMaxTextureSize = 2048;
+  static const GLint kMaxCubeMapTextureSize = 256;
+  static const GLint kNumVertexAttribs = 16;
+  static const GLint kNumTextureUnits = 8;
+  static const GLint kMaxTextureImageUnits = 8;
+  static const GLint kMaxVertexTextureImageUnits = 2;
+  static const GLint kMaxFragmentUniformVectors = 16;
+  static const GLint kMaxVaryingVectors = 8;
+  static const GLint kMaxVertexUniformVectors = 128;
+
+  static const GLuint kServiceAttrib0BufferId = 801;
+  static const GLuint kServiceFixedAttribBufferId = 802;
+
+  static const GLuint kServiceBufferId = 301;
+  static const GLuint kServiceFramebufferId = 302;
+  static const GLuint kServiceRenderbufferId = 303;
+  static const GLuint kServiceTextureId = 304;
+  static const GLuint kServiceProgramId = 305;
+  static const GLuint kServiceShaderId = 306;
+  static const GLuint kServiceElementBufferId = 308;
+  static const GLuint kServiceQueryId = 309;
+
+  static const int32 kSharedMemoryId = 401;
+  static const size_t kSharedBufferSize = 2048;
+  static const uint32 kSharedMemoryOffset = 132;
+  static const int32 kInvalidSharedMemoryId = 402;
+  static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
+  static const uint32 kInitialResult = 0xBDBDBDBDu;
+  static const uint8 kInitialMemoryValue = 0xBDu;
+
+  static const uint32 kNewClientId = 501;
+  static const uint32 kNewServiceId = 502;
+  static const uint32 kInvalidClientId = 601;
+
+  static const int kBackBufferWidth = 128;
+  static const int kBackBufferHeight = 64;
+
+  static const GLuint kServiceVertexShaderId = 321;
+  static const GLuint kServiceFragmentShaderId = 322;
+
+  static const GLsizei kNumVertices = 100;
+  static const GLsizei kNumIndices = 10;
+  static const int kValidIndexRangeStart = 1;
+  static const int kValidIndexRangeCount = 7;
+  static const int kInvalidIndexRangeStart = 0;
+  static const int kInvalidIndexRangeCount = 7;
+  static const int kOutOfRangeIndexRangeEnd = 10;
+  static const GLuint kMaxValidIndex = 7;
+
+  static const GLint kMaxAttribLength = 10;
+  static const char* kAttrib1Name;
+  static const char* kAttrib2Name;
+  static const char* kAttrib3Name;
+  static const GLint kAttrib1Size = 1;
+  static const GLint kAttrib2Size = 1;
+  static const GLint kAttrib3Size = 1;
+  static const GLint kAttrib1Location = 0;
+  static const GLint kAttrib2Location = 1;
+  static const GLint kAttrib3Location = 2;
+  static const GLenum kAttrib1Type = GL_FLOAT_VEC4;
+  static const GLenum kAttrib2Type = GL_FLOAT_VEC2;
+  static const GLenum kAttrib3Type = GL_FLOAT_VEC3;
+  static const GLint kInvalidAttribLocation = 30;
+  static const GLint kBadAttribIndex = kNumVertexAttribs;
+
+  static const GLint kMaxUniformLength = 12;
+  static const char* kUniform1Name;
+  static const char* kUniform2Name;
+  static const char* kUniform3Name;
+  static const GLint kUniform1Size = 1;
+  static const GLint kUniform2Size = 3;
+  static const GLint kUniform3Size = 2;
+  static const GLint kUniform1RealLocation = 3;
+  static const GLint kUniform2RealLocation = 10;
+  static const GLint kUniform2ElementRealLocation = 12;
+  static const GLint kUniform3RealLocation = 20;
+  static const GLint kUniform1FakeLocation = 0;               // These are
+  static const GLint kUniform2FakeLocation = 1;               // hardcoded
+  static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
+  static const GLint kUniform3FakeLocation = 2;               // ProgramManager.
+  static const GLenum kUniform1Type = GL_SAMPLER_2D;
+  static const GLenum kUniform2Type = GL_INT_VEC2;
+  static const GLenum kUniform3Type = GL_FLOAT_VEC3;
+  static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
+  static const GLint kInvalidUniformLocation = 30;
+  static const GLint kBadUniformIndex = 1000;
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;

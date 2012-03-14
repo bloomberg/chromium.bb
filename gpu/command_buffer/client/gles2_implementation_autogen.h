@@ -1410,8 +1410,7 @@ void TexStorage2DEXT(
 }
 
 void GenQueriesEXT(GLsizei n, GLuint* queries) {
-  GPU_CLIENT_LOG("[" << this << "] glGenQueriesEXT(" << n << ", "
-                 << static_cast<const void*>(queries) << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << this << "] glGenQueriesEXT(" << n << ", " << static_cast<const void*>(queries) << ")");  // NOLINT
   if (n < 0) {
     SetGLError(GL_INVALID_VALUE, "glGenQueriesEXT: n < 0");
     return;
@@ -1429,8 +1428,7 @@ void GenQueriesEXT(GLsizei n, GLuint* queries) {
 
 void DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glDeleteQueriesEXT(" << n << ", "
-                 << static_cast<const void*>(queries) << ")");  // NOLINT
+  GPU_CLIENT_LOG("[" << this << "] glDeleteQueriesEXT(" << n << ", " << static_cast<const void*>(queries) << ")");  // NOLINT
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << queries[i]);

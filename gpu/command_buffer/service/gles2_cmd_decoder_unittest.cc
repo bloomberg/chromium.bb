@@ -6583,13 +6583,7 @@ TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXT) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  // Test a non-generated id fails.
   BeginQueryEXT begin_cmd;
-  begin_cmd.Init(
-      GL_ANY_SAMPLES_PASSED_EXT, kInvalidClientId,
-      kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
-  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
   // Test id = 0 fails.
   begin_cmd.Init(
@@ -6597,22 +6591,12 @@ TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXT) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  // Test valid parameters work.
   EXPECT_CALL(*gl_, GenQueriesARB(1, _))
      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
      .RetiresOnSaturation();
-  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
-
-  // Test bad shared memory fails
-  begin_cmd.Init(
-      GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
-      kInvalidSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteCmd(begin_cmd));
-  begin_cmd.Init(
-      GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
-      kSharedMemoryId, kInvalidSharedMemoryOffset);
-  EXPECT_NE(error::kNoError, ExecuteCmd(begin_cmd));
-
-  // Test valid parameters work.
   EXPECT_CALL(*gl_, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
       .Times(1)
       .RetiresOnSaturation();
@@ -6649,6 +6633,117 @@ TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXT) {
   EXPECT_CALL(*gl_, DeleteQueriesARB(1, _))
       .Times(1)
       .RetiresOnSaturation();
+}
+
+static void CheckBeginEndQueryBadMemoryFails(
+    GLES2DecoderTestBase* test,
+    GLuint client_id,
+    GLuint service_id,
+    int32 shm_id,
+    uint32 shm_offset) {
+  ::testing::StrictMock< ::gfx::MockGLInterface>* gl = test->GetGLMock();
+
+  BeginQueryEXT begin_cmd;
+
+  test->GenHelper<GenQueriesEXTImmediate>(client_id);
+
+  EXPECT_CALL(*gl, GenQueriesARB(1, _))
+     .WillOnce(SetArgumentPointee<1>(service_id))
+     .RetiresOnSaturation();
+  EXPECT_CALL(*gl, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  // Test bad shared memory fails
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, client_id, shm_id, shm_offset);
+  error::Error error1 = test->ExecuteCmd(begin_cmd);
+
+  EXPECT_CALL(*gl, EndQueryARB(GL_ANY_SAMPLES_PASSED_EXT))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, 1);
+  error::Error error2 = test->ExecuteCmd(end_cmd);
+
+  EXPECT_CALL(*gl,
+      GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
+      .WillOnce(SetArgumentPointee<2>(1))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl,
+      GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_EXT, _))
+      .WillOnce(SetArgumentPointee<2>(1))
+      .RetiresOnSaturation();
+
+  QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  bool process_success = query_manager->ProcessPendingQueries();
+
+  EXPECT_TRUE(error1 != error::kNoError ||
+              error2 != error::kNoError ||
+              !process_success);
+
+  EXPECT_CALL(*gl, DeleteQueriesARB(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryIdFails) {
+  InitDecoder(
+      "GL_EXT_occlusion_query_boolean",      // extensions
+      true,    // has alpha
+      false,   // has depth
+      false,   // has stencil
+      true,    // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  CheckBeginEndQueryBadMemoryFails(
+      this, kNewClientId, kNewServiceId,
+      kInvalidSharedMemoryId, kSharedMemoryOffset);
+}
+
+TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXTBadMemoryOffsetFails) {
+  InitDecoder(
+      "GL_EXT_occlusion_query_boolean",      // extensions
+      true,    // has alpha
+      false,   // has depth
+      false,   // has stencil
+      true,    // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  CheckBeginEndQueryBadMemoryFails(
+      this, kNewClientId, kNewServiceId,
+      kSharedMemoryId, kInvalidSharedMemoryOffset);
+}
+
+TEST_F(GLES2DecoderTest, BeingEndQueryEXTCommandsIssuedCHROMIUM) {
+  BeginQueryEXT begin_cmd;
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  // Test valid parameters work.
+  begin_cmd.Init(
+      GL_COMMANDS_ISSUED_CHROMIUM, kNewClientId,
+      kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != NULL);
+  EXPECT_FALSE(query->pending());
+
+  // Test end succeeds
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_COMMANDS_ISSUED_CHROMIUM, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(query->pending());
 }
 
 

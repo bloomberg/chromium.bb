@@ -39,17 +39,10 @@ void GLES2DecoderTestBase::SpecializedSetup<GenQueriesEXT, 0>(
     // Make the client_query_id_ so that trying to make it again
     // will fail.
     GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-        .WillOnce(SetArgumentPointee<1>(kNewServiceId));
     GenQueriesEXT cmd;
     cmd.Init(1, shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
-  // In the valid case this deletes the one created in the test. In the invalid
-  // case it deleted the one above.
-  EXPECT_CALL(*gl_, DeleteQueriesARB(1, _))
-      .Times(1)
-      .RetiresOnSaturation();
 };
 
 template <>
@@ -59,17 +52,10 @@ void GLES2DecoderTestBase::SpecializedSetup<GenQueriesEXTImmediate, 0>(
     // Make the client_query_id_ so that trying to make it again
     // will fail.
     GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-        .WillOnce(SetArgumentPointee<1>(kNewServiceId));
     GenQueriesEXT cmd;
     cmd.Init(1, shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
-  // In the valid case this deletes the one created in the test. In the invalid
-  // case it deleted the one above.
-  EXPECT_CALL(*gl_, DeleteQueriesARB(1, _))
-      .Times(1)
-      .RetiresOnSaturation();
 };
 
 template <>
@@ -78,8 +64,6 @@ void GLES2DecoderTestBase::SpecializedSetup<DeleteQueriesEXT, 0>(
   if (valid) {
     // Make the client_query_id_ so that trying to delete it will succeed.
     GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-        .WillOnce(SetArgumentPointee<1>(kServiceQueryId));
     GenQueriesEXT cmd;
     cmd.Init(1, shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -92,8 +76,6 @@ void GLES2DecoderTestBase::SpecializedSetup<DeleteQueriesEXTImmediate, 0>(
   if (valid) {
     // Make the client_query_id_ so that trying to delete it will succeed.
     GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-    EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-        .WillOnce(SetArgumentPointee<1>(kServiceQueryId));
     GenQueriesEXT cmd;
     cmd.Init(1, shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

@@ -279,6 +279,7 @@ static GLenum valid_query_parameter_table[] = {
 static GLenum valid_query_target_table[] = {
   GL_ANY_SAMPLES_PASSED_EXT,
   GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
+  GL_COMMANDS_ISSUED_CHROMIUM,
 };
 
 static GLenum valid_read_pixel_format_table[] = {

@@ -5,14 +5,123 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "base/atomicops.h"
 #include "base/logging.h"
+#include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
 namespace gpu {
 namespace gles2 {
 
-QueryManager::QueryManager()
-    : query_count_(0) {
+class AllSamplesPassedQuery : public QueryManager::Query {
+ public:
+  AllSamplesPassedQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset,
+      GLuint service_id);
+  virtual ~AllSamplesPassedQuery();
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(uint32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ private:
+  // Service side query id.
+  GLuint service_id_;
+};
+
+AllSamplesPassedQuery::AllSamplesPassedQuery(
+    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset,
+    GLuint service_id)
+    : Query(manager, target, shm_id, shm_offset),
+      service_id_(service_id) {
+}
+
+AllSamplesPassedQuery::~AllSamplesPassedQuery() {
+}
+
+void AllSamplesPassedQuery::Destroy(bool have_context) {
+  if (have_context && !IsDeleted()) {
+    glDeleteQueriesARB(1, &service_id_);
+    MarkAsDeleted();
+  }
+}
+
+bool AllSamplesPassedQuery::Begin() {
+  BeginQueryHelper(target(), service_id_);
+  return true;
+}
+
+bool AllSamplesPassedQuery::End(uint32 submit_count) {
+  EndQueryHelper(target());
+  return AddToPendingQueue(submit_count);
+}
+
+bool AllSamplesPassedQuery::Process() {
+  GLuint available = 0;
+  glGetQueryObjectuivARB(
+      service_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  if (!available) {
+    return true;
+  }
+  GLuint result = 0;
+  glGetQueryObjectuivARB(
+      service_id_, GL_QUERY_RESULT_EXT, &result);
+
+  return MarkAsCompleted(result);
+}
+
+class CommandsIssuedQuery : public QueryManager::Query {
+ public:
+  CommandsIssuedQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+  virtual ~CommandsIssuedQuery();
+
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(uint32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ private:
+  base::TimeTicks begin_time_;
+};
+
+CommandsIssuedQuery::CommandsIssuedQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {
+}
+
+CommandsIssuedQuery::~CommandsIssuedQuery() {
+}
+
+bool CommandsIssuedQuery::Process() {
+  NOTREACHED();
+  return true;
+}
+
+bool CommandsIssuedQuery::Begin() {
+  begin_time_ = base::TimeTicks::HighResNow();
+  return true;
+}
+
+bool CommandsIssuedQuery::End(uint32 submit_count) {
+  base::TimeDelta elapsed = base::TimeTicks::HighResNow() - begin_time_;
+  MarkAsPending(submit_count);
+  return MarkAsCompleted(
+      std::min(elapsed.InMicroseconds(), static_cast<int64>(0xFFFFFFFFL)));
+}
+
+void CommandsIssuedQuery::Destroy(bool /* have_context */) {
+  if (!IsDeleted()) {
+    MarkAsDeleted();
+  }
+}
+
+QueryManager::QueryManager(
+    CommonDecoder* decoder,
+    bool use_arb_occlusion_query2_for_occlusion_query_boolean)
+    : decoder_(decoder),
+      use_arb_occlusion_query2_for_occlusion_query_boolean_(
+          use_arb_occlusion_query2_for_occlusion_query_boolean),
+      query_count_(0) {
 }
 
 QueryManager::~QueryManager() {
@@ -27,21 +136,27 @@ void QueryManager::Destroy(bool have_context) {
   pending_queries_.clear();
   while (!queries_.empty()) {
     Query* query = queries_.begin()->second;
-    if (have_context) {
-      if (!query->IsDeleted()) {
-        GLuint service_id = query->service_id();
-        glDeleteQueriesARB(1, &service_id);
-        query->MarkAsDeleted();
-      }
-    }
+    query->Destroy(have_context);
     queries_.erase(queries_.begin());
   }
 }
 
 QueryManager::Query* QueryManager::CreateQuery(
-    GLuint client_id,
-    GLuint service_id) {
-  Query::Ref query(new Query(this, service_id));
+    GLenum target, GLuint client_id, int32 shm_id, uint32 shm_offset) {
+  Query::Ref query;
+  switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+      query = new CommandsIssuedQuery(this, target, shm_id, shm_offset);
+      break;
+    default: {
+      GLuint service_id = 0;
+      glGenQueriesARB(1, &service_id);
+      DCHECK_NE(0u, service_id);
+      query = new AllSamplesPassedQuery(
+          this, target, shm_id, shm_offset, service_id);
+      break;
+    }
+  }
   std::pair<QueryMap::iterator, bool> result =
       queries_.insert(std::make_pair(client_id, query));
   DCHECK(result.second);
@@ -72,16 +187,33 @@ void QueryManager::StopTracking(QueryManager::Query* /* query */) {
   --query_count_;
 }
 
+void QueryManager::BeginQueryHelper(GLenum target, GLuint id) {
+  // ARB_occlusion_query2 does not have a GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
+  // target.
+  if (use_arb_occlusion_query2_for_occlusion_query_boolean_) {
+    target = GL_ANY_SAMPLES_PASSED_EXT;
+  }
+  glBeginQueryARB(target, id);
+}
+
+void QueryManager::EndQueryHelper(GLenum target) {
+  // ARB_occlusion_query2 does not have a GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
+  // target.
+  if (use_arb_occlusion_query2_for_occlusion_query_boolean_) {
+    target = GL_ANY_SAMPLES_PASSED_EXT;
+  }
+  glEndQueryARB(target);
+}
+
 QueryManager::Query::Query(
-     QueryManager* manager,
-     GLuint service_id)
+     QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
     : manager_(manager),
-      service_id_(service_id),
-      target_(0),
-      shm_id_(0),
-      shm_offset_(0),
+      target_(target),
+      shm_id_(shm_id),
+      shm_offset_(shm_offset),
       submit_count_(0),
-      pending_(false) {
+      pending_(false),
+      deleted_(false) {
   DCHECK(manager);
   manager_->StartTracking(this);
 }
@@ -93,53 +225,33 @@ QueryManager::Query::~Query() {
   }
 }
 
-void QueryManager::Query::Initialize(
-    GLenum target, int32 shm_id, uint32 shm_offset) {
-  DCHECK(!IsInitialized());
-  target_ = target;
-  shm_id_ = shm_id;
-  shm_offset_ = shm_offset;
-}
-
-bool QueryManager::GetClientId(GLuint service_id, GLuint* client_id) const {
-  DCHECK(client_id);
-  // This doesn't need to be fast. It's only used during slow queries.
-  for (QueryMap::const_iterator it = queries_.begin();
-       it != queries_.end(); ++it) {
-    if (it->second->service_id() == service_id) {
-      *client_id = it->first;
-      return true;
-    }
+bool QueryManager::Query::MarkAsCompleted(GLuint result) {
+  DCHECK(pending_);
+  QuerySync* sync = manager_->decoder_->GetSharedMemoryAs<QuerySync*>(
+          shm_id_, shm_offset_, sizeof(*sync));
+  if (!sync) {
+    return false;
   }
-  return false;
+
+  pending_ = false;
+  sync->result = result;
+  // Need a MemoryBarrier here so that sync->result is written before
+  // sync->process_count.
+  base::subtle::MemoryBarrier();
+  sync->process_count = submit_count_;
+
+  return true;
 }
 
-bool QueryManager::ProcessPendingQueries(CommonDecoder* decoder) {
-  DCHECK(decoder);
+bool QueryManager::ProcessPendingQueries() {
   while (!pending_queries_.empty()) {
     Query* query = pending_queries_.front().get();
-    GLuint available = 0;
-    glGetQueryObjectuivARB(
-        query->service_id(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-    if (!available) {
-      return true;
-    }
-    GLuint result = 0;
-    glGetQueryObjectuivARB(
-        query->service_id(), GL_QUERY_RESULT_EXT, &result);
-    QuerySync* sync = decoder->GetSharedMemoryAs<QuerySync*>(
-            query->shm_id(), query->shm_offset(), sizeof(*sync));
-    if (!sync) {
+    if (!query->Process()) {
       return false;
     }
-
-    sync->result = result;
-    // Need a MemoryBarrier here so that sync->result is written before
-    // sync->process_count.
-    base::subtle::MemoryBarrier();
-    sync->process_count = query->submit_count();
-
-    query->MarkAsCompleted();
+    if (query->pending()) {
+      return true;
+    }
     pending_queries_.pop_front();
   }
 
@@ -150,16 +262,18 @@ bool QueryManager::HavePendingQueries() {
   return !pending_queries_.empty();
 }
 
-void QueryManager::AddPendingQuery(Query* query, uint32 submit_count) {
+bool QueryManager::AddPendingQuery(Query* query, uint32 submit_count) {
   DCHECK(query);
-  DCHECK(query->IsInitialized());
   DCHECK(!query->IsDeleted());
-  RemovePendingQuery(query);
+  if (!RemovePendingQuery(query)) {
+    return false;
+  }
   query->MarkAsPending(submit_count);
   pending_queries_.push_back(query);
+  return true;
 }
 
-void QueryManager::RemovePendingQuery(Query* query) {
+bool QueryManager::RemovePendingQuery(Query* query) {
   DCHECK(query);
   if (query->pending()) {
     // TODO(gman): Speed this up if this is a common operation. This would only
@@ -172,8 +286,27 @@ void QueryManager::RemovePendingQuery(Query* query) {
         break;
       }
     }
-    query->MarkAsCompleted();
+    if (!query->MarkAsCompleted(0)) {
+      return false;
+    }
   }
+  return true;
+}
+
+bool QueryManager::BeginQuery(Query* query) {
+  DCHECK(query);
+  if (!RemovePendingQuery(query)) {
+    return false;
+  }
+  return query->Begin();
+}
+
+bool QueryManager::EndQuery(Query* query, uint32 submit_count) {
+  DCHECK(query);
+  if (!RemovePendingQuery(query)) {
+    return false;
+  }
+  return query->End(submit_count);
 }
 
 }  // namespace gles2

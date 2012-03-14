@@ -2023,7 +2023,8 @@ bool GLES2DecoderImpl::Initialize(
   vertex_attrib_manager_.reset(new VertexAttribManager());
   vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
 
-  query_manager_.reset(new QueryManager());
+  query_manager_.reset(new QueryManager(this, feature_info_->feature_flags(
+      ).use_arb_occlusion_query2_for_occlusion_query_boolean));
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -7931,11 +7932,7 @@ bool GLES2DecoderImpl::GenQueriesEXTHelper(
       return false;
     }
   }
-  scoped_array<GLuint> service_ids(new GLuint[n]);
-  glGenQueriesARB(n, service_ids.get());
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    query_manager_->CreateQuery(client_ids[ii], service_ids[ii]);
-  }
+  // NOTE: We don't generate Query objects here. Only in BeginQueryEXT
   return true;
 }
 
@@ -7947,8 +7944,7 @@ void GLES2DecoderImpl::DeleteQueriesEXTHelper(
       if (query == current_query_) {
         current_query_ = NULL;
       }
-      GLuint service_id = query->service_id();
-      glDeleteQueriesARB(1, &service_id);
+      query->Destroy(true);
       query_manager_->RemoveQuery(client_ids[ii]);
     }
   }
@@ -7958,7 +7954,7 @@ bool GLES2DecoderImpl::ProcessPendingQueries() {
   if (query_manager_.get() == NULL) {
     return false;
   }
-  if (!query_manager_->ProcessPendingQueries(this)) {
+  if (!query_manager_->ProcessPendingQueries()) {
     current_decoder_error_ = error::kOutOfBounds;
   }
   return query_manager_->HavePendingQueries();
@@ -7971,9 +7967,15 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
   int32 sync_shm_id = static_cast<int32>(c.sync_data_shm_id);
   uint32 sync_shm_offset = static_cast<uint32>(c.sync_data_shm_offset);
 
-  if (!feature_info_->feature_flags().occlusion_query_boolean) {
-    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: not enabled");
-    return error::kNoError;
+  switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+      break;
+    default:
+      if (!feature_info_->feature_flags().occlusion_query_boolean) {
+        SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: not enabled");
+        return error::kNoError;
+      }
+      break;
   }
 
   if (current_query_) {
@@ -7989,31 +7991,28 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
 
   QueryManager::Query* query = query_manager_->GetQuery(client_id);
   if (!query) {
+    // TODO(gman): Decide if we need this check.
+    //
     // Checks id was made by glGenQueries
-    IdAllocatorInterface* id_allocator =
-        group_->GetIdAllocator(id_namespaces::kQueries);
-    if (!id_allocator->InUse(client_id)) {
-      SetGLError(GL_INVALID_OPERATION,
-                 "glBeginQueryEXT: id not made by glGenQueriesEXT");
-      return error::kNoError;
-    }
-    // Makes object and assoicates with memory.
-    GLuint service_id = 0;
-    glGenQueriesARB(1, &service_id);
-    DCHECK_NE(0u, service_id);
-    query = query_manager_->CreateQuery(client_id, service_id);
+    //
+    // From the POV of OpenGL ES 2.0 you need to call glGenQueriesEXT
+    // for all Query ids but from the POV of the command buffer service maybe
+    // you don't.
+    //
+    // The client can enforce this. I don't think the service cares.
+    //
+    // IdAllocatorInterface* id_allocator =
+    //     group_->GetIdAllocator(id_namespaces::kQueries);
+    // if (!id_allocator->InUse(client_id)) {
+    //   SetGLError(GL_INVALID_OPERATION,
+    //              "glBeginQueryEXT: id not made by glGenQueriesEXT");
+    //   return error::kNoError;
+    // }
+    query = query_manager_->CreateQuery(
+        target, client_id, sync_shm_id, sync_shm_offset);
   }
 
-  QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
-      sync_shm_id, sync_shm_offset, sizeof(*sync));
-  if (!sync) {
-    DLOG(ERROR) << "Invalid shared memory referenced by query";
-    return error::kOutOfBounds;
-  }
-
-  if (!query->IsInitialized()) {
-    query->Initialize(target, sync_shm_id, sync_shm_offset);
-  } else if (query->target() != target) {
+  if (query->target() != target) {
     SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: target does not match");
     return error::kNoError;
   } else if (query->shm_id() != sync_shm_id ||
@@ -8022,11 +8021,11 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     return error::kInvalidArguments;
   }
 
-  query_manager_->RemovePendingQuery(query);
+  if (!query_manager_->BeginQuery(query)) {
+    return error::kOutOfBounds;
+  }
 
-  glBeginQueryARB(target, query->service_id());
   current_query_ = query;
-
   return error::kNoError;
 }
 
@@ -8044,10 +8043,12 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
                "glEndQueryEXT: target does not match active query");
     return error::kNoError;
   }
-  glEndQueryARB(target);
-  query_manager_->AddPendingQuery(current_query_, submit_count);
-  current_query_ = NULL;
 
+  if (!query_manager_->EndQuery(current_query_, submit_count)) {
+    return error::kOutOfBounds;
+  }
+
+  current_query_ = NULL;
   return error::kNoError;
 }
 

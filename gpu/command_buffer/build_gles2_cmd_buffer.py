@@ -451,6 +451,7 @@ _ENUM_LISTS = {
     'valid': [
       'GL_ANY_SAMPLES_PASSED_EXT',
       'GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT',
+      'GL_COMMANDS_ISSUED_CHROMIUM',
     ],
   },
   'RenderBufferParameter': {
@@ -795,6 +796,7 @@ _PEPPER_INTERFACES = [
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.
 # pepper_interface: The pepper interface that is used for this extension
+# invalid_test: False if no invalid test needed.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -1594,12 +1596,14 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGenQueriesARB',
     'resource_type': 'Query',
     'resource_types': 'Queries',
+    'unit_test': False,
   },
   'DeleteQueriesEXT': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteQueriesARB',
     'resource_type': 'Query',
     'resource_types': 'Queries',
+    'unit_test': False,
   },
   'IsQueryEXT': {
     'gen_cmd': False,
@@ -2797,7 +2801,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
   EXPECT_TRUE(Get%(resource_name)sInfo(kNewClientId) != NULL);
 }
 """
-    self.WriteValidUnitTest(func, file, valid_test,  {
+    self.WriteValidUnitTest(func, file, valid_test, {
         'resource_name': func.GetInfo('resource_type'),
       })
     invalid_test = """

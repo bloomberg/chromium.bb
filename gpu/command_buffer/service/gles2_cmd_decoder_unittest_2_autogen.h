@@ -1806,98 +1806,10 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 // TODO(gman): BlitFramebufferEXT
 // TODO(gman): RenderbufferStorageMultisampleEXT
 // TODO(gman): TexStorage2DEXT
-
-TEST_F(GLES2DecoderTest2, GenQueriesEXTValidArgs) {
-  EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
-  SpecializedSetup<GenQueriesEXT, 0>(true);
-  GenQueriesEXT cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetQueryInfo(kNewClientId) != NULL);
-}
-
-TEST_F(GLES2DecoderTest2, GenQueriesEXTInvalidArgs) {
-  EXPECT_CALL(*gl_, GenQueriesARB(_, _)).Times(0);
-  GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-  SpecializedSetup<GenQueriesEXT, 0>(false);
-  GenQueriesEXT cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-}
-
-TEST_F(GLES2DecoderTest2, GenQueriesEXTImmediateValidArgs) {
-  EXPECT_CALL(*gl_, GenQueriesARB(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  GenQueriesEXTImmediate* cmd = GetImmediateAs<GenQueriesEXTImmediate>();
-  GLuint temp = kNewClientId;
-  SpecializedSetup<GenQueriesEXTImmediate, 0>(true);
-  cmd->Init(1, &temp);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetQueryInfo(kNewClientId) != NULL);
-}
-
-TEST_F(GLES2DecoderTest2, GenQueriesEXTImmediateInvalidArgs) {
-  EXPECT_CALL(*gl_, GenQueriesARB(_, _)).Times(0);
-  GenQueriesEXTImmediate* cmd = GetImmediateAs<GenQueriesEXTImmediate>();
-  SpecializedSetup<GenQueriesEXTImmediate, 0>(false);
-  cmd->Init(1, &client_query_id_);
-  EXPECT_EQ(error::kInvalidArguments,
-            ExecuteImmediateCmd(*cmd, sizeof(&client_query_id_)));
-}
-
-TEST_F(GLES2DecoderTest2, DeleteQueriesEXTValidArgs) {
-  EXPECT_CALL(
-      *gl_,
-      DeleteQueriesARB(1, Pointee(kServiceQueryId)))
-      .Times(1);
-  GetSharedMemoryAs<GLuint*>()[0] = client_query_id_;
-  SpecializedSetup<DeleteQueriesEXT, 0>(true);
-  DeleteQueriesEXT cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(
-      GetQueryInfo(client_query_id_) == NULL);
-}
-
-TEST_F(GLES2DecoderTest2, DeleteQueriesEXTInvalidArgs) {
-  GetSharedMemoryAs<GLuint*>()[0] = kInvalidClientId;
-  SpecializedSetup<DeleteQueriesEXT, 0>(false);
-  DeleteQueriesEXT cmd;
-  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-TEST_F(GLES2DecoderTest2, DeleteQueriesEXTImmediateValidArgs) {
-  EXPECT_CALL(
-      *gl_,
-      DeleteQueriesARB(1, Pointee(kServiceQueryId)))
-      .Times(1);
-  DeleteQueriesEXTImmediate& cmd =
-      *GetImmediateAs<DeleteQueriesEXTImmediate>();
-  SpecializedSetup<DeleteQueriesEXTImmediate, 0>(true);
-  cmd.Init(1, &client_query_id_);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(client_query_id_)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(
-      GetQueryInfo(client_query_id_) == NULL);
-}
-
-TEST_F(GLES2DecoderTest2, DeleteQueriesEXTImmediateInvalidArgs) {
-  DeleteQueriesEXTImmediate& cmd =
-      *GetImmediateAs<DeleteQueriesEXTImmediate>();
-  SpecializedSetup<DeleteQueriesEXTImmediate, 0>(false);
-  GLuint temp = kInvalidClientId;
-  cmd.Init(1, &temp);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
+// TODO(gman): GenQueriesEXT
+// TODO(gman): GenQueriesEXTImmediate
+// TODO(gman): DeleteQueriesEXT
+// TODO(gman): DeleteQueriesEXTImmediate
 // TODO(gman): BeginQueryEXT
 
 // TODO(gman): EndQueryEXT

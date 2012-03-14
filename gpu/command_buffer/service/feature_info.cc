@@ -118,6 +118,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_rate_limit_offscreen_context");
   AddExtensionString("GL_CHROMIUM_set_visibility");
   AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
+  AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_ANGLE_translated_shader_source");
 
   if (ext.Have("GL_ANGLE_translated_shader_source")) {
@@ -439,12 +440,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     }
   }
 
+  bool have_ext_occlusion_query_boolean =
+      ext.Have("GL_EXT_occlusion_query_boolean");
+  bool have_arb_occlusion_query2 = ext.Have("GL_ARB_occlusion_query2");
   if (ext.Desire("GL_EXT_occlusion_query_boolean") &&
-      (ext.Have("GL_EXT_occlusion_query_boolean") ||
-       ext.Have("GL_ARB_occlusion_query2"))) {
-    // TODO(gman): Comment in the next line once this really works.
-    // AddExtensionString("GL_EXT_occlusion_query_boolean");
+      (have_ext_occlusion_query_boolean || have_arb_occlusion_query2)) {
+    AddExtensionString("GL_EXT_occlusion_query_boolean");
     feature_flags_.occlusion_query_boolean = true;
+    feature_flags_.use_arb_occlusion_query2_for_occlusion_query_boolean =
+        !have_ext_occlusion_query_boolean;
   }
 
   if (ext.Desire("GL_ANGLE_instanced_arrays") &&

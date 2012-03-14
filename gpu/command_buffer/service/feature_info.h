@@ -33,7 +33,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
           angle_pack_reverse_row_order(false),
           arb_texture_rectangle(false),
           angle_instanced_arrays(false),
-          occlusion_query_boolean(false) {
+          occlusion_query_boolean(false),
+          use_arb_occlusion_query2_for_occlusion_query_boolean(false) {
     }
 
     bool chromium_framebuffer_multisample;
@@ -49,6 +50,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool arb_texture_rectangle;
     bool angle_instanced_arrays;
     bool occlusion_query_boolean;
+    bool use_arb_occlusion_query2_for_occlusion_query_boolean;
   };
 
   FeatureInfo();
