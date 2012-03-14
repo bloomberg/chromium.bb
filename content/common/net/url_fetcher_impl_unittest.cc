@@ -149,19 +149,6 @@ class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
   bool cancelled_;
 };
 
-// Version of URLFetcherTest that tests upload progress reports.
-class URLFetcherUploadProgressTest : public URLFetcherTest {
- public:
-  virtual void CreateFetcher(const GURL& url);
-
-  // content::URLFetcherDelegate
-  virtual void OnURLFetchUploadProgress(const content::URLFetcher* source,
-                                        int64 current, int64 total);
- protected:
-  int64 previous_progress_;
-  int64 expected_total_;
-};
-
 // Version of URLFetcherTest that tests headers.
 class URLFetcherHeadersTest : public URLFetcherTest {
  public:
@@ -356,31 +343,6 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
   ADD_FAILURE();
   delete fetcher_;
   io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
-void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
-  previous_progress_ = 0;
-  // Large data.
-  std::string data =
-      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTYVWXYZ";
-  while (data.size() < (128<<20))
-    data += data;
-  expected_total_ = data.size();
-  fetcher_->SetUploadData("application/x-www-form-urlencoded", data);
-  fetcher_->Start();
-}
-
-void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
-    const content::URLFetcher* source, int64 current, int64 total) {
-  // Increasing between 0 and total.
-  EXPECT_LE(0, current);
-  EXPECT_GE(total, current);
-  EXPECT_LE(previous_progress_, current);
-  previous_progress_ = current;
-  EXPECT_EQ(expected_total_, total);
 }
 
 void URLFetcherHeadersTest::OnURLFetchComplete(
@@ -666,21 +628,6 @@ TEST_F(URLFetcherTest, CancelAll) {
 TEST_F(URLFetcherPostTest, DISABLED_Basic) {
 #else
 TEST_F(URLFetcherPostTest, Basic) {
-#endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
-  ASSERT_TRUE(test_server.Start());
-
-  CreateFetcher(test_server.GetURL("echo"));
-  MessageLoop::current()->Run();
-}
-
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherUploadProgressTest, DISABLED_Basic) {
-#else
-TEST_F(URLFetcherUploadProgressTest, Basic) {
 #endif
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,

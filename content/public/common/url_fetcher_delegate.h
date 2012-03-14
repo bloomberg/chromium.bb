@@ -21,16 +21,10 @@ class CONTENT_EXPORT URLFetcherDelegate {
   virtual void OnURLFetchComplete(const URLFetcher* source) = 0;
 
   // This will be called when some part of the response are read. |current|
-  // denotes the number of bytes received up to the call, and |total| is the
+  // denotes the sum of bytes received up to the call, and |total| is the
   // expected total size of the response (or -1 if not determined).
   virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
                                           int64 current, int64 total) {}
-
-  // This will be called when uploading of POST or PUT requests proceeded.
-  // |current| denotes the number of bytes sent so far, and |total| is the
-  // total size of uploading data (or -1 if chunked upload is enabled).
-  virtual void OnURLFetchUploadProgress(const URLFetcher* source,
-                                        int64 current, int64 total) {}
 
  protected:
   virtual ~URLFetcherDelegate() {}
