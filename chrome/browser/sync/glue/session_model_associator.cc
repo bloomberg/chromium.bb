@@ -57,6 +57,24 @@ static const int kMaxSyncNavigationCount = 6;
 // Default number of days without activity after which a session is considered
 // stale and becomes a candidate for garbage collection.
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
+
+sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
+#if defined(OS_CHROMEOS)
+  return sync_pb::SessionHeader_DeviceType_TYPE_CROS;
+#elif defined(OS_LINUX)
+  return sync_pb::SessionHeader_DeviceType_TYPE_LINUX;
+#elif defined(OS_MACOSX)
+  return sync_pb::SessionHeader_DeviceType_TYPE_MAC;
+#elif defined(OS_WIN)
+  return sync_pb::SessionHeader_DeviceType_TYPE_WIN;
+#elif defined(OS_ANDROID)
+  // TODO(yfriedman): Add logic to conditionally set device_type to tablet.
+  return sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
+#else
+  return sync_pb::SessionHeader_DeviceType_TYPE_OTHER;
+#endif
+}
+
 }  // namespace
 
 SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service)
@@ -153,17 +171,7 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
       synced_session_tracker_.GetSession(local_tag);
   current_session->modified_time = base::Time::Now();
   header_s->set_client_name(current_session_name_);
-#if defined(OS_CHROMEOS)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_CROS);
-#elif defined(OS_LINUX)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_LINUX);
-#elif defined(OS_MACOSX)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_MAC);
-#elif defined(OS_WIN)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
-#else
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_OTHER);
-#endif
+  header_s->set_device_type(GetLocalDeviceType());
 
   synced_session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =
@@ -720,6 +728,12 @@ void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
         break;
       case sync_pb::SessionHeader_DeviceType_TYPE_CROS:
         session_header->device_type = SyncedSession::TYPE_CHROMEOS;
+        break;
+      case sync_pb::SessionHeader_DeviceType_TYPE_PHONE:
+        session_header->device_type = SyncedSession::TYPE_PHONE;
+        break;
+      case sync_pb::SessionHeader_DeviceType_TYPE_TABLET:
+        session_header->device_type = SyncedSession::TYPE_TABLET;
         break;
       case sync_pb::SessionHeader_DeviceType_TYPE_OTHER:
         // Intentionally fall-through

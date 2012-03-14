@@ -30,7 +30,9 @@ struct SyncedSession {
     TYPE_MACOSX = 2,
     TYPE_LINUX = 3,
     TYPE_CHROMEOS = 4,
-    TYPE_OTHER = 5
+    TYPE_OTHER = 5,
+    TYPE_PHONE = 6,
+    TYPE_TABLET = 7
   };
 
   SyncedSession();
