@@ -600,7 +600,6 @@ class IBusUiControllerImpl : public IBusUiController {
       lookup_table.orientation = InputMethodLookupTable::kHorizontal;
     }
 
-#ifdef OS_CHROMEOS
     // The function ibus_serializable_get_attachment had been changed
     // to use GVariant by the commit
     // https://github.com/ibus/ibus/commit/ac9dfac13cef34288440a2ecdf067cd827fb2f8f
@@ -620,7 +619,7 @@ class IBusUiControllerImpl : public IBusUiController {
         g_byte_array_unref(bytearray);
       }
     }
-#endif
+
     // Copy candidates and annotations to |lookup_table|.
     for (int i = 0; ; i++) {
       IBusText *text = ibus_lookup_table_get_candidate(table, i);
