@@ -91,7 +91,8 @@ class SURFACE_EXPORT AcceleratedSurface {
   void Suspend();
 
  private:
-  scoped_refptr<AcceleratedPresenter> presenter_;
+  // Immutable and accessible on any thread.
+  const scoped_refptr<AcceleratedPresenter> presenter_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurface);
 };
 

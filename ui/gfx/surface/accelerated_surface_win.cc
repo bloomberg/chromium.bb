@@ -50,10 +50,10 @@ class PresentThread : public base::Thread {
   IDirect3DDevice9* device() { return device_.get(); }
   IDirect3DQuery9* query() { return query_.get(); }
 
+  void InitDevice();
   void ResetDevice();
 
  protected:
-  virtual void Init();
   virtual void CleanUp();
 
  private:
@@ -92,6 +92,15 @@ PresentThread::PresentThread(const char* name) : base::Thread(name) {
 
 PresentThread::~PresentThread() {
   Stop();
+}
+
+void PresentThread::InitDevice() {
+  if (device_)
+    return;
+
+  TRACE_EVENT0("surface", "PresentThread::Init");
+  d3d_module_.Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
+  ResetDevice();
 }
 
 void PresentThread::ResetDevice() {
@@ -144,12 +153,6 @@ void PresentThread::ResetDevice() {
     device_ = NULL;
 }
 
-void PresentThread::Init() {
-  TRACE_EVENT0("surface", "PresentThread::Init");
-  d3d_module_.Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
-  ResetDevice();
-}
-
 void PresentThread::CleanUp() {
   // The D3D device and query are leaked because destroying the associated D3D
   // query crashes some Intel drivers.
@@ -158,15 +161,17 @@ void PresentThread::CleanUp() {
 }
 
 PresentThreadPool::PresentThreadPool() : next_thread_(0) {
+  // Do this in the constructor so present_threads_ is initialized before any
+  // other thread sees it. See LazyInstance documentation.
+  for (int i = 0; i < kNumPresentThreads; ++i) {
+    present_threads_[i].reset(new PresentThread(
+        base::StringPrintf("PresentThread #%d", i).c_str()));
+    present_threads_[i]->Start();
+  }
 }
 
 PresentThread* PresentThreadPool::NextThread() {
   next_thread_ = (next_thread_ + 1) % kNumPresentThreads;
-  if (!present_threads_[next_thread_].get()) {
-    present_threads_[next_thread_].reset(new PresentThread(
-        base::StringPrintf("PresentThread #%d", next_thread_).c_str()));
-    present_threads_[next_thread_]->Start();
-  }
   return present_threads_[next_thread_].get();
 }
 
@@ -196,7 +201,8 @@ bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
 
   base::AutoLock locked(lock_);
 
-  // Signal the caller to recomposite if the presenter has been suspended.
+  // Signal the caller to recomposite if the presenter has been suspended or no
+  // surface has ever been presented.
   if (!swap_chain_)
     return false;
 
@@ -266,6 +272,17 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   base::AutoLock locked(lock_);
 
+  // Initialize the device lazily since calling Direct3D can crash bots.
+  present_thread_->InitDevice();
+
+  // A surface with ID zero is presented even when shared surfaces are not in
+  // use for synchronization purposes. In that case, just acknowledge.
+  if (!surface_id) {
+    if (!completion_task.is_null())
+      completion_task.Run(true);
+    return;
+  }
+
   if (!present_thread_->device()) {
     if (!completion_task.is_null())
       completion_task.Run(false);
@@ -308,13 +325,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
       return;
   }
 
-  HANDLE handle = reinterpret_cast<HANDLE>(surface_id);
-  if (!handle)
-    return;
-
   base::win::ScopedComPtr<IDirect3DTexture9> source_texture;
   {
     TRACE_EVENT0("surface", "CreateTexture");
+    HANDLE handle = reinterpret_cast<HANDLE>(surface_id);
     hr = present_thread_->device()->CreateTexture(size.width(),
                                                   size.height(),
                                                   1,
@@ -401,16 +415,15 @@ void AcceleratedPresenter::DoSuspend() {
   swap_chain_ = NULL;
 }
 
-AcceleratedSurface::AcceleratedSurface(){
+AcceleratedSurface::AcceleratedSurface()
+    : presenter_(new AcceleratedPresenter) {
 }
 
 AcceleratedSurface::~AcceleratedSurface() {
-  if (presenter_) {
-    // Ensure that the swap chain is destroyed on the PresentThread in case
-    // there are still pending presents.
-    presenter_->Suspend();
-    presenter_->WaitForPendingTasks();
-  }
+  // Ensure that the swap chain is destroyed on the PresentThread in case
+  // there are still pending presents.
+  presenter_->Suspend();
+  presenter_->WaitForPendingTasks();
 }
 
 void AcceleratedSurface::AsyncPresentAndAcknowledge(
@@ -421,9 +434,6 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
   if (!surface_id)
     return;
 
-  if (!presenter_)
-    presenter_ = new AcceleratedPresenter;
-
   presenter_->AsyncPresentAndAcknowledge(window,
                                          size,
                                          surface_id,
@@ -431,14 +441,10 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
 }
 
 bool AcceleratedSurface::Present(HWND window) {
-  if (presenter_)
-    return presenter_->Present(window);
-  else
-    return false;
+  return presenter_->Present(window);
 }
 
 void AcceleratedSurface::Suspend() {
-  if (presenter_)
-    presenter_->Suspend();
+  presenter_->Suspend();
 }
 
