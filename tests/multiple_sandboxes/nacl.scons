@@ -47,18 +47,14 @@ test_prog = env.ComponentProgram(
     EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
 
 # If we are generating a pexe, translate it first
-extra_deps = []
 if env.Bit('pnacl_generate_pexe'):
-  nexe_name, pexe_node = env.GetTranslatedNexe(test_prog)
-  test_prog = nexe_name
-  extra_deps = [pexe_node]
+  test_prog = env.GetTranslatedNexe(test_prog)
 
 node = env.CommandTest('multidomain_test.out', [runner, test_prog],
                        # Increase verbosity to get more information in
                        # the event of a crash.
                        osenv='NACLVERBOSITY=4',
-                       stdout_golden=env.File('multidomain_test.stdout'),
-                       extra_deps=extra_deps)
+                       stdout_golden=env.File('multidomain_test.stdout'))
 
 # This test does not work everywhere:
 #  * NaCl's ARM sandbox does not support multiple sandboxes per

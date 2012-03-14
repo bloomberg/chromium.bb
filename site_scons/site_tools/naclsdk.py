@@ -220,7 +220,6 @@ def _SetEnvForPnacl(env, root):
   else:
     ld_arch_flag = arch_flag
 
-
   if env.Bit('nacl_glibc'):
     subroot = root + '/glibc'
   else:

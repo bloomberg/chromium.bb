@@ -52,12 +52,9 @@ test_prog = env.ComponentProgram(
     ['minimal_test_guest.c'],
     EXTRA_LINKFLAGS=['-nostdlib'])
 
-extra_deps = []
 if env.Bit('pnacl_generate_pexe'):
   env.Replace(TRANSLATEFLAGS=['-nostdlib'])
-  nexe_name, pexe_node = env.GetTranslatedNexe(test_prog)
-  test_prog = nexe_name
-  extra_deps = [pexe_node]
+  test_prog = env.GetTranslatedNexe(test_prog)
 
 test_command = [runner, test_prog]
 bootstrap, _ = env.GetBootstrap()
@@ -65,7 +62,6 @@ if bootstrap is not None:
   test_command = [bootstrap] + test_command
 
 node = env.CommandTest('minimal_test.out', test_command,
-                       stdout_golden=env.File('minimal_test.stdout'),
-                       extra_deps=extra_deps)
+                       stdout_golden=env.File('minimal_test.stdout'))
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_minnacl_test',
                        is_broken=not env.Bit('nacl_static_link'))
