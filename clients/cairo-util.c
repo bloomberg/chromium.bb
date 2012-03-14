@@ -300,6 +300,10 @@ load_cairo_surface(const char *filename)
 	void *data;
 
 	image = load_image(filename);
+	if (image == NULL) {
+		return NULL;
+	}
+
 	data = pixman_image_get_data(image);
 	width = pixman_image_get_width(image);
 	height = pixman_image_get_height(image);
