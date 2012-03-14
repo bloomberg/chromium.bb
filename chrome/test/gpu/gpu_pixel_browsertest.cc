@@ -145,13 +145,20 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(message_queue.WaitForMessage(NULL));
     message_queue.ClearQueue();
 
+    gfx::Rect new_bounds = GetNewTabContainerBounds(tab_container_size);
+
+    std::wostringstream js_call;
+    js_call << "preCallResizeInChromium(";
+    js_call << new_bounds.width() << ", " << new_bounds.height();
+    js_call << ");";
+
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
         browser()->GetSelectedWebContents()->GetRenderViewHost(),
-        L"", L"preCallResizeInChromium();"));
+        L"", js_call.str()));
 
     ASSERT_TRUE(message_queue.WaitForMessage(NULL));
     message_queue.ClearQueue();
-    ResizeTabContainer(tab_container_size);
+    browser()->window()->SetBounds(new_bounds);
 
     // Wait for message from test page indicating the rendering is done.
     std::string message;
@@ -330,8 +337,9 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     return rt;
   }
 
-  // Resizes the browser window so that the tab's contents are at a given size.
-  void ResizeTabContainer(const gfx::Size& desired_size) {
+  // Returns a gfx::Rect representing the bounds that the browser window should
+  // have if the tab contents have the desired size.
+  gfx::Rect GetNewTabContainerBounds(const gfx::Size& desired_size) {
     gfx::Rect container_rect;
     browser()->GetSelectedWebContents()->GetContainerBounds(&container_rect);
     // Size cannot be negative, so use a point.
@@ -343,7 +351,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     gfx::Size new_size = window_rect.size();
     new_size.Enlarge(correction.x(), correction.y());
     window_rect.set_size(new_size);
-    browser()->window()->SetBounds(window_rect);
+    return window_rect;
   }
 
   // Take snapshot of the current tab, encode it as PNG, and save to a SkBitmap.

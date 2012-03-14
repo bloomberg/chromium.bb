@@ -9,17 +9,16 @@
 </style>
 <script>
 var g_swapsBeforeAck = 6;
-var g_paintLoopStarted = false;
+var g_targetHeight, g_targetWidth;
 
 function main()
 {
-  g_swapsBeforeAck = 6;
+  if (window.outerHeight != g_targetHeight ||
+      window.outerWidth != g_targetWidth)
+    return;
 
-  if (!g_paintLoopStarted) {
-    g_paintLoopStarted = true;
-    draw();
-    waitForFinish();
-  }
+  draw();
+  waitForFinish();
 }
 
 function draw()
@@ -49,8 +48,10 @@ function notifyLoadFinished()
   domAutomationController.send("ok");
 }
 
-function preCallResizeInChromium()
+function preCallResizeInChromium(targetWidth, targetHeight)
 {
+  g_targetWidth = targetWidth;
+  g_targetHeight = targetHeight;
   window.onresize = main;
   // Call main() on a timeout in case the window did not resize for whatever
   // reason.

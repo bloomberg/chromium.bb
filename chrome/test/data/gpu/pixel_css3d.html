@@ -25,15 +25,15 @@
 </style>
 <script>
 var g_swapsBeforeAck = 15;
-var g_paintLoopStarted = false;
+var g_targetWidth, g_targetHeight;
 
 function main()
 {
-  g_swapsBeforeAck = 15;
-  if (!g_paintLoopStarted) {
-    g_paintLoopStarted = true;
-    waitForFinish();
-  }
+  if (g_targetWidth != window.outerWidth ||
+      g_targetHeight != window.outerHeight)
+    return;
+
+  waitForFinish();
 }
 
 function waitForFinish()
@@ -54,9 +54,12 @@ function notifyLoadFinished()
   domAutomationController.send("ok");
 }
 
-function preCallResizeInChromium()
+function preCallResizeInChromium(targetWidth, targetHeight)
 {
+  g_targetWidth = targetWidth;
+  g_targetHeight = targetHeight;
   window.onresize = main;
+
   // Call main() on a timeout in case the window did not resize for whatever
   // reason.
   setTimeout(main, 10000);

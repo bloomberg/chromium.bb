@@ -26,20 +26,19 @@ void main(void)
 
 <script>
 var g_swapsBeforeAck = 15;
-var g_paintLoopStarted = false;
+var g_targetWidth, g_targetHeight;
 var gl;
 
 function main()
 {
-  g_swapsBeforeAck = 15;
+  if (window.outerWidth != g_targetWidth ||
+      window.outerHeight != g_targetHeight)
+   return;
 
-  if (!g_paintLoopStarted) {
-    g_paintLoopStarted = true;
-    var canvas = document.getElementById("c");
-    gl = initGL(canvas);
-    if (gl && setup(gl))
-      drawSomeFrames();
-  }
+  var canvas = document.getElementById("c");
+  gl = initGL(canvas);
+  if (gl && setup(gl))
+    drawSomeFrames();
 }
 
 function notifyLoadFinished()
@@ -48,8 +47,10 @@ function notifyLoadFinished()
   domAutomationController.send("ok");
 }
 
-function preCallResizeInChromium()
+function preCallResizeInChromium(targetWidth, targetHeight)
 {
+  g_targetWidth = targetWidth;
+  g_targetHeight = targetHeight;
   window.onresize = main;
   // Call main() on a timeout in case the window did not resize for whatever
   // reason.
