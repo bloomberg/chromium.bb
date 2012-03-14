@@ -33,7 +33,6 @@ ROW_TRANSIENTPARENT,
 ROW_USERDATA,
 ROW_STOPSEVENTPROPAGATION,
 ROW_IGNOREEVENTS,
-ROW_HITTESTBOUNDSINSET,
 ROW_CANFOCUS,
 ROW_COUNT
 };
@@ -142,9 +141,6 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
     case ROW_IGNOREEVENTS:
       return PropertyWithBool("Can receive events: ",
                               window_->CanReceiveEvents());
-    case ROW_HITTESTBOUNDSINSET:
-      return PropertyWithInteger("Hit-test bounds inset: ",
-                                 window_->hit_test_bounds_inset());
     case ROW_CANFOCUS:
       return PropertyWithBool("Can Focus: ", window_->CanFocus());
     default:
