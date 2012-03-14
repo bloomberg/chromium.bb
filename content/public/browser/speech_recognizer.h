@@ -16,14 +16,21 @@ class URLRequestContextGetter;
 
 namespace content {
 
-class SpeechRecognizerDelegate;
+class SpeechRecognitionEventListener;
 
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
+// TODO(primiano) remove this public interface as soon as we fix speech input
+// extensions.
 class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
  public:
+
+  // TODO(primiano) Create(...) is transitional (until we fix speech input
+  // extensions) and should be removed soon. The manager should be the only one
+  // knowing the existence of SpeechRecognizer, thus the only one in charge of
+  // instantiating it.
   CONTENT_EXPORT static SpeechRecognizer* Create(
-      SpeechRecognizerDelegate* delegate,
+      SpeechRecognitionEventListener* event_listener,
       int caller_id,
       const std::string& language,
       const std::string& grammar,
@@ -34,18 +41,28 @@ class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
 
   virtual ~SpeechRecognizer() {}
 
-  // Starts audio recording and does recognition after recording ends. The same
+  // Starts audio recording and the recognition process. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition
   // though each recognition request can be made only after the previous one
   // completes (i.e. after receiving
-  // SpeechRecognizerDelegate::DidCompleteRecognition).
-  virtual bool StartRecording() = 0;
+  // SpeechRecognitionEventListener::OnRecognitionEnd).
+  virtual bool StartRecognition() = 0;
 
   // Stops recording audio and cancels recognition. Any audio recorded so far
   // gets discarded.
-  virtual void CancelRecognition() = 0;
+  virtual void AbortRecognition() = 0;
+
+  // Stops recording audio and finalizes recognition, possibly getting results.
+  virtual void StopAudioCapture() = 0;
+
+  // Checks wether the recognizer is active, that is, either capturing audio
+  // or waiting for a result.
+  virtual bool IsActive() const = 0;
+
+  // Checks wether the recognizer is capturing audio.
+  virtual bool IsCapturingAudio() const = 0;
 };
 
-}  // namespace speech
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNIZER_H_

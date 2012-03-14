@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/speech_recognizer_delegate.h"
+#include "content/public/browser/speech_recognition_event_listener.h"
 
 class Extension;
 class Profile;
@@ -36,7 +36,7 @@ class SpeechInputExtensionInterface {
 
   // Called from the IO thread.
   virtual void StartRecording(
-      content::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
       int caller_id,
       const std::string& language,
@@ -55,7 +55,7 @@ class SpeechInputExtensionInterface {
 // associated to the given profile.
 class SpeechInputExtensionManager
     : public base::RefCountedThreadSafe<SpeechInputExtensionManager>,
-      public content::SpeechRecognizerDelegate,
+      public content::SpeechRecognitionEventListener,
       public content::NotificationObserver,
       private SpeechInputExtensionInterface {
  public:
@@ -114,22 +114,21 @@ class SpeechInputExtensionManager
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Methods from SpeechRecognizerDelegate.
-  virtual void SetRecognitionResult(
+  // Methods from SpeechRecognitionEventListener.
+  virtual void OnRecognitionStart(int caller_id) OVERRIDE;
+  virtual void OnAudioStart(int caller_id) OVERRIDE;
+  virtual void OnEnvironmentEstimationComplete(int caller_id) OVERRIDE;
+  virtual void OnSoundStart(int caller_id) OVERRIDE;
+  virtual void OnSoundEnd(int caller_id) OVERRIDE;
+  virtual void OnAudioEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionResult(
+      int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE;
+  virtual void OnRecognitionError(
       int caller_id,
-      const content::SpeechRecognitionResult& result) OVERRIDE;
-
-  virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
-  virtual void DidCompleteRecording(int caller_id) OVERRIDE;
-  virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
-  virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
-  virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
-  virtual void OnRecognizerError(int caller_id,
-                                 content::SpeechRecognitionErrorCode error)
-                                 OVERRIDE;
-  virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
-  virtual void SetInputVolume(int caller_id, float volume,
-                              float noise_volume) OVERRIDE;
+      const content::SpeechRecognitionErrorCode& error) OVERRIDE;
+  virtual void OnAudioLevelsChange(int caller_id, float volume,
+                                   float noise_volume) OVERRIDE;
+  virtual void OnRecognitionEnd(int caller_id) OVERRIDE;
 
   // Methods for API testing.
   void SetSpeechInputExtensionInterface(
@@ -142,7 +141,7 @@ class SpeechInputExtensionManager
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual bool HasValidRecognizer() OVERRIDE;
   virtual void StartRecording(
-      content::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
       int caller_id,
       const std::string& language,

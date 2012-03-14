@@ -19,6 +19,10 @@
 
 class AudioManager;
 
+namespace content {
+class SpeechRecognitionEventListener;
+}
+
 namespace speech {
 
 // Records audio, sends recorded audio to server and translates server response
@@ -28,7 +32,14 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       public media::AudioInputController::EventHandler,
       public SpeechRecognitionRequestDelegate {
  public:
-  SpeechRecognizerImpl(content::SpeechRecognizerDelegate* delegate,
+  static const int kAudioSampleRate;
+  static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
+  static const ChannelLayout kChannelLayout;
+  static const int kNumBitsPerAudioSample;
+  static const int kNoSpeechTimeoutSec;
+  static const int kEndpointerEstimationTimeMs;
+
+  SpeechRecognizerImpl(content::SpeechRecognitionEventListener* listener,
                        int caller_id,
                        const std::string& language,
                        const std::string& grammar,
@@ -39,12 +50,12 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   virtual ~SpeechRecognizerImpl();
 
-  // SpeechRecognizer implementation:
-  virtual bool StartRecording() OVERRIDE;
-  virtual void CancelRecognition() OVERRIDE;
-
-  // Stops recording audio and starts recognition.
-  void StopRecording();
+  // content::SpeechRecognizer methods.
+  virtual bool StartRecognition() OVERRIDE;
+  virtual void AbortRecognition() OVERRIDE;
+  virtual void StopAudioCapture() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsCapturingAudio() const OVERRIDE;
 
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
@@ -59,17 +70,10 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   virtual void SetRecognitionResult(
       const content::SpeechRecognitionResult& result) OVERRIDE;
 
-  static const int kAudioSampleRate;
-  static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
-  static const ChannelLayout kChannelLayout;
-  static const int kNumBitsPerAudioSample;
-  static const int kNoSpeechTimeoutSec;
-  static const int kEndpointerEstimationTimeMs;
-
  private:
-  friend class SpeechRecognizerTest;
+  friend class SpeechRecognizerImplTest;
 
-  void InformErrorAndCancelRecognition(
+  void InformErrorAndAbortRecognition(
       content::SpeechRecognitionErrorCode error);
   void SendRecordedAudioToServer();
 
@@ -83,7 +87,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   void SetAudioManagerForTesting(AudioManager* audio_manager);
 
-  content::SpeechRecognizerDelegate* delegate_;
+  content::SpeechRecognitionEventListener* listener_;
   int caller_id_;
   std::string language_;
   std::string grammar_;

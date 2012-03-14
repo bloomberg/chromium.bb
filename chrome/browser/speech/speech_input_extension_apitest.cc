@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/speech_recognizer_delegate.h"
+#include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,7 +74,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   }
 
   virtual void StartRecording(
-      content::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
       int caller_id,
       const std::string& language,
@@ -128,7 +128,7 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 }
 
 void SpeechInputExtensionApiTest::StartRecording(
-      content::SpeechRecognizerDelegate* delegate,
+      content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
       int caller_id,
       const std::string& language,
@@ -140,7 +140,7 @@ void SpeechInputExtensionApiTest::StartRecording(
   // Notify that recording started.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpeechInputExtensionManager::DidStartReceivingAudio,
+      base::Bind(&SpeechInputExtensionManager::OnAudioStart,
                  GetManager(),
                  caller_id),
       base::TimeDelta());
@@ -148,7 +148,7 @@ void SpeechInputExtensionApiTest::StartRecording(
   // Notify sound start in the input device.
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpeechInputExtensionManager::DidStartReceivingSpeech,
+      base::Bind(&SpeechInputExtensionManager::OnSoundStart,
                  GetManager(),
                  caller_id),
       base::TimeDelta());
@@ -173,12 +173,13 @@ void SpeechInputExtensionApiTest::ProvideResults(int caller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (next_error_ != content::SPEECH_RECOGNITION_ERROR_NONE) {
-    GetManager()->OnRecognizerError(caller_id, next_error_);
+    GetManager()->OnRecognitionError(caller_id, next_error_);
     return;
   }
 
-  GetManager()->DidStopReceivingSpeech(caller_id);
-  GetManager()->SetRecognitionResult(caller_id, next_result_);
+  GetManager()->OnSoundEnd(caller_id);
+  GetManager()->OnAudioEnd(caller_id);
+  GetManager()->OnRecognitionResult(caller_id, next_result_);
 }
 
 // Every test should leave the manager in the idle state when finished.

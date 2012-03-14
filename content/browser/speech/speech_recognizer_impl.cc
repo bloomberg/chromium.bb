@@ -8,15 +8,15 @@
 #include "base/time.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/speech/audio_buffer.h"
-#include "content/public/browser/speech_recognizer_delegate.h"
+#include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserMainLoop;
 using content::BrowserThread;
+using content::SpeechRecognitionEventListener;
 using content::SpeechRecognizer;
-using content::SpeechRecognizerDelegate;
 using media::AudioInputController;
 using std::string;
 
@@ -56,7 +56,7 @@ bool DetectClipping(const speech::AudioChunk& chunk) {
 }  // namespace
 
 SpeechRecognizer* SpeechRecognizer::Create(
-    SpeechRecognizerDelegate* delegate,
+    SpeechRecognitionEventListener* listener,
     int caller_id,
     const std::string& language,
     const std::string& grammar,
@@ -65,7 +65,7 @@ SpeechRecognizer* SpeechRecognizer::Create(
     const std::string& hardware_info,
     const std::string& origin_url) {
   return new speech::SpeechRecognizerImpl(
-      delegate, caller_id, language, grammar, context_getter,
+      listener, caller_id, language, grammar, context_getter,
       filter_profanities, hardware_info, origin_url);
 }
 
@@ -79,7 +79,7 @@ const int SpeechRecognizerImpl::kNoSpeechTimeoutSec = 8;
 const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 
 SpeechRecognizerImpl::SpeechRecognizerImpl(
-    SpeechRecognizerDelegate* delegate,
+    SpeechRecognitionEventListener* listener,
     int caller_id,
     const std::string& language,
     const std::string& grammar,
@@ -87,7 +87,7 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
     bool filter_profanities,
     const std::string& hardware_info,
     const std::string& origin_url)
-    : delegate_(delegate),
+    : listener_(listener),
       caller_id_(caller_id),
       language_(language),
       grammar_(grammar),
@@ -118,7 +118,7 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   endpointer_.EndSession();
 }
 
-bool SpeechRecognizerImpl::StartRecording() {
+bool SpeechRecognizerImpl::StartRecognition() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
@@ -146,7 +146,7 @@ bool SpeechRecognizerImpl::StartRecording() {
   return true;
 }
 
-void SpeechRecognizerImpl::CancelRecognition() {
+void SpeechRecognizerImpl::AbortRecognition() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_controller_.get() || request_.get());
 
@@ -160,7 +160,7 @@ void SpeechRecognizerImpl::CancelRecognition() {
   request_.reset();
 }
 
-void SpeechRecognizerImpl::StopRecording() {
+void SpeechRecognizerImpl::StopAudioCapture() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If audio recording has already stopped and we are in recognition phase,
@@ -170,8 +170,8 @@ void SpeechRecognizerImpl::StopRecording() {
 
   CloseAudioControllerSynchronously();
 
-  delegate_->DidStopReceivingSpeech(caller_id_);
-  delegate_->DidCompleteRecording(caller_id_);
+  listener_->OnSoundEnd(caller_id_);
+  listener_->OnAudioEnd(caller_id_);
 
   // UploadAudioChunk requires a non-empty final buffer. So we encode a packet
   // of silence in case encoder had no data already.
@@ -188,9 +188,9 @@ void SpeechRecognizerImpl::StopRecording() {
 
   // If we haven't got any audio yet end the recognition sequence here.
   if (request_ == NULL) {
-    // Guard against the delegate freeing us until we finish our job.
+    // Guard against the listener freeing us until we finish our job.
     scoped_refptr<SpeechRecognizerImpl> me(this);
-    delegate_->DidCompleteRecognition(caller_id_);
+    listener_->OnRecognitionEnd(caller_id_);
   } else {
     request_->UploadAudioChunk(*encoded_data, true /* is_last_chunk */);
   }
@@ -213,7 +213,7 @@ void SpeechRecognizerImpl::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
-  InformErrorAndCancelRecognition(content::SPEECH_RECOGNITION_ERROR_AUDIO);
+  InformErrorAndAbortRecognition(content::SPEECH_RECOGNITION_ERROR_AUDIO);
 }
 
 void SpeechRecognizerImpl::OnData(AudioInputController* controller,
@@ -245,8 +245,8 @@ void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
 
   if (request_ == NULL) {
     // This was the first audio packet recorded, so start a request to the
-    // server to send the data and inform the delegate.
-    delegate_->DidStartReceivingAudio(caller_id_);
+    // server to send the data and inform the listener.
+    listener_->OnAudioStart(caller_id_);
     request_.reset(new SpeechRecognitionRequest(context_getter_.get(), this));
     request_->Start(language_, grammar_, filter_profanities_,
                     hardware_info_, origin_url_, encoder_->mime_type());
@@ -262,7 +262,7 @@ void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
     if (num_samples_recorded_ >= (kEndpointerEstimationTimeMs *
                                   kAudioSampleRate) / 1000) {
       endpointer_.SetUserInputMode();
-      delegate_->DidCompleteEnvironmentEstimation(caller_id_);
+      listener_->OnEnvironmentEstimationComplete(caller_id_);
     }
     return;  // No more processing since we are still estimating environment.
   }
@@ -271,13 +271,13 @@ void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
   bool speech_was_heard_after_packet = endpointer_.DidStartReceivingSpeech();
   if (!speech_was_heard_after_packet &&
       num_samples_recorded_ >= kNoSpeechTimeoutSec * kAudioSampleRate) {
-    InformErrorAndCancelRecognition(
+    InformErrorAndAbortRecognition(
         content::SPEECH_RECOGNITION_ERROR_NO_SPEECH);
     return;
   }
 
   if (!speech_was_heard_before_packet && speech_was_heard_after_packet)
-    delegate_->DidStartReceivingSpeech(caller_id_);
+    listener_->OnSoundStart(caller_id_);
 
   // Calculate the input volume to display in the UI, smoothing towards the
   // new level.
@@ -295,34 +295,34 @@ void SpeechRecognizerImpl::HandleOnData(AudioChunk* raw_audio) {
   noise_level = std::min(std::max(0.0f, noise_level),
       kAudioMeterRangeMaxUnclipped);
 
-  delegate_->SetInputVolume(caller_id_, did_clip ? 1.0f : audio_level_,
-                            noise_level);
+  listener_->OnAudioLevelsChange(caller_id_, did_clip ? 1.0f : audio_level_,
+                                 noise_level);
 
   if (endpointer_.speech_input_complete())
-    StopRecording();
+    StopAudioCapture();
 }
 
 void SpeechRecognizerImpl::SetRecognitionResult(
     const content::SpeechRecognitionResult& result) {
   if (result.error != content::SPEECH_RECOGNITION_ERROR_NONE) {
-    InformErrorAndCancelRecognition(result.error);
+    InformErrorAndAbortRecognition(result.error);
     return;
   }
 
-  // Guard against the delegate freeing us until we finish our job.
+  // Guard against the listener freeing us until we finish our job.
   scoped_refptr<SpeechRecognizerImpl> me(this);
-  delegate_->SetRecognitionResult(caller_id_, result);
-  delegate_->DidCompleteRecognition(caller_id_);
+  listener_->OnRecognitionResult(caller_id_, result);
+  listener_->OnRecognitionEnd(caller_id_);
 }
 
-void SpeechRecognizerImpl::InformErrorAndCancelRecognition(
+void SpeechRecognizerImpl::InformErrorAndAbortRecognition(
     content::SpeechRecognitionErrorCode error) {
   DCHECK_NE(error, content::SPEECH_RECOGNITION_ERROR_NONE);
-  CancelRecognition();
+  AbortRecognition();
 
-  // Guard against the delegate freeing us until we finish our job.
+  // Guard against the listener freeing us until we finish our job.
   scoped_refptr<SpeechRecognizerImpl> me(this);
-  delegate_->OnRecognizerError(caller_id_, error);
+  listener_->OnRecognitionError(caller_id_, error);
 }
 
 void SpeechRecognizerImpl::CloseAudioControllerSynchronously() {
@@ -341,6 +341,14 @@ void SpeechRecognizerImpl::CloseAudioControllerSynchronously() {
 void SpeechRecognizerImpl::SetAudioManagerForTesting(
     AudioManager* audio_manager) {
   audio_manager_ = audio_manager;
+}
+
+bool SpeechRecognizerImpl::IsActive() const {
+  return (request_.get() != NULL);
+}
+
+bool SpeechRecognizerImpl::IsCapturingAudio() const {
+  return (audio_controller_.get() != NULL);
 }
 
 }  // namespace speech

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_H_
-#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_H_
+#ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_
+#define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_
 
 #include <map>
 #include <string>
@@ -12,17 +12,16 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
-#include "content/public/browser/speech_recognizer_delegate.h"
 #include "ui/gfx/rect.h"
-
-class AudioManager;
 
 namespace content {
 class ResourceContext;
 class SpeechRecognitionManagerDelegate;
 class SpeechRecognitionPreferences;
 struct SpeechRecognitionResult;
+class SpeechRecognizer;
 }
 
 namespace net {
@@ -32,11 +31,10 @@ class URLRequestContextGetter;
 namespace speech {
 
 class InputTagSpeechDispatcherHost;
-class SpeechRecognizerImpl;
 
 class CONTENT_EXPORT SpeechRecognitionManagerImpl
     : NON_EXPORTED_BASE(public content::SpeechRecognitionManager),
-      NON_EXPORTED_BASE(public content::SpeechRecognizerDelegate) {
+      NON_EXPORTED_BASE(public content::SpeechRecognitionEventListener) {
  public:
   static SpeechRecognitionManagerImpl* GetInstance();
 
@@ -73,20 +71,20 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
       InputTagSpeechDispatcherHost* delegate);
   virtual void StopRecording(int caller_id);
 
-  // Overridden from content::SpeechRecognizerDelegate:
-  virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
-  virtual void SetRecognitionResult(
+  // SpeechRecognitionEventListener methods.
+  virtual void OnRecognitionStart(int caller_id) OVERRIDE;
+  virtual void OnAudioStart(int caller_id) OVERRIDE;
+  virtual void OnEnvironmentEstimationComplete(int caller_id) OVERRIDE;
+  virtual void OnSoundStart(int caller_id) OVERRIDE;
+  virtual void OnSoundEnd(int caller_id) OVERRIDE;
+  virtual void OnAudioEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionResult(
       int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE;
-  virtual void DidCompleteRecording(int caller_id) OVERRIDE;
-  virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
-  virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
-  virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
-
-  virtual void OnRecognizerError(
-      int caller_id, content::SpeechRecognitionErrorCode error) OVERRIDE;
-  virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
-  virtual void SetInputVolume(int caller_id, float volume,
-                              float noise_volume) OVERRIDE;
+  virtual void OnRecognitionError(
+      int caller_id, const content::SpeechRecognitionErrorCode& error) OVERRIDE;
+  virtual void OnAudioLevelsChange(
+      int caller_id, float volume, float noise_volume) OVERRIDE;
 
  protected:
   // Private constructor to enforce singleton.
@@ -102,7 +100,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
     ~Request();
 
     InputTagSpeechDispatcherHost* delegate;
-    scoped_refptr<SpeechRecognizerImpl> recognizer;
+    scoped_refptr<content::SpeechRecognizer> recognizer;
     bool is_active;  // Set to true when recording or recognition is going on.
   };
 
@@ -126,4 +124,4 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
 
 }  // namespace speech
 
-#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_H_
+#endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_
