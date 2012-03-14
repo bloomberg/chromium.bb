@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -213,6 +214,12 @@ bool FindCommonTasks(Profile* profile,
        iter != common_tasks.end(); ++iter) {
     // Get timestamp of when this task was used last time.
     int last_used_timestamp = 0;
+
+    if ((*iter)->extension_id() == kFileBrowserDomain) {
+      // Give a little bump to the action from File Browser extenion
+      // to make sure it is the default on a fresh profile.
+      last_used_timestamp = 1;
+    }
     prefs_tasks->GetInteger(MakeTaskID((*iter)->extension_id(), (*iter)->id()),
                             &last_used_timestamp);
     URLPatternSet matching_patterns = GetAllMatchingPatterns(*iter, files_list);
