@@ -13,7 +13,9 @@ import download_utils
 import optparse
 import os
 import sys
+import tempfile
 import toolchainbinaries
+
 
 def VersionSelect(options, flavor):
   """Decide which version to used based on options + flavor.
@@ -82,8 +84,10 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   """
 
   parent_dir = os.path.dirname(os.path.dirname(__file__))
-  download_dir = os.path.join(parent_dir, 'toolchain', '.tars')
-  untar_dir = os.path.join(parent_dir, 'toolchain', '.tmp')
+  toolchain_dir = os.path.join(parent_dir, 'toolchain')
+  if not os.path.exists(toolchain_dir):
+    os.makedirs(toolchain_dir)
+  download_dir = os.path.join(toolchain_dir, '.tars')
 
   # Build the tarfile name from the url
   filepath = os.path.join(download_dir, url.split('/')[-1])
@@ -105,29 +109,32 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   if hash is None:
     hash = download_utils.HashFile(filepath)
 
-  tar = cygtar.CygTar(filepath, 'r:*')
-  curdir = os.getcwd()
-  if not os.path.exists(untar_dir):
-    os.makedirs(untar_dir)
-  os.chdir(untar_dir)
-  tar.Extract()
-  tar.Close()
-  os.chdir(curdir)
+  untar_dir = tempfile.mkdtemp(
+      suffix='.tmp', prefix='tmp_unpacked_toolchain_',
+      dir=toolchain_dir)
+  try:
+    tar = cygtar.CygTar(filepath, 'r:*')
+    curdir = os.getcwd()
+    os.chdir(untar_dir)
+    try:
+      tar.Extract()
+      tar.Close()
+    finally:
+      os.chdir(curdir)
 
-  if not keep:
-    os.remove(filepath)
+    if not keep:
+      os.remove(filepath)
 
-  # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
-  if 'arm' in flavor or 'pnacl' in flavor:
-    src = os.path.join(untar_dir)
-  elif 'newlib' in flavor:
-    src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
-  else:
-    src = os.path.join(untar_dir, 'toolchain', flavor)
-
-  # Move and update the stamp
-  download_utils.MoveDirCleanly(src ,dst)
-  download_utils.RemoveDir(untar_dir)
+    # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
+    if 'arm' in flavor or 'pnacl' in flavor:
+      src = os.path.join(untar_dir)
+    elif 'newlib' in flavor:
+      src = os.path.join(untar_dir, 'sdk', 'nacl-sdk')
+    else:
+      src = os.path.join(untar_dir, 'toolchain', flavor)
+    download_utils.MoveDirCleanly(src, dst)
+  finally:
+    download_utils.RemoveDir(untar_dir)
   download_utils.WriteSourceStamp(dst, url)
   download_utils.WriteHashStamp(dst, hash)
   return True
