@@ -187,6 +187,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  if (!shared_surface_handle_.is_null()) {
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
+    factory->RemoveObserver(this);
+  }
   window_->RemoveObserver(window_observer_.get());
   UnlockMouse();
   if (popup_type_ != WebKit::WebPopupTypeNone) {
@@ -362,11 +367,9 @@ void RenderWidgetHostViewAura::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewAura::Destroy() {
-  if (!shared_surface_handle_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-    factory->RemoveObserver(this);
-  }
+  // Beware, this function is not called on all destruction paths. It will
+  // implicitly end up calling ~RenderWidgetHostViewAura though, so all
+  // destruction/cleanup code should happen there, not here.
   delete window_;
 }
 
