@@ -188,11 +188,11 @@ ServiceButtonsView::~ServiceButtonsView() {
 
 void ServiceButtonsView::Update() {
   RemoveAllChildViews(true);
-  if (model_->GetInstalledServiceCount() == 0)
-    return;
-
   views::GridLayout* grid_layout = new views::GridLayout(this);
   SetLayoutManager(grid_layout);
+
+  if (model_->GetInstalledServiceCount() == 0)
+    return;
 
   views::ColumnSet* cs = grid_layout->AddColumnSet(0);
   cs->AddPaddingColumn(1, 0);
