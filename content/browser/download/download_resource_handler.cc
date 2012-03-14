@@ -250,6 +250,10 @@ bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
+  VLOG(20) << __FUNCTION__ << "()" << DebugString()
+           << " request_id = " << request_id
+           << " status.status() = " << status.status()
+           << " status.error() = " << status.error();
   if (download_id_.IsValid()) {
     OnResponseCompletedInternal(request_id, status, security_info);
   } else {
@@ -268,7 +272,8 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
-  VLOG(20) << __FUNCTION__ << "()" << DebugString()
+  // NOTE: |request_| may be a dangling pointer at this point.
+  VLOG(20) << __FUNCTION__ << "()"
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.error() = " << status.error();

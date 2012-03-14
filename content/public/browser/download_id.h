@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,12 @@ namespace content {
 // sessions, but their local() field is.
 class DownloadId {
  public:
-  static DownloadId Invalid() { return DownloadId(NULL, -1); }
+  static DownloadId Invalid() { return DownloadId(); }
 
   // Domain separates spaces of local ids.
   typedef const void* Domain;
+
+  DownloadId() : domain_(NULL), local_id_(-1) {}
 
   DownloadId(Domain domain, int32 local_id)
     : domain_(domain),

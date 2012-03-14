@@ -92,6 +92,8 @@
         'test/test_browser_thread.h',
         'test/test_content_client.cc',
         'test/test_content_client.h',
+        'test/test_file_error_injector.cc',
+        'test/test_file_error_injector.h',
         'test/test_navigation_observer.cc',
         'test/test_navigation_observer.h',
         'test/test_notification_tracker.cc',

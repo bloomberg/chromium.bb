@@ -142,6 +142,14 @@ class CONTENT_EXPORT DownloadFileManager
     return downloads_.size();
   }
 
+  void SetFileFactoryForTesting(scoped_ptr<DownloadFileFactory> file_factory) {
+    download_file_factory_.reset(file_factory.release());
+  }
+
+  DownloadFileFactory* GetFileFactoryForTesting() const {
+    return download_file_factory_.get();  // Explicitly NOT a scoped_ptr.
+  }
+
  private:
   friend class base::RefCountedThreadSafe<DownloadFileManager>;
   friend class DownloadFileManagerTest;

@@ -571,6 +571,8 @@ void DownloadItemImpl::TransitionTo(DownloadState new_state) {
       break;
   }
 
+  VLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true);
+
   UpdateObservers();
 
   bool is_done = (state_ != IN_PROGRESS);
@@ -989,19 +991,21 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   if (verbose) {
     description += base::StringPrintf(
         " db_handle = %" PRId64
-        " total_bytes = %" PRId64
-        " received_bytes = %" PRId64
-        " is_paused = %c"
-        " is_otr = %c"
-        " safety_state = %s"
+        " total = %" PRId64
+        " received = %" PRId64
+        " reason = %s"
+        " paused = %c"
+        " otr = %c"
+        " safety = %s"
         " last_modified = '%s'"
         " etag = '%s'"
         " url_chain = \n\t\"%s\"\n\t"
-        " target_name = \"%" PRFilePath "\""
+        " target = \"%" PRFilePath "\""
         " full_path = \"%" PRFilePath "\"",
         GetDbHandle(),
         GetTotalBytes(),
         GetReceivedBytes(),
+        InterruptReasonDebugString(last_reason_).c_str(),
         IsPaused() ? 'T' : 'F',
         IsOtr() ? 'T' : 'F',
         DebugSafetyStateString(GetSafetyState()),
