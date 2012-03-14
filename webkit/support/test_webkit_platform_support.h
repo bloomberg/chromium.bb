@@ -93,6 +93,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes&);
+  virtual bool canAccelerate2dCanvas();
 
   WebURLLoaderMockFactory* url_loader_factory() {
     return &url_loader_factory_;

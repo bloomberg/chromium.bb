@@ -20,6 +20,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_info.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_device.h"
@@ -583,6 +584,20 @@ RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
   } else {
     return NULL;
   }
+}
+
+bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  GpuChannelHost* host = thread->EstablishGpuChannelSync(
+      content::CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
+  if (!host)
+    return false;
+
+  const content::GPUInfo& gpu_info = host->gpu_info();
+  if (gpu_info.can_lose_context || gpu_info.software_rendering)
+    return false;
+
+  return true;
 }
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {

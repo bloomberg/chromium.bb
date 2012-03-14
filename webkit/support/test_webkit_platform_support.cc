@@ -401,6 +401,12 @@ TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
   return NULL;
 }
 
+bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {
+  // We supply an OS-MESA based context for accelarated 2d
+  // canvas, which should always work.
+  return true;
+}
+
 double TestWebKitPlatformSupport::audioHardwareSampleRate() {
   return 44100.0;
 }

@@ -372,6 +372,7 @@ bool GpuDataManagerImpl::Merge(content::GPUInfo* object,
       object->gl_extensions = other.gl_extensions;
     }
     object->can_lose_context = other.can_lose_context;
+    object->software_rendering = other.software_rendering;
 #if defined(OS_WIN)
     if (object->dx_diagnostics.values.size() == 0 &&
         object->dx_diagnostics.children.size() == 0) {

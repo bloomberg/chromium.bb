@@ -11,7 +11,8 @@ GPUInfo::GPUInfo()
       optimus(false),
       vendor_id(0),
       device_id(0),
-      can_lose_context(false) {
+      can_lose_context(false),
+      software_rendering(false) {
 }
 
 GPUInfo::~GPUInfo() { }

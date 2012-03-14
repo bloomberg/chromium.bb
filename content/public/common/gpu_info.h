@@ -79,6 +79,8 @@ struct CONTENT_EXPORT GPUInfo {
   // By default all values are 0.
   GpuPerformanceStats performance_stats;
 
+  bool software_rendering;
+
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;

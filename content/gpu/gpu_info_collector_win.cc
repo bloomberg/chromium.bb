@@ -106,8 +106,10 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
-    if (requested_implementation_name == "swiftshader")
+    if (requested_implementation_name == "swiftshader") {
+      gpu_info->software_rendering = true;
       return false;
+    }
   }
 
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {

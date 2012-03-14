@@ -113,6 +113,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(gl_extensions)
   IPC_STRUCT_TRAITS_MEMBER(can_lose_context)
   IPC_STRUCT_TRAITS_MEMBER(performance_stats)
+  IPC_STRUCT_TRAITS_MEMBER(software_rendering)
 #if defined(OS_WIN)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
 #endif
