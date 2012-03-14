@@ -447,6 +447,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
+  virtual ~PrerenderBrowserTest() {}
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
 #if defined(ENABLE_SAFE_BROWSING)
     SafeBrowsingService::RegisterFactory(safe_browsing_factory_.get());
@@ -926,6 +928,30 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickToPlay) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
+}
+
+// Checks that we don't load a NaCl plugin when NaCl is disabled.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
+  PrerenderTestURL("files/prerender/prerender_plugin_nacl_disabled.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+
+
+  // Run this check again.  When we try to load aa ppapi plugin, the
+  // "loadstart" event is asynchronously posted to a message loop.
+  // It's possible that earlier call could have been run before the
+  // the "loadstart" event was posted.
+  // TODO(mmenke):  While this should reliably fail on regressions, the
+  //                reliability depends on the specifics of ppapi plugin
+  //                loading.  It would be great if we could avoid that.
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  bool display_test_result = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      web_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(DidDisplayPass())",
+      &display_test_result));
+  EXPECT_TRUE(display_test_result);
 }
 
 // Checks that plugins in an iframe are not loaded while a page is
@@ -1471,7 +1497,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_fragment.html");
 }
 
-// Checks that we correctly use a prerendered page when the page uses a crient
+// Checks that we correctly use a prerendered page when the page uses a client
 // redirect to refresh to a fragment on the same page.
 // DISABLED: http://crbug.com/84154
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
@@ -1990,6 +2016,36 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
   PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
                    expected_final_status_queue, 1);
   NavigateToDestURL();
+}
+
+class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
+ public:
+  PrerenderBrowserTestWithNaCl() {}
+  virtual ~PrerenderBrowserTestWithNaCl() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PrerenderBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableNaCl);
+  }
+};
+
+// Check that NaCl plugins work when enabled, with prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
+                       PrerenderNaClPluginEnabled) {
+  PrerenderTestURL("files/prerender/prerender_plugin_nacl_enabled.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+
+  // To avoid any chance of a race, we have to let the script send its response
+  // asynchronously.
+  WebContents* web_contents = browser()->GetSelectedWebContents();
+  bool display_test_result = false;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      web_contents->GetRenderViewHost(), L"",
+      L"DidDisplayReallyPass()",
+      &display_test_result));
+  ASSERT_TRUE(display_test_result);
 }
 
 }  // namespace prerender

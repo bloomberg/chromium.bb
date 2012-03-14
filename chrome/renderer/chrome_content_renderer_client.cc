@@ -373,16 +373,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed: {
-        // Delay loading plugins if prerendering.
-        if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
-          placeholder = PluginPlaceholder::CreateBlockedPlugin(
-              render_view, frame, params, plugin, name,
-              IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
-          placeholder->set_blocked_for_prerendering(true);
-          placeholder->set_allow_loading(true);
-          break;
-        }
-
         const char* kNaClMimeType = "application/x-nacl";
         bool is_nacl_mime_type = actual_mime_type == kNaClMimeType;
         bool is_nacl_unrestricted;
@@ -425,6 +415,20 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             break;
           }
         }
+
+        // Delay loading plugins if prerendering.
+        // TODO(mmenke):  In the case of prerendering, feed into
+        //                ChromeContentRendererClient::CreatePlugin instead, to
+        //                reduce the chance of future regressions.
+        if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
+          placeholder = PluginPlaceholder::CreateBlockedPlugin(
+              render_view, frame, params, plugin, name,
+              IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
+          placeholder->set_blocked_for_prerendering(true);
+          placeholder->set_allow_loading(true);
+          break;
+        }
+
         return render_view->CreatePlugin(frame, plugin, params);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {

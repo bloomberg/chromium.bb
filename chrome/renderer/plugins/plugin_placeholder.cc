@@ -449,6 +449,10 @@ void PluginPlaceholder::LoadPlugin() {
     NOTREACHED();
     return;
   }
+
+  // TODO(mmenke):  In the case of prerendering, feed into
+  //                ChromeContentRendererClient::CreatePlugin instead, to
+  //                reduce the chance of future regressions.
   WebPlugin* plugin =
       render_view()->CreatePlugin(frame_, plugin_info_, plugin_params_);
   ReplacePlugin(plugin);
