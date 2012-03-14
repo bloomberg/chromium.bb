@@ -39,12 +39,14 @@
 InstantController::InstantController(Profile* profile,
                                      InstantDelegate* delegate)
     : delegate_(delegate),
+      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       tab_contents_(NULL),
       is_displayable_(false),
       is_out_of_date_(true),
       commit_on_mouse_up_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  DCHECK(template_url_service_);
   PrefService* service = profile->GetPrefs();
   if (service && !InstantFieldTrial::IsInstantExperiment(profile)) {
     // kInstantEnabledOnce was added after instant, set it now to make sure it
@@ -162,13 +164,15 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   last_url_ = match.destination_url;
   last_user_text_ = user_text;
 
-  if (!ShouldUseInstant(match)) {
+  const TemplateURL* template_url = match.GetTemplateURL();
+  const TemplateURL* default_t_url =
+      template_url_service_->GetDefaultSearchProvider();
+  if (!IsValidInstantTemplateURL(template_url) || !default_t_url ||
+      (template_url->id() != default_t_url->id())) {
     Hide();
     return false;
   }
 
-  const TemplateURL* template_url = match.template_url;
-  DCHECK(template_url);  // ShouldUseInstant returns false if no turl.
   if (!loader_.get()) {
     loader_.reset(new InstantLoader(this, template_url->id(),
         InstantFieldTrial::GetGroupName(tab_contents->profile())));
@@ -247,12 +251,8 @@ bool InstantController::PrepareForCommit() {
   if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
     return IsCurrent();
 
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
-      tab_contents_->profile());
-  if (!model)
-    return false;
-
-  const TemplateURL* template_url = model->GetDefaultSearchProvider();
+  const TemplateURL* template_url =
+      template_url_service_->GetDefaultSearchProvider();
   if (!IsValidInstantTemplateURL(template_url) ||
       loader_->template_url_id() != template_url->id() ||
       loader_->IsNavigationPending() ||
@@ -386,12 +386,8 @@ void InstantController::OnAutocompleteGotFocus(
     return;
   }
 
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
-      tab_contents->profile());
-  if (!model)
-    return;
-
-  const TemplateURL* template_url = model->GetDefaultSearchProvider();
+  const TemplateURL* template_url =
+      template_url_service_->GetDefaultSearchProvider();
   if (!IsValidInstantTemplateURL(template_url))
     return;
 
@@ -519,19 +515,6 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
   // For the HIDDEN and SILENT field trials, don't send back suggestions.
   if (!InstantFieldTrial::ShouldSetSuggestedText(tab_contents_->profile()))
     suggested_text->clear();
-}
-
-bool InstantController::ShouldUseInstant(const AutocompleteMatch& match) {
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
-      tab_contents_->profile());
-  if (!model)
-    return false;
-
-  const TemplateURL* default_t_url = model->GetDefaultSearchProvider();
-  const TemplateURL* match_t_url = match.template_url;
-  return IsValidInstantTemplateURL(default_t_url) &&
-      IsValidInstantTemplateURL(match_t_url) &&
-      (match_t_url->id() == default_t_url->id());
 }
 
 // Returns true if |template_url| is a valid TemplateURL for use by instant.

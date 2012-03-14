@@ -32,6 +32,7 @@ class Profile;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
+class TemplateURLService;
 
 // InstantController maintains a TabContents that is intended to give a preview
 // of a URL. InstantController is owned by Browser.
@@ -194,10 +195,6 @@ class InstantController : public InstantLoaderDelegate {
                     bool verbatim,
                     string16* suggested_text);
 
-  // Returns true if instant should be used for the specified match. Instant is
-  // only used if |match| corresponds to the default search provider.
-  bool ShouldUseInstant(const AutocompleteMatch& match);
-
   // Returns true if |template_url| is a valid TemplateURL for use by instant.
   bool IsValidInstantTemplateURL(const TemplateURL* template_url);
 
@@ -222,6 +219,10 @@ class InstantController : public InstantLoaderDelegate {
   void DestroyLoaders();
 
   InstantDelegate* delegate_;
+
+  // The TemplateURLService for the Profile provided at construction time.  We
+  // don't own this pointer.
+  TemplateURLService* template_url_service_;
 
   // The TabContents last passed to |Update|.
   TabContentsWrapper* tab_contents_;
