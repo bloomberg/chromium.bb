@@ -448,6 +448,14 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     errorCallback(new FileCopyManager.Error(reason, data));
   }
 
+  function onFilesystemCopyComplete(entry) {
+    // TODO(benchan): We currently do not know the size of data being
+    // copied by FileEntry.copyTo(), so task.completedBytes will not be
+    // increased. We will address this issue once we need to use
+    // task.completedBytes to track the progress.
+    onCopyComplete(entry, 0);
+  }
+
   function onFilesystemError(err) {
     onError('FILESYSTEM_ERROR', err);
   }
@@ -464,6 +472,52 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     }
   }
 
+  /**
+   * Resolves the immediate parent directory entry and the file name of a
+   * given path, where the path is specified by a directory (not necessarily
+   * the immediate parent) and a path (not necessarily the file name) related
+   * to that directory. For instance,
+   *   Given:
+   *     |dirEntry| = DirectoryEntry('/root/dir1')
+   *     |relativePath| = 'dir2/file'
+   *
+   *   Return:
+   *     |parentDirEntry| = DirectoryEntry('/root/dir1/dir2')
+   *     |fileName| = 'file'
+   *
+   * @param {DirectoryEntry} dirEntry A directory entry.
+   * @param {string} relativePath A path relative to |dirEntry|.
+   * @param {function(Entry,string)} A callback for returning the
+   *        |parentDirEntry| and |fileName| upon success.
+   * @param {function(FileError)} An error callback when there is an error
+   *        getting |parentDirEntry|.
+   */
+  function resolveDirAndBaseName(dirEntry, relativePath,
+                                 successCallback, errorCallback) {
+    // |intermediatePath| contains the intermediate path components
+    // that are appended to |dirEntry| to form |parentDirEntry|.
+    var intermediatePath = '';
+    var fileName = relativePath;
+
+    // Extract the file name component from |relativePath|.
+    var index = relativePath.lastIndexOf('/');
+    if (index != -1) {
+      intermediatePath = relativePath.substr(0, index);
+      fileName = relativePath.substr(index + 1);
+    }
+
+    if (intermediatePath == '') {
+      successCallback(dirEntry, fileName);
+    } else {
+      dirEntry.getDirectory(intermediatePath,
+                            {create: false},
+                            function(entry) {
+                              successCallback(entry, fileName);
+                            },
+                            errorCallback);
+    }
+  }
+
   function onTargetNotResolved(err) {
     // We expect to be unable to resolve the target file, since we're going
     // to create it during the copy.  However, if the resolve fails with
@@ -473,16 +527,26 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
     if (task.sourceAndTargetOnGData) {
       if (task.deleteAfterCopy) {
-        sourceEntry.moveTo(targetDirEntry, targetRelativePath,
-                           onCopyComplete, onError);
+        resolveDirAndBaseName(
+            targetDirEntry, targetRelativePath,
+            function(dirEntry, fileName) {
+              sourceEntry.moveTo(dirEntry, fileName,
+                                 onFilesystemCopyComplete, onFilesystemError);
+            },
+            onFilesystemError);
         return;
       } else {
         // TODO(benchan): GDataFileSystem has not implemented directory copy,
         // and thus we only call FileEntry.copyTo() for files. Revisit this
         // code when GDataFileSystem supports directory copy.
         if (!sourceEntry.isDirectory) {
-          sourceEntry.copyTo(targetDirEntry, targetRelativePath,
-                             onCopyComplete, onError);
+          resolveDirAndBaseName(
+              targetDirEntry, targetRelativePath,
+              function(dirEntry, fileName) {
+                sourceEntry.copyTo(dirEntry, fileName,
+                                   onFilesystemCopyComplete, onFilesystemError);
+              },
+              onFilesystemError);
           return;
         }
       }
