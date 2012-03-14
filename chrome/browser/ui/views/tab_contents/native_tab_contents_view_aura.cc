@@ -163,7 +163,6 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.parent = NULL;
   params.can_activate = true;
   GetWidget()->Init(params);
-  GetNativeWindow()->SetName("NativeTabContentsViewAura");
 #if defined(USE_ASH)
   ash::SetChildWindowVisibilityChangesAnimated(GetWidget()->GetNativeView());
 #else

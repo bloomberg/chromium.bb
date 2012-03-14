@@ -282,7 +282,7 @@ TEST_F(WindowTest, HitTest) {
   EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
 
   // We can expand the bounds slightly to track events outside our border.
-  w1.SetHitTestBoundsOverride(1, 0);
+  w1.set_hit_test_bounds_inset(-1);
   EXPECT_TRUE(w1.HitTest(gfx::Point(-1, -1)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
@@ -316,23 +316,6 @@ TEST_F(WindowTest, GetEventHandlerForPoint) {
   EXPECT_EQ(w12.get(), root->GetEventHandlerForPoint(gfx::Point(21, 431)));
   EXPECT_EQ(w121.get(), root->GetEventHandlerForPoint(gfx::Point(26, 436)));
   EXPECT_EQ(w13.get(), root->GetEventHandlerForPoint(gfx::Point(26, 481)));
-}
-
-TEST_F(WindowTest, GetEventHandlerForPointWithOverride) {
-  // If our child is flush to our top-left corner he gets events just inside the
-  // window edges.
-  scoped_ptr<Window> parent(
-      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 20, 400, 500), NULL));
-  scoped_ptr<Window> child(
-      CreateTestWindow(SK_ColorRED, 2, gfx::Rect(0, 0, 60, 70), parent.get()));
-  EXPECT_EQ(child.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(child.get(), parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
-
-  // We can override the hit test bounds of the parent to make the parent grab
-  // events along that edge.
-  parent->SetHitTestBoundsOverride(0, 1);
-  EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(child.get(),  parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
 }
 
 TEST_F(WindowTest, GetTopWindowContainingPoint) {

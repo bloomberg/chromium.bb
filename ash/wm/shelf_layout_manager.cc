@@ -26,9 +26,6 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 }  // namespace
 
-// static
-const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, public:
 
@@ -147,8 +144,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
       available_bounds.width(),
       launcher_bounds.height());
   if (visible)
-    target_bounds->work_area_insets = gfx::Insets(
-        0, 0, max_height_ + kWorkspaceAreaBottomInset, 0);
+    target_bounds->work_area_insets = gfx::Insets(0, 0, max_height_, 0);
 }
 
 void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
