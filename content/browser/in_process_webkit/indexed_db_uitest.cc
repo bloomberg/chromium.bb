@@ -56,18 +56,7 @@ TEST_F(IndexedDBUILayoutTest, LayoutTests) {
     RunLayoutTest(kLayoutTestFileNames[i], port);
 }
 
-// Was skipped on mac_valgrind due to memory leak (http://crbug.com/113649),
-// which was _probably_ fixed when http://crbug.com/113717 was fixed.
-// But it will probably now fail due to http://crbug.com/110612.
-//
-// Run it for a few days as FLAKY to see what happens.  Feel free to disable
-// if this is still here on Mar 9 2012 MTV time.
-#if defined(OS_MACOSX)
-#define MAYBE_WorkerLayoutTests FLAKY_WorkerLayoutTests
-#else
-#define MAYBE_WorkerLayoutTests WorkerLayoutTests
-#endif
-TEST_F(IndexedDBUILayoutTest, MAYBE_WorkerLayoutTests) {
+TEST_F(IndexedDBUILayoutTest, WorkerLayoutTests) {
   const int port = kNoHttpPort;
   InitializeForLayoutTest(test_dir_, FilePath(), port);
   AddJSTestResources();
