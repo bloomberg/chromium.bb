@@ -57,6 +57,7 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
 #include "chrome/browser/ui/webui/chromeos/idle_logout_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
@@ -67,7 +68,6 @@
 #include "chrome/browser/ui/webui/chromeos/register_page_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
-#include "chrome/browser/ui/webui/active_downloads_ui.h"
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

@@ -3584,8 +3584,6 @@
         'browser/ui/web_applications/web_app_ui.h',
         'browser/ui/webui/about_ui.cc',
         'browser/ui/webui/about_ui.h',
-        'browser/ui/webui/active_downloads_ui.cc',
-        'browser/ui/webui/active_downloads_ui.h',
         'browser/ui/webui/bookmarks_ui.cc',
         'browser/ui/webui/bookmarks_ui.h',
         'browser/ui/webui/feedback_ui.cc',
@@ -3602,6 +3600,8 @@
         'browser/ui/webui/chrome_web_ui_controller_factory.h',
         'browser/ui/webui/chrome_web_ui_data_source.cc',
         'browser/ui/webui/chrome_web_ui_data_source.h',
+        'browser/ui/webui/chromeos/active_downloads_ui.cc',
+        'browser/ui/webui/chromeos/active_downloads_ui.h',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.cc',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.h',
         'browser/ui/webui/chromeos/idle_logout_dialog.cc',
@@ -4157,7 +4157,6 @@
             ['exclude', 'browser/ui/views/status_icons/status_tray_chromeos.h'],
             ['exclude', 'browser/ui/views/status_icons/status_icon_chromeos.cc'],
             ['exclude', 'browser/ui/views/status_icons/status_icon_chromeos.h'],
-            ['exclude', 'browser/ui/webui/active_downloads_ui.cc'],
           ],
         }, {  # chromeos==1
           'dependencies': [

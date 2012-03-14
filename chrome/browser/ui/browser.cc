@@ -207,7 +207,7 @@
 #if defined(USE_AURA)
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #endif
-#include "chrome/browser/ui/webui/active_downloads_ui.h"
+#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #endif
 
 #if defined(USE_AURA)
