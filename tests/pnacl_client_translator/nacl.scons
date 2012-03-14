@@ -29,7 +29,7 @@ test_example_obj = env.ComponentObject(
     'pnacl_test_example_obj',
     '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
 
-pexe_name = 'pnacl_test_example'
+pexe_name = env.ProgramNameForNmf('pnacl_test_example')
 
 test_example_pexe = env.ComponentProgram(
     pexe_name,

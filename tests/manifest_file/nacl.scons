@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,7 +7,7 @@ Import('env')
 
 srpc_mf_obj = env.ComponentObject('srpc_manifest_file_test.o',
                                   'srpc_manifest_file_test.c')
-srpc_mf_nexe_name = 'srpc_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+srpc_mf_nexe_name = env.ProgramNameForNmf('srpc_manifest_file_test')
 srpc_mf_nexe = env.ComponentProgram(srpc_mf_nexe_name,
                                     srpc_mf_obj,
                                     EXTRA_LIBS=[
@@ -43,7 +43,7 @@ env.AddNodeToTestSuite(node,
 
 pm_mf_obj = env.ComponentObject('pm_manifest_file_test.o',
                                 'pm_manifest_file_test.cc')
-pm_mf_nexe_name = 'pm_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+pm_mf_nexe_name = env.ProgramNameForNmf('pm_manifest_file_test')
 pm_mf_nexe = env.ComponentProgram(pm_mf_nexe_name,
                                   pm_mf_obj,
                                   EXTRA_LIBS=['nacl_ppapi_util',
@@ -82,8 +82,7 @@ env.AddNodeToTestSuite(node,
 
 pm_pi_mf_obj = env.ComponentObject('pm_pre_init_manifest_file_test.o',
                                    'pm_pre_init_manifest_file_test.cc')
-pm_pi_mf_nexe_name = ('pm_pre_init_manifest_file_test_%s'
-                      % env.get('TARGET_FULLARCH'))
+pm_pi_mf_nexe_name = env.ProgramNameForNmf('pm_pre_init_manifest_file_test')
 pm_pi_mf_nexe = env.ComponentProgram(pm_pi_mf_nexe_name,
                                      pm_pi_mf_obj,
                                      EXTRA_LIBS=['nacl_ppapi_util',
@@ -120,7 +119,7 @@ if not env.Bit('irt'):
 else:
   # This test cannot be built under irt=0 because it uses __nacl_irt_query,
   # which is not available in the private libraries.
-  irt_mf_nexe_name = 'irt_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
+  irt_mf_nexe_name = env.ProgramNameForNmf('irt_manifest_file_test')
   irt_mf_nexe = env.ComponentProgram(irt_mf_nexe_name,
                                      'irt_manifest_file_test.cc',
                                      EXTRA_LIBS=['nacl_ppapi_util',

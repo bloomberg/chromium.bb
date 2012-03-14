@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,7 +23,7 @@ def make_crash_test_nexe(name, libs=[]):
   obj = env.ComponentObject('inbrowser_%s' % name,
                             '${MAIN_DIR}/tests/signal_handler/%s.c' % name)
   nexe = env.ComponentProgram(
-      'inbrowser_%s_${TARGET_FULLARCH}' % name, obj,
+      env.ProgramNameForNmf('inbrowser_' + name), obj,
       EXTRA_LIBS=libs + [
           'srpc', 'platform', 'gio', 'imc', 'imc_syscalls', '${PTHREAD_LIBS}',
           '${NON_PPAPI_BROWSER_LIBS}'])

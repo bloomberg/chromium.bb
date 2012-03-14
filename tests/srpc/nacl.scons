@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,7 +15,7 @@ Import('env')
 srpc_test_objs = env.ComponentObject('srpc_test', 'srpc_test.c')
 srpc_test_libs = ['srpc', 'imc_syscalls', 'platform', 'gio', 'm']
 
-srpc_test_nexe_name = 'srpc_test_%s' % env.get('TARGET_FULLARCH')
+srpc_test_nexe_name = env.ProgramNameForNmf('srpc_test')
 srpc_test_nexe = env.ComponentProgram(
     srpc_test_nexe_name, srpc_test_objs,
     EXTRA_LIBS=srpc_test_libs + [
@@ -30,8 +30,7 @@ srpc_test_nonbrowser = env.ComponentProgram(
     EXTRA_LIBS=srpc_test_libs + ['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 
-srpc_nrd_server_nexe_name = ('srpc_nrd_server_%s' %
-                             env.get('TARGET_FULLARCH'))
+srpc_nrd_server_nexe_name = env.ProgramNameForNmf('srpc_nrd_server')
 srpc_nrd_server_nexe = env.ComponentProgram(
     srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
     EXTRA_LIBS=[
@@ -43,8 +42,7 @@ srpc_nrd_server_nexe = env.ComponentProgram(
         'm',
         '${PTHREAD_LIBS}'])
 
-srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s' %
-                             env.get('TARGET_FULLARCH'))
+srpc_nrd_client_nexe_name = env.ProgramNameForNmf('srpc_nrd_client')
 srpc_nrd_client_nexe = env.ComponentProgram(
     srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
     EXTRA_LIBS=[
@@ -60,7 +58,7 @@ env.Publish(srpc_nrd_client_nexe_name, 'run',
      srpc_nrd_server_nexe])
 
 
-srpc_bidir_nexe_name = ('srpc_bidir_%s' % env.get('TARGET_FULLARCH'))
+srpc_bidir_nexe_name = env.ProgramNameForNmf('srpc_bidir')
 srpc_bidir_nexe = env.ComponentProgram(
     srpc_bidir_nexe_name, 'srpc_bidir.c',
     EXTRA_LIBS=['srpc', 'imc_syscalls', 'platform', 'gio', 'm', 'pthread'])
@@ -69,8 +67,7 @@ env.Publish(srpc_bidir_nexe_name, 'run', [])
 
 # NOTE: at least for ARM the EXTRA_LIBS list should include 'srpc'
 #       but this somehow make the x86 version fragile
-srpc_bad_service_nexe_name = ('srpc_bad_service_%s' %
-                              env.get('TARGET_FULLARCH'))
+srpc_bad_service_nexe_name = env.ProgramNameForNmf('srpc_bad_service')
 srpc_bad_service_nexe = env.ComponentProgram(
     srpc_bad_service_nexe_name, 'srpc_bad_service.c',
     EXTRA_LIBS=['imc_syscalls', 'm', '${PTHREAD_LIBS}', '${NONIRT_LIBS}'])

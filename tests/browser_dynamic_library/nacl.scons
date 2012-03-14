@@ -21,7 +21,7 @@ def make_mappings(libdir, libs):
 browser_dlopen_file_mapping = make_mappings('${NACL_SDK_LIB}',
                                             toolchain_libraries)
 
-browser_dlopen_nexe_name = 'browser_dlopen_test_%s' % env.get('TARGET_FULLARCH')
+browser_dlopen_nexe_name = env.ProgramNameForNmf('browser_dlopen_test')
 browser_dlopen_nexe = env.ComponentProgram(browser_dlopen_nexe_name,
                                            'browser_dlopen_test.cc',
                                            EXTRA_LIBS=[

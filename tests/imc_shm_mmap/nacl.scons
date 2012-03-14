@@ -12,8 +12,7 @@ browser_test_libs = ['testrunner_browser', '${PPAPI_LIBS}', 'imc_syscalls']
 
 objs = env.ComponentObject('imc_shm_mmap_test', 'imc_shm_mmap_test.c')
 
-imc_shm_mmap_test_nexe_name = ('imc_shm_mmap_test_%s' %
-                               env.get('TARGET_FULLARCH'))
+imc_shm_mmap_test_nexe_name = env.ProgramNameForNmf('imc_shm_mmap_test')
 imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
                                               objs,
                                               EXTRA_LIBS=browser_test_libs)

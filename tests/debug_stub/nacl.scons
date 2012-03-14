@@ -61,7 +61,7 @@ env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
 is_broken = True
 
 # Build .nexe to be used with debug_in_browswer test
-browser_test_target = 'debug_browser_test_%s' % env.get('TARGET_FULLARCH')
+browser_test_target = env.ProgramNameForNmf('debug_browser_test')
 browser_test_nexe = env.ComponentProgram(browser_test_target,
                                          ['debug_browser_test.cc'],
                                          EXTRA_LIBS=['${PPAPI_LIBS}',

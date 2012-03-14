@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,9 +7,8 @@
 
 Import('env')
 
-nexe_name = 'browser_startup_time_${TARGET_FULLARCH}'
-stripped_nexe = ('browser_startup_time_stripped_%s.nexe' %
-                 env.get('TARGET_FULLARCH'))
+nexe_name = env.ProgramNameForNmf('browser_startup_time')
+stripped_nexe = env.ProgramNameForNmf('browser_startup_time_stripped')
 
 browser_startup_nexe = env.ComponentProgram(
     nexe_name,

@@ -32,8 +32,8 @@ if (env.Bit('nacl_static_link') and
 
 
 def AddTest(env, test_name, exe_list):
-  test_files = [env.File('${STAGING_DIR}/%s_${TARGET_FULLARCH}${PROGSUFFIX}'
-                         % exe_name)
+  test_files = [env.File('${STAGING_DIR}/%s${PROGSUFFIX}'
+                         % env.ProgramNameForNmf(exe_name))
                 for exe_name in exe_list]
 
   def WriteManifestList(target, source, env):

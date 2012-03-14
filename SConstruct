@@ -1417,6 +1417,17 @@ def GenerateSimpleManifestStaticLink(env, dest_file, exe_name):
   return node
 
 
+def ProgramNameForNmf(env, basename):
+  """ Create an architecture-specific filename that can be used in an NMF URL.
+  """
+  if env.Bit('pnacl_generate_pexe'):
+    return basename
+  else:
+    return '%s_%s' % (basename, env.get('TARGET_FULLARCH'))
+
+pre_base_env.AddMethod(ProgramNameForNmf)
+
+
 def GenerateSimpleManifest(env, dest_file, exe_name):
   static_manifest = GenerateSimpleManifestStaticLink(
       env, '%s.static' % dest_file, exe_name)
@@ -1425,7 +1436,7 @@ def GenerateSimpleManifest(env, dest_file, exe_name):
   else:
     return GenerateManifestDynamicLink(
         env, dest_file, '%s.tmp_lib_list' % dest_file, static_manifest,
-        '${STAGING_DIR}/%s_%s.nexe' % (exe_name, env['TARGET_FULLARCH']))
+        '${STAGING_DIR}/%s.nexe' % env.ProgramNameForNmf(exe_name))
 
 
 # Returns a pair (main program, is_portable), based on the program

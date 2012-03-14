@@ -62,16 +62,16 @@ template_obj = asm_env.ComponentObject(GetTemplate(env))
 
 dynamic_load_test_object = env.ComponentObject('dynamic_load_test.c')
 
-dynamic_load_nonbrowser_test_nexe_name = ('dynamic_load_test_%s' %
-                                          env.get('TARGET_FULLARCH'))
+dynamic_load_nonbrowser_test_nexe_name = env.ProgramNameForNmf(
+    'dynamic_load_test')
 dynamic_load_test_nexe = env.ComponentProgram(
     dynamic_load_nonbrowser_test_nexe_name,
     [dynamic_load_test_object, template_obj],
     EXTRA_LIBS=nonbrowser_libs)
 
 if env.Bit('irt'):
-  dynamic_load_browser_test_nexe_name = ('dynamic_load_browser_test_%s' %
-                                         env.get('TARGET_FULLARCH'))
+  dynamic_load_browser_test_nexe_name = env.ProgramNameForNmf(
+      'dynamic_load_browser_test')
   dynamic_load_browser_test_nexe = env.ComponentProgram(
       dynamic_load_browser_test_nexe_name,
       [dynamic_load_test_object, template_obj],
@@ -79,16 +79,16 @@ if env.Bit('irt'):
 
 dynamic_modify_test_object = env.ComponentObject(['dynamic_modify_test.c'])
 
-dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s' %
-                                 env.get('TARGET_FULLARCH'))
+dynamic_modify_test_nexe_name = env.ProgramNameForNmf(
+    'dynamic_modify_test')
 dynamic_modify_test_nexe = env.ComponentProgram(
     dynamic_modify_test_nexe_name,
     [dynamic_modify_test_object, template_obj],
     EXTRA_LIBS=nonbrowser_libs)
 
 if env.Bit('irt'):
-  dynamic_modify_browser_test_nexe_name = ('dynamic_modify_browser_test_%s' %
-                                           env.get('TARGET_FULLARCH'))
+  dynamic_modify_browser_test_nexe_name = env.ProgramNameForNmf(
+      'dynamic_modify_browser_test')
   dynamic_modify_browser_test_nexe = env.ComponentProgram(
       dynamic_modify_browser_test_nexe_name,
       [dynamic_modify_test_object, template_obj],

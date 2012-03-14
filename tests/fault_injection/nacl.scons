@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,7 @@ Import('env')
 
 pm_ns_obj = env.ComponentObject('fault_pm_nameservice_test.o',
                                 'fault_pm_nameservice_test.cc')
-pm_ns_nexe_name = 'fault_pm_nameservice_test_%s' % env.get('TARGET_FULLARCH')
+pm_ns_nexe_name = env.ProgramNameForNmf('fault_pm_nameservice_test')
 pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
                                   pm_ns_obj,
                                   EXTRA_LIBS=['nacl_ppapi_util',

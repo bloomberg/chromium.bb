@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -22,7 +22,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_nameservice_test')
 
 srpc_ns_obj = env.ComponentObject('srpc_nameservice_test.o',
                                   'srpc_nameservice_test.c')
-srpc_ns_nexe_name = 'srpc_nameservice_test_%s' % env.get('TARGET_FULLARCH')
+srpc_ns_nexe_name = env.ProgramNameForNmf('srpc_nameservice_test')
 srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                     srpc_ns_obj,
                                     EXTRA_LIBS=[
@@ -56,7 +56,7 @@ env.AddNodeToTestSuite(node,
 
 pm_ns_obj = env.ComponentObject('pm_nameservice_test.o',
                                 'pm_nameservice_test.cc')
-pm_ns_nexe_name = 'pm_nameservice_test_%s' % env.get('TARGET_FULLARCH')
+pm_ns_nexe_name = env.ProgramNameForNmf('pm_nameservice_test')
 pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
                                   pm_ns_obj,
                                   EXTRA_LIBS=['nacl_ppapi_util',

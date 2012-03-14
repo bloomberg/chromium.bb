@@ -33,7 +33,7 @@ env.AddNodeToTestSuite(
 
 if env.Bit('irt'):
   exception_browser_test = env.ComponentProgram(
-      'exception_browser_test_%s' % env.get('TARGET_FULLARCH'),
+      env.ProgramNameForNmf('exception_browser_test'),
       exception_test_objs,
       EXTRA_LIBS=['testrunner_browser', '${PPAPI_LIBS}'])
 

@@ -1,12 +1,12 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 Import('env')
 
 
-mandel_tiled_nexe_name = 'mandel_tiled_%s' % env.get('TARGET_FULLARCH')
+mandel_tiled_nexe_name = env.ProgramNameForNmf('mandel_tiled')
 mandel_tiled_nexe = env.ComponentProgram(mandel_tiled_nexe_name,
                                          'mandel_tiled.c',
                                          EXTRA_LIBS=[
@@ -22,7 +22,7 @@ env.Publish(mandel_tiled_nexe_name, 'run', ['mandel_tiled.html',
                                             'mandel_tiled.nmf'])
 
 
-mandel_nexe_name = 'mandel_%s' % env.get('TARGET_FULLARCH')
+mandel_nexe_name = env.ProgramNameForNmf('mandel')
 mandel_nexe = env.ComponentProgram(mandel_nexe_name, 'mandel.c',
                                    EXTRA_LIBS=[
                                        'srpc',

@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,7 @@ Import('env')
 
 pm_es_obj = env.ComponentObject('pm_exit_status_test.o',
                                 'pm_exit_status_test.cc')
-pm_es_nexe_name = 'pm_exit_status_test_%s' % env.get('TARGET_FULLARCH')
+pm_es_nexe_name = env.ProgramNameForNmf('pm_exit_status_test')
 pm_es_nexe = env.ComponentProgram(pm_es_nexe_name,
                                   pm_es_obj,
                                   EXTRA_LIBS=['ppapi_cpp',

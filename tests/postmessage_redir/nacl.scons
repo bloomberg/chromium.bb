@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,7 +7,7 @@ Import('env')
 
 pm_rd_obj = env.ComponentObject('pm_redir_test.o',
                                 'pm_redir_test.cc')
-pm_rd_nexe_name = 'pm_redir_test_%s' % env.get('TARGET_FULLARCH')
+pm_rd_nexe_name = env.ProgramNameForNmf('pm_redir_test')
 pm_rd_nexe = env.ComponentProgram(pm_rd_nexe_name,
                                   pm_rd_obj,
                                   EXTRA_LIBS=['weak_ref',
