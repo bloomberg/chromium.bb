@@ -178,27 +178,3 @@ void InitAndroidTestStub() {
 
   MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub);
 }
-
-namespace base {
-
-// TODO(michaelbai): The below MessagePumpForUI were added because we excluded
-// message_pump_android.{h|cc} which require JNI to compile. Remove them when
-// those 2 files added.
-MessagePumpForUI::MessagePumpForUI()
-    : state_(NULL) {
-}
-
-MessagePumpForUI::~MessagePumpForUI() {}
-
-void MessagePumpForUI::Run(Delegate* delegate) {}
-
-void MessagePumpForUI::Start(Delegate* delegate) {}
-
-void MessagePumpForUI::Quit() {}
-
-void MessagePumpForUI::ScheduleWork() {}
-
-void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
-}
-
-}  // namespace base
