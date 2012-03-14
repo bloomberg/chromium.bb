@@ -215,6 +215,9 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
                                              attributes:attributes]);
   NSString* linkText = [controller_ linkText];
   if (linkText) {
+    scoped_nsobject<NSAttributedString> whiteSpace(
+        [[NSAttributedString alloc] initWithString:@" "]);
+    [attributedMessage.get() appendAttributedString:whiteSpace.get()];
     [attributes setObject:[NSString string]
                    forKey:NSLinkAttributeName];
     scoped_nsobject<NSAttributedString> attributedLink(
