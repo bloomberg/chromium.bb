@@ -357,10 +357,6 @@ cr.define('options', function() {
         $('downloadLocationChangeButton').onclick = function(event) {
           chrome.send('selectDownloadLocation');
         };
-        // This text field is always disabled. Setting ".disabled = true" isn't
-        // enough, since a policy can disable it but shouldn't re-enable when
-        // it is removed.
-        $('downloadLocationPath').setDisabled('readonly', true);
         $('autoOpenFileTypesResetToDefault').onclick = function(event) {
           chrome.send('autoOpenFileTypesAction');
         };
