@@ -245,6 +245,7 @@ class FileSystemOperationInterface {
     kOperationNone,
     kOperationCreateFile,
     kOperationCreateDirectory,
+    kOperationCreateSnapshotFile,
     kOperationCopy,
     kOperationMove,
     kOperationDirectoryExists,

@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -23,6 +24,20 @@ namespace {
 
 const char kGDataRootDirectory[] = "gdata";
 const char kFeedField[] = "feed";
+
+// Helper function to run SnapshotFileCallback from
+// GDataFileSystemProxy::CreateSnapshotFile().
+void CallSnapshotFileCallback(
+    const FileSystemOperationInterface::SnapshotFileCallback& callback,
+    base::PlatformFileInfo file_info,
+    base::PlatformFileError error,
+    const FilePath& local_path) {
+  // TODO(satorux): We should use the last parameter
+  // (webkit_blob::ShareableFileReference) to create temporary JSON files
+  // on-the-fly for hosted documents so users can attach hosted files to web
+  // apps via File API. crosbug.com/27690
+  callback.Run(error, file_info, local_path, NULL);
+}
 
 }  // namespace
 
@@ -274,6 +289,37 @@ void GDataFileSystemProxy::CreateDirectory(
   }
 
   file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
+}
+
+void GDataFileSystemProxy::CreateSnapshotFile(
+    const GURL& file_url,
+    const FileSystemOperationInterface::SnapshotFileCallback& callback) {
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback,
+                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                    base::PlatformFileInfo(),
+                    FilePath(),
+                    scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
+    return;
+  }
+
+  GDataFileBase* file = file_system_->GetGDataFileInfoFromPath(file_path);
+  if (!file) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback,
+                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                    base::PlatformFileInfo(),
+                    FilePath(),
+                    scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
+    return;
+  }
+
+  file_system_->GetFile(file_path,
+                        base::Bind(&CallSnapshotFileCallback,
+                                   callback,
+                                   file->file_info()));
 }
 
 // static.

@@ -140,8 +140,11 @@ RemoteFileSystemOperation::AsFileSystemOperation() {
 void RemoteFileSystemOperation::CreateSnapshotFile(
     const GURL& path,
     const SnapshotFileCallback& callback) {
-  LOG(WARNING) << "No implementation for " << path.spec();
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationCreateSnapshotFile));
+  remote_proxy_->CreateSnapshotFile(
+      path,
+      base::Bind(&RemoteFileSystemOperation::DidCreateSnapshotFile,
+                 base::Owned(this), callback));
 }
 
 bool RemoteFileSystemOperation::SetPendingOperationType(OperationType type) {
@@ -191,6 +194,15 @@ void RemoteFileSystemOperation::DidFinishFileOperation(
     const StatusCallback& callback,
     base::PlatformFileError rv) {
   callback.Run(rv);
+}
+
+void RemoteFileSystemOperation::DidCreateSnapshotFile(
+    const SnapshotFileCallback& callback,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  callback.Run(result, file_info, platform_path, file_ref);
 }
 
 }  // namespace chromeos

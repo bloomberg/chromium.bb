@@ -42,6 +42,10 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       bool recursive,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback)
           OVERRIDE;
+  virtual void CreateSnapshotFile(
+      const GURL& path,
+      const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
+      callback) OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  private:

@@ -99,6 +99,13 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       bool has_more);
   void DidFinishFileOperation(const StatusCallback& callback,
                               base::PlatformFileError rv);
+  void DidCreateSnapshotFile(
+      const SnapshotFileCallback& callback,
+      base::PlatformFileError result,
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+
 
   scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy_;
   // A flag to make sure we call operation only once per instance.

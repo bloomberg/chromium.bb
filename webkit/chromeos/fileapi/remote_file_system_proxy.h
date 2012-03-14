@@ -58,6 +58,13 @@ class RemoteFileSystemProxyInterface :
       bool recursive,
       const FileSystemOperationInterface::StatusCallback& callback) = 0;
 
+  // Creates a local snapshot file for a given |path| and returns the
+  // metadata and platform path of the snapshot file via |callback|.
+  // See also FileSystemOperationInterface::CreateSnapshotFile().
+  virtual void CreateSnapshotFile(
+      const GURL& path,
+      const FileSystemOperationInterface::SnapshotFileCallback& callback) = 0;
+
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 };
 
