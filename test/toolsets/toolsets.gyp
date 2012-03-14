@@ -43,6 +43,7 @@
       'sources': [
         'toolsets.cc',
       ],
+      'cflags': [ '-fPIC' ],
     },
   ],
 }
