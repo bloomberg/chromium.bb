@@ -392,6 +392,8 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setContentFilterSettingsValue", filter_settings);
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(

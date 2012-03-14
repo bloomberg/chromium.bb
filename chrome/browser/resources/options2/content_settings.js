@@ -20,13 +20,14 @@ cr.define('options', function() {
                      'content-settings-page');
 
     // Keep track of the real value of the "clear on exit" preference. (The UI
-    // might override it if the reopen last pages setting is selected.)
+    // might override it if the "continue where I left off" setting is
+    // selected.)
     var self = this;
     Preferences.getInstance().addEventListener(
         'profile.clear_site_data_on_exit',
         function(event) {
-          if (event.value && event.value['value'] != undefined) {
-            self.clearCookiesOnExit = (event.value['value'] == true);
+          if (event.value && typeof event.value['value'] != 'undefined') {
+            self.clearCookiesOnExit = event.value['value'] == true;
           }
         });
     Preferences.getInstance().addEventListener(
@@ -91,11 +92,16 @@ cr.define('options', function() {
           OptionsPage.closeOverlay.bind(OptionsPage);
     },
 
+    /**
+     * Called when the value of the "On startup" setting changes.
+     * @param {Event} event Change event.
+     * @private
+     */
     onSessionRestoreSelectedChanged: function(event) {
-      if (!event.value || event.value['value'] == undefined)
+      if (!event.value || typeof event.value['value'] == 'undefined')
         return;
 
-      this.sessionRestoreSelected = (event.value['value'] == 1);
+      this.sessionRestoreSelected = event.value['value'] == 1;
 
       if (this.sessionRestoreSelected)
         this.updateSessionRestoreContentSettings();
@@ -103,8 +109,8 @@ cr.define('options', function() {
         this.restoreContentSettings();
     },
 
-    // If the "reopen last opened pages" setting is selected, disable the "clear
-    // on exit" checkbox, and the "session only" setting for cookies.
+    // If the "continue where I left off" setting is selected, disable the
+    // "clear on exit" checkbox, and the "session only" setting for cookies.
     updateSessionRestoreContentSettings: function() {
       // This feature is behind a command line flag.
       if (this.sessionRestoreEnabled && this.sessionRestoreSelected) {
@@ -159,7 +165,7 @@ cr.define('options', function() {
     // if the reopen last pages setting is selected.)
     if ('cookies' in dict && 'value' in dict['cookies']) {
       ContentSettings.getInstance().cookiesSession =
-          (dict['cookies']['value'] == 'session');
+          dict['cookies']['value'] == 'session';
     }
     ContentSettings.getInstance().updateSessionRestoreContentSettings();
     OptionsPage.updateManagedBannerVisibility();

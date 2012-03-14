@@ -35,6 +35,24 @@ cr.define('options', function() {
     instantConfirmDialogShown_: false,
 
     /**
+     * True if the default cookie settings is session only. Used for deciding
+     * whether to show the session restore info dialog. The value is undefined
+     * until the preference has been read.
+     * @type {bool}
+     * @private
+     */
+    sessionOnlyCookies_: undefined,
+
+    /**
+     * True if the "clear cookies and other site data on exit" setting is
+     * selected. Used for deciding whether to show the session restore info
+     * dialog. The value is undefined until the preference has been read.
+     * @type {bool}
+     * @private
+     */
+    clearCookiesOnExit_: undefined,
+
+    /**
      * @inheritDoc
      */
     initializePage: function() {
@@ -83,10 +101,17 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('startup');
       };
 
+      // Session restore.
       this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
       if (this.sessionRestoreEnabled_) {
         $('old-startup-last-text').hidden = true;
         $('new-startup-last-text').hidden = false;
+        $('startup-restore-session').customChangeHandler = function(event) {
+          if (this.checked)
+            BrowserOptions.getInstance().maybeShowSessionRestoreDialog_();
+          // Continue the normal event handling (set the preference).
+          return false;
+        };
       }
 
       // Appearance section.
@@ -146,11 +171,16 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener('instant.enabled',
           this.onInstantEnabledChanged_.bind(this));
       Preferences.getInstance().addEventListener(
-          'session.restore_on_startup',
-          this.onSessionRestoreSelectedChanged_.bind(this));
-      Preferences.getInstance().addEventListener(
           'restore_session_state.dialog_shown',
           this.onSessionRestoreDialogShownChanged_.bind(this));
+      var self = this;
+      Preferences.getInstance().addEventListener(
+          'profile.clear_site_data_on_exit',
+          function(event) {
+            if (event.value && typeof event.value['value'] != 'undefined') {
+              self.clearCookiesOnExit_ = event.value['value'] == true;
+            }
+          });
 
       // Users section.
       var profilesList = $('profiles-list');
@@ -702,29 +732,45 @@ cr.define('options', function() {
                                              'instant-enabled-control';
     },
 
-    onSessionRestoreSelectedChanged_: function(event) {
-      this.sessionRestoreSelected_ = event.value['value'] == 1;
-      this.maybeShowSessionRestoreDialog_();
-    },
-
+    /**
+     * Called when the value of the restore_session_state.dialog_shown
+     * preference changes.
+     * @param {Event} event Change event.
+     * @private
+     */
     onSessionRestoreDialogShownChanged_: function(event) {
       this.sessionRestoreDialogShown_ = event.value['value'];
-      this.maybeShowSessionRestoreDialog_();
     },
 
+    /**
+     * Displays the session restore info dialog if options depending on sessions
+     * (session only cookies or clearning data on exit) are selected, and the
+     * dialog has never been shown.
+     * @private
+     */
     maybeShowSessionRestoreDialog_: function() {
       // Don't show this dialog in Guest mode.
       if (cr.isChromeOS && AccountsOptions.loggedInAsGuest())
         return;
-      // If either of the needed two preferences hasn't been read yet, the
+      // If some of the needed preferences haven't been read yet, the
       // corresponding member variable will be undefined and we won't display
       // the dialog yet.
-      if (this.sessionRestoreEnabled_ && this.sessionRestoreSelected_ &&
+      if (this.userHasSelectedSessionContentSettings_() &&
           this.sessionRestoreDialogShown_ === false) {
         this.sessionRestoreDialogShown_ = true;
         Preferences.setBooleanPref('restore_session_state.dialog_shown', true);
         OptionsPage.navigateToPage('sessionRestoreOverlay');
       }
+    },
+
+    /**
+     * Returns true if the user has selected content settings which rely on
+     * sessions: clearning the browsing data on exit or defaulting the cookie
+     * content setting to session only.
+     * @private
+     */
+    userHasSelectedSessionContentSettings_: function() {
+      return this.clearCookiesOnExit_ || this.sessionOnlyCookies_;
     },
 
     /**
@@ -1168,7 +1214,19 @@ cr.define('options', function() {
         if (index != undefined)
           $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
+    },
+
+    /**
+     * Called when the default content setting value for a content type changes.
+     * @param {Object} dict A mapping content setting types to the default
+     * value.
+     * @private
+     */
+    setContentFilterSettingsValue_: function(dict) {
+      if ('cookies' in dict && 'value' in dict['cookies'])
+        this.sessionOnlyCookies_ = dict['cookies']['value'] == 'session';
     }
+
   };
 
   //Forward public APIs to private implementations.
@@ -1183,6 +1241,7 @@ cr.define('options', function() {
     'setBackgroundModeCheckboxState',
     'setBluetoothState',
     'setCheckRevocationCheckboxState',
+    'setContentFilterSettingsValue',
     'setFontSize',
     'setGtkThemeButtonEnabled',
     'setHighContrastCheckboxState',
