@@ -16,6 +16,10 @@
 
 namespace history {
 
+// The maximum number of characters to consider from an URL and page title
+// while matching user-typed terms.
+const size_t kMaxSignificantChars = 50;
+
 // Matches within URL and Title Strings ----------------------------------------
 
 // Specifies where an omnibox term occurs within a string. Used for specifying
@@ -83,8 +87,15 @@ typedef std::vector<char16> Char16Vector;
 
 // Utility Functions -----------------------------------------------------------
 
-// Breaks a string down into individual words.
-String16Set String16SetFromString16(const string16& uni_string);
+// A vector that contains the offsets at which each word starts within a string.
+typedef std::vector<size_t> WordStarts;
+
+// Breaks the string |uni_string| down into individual words. If |word_starts|
+// is not NULL then clears and pushes the offsets within |uni_string| at which
+// each word starts onto |word_starts|. These offsets are collected only up to
+// the first kMaxSignificantChars of |uni_string|.
+String16Set String16SetFromString16(const string16& uni_string,
+                                    WordStarts* word_starts);
 
 // Breaks the |uni_string| string down into individual words and return
 // a vector with the individual words in their original order. If
@@ -93,7 +104,8 @@ String16Set String16SetFromString16(const string16& uni_string);
 // resulting list will contain strings broken at whitespace. (|break_on_space|
 // indicates that the BreakIterator::BREAK_SPACE (equivalent to BREAK_LINE)
 // approach is to be used. For a complete description of this algorithm
-// refer to the comments in base/i18n/break_iterator.h.)
+// refer to the comments in base/i18n/break_iterator.h.) If |word_starts| is
+// not NULL then clears and pushes the word starts onto |word_starts|.
 //
 // Example:
 //   Given: |uni_string|: "http://www.google.com/ harry the rabbit."
@@ -102,7 +114,8 @@ String16Set String16SetFromString16(const string16& uni_string);
 //   With |break_on_space| true the returned list will contain:
 //    "http://", "www.google.com/", "harry", "the", "rabbit."
 String16Vector String16VectorFromString16(const string16& uni_string,
-                                          bool break_on_space);
+                                          bool break_on_space,
+                                          WordStarts* word_starts);
 
 // Breaks the |uni_word| string down into its individual characters.
 // Note that this is temporarily intended to work on a single word, but
@@ -138,6 +151,16 @@ typedef std::map<HistoryID, WordIDSet> HistoryIDWordMap;
 
 // A map from history_id to the history's URL and title.
 typedef std::map<HistoryID, URLRow> HistoryInfoMap;
+
+// A map from history_id to URL and page title word start metrics.
+struct RowWordStarts {
+  RowWordStarts();
+  ~RowWordStarts();
+
+  WordStarts url_word_starts_;
+  WordStarts title_word_starts_;
+};
+typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
 
 }  // namespace history
 

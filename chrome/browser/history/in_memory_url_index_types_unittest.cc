@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include <algorithm>
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -9,13 +11,29 @@
 
 namespace history {
 
+// Helper function for verifying that the contents of a C++ iterable container
+// of ints matches a C array ints.
+template <typename T>
+bool IntArraysEqual(const size_t* expected,
+                    size_t expected_size,
+                    const T& actual) {
+  if (expected_size != actual.size())
+    return false;
+  for (size_t i = 0; i < expected_size; ++i)
+    if (expected[i] != actual[i])
+      return false;
+  return true;
+}
+
 class InMemoryURLIndexTypesTest : public testing::Test {
 };
 
 TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
-  // Test WordVectorFromString16
-  string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy the brammy"));
-  String16Vector string_vec = String16VectorFromString16(string_a, false);
+  // Test String16VectorFromString16
+  string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy  the brammy"));
+  WordStarts actual_starts_a;
+  String16Vector string_vec =
+      String16VectorFromString16(string_a, false, &actual_starts_a);
   ASSERT_EQ(7U, string_vec.size());
   // See if we got the words we expected.
   EXPECT_EQ(UTF8ToUTF16("http"), string_vec[0]);
@@ -25,19 +43,38 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[4]);
   EXPECT_EQ(UTF8ToUTF16("the"), string_vec[5]);
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
+  // Verify the word starts.
+  size_t expected_starts_a[] = {0, 7, 11, 18, 23, 31, 35};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_a, arraysize(expected_starts_a),
+                             actual_starts_a));
 
-  string_vec = String16VectorFromString16(string_a, true);
+  WordStarts actual_starts_b;
+  string_vec = String16VectorFromString16(string_a, true, &actual_starts_b);
   ASSERT_EQ(5U, string_vec.size());
   EXPECT_EQ(UTF8ToUTF16("http://"), string_vec[0]);
   EXPECT_EQ(UTF8ToUTF16("www.google.com/"), string_vec[1]);
   EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[2]);
   EXPECT_EQ(UTF8ToUTF16("the"), string_vec[3]);
   EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[4]);
+  size_t expected_starts_b[] = {0, 7, 23, 31, 35};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_b, arraysize(expected_starts_b),
+                             actual_starts_b));
 
-  // Test WordSetFromString16
-  string16 string_b(ASCIIToUTF16(
+  string16 string_c(ASCIIToUTF16(
+      " funky%20string-with=@strange   sequences, intended(to exceed)"));
+  WordStarts actual_starts_c;
+  string_vec = String16VectorFromString16(string_c, false, &actual_starts_c);
+  ASSERT_EQ(8U, string_vec.size());
+  // Note that we stop collecting words and word starts at kMaxSignificantChars.
+  size_t expected_starts_c[] = {1, 7, 16, 22, 32, 43};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_c, arraysize(expected_starts_c),
+                             actual_starts_c));
+
+  // Test String16SetFromString16
+  string16 string_d(ASCIIToUTF16(
       "http://web.google.com/search Google Web Search"));
-  String16Set string_set = String16SetFromString16(string_b);
+  WordStarts actual_starts_d;
+  String16Set string_set = String16SetFromString16(string_d, &actual_starts_d);
   EXPECT_EQ(5U, string_set.size());
   // See if we got the words we expected.
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("com")) != string_set.end());
@@ -45,39 +82,42 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("http")) != string_set.end());
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("search")) != string_set.end());
   EXPECT_TRUE(string_set.find(UTF8ToUTF16("web")) != string_set.end());
+  size_t expected_starts_d[] = {0, 7, 11, 18, 22, 29, 36, 40};
+  EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
+                             actual_starts_d));
 
-  // Test SortAndDeoverlap
-  TermMatches matches_a;
-  matches_a.push_back(TermMatch(1, 13, 10));
-  matches_a.push_back(TermMatch(2, 23, 10));
-  matches_a.push_back(TermMatch(3, 3, 10));
-  matches_a.push_back(TermMatch(4, 40, 5));
-  TermMatches matches_b = SortAndDeoverlapMatches(matches_a);
+  // Test SortAndDeoverlapMatches
+  TermMatches matches_e;
+  matches_e.push_back(TermMatch(1, 13, 10));
+  matches_e.push_back(TermMatch(2, 23, 10));
+  matches_e.push_back(TermMatch(3, 3, 10));
+  matches_e.push_back(TermMatch(4, 40, 5));
+  TermMatches matches_f = SortAndDeoverlapMatches(matches_e);
   // Nothing should have been eliminated.
-  EXPECT_EQ(matches_a.size(), matches_b.size());
+  EXPECT_EQ(matches_e.size(), matches_f.size());
   // The order should now be 3, 1, 2, 4.
-  EXPECT_EQ(3, matches_b[0].term_num);
-  EXPECT_EQ(1, matches_b[1].term_num);
-  EXPECT_EQ(2, matches_b[2].term_num);
-  EXPECT_EQ(4, matches_b[3].term_num);
-  matches_a.push_back(TermMatch(5, 18, 10));
-  matches_a.push_back(TermMatch(6, 38, 5));
-  matches_b = SortAndDeoverlapMatches(matches_a);
+  EXPECT_EQ(3, matches_f[0].term_num);
+  EXPECT_EQ(1, matches_f[1].term_num);
+  EXPECT_EQ(2, matches_f[2].term_num);
+  EXPECT_EQ(4, matches_f[3].term_num);
+  matches_e.push_back(TermMatch(5, 18, 10));
+  matches_e.push_back(TermMatch(6, 38, 5));
+  matches_f = SortAndDeoverlapMatches(matches_e);
   // Two matches should have been eliminated.
-  EXPECT_EQ(matches_a.size() - 2, matches_b.size());
+  EXPECT_EQ(matches_e.size() - 2, matches_f.size());
   // The order should now be 3, 1, 2, 6.
-  EXPECT_EQ(3, matches_b[0].term_num);
-  EXPECT_EQ(1, matches_b[1].term_num);
-  EXPECT_EQ(2, matches_b[2].term_num);
-  EXPECT_EQ(6, matches_b[3].term_num);
+  EXPECT_EQ(3, matches_f[0].term_num);
+  EXPECT_EQ(1, matches_f[1].term_num);
+  EXPECT_EQ(2, matches_f[2].term_num);
+  EXPECT_EQ(6, matches_f[3].term_num);
 
   // Test MatchTermInString
-  TermMatches matches_c = MatchTermInString(
+  TermMatches matches_g = MatchTermInString(
       UTF8ToUTF16("x"), UTF8ToUTF16("axbxcxdxex fxgx/hxixjx.kx"), 123);
   const size_t expected_offsets[] = { 1, 3, 5, 7, 9, 12, 14, 17, 19, 21, 24 };
-  ASSERT_EQ(arraysize(expected_offsets), matches_c.size());
+  ASSERT_EQ(arraysize(expected_offsets), matches_g.size());
   for (size_t i = 0; i < arraysize(expected_offsets); ++i)
-    EXPECT_EQ(expected_offsets[i], matches_c[i].offset);
+    EXPECT_EQ(expected_offsets[i], matches_g[i].offset);
 }
 
 TEST_F(InMemoryURLIndexTypesTest, OffsetsAndTermMatches) {

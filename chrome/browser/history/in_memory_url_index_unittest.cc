@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <fstream>
 
 #include "base/file_path.h"
@@ -78,6 +79,12 @@ class InMemoryURLIndexTest : public testing::Test {
   // Pass-through functions to simplify our friendship with URLIndexPrivateData.
   bool UpdateURL(const URLRow& row);
   bool DeleteURL(const GURL& url);
+
+  // Data verification helper functions.
+  void ExpectPrivateDataNotEmpty(const URLIndexPrivateData& data);
+  void ExpectPrivateDataEmpty(const URLIndexPrivateData& data);
+  void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
+                              const URLIndexPrivateData& actual);
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -236,6 +243,30 @@ void InMemoryURLIndexTest::CheckTerm(
       << "Cache item '" << term << "' should be marked as being in use.";
 }
 
+void InMemoryURLIndexTest::ExpectPrivateDataNotEmpty(
+    const URLIndexPrivateData& data) {
+  EXPECT_FALSE(data.word_list_.empty());
+  // available_words_ will be empty since we have freshly built the
+  // data set for these tests.
+  EXPECT_TRUE(data.available_words_.empty());
+  EXPECT_FALSE(data.word_map_.empty());
+  EXPECT_FALSE(data.char_word_map_.empty());
+  EXPECT_FALSE(data.word_id_history_map_.empty());
+  EXPECT_FALSE(data.history_id_word_map_.empty());
+  EXPECT_FALSE(data.history_info_map_.empty());
+}
+
+void InMemoryURLIndexTest::ExpectPrivateDataEmpty(
+    const URLIndexPrivateData& data) {
+  EXPECT_TRUE(data.word_list_.empty());
+  EXPECT_TRUE(data.available_words_.empty());
+  EXPECT_TRUE(data.word_map_.empty());
+  EXPECT_TRUE(data.char_word_map_.empty());
+  EXPECT_TRUE(data.word_id_history_map_.empty());
+  EXPECT_TRUE(data.history_id_word_map_.empty());
+  EXPECT_TRUE(data.history_info_map_.empty());
+}
+
 // Helper function which compares two maps for equivalence. The maps' values
 // are associative containers and their contents are compared as well.
 template<typename T>
@@ -252,6 +283,65 @@ void ExpectMapOfContainersIdentical(const T& expected, const T& actual) {
          expected_values.begin(); set_iter != expected_values.end(); ++set_iter)
       EXPECT_EQ(actual_values.count(*set_iter),
                 expected_values.count(*set_iter));
+  }
+}
+
+void InMemoryURLIndexTest::ExpectPrivateDataEqual(
+    const URLIndexPrivateData& expected,
+    const URLIndexPrivateData& actual) {
+  EXPECT_EQ(expected.word_list_.size(), actual.word_list_.size());
+  EXPECT_EQ(expected.word_map_.size(), actual.word_map_.size());
+  EXPECT_EQ(expected.char_word_map_.size(), actual.char_word_map_.size());
+  EXPECT_EQ(expected.word_id_history_map_.size(),
+            actual.word_id_history_map_.size());
+  EXPECT_EQ(expected.history_id_word_map_.size(),
+            actual.history_id_word_map_.size());
+  EXPECT_EQ(expected.history_info_map_.size(), actual.history_info_map_.size());
+  // WordList must be index-by-index equal.
+  size_t count = expected.word_list_.size();
+  for (size_t i = 0; i < count; ++i)
+    EXPECT_EQ(expected.word_list_[i], actual.word_list_[i]);
+
+  ExpectMapOfContainersIdentical(expected.char_word_map_,
+                                 actual.char_word_map_);
+  ExpectMapOfContainersIdentical(expected.word_id_history_map_,
+                                 actual.word_id_history_map_);
+  ExpectMapOfContainersIdentical(expected.history_id_word_map_,
+                                 actual.history_id_word_map_);
+
+  for (HistoryInfoMap::const_iterator expected_info =
+      expected.history_info_map_.begin();
+      expected_info != expected.history_info_map_.end(); ++expected_info) {
+    HistoryInfoMap::const_iterator actual_info =
+        actual.history_info_map_.find(expected_info->first);
+    ASSERT_NE(actual_info, actual.history_info_map_.end());
+    const URLRow& expected_row(expected_info->second);
+    const URLRow& actual_row(actual_info->second);
+    EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
+    EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
+    EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
+    EXPECT_EQ(expected_row.url(), actual_row.url());
+  }
+
+  for (WordStartsMap::const_iterator expected_starts =
+      expected.word_starts_map_.begin();
+      expected_starts != expected.word_starts_map_.end();
+      ++expected_starts) {
+    WordStartsMap::const_iterator actual_starts =
+        actual.word_starts_map_.find(expected_starts->first);
+    ASSERT_NE(actual_starts, actual.word_starts_map_.end());
+    const RowWordStarts& expected_word_starts(expected_starts->second);
+    const RowWordStarts& actual_word_starts(actual_starts->second);
+    EXPECT_EQ(expected_word_starts.url_word_starts_.size(),
+              actual_word_starts.url_word_starts_.size());
+    EXPECT_TRUE(std::equal(expected_word_starts.url_word_starts_.begin(),
+                           expected_word_starts.url_word_starts_.end(),
+                           actual_word_starts.url_word_starts_.begin()));
+    EXPECT_EQ(expected_word_starts.title_word_starts_.size(),
+              actual_word_starts.title_word_starts_.size());
+    EXPECT_TRUE(std::equal(expected_word_starts.title_word_starts_.begin(),
+                           expected_word_starts.title_word_starts_.end(),
+                           actual_word_starts.title_word_starts_.begin()));
   }
 }
 
@@ -588,41 +678,44 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
 TEST_F(InMemoryURLIndexTest, Scoring) {
   URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
   // Test scores based on position.
+  // TODO(mpearson): Set word_starts when ScoredMatchForURL has been modified
+  // to take them into consideration when scoring.
+  RowWordStarts word_starts;
   ScoredHistoryMatch scored_a(URLIndexPrivateData::ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abc"), Make1Term("abc")));
+      row_a, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts));
   ScoredHistoryMatch scored_b(URLIndexPrivateData::ScoredMatchForURL(
-      row_a, ASCIIToUTF16("bcd"), Make1Term("bcd")));
+      row_a, ASCIIToUTF16("bcd"), Make1Term("bcd"), word_starts));
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
   // Test scores based on length.
   ScoredHistoryMatch scored_c(URLIndexPrivateData::ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abcd"), Make1Term("abcd")));
+      row_a, ASCIIToUTF16("abcd"), Make1Term("abcd"), word_starts));
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
   // Test scores based on order.
   ScoredHistoryMatch scored_d(URLIndexPrivateData::ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abcdef"), Make2Terms("abc", "def")));
+      row_a, ASCIIToUTF16("abcdef"), Make2Terms("abc", "def"), word_starts));
   ScoredHistoryMatch scored_e(URLIndexPrivateData::ScoredMatchForURL(
-      row_a, ASCIIToUTF16("def abc"), Make2Terms("def", "abc")));
+      row_a, ASCIIToUTF16("def abc"), Make2Terms("def", "abc"), word_starts));
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
   ScoredHistoryMatch scored_f(URLIndexPrivateData::ScoredMatchForURL(
-      row_b, ASCIIToUTF16("abc"), Make1Term("abc")));
+      row_b, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts));
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
   ScoredHistoryMatch scored_g(URLIndexPrivateData::ScoredMatchForURL(
-      row_c, ASCIIToUTF16("abc"), Make1Term("abc")));
+      row_c, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts));
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
   ScoredHistoryMatch scored_h(URLIndexPrivateData::ScoredMatchForURL(
-      row_d, ASCIIToUTF16("abc"), Make1Term("abc")));
+      row_d, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts));
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
   // Test scores based on a terms appearing multiple times.
   URLRow row_i(MakeURLRow("http://csi.csi.csi/csi_csi",
       "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));
   ScoredHistoryMatch scored_i(URLIndexPrivateData::ScoredMatchForURL(
-      row_i, ASCIIToUTF16("csi"), Make1Term("csi")));
+      row_i, ASCIIToUTF16("csi"), Make1Term("csi"), word_starts));
   EXPECT_LT(scored_i.raw_score, 1400);
 }
 
@@ -753,76 +846,65 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
 }
 
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
-  // Save the cache to a protobuf, restore it, and compare the results.
+  // Part 1: Save the cache to a protobuf, restore it, and compare the results.
   in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
-  URLIndexPrivateData& private_data(*GetPrivateData());
-  private_data.SavePrivateData(&index_cache);
+  URLIndexPrivateData& expected(*GetPrivateData());
 
   // Capture our private data so we can later compare for equality.
-  String16Vector word_list(private_data.word_list_);
-  WordMap word_map(private_data.word_map_);
-  CharWordIDMap char_word_map(private_data.char_word_map_);
-  WordIDHistoryMap word_id_history_map(private_data.word_id_history_map_);
-  HistoryIDWordMap history_id_word_map(private_data.history_id_word_map_);
-  HistoryInfoMap history_info_map(private_data.history_info_map_);
+  URLIndexPrivateData actual(expected);
+
+  actual.SavePrivateData(&index_cache);
+
+  // Version check: Make sure this version actually has the word starts.
+  EXPECT_TRUE(index_cache.has_word_starts_map());
+
+  // Save the size of the resulting cache for later versioning comparison.
+  std::string data;
+  EXPECT_TRUE(index_cache.SerializeToString(&data));
+  size_t current_version_cache_size = data.size();
 
   // Prove that there is really something there.
-  EXPECT_FALSE(private_data.word_list_.empty());
-  // available_words_ will already be empty since we have freshly built the
-  // data set for this test.
-  EXPECT_TRUE(private_data.available_words_.empty());
-  EXPECT_FALSE(private_data.word_map_.empty());
-  EXPECT_FALSE(private_data.char_word_map_.empty());
-  EXPECT_FALSE(private_data.word_id_history_map_.empty());
-  EXPECT_FALSE(private_data.history_id_word_map_.empty());
-  EXPECT_FALSE(private_data.history_info_map_.empty());
+  ExpectPrivateDataNotEmpty(actual);
 
   // Clear and then prove it's clear.
-  private_data.Clear();
-  EXPECT_TRUE(private_data.word_list_.empty());
-  EXPECT_TRUE(private_data.available_words_.empty());
-  EXPECT_TRUE(private_data.word_map_.empty());
-  EXPECT_TRUE(private_data.char_word_map_.empty());
-  EXPECT_TRUE(private_data.word_id_history_map_.empty());
-  EXPECT_TRUE(private_data.history_id_word_map_.empty());
-  EXPECT_TRUE(private_data.history_info_map_.empty());
+  actual.Clear();
+  ExpectPrivateDataEmpty(actual);
 
   // Restore the cache.
-  EXPECT_TRUE(private_data.RestorePrivateData(index_cache));
+  EXPECT_TRUE(actual.RestorePrivateData(index_cache));
+  EXPECT_EQ(kCurrentCacheFileVersion, actual.restored_cache_version_);
 
-  // Compare the restored and captured for equality.
-  EXPECT_EQ(word_list.size(), private_data.word_list_.size());
-  EXPECT_EQ(word_map.size(), private_data.word_map_.size());
-  EXPECT_EQ(char_word_map.size(), private_data.char_word_map_.size());
-  EXPECT_EQ(word_id_history_map.size(),
-            private_data.word_id_history_map_.size());
-  EXPECT_EQ(history_id_word_map.size(),
-            private_data.history_id_word_map_.size());
-  EXPECT_EQ(history_info_map.size(), private_data.history_info_map_.size());
-  // WordList must be index-by-index equal.
-  size_t count = word_list.size();
-  for (size_t i = 0; i < count; ++i)
-    EXPECT_EQ(word_list[i], private_data.word_list_[i]);
+  // Compare the restored and expected for equality.
+  ExpectPrivateDataEqual(expected, actual);
 
-  ExpectMapOfContainersIdentical(char_word_map,
-                                 private_data.char_word_map_);
-  ExpectMapOfContainersIdentical(word_id_history_map,
-                                 private_data.word_id_history_map_);
-  ExpectMapOfContainersIdentical(history_id_word_map,
-                                 private_data.history_id_word_map_);
+  // Part 2: Save an older version of the cache, restore it, and verify that the
+  // reversioned portions are as expected.
+  URLIndexPrivateData older(expected);
+  in_memory_url_index::InMemoryURLIndexCacheItem older_cache;
+  older.set_saved_cache_version(0);
+  older.SavePrivateData(&older_cache);
 
-  for (HistoryInfoMap::const_iterator expected = history_info_map.begin();
-       expected != history_info_map.end(); ++expected) {
-    HistoryInfoMap::const_iterator actual =
-        private_data.history_info_map_.find(expected->first);
-    ASSERT_FALSE(private_data.history_info_map_.end() == actual);
-    const URLRow& expected_row(expected->second);
-    const URLRow& actual_row(actual->second);
-    EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
-    EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
-    EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
-    EXPECT_EQ(expected_row.url(), actual_row.url());
-  }
+  // Version check: Make sure this version does not have the word starts.
+  EXPECT_FALSE(older_cache.has_word_starts_map());
+
+  // Since we shouldn't have saved the word starts information for the version
+  // 0 save immediately above, the cache should be a bit smaller.
+  std::string older_data;
+  EXPECT_TRUE(older_cache.SerializeToString(&older_data));
+  size_t old_version_file_size = older_data.size();
+  EXPECT_LT(old_version_file_size, current_version_cache_size);
+  EXPECT_NE(data, older_data);
+
+  // Clear and then prove it's clear.
+  older.Clear();
+  ExpectPrivateDataEmpty(older);
+
+  // Restore the cache.
+  EXPECT_TRUE(older.RestorePrivateData(older_cache));
+  EXPECT_EQ(0, older.restored_cache_version_);
+
+  // Compare the restored and expected for equality.
+  ExpectPrivateDataEqual(expected, older);
 }
 
 class InMemoryURLIndexCacheTest : public testing::Test {

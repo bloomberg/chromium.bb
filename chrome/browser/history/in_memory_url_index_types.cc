@@ -96,18 +96,22 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
 
 // Utility Functions -----------------------------------------------------------
 
-String16Set String16SetFromString16(const string16& uni_string) {
-  const size_t kMaxWordLength = 64;
-  String16Vector words = String16VectorFromString16(uni_string, false);
+String16Set String16SetFromString16(const string16& uni_string,
+                                    WordStarts* word_starts) {
+  String16Vector words =
+      String16VectorFromString16(uni_string, false, word_starts);
   String16Set word_set;
   for (String16Vector::const_iterator iter = words.begin(); iter != words.end();
        ++iter)
-    word_set.insert(base::i18n::ToLower(*iter).substr(0, kMaxWordLength));
+    word_set.insert(base::i18n::ToLower(*iter).substr(0, kMaxSignificantChars));
   return word_set;
 }
 
 String16Vector String16VectorFromString16(const string16& uni_string,
-                                          bool break_on_space) {
+                                          bool break_on_space,
+                                          WordStarts* word_starts) {
+  if (word_starts)
+    word_starts->clear();
   base::i18n::BreakIterator iter(uni_string,
       break_on_space ? base::i18n::BreakIterator::BREAK_SPACE :
           base::i18n::BreakIterator::BREAK_WORD);
@@ -116,11 +120,22 @@ String16Vector String16VectorFromString16(const string16& uni_string,
     return words;
   while (iter.Advance()) {
     if (break_on_space || iter.IsWord()) {
-      string16 word = iter.GetString();
-      if (break_on_space)
-        TrimWhitespace(word, TRIM_ALL, &word);
-      if (!word.empty())
-        words.push_back(word);
+      string16 word(iter.GetString());
+      size_t initial_whitespace = 0;
+      if (break_on_space) {
+        string16 trimmed_word;
+        TrimWhitespace(word, TRIM_LEADING, &trimmed_word);
+        initial_whitespace = word.length() - trimmed_word.length();
+        TrimWhitespace(trimmed_word, TRIM_TRAILING, &word);
+      }
+      if (word.empty())
+        continue;
+      words.push_back(word);
+      if (!word_starts)
+        continue;
+      size_t word_start = iter.prev() + initial_whitespace;
+      if (word_start < kMaxSignificantChars)
+        word_starts->push_back(word_start);
     }
   }
   return words;
@@ -146,5 +161,10 @@ bool IsInlineablePrefix(const string16& prefix) {
   }
   return prefixes.count(prefix) != 0;
 }
+
+// RowWordStarts ---------------------------------------------------------------
+
+RowWordStarts::RowWordStarts() {}
+RowWordStarts::~RowWordStarts() {}
 
 }  // namespace history

@@ -67,14 +67,26 @@ message InMemoryURLIndexCacheItem {
     repeated HistoryInfoMapEntry history_info_map_entry = 2;
   }
 
-  // The timestamp of the cache, used to validate against an
-  // accompanying transaction journal.
-  required int64 timestamp = 1;
-  required int32 history_item_count = 2;
+  message WordStartsMapItem {
+    message WordStartsMapEntry {
+      required int64 history_id = 1;
+      repeated int32 url_word_starts = 2 [packed=true];
+      repeated int32 title_word_starts = 3 [packed=true];
+    }
 
-  optional WordListItem word_list = 3;
-  optional WordMapItem word_map = 4;
-  optional CharWordMapItem char_word_map = 5;
-  optional WordIDHistoryMapItem word_id_history_map = 6;
-  optional HistoryInfoMapItem history_info_map = 7;
+    required uint32 item_count = 1;
+    repeated WordStartsMapEntry word_starts_map_entry = 2;
+  }
+
+  required int64 timestamp = 1;
+  // If there is no version we'll assume version 0.
+  optional int32 version = 2;
+  required int32 history_item_count = 3;
+
+  optional WordListItem word_list = 4;
+  optional WordMapItem word_map = 5;
+  optional CharWordMapItem char_word_map = 6;
+  optional WordIDHistoryMapItem word_id_history_map = 7;
+  optional HistoryInfoMapItem history_info_map = 8;
+  optional WordStartsMapItem word_starts_map = 9;
 }
