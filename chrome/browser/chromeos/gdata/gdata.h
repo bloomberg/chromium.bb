@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -69,13 +70,10 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& content_url,
                             const FilePath& temp_file)> DownloadActionCallback;
 typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& upload_location)>
+                            const GURL& upload_url)>
     InitiateUploadCallback;
-typedef base::Callback<void(GDataErrorCode error,
-                            int64 start_range_received,
-                            int64 end_range_received) >
+typedef base::Callback<void(const ResumeUploadResponse& response)>
     ResumeUploadCallback;
-
 
 // Struct for passing params needed for DocumentsService::ResumeUpload() calls.
 struct ResumeUploadParams {

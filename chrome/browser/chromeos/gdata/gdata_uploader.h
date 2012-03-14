@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "googleurl/src/gurl.h"
 
 namespace gdata {
@@ -60,9 +61,7 @@ class GDataUploader {
 
   // DocumentsService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(const GURL& file_url,
-                                      GDataErrorCode code,
-                                      int64 start_range_received,
-                                      int64 end_range_received);
+                                      const ResumeUploadResponse& response);
 
   // Private data.
 

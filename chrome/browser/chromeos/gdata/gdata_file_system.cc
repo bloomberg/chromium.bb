@@ -344,10 +344,13 @@ void StoreToCacheOnIOThreadPool(const StoreToCacheParams& params) {
   if (params.source_path != params.dest_path) {
     if (!file_util::Move(params.source_path, params.dest_path)) {
       error = net::MapSystemError(errno);
-      DVLOG(1) << "Error moving " << params.source_path.value()
-               << " to " << params.dest_path.value()
-               << ": \"" << strerror(errno)
-               << "\", " << net::ErrorToString(error);
+      DLOG(ERROR) << "Error moving " << params.source_path.value()
+                  << " to " << params.dest_path.value()
+                  << ": \"" << strerror(errno)
+                  << "\", " << net::ErrorToString(error);
+    } else {
+      DVLOG(1) << "Moved " << params.source_path.value()
+               << " to " << params.dest_path.value();
     }
   }
 
@@ -947,7 +950,7 @@ void GDataFileSystem::InitiateUpload(
     const std::string& content_type,
     int64 content_length,
     const FilePath& destination_directory,
-    const InitiateUploadOperationCallback& callback) {
+    const InitiateUploadCallback& callback) {
   GURL destination_directory_url =
       GetUploadUrlForDirectory(destination_directory);
 
@@ -975,7 +978,7 @@ void GDataFileSystem::InitiateUpload(
 }
 
 void GDataFileSystem::OnUploadLocationReceived(
-    const InitiateUploadOperationCallback& callback,
+    const InitiateUploadCallback& callback,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     GDataErrorCode code,
     const GURL& upload_location) {
@@ -989,7 +992,7 @@ void GDataFileSystem::OnUploadLocationReceived(
 
 void GDataFileSystem::ResumeUpload(
     const ResumeUploadParams& params,
-    const ResumeUploadOperationCallback& callback) {
+    const ResumeUploadCallback& callback) {
   documents_service_->ResumeUpload(
           params,
           base::Bind(&GDataFileSystem::OnResumeUpload,
@@ -1000,18 +1003,13 @@ void GDataFileSystem::ResumeUpload(
                      base::MessageLoopProxy::current()));
 }
 
-void GDataFileSystem::OnResumeUpload(
-    const ResumeUploadOperationCallback& callback,
+void GDataFileSystem::OnResumeUpload(const ResumeUploadCallback& callback,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-    GDataErrorCode code,
-    int64 start_range_received,
-    int64 end_range_received) {
+    const ResumeUploadResponse& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null()) {
-    message_loop_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, code, start_range_received, end_range_received));
-  }
+  if (!callback.is_null())
+    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, response));
+
   // TODO(achuith): Figure out when we are done with upload and
   // add appropriate entry to the file system that represents the new file.
 }

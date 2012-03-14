@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "chrome/common/libxml_utils.h"
 #include "chrome/browser/download/download_util.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -69,6 +70,36 @@ FilePath GetGDataTempDownloadFolderPath() {
   return download_util::GetDefaultDownloadDirectory().Append(
       kGDataDownloadPath);
 }
+void ParseCreatedResponseContent(const std::string& response_content,
+    std::string* resource_id, std::string* md5_checksum) {
+  if (response_content.empty())
+    return;
+
+  XmlReader xml_reader;
+  bool ok = xml_reader.Load(response_content);
+  if (!ok) {
+    NOTREACHED() << "Invalid xml received " << response_content;
+    return;
+  }
+
+  // Read the 'entry' node, and then the first node under entry.
+  for (int i = 0; i < 2; ++i) {
+    ok = xml_reader.Read();
+    if (!ok) {
+      NOTREACHED() << "Read failed";
+      return;
+    }
+  }
+
+  // Look for nodes for resourceId and md5Checksum.
+  while (xml_reader.Next()) {
+    if (xml_reader.NodeName() == "resourceId")
+      xml_reader.ReadElementContent(resource_id);
+    if (xml_reader.NodeName() == "md5Checksum")
+      xml_reader.ReadElementContent(md5_checksum);
+  }
+}
+
 
 }  // namespace util
 }  // namespace gdata

@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -90,16 +91,6 @@ class GDataFileSystem : public ProfileKeyedService {
   // Used for file operations like removing files.
   typedef base::Callback<void(base::PlatformFileError error)>
       FileOperationCallback;
-
-  // Used for file operations like removing files.
-  typedef base::Callback<void(GDataErrorCode code,
-                              const GURL& upload_url)>
-      InitiateUploadOperationCallback;
-
-  typedef base::Callback<void(GDataErrorCode code,
-                              int64 start_range_received,
-                              int64 end_range_received) >
-      ResumeUploadOperationCallback;
 
   // Used to get files from the file system.
   typedef base::Callback<void(base::PlatformFileError error,
@@ -280,13 +271,13 @@ class GDataFileSystem : public ProfileKeyedService {
                       const std::string& content_type,
                       int64 content_length,
                       const FilePath& destination_directory,
-                      const InitiateUploadOperationCallback& callback);
+                      const InitiateUploadCallback& callback);
 
   // Resumes upload operation for chunk of file defined in |params..
   //
   // Can be called from any thread. |callback| is run on the calling thread.
   void ResumeUpload(const ResumeUploadParams& params,
-                    const ResumeUploadOperationCallback& callback);
+                    const ResumeUploadCallback& callback);
 
   // Unsafe (unlocked) version of the function above.
   void UnsafeFindFileByPath(const FilePath& file_path,
@@ -390,18 +381,15 @@ class GDataFileSystem : public ProfileKeyedService {
 
   // Callback for handling file upload initialization requests.
   void OnUploadLocationReceived(
-      const InitiateUploadOperationCallback& callback,
+      const InitiateUploadCallback& callback,
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       GDataErrorCode code,
       const GURL& upload_location);
 
   // Callback for handling file upload resume requests.
-  void OnResumeUpload(
-      const ResumeUploadOperationCallback& callback,
+  void OnResumeUpload(const ResumeUploadCallback& callback,
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      GDataErrorCode code,
-      int64 start_range_received,
-      int64 end_range_received);
+      const ResumeUploadResponse& response);
 
   // Renames a file or directory at |file_path| on in-memory snapshot
   // of the file system. Returns PLATFORM_FILE_OK if successful.

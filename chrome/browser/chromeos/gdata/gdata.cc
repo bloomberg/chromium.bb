@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -1203,13 +1204,14 @@ GURL ResumeUploadOperation::GetURL() const {
 void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
-  std::string range_received;
-  std::string response_content;
   int64 start_range_received = -1;
   int64 end_range_received = -1;
+  std::string resource_id;
+  std::string md5_checksum;
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
+    std::string range_received;
     hdrs->EnumerateHeader(NULL, kUploadResponseRange, &range_received);
     if (!range_received.empty()) {  // Parse the range header.
       std::vector<net::HttpByteRange> ranges;
@@ -1220,30 +1222,36 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
         end_range_received = ranges[0].last_byte_position();
       }
     }
-    VLOG(1) << "Got response for [" << params_.title
+    DVLOG(1) << "Got response for [" << params_.title
             << "]: code=" << code
             << ", range_hdr=[" << range_received
             << "], range_parsed=" << start_range_received
             << "," << end_range_received;
   } else {
     // There might be explanation of unexpected error code in response.
+    std::string response_content;
     source->GetResponseAsString(&response_content);
-    VLOG(1) << "Got response for [" << params_.title
+    DVLOG(1) << "Got response for [" << params_.title
             << "]: code=" << code
             << ", content=[\n" << response_content << "\n]";
+    util::ParseCreatedResponseContent(response_content, &resource_id,
+                                      &md5_checksum);
+    DCHECK(!resource_id.empty());
+    DCHECK(!md5_checksum.empty());
   }
 
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(callback_, code,
-                   start_range_received, end_range_received));
+        base::Bind(callback_, ResumeUploadResponse(code, start_range_received,
+                   end_range_received, resource_id, md5_checksum)));
   }
 }
 
 void ResumeUploadOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
   if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE, base::Bind(callback_, code, 0, 0));
+    relay_proxy_->PostTask(FROM_HERE, base::Bind(callback_,
+        ResumeUploadResponse(code, 0, 0, "", "")));
   }
 }
 

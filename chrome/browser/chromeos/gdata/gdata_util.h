@@ -36,6 +36,12 @@ FilePath ExtractGDataPath(const FilePath& path);
 // located at ~/Downloads/.gdata
 FilePath GetGDataTempDownloadFolderPath();
 
+// Parses the xml response of HTTP_CREATED response to extract the
+// resourceId and md5Checksum.
+void ParseCreatedResponseContent(const std::string& response_content,
+                                 std::string* resource_id,
+                                 std::string* md5_checksum);
+
 }  // namespace util
 }  // namespace gdata
 

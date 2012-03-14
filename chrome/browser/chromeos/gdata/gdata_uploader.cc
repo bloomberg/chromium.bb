@@ -216,20 +216,27 @@ void GDataUploader::ReadCompletionCallback(
 
 void GDataUploader::OnResumeUploadResponseReceived(
     const GURL& file_url,
-    GDataErrorCode code,
-    int64 start_range_received,
-    int64 end_range_received) {
+    const ResumeUploadResponse& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
     return;
 
-  if (code == HTTP_CREATED) {
+  if (response.code == HTTP_CREATED) {
     DVLOG(1) << "Successfully created uploaded file=["
-             << upload_file_info->title << "]";
+             << upload_file_info->title
+             << "], with resourceId=[" << response.resource_id
+             << "], and md5Checksum=[" << response.md5_checksum << "]";
 
     // Done uploading.
+    DCHECK(!response.resource_id.empty());
+    DCHECK(!response.md5_checksum.empty());
+    bool ok = file_system_->StoreToCache(response.resource_id,
+        response.md5_checksum,
+        upload_file_info->file_path,
+        CacheOperationCallback());
+    DCHECK(ok);
     RemovePendingUpload(upload_file_info);
     return;
   }
@@ -237,9 +244,9 @@ void GDataUploader::OnResumeUploadResponseReceived(
   // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
   // previously uploaded (i.e. = upload_file_info->end_range), proceed to
   // upload the next chunk.
-  if (code != HTTP_RESUME_INCOMPLETE ||
-      start_range_received != 0 ||
-      end_range_received != upload_file_info->end_range) {
+  if (response.code != HTTP_RESUME_INCOMPLETE ||
+      response.start_range_received != 0 ||
+      response.end_range_received != upload_file_info->end_range) {
     // TODO(achuith): Handle error cases, e.g.
     // - when previously uploaded data wasn't received by Google Docs server,
     //   i.e. when end_range_received < upload_file_info->end_range
@@ -250,17 +257,17 @@ void GDataUploader::OnResumeUploadResponseReceived(
     //   successfully, but instead of returning 201 (CREATED) status code after
     //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
     //   then will indicate quote exceeded exception.
-    NOTREACHED() << "UploadNextChunk http code=" << code
-                 << ", start_range_received=" << start_range_received
-                 << ", end_range_received=" << end_range_received
+    NOTREACHED() << "UploadNextChunk http code=" << response.code
+                 << ", start_range_received=" << response.start_range_received
+                 << ", end_range_received=" << response.end_range_received
                  << ", expected end range=" << upload_file_info->end_range;
 
     RemovePendingUpload(upload_file_info);
     return;
   }
 
-  DVLOG(1) << "Received range " << start_range_received
-           << "-" << end_range_received
+  DVLOG(1) << "Received range " << response.start_range_received
+           << "-" << response.end_range_received
            << " for [" << upload_file_info->title << "]";
 
   // Continue uploading.
