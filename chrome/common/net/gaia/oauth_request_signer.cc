@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ const std::string SignatureMethodName(
 
 std::string BuildBaseString(const GURL& request_base_url,
                             OAuthRequestSigner::HttpMethod http_method,
-                            const std::string base_parameters) {
+                            const std::string& base_parameters) {
   return StringPrintf("%s&%s&%s",
                       HttpMethodName(http_method).c_str(),
                       OAuthRequestSigner::Encode(
