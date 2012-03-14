@@ -69,6 +69,7 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
+  CleanupDragDrop();
 }
 
 void PanelBrowserWindowGtk::Init() {

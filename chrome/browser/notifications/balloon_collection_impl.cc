@@ -56,6 +56,9 @@ BalloonCollectionImpl::BalloonCollectionImpl()
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
+#if USE_OFFSETS
+  RemoveMessageLoopObserver();
+#endif
 }
 
 void BalloonCollectionImpl::AddImpl(const Notification& notification,
