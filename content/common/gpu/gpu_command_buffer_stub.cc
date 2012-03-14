@@ -564,7 +564,8 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   if (visible)
-    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_FOREGROUND);
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
   DCHECK(surface_state_.get());
   surface_state_->visible = visible;
   surface_state_->last_used_time = base::TimeTicks::Now();
@@ -625,11 +626,14 @@ void GpuCommandBufferStub::SetMemoryAllocation(
   if (!surface_)
     return;
   if (allocation.has_frontbuffer && allocation.has_backbuffer)
-    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_FOREGROUND);
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
   else if (allocation.has_frontbuffer)
-    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_BACKGROUND);
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_ONLY);
   else
-    surface_->SetVisibility(gfx::GLSurface::VISIBILITY_STATE_HIBERNATED);
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_NONE);
 }
 
 #endif  // defined(ENABLE_GPU)

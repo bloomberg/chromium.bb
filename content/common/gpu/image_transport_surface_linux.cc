@@ -93,7 +93,7 @@ class EGLImageTransportSurface
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
+  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -110,8 +110,8 @@ class EGLImageTransportSurface
   void SendBuffersSwapped();
   void SendPostSubBuffer(int x, int y, int width, int height);
 
-  // Tracks the current surface visibility state.
-  VisibilityState visibility_state_;
+  // Tracks the current buffer allocation state.
+  BufferAllocationState buffer_allocation_state_;
 
   uint32 fbo_id_;
 
@@ -145,7 +145,7 @@ class GLXImageTransportSurface
   virtual std::string GetExtensions();
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
+  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -167,8 +167,8 @@ class GLXImageTransportSurface
 
   void ResizeSurface(gfx::Size size);
 
-  // Tracks the current surface visibility state.
-  VisibilityState visibility_state_;
+  // Tracks the current buffer allocation state.
+  BufferAllocationState buffer_allocation_state_;
 
   XID dummy_parent_;
   gfx::Size size_;
@@ -270,7 +270,7 @@ EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
-      visibility_state_(VISIBILITY_STATE_FOREGROUND),
+      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
       fbo_id_(0),
       made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
@@ -333,23 +333,24 @@ unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void EGLImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
-  if (visibility_state_ == visibility_state)
+void EGLImageTransportSurface::SetBufferAllocation(
+    BufferAllocationState state) {
+  if (buffer_allocation_state_ == state)
     return;
-  visibility_state_ = visibility_state;
+  buffer_allocation_state_ = state;
 
-  switch (visibility_state) {
-    case VISIBILITY_STATE_FOREGROUND:
+  switch (state) {
+    case BUFFER_ALLOCATION_FRONT_AND_BACK:
       if (!back_surface_.get() && front_surface_.get())
         OnResize(front_surface_->size());
       break;
 
-    case VISIBILITY_STATE_BACKGROUND:
+    case BUFFER_ALLOCATION_FRONT_ONLY:
       if (back_surface_.get() && front_surface_.get())
         ReleaseSurface(&back_surface_);
       break;
 
-    case VISIBILITY_STATE_HIBERNATED:
+    case BUFFER_ALLOCATION_NONE:
       if (back_surface_.get() && front_surface_.get())
         ReleaseSurface(&back_surface_);
       break;
@@ -518,7 +519,7 @@ GLXImageTransportSurface::GLXImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::NativeViewGLSurfaceGLX(),
-      visibility_state_(VISIBILITY_STATE_FOREGROUND),
+      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
       dummy_parent_(0),
       size_(1, 1),
       bound_(false),
@@ -602,21 +603,22 @@ void GLXImageTransportSurface::ReleaseSurface() {
   bound_ = false;
 }
 
-void GLXImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
-  if (visibility_state_ == visibility_state)
+void GLXImageTransportSurface::SetBufferAllocation(
+    BufferAllocationState state) {
+  if (buffer_allocation_state_ == state)
     return;
-  visibility_state_ = visibility_state;
+  buffer_allocation_state_ = state;
 
-  switch (visibility_state) {
-    case VISIBILITY_STATE_FOREGROUND: {
+  switch (state) {
+    case BUFFER_ALLOCATION_FRONT_AND_BACK: {
       ResizeSurface(size_);
       break;
     }
-    case VISIBILITY_STATE_BACKGROUND: {
+    case BUFFER_ALLOCATION_FRONT_ONLY: {
       ResizeSurface(gfx::Size(1,1));
       break;
     }
-    case VISIBILITY_STATE_HIBERNATED: {
+    case BUFFER_ALLOCATION_NONE: {
       ResizeSurface(gfx::Size(1,1));
       if (bound_)
         ReleaseSurface();

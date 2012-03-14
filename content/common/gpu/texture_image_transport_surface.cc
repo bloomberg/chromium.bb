@@ -147,15 +147,16 @@ unsigned int TextureImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void TextureImageTransportSurface::SetVisibility(VisibilityState state) {
+void TextureImageTransportSurface::SetBufferAllocation(
+    BufferAllocationState state) {
   if (!helper_->MakeCurrent())
     return;
   switch (state) {
-    case VISIBILITY_STATE_FOREGROUND:
+    case BUFFER_ALLOCATION_FRONT_AND_BACK:
       CreateBackTexture(textures_[back()].size);
       break;
-    case VISIBILITY_STATE_BACKGROUND:
-    case VISIBILITY_STATE_HIBERNATED:
+    case BUFFER_ALLOCATION_FRONT_ONLY:
+    case BUFFER_ALLOCATION_NONE:
       ReleaseBackTexture();
       break;
   };

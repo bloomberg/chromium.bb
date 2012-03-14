@@ -71,14 +71,14 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
 
-  // This gives a hint as to whether this surface is visible. If it is not
-  // visible, the backing store need not be preserved.
-  enum VisibilityState {
-    VISIBILITY_STATE_FOREGROUND,
-    VISIBILITY_STATE_BACKGROUND,
-    VISIBILITY_STATE_HIBERNATED
+  // Used for explicit buffer management.  Expect buffers to be destroyed only
+  // when surface is not visible.
+  enum BufferAllocationState {
+    BUFFER_ALLOCATION_FRONT_AND_BACK,
+    BUFFER_ALLOCATION_FRONT_ONLY,
+    BUFFER_ALLOCATION_NONE
   };
-  virtual void SetVisibility(VisibilityState visibility_state);
+  virtual void SetBufferAllocation(BufferAllocationState state);
 
   // Get a handle used to share the surface with another process. Returns null
   // if this is not possible.
@@ -135,7 +135,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
-  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
+  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;

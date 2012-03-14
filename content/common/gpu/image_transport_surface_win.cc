@@ -40,7 +40,7 @@ class PbufferImageTransportSurface
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
-  virtual void SetVisibility(VisibilityState visibility_state) OVERRIDE;
+  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -55,8 +55,8 @@ class PbufferImageTransportSurface
   virtual ~PbufferImageTransportSurface();
   void SendBuffersSwapped();
 
-  // Tracks the current surface visibility state.
-  VisibilityState visibility_state_;
+  // Tracks the current buffer allocation state.
+  BufferAllocationState buffer_allocation_state_;
 
   // Size to resize to when the surface becomes visible.
   gfx::Size visible_size_;
@@ -70,7 +70,7 @@ PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1))),
-      visibility_state_(VISIBILITY_STATE_FOREGROUND) {
+      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -121,22 +121,22 @@ bool PbufferImageTransportSurface::PostSubBuffer(
   return false;
 }
 
-void PbufferImageTransportSurface::SetVisibility(
-    VisibilityState visibility_state) {
-  if (visibility_state_ == visibility_state)
+void PbufferImageTransportSurface::SetBufferAllocation(
+    BufferAllocationState state) {
+  if (buffer_allocation_state_ == state)
     return;
-  visibility_state_ = visibility_state;
+  buffer_allocation_state_ = state;
 
-  switch (visibility_state) {
-    case VISIBILITY_STATE_FOREGROUND:
+  switch (state) {
+    case BUFFER_ALLOCATION_FRONT_AND_BACK:
       Resize(visible_size_);
       break;
 
-    case VISIBILITY_STATE_BACKGROUND:
+    case BUFFER_ALLOCATION_FRONT_ONLY:
       Resize(gfx::Size(1, 1));
       break;
 
-    case VISIBILITY_STATE_HIBERNATED:
+    case BUFFER_ALLOCATION_NONE:
       Resize(gfx::Size(1, 1));
       helper_->Suspend();
       break;
@@ -181,7 +181,7 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
 }
 
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {
-  if (visibility_state_ == VISIBILITY_STATE_FOREGROUND)
+  if (buffer_allocation_state_ == BUFFER_ALLOCATION_FRONT_AND_BACK)
     Resize(size);
 
   visible_size_ = size;
