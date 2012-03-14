@@ -28,13 +28,13 @@ BUILD_TYPE_DUMP_ORDER = [
     constants.REFRESH_PACKAGES_TYPE]
 
 
-def OverrideConfigForTrybot(build_config):
+def OverrideConfigForTrybot(build_config, remote_trybot):
   """Apply trybot-specific configuration settings.
 
   Args:
     build_config:  The build configuration dictionary to override.
       The dictionary is not modified.
-
+    remote_trybot: Whether we are overriding as remote trybot.
   Returns:
     A build configuration dictionary with the overrides applied.
   """
@@ -52,6 +52,10 @@ def OverrideConfigForTrybot(build_config):
 
     config['upload_symbols'] = False
     config['push_image'] = False
+
+    # Default to starting with a fresh chroot on remote trybot runs.
+    if remote_trybot:
+      config['chroot_replace'] = True
 
   return copy_config
 

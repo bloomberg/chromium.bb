@@ -990,6 +990,7 @@ def main(argv):
                                      cros_lib.Timeout, options.timeout):
           if not options.buildbot:
             build_config = cbuildbot_config.OverrideConfigForTrybot(
-                build_config)
+                build_config,
+                options.remote_trybot)
 
           _RunBuildStagesWrapper(options, build_config)
