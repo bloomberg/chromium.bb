@@ -250,6 +250,7 @@ class DownloadTest : public InProcessBrowserTest {
     // Download interrupt reason (NONE is OK).
     content::DownloadInterruptReason reason;
     bool show_download_item;  // True if the download item appears on the shelf.
+    bool should_redirect_to_documents;  // True if we save it in "My Documents".
   };
 
   DownloadTest() {
@@ -641,6 +642,7 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   // Attempts to download a file, based on information in |download_info|.
+  // If a Select File dialog opens, will automatically choose the default.
   void DownloadFileCheckErrors(const DownloadInfo& download_info) {
     ASSERT_TRUE(test_server()->Start());
     std::vector<DownloadItem*> download_items;
@@ -653,6 +655,8 @@ class DownloadTest : public InProcessBrowserTest {
     server_path += download_info.url_name;
     GURL url = test_server()->GetURL(server_path);
     ASSERT_TRUE(url.is_valid());
+
+    NullSelectFile(browser());  // Needed for read-only tests.
 
     DownloadManager* download_manager = DownloadManagerForBrowser(browser());
     scoped_ptr<DownloadTestObserver> observer(
@@ -717,7 +721,44 @@ class DownloadTest : public InProcessBrowserTest {
       ASSERT_EQ(url, item->GetOriginalUrl());
 
       ASSERT_EQ(download_info.reason, item->GetLastReason());
+
+      if (item->GetState() == content::DownloadItem::COMPLETE) {
+        // Clean up the file, in case it ended up in the My Documents folder.
+        FilePath destination_folder = GetDownloadDirectory(browser());
+        FilePath my_downloaded_file = item->GetTargetFilePath();
+        EXPECT_TRUE(file_util::PathExists(my_downloaded_file));
+        EXPECT_TRUE(file_util::Delete(my_downloaded_file, false));
+
+        EXPECT_EQ(download_info.should_redirect_to_documents ?
+                      std::string::npos :
+                      0u,
+                  my_downloaded_file.value().find(destination_folder.value()));
+        if (download_info.should_redirect_to_documents) {
+          // If it's not where we asked it to be, it should be in the
+          // My Documents folder.
+          FilePath my_docs_folder;
+          EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DOCUMENTS,
+                                       &my_docs_folder));
+          EXPECT_EQ(0u,
+                    my_downloaded_file.value().find(my_docs_folder.value()));
+        }
+      }
     }
+  }
+
+  // Attempts to download a file to a read-only folder, based on information
+  // in |download_info|.
+  void DownloadFileToReadonlyFolder(const DownloadInfo& download_info) {
+    ASSERT_TRUE(InitialSetup(false));  // Creates temporary download folder.
+
+    // Make the test folder unwritable.
+    FilePath destination_folder = GetDownloadDirectory(browser());
+    DVLOG(1) << " " << __FUNCTION__ << "()"
+             << " folder = '" << destination_folder.value() << "'";
+    file_util::PermissionRestorer permission_restorer(destination_folder);
+    EXPECT_TRUE(file_util::MakeFileUnwritable(destination_folder));
+
+    DownloadFileCheckErrors(download_info);
   }
 
   bool EnsureNoPendingDownloads() {
@@ -2028,7 +2069,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadNavigate) {
     "a_zip_file.zip",
     DOWNLOAD_NAVIGATE,
     content::DOWNLOAD_INTERRUPT_REASON_NONE,
-    true
+    true,
+    false
   };
 
   // Do initial setup.
@@ -2041,7 +2083,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDirect) {
     "a_zip_file.zip",
     DOWNLOAD_DIRECT,
     content::DOWNLOAD_INTERRUPT_REASON_NONE,
-    true
+    true,
+    false
   };
 
   // Do initial setup.
@@ -2054,7 +2097,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Direct) {
     "there_IS_no_spoon.zip",
     DOWNLOAD_DIRECT,
     content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
-    true
+    true,
+    false
   };
 
   // Do initial setup.
@@ -2067,6 +2111,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Navigate) {
     "there_IS_no_spoon.zip",
     DOWNLOAD_NAVIGATE,
     content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+    false,
     false
   };
 
@@ -2080,7 +2125,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Direct) {
     "zip_file_not_found.zip",
     DOWNLOAD_DIRECT,
     content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
-    true
+    true,
+    false
   };
 
   // Do initial setup.
@@ -2093,10 +2139,37 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Navigate) {
     "zip_file_not_found.zip",
     DOWNLOAD_NAVIGATE,
     content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    false,
     false
   };
 
   // Do initial setup.
   ASSERT_TRUE(InitialSetup(false));
   DownloadFileCheckErrors(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolderDirect) {
+  DownloadInfo download_info = {
+    "a_zip_file.zip",
+    DOWNLOAD_DIRECT,
+    // This passes because we switch to the My Documents folder.
+    content::DOWNLOAD_INTERRUPT_REASON_NONE,
+    true,
+    true
+  };
+
+  DownloadFileToReadonlyFolder(download_info);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolderNavigate) {
+  DownloadInfo download_info = {
+    "a_zip_file.zip",
+    DOWNLOAD_NAVIGATE,
+    // This passes because we switch to the My Documents folder.
+    content::DOWNLOAD_INTERRUPT_REASON_NONE,
+    true,
+    true
+  };
+
+  DownloadFileToReadonlyFolder(download_info);
 }
