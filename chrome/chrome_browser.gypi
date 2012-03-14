@@ -138,8 +138,6 @@
         'browser/autocomplete/search_provider.h',
         'browser/autocomplete/shortcuts_provider.cc',
         'browser/autocomplete/shortcuts_provider.h',
-        'browser/autocomplete/shortcuts_provider_shortcut.cc',
-        'browser/autocomplete/shortcuts_provider_shortcut.h',
         'browser/autocomplete_history_manager.cc',
         'browser/autocomplete_history_manager.h',
         'browser/autofill/address.cc',

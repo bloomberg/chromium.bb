@@ -6,16 +6,13 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
 #pragma once
 
-#include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
@@ -56,7 +53,7 @@ class ShortcutsProvider
   AutocompleteMatch ShortcutToACMatch(
       const AutocompleteInput& input,
       const string16& terms,
-      shortcuts_provider::ShortcutMap::const_iterator it);
+      const history::ShortcutsBackend::Shortcut& shortcut);
 
   // Given |text| and a corresponding base set of classifications
   // |original_class|, adds ACMatchClassification::MATCH markers for all
@@ -76,11 +73,12 @@ class ShortcutsProvider
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
-  shortcuts_provider::ShortcutMap::const_iterator FindFirstMatch(
+  history::ShortcutsBackend::ShortcutMap::const_iterator FindFirstMatch(
       const string16& keyword);
 
-  static int CalculateScore(const string16& terms,
-                            const shortcuts_provider::Shortcut& shortcut);
+  static int CalculateScore(
+      const string16& terms,
+      const history::ShortcutsBackend::Shortcut& shortcut);
 
   // For unit-test only.
   void set_shortcuts_backend(history::ShortcutsBackend* shortcuts_backend);

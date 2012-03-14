@@ -9,58 +9,35 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/shortcuts_provider.h"
 #include "chrome/common/guid.h"
 #include "sql/statement.h"
-
-using base::Time;
 
 namespace {
 
 // Using define instead of const char, so I could use ## in the statements.
 #define kShortcutsDBName "omni_box_shortcuts"
 
-// The maximum length allowed for form data.
-const size_t kMaxDataLength = 2048;  // 2K is a hard limit on URLs URI.
-
-string16 LimitDataSize(const string16& data) {
-  if (data.size() > kMaxDataLength)
-    return data.substr(0, kMaxDataLength);
-
-  return data;
-}
-
-void BindShortcutToStatement(const shortcuts_provider::Shortcut& shortcut,
-                             sql::Statement* s) {
+void BindShortcutToStatement(
+    const history::ShortcutsBackend::Shortcut& shortcut,
+    sql::Statement* s) {
   DCHECK(guid::IsValidGUID(shortcut.id));
   s->BindString(0, shortcut.id);
-  s->BindString16(1, LimitDataSize(shortcut.text));
-  s->BindString16(2, LimitDataSize(UTF8ToUTF16(shortcut.url.spec())));
-  s->BindString16(3, LimitDataSize(shortcut.contents));
-  s->BindString16(4, LimitDataSize(shortcut.contents_class_as_str()));
-  s->BindString16(5, LimitDataSize(shortcut.description));
-  s->BindString16(6, LimitDataSize(shortcut.description_class_as_str()));
+  s->BindString16(1, shortcut.text);
+  s->BindString(2, shortcut.url.spec());
+  s->BindString16(3, shortcut.contents);
+  s->BindString(4,
+      AutocompleteMatch::ClassificationsToString(shortcut.contents_class));
+  s->BindString16(5, shortcut.description);
+  s->BindString(6,
+      AutocompleteMatch::ClassificationsToString(shortcut.description_class));
   s->BindInt64(7, shortcut.last_access_time.ToInternalValue());
   s->BindInt(8, shortcut.number_of_hits);
 }
 
-shortcuts_provider::Shortcut ShortcutFromStatement(const sql::Statement& s) {
-  return shortcuts_provider::Shortcut(s.ColumnString(0),
-                                      s.ColumnString16(1),
-                                      s.ColumnString16(2),
-                                      s.ColumnString16(3),
-                                      s.ColumnString16(4),
-                                      s.ColumnString16(5),
-                                      s.ColumnString16(6),
-                                      s.ColumnInt64(7),
-                                      s.ColumnInt(8));
-}
-
-bool DeleteShortcut(const char* field_name, const std::string& id,
+bool DeleteShortcut(const char* field_name,
+                    const std::string& id,
                     sql::Connection& db) {
   sql::Statement s(db.GetUniqueStatement(
       base::StringPrintf("DELETE FROM %s WHERE %s = ?", kShortcutsDBName,
@@ -104,7 +81,7 @@ bool ShortcutsDatabase::Init() {
 }
 
 bool ShortcutsDatabase::AddShortcut(
-    const shortcuts_provider::Shortcut& shortcut) {
+    const ShortcutsBackend::Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO " kShortcutsDBName
       " (id, text, url, contents, contents_class, description,"
@@ -116,7 +93,7 @@ bool ShortcutsDatabase::AddShortcut(
 }
 
 bool ShortcutsDatabase::UpdateShortcut(
-    const shortcuts_provider::Shortcut& shortcut) {
+    const ShortcutsBackend::Shortcut& shortcut) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
     "UPDATE " kShortcutsDBName " "
       "SET id=?, text=?, url=?, contents=?, contents_class=?,"
@@ -158,8 +135,7 @@ bool ShortcutsDatabase::DeleteAllShortcuts() {
 }
 
 // Loads all of the shortcuts.
-bool ShortcutsDatabase::LoadShortcuts(
-    std::map<std::string, shortcuts_provider::Shortcut>* shortcuts) {
+bool ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
   DCHECK(shortcuts);
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, text, url, contents, contents_class, "
@@ -172,7 +148,12 @@ bool ShortcutsDatabase::LoadShortcuts(
   shortcuts->clear();
   while (s.Step()) {
     shortcuts->insert(std::make_pair(s.ColumnString(0),
-                                     ShortcutFromStatement(s)));
+        ShortcutsBackend::Shortcut(s.ColumnString(0), s.ColumnString16(1),
+            GURL(s.ColumnString(2)), s.ColumnString16(3),
+            AutocompleteMatch::ClassificationsFromString(s.ColumnString(4)),
+            s.ColumnString16(5),
+            AutocompleteMatch::ClassificationsFromString(s.ColumnString(6)),
+            base::Time::FromInternalValue(s.ColumnInt64(7)), s.ColumnInt(8))));
   }
   return true;
 }

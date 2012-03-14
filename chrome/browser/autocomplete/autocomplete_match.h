@@ -134,6 +134,21 @@ struct AutocompleteMatch {
                                        int style,
                                        ACMatchClassifications* classifications);
 
+  // Converts classifications to and from a serialized string representation
+  // (using comma-separated integers to sequentially list positions and styles).
+  static std::string ClassificationsToString(
+      const ACMatchClassifications& classifications);
+  static ACMatchClassifications ClassificationsFromString(
+      const std::string& serialized_classifications);
+
+  // Adds a classification to the end of |classifications| iff its style is
+  // different from the last existing classification.  |offset| must be larger
+  // than the offset of the last classification in |classifications|.
+  static void AddLastClassificationIfNecessary(
+      ACMatchClassifications* classifications,
+      size_t offset,
+      int style);
+
   // Removes invalid characters from |text|. Should be called on strings coming
   // from external sources (such as extensions) before assigning to |contents|
   // or |description|.

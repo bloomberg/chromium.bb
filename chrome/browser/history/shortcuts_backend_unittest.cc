@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/common/guid.h"
@@ -19,8 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using shortcuts_provider::Shortcut;
-using shortcuts_provider::ShortcutMap;
 
 namespace history {
 
@@ -82,15 +79,16 @@ void ShortcutsBackendTest::InitBackend() {
 
 TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   InitBackend();
-  Shortcut shortcut("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
-                    ASCIIToUTF16("goog"), ASCIIToUTF16("http://www.google.com"),
-                    ASCIIToUTF16("Google"), ASCIIToUTF16("0,1"),
-                    ASCIIToUTF16("Google"), ASCIIToUTF16("0,1"),
-                    base::Time::Now().ToInternalValue(),
-                    100);
+  ShortcutsBackend::Shortcut shortcut("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
+      ASCIIToUTF16("goog"), GURL("http://www.google.com"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,1"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
+      100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut));
 
-  const ShortcutMap& shortcuts = backend_->shortcuts_map();
+  const ShortcutsBackend::ShortcutMap& shortcuts = backend_->shortcuts_map();
   ASSERT_TRUE(shortcuts.end() != shortcuts.find(shortcut.text));
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
   EXPECT_EQ(shortcut.contents, shortcuts.find(shortcut.text)->second.contents);
@@ -102,40 +100,41 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
 
 TEST_F(ShortcutsBackendTest, DeleteShortcuts) {
   InitBackend();
-  Shortcut shortcut1("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
-                     ASCIIToUTF16("goog"),
-                     ASCIIToUTF16("http://www.google.com"),
-                     ASCIIToUTF16("Google"), ASCIIToUTF16("0,1,4,0"),
-                     ASCIIToUTF16("Google"), ASCIIToUTF16("0,3,4,1"),
-                     base::Time::Now().ToInternalValue(),
-                     100);
+  ShortcutsBackend::Shortcut shortcut1("BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
+      ASCIIToUTF16("goog"), GURL("http://www.google.com"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,1,4,0"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,3,4,1"),
+      base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut1));
 
-  Shortcut shortcut2("BD85DBA2-8C29-49F9-84AE-48E1E90880E0",
-                     ASCIIToUTF16("gle"), ASCIIToUTF16("http://www.google.com"),
-                     ASCIIToUTF16("Google"), ASCIIToUTF16("0,1"),
-                     ASCIIToUTF16("Google"), ASCIIToUTF16("0,1"),
-                     base::Time::Now().ToInternalValue(),
-                     100);
+  ShortcutsBackend::Shortcut shortcut2("BD85DBA2-8C29-49F9-84AE-48E1E90880E0",
+      ASCIIToUTF16("gle"), GURL("http://www.google.com"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,1"),
+      ASCIIToUTF16("Google"),
+      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
+      100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut2));
 
-  Shortcut shortcut3("BD85DBA2-8C29-49F9-84AE-48E1E90880E1",
-                     ASCIIToUTF16("sp"), ASCIIToUTF16("http://www.sport.com"),
-                     ASCIIToUTF16("Sports"), ASCIIToUTF16("0,1"),
-                     ASCIIToUTF16("Sport news"), ASCIIToUTF16("0,1"),
-                     base::Time::Now().ToInternalValue(),
-                     10);
+  ShortcutsBackend::Shortcut shortcut3("BD85DBA2-8C29-49F9-84AE-48E1E90880E1",
+      ASCIIToUTF16("sp"), GURL("http://www.sport.com"), ASCIIToUTF16("Sports"),
+      AutocompleteMatch::ClassificationsFromString("0,1"),
+      ASCIIToUTF16("Sport news"),
+      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
+      10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut3));
 
-  Shortcut shortcut4("BD85DBA2-8C29-49F9-84AE-48E1E90880E2",
-                     ASCIIToUTF16("mov"), ASCIIToUTF16("http://www.film.com"),
-                     ASCIIToUTF16("Movies"), ASCIIToUTF16("0,1"),
-                     ASCIIToUTF16("Movie news"), ASCIIToUTF16("0,1"),
-                     base::Time::Now().ToInternalValue(),
-                     10);
+  ShortcutsBackend::Shortcut shortcut4("BD85DBA2-8C29-49F9-84AE-48E1E90880E2",
+      ASCIIToUTF16("mov"), GURL("http://www.film.com"), ASCIIToUTF16("Movies"),
+      AutocompleteMatch::ClassificationsFromString("0,1"),
+      ASCIIToUTF16("Movie news"),
+      AutocompleteMatch::ClassificationsFromString("0,1"), base::Time::Now(),
+      10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut4));
 
-  const ShortcutMap& shortcuts = backend_->shortcuts_map();
+  const ShortcutsBackend::ShortcutMap& shortcuts = backend_->shortcuts_map();
 
   ASSERT_EQ(4U, shortcuts.size());
   EXPECT_EQ(shortcut1.id, shortcuts.find(shortcut1.text)->second.id);

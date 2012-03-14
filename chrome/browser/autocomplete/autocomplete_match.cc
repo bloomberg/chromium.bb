@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -212,6 +213,53 @@ void AutocompleteMatch::ClassifyLocationInString(
   const size_t after_match(match_location + match_length);
   if (after_match < overall_length) {
     classification->push_back(ACMatchClassification(after_match, style));
+  }
+}
+
+// static
+std::string AutocompleteMatch::ClassificationsToString(
+    const ACMatchClassifications& classifications) {
+  std::string serialized_classifications;
+  for (size_t i = 0; i < classifications.size(); ++i) {
+    if (i)
+      serialized_classifications += ',';
+    serialized_classifications += base::IntToString(classifications[i].offset) +
+        ',' + base::IntToString(classifications[i].style);
+  }
+  return serialized_classifications;
+}
+
+// static
+ACMatchClassifications AutocompleteMatch::ClassificationsFromString(
+    const std::string& serialized_classifications) {
+  ACMatchClassifications classifications;
+  std::vector<std::string> tokens;
+  Tokenize(serialized_classifications, ",", &tokens);
+  DCHECK(!(tokens.size() & 1));  // The number of tokens should be even.
+  for (size_t i = 0; i < tokens.size(); i += 2) {
+    int classification_offset = 0;
+    int classification_style = ACMatchClassification::NONE;
+    if (!base::StringToInt(tokens[i], &classification_offset) ||
+        !base::StringToInt(tokens[i + 1], &classification_style)) {
+      NOTREACHED();
+      return classifications;
+    }
+    classifications.push_back(ACMatchClassification(classification_offset,
+                                                    classification_style));
+  }
+  return classifications;
+}
+
+// static
+void AutocompleteMatch::AddLastClassificationIfNecessary(
+    ACMatchClassifications* classifications,
+    size_t offset,
+    int style) {
+  DCHECK(classifications);
+  if (classifications->empty() || classifications->back().style != style) {
+    DCHECK(classifications->empty() ||
+           (offset > classifications->back().offset));
+    classifications->push_back(ACMatchClassification(offset, style));
   }
 }
 

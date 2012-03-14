@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,17 +8,11 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/common/guid.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::Time;
-using base::TimeDelta;
-using shortcuts_provider::Shortcut;
-using shortcuts_provider::ShortcutMap;
 
 namespace history {
 
@@ -54,7 +48,8 @@ class ShortcutsDatabaseTest : public testing::Test {
   void ClearDB();
   size_t CountRecords() const;
 
-  Shortcut ShortcutFromTestInfo(const ShortcutsDatabaseTestInfo& info);
+  ShortcutsBackend::Shortcut ShortcutFromTestInfo(
+      const ShortcutsDatabaseTestInfo& info);
 
   void AddAll();
 
@@ -86,18 +81,15 @@ size_t ShortcutsDatabaseTest::CountRecords() const {
   return static_cast<size_t>(s.ColumnInt(0));
 }
 
-Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
+ShortcutsBackend::Shortcut ShortcutsDatabaseTest::ShortcutFromTestInfo(
     const ShortcutsDatabaseTestInfo& info) {
-  Time visit_time = Time::Now() - TimeDelta::FromDays(info.days_from_now);
-  return Shortcut(info.guid,
-                  ASCIIToUTF16(info.title),
-                  ASCIIToUTF16(info.url),
-                  ASCIIToUTF16(info.contents),
-                  ASCIIToUTF16(info.contents_class),
-                  ASCIIToUTF16(info.description),
-                  ASCIIToUTF16(info.description_class),
-                  visit_time.ToInternalValue(),
-                  info.typed_count);
+  return ShortcutsBackend::Shortcut(info.guid, ASCIIToUTF16(info.title),
+      GURL(info.url), ASCIIToUTF16(info.contents),
+      AutocompleteMatch::ClassificationsFromString(info.contents_class),
+      ASCIIToUTF16(info.description),
+      AutocompleteMatch::ClassificationsFromString(info.description_class),
+      base::Time::Now() - base::TimeDelta::FromDays(info.days_from_now),
+      info.typed_count);
 }
 
 void ShortcutsDatabaseTest::AddAll() {
@@ -121,12 +113,14 @@ TEST_F(ShortcutsDatabaseTest, AddShortcut) {
 
 TEST_F(ShortcutsDatabaseTest, UpdateShortcut) {
   AddAll();
-  Shortcut shortcut(ShortcutFromTestInfo(shortcut_test_db[1]));
+  ShortcutsBackend::Shortcut shortcut(
+      ShortcutFromTestInfo(shortcut_test_db[1]));
   shortcut.contents = ASCIIToUTF16("gro.todhsals");
   EXPECT_TRUE(db_->UpdateShortcut(shortcut));
-  std::map<std::string, Shortcut> shortcuts;
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
-  std::map<std::string, Shortcut>::iterator it = shortcuts.find(shortcut.id);
+  ShortcutsDatabase::GuidToShortcutMap::iterator it =
+      shortcuts.find(shortcut.id);
   EXPECT_TRUE(it != shortcuts.end());
   EXPECT_TRUE(it->second.contents == shortcut.contents);
 }
@@ -139,10 +133,10 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithIds) {
   EXPECT_TRUE(db_->DeleteShortcutsWithIds(shortcut_ids));
   EXPECT_EQ(arraysize(shortcut_test_db) - 2, CountRecords());
 
-  std::map<std::string, Shortcut> shortcuts;
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
 
-  std::map<std::string, Shortcut>::iterator it =
+  ShortcutsDatabase::GuidToShortcutMap::iterator it =
       shortcuts.find(shortcut_test_db[0].guid);
   EXPECT_TRUE(it == shortcuts.end());
 
@@ -159,10 +153,10 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithUrl) {
   EXPECT_TRUE(db_->DeleteShortcutsWithUrl("http://slashdot.org/"));
   EXPECT_EQ(arraysize(shortcut_test_db) - 2, CountRecords());
 
-  std::map<std::string, Shortcut> shortcuts;
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
 
-  std::map<std::string, Shortcut>::iterator it =
+  ShortcutsDatabase::GuidToShortcutMap::iterator it =
       shortcuts.find(shortcut_test_db[0].guid);
   EXPECT_TRUE(it != shortcuts.end());
 
@@ -175,7 +169,7 @@ TEST_F(ShortcutsDatabaseTest, DeleteShortcutsWithUrl) {
 
 TEST_F(ShortcutsDatabaseTest, LoadShortcuts) {
   AddAll();
-  std::map<std::string, Shortcut> shortcuts;
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
 
   for (size_t i = 0; i < arraysize(shortcut_test_db); ++i) {
@@ -187,7 +181,7 @@ TEST_F(ShortcutsDatabaseTest, LoadShortcuts) {
 
 TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
   AddAll();
-  std::map<std::string, Shortcut> shortcuts;
+  ShortcutsDatabase::GuidToShortcutMap shortcuts;
   EXPECT_TRUE(db_->LoadShortcuts(&shortcuts));
   EXPECT_EQ(arraysize(shortcut_test_db), shortcuts.size());
   EXPECT_TRUE(db_->DeleteAllShortcuts());

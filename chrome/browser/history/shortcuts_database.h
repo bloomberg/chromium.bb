@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/shortcuts_provider_shortcut.h"
+#include "chrome/browser/history/shortcuts_backend.h"
 #include "googleurl/src/gurl.h"
 #include "sql/connection.h"
 
@@ -40,16 +40,18 @@ namespace history {
 //   number_of_hits      Number of times that the entry has been selected.
 class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
  public:
+  typedef std::map<std::string, ShortcutsBackend::Shortcut> GuidToShortcutMap;
+
   explicit ShortcutsDatabase(const FilePath& folder_path);
   virtual ~ShortcutsDatabase();
 
   bool Init();
 
   // Adds the ShortcutsProvider::Shortcut to the database.
-  bool AddShortcut(const shortcuts_provider::Shortcut& shortcut);
+  bool AddShortcut(const ShortcutsBackend::Shortcut& shortcut);
 
   // Updates timing and selection count for the ShortcutsProvider::Shortcut.
-  bool UpdateShortcut(const shortcuts_provider::Shortcut& shortcut);
+  bool UpdateShortcut(const ShortcutsBackend::Shortcut& shortcut);
 
   // Deletes the ShortcutsProvider::Shortcuts with the id.
   bool DeleteShortcutsWithIds(const std::vector<std::string>& shortcut_ids);
@@ -61,8 +63,7 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   bool DeleteAllShortcuts();
 
   // Loads all of the shortcuts.
-  bool LoadShortcuts(
-      std::map<std::string, shortcuts_provider::Shortcut>* shortcuts);
+  bool LoadShortcuts(GuidToShortcutMap* shortcuts);
 
  private:
   // Ensures that the table is present.
