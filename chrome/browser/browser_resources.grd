@@ -36,9 +36,9 @@
         <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" type="BINDATA" />
       </if>
       <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="printing\cloud_print\resources\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="printing\cloud_print\resources\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="printing\cloud_print\resources\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="resources\cloud_print\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="resources\cloud_print\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="resources\cloud_print\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
