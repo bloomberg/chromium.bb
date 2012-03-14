@@ -241,8 +241,9 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
 
   UMA_HISTOGRAM_BOOLEAN(
-      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender_%.1f",
-                   get_hit_weight()).c_str(),
+      StringPrintf("Prerender.OmniboxNavigationsCouldPrerender_%.1f%s",
+                   get_hit_weight(),
+                   prerender::PrerenderManager::GetModeString()).c_str(),
       prerender::IsOmniboxEnabled(profile_));
 
   const GURL& opened_url = match.destination_url;

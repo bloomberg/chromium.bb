@@ -601,6 +601,27 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 }
 
 // static
+const char* PrerenderManager::GetModeString() {
+  switch (mode_) {
+    case PRERENDER_MODE_DISABLED:
+      return "_Disabled";
+    case PRERENDER_MODE_ENABLED:
+    case PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP:
+      return "_Enabled";
+    case PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP:
+      return "_Control";
+    case PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP:
+      return "_5MinTTL";
+    case PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP:
+      return "_NoUse";
+    case PRERENDER_MODE_MAX:
+      NOTREACHED() << "Invalid PrerenderManager mode.";
+      break;
+  };
+  return "";
+}
+
+// static
 bool PrerenderManager::IsPrerenderingPossible() {
   return GetMode() != PRERENDER_MODE_DISABLED;
 }

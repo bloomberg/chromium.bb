@@ -10,8 +10,9 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/autocomplete/network_action_predictor.h"
-#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_util.h"
 
 namespace prerender {
 
@@ -151,16 +152,20 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
-        StringPrintf("Prerender.OmniboxPrerenderCount_%.1f",
-                     NetworkActionPredictor::get_hit_weight()).c_str(), 1);
+        StringPrintf("Prerender.OmniboxPrerenderCount_%.1f%s",
+                     NetworkActionPredictor::get_hit_weight(),
+                     PrerenderManager::GetModeString()).c_str(),
+        1);
   }
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
-        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%.1f",
-                     NetworkActionPredictor::get_hit_weight()).c_str(), 1);
+        StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%.1f%s",
+                     NetworkActionPredictor::get_hit_weight(),
+                     PrerenderManager::GetModeString()).c_str(),
+        1);
   }
 }
 
