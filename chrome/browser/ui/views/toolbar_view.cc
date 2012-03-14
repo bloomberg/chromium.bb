@@ -55,17 +55,31 @@ using content::WebContents;
 // static
 const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
 // The space between items is 4 px in general.
+// TODO(jamescook): Update all Chrome platforms to use the new art and metrics
+// from Ash, crbug.com/118228
+#if defined(USE_ASH)
+const int ToolbarView::kStandardSpacing = 3;
+#else
 const int ToolbarView::kStandardSpacing = 4;
+#endif
+
 // The top of the toolbar has an edge we have to skip over in addition to the 4
 // px of spacing.
-const int ToolbarView::kVertSpacing = kStandardSpacing + 1;
+const int ToolbarView::kVertSpacing = 5;
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
 // our spacing to make it still appear to be 4 px.
-static const int kEdgeSpacing = ToolbarView::kStandardSpacing - 1;
-// The buttons to the left of the omnibox are close together.
-static const int kButtonSpacing = 1;
+#if defined(USE_ASH)
+static const int kEdgeSpacing = 4;
+#else
+static const int kEdgeSpacing = 3;
+#endif
 
-static const int kStatusBubbleWidth = 480;
+// The buttons to the left of the omnibox are close together.
+#if defined(USE_ASH)
+static const int kButtonSpacing = 0;
+#else
+static const int kButtonSpacing = 1;
+#endif
 
 // The length of time to run the upgrade notification animation (the time it
 // takes one pulse to run its course and go back to its original brightness).

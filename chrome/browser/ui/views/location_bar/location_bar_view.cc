@@ -87,11 +87,37 @@ OmniboxViewViews* AsViews(OmniboxView* view) {
   return static_cast<OmniboxViewViews*>(view);
 }
 
+// Height of the location bar's round corner region.
+// TODO(jamescook): Update all Chrome platforms to use the new art and metrics
+// from Ash, crbug.com/118228
+#if defined(USE_ASH)
+const int kBorderRoundCornerHeight = 5;
+#else
+const int kBorderRoundCornerHeight = 6;
+#endif
+
+// Width of location bar's round corner region.
+#if defined(USE_ASH)
+const int kBorderRoundCornerWidth = 4;
+#else
+const int kBorderRoundCornerWidth = 5;
+#endif
+
+// Radius of the round corners inside the location bar.
+#if defined(USE_ASH)
+const int kBorderCornerRadius = 2;
+#endif
+
 }  // namespace
 
 // static
+#if defined(USE_ASH)
+const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
+const int LocationBarView::kVerticalEdgeThickness = 3;
+#else
 const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
 const int LocationBarView::kVerticalEdgeThickness = 2;
+#endif  // defined(USE_ASH)
 const int LocationBarView::kItemPadding = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
@@ -110,11 +136,6 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
-
-// Height of the location bar's round corner region.
-static const int kBorderRoundCornerHeight = 6;
-// Width of location bar's round corner region.
-static const int kBorderRoundCornerWidth = 5;
 
 // LocationBarView -----------------------------------------------------------
 
@@ -768,10 +789,15 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setColor(color);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
+#if defined(USE_ASH)
+    // On Ash the omnibox uses smaller corners.
+    const SkScalar radius(SkIntToScalar(kBorderCornerRadius));
+#else
     // The round corners of the omnibox match the round corners of the dropdown
     // below, and all our other bubbles.
     const SkScalar radius(SkIntToScalar(
         views::BubbleBorder::GetCornerRadius()));
+#endif
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                        radius, paint);
