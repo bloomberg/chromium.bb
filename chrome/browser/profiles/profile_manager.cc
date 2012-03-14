@@ -375,6 +375,14 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
 void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
                                         const CreateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Make sure that this profile is not pending deletion.
+  if (std::find(ProfilesToDelete().begin(), ProfilesToDelete().end(),
+      profile_path) != ProfilesToDelete().end()) {
+    callback.Run(NULL, Profile::CREATE_STATUS_FAIL);
+    return;
+  }
+
   ProfilesInfoMap::iterator iter = profiles_info_.find(profile_path);
   if (iter != profiles_info_.end()) {
     ProfileInfo* info = iter->second.get();
