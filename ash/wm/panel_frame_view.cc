@@ -19,12 +19,15 @@
 namespace ash {
 
 namespace {
+
 const int kClientViewPaddingLeft = 0;
 const int kClientViewPaddingRight = 0;
 const int kClientViewPaddingBottom = 0;
+const int kSeparatorWidth = 1;
 const SkColor kCaptionColor = SK_ColorGRAY;
-const SkColor kCaptionIconDivisorColor = SkColorSetARGB(0xFF, 0x55, 0x55, 0x55);
-}
+const SkColor kCaptionIconSeparatorColor = SkColorSetRGB(0x55, 0x55, 0x55);
+
+}  // namespace
 
 // Buttons for panel control
 class PanelControlButton : public views::CustomButton {
@@ -90,11 +93,9 @@ class PanelCaption : public views::View,
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(GetLocalBounds(), kCaptionColor);
-    gfx::Rect close_button_bounds = close_button_->bounds();
-    canvas->DrawLine(
-        gfx::Point(close_button_bounds.x(), close_button_bounds.y()),
-        gfx::Point(close_button_bounds.x(), close_button_bounds.bottom()),
-        kCaptionIconDivisorColor);
+    gfx::Rect separator(close_button_->bounds());
+    separator.set_width(kSeparatorWidth);
+    canvas->FillRect(separator, kCaptionIconSeparatorColor);
   }
 
   virtual void Layout() OVERRIDE {
@@ -182,4 +183,4 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
   return window_bounds;
 }
 
-}
+}  // namespace ash
