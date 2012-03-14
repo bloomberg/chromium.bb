@@ -10,6 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
+
 class GURL;
 class PrefService;
 class TemplateURL;
@@ -35,18 +38,22 @@ void GetPrepopulatedEngines(PrefService* prefs,
 
 // Returns the default search provider specified by the prepopulate data.
 // The caller owns the returned value, which may be NULL.
-// If |prefs| is NULL, search provider overrides from preferences are not used.
+// If |prefs| is NULL, any search provider overrides from the preferences are
+// not used.
 TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
 
-// Returns a TemplateURL from the prepopulated data which has the same origin
-// as the given url.  The caller is responsible for deleting the returned
-// TemplateURL.
-TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find);
+// Both the next two functions use same-origin checks unless the |url| is a
+// Google seach URL, in which case we'll identify any valid Google hostname, or
+// the unsubstituted Google prepopulate URL, as "Google".
 
-// Returns the prepopulated search provider whose search URL origin matches the
-// origin of |search_url| or NULL if none is found. The caller is responsible
-// for deleting the returned TemplateURL.
-TemplateURL* FindPrepopulatedEngine(const std::string& search_url);
+// Returns the short name for the matching engine, or url.host() if no engines
+// match.  If no engines match and the |url| can't be converted to a valid GURL,
+// returns the string in IDS_UNKNOWN_SEARCH_ENGINE_NAME.
+string16 GetEngineName(const std::string& url);
+
+// Returns the type of the matching engine, or SEARCH_ENGINE_OTHER if no engines
+// match.
+SearchEngineType GetEngineType(const std::string& url);
 
 }  // namespace TemplateURLPrepopulateData
 

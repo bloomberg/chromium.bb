@@ -38,6 +38,9 @@ bool GetBrand(std::string* brand);
 // install. Returns false if the information is not available.
 bool GetReactivationBrand(std::string* brand);
 
+// True if |host| is "[www.]google.<TLD>" with a valid TLD.
+bool IsGoogleHostname(const std::string& host);
+
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const std::string& url);
 

@@ -44,33 +44,11 @@ bool HasQueryParameter(const std::string& str) {
   return false;
 }
 
-// True if |url| is an HTTP[S] request with host "[www.]google.<TLD>".
+// True if |url| is an HTTP[S] request with host "[www.]google.<TLD>" and no
+// explicit port.
 bool IsGoogleDomainUrl(const GURL& url) {
-  if (!url.is_valid())
-    return false;
-
-  // Make sure the scheme is valid.
-  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
-    return false;
-
-  // Make sure port is default for the respective scheme.
-  if (!url.port().empty())
-    return false;
-
-  // Accept only valid TLD.
-  size_t tld_length = net::RegistryControlledDomainService::GetRegistryLength(
-      url, false);
-  if (tld_length == 0 || tld_length == std::string::npos)
-    return false;
-
-  // We only accept "[www.]google." in front of the TLD.
-  std::string host = url.host();
-  host = host.substr(0, host.length() - tld_length);
-  if (!LowerCaseEqualsASCII(host, "www.google.") &&
-      !LowerCaseEqualsASCII(host, "google."))
-    return false;
-
-  return true;
+  return url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")) &&
+      url.port().empty() && google_util::IsGoogleHostname(url.host());
 }
 
 }  // anonymous namespace
@@ -163,6 +141,16 @@ bool GetReactivationBrand(std::string* brand) {
 }
 
 #endif
+
+bool IsGoogleHostname(const std::string& host) {
+  size_t tld_length =
+      net::RegistryControlledDomainService::GetRegistryLength(host, false);
+  if ((tld_length == 0) || (tld_length == std::string::npos))
+    return false;
+  std::string host_minus_tld(host, 0, host.length() - tld_length);
+  return LowerCaseEqualsASCII(host_minus_tld, "www.google.") ||
+      LowerCaseEqualsASCII(host_minus_tld, "google.");
+}
 
 bool IsGoogleHomePageUrl(const std::string& url) {
   GURL original_url(url);
