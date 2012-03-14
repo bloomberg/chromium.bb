@@ -290,6 +290,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
 #elif defined(OS_ANDROID)
     view_.reset(new WebContentsViewAndroid(this));
 #endif
+    (void)delegate;
   }
   CHECK(view_.get());
 
