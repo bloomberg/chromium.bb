@@ -19,3 +19,6 @@ HttpNetworkTransactionTest.KeepAliveConnectionEOF
 
 # Crashes silently, see http://crbug.com/76911
 URLRequestTest.FileTest
+
+# http://crbug.com/92439
+OriginBoundCertServiceTest.*
