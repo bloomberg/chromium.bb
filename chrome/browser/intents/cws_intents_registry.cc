@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/api_key.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -154,6 +155,12 @@ GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
   GURL request(kCWSIntentServiceURL);
   request = chrome_browser_net::AppendQueryParameter(request, "intent",
                                                      UTF16ToUTF8(action));
-  return chrome_browser_net::AppendQueryParameter(request, "mime_types",
-                                                  UTF16ToUTF8(type));
+  request = chrome_browser_net::AppendQueryParameter(request, "mime_types",
+                                                     UTF16ToUTF8(type));
+  if (web_intents::kApiKey[0]) {
+    request = chrome_browser_net::AppendQueryParameter(request, "key",
+                                                       web_intents::kApiKey);
+  }
+
+  return request;
 }
