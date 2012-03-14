@@ -48,7 +48,7 @@
 #include <unistd.h>                     // for sbrk, getpagesize, off_t
 #endif
 #include <new>                          // for operator new
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_extension.h>
 #include "base/basictypes.h"
 #include "base/commandlineflags.h"
 #include "base/spinlock.h"              // for SpinLockHolder, SpinLock, etc
@@ -59,6 +59,13 @@
 // form of the name instead.
 #ifndef MAP_ANONYMOUS
 # define MAP_ANONYMOUS MAP_ANON
+#endif
+
+// MADV_FREE is specifically designed for use by malloc(), but only
+// FreeBSD supports it; in linux we fall back to the somewhat inferior
+// MADV_DONTNEED.
+#if !defined(MADV_FREE) && defined(MADV_DONTNEED)
+# define MADV_FREE  MADV_DONTNEED
 #endif
 
 // Solaris has a bug where it doesn't declare madvise() for C++.
@@ -75,6 +82,10 @@ static const bool kDebugMode = false;
 #else
 static const bool kDebugMode = true;
 #endif
+
+// TODO(sanjay): Move the code below into the tcmalloc namespace
+using tcmalloc::kLog;
+using tcmalloc::Log;
 
 // Anonymous namespace to avoid name conflicts on "CheckAddressBits".
 namespace {
@@ -103,7 +114,7 @@ union MemoryAligner {
 
 static SpinLock spinlock(SpinLock::LINKER_INITIALIZED);
 
-#if defined(HAVE_MMAP) || defined(MADV_DONTNEED)
+#if defined(HAVE_MMAP) || defined(MADV_FREE)
 // Page size is initialized on demand (only needed for mmap-based allocators)
 static size_t pagesize = 0;
 #endif
@@ -420,7 +431,6 @@ void* DefaultSysAllocator::Alloc(size_t size, size_t *actual_size,
       if (result != NULL) {
         return result;
       }
-      TCMalloc_MESSAGE(__FILE__, __LINE__, "%s failed.\n", names_[i]);
       failed_[i] = true;
     }
   }
@@ -484,10 +494,10 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
 }
 
 void TCMalloc_SystemRelease(void* start, size_t length) {
-#ifdef MADV_DONTNEED
+#ifdef MADV_FREE
   if (FLAGS_malloc_devmem_start) {
-    // It's not safe to use MADV_DONTNEED if we've been mapping
-    // /dev/mem for heap memory
+    // It's not safe to use MADV_FREE/MADV_DONTNEED if we've been
+    // mapping /dev/mem for heap memory.
     return;
   }
   if (pagesize == 0) pagesize = getpagesize();
@@ -511,7 +521,7 @@ void TCMalloc_SystemRelease(void* start, size_t length) {
     // Note -- ignoring most return codes, because if this fails it
     // doesn't matter...
     while (madvise(reinterpret_cast<char*>(new_start), new_end - new_start,
-                   MADV_DONTNEED) == -1 &&
+                   MADV_FREE) == -1 &&
            errno == EAGAIN) {
       // NOP
     }

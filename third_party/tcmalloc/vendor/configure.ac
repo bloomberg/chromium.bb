@@ -4,11 +4,11 @@
 # make sure we're interpreted by some minimal autoconf
 AC_PREREQ(2.57)
 
-AC_INIT(google-perftools, 1.8, opensource@google.com)
+AC_INIT(gperftools, 2.0, google-perftools@googlegroups.com)
 # Update this value for every release!  (A:B:C will map to foo.so.(A-C).C.B)
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-TCMALLOC_SO_VERSION=2:0:2
-PROFILER_SO_VERSION=1:1:1
+TCMALLOC_SO_VERSION=5:0:1
+PROFILER_SO_VERSION=3:0:3
 
 AC_SUBST(TCMALLOC_SO_VERSION)
 AC_SUBST(PROFILER_SO_VERSION)
@@ -23,8 +23,8 @@ AM_CONFIG_HEADER(src/config.h)
 
 # Export the version information (for tc_version and friends)
 TC_VERSION_MAJOR=`expr "$PACKAGE_VERSION" : '\([[0-9]]*\)'`
-TC_VERSION_MINOR=`expr "$PACKAGE_VERSION" : '[[^.]]*\.\([[0-9]]*\)'`
-TC_VERSION_PATCH=`expr "$PACKAGE_VERSION" : '[[^.0-9]]*\([[^0-9]]*\)$'`
+TC_VERSION_MINOR=`expr "$PACKAGE_VERSION" : '[[0-9]]*\.\([[0-9]]*\)'`
+TC_VERSION_PATCH=`expr "$PACKAGE_VERSION" : '[[0-9]]*\.[[0-9]]*\(.*\)$'`
 AC_SUBST(TC_VERSION_MAJOR)
 AC_SUBST(TC_VERSION_MINOR)
 AC_SUBST(TC_VERSION_PATCH)
@@ -82,9 +82,9 @@ fi
 
 
 # Checks for programs.
+AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_CXX
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
 AM_PROG_CC_C_O      # shrug: autogen.sh suddenly needs this for some reason
 
@@ -166,7 +166,7 @@ AC_CHECK_DECLS([cfree,
                 #include <malloc.h>])
 
 if test "$ac_cv_type_struct_mallinfo" = yes; then
-  AC_SUBST(ac_cv_have_struct_mallinfo, 1)   # google/tcmalloc.h needs this
+  AC_SUBST(ac_cv_have_struct_mallinfo, 1)   # gperftools/tcmalloc.h needs this
 else
   AC_SUBST(ac_cv_have_struct_mallinfo, 0)
 fi
@@ -238,6 +238,12 @@ AM_CONDITIONAL(X86_64_AND_NO_FP_BY_DEFAULT,
 rm fp.s
 CFLAGS="$OLD_CFLAGS"
 
+# We need to know if we're i386 so we can turn on -mmms, which is not
+# on by default for i386 (it is for x86_64).
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(, [return __i386__ == 1 ? 0 : 1])],
+                  [is_i386=yes], [is_i386=no])
+AM_CONDITIONAL(I386, test "$is_i386" = yes)
+
 # See if the compiler supports -Wno-unused-result.
 # Newer ubuntu's turn on -D_FORTIFY_SOURCE=2, enabling
 # __attribute__((warn_unused_result)) for things like write(),
@@ -305,7 +311,7 @@ void* (* volatile __malloc_hook)(size_t, const void*) = 0;],)],
                   [AC_DEFINE(MALLOC_HOOK_MAYBE_VOLATILE, volatile,
                              Define to 'volatile' if __malloc_hook is declared volatile)
                    AC_MSG_RESULT([yes])],
-                  [AC_DEFINE(MALLOC_HOOK_MAYBE_VOLATILE, ),
+                  [AC_DEFINE(MALLOC_HOOK_MAYBE_VOLATILE, )
                    AC_MSG_RESULT([no])])
 
 # Nanosleep requires extra libraries on some architectures (solaris).
@@ -356,10 +362,10 @@ AC_DEFINE(PERFTOOLS_DLL_DECL,,
 # the end result is if config.h is #included twice, its #undefs get
 # evaluated twice, but all the ones in mingw.h/etc only get evaluated
 # once, potentially causing trouble.  c.f.
-#   http://code.google.com/p/google-perftools/issues/detail?id=246
+#   http://code.google.com/p/gperftools/issues/detail?id=246
 AH_TOP([
-#ifndef GOOGLE_PERFTOOLS_CONFIG_H_
-#define GOOGLE_PERFTOOLS_CONFIG_H_
+#ifndef GPERFTOOLS_CONFIG_H_
+#define GPERFTOOLS_CONFIG_H_
 ])
 
 AH_VERBATIM([PTHREADS_CRASHES_IF_RUN_TOO_EARLY],
@@ -381,7 +387,7 @@ AH_BOTTOM([
 #include "windows/mingw.h"
 #endif
 
-#endif  /* #ifndef GOOGLE_PERFTOOLS_CONFIG_H_ */
+#endif  /* #ifndef GPERFTOOLS_CONFIG_H_ */
 ])
 AM_CONDITIONAL(MINGW, expr $host : '.*-mingw' >/dev/null 2>&1)
 AM_CONDITIONAL(OSX, expr $host : '.*-apple-darwin.*' >/dev/null 2>&1)
@@ -410,5 +416,6 @@ AM_CONDITIONAL(WITH_STACK_TRACE, test "$enable_cpu_profiler" = yes -o \
                                       "$enable_heap_checker" = yes)
 
 # Write generated configuration file
-AC_CONFIG_FILES([Makefile src/google/tcmalloc.h src/windows/google/tcmalloc.h])
+AC_CONFIG_FILES([Makefile
+                 src/gperftools/tcmalloc.h src/windows/gperftools/tcmalloc.h])
 AC_OUTPUT

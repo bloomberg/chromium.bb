@@ -1,4 +1,4 @@
-// Copyright (c) 2011, Google Inc.
+// Copyright (c) 2012, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,40 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ---
-// Author: Ivan Krasin
+// Author: Craig Silverstein
 //
-// Native Client stub for stacktrace.
+// This just verifies that we can compile code that #includes stuff
+// via the backwards-compatibility 'google/' #include-dir.  It does
+// not include config.h on purpose, to better simulate a perftools
+// client.
 
-int GET_STACK_TRACE_OR_FRAMES {
+#include <stddef.h>
+#include <stdio.h>
+#include <google/heap-checker.h>
+#include <google/heap-profiler.h>
+#include <google/malloc_extension.h>
+#include <google/malloc_extension_c.h>
+#include <google/malloc_hook.h>
+#include <google/malloc_hook_c.h>
+#include <google/profiler.h>
+#include <google/stacktrace.h>
+#include <google/tcmalloc.h>
+
+// We don't link in -lprofiler for this test, so be sure not to make
+// any function calls that require the cpu-profiler code.  The
+// heap-profiler is ok.
+
+HeapLeakChecker::Disabler* heap_checker_h;
+void (*heap_profiler_h)(const char*) = &HeapProfilerStart;
+MallocExtension::Ownership malloc_extension_h;
+MallocExtension_Ownership malloc_extension_c_h;
+MallocHook::NewHook* malloc_hook_h;
+MallocHook_NewHook* malloc_hook_c_h;
+ProfilerOptions* profiler_h;
+int (*stacktrace_h)(void**, int, int) = &GetStackTrace;
+void* (*tcmalloc_h)(size_t) = &tc_new;
+
+int main(int argc, char** argv) {
+  printf("PASS\n");
   return 0;
 }

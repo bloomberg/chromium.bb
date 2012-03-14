@@ -88,9 +88,9 @@
 #include <new>
 #include "base/logging.h"
 #include "base/simple_mutex.h"
-#include "google/malloc_hook.h"
-#include "google/malloc_extension.h"
-#include "google/tcmalloc.h"
+#include "gperftools/malloc_hook.h"
+#include "gperftools/malloc_extension.h"
+#include "gperftools/tcmalloc.h"
 #include "thread_cache.h"
 #include "tests/testutil.h"
 
@@ -107,10 +107,12 @@ static bool kOSSupportsMemalign = false;
 static inline void* Memalign(size_t align, size_t size) {
   //LOG(FATAL) << "memalign not supported on windows";
   exit(1);
+  return NULL;
 }
 static inline int PosixMemalign(void** ptr, size_t align, size_t size) {
   //LOG(FATAL) << "posix_memalign not supported on windows";
   exit(1);
+  return -1;
 }
 
 // OS X defines posix_memalign in some OS versions but not others;
@@ -120,10 +122,12 @@ static bool kOSSupportsMemalign = false;
 static inline void* Memalign(size_t align, size_t size) {
   //LOG(FATAL) << "memalign not supported on OS X";
   exit(1);
+  return NULL;
 }
 static inline int PosixMemalign(void** ptr, size_t align, size_t size) {
   //LOG(FATAL) << "posix_memalign not supported on OS X";
   exit(1);
+  return -1;
 }
 
 #else
@@ -1083,6 +1087,7 @@ static int RunAllTests(int argc, char** argv) {
     // Windows has _aligned_malloc.  Let's test that that's captured too.
 #if (defined(_MSC_VER) || defined(__MINGW32__)) && !defined(PERFTOOLS_NO_ALIGNED_MALLOC)
     p1 = _aligned_malloc(sizeof(p1) * 2, 64);
+    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     _aligned_free(p1);
     VerifyDeleteHookWasCalled();
