@@ -25,11 +25,8 @@ cr.define('cr.ui.overlay', function() {
     // visible overlay .page.
     document.addEventListener('focus', function(e) {
       var overlay = getTopOverlay();
-      if (!overlay)
-        return;
-
-      var page = overlay.querySelector('.page:not([hidden])');
-      if (page.contains(e.target))
+      var page = overlay ? overlay.querySelector('.page:not([hidden])') : null;
+      if (!page || page.contains(e.target))
         return;
 
       var focusElement = page.querySelector('button, input, list, select, a');
@@ -50,10 +47,10 @@ cr.define('cr.ui.overlay', function() {
 
     window.addEventListener('resize', function() {
       var overlay = getTopOverlay();
-      if (!overlay)
+      var page = overlay ? overlay.querySelector('.page:not([hidden])') : null;
+      if (!page)
         return;
 
-      var page = overlay.querySelector('.page:not([hidden])');
       page.style.maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
     });
   }

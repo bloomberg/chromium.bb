@@ -3,13 +3,12 @@
  * found in the LICENSE file. */
 
 #startup-overlay {
-  min-width: 600px;
+  min-width: 500px;
 }
 
 #startupPagesList {
   margin-bottom: 20px;
   min-height: 64px;
-  min-width: 600px;
 }
 
 #startupPagesList .title {
