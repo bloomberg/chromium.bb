@@ -26,6 +26,8 @@ class IOBuffer;
 
 namespace webkit_blob {
 
+class LocalFileReader;
+
 // A request job that handles reading blob URLs.
 class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
  public:
@@ -47,13 +49,13 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
       const net::HttpRequestHeaders& headers) OVERRIDE;
 
  private:
+  typedef std::map<size_t, LocalFileReader*> IndexToReaderMap;
+
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
   void CountSize();
   void DidCountSize(int error);
-  void DidGetFileItemInfo(size_t index,
-                          base::PlatformFileError error,
-                          const base::PlatformFileInfo& file_info);
+  void DidGetFileItemLength(size_t index, int result);
   void Seek(int64 offset);
 
   // For reading the blob.
@@ -62,15 +64,10 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void AdvanceItem();
   void AdvanceBytesRead(int result);
   bool ReadBytesItem(const BlobData::Item& item, int bytes_to_read);
-  bool ReadFileItem(const BlobData::Item& item, int bytes_to_read);
+  bool ReadFileItem(LocalFileReader* reader, int bytes_to_read);
 
-  void DidOpenFile(int bytes_to_read,
-                   base::PlatformFileError rv,
-                   base::PassPlatformFile file,
-                   bool created);
-  bool ReadFileStream(int bytes_to_read);
-  void DidReadFileStream(int result);
-  void CloseFileStream();
+  void DidReadFile(int result);
+  void DeleteCurrentFileReader();
 
   int ComputeBytesToRead() const;
   int BytesReadCompleted();
@@ -79,6 +76,10 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void NotifyFailure(int);
   void HeadersCompleted(int status_code, const std::string& status_txt);
 
+  // Returns a LocalFileReader for a blob item at |index|.
+  // If the item at |index| is not of TYPE_FILE this returns NULL.
+  LocalFileReader* GetFileReader(size_t index);
+
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
   scoped_refptr<BlobData> blob_data_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
@@ -86,7 +87,7 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   int64 total_size_;
   int64 remaining_bytes_;
   int pending_get_file_info_count_;
-  scoped_ptr<net::FileStream> stream_;
+  IndexToReaderMap index_to_reader_;
   size_t current_item_index_;
   int64 current_item_offset_;
   scoped_refptr<net::DrainableIOBuffer> read_buf_;
