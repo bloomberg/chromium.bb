@@ -80,6 +80,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
+  virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;

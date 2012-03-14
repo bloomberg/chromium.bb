@@ -123,6 +123,7 @@ class ProfileImpl : public Profile,
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
+  virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
@@ -250,6 +251,7 @@ class ProfileImpl : public Profile,
   bool created_web_data_service_;
   bool created_password_store_;
   bool clear_local_state_on_exit_;
+
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;
 

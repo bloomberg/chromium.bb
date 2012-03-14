@@ -6,8 +6,11 @@
 
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
+#include "base/version.h"
+#include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +34,20 @@ void CreatePrefsFileInDirectory(const FilePath& directory_path) {
   ASSERT_TRUE(file_util::WriteFile(pref_path, data.c_str(), data.size()));
 }
 
+void CheckChromeVersion(Profile *profile, bool is_new) {
+  std::string created_by_version;
+  if (is_new) {
+    chrome::VersionInfo version_info;
+    created_by_version = version_info.Version();
+  } else {
+    created_by_version = "1.0.0.0";
+  }
+  std::string pref_version =
+      ChromeVersionService::GetVersion(profile->GetPrefs());
+  // Assert that created_by_version pref gets set to current version.
+  EXPECT_EQ(created_by_version, pref_version);
+}
+
 }  // namespace
 
 typedef InProcessBrowserTest ProfileBrowserTest;
@@ -47,6 +64,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
   scoped_ptr<Profile> profile(Profile::CreateProfile(
       temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile.get());
+  CheckChromeVersion(profile.get(), true);
 }
 
 // Test OnProfileCreate is called with is_new_profile set to false when
@@ -62,6 +80,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
   scoped_ptr<Profile> profile(Profile::CreateProfile(
       temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
   ASSERT_TRUE(profile.get());
+  CheckChromeVersion(profile.get(), false);
 }
 
 // Test OnProfileCreate is called with is_new_profile set to true when
@@ -82,6 +101,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(profile.get()));
   observer.Wait();
+  CheckChromeVersion(profile.get(), true);
 }
 
 // Test OnProfileCreate is called with is_new_profile set to false when
@@ -102,4 +122,5 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(profile.get()));
   observer.Wait();
+  CheckChromeVersion(profile.get(), false);
 }

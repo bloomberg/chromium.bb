@@ -432,6 +432,11 @@ void OffTheRecordProfileImpl::set_last_selected_directory(
   last_selected_directory_ = path;
 }
 
+bool OffTheRecordProfileImpl::WasCreatedByVersionOrLater(
+    const std::string& version) {
+  return profile_->WasCreatedByVersionOrLater(version);
+}
+
 #if defined(OS_CHROMEOS)
 void OffTheRecordProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
   profile_->SetupChromeOSEnterpriseExtensionObserver();

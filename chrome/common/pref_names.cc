@@ -955,6 +955,11 @@ const char kProfilesLastActive[] = "profile.last_active_profiles";
 // directories.
 const char kProfilesNumCreated[] = "profile.profiles_created";
 
+// String containing the version of Chrome that the profile was created by.
+// If profile was created before this feature was added, this pref will default
+// to "1.0.0.0".
+const char kProfileCreatedByVersion[] = "profile.created_by_version";
+
 // A map of profile data directory to cached information. This cache can be
 // used to display information about profiles without actually having to load
 // them.

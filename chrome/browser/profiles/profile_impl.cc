@@ -15,6 +15,7 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -63,6 +64,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -86,6 +88,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
@@ -766,11 +769,14 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
 
   bool is_new_profile = prefs_->GetInitializationStatus() ==
       PrefService::INITIALIZATION_STATUS_CREATED_NEW_PROFILE;
-  if (is_new_profile) {
-    // TODO(caitkp): Set chrome version here.
-  }
-
+  ChromeVersionService::OnProfileLoaded(prefs_.get(), is_new_profile);
   DoFinalInit(is_new_profile);
+}
+
+bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
+  Version profile_version(ChromeVersionService::GetVersion(prefs_.get()));
+  Version arg_version(version);
+  return (profile_version.CompareTo(arg_version) >= 0);
 }
 
 PrefService* ProfileImpl::GetPrefs() {

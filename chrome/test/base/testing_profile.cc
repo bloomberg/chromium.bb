@@ -765,3 +765,7 @@ void TestingProfile::DestroyWebDataService() {
 
   web_data_service_->Shutdown();
 }
+
+bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
+  return true;
+}

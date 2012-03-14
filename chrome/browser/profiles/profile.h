@@ -450,6 +450,10 @@ class Profile : public content::BrowserContext {
   // Returns the home page for this profile.
   virtual GURL GetHomePage() = 0;
 
+  // Returns whether or not the profile was created by a version of Chrome
+  // more recent (or equal to) the one specified.
+  virtual bool WasCreatedByVersionOrLater(const std::string& version) = 0;
+
   std::string GetDebugName();
 
   // Returns whether it is a guest session.
