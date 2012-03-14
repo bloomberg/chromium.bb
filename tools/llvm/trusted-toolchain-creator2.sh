@@ -1,12 +1,25 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@ This script builds the a cross toolchain for arm.
+#@ This script builds the (trusted) cross toolchain for arm.
 #@ It must be run from the native_client/ directory.
 #@
-#@ NOTE: There is one-time step required for all machines using this TC
+#@ The toolchain consists primarily of a jail with arm header and libraries.
+#@ It also provides additional tools such as QEMU.
+#@ It does NOT provide the actual cross compiler anymore.
+#@ The cross compiler is now comming straight from a debian package.
+#@ So there is a one-time step required for all machines using this TC.
+#@ Which is especially true for build-bots:
+#@
+#@  tools/llvm/trusted-toolchain-creator2.sh  InstallCrossArmBasePackagesManual
+#@
+#@
+#@  Generally this script is invoked as:
+#@  tools/llvm/trusted-toolchain-creator2.sh <mode> <args>*
+#@  Available modes are shown below.
+#@
 #@
 #@ This Toolchain was tested with Ubuntu Lucid
 #@
@@ -15,8 +28,10 @@
 #@  link:    arm-linux-gnueabi-gcc -L${JAIL}/usr/lib -L${JAIL}/usr/lib/arm-linux-gnueabi
 #@                                 -L${JAIL}/lib -L${JAIL}/lib/arm-linux-gnueabi
 #@
-#@ Usage of this TC with qemu
-#@  TODO(robertm)
+#@ Usage of QEMU
+#@  TBD
+#@
+#@ List of modes:
 
 ######################################################################
 # Config
@@ -288,8 +303,8 @@ CreateTarBall() {
 #@
 #@ InstallCrossArmBasePackages
 #@
-#@ This has been tested on 64bit ubuntu natty
-#@ For oneiric additional adjustments are necessary
+#@     This has been tested on 64bit ubuntu natty.
+#@     For oneiric additional adjustments are necessary.
 InstallCrossArmBasePackages() {
   sudo apt-get install ${CROSS_ARM_TC_PACKAGES}
 }
@@ -297,9 +312,9 @@ InstallCrossArmBasePackages() {
 #@
 #@ InstallCrossArmBasePackagesManual
 #@
-#@ This should work even for 64bit ubuntu lucid machine
-#@ The download part is more or less idem-potent, run it until
-#@ all files have been downloaded
+#@     This should work even for 64bit ubuntu lucid machine.
+#@     The download part is more or less idem-potent, run it until
+#@     all files have been downloaded.
 InstallCrossArmBasePackagesManual() {
   Banner "Install arm cross TC semi-automatically"
 
@@ -340,6 +355,11 @@ InstallCrossArmBasePackagesManual() {
 
 #@
 #@ InstallTrustedLinkerScript
+#@
+#@     This forces the loading address of sel_ldr like programs
+#@     to higher memory areas where they do not conflict with
+#@     untrusted binaries.
+#@     This likely no longer used because of "nacl_helper_bootstrap".
 InstallTrustedLinkerScript() {
   local trusted_ld_script=${INSTALL_ROOT}/ld_script_arm_trusted
   # We are using the output of "ld --verbose" which contains
@@ -426,6 +446,8 @@ CleanupJailSymlinks() {
 
 #@
 #@ BuildAndInstallQemu
+#@
+#@     Build ARM emulator including some patches for better tracing
 #
 # Historic Notes:
 # Traditionally we were builidng static 32 bit images of qemu on a
@@ -486,7 +508,9 @@ BuildAndInstallQemu() {
 }
 
 #@
-#@ BuildJail
+#@ BuildJail <tarball-name>
+#@
+#@    Build everything and package it
 BuildJail() {
   ClearInstallDir
   InstallMissingArmLibrariesAndHeadersIntoJail \
@@ -502,6 +526,8 @@ BuildJail() {
 
 #@
 #@ AddChromeWrapperScripts
+#@
+#@    Add some script which simplify cross compiling chrome.
 AddChromeWrapperScripts() {
    SubBanner "Installing Chrome Wrapper"
 
@@ -517,8 +543,8 @@ AddChromeWrapperScripts() {
 #@
 #@ Regenerate Package List
 #@
-#@ This will need some manual intervention, e.g.
-#@ pool/ needs to be stripped and special characters like may "+" cause problems
+#@     This will need some manual intervention, e.g. "pool/"
+#@     needs to be stripped and special characters like may "+" cause problems
 GeneratePackageList() {
   DownloadOrCopy ${PACKAGE_LIST} ${TMP}/Packages.bz2
   bzcat ${TMP}/Packages.bz2 | egrep '^(Package:|Filename:)' > ${TMP}/Packages
@@ -539,10 +565,8 @@ GeneratePackageListExtra() {
 }
 
 
-SanityCheck
-
 if [[ $# -eq 0 ]] ; then
-  echo "you must specify a mode on the commandline:"
+  echo "ERROR: you must specify a mode on the commandline"
   echo
   Usage
   exit -1
@@ -552,5 +576,6 @@ elif [[ "$(type -t $1)" != "function" ]]; then
   echo "    $0 help"
   exit 1
 else
+  SanityCheck
   "$@"
 fi
