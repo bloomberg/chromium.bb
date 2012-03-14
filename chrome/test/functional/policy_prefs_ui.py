@@ -31,21 +31,16 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
   """Tests policies and their impact on the prefs UI."""
 
   settings_pages = [
-      'chrome://settings/browser',
-      'chrome://settings/personal',
-      'chrome://settings/advanced',
-      'chrome://settings/searchEngines',
-      'chrome://settings/passwords',
-      'chrome://settings/autofill',
-      'chrome://settings/content',
-      'chrome://settings/languages',
-      'chrome://settings/extensions',
+      'chrome://settings-frame',
+      'chrome://settings-frame/searchEngines',
+      'chrome://settings-frame/passwords',
+      'chrome://settings-frame/autofill',
+      'chrome://settings-frame/content',
+      'chrome://settings-frame/languages',
   ]
   if pyauto.PyUITest.IsChromeOS():
     settings_pages += [
-        'chrome://settings/system',
-        'chrome://settings/internet',
-        'chrome://settings/accounts',
+        'chrome://settings-frame/accounts',
     ]
 
   def GetPlatform(self):
@@ -62,6 +57,8 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
 
   def IsBannerVisible(self):
     """Returns true if the managed-banner is visible in the current page."""
+    # TODO(csilv): This logic assumes there is only one banner, it needs to be
+    # updated to work with uber page.
     ret = self.ExecuteJavascript("""
         var visible = false;
         var banner = document.getElementById('managed-prefs-banner');

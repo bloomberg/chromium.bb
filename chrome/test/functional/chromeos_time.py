@@ -43,7 +43,7 @@ class ChromeosTime(pyauto.PyUITest):
       True, if timezone dropdown is enabled
       False, otherwise
     """
-    self.NavigateToURL('chrome://settings/system')
+    self.NavigateToURL('chrome://settings-frame')
     ret = self.ExecuteJavascript("""
         var disabled = true;
         var timezone = document.getElementById('timezone-select');

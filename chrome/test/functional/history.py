@@ -327,10 +327,7 @@ class HistoryTest(pyauto.PyUITest):
     Also, make sure that existing history tab is activated.
     """
     command_line = self.GetBrowserInfo()['properties']['command_line_string']
-    if '--disable-uber-page' in command_line.split():
-      history_url = 'chrome://history-frame/'
-    else:
-      history_url = 'chrome://chrome/history/'
+    history_url = 'chrome://history-frame/'
 
     # Invoke History.
     self.RunCommand(pyauto.IDC_SHOW_HISTORY)

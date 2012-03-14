@@ -774,7 +774,7 @@ class AutofillTest(pyauto.PyUITest):
   def testDisplayLineItemForEntriesWithNoCCNum(self):
     """Verify Autofill creates a line item for CC entries with no CC number."""
     driver = self.NewWebDriver()
-    self.NavigateToURL('chrome://settings/autofillEditCreditCard')
+    self.NavigateToURL('chrome://settings-frame/autofillEditCreditCard')
     driver.find_element_by_id('name-on-card').send_keys('Jane Doe')
     query_month = self._SelectOptionXpath('12')
     query_year = self._SelectOptionXpath('2014')

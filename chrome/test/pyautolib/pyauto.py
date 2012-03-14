@@ -247,7 +247,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--allow-file-access-from-files',
         '--enable-file-cookies',
         '--dom-automation',
-        '--disable-uber-page',
         '--skip-oauth-login',
         # Enables injection of test content script for webui login automation
         '--auth-ext-path=/usr/share/chromeos-assets/gaia_auth',

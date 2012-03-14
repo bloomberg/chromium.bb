@@ -47,10 +47,11 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://credits': { 'title': 'Credits' },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://dns': { 'title': 'About DNS' },
-    'chrome://settings/extensions': { 'title': 'Settings - Extensions' },
+    'chrome://extensions': { 'title': 'Extensions' },
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
+    'chrome://help': { 'title': 'Help' },
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://media-internals': { 'title': 'Media Internals' },
@@ -60,7 +61,14 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
     'chrome://plugins': { 'title': 'Plug-ins' },
     'chrome://sessions': { 'title': 'Sessions' },
-    'chrome://settings': { 'title': 'Settings - Basics' },
+    'chrome://settings': { 'title': 'Settings' },
+    'chrome://settings/autofill': { 'title': 'Settings - Autofill Settings' },
+    'chrome://settings/clearBrowserData':
+      { 'title': 'Settings - Clear Browsing Data' },
+    'chrome://settings/content': { 'title': 'Settings - Content Settings' },
+    'chrome://settings/languages':
+      { 'title': 'Settings - Languages and Input' },
+    'chrome://settings/passwords': { 'title': 'Settings - Passwords' },
     'chrome://stats': {},
     'chrome://sync': { 'title': 'Sync Internals' },
     'chrome://sync-internals': { 'title': 'Sync Internals' },
@@ -102,22 +110,8 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://flags': { 'CSP': False },
 
     # OVERRIDE - title and page different on CrOS
-    'chrome://settings/about': { 'title': 'Settings - About' },
     'chrome://settings/accounts': { 'title': 'Settings - Users' },
-    'chrome://settings/advanced': { 'title': 'Settings - Under the Hood' },
-    'chrome://settings/autofill': { 'title': 'Settings - Autofill Settings' },
-    'chrome://settings/browser': { 'title': 'Settings - Basics' },
-    'chrome://settings/clearBrowserData':
-      { 'title': 'Settings - Clear Browsing Data' },
-    'chrome://settings/content': { 'title': 'Settings - Content Settings' },
-    'chrome://settings/extensions': { 'title': 'Settings - Extensions' },
-    'chrome://settings/internet': { 'title': 'Settings - Internet' },
-    'chrome://settings/languages':
-      { 'title': 'Settings - Languages and Input' },
-    'chrome://settings/passwords': { 'title': 'Settings - Passwords' },
-    'chrome://settings/personal': { 'title': 'Settings - Personal Stuff' },
     'chrome://settings/proxy': { 'title': 'Proxy' },
-    'chrome://settings/system': { 'title': 'Settings - System' },
   }
   broken_chromeos_special_url_tabs = {
     # returns "not available" page on chromeos=1 linux but has an URL constant.
@@ -149,7 +143,9 @@ class SpecialTabsTest(pyauto.PyUITest):
   }
   broken_linux_special_url_tabs = {}
 
-  mac_special_url_tabs = {}
+  mac_special_url_tabs = {
+    'chrome://settings/languages': { 'title': 'Settings - Languages' },
+  }
   broken_mac_special_url_tabs = {}
 
   win_special_url_tabs = {

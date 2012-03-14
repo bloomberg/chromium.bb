@@ -62,10 +62,10 @@ class SyncTest(pyauto.PyUITest):
     customize_button = 'Customize'
     stop_button = 'Stop Sync'
     signed_in_text = 'Google Dashboard'
-    chrome_personal_stuff_url = 'chrome://settings/personal'
+    chrome_settings_url = 'chrome://settings-frame'
     new_timeout = pyauto.PyUITest.ActionTimeoutChanger(self,
                                                        2 * 60 * 1000)  # 2 min.
-    self.AppendTab(pyauto.GURL(chrome_personal_stuff_url))
+    self.AppendTab(pyauto.GURL(chrome_settings_url))
     self.assertTrue(self.WaitUntil(
         lambda: self.FindInPage(default_text, tab_index=1)['match_count'],
                 expect_retval=1),

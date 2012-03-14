@@ -176,7 +176,7 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
     self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
     # Javascript is always enabled for internal Chrome pages.
-    self.NavigateToURL('chrome://settings')
+    self.NavigateToURL('chrome://settings-frame')
     self.assertTrue(self._IsJavascriptEnabled())
 
     # The Developer Tools can be explicitly disabled.

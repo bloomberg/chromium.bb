@@ -24,17 +24,17 @@ import pyauto
 
 
 class ExtensionsPage(object):
-  """Access options in extensions page (chrome://settings/extensions)."""
+  """Access options in extensions page (chrome://extensions-frame)."""
 
-  _URL = 'chrome://settings/extensions'
+  _URL = 'chrome://extensions-frame'
 
   def __init__(self, driver):
     self._driver = driver
     self._driver.get(ExtensionsPage._URL)
 
   def CheckExtensionVisible(self, ext_id):
-    """Returns True if |ext_id| Enabled checkbox exists on page."""
-    return len(self._driver.find_elements_by_id('toggle-%s' % ext_id)) == 1
+    """Returns True if |ext_id| exists on page."""
+    return len(self._driver.find_elements_by_id(ext_id)) == 1
 
   def SetEnabled(self, ext_id, enabled):
     """Clicks on 'Enabled' checkbox for specified extension.
@@ -43,7 +43,9 @@ class ExtensionsPage(object):
       ext_id: Extension ID to be enabled or disabled.
       enabled: Boolean indicating whether |ext_id| is to be enabled or disabled.
     """
-    checkbox = self._driver.find_element_by_id('toggle-%s' % ext_id)
+    checkbox = self._driver.find_element_by_xpath(
+        '//*[@id="%s"]//*[@class="enable-controls"]//*[@type="checkbox"]' %
+        ext_id)
     if checkbox != enabled:
       checkbox.click()
     # Reload page to ensure that the UI is recreated.
@@ -58,10 +60,8 @@ class ExtensionsPage(object):
           disallowed in incognito.
     """
     checkbox = self._driver.find_element_by_xpath(
-        '//*[@id="%s"][@type="checkbox"]' % ext_id)
-    # Expand extension and click on 'Allow in incognito'.
-    if not checkbox.is_displayed():
-      self._driver.find_element_by_id('%s_zippy' % ext_id).click()
+        '//*[@id="%s"]//*[@class="incognito-control"]//*[@type="checkbox"]' %
+        ext_id)
     if checkbox.is_selected() != allowed:
       checkbox.click()
     # Reload page to ensure that the UI is recreated.
@@ -76,10 +76,8 @@ class ExtensionsPage(object):
           file URLs.
     """
     checkbox = self._driver.find_element_by_xpath(
-        '(//*[@id="%s"][@type="checkbox"])[2]' % ext_id)
-    # Expand extension and click on 'Allow access to file URLs'.
-    if not checkbox.is_displayed():
-      self._driver.find_element_by_id('%s_zippy' % ext_id).click()
+        '//*[@id="%s"]//*[@class="file-access-control"]//*[@type="checkbox"]' %
+        ext_id)
     if checkbox.is_selected() != allowed:
       checkbox.click()
 

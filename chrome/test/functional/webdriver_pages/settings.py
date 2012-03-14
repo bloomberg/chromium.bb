@@ -187,7 +187,7 @@ class TextField(object):
 class AutofillEditAddressDialog(object):
   """The overlay for editing an autofill address."""
 
-  _URL = 'chrome://settings/autofillEditAddress'
+  _URL = 'chrome://settings-frame/autofillEditAddress'
 
   @staticmethod
   def FromNavigation(driver):
@@ -280,7 +280,7 @@ class Behaviors(object):
 class ContentSettingsPage(object):
   """The overlay for managing exceptions on the Content Settings page."""
 
-  _URL = 'chrome://settings/content'
+  _URL = 'chrome://settings-frame/content'
 
   @staticmethod
   def FromNavigation(driver):
@@ -315,13 +315,11 @@ class ManageExceptionsPage(object):
       driver: The remote WebDriver instance to manage some content type.
       content_type: The content type to manage.
     """
-    content_url = 'chrome://settings/contentExceptions#%s' % content_type
+    content_url = 'chrome://settings-frame/contentExceptions#%s' % content_type
     driver.get(content_url)
     return ManageExceptionsPage(driver, content_type)
 
   def __init__(self, driver, content_type):
-    content_url = 'chrome://settings/contentExceptions#%s' % content_type
-    assert content_url == driver.current_url
     self._list_elem = driver.find_element_by_xpath(
         './/*[@id="content-settings-exceptions-area"]'
         '//*[@contenttype="%s"]//list[@role="listbox"]'
