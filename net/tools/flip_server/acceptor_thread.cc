@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,7 +89,7 @@ void SMAcceptorThread::HandleConnection(int server_fd,
                     reinterpret_cast<char*>(&on), sizeof(on));
     if (rc < 0) {
       close(server_fd);
-      LOG(ERROR) << "setsockopt() failed fd=" + server_fd;
+      LOG(ERROR) << "setsockopt() failed fd=" << server_fd;
       return;
     }
   }
