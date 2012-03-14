@@ -70,7 +70,6 @@ cr.define('options.browser_options', function() {
       this.contentElement.appendChild(urlEl);
 
       var urlField = urlEl.querySelector('input');
-      urlField.required = true;
       urlField.className = 'weakrtl';
       urlField.placeholder = localStrings.getString('startupPagesPlaceholder');
       this.urlField_ = urlField;
