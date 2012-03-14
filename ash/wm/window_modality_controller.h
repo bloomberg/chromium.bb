@@ -6,10 +6,18 @@
 #define ASH_WM_WINDOW_MODALITY_CONTROLLER_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
 
 namespace ash {
+
+namespace wm {
+// Returns the window-modal transient child of |window|, or NULL if |window|
+// does not have any window-modal transient children.
+ASH_EXPORT aura::Window* GetWindowModalTransient(aura::Window* window);
+}
+
 namespace internal {
 
 // WindowModalityController is an event filter that consumes events sent to
@@ -19,10 +27,6 @@ class WindowModalityController : public aura::EventFilter {
  public:
   WindowModalityController();
   virtual ~WindowModalityController();
-
-  // Returns the window-modal transient child of |window|, or NULL if |window|
-  // does not have any window-modal transient children.
-  static aura::Window* GetWindowModalTransient(aura::Window* window);
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,

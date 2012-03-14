@@ -116,8 +116,7 @@ aura::Window* ActivationController::GetActivatableWindow(aura::Window* window) {
 // ActivationController, aura::client::ActivationClient implementation:
 
 void ActivationController::ActivateWindow(aura::Window* window) {
-  aura::Window* window_modal_transient =
-      WindowModalityController::GetWindowModalTransient(window);
+  aura::Window* window_modal_transient = wm::GetWindowModalTransient(window);
   if (window_modal_transient) {
     ActivateWindow(window_modal_transient);
     return;

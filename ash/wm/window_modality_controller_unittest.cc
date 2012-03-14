@@ -202,5 +202,39 @@ TEST_F(WindowModalityControllerTest, Events) {
   }
 }
 
+// Creates windows w1 and non activatiable child w11. Creates transient window
+// w2 and adds it as a transeint child of w1. Ensures that w2 is parented to
+// the parent of w1, and that GetWindowModalTransient(w11) returns w2.
+TEST_F(WindowModalityControllerTest, GetWindowModalTransient) {
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&d, -1, gfx::Rect(), NULL));
+  scoped_ptr<aura::Window> w11(
+      aura::test::CreateTestWindowWithDelegate(&d, -11, gfx::Rect(), w1.get()));
+  scoped_ptr<aura::Window> w2(
+      aura::test::CreateTestWindowWithDelegate(&d, -2, gfx::Rect(), NULL));
+  w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+
+  aura::Window* wt;
+  wt = wm::GetWindowModalTransient(w1.get());
+  ASSERT_EQ(static_cast<aura::Window*>(NULL), wt);
+
+  // Parent w2 to w1. It should get parented to the parent of w1.
+  w1->AddTransientChild(w2.get());
+  ASSERT_EQ(2U, w1->parent()->children().size());
+  EXPECT_EQ(-2, w1->parent()->children().at(1)->id());
+
+  // Request the modal transient window for w1, it should be w2.
+  wt = wm::GetWindowModalTransient(w1.get());
+  ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
+  EXPECT_EQ(-2, wt->id());
+
+  // Request the modal transient window for w11, it should also be w2.
+  wt = wm::GetWindowModalTransient(w11.get());
+  ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
+  EXPECT_EQ(-2, wt->id());
+}
+
+
 }  // namespace internal
 }  // namespace ash

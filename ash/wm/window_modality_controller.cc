@@ -11,7 +11,8 @@
 #include "ui/base/ui_base_types.h"
 
 namespace ash {
-namespace internal {
+
+namespace wm {
 
 namespace {
 
@@ -19,7 +20,38 @@ bool TransientChildIsWindowModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
+aura::Window* GetWindowModalTransientChild(aura::Window* window) {
+  aura::Window::Windows::const_iterator it;
+  for (it = window->transient_children().begin();
+       it != window->transient_children().end();
+       ++it) {
+    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
+      if (!(*it)->transient_children().empty())
+        return GetWindowModalTransientChild(*it);
+      return *it;
+    }
+  }
+  return NULL;
 }
+
+}  // namespace
+
+aura::Window* GetWindowModalTransient(aura::Window* window) {
+  if (!window)
+    return NULL;
+
+  // We always want to check the for the transient child of the activatable
+  // window.
+  window = wm::GetActivatableWindow(window);
+  if (!window)
+    return NULL;
+
+  return GetWindowModalTransientChild(window);
+}
+
+}  // namespace wm
+
+namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, public:
@@ -30,35 +62,17 @@ WindowModalityController::WindowModalityController() {
 WindowModalityController::~WindowModalityController() {
 }
 
-aura::Window* WindowModalityController::GetWindowModalTransient(
-    aura::Window* window) {
-  if (!window)
-    return NULL;
-
-  aura::Window::Windows::const_iterator it;
-  for (it = window->transient_children().begin();
-       it != window->transient_children().end();
-       ++it) {
-    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
-      if (!(*it)->transient_children().empty())
-        return GetWindowModalTransient(*it);
-      return *it;
-    }
-  }
-  return NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowModalityController, aura::EventFilter implementation:
 
 bool WindowModalityController::PreHandleKeyEvent(aura::Window* target,
                                                  aura::KeyEvent* event) {
-  return !!GetWindowModalTransient(target);
+  return !!wm::GetWindowModalTransient(target);
 }
 
 bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
                                                    aura::MouseEvent* event) {
-  aura::Window* modal_transient_child = GetWindowModalTransient(target);
+  aura::Window* modal_transient_child = wm::GetWindowModalTransient(target);
   if (modal_transient_child && event->type() == ui::ET_MOUSE_PRESSED)
     wm::ActivateWindow(modal_transient_child);
   return !!modal_transient_child;
