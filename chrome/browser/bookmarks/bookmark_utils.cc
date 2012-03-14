@@ -721,7 +721,7 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
   DCHECK(node && node->is_folder() && !node->empty());
   return browser::ShowYesNoBox(window,
-      l10n_util::GetStringUTF16(IDS_DELETE),
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
                                     ChildURLCountTotal(node)));
 }
