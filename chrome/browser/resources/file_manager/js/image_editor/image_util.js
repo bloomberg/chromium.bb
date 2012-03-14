@@ -462,7 +462,7 @@ ImageUtil.removeChildren = function(element) {
 };
 
 ImageUtil.getFullNameFromUrl = function(url) {
-  url = unescape(url);
+  url = decodeURIComponent(url);
   if (url.indexOf('/') != -1)
     return url.substr(url.lastIndexOf('/') + 1);
   else
