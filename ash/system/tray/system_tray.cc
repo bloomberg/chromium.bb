@@ -288,6 +288,12 @@ NetworkIconInfo::~NetworkIconInfo() {
 
 SystemTray::SystemTray()
     : items_(),
+      audio_controller_(NULL),
+      brightness_controller_(NULL),
+      date_format_observer_(NULL),
+      network_controller_(NULL),
+      power_status_controller_(NULL),
+      update_controller_(NULL),
       bubble_(NULL),
       popup_(NULL) {
   container_ = new views::View;

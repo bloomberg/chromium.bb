@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NETWORK_NETWORK_CONTROLLER_H
-#define ASH_SYSTEM_NETWORK_NETWORK_CONTROLLER_H
+#ifndef ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
+#define ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
 #pragma once
 
 namespace ash {
 
 struct NetworkIconInfo;
 
-class NetworkController {
+class NetworkObserver {
  public:
-  virtual ~NetworkController() {}
+  virtual ~NetworkObserver() {}
 
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) = 0;
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NETWORK_NETWORK_CONTROLLER_H
+#endif  // ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_AUDIO_AUDIO_CONTROLLER_H_
-#define ASH_SYSTEM_AUDIO_AUDIO_CONTROLLER_H_
+#ifndef ASH_SYSTEM_AUDIO_AUDIO_OBSERVER_H_
+#define ASH_SYSTEM_AUDIO_AUDIO_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
 namespace ash {
 
-class ASH_EXPORT AudioController {
+class ASH_EXPORT AudioObserver {
  public:
-  virtual ~AudioController() {}
+  virtual ~AudioObserver() {}
 
   virtual void OnVolumeChanged(float percent) = 0;
 };
 
 }  // namespace ash
 
-#endif  //ASH_SYSTEM_AUDIO_AUDIO_CONTROLLER_H_
+#endif  //ASH_SYSTEM_AUDIO_AUDIO_OBSERVER_H_

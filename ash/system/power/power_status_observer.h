@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_POWER_STATUS_CONTROLLER_H_
-#define ASH_SYSTEM_POWER_POWER_STATUS_CONTROLLER_H_
+#ifndef ASH_SYSTEM_POWER_POWER_STATUS_OBSERVER_H_
+#define ASH_SYSTEM_POWER_POWER_STATUS_OBSERVER_H_
 
 namespace ash {
 
 struct PowerSupplyStatus;
 
-class PowerStatusController {
+class PowerStatusObserver {
  public:
-  virtual ~PowerStatusController() {}
+  virtual ~PowerStatusObserver() {}
 
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) = 0;
 };
 
 };
 
-#endif  // ASH_SYSTEM_POWER_POWER_STATUS_CONTROLLER_H_
+#endif  // ASH_SYSTEM_POWER_POWER_STATUS_OBSERVER_H_

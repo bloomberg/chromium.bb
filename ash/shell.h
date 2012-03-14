@@ -40,20 +40,14 @@ class Widget;
 namespace ash {
 
 class AcceleratorController;
-class AudioController;
-class BrightnessController;
-class DateFormatObserver;
 class Launcher;
 class NestedDispatcherController;
-class NetworkController;
 class PowerButtonController;
-class PowerStatusController;
 class ScreenAsh;
 class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTray;
-class UpdateController;
 class VideoDetector;
 class WindowCycleController;
 
@@ -194,24 +188,6 @@ class ASH_EXPORT Shell {
   internal::FocusCycler* focus_cycler() {
     return focus_cycler_.get();
   }
-  AudioController* audio_controller() const {
-    return audio_controller_;
-  }
-  BrightnessController* brightness_controller() const {
-    return brightness_controller_;
-  }
-  DateFormatObserver* date_format_observer() const {
-    return date_format_observer_;
-  }
-  NetworkController* network_controller() const {
-    return network_controller_;
-  }
-  PowerStatusController* power_status_controller() const {
-    return power_status_controller_;
-  }
-  UpdateController* update_controller() const {
-    return update_controller_;
-  }
 
   ShellDelegate* delegate() { return delegate_.get(); }
   SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
@@ -291,14 +267,6 @@ class ASH_EXPORT Shell {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
-
-  // These controllers are not owned by the shell.
-  AudioController* audio_controller_;
-  BrightnessController* brightness_controller_;
-  DateFormatObserver* date_format_observer_;
-  NetworkController* network_controller_;
-  PowerStatusController* power_status_controller_;
-  UpdateController* update_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;

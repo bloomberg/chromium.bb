@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/system/power/date_format_observer.h"
-#include "ash/system/power/power_status_controller.h"
+#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
@@ -20,7 +20,7 @@ class PowerTrayView;
 }
 
 class TrayPowerDate : public SystemTrayItem,
-                      public PowerStatusController,
+                      public PowerStatusObserver,
                       public DateFormatObserver {
  public:
   TrayPowerDate();
@@ -35,7 +35,7 @@ class TrayPowerDate : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
-  // Overridden from PowerStatusController.
+  // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
   // Overridden from DateFormatObserver.

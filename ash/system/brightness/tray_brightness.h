@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
 #pragma once
 
-#include "ash/system/brightness/brightness_controller.h"
+#include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/compiler_specific.h"
 
@@ -18,7 +18,7 @@ class BrightnessView;
 }
 
 class TrayBrightness : public SystemTrayItem,
-                       public BrightnessController {
+                       public BrightnessObserver {
  public:
   TrayBrightness();
   virtual ~TrayBrightness();
@@ -32,7 +32,7 @@ class TrayBrightness : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
-  // Overridden from BrightnessController.
+  // Overridden from BrightnessObserver.
   virtual void OnBrightnessChanged(float percent,
                                    bool user_initiated) OVERRIDE;
 

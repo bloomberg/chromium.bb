@@ -19,7 +19,7 @@
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/network/tray_network.h"
-#include "ash/system/power/power_status_controller.h"
+#include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/tray_power_date.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -340,12 +340,6 @@ Shell::Shell(ShellDelegate* delegate)
       screen_(new ScreenAsh(root_window_.get())),
       root_filter_(NULL),
       delegate_(delegate),
-      audio_controller_(NULL),
-      brightness_controller_(NULL),
-      date_format_observer_(NULL),
-      network_controller_(NULL),
-      power_status_controller_(NULL),
-      update_controller_(NULL),
       shelf_(NULL),
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
@@ -501,12 +495,12 @@ void Shell::Init() {
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
     internal::TrayUser* tray_user = new internal::TrayUser;
-    audio_controller_ = tray_volume;
-    brightness_controller_ = tray_brightness;
-    date_format_observer_ = tray_power_date;
-    network_controller_ = tray_network;
-    power_status_controller_ = tray_power_date;
-    update_controller_ = tray_user;
+    tray_->audio_controller_ = tray_volume;
+    tray_->brightness_controller_ = tray_brightness;
+    tray_->date_format_observer_ = tray_power_date;
+    tray_->network_controller_ = tray_network;
+    tray_->power_status_controller_ = tray_power_date;
+    tray_->update_controller_ = tray_user;
 
     tray_->AddTrayItem(tray_user);
     tray_->AddTrayItem(new internal::TrayEmpty());

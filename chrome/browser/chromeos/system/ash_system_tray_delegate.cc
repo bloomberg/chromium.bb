@@ -6,14 +6,14 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/audio/audio_controller.h"
-#include "ash/system/brightness/brightness_controller.h"
-#include "ash/system/network/network_controller.h"
+#include "ash/system/audio/audio_observer.h"
+#include "ash/system/brightness/brightness_observer.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/power/date_format_observer.h"
-#include "ash/system/power/power_status_controller.h"
+#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/user/update_controller.h"
+#include "ash/system/user/update_observer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
@@ -273,12 +273,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void NotifyRefreshNetwork() {
-    ash::NetworkController* controller =
-        ash::Shell::GetInstance()->network_controller();
-    if (controller) {
+    ash::NetworkObserver* observer =
+        ash::Shell::GetInstance()->tray()->network_controller();
+    if (observer) {
       ash::NetworkIconInfo info;
       info.image = network_icon_->GetIconAndText(&info.description);
-      controller->OnNetworkRefresh(info);
+      observer->OnNetworkRefresh(info);
     }
   }
 
@@ -305,18 +305,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from AudioHandler::VolumeObserver.
   virtual void OnVolumeChanged() OVERRIDE {
     float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
-    ash::Shell::GetInstance()->audio_controller()->
+    ash::Shell::GetInstance()->tray()->audio_controller()->
         OnVolumeChanged(level);
   }
 
   // Overridden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
-    ash::Shell::GetInstance()->brightness_controller()->
+    ash::Shell::GetInstance()->tray()->brightness_controller()->
         OnBrightnessChanged(level / 100.f, user_initiated);
   }
 
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
-    ash::Shell::GetInstance()->power_status_controller()->
+    ash::Shell::GetInstance()->tray()->power_status_controller()->
         OnPowerStatusChanged(power_status);
   }
 
@@ -390,17 +390,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-        ash::UpdateController* controller =
-            ash::Shell::GetInstance()->update_controller();
-        if (controller)
-          controller->OnUpdateRecommended();
+        ash::UpdateObserver* observer =
+            ash::Shell::GetInstance()->tray()->update_controller();
+        if (observer)
+          observer->OnUpdateRecommended();
         break;
       }
       case chrome::NOTIFICATION_PREF_CHANGED: {
         DCHECK_EQ(*content::Details<std::string>(details).ptr(),
                   prefs::kUse24HourClock);
         ash::DateFormatObserver* observer =
-            ash::Shell::GetInstance()->date_format_observer();
+            ash::Shell::GetInstance()->tray()->date_format_observer();
         if (observer)
           observer->OnDateFormatChanged();
         break;

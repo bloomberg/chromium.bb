@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROLLER_H_
-#define ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROLLER_H_
+#ifndef ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_OBSERVER_H_
+#define ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
 namespace ash {
 
-class ASH_EXPORT BrightnessController {
+class ASH_EXPORT BrightnessObserver {
  public:
-  virtual ~BrightnessController() {}
+  virtual ~BrightnessObserver() {}
 
   virtual void OnBrightnessChanged(float percent, bool user_initiated) = 0;
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_CONTROLLER_H_
+#endif  // ASH_SYSTEM_BRIGHTNESS_BRIGHTNESS_OBSERVER_H_

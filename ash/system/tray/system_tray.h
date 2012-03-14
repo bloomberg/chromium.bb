@@ -16,6 +16,13 @@
 
 namespace ash {
 
+class AudioObserver;
+class BrightnessObserver;
+class DateFormatObserver;
+class NetworkObserver;
+class PowerStatusObserver;
+class UpdateObserver;
+
 class SystemTrayItem;
 
 namespace internal {
@@ -48,7 +55,28 @@ class ASH_EXPORT SystemTray : public views::View,
 
   const std::vector<SystemTrayItem*>& items() const { return items_; }
 
+  AudioObserver* audio_controller() const {
+    return audio_controller_;
+  }
+  BrightnessObserver* brightness_controller() const {
+    return brightness_controller_;
+  }
+  DateFormatObserver* date_format_observer() const {
+    return date_format_observer_;
+  }
+  NetworkObserver* network_controller() const {
+    return network_controller_;
+  }
+  PowerStatusObserver* power_status_controller() const {
+    return power_status_controller_;
+  }
+  UpdateObserver* update_controller() const {
+    return update_controller_;
+  }
+
  private:
+  friend class Shell;
+
   void ShowItems(std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate);
@@ -66,6 +94,14 @@ class ASH_EXPORT SystemTray : public views::View,
 
   // The container for all the tray views of the items.
   views::View* container_;
+
+  // These observers are not owned by the tray.
+  AudioObserver* audio_controller_;
+  BrightnessObserver* brightness_controller_;
+  DateFormatObserver* date_format_observer_;
+  NetworkObserver* network_controller_;
+  PowerStatusObserver* power_status_controller_;
+  UpdateObserver* update_controller_;
 
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;

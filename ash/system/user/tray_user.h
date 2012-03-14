@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/user/update_controller.h"
+#include "ash/system/user/update_observer.h"
 
 namespace ash {
 namespace internal {
@@ -17,7 +17,7 @@ class UserView;
 }
 
 class TrayUser : public SystemTrayItem,
-                 public UpdateController {
+                 public UpdateObserver {
  public:
   TrayUser();
   virtual ~TrayUser();
@@ -31,7 +31,7 @@ class TrayUser : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
-  // Overridden from UpdateController.
+  // Overridden from UpdateObserver.
   virtual void OnUpdateRecommended() OVERRIDE;
 
   scoped_ptr<tray::UserView> user_;

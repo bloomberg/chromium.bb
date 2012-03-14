@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_AUDIO_TRAY_VOLUME_H_
 #pragma once
 
-#include "ash/system/audio/audio_controller.h"
+#include "ash/system/audio/audio_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -18,7 +18,7 @@ class VolumeView;
 }
 
 class TrayVolume : public SystemTrayItem,
-                   public AudioController {
+                   public AudioObserver {
  public:
   TrayVolume();
   virtual ~TrayVolume();
@@ -32,7 +32,7 @@ class TrayVolume : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
-  // Overridden from AudioController.
+  // Overridden from AudioObserver.
   virtual void OnVolumeChanged(float percent) OVERRIDE;
 
   scoped_ptr<tray::VolumeView> volume_view_;

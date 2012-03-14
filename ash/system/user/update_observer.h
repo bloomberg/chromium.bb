@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_USER_UPDATE_CONTROLLER_H_
-#define ASH_SYSTEM_USER_UPDATE_CONTROLLER_H_
+#ifndef ASH_SYSTEM_USER_UPDATE_OBSERVER_H_
+#define ASH_SYSTEM_USER_UPDATE_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
 namespace ash {
 
-class ASH_EXPORT UpdateController {
+class ASH_EXPORT UpdateObserver {
  public:
-  virtual ~UpdateController() {}
+  virtual ~UpdateObserver() {}
 
   virtual void OnUpdateRecommended() = 0;
 };
 
 }  // namespace ash
 
-#endif  //ASH_SYSTEM_USER_UPDATE_CONTROLLER_H_
+#endif  //ASH_SYSTEM_USER_UPDATE_OBSERVER_H_

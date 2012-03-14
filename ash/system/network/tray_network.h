@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_NETWORK_TRAY_NETWORK_H
 #pragma once
 
-#include "ash/system/network/network_controller.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -20,7 +20,7 @@ class NetworkTrayView;
 }
 
 class TrayNetwork : public SystemTrayItem,
-                    public NetworkController {
+                    public NetworkObserver {
  public:
   TrayNetwork();
   virtual ~TrayNetwork();
@@ -34,7 +34,7 @@ class TrayNetwork : public SystemTrayItem,
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
-  // Overridden from NetworkController.
+  // Overridden from NetworkObserver.
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
 
   scoped_ptr<tray::NetworkTrayView> tray_;
