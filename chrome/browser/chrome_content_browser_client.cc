@@ -92,7 +92,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
@@ -104,6 +103,10 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
+#endif
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
