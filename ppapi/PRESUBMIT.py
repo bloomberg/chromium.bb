@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 import os
+import re
 import sys
 import subprocess
+
 
 def RunCmdAndCheck(cmd, err_string, output_api, cwd=None):
   results = []
@@ -52,6 +54,44 @@ def CheckSrpcChange(input_api, output_api):
                           output_api)
   return []
 
+
+# Verify that the files do not contain a 'TODO' in them.
+RE_TODO = re.compile(r'\WTODO\W', flags=re.I)
+def CheckTODO(input_api, output_api):
+  files = input_api.LocalPaths()
+  todo = []
+
+  for filename in files:
+    name, ext = os.path.splitext(filename)
+    name_parts = name.split(os.sep)
+
+    # Only check normal build sources.
+    if ext not in ['.h', '.cc', '.idl']:
+      continue
+
+    # Only examine the ppapi directory.
+    if name_parts[0] != 'ppapi':
+      continue
+
+    # Only examine public plugin facing directories.
+    if name_parts[1] not in ['api', 'c', 'cpp', 'utility']:
+      continue
+
+    # Only examine public stable interfaces.
+    if name_parts[2] in ['dev', 'private', 'trusted']:
+      continue
+
+    filepath = os.path.join('..', filename)
+    if RE_TODO.search(open(filepath, 'rb').read()):
+      todo.append(filename)
+
+  if todo:
+    return [output_api.PresubmitError(
+        'TODOs found in stable public PPAPI files:',
+        long_text='\n'.join(todo))]
+  return []
+
+
 def CheckChange(input_api, output_api):
   results = []
 
@@ -59,11 +99,13 @@ def CheckChange(input_api, output_api):
 
   results.extend(RunUnittests(input_api, output_api))
 
+  results.extend(CheckTODO(input_api, output_api))
   # Verify all modified *.idl have a matching *.h
   files = input_api.LocalPaths()
   h_files = []
   idl_files = []
 
+  # Find all relevant .h and .idl files.
   for filename in files:
     name, ext = os.path.splitext(filename)
     name_parts = name.split(os.sep)
@@ -81,36 +123,76 @@ def CheckChange(input_api, output_api):
   missing = []
   for filename in idl_files:
     if filename not in set(h_files):
-      missing.append('  ppapi/c/%s.h' % filename)
-  for filename in h_files:
-    if filename not in set(idl_files):
-      missing.append('  ppapi/api/%s.idl' % filename)
+      missing.append('  ppapi/c/%s.idl' % filename)
 
   if missing:
     results.append(
-        output_api.PresubmitPromptWarning('Missing matching PPAPI definition:',
-                                          long_text='\n'.join(missing)))
+        output_api.PresubmitPromptWarning(
+            'Missing PPAPI header, no change or skipped generation?',
+            long_text='\n'.join(missing)))
+
+  missing_dev = []
+  missing_stable = []
+  missing_priv = []
+  for filename in h_files:
+    if filename not in set(idl_files):
+      name_parts = filename.split(os.sep)
+
+      if 'trusted' in name_parts:
+        missing_priv.append('  ppapi/c/%s.h' % filename)
+        continue
+
+      if 'private' in name_parts:
+        missing_priv.append('  ppapi/c/%s.h' % filename)
+        continue
+
+      if 'dev' in name_parts:
+        missing_dev.append('  ppapi/c/%s.h' % filename)
+        continue
+
+      missing_stable.append('  ppapi/c/%s.h' % filename)
+
+  if missing_priv:
+    results.append(
+        output_api.PresubmitPromptWarning(
+            'Missing PPAPI IDL for private interface, please generate IDL:',
+            long_text='\n'.join(missing_priv)))
+
+  if missing_dev:
+    results.append(
+        output_api.PresubmitPromptWarning(
+            'Missing PPAPI IDL for DEV, required before moving to stable:',
+            long_text='\n'.join(missing_dev)))
+
+  if missing_stable:
+    results.append(
+        output_api.PresubmitError(
+            'Missing PPAPI IDL for stable interface:',
+            long_text='\n'.join(missing_stable)))
 
   # Verify all *.h files match *.idl definitions, use:
   #   --test to prevent output to disk
   #   --diff to generate a unified diff
   #   --out to pick which files to examine (only the ones in the CL)
   ppapi_dir = input_api.PresubmitLocalPath()
-  cmd = [ sys.executable, 'generator.py',
-          '--wnone', '--diff', '--test','--cgen', '--range=start,end']
+  cmd = [sys.executable, 'generator.py',
+         '--wnone', '--diff', '--test','--cgen', '--range=start,end']
 
   # Only generate output for IDL files references (as *.h or *.idl) in this CL
   cmd.append('--out=' + ','.join([name + '.idl' for name in both]))
-  results.extend(RunCmdAndCheck(cmd,
-                                'PPAPI IDL Diff detected: Run the generator.',
-                                output_api,
-                                os.path.join(ppapi_dir, 'generators')))
+  cmd_results = RunCmdAndCheck(cmd,
+                               'PPAPI IDL Diff detected: Run the generator.',
+                               output_api,
+                               os.path.join(ppapi_dir, 'generators'))
+  if cmd_results:
+    results.extend(cmd_results)
+
   return results
 
+
 def CheckChangeOnUpload(input_api, output_api):
-#  return []
   return CheckChange(input_api, output_api)
 
+
 def CheckChangeOnCommit(input_api, output_api):
-#  return []
   return CheckChange(input_api, output_api)
