@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,23 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/output_traits.h"
+
+struct PP_ArrayOutput;
 
 /// @file
 /// This file defines the API to create and run a callback.
 namespace pp {
 
+template<typename T> class AsyncArrayOutputAdapter;
+template<typename T> class AsyncResourceArrayOutputAdapter;
+
 /// This API enables you to implement and receive callbacks when
 /// Pepper operations complete asynchronously.
+///
+/// You can create these objects yourself, but it is most common to use the
+/// CompletionCallbackFactory to allow the callbacks to call class member
+/// functions.
 class CompletionCallback {
  public:
   /// The default constructor will create a blocking
@@ -146,6 +156,91 @@ class CompletionCallback {
 
  protected:
   PP_CompletionCallback cc_;
+};
+
+/// A CompletionCallbackWithOutput defines a completion callback that
+/// additionally stores a pointer to some output data. Some C++ wrappers
+/// take a CompletionCallbackWithOutput when the browser is returning a
+/// bit of data as part of the function call. The "output" parameter
+/// stored in the CompletionCallbackWithOutput will receive the data from
+/// the browser.
+///
+/// You can create this yourself, but it is most common to use with the
+/// CompletionCallbackFactory's NewCallbackWithOutput, which manages the
+/// storage for the output parameter for you and passes it as an argument
+/// to your callback function.
+///
+/// Note that this class doesn't actually do anything with the output data,
+/// it just stores a pointer to it. C++ wrapper objects that accept a
+/// CompletionCallbackWithOutput will retrieve this pointer and pass it to
+/// the browser as the output parameter.
+template<typename T>
+class CompletionCallbackWithOutput : public CompletionCallback {
+ public:
+  /// The type that will actually be stored in the completion callback. In the
+  /// common case, this will be equal to the template parameter (for example,
+  /// CompletionCallbackWithOutput<int> would obviously take an int*. However,
+  /// resources are passed as PP_Resource, vars as PP_Var, and arrays as our
+  /// special ArrayOutputAdapter object. The CallbackOutputTraits defines
+  /// specializations for all of these cases.
+  typedef typename internal::CallbackOutputTraits<T>::StorageType
+      OutputStorageType;
+
+  /// The default constructor will create a blocking
+  /// <code>CompletionCallback</code> that references the given output
+  /// data.
+  ///
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  ///
+  /// <strong>Note:</strong> Blocking completion callbacks are only allowed from
+  /// from background threads.
+  CompletionCallbackWithOutput(OutputStorageType* output)
+      : CompletionCallback(),
+        output_(output) {
+  }
+
+  /// A constructor for creating a <code>CompletionCallback</code> that
+  /// references the given output data.
+  ///
+  /// @param[in] user_data The user data to be passed to the callback function.
+  /// This is optional and is typically used to help track state in case of
+  /// multiple pending callbacks.
+  ///
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  CompletionCallbackWithOutput(PP_CompletionCallback_Func func,
+                               void* user_data,
+                               OutputStorageType* output)
+      : CompletionCallback(func, user_data),
+        output_(output) {
+  }
+
+  /// A constructor for creating a <code>CompletionCallback</code> that
+  /// references the given output data.
+  ///
+  /// @param[in] user_data The user data to be passed to the callback function.
+  /// This is optional and is typically used to help track state in case of
+  /// multiple pending callbacks.
+  ///
+  /// @param[in] flags Bit field combination of
+  /// <code>PP_CompletionCallback_Flag</code> flags used to control how
+  /// non-NULL callbacks are scheduled by asynchronous methods.
+  ///
+  /// @param[in] output A pointer to the data associated with the callback. The
+  /// caller must ensure that this pointer outlives the completion callback.
+  CompletionCallbackWithOutput(PP_CompletionCallback_Func func,
+                               void* user_data,
+                               int32_t flags,
+                               OutputStorageType* output)
+      : CompletionCallback(func, user_data, flags),
+        output_(output) {
+  }
+
+  OutputStorageType* output() const { return output_; }
+
+ private:
+  OutputStorageType* output_;
 };
 
 /// BlockUntilComplete() is used in place of an actual completion callback

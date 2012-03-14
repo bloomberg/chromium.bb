@@ -126,6 +126,8 @@
       'c/trusted/ppp_broker.h',
     ],
     'cpp_source_files': [
+      'cpp/array_output.cc',
+      'cpp/array_output.h',
       'cpp/audio.cc',
       'cpp/audio.h',
       'cpp/audio_config.cc',
@@ -162,6 +164,7 @@
       'cpp/module_impl.h',
       'cpp/mouse_lock.cc',
       'cpp/mouse_lock.h',
+      'cpp/output_traits.h',
       'cpp/point.h',
       'cpp/rect.cc',
       'cpp/rect.h',
