@@ -242,6 +242,9 @@ base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
 
 // static
 bool BrowserThread::IsWellKnownThread(ID identifier) {
+  if (g_globals == NULL)
+    return false;
+
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
   return (identifier >= 0 && identifier < ID_COUNT &&
@@ -265,6 +268,9 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
+  if (g_globals == NULL)
+    return false;
+
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
@@ -348,6 +354,9 @@ bool BrowserThread::PostTaskAndReply(
 
 // static
 bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
+  if (g_globals == NULL)
+    return false;
+
   // We shouldn't use MessageLoop::current() since it uses LazyInstance which
   // may be deleted by ~AtExitManager when a WorkerPool thread calls this
   // function.
@@ -376,6 +385,9 @@ BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
 
 // static
 MessageLoop* BrowserThread::UnsafeGetMessageLoopForThread(ID identifier) {
+  if (g_globals == NULL)
+    return NULL;
+
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
   base::Thread* thread = globals.threads[identifier];
