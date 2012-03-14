@@ -14,6 +14,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 class Widget;
 }
@@ -22,6 +26,7 @@ namespace ash {
 
 namespace internal {
 class FocusCycler;
+class LauncherView;
 }
 
 class LauncherDelegate;
@@ -39,6 +44,10 @@ class ASH_EXPORT Launcher {
   void SetStatusWidth(int width);
   int GetStatusWidth();
 
+  // Returns the screen bounds of the item for the specified window. If there is
+  // no item for the specified window an empty rect is returned.
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
+
   LauncherDelegate* delegate() { return delegate_.get(); }
 
   LauncherModel* model() { return model_.get(); }
@@ -49,10 +58,6 @@ class ASH_EXPORT Launcher {
  private:
   class DelegateView;
 
-  // If necessary asks the delegate if an entry should be created in the
-  // launcher for |window|. This only asks the delegate once for a window.
-  void MaybeAdd(aura::Window* window);
-
   scoped_ptr<LauncherModel> model_;
 
   // Widget hosting the view.
@@ -62,6 +67,8 @@ class ASH_EXPORT Launcher {
 
   // Contents view of the widget. Houses the LauncherView.
   DelegateView* delegate_view_;
+
+  internal::LauncherView* launcher_view_;
 
   scoped_ptr<LauncherDelegate> delegate_;
 

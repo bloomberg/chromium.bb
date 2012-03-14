@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/phantom_window_controller.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -175,8 +177,16 @@ void PhantomWindowController::ShowNow() {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.transparent = true;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = window_->parent();
+    if (type_ == TYPE_DESTINATION) {
+      params.parent = window_->parent();
+    } else {
+      // TYPE_EDGE is used by FrameMaximizeButton to highlight the launcher
+      // button, make sure the phantom appears over it.
+      params.parent =
+          Shell::GetInstance()->GetContainer(kShellWindowId_LauncherContainer);
+    }
     params.can_activate = false;
+    params.keep_on_top = true;
     phantom_widget_->set_focus_on_creation(false);
     phantom_widget_->Init(params);
     phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);

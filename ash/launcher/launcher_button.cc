@@ -140,6 +140,10 @@ void LauncherButton::ClearState(State state) {
   }
 }
 
+gfx::Rect LauncherButton::GetIconBounds() const {
+  return icon_view_->bounds();
+}
+
 bool LauncherButton::OnMousePressed(const views::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
   host_->MousePressedOnButton(this, event);

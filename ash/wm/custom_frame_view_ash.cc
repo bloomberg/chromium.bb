@@ -5,6 +5,7 @@
 #include "ash/wm/custom_frame_view_ash.h"
 
 #include "ash/wm/frame_painter.h"
+#include "ash/wm/workspace/frame_maximize_button.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/l10n/l10n_util.h"
@@ -43,7 +44,7 @@ void CustomFrameViewAsh::Init(views::Widget* frame) {
 
   frame_ = frame;
 
-  maximize_button_ = new views::ImageButton(this);
+  maximize_button_ = new FrameMaximizeButton(this);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);

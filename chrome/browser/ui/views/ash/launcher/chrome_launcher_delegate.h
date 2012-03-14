@@ -158,6 +158,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item) OVERRIDE;
+  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;

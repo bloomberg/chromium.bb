@@ -96,7 +96,8 @@ void Launcher::DelegateView::Layout() {
 Launcher::Launcher(aura::Window* window_container)
     : widget_(NULL),
       window_container_(window_container),
-      delegate_view_(NULL) {
+      delegate_view_(NULL),
+      launcher_view_(NULL) {
   model_.reset(new LauncherModel);
   if (Shell::GetInstance()->delegate()) {
     delegate_.reset(
@@ -111,15 +112,15 @@ Launcher::Launcher(aura::Window* window_container)
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_LauncherContainer);
-  internal::LauncherView* launcher_view =
-      new internal::LauncherView(model_.get(), delegate_.get());
-  launcher_view->Init();
+  launcher_view_ = new internal::LauncherView(model_.get(), delegate_.get());
+  launcher_view_->Init();
   delegate_view_ = new DelegateView;
-  delegate_view_->AddChildView(launcher_view);
+  delegate_view_->AddChildView(launcher_view_);
   params.delegate = delegate_view_;
   widget_->Init(params);
   widget_->GetNativeWindow()->SetName("LauncherWindow");
-  gfx::Size pref = static_cast<views::View*>(launcher_view)->GetPreferredSize();
+  gfx::Size pref =
+      static_cast<views::View*>(launcher_view_)->GetPreferredSize();
   widget_->SetBounds(gfx::Rect(0, 0, pref.width(), pref.height()));
   // The launcher should not take focus when it is initially shown.
   widget_->set_focus_on_creation(false);
@@ -137,6 +138,23 @@ void Launcher::SetStatusWidth(int width) {
 
 int Launcher::GetStatusWidth() {
   return delegate_view_->status_width();
+}
+
+gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
+  if (!delegate_.get())
+    return gfx::Rect();
+
+  LauncherID id = delegate_->GetIDByWindow(window);
+  gfx::Rect bounds(launcher_view_->GetIdealBoundsOfItemIcon(id));
+  if (bounds.IsEmpty())
+    return bounds;
+
+  gfx::Point screen_origin;
+  views::View::ConvertPointToScreen(launcher_view_, &screen_origin);
+  return gfx::Rect(screen_origin.x() + bounds.x(),
+                   screen_origin.y() + bounds.y(),
+                   bounds.width(),
+                   bounds.height());
 }
 
 }  // namespace ash

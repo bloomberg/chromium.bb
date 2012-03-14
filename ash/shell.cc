@@ -641,6 +641,10 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int Shell::GetGridSize() const {
+  return workspace_controller_->workspace_manager()->grid_size();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 

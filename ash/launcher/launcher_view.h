@@ -60,6 +60,10 @@ class ASH_EXPORT LauncherView : public views::View,
 
   void Init();
 
+  // Returns the ideal bounds of the specified item, or an empty rect if id
+  // isn't know.
+  gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
+
  private:
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;

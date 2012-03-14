@@ -23,7 +23,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   virtual ~ImageButton();
 
   // Set the image the button should use for the provided state.
-  virtual void SetImage(ButtonState aState, const SkBitmap* anImage);
+  virtual void SetImage(ButtonState state, const SkBitmap* image);
 
   // Set the background details.
   void SetBackground(SkColor color,

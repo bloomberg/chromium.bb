@@ -23,6 +23,7 @@
 #include "base/message_loop.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/env.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -72,8 +73,20 @@ class WindowWatcher : public aura::WindowObserver {
     return i != id_to_window_.end() ? i->second : NULL;
   }
 
+  ash::LauncherID GetIDByWindow(aura::Window* window) const {
+    for (IDToWindow::const_iterator i = id_to_window_.begin();
+         i != id_to_window_.end(); ++i) {
+      if (i->second == window)
+        return i->first;
+    }
+    return 0;  // TODO: add a constant for this.
+  }
+
   // aura::WindowObserver overrides:
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
+    if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL)
+      return;
+
     static int image_count = 0;
     ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
     ash::LauncherItem item;
@@ -150,6 +163,10 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item) OVERRIDE {
     return NULL;
+  }
+
+  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE {
+    return watcher_->GetIDByWindow(window);
   }
 
  private:

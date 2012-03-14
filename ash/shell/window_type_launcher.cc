@@ -305,6 +305,10 @@ string16 WindowTypeLauncher::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Window Builder");
 }
 
+bool WindowTypeLauncher::CanMaximize() const {
+  return true;
+}
+
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   if (sender == create_button_) {

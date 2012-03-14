@@ -434,6 +434,16 @@ ui::MenuModel* ChromeLauncherDelegate::CreateContextMenu(
   return new LauncherContextMenu(this, item.id);
 }
 
+ash::LauncherID ChromeLauncherDelegate::GetIDByWindow(
+    aura::Window* window) {
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.updater && i->second.updater->window() == window)
+      return i->first;
+  }
+  return 0;
+}
+
 void ChromeLauncherDelegate::LauncherItemAdded(int index) {
 }
 

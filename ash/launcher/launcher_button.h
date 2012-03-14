@@ -39,6 +39,9 @@ class LauncherButton : public views::CustomButton {
   void ClearState(State state);
   int state() const { return state_; }
 
+  // Returns the bounds of the icon.
+  gfx::Rect GetIconBounds() const;
+
  protected:
   LauncherButton(views::ButtonListener* listener, LauncherButtonHost* host);
 

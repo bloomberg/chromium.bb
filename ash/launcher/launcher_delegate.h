@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/launcher/launcher_types.h"
 #include "base/string16.h"
 
 namespace ui {
@@ -14,8 +15,6 @@ class MenuModel;
 }
 
 namespace ash {
-
-struct LauncherItem;
 
 // Delegate for the Launcher.
 class ASH_EXPORT LauncherDelegate {
@@ -40,6 +39,10 @@ class ASH_EXPORT LauncherDelegate {
   // should be no context menu. The caller takes ownership of the returned
   // model.
   virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item) = 0;
+
+  // Returns the id of the item associated with the specified window, or 0 if
+  // there isn't one.
+  virtual ash::LauncherID GetIDByWindow(aura::Window* window) = 0;
 };
 
 }  // namespace ash

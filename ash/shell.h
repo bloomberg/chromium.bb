@@ -224,6 +224,9 @@ class ASH_EXPORT Shell {
 
   SystemTray* tray() const { return tray_.get(); }
 
+  // Returns the size of the grid.
+  int GetGridSize() const;
+
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }

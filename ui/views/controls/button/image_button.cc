@@ -31,8 +31,8 @@ ImageButton::ImageButton(ButtonListener* listener)
 ImageButton::~ImageButton() {
 }
 
-void ImageButton::SetImage(ButtonState aState, const SkBitmap* anImage) {
-  images_[aState] = anImage ? *anImage : SkBitmap();
+void ImageButton::SetImage(ButtonState state, const SkBitmap* image) {
+  images_[state] = image ? *image : SkBitmap();
   PreferredSizeChanged();
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 
 #include "ash/wm/frame_painter.h"
+#include "ash/wm/workspace/frame_maximize_button.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -52,7 +53,7 @@ BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
 
 void BrowserNonClientFrameViewAura::Init() {
   // Caption buttons.
-  maximize_button_ = new views::ImageButton(this);
+  maximize_button_ = new ash::FrameMaximizeButton(this);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
