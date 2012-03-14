@@ -157,7 +157,10 @@ var SpdyView = (function() {
       var session = spdySessions[i];
       tablePrinter.addRow();
 
-      tablePrinter.addCell(session.host_port_pair);
+      var host = session.host_port_pair;
+      if (session.aliases)
+        host += ' ' + session.aliases.join(' ');
+      tablePrinter.addCell(host);
       tablePrinter.addCell(session.proxy);
 
       var idCell = tablePrinter.addCell(session.source_id);
