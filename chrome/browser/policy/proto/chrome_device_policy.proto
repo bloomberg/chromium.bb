@@ -78,6 +78,11 @@ message MetricsEnabledProto {
 message ReleaseChannelProto {
   // One of "stable-channel", "beta-channel", or "dev-channel"
   optional string release_channel = 1;
+
+  // If |user_delegated| is set to true and the |release_channel| field is not
+  // set or left empty, the user can select the channel. If the
+  // |release_channel| is specified it will always override users choice!
+  optional bool release_channel_delegated = 2;
 }
 
 message DeviceOpenNetworkConfigurationProto {

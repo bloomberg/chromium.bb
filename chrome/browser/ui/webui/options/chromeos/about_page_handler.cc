@@ -54,8 +54,6 @@ const char kEndLinkOss[] = "END_LINK_OSS";
 const char kBeginLinkCrosOss[] = "BEGIN_LINK_CROS_OSS";
 const char kEndLinkCrosOss[] = "END_LINK_CROS_OSS";
 
-const char kDomainChangable[] = "domain";
-
 // Returns a substring [start, end) from |text|.
 std::string StringSubRange(const std::string& text, size_t start,
                            size_t end) {
@@ -71,9 +69,9 @@ bool CanChangeReleaseChannel() {
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
   if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    std::string value;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kReleaseChannel, &value);
-    if (value != kDomainChangable)
+    bool value = false;
+    if (!chromeos::CrosSettings::Get()->GetBoolean(
+            chromeos::kReleaseChannelDelegated, &value) || !value)
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";

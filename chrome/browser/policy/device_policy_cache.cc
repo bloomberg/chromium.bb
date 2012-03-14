@@ -517,18 +517,27 @@ void DevicePolicyCache::DecodeGenericPolicies(
     }
   }
 
-  if (policy.has_release_channel() &&
-      policy.release_channel().has_release_channel()) {
-    std::string channel(policy.release_channel().release_channel());
-    policies->Set(key::kChromeOsReleaseChannel,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE,
-                  Value::CreateStringValue(channel));
-    // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
-    // have to pass the channel in here, only ping the update engine to tell
-    // it to fetch the channel from the policy.
-    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
-        SetReleaseTrack(channel);
+  if (policy.has_release_channel()) {
+    const em::ReleaseChannelProto& container(policy.release_channel());
+    if (container.has_release_channel()) {
+      std::string channel(container.release_channel());
+      policies->Set(key::kChromeOsReleaseChannel,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(channel));
+      // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
+      // have to pass the channel in here, only ping the update engine to tell
+      // it to fetch the channel from the policy.
+      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
+          SetReleaseTrack(channel);
+    }
+    if (container.has_release_channel_delegated()) {
+      policies->Set(key::kChromeOsReleaseChannelDelegated,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.release_channel_delegated()));
+    }
   }
 }
 

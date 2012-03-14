@@ -176,6 +176,7 @@ class PolicyPrefsTestCases(object):
     # ChromeOS Device policies:
     'DevicePolicyRefreshRate': (300000, [], []),
     'ChromeOsReleaseChannel': ('stable-channel', [], []),
+    'ChromeOsReleaseChannelDelegated': (False, [], []),
     'DeviceOpenNetworkConfiguration': ('', [], []),
     'ReportDeviceVersionInfo': (True, [], []),
     'ReportDeviceActivityTimes': (True, [], []),

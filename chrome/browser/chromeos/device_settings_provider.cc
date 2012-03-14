@@ -47,6 +47,7 @@ const char* kKnownSettings[] = {
   kIdleLogoutTimeout,
   kIdleLogoutWarningDuration,
   kReleaseChannel,
+  kReleaseChannelDelegated,
   kReportDeviceActivityTimes,
   kReportDeviceBootMode,
   kReportDeviceVersionInfo,
@@ -282,6 +283,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kAppPack
     //   kIdleLogoutTimeout,
     //   kIdleLogoutWarningDuration,
+    //   kReleaseChannelDelegated,
     //   kReportDeviceVersionInfo
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
@@ -492,6 +494,12 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
     new_values_cache->SetString(kReleaseChannel,
                                 policy.release_channel().release_channel());
   }
+
+  new_values_cache->SetBoolean(
+      kReleaseChannelDelegated,
+      policy.has_release_channel() &&
+      policy.release_channel().has_release_channel_delegated() &&
+      policy.release_channel().release_channel_delegated());
 }
 
 void DeviceSettingsProvider::UpdateValuesCache() {

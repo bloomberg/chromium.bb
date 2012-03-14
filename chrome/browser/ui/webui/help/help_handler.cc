@@ -42,8 +42,6 @@ using base::ListValue;
 
 namespace {
 
-const char kDomainChangable[] = "domain";
-
 // Returns the browser version as a string.
 string16 BuildBrowserVersionString() {
   chrome::VersionInfo version_info;
@@ -74,9 +72,9 @@ bool CanChangeReleaseChannel() {
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
   if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
-    std::string value;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kReleaseChannel, &value);
-    if (value != kDomainChangable)
+    bool value = false;
+    if (!chromeos::CrosSettings::Get()->GetBoolean(
+            chromeos::kReleaseChannelDelegated, &value) || !value)
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
@@ -260,10 +258,15 @@ void HelpHandler::SetReleaseTrack(const ListValue* args) {
   }
 
   const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
-  Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-  prefs->SetString("cros.system.releaseChannel", channel);
   version_updater_->SetReleaseChannel(channel);
+  // On enterprise machines we can only use SetReleaseChannel to store the
+  // user choice in the lsb-release file but we can not modify the policy blob.
+  // Therefore we only call SetString if the device is locally owned and the
+  // currently logged in user is the owner.
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+    chromeos::CrosSettings::Get()->SetString(chromeos::kReleaseChannel,
+                                             channel);
+  }
 }
 
 #endif  // defined(OS_CHROMEOS)

@@ -27,6 +27,7 @@ extern const char kDeviceOwner[];
 extern const char kStatsReportingPref[];
 
 extern const char kReleaseChannel[];
+extern const char kReleaseChannelDelegated[];
 
 extern const char kReportDeviceVersionInfo[];
 extern const char kReportDeviceActivityTimes[];
