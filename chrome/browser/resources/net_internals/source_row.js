@@ -75,7 +75,8 @@ var SourceRow = (function() {
 
       // Add a CSS classname specific to this source type (so CSS can specify
       // different stylings for different types).
-      changeClassName(this.row_, 'source_' + sourceTypeString, true);
+      var sourceTypeClass = sourceTypeString.toLowerCase().replace(/_/g, '-');
+      changeClassName(this.row_, 'source-' + sourceTypeClass, true);
 
       this.updateClass_();
     },

@@ -1,12 +1,12 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 .tab-switcher-view {
-  font-family: sans-serif;
-  display: inline-block;
   border-right: 1px solid #aaa;
+  display: inline-block;
+  font-family: sans-serif;
 }
 
 .tab-switcher-view {
@@ -16,10 +16,10 @@
 }
 
 .tab-switcher-view a {
-  text-decoration: none;
   display: block;
   margin-top: 2px;
   padding: 5px 10px 3px 10px;
+  text-decoration: none;
 }
 
 .tab-switcher-view a:hover,
@@ -34,6 +34,6 @@
 }
 
 .tab-switcher-view a.selected {
-  color: #DD4B39;
+  color: rgb(221, 75, 57);
   font-weight: bold;
 }

@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,26 +6,26 @@
 #capture-status-view,
 #halted-status-view,
 #loaded-status-view {
+  color: #eee;
   padding: 0 6px;
   white-space: nowrap;
-  color: #eee;
 }
 
 #capture-status-view {
-  background: #f00;
+  background: rgb(255, 0, 0);
 }
 
 #halted-status-view {
-  background: #0a0;
+  background: rgb(0, 170, 0);
 }
 
 #loaded-status-view {
-  background: #88c;
+  background: rgb(136, 136, 204);
 }
 
 #capture-status-view-toggle-extras {
-  cursor: pointer;
   -webkit-filter: invert();  /* Make it white! */
+  cursor: pointer;
 }
 
 .capture-status-view-rotateleft {

@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -36,11 +35,11 @@
 }
 
 #timeline-view-open-sockets {
-  color: #A0A;
+  color: rgb(170, 0, 170);
 }
 
 #timeline-view-in-use-sockets {
-  color: #F3C;
+  color: rgb(255, 51, 204);
 }
 
 #timeline-view-url-requests {
@@ -48,11 +47,11 @@
 }
 
 #timeline-view-dns-requests {
-  color: #6BB;
+  color: rgb(102, 187, 187);
 }
 
 #timeline-view-bytes-received {
-  color: #0B0;
+  color: rgb(0, 187, 0);
 }
 
 #timeline-view-bytes-sent {
@@ -60,7 +59,7 @@
 }
 
 #timeline-view-disk-cache-bytes-read {
-  color: #00F;
+  color: rgb(0, 0, 255);
 }
 
 #timeline-view-disk-cache-bytes-written {
@@ -77,13 +76,13 @@
 }
 
 #timeline-view-graph-canvas {
-  padding: 10px 10px 2px 10px;
   cursor: pointer;
+  padding: 10px 10px 2px;
 }
 
 #timeline-view-scrollbar-div {
-  overflow-y: hidden;
   overflow-x: scroll;
+  overflow-y: hidden;
 }
 
 #timeline-view-scrollbar-inner-div {

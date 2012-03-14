@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,8 +6,8 @@
 /* Only common styles should be declared here. */
 
 * {
-  box-sizing: border-box;
   -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 body {
   font-family: sans-serif;
@@ -20,10 +19,10 @@ body {
   background: #bfbfbf;
   border-left: 1px inset black;
   border-right: 1px solid black;
-  position: absolute;
-  width: 8px;
   cursor: col-resize;
+  position: absolute;
   user-select: none;
+  width: 8px;
 }
 
 .log-source-entry {
@@ -31,8 +30,8 @@ body {
 }
 
 .log-source-entry * p {
-  font-weight: bold;
   font-size: 12px;
+  font-weight: bold;
 }
 
 .log-source-entry * td {
@@ -59,8 +58,8 @@ table.styled-table,
 .styled-table th,
 .styled-table td {
   border: 1px solid #777;
-  padding-right: 4px;
   padding-left: 4px;
+  padding-right: 4px;
 }
 
 .styled-table th {
@@ -83,8 +82,8 @@ table.styled-table,
 }
 
 .event-log a {
-  text-decoration: none;
   font-weight: bold;
+  text-decoration: none;
 }
 
 /**
