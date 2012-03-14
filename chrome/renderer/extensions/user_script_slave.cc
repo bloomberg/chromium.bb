@@ -155,14 +155,14 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     return false;
 
   // Unpickle scripts.
-  size_t num_scripts = 0;
+  uint64 num_scripts = 0;
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
                 pickle_size);
   PickleIterator iter(pickle);
-  pickle.ReadSize(&iter, &num_scripts);
+  pickle.ReadUInt64(&iter, &num_scripts);
 
   scripts_.reserve(num_scripts);
-  for (size_t i = 0; i < num_scripts; ++i) {
+  for (uint64 i = 0; i < num_scripts; ++i) {
     scripts_.push_back(new UserScript());
     UserScript* script = scripts_.back();
     script->Unpickle(pickle, &iter);

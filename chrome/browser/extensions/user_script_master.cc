@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,7 +245,7 @@ SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
 // Pickle user scripts and return pointer to the shared memory.
 static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   Pickle pickle;
-  pickle.WriteSize(scripts.size());
+  pickle.WriteUInt64(scripts.size());
   for (size_t i = 0; i < scripts.size(); i++) {
     const UserScript& script = scripts[i];
     // TODO(aa): This can be replaced by sending content script metadata to
