@@ -1515,7 +1515,14 @@ class PanelAndNotificationTest : public PanelBrowserTest {
   scoped_ptr<DesktopNotificationService> service_;
 };
 
-IN_PROC_BROWSER_TEST_F(PanelAndNotificationTest, NoOverlapping) {
+// crbug.com/118168
+#if defined(OS_MACOSX)
+#define MAYBE_NoOverlapping FAILS_NoOverlapping
+#else
+#define MAYBE_NoOverlapping NoOverlapping
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelAndNotificationTest, MAYBE_NoOverlapping) {
   const int kPanelWidth = 200;
   const int kShortPanelHeight = 150;
   const int kTallPanelHeight = 200;
