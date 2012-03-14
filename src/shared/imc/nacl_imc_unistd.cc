@@ -34,12 +34,6 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 
-// Duplicate a file descriptor.
-NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
-  return dup(handle);
-}
-
-namespace nacl {
 
 namespace {
 
@@ -50,7 +44,25 @@ const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
 const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
 const char kShmOpenPrefix[] = "/google-nacl-shm-";
 
+nacl::CreateMemoryObjectFunc g_create_memory_object_func = NULL;
+// This is the usable-from-C variant that takes an int rather than a bool.
+// TODO(mseaborn): Switch to having only the int variant.
+NaClCreateMemoryObjectFunc g_create_memory_object_func_c = NULL;
+
 }  // namespace
+
+
+// Duplicate a file descriptor.
+NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
+  return dup(handle);
+}
+
+void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
+  g_create_memory_object_func_c = func;
+}
+
+
+namespace nacl {
 
 bool WouldBlock() {
   return (errno == EAGAIN) ? true : false;
@@ -115,17 +127,8 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   }
 }
 
-static CreateMemoryObjectFunc g_create_memory_object_func = NULL;
-// This is the usable-from-C variant that takes an int rather than a bool.
-// TODO(mseaborn): Switch to having only the int variant.
-static NaClCreateMemoryObjectFunc g_create_memory_object_func_c = NULL;
-
 void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func) {
   g_create_memory_object_func = func;
-}
-
-void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
-  g_create_memory_object_func_c = func;
 }
 
 Handle CreateMemoryObject(size_t length, bool executable) {

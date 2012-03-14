@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -9,8 +9,15 @@
 
 #include <windows.h>
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+
+// This function is a no-op on Windows because there is no need to
+// override the Windows definition of NaClCreateMemoryObject(): it
+// already works inside the outer sandbox.
+void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
+}
 
 namespace nacl {
 

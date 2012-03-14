@@ -310,7 +310,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClExit(ret_code);
 }
 
-struct NaClChromeMainArgs *NaClChromeMainArgsInit(void) {
+struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   struct NaClChromeMainArgs *args = malloc(sizeof(*args));
   if (args == NULL)
     return NULL;

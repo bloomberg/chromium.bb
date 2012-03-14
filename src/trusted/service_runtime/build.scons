@@ -80,8 +80,8 @@ ldr_inputs = [
     'sel_ldr.c',
     'sel_ldr_standard.c',
     'sel_ldr_thread_interface.c',
-    # sel_main_chrome.c is compile-tested here but not otherwise used
-    # in the Scons build.
+    # sel_main_chrome.c is compile-tested and link-tested here but not
+    # otherwise used in the Scons build.
     'sel_main_chrome.c',
     'sel_mem.c',
     'sel_qualify.c',
@@ -950,3 +950,9 @@ if (not env.CrossToolsBuild() and
   env.AddNodeToTestSuite(node, ['medium_tests'],
                          'run_sel_ldr_thread_death_test',
                          is_broken=env.Bit('windows'))
+
+
+# This currently tests linking of sel_main_chrome.c *only*.  We do not
+# expect this program to do anything meaningful when run.
+env.ComponentProgram('sel_main_chrome_test', ['sel_main_chrome_test.c'],
+                     EXTRA_LIBS=sel_ldr_libs)
