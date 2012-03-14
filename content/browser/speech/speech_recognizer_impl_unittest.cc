@@ -24,7 +24,7 @@ using media::TestAudioInputControllerFactory;
 
 namespace {
 
-class MockAudioManager : public AudioManager {
+class MockAudioManager : public AudioManagerBase {
  public:
   MockAudioManager() {
     audio_thread_.reset(new base::Thread("MockAudioThread"));
@@ -39,7 +39,7 @@ class MockAudioManager : public AudioManager {
       media::AudioDeviceNames* device_names) OVERRIDE {}
   virtual AudioOutputStream* MakeAudioOutputStream(
         const AudioParameters& params) OVERRIDE {
-    return FakeAudioOutputStream::MakeFakeStream(params);
+    return FakeAudioOutputStream::MakeFakeStream(this, params);
   }
   virtual AudioOutputStream* MakeAudioOutputStreamProxy(
         const AudioParameters& params) OVERRIDE {
@@ -48,7 +48,19 @@ class MockAudioManager : public AudioManager {
   }
   virtual AudioInputStream* MakeAudioInputStream(
         const AudioParameters& params, const std::string& device_id) OVERRIDE {
-    return FakeAudioInputStream::MakeFakeStream(params);
+    return FakeAudioInputStream::MakeFakeStream(this, params);
+  }
+  virtual AudioOutputStream* MakeLinearOutputStream(
+      const AudioParameters& params) OVERRIDE { return NULL; }
+  virtual AudioOutputStream* MakeLowLatencyOutputStream(
+      const AudioParameters& params) OVERRIDE { return NULL; }
+  virtual AudioInputStream* MakeLinearInputStream(
+      const AudioParameters& params, const std::string& device_id) OVERRIDE {
+    return NULL;
+  }
+  virtual AudioInputStream* MakeLowLatencyInputStream(
+      const AudioParameters& params, const std::string& device_id) OVERRIDE {
+    return NULL;
   }
   virtual void MuteAll() OVERRIDE {}
   virtual void UnMuteAll() OVERRIDE {}
