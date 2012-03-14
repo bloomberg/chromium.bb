@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,17 +62,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
   // Add two entries with the same Name and URL (but different keywords).
   // Note that we have to change the GUID of the duplicate.
   AddSearchEngine(0, 0);
-
-  TemplateURL* dupe = CreateTestTemplateURL(0);
-  dupe->set_keyword(ASCIIToUTF16("somethingelse"));
-  dupe->set_sync_guid("newguid");
-  GetServiceForProfile(0)->Add(dupe);
-
-  TemplateURL* verifier_dupe = CreateTestTemplateURL(0);
-  verifier_dupe->set_keyword(ASCIIToUTF16("somethingelse"));
-  verifier_dupe->set_sync_guid("newguid");
-  GetVerifierService()->Add(verifier_dupe);
-
+  GetServiceForProfile(0)->Add(CreateTestTemplateURL(0,
+      ASCIIToUTF16("somethingelse"), "newguid"));
+  GetVerifierService()->Add(CreateTestTemplateURL(0,
+      ASCIIToUTF16("somethingelse"), "newguid"));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
 }
@@ -88,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateKeyword) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
 
-  EditSearchEngine(0, "test0", "test0", "newkeyword", "http://www.test0.com/");
+  EditSearchEngine(0, ASCIIToUTF16("test0"), ASCIIToUTF16("test0"),
+                   ASCIIToUTF16("newkeyword"), "http://www.test0.com/");
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
@@ -105,8 +99,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateUrl) {
   ASSERT_TRUE(AllServicesMatch());
 
   // Change the URL.
-  EditSearchEngine(0, "test0", "test0", "test0",
-                   "http://www.wikipedia.org/q=%s");
+  EditSearchEngine(0, ASCIIToUTF16("test0"), ASCIIToUTF16("test0"),
+                   ASCIIToUTF16("test0"), "http://www.wikipedia.org/q=%s");
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
@@ -123,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateName) {
   ASSERT_TRUE(AllServicesMatch());
 
   // Change the short name.
-  EditSearchEngine(0, "test0", "New Name", "test0", "http://www.test0.com/");
+  EditSearchEngine(0, ASCIIToUTF16("test0"), ASCIIToUTF16("New Name"),
+                   ASCIIToUTF16("test0"), "http://www.test0.com/");
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllServicesMatch());
@@ -155,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, ConflictKeyword) {
   // conflict.
   AddSearchEngine(0, 0);
   AddSearchEngine(1, 1);
-  const TemplateURL* turl = GetServiceForProfile(1)->
-      GetTemplateURLForKeyword(ASCIIToUTF16("test1"));
+  const TemplateURL* turl = GetServiceForProfile(1)->GetTemplateURLForKeyword(
+      ASCIIToUTF16("test1"));
   EXPECT_TRUE(turl);
   GetServiceForProfile(1)->ResetTemplateURL(turl,
                                             turl->short_name(),
@@ -184,11 +179,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, MergeMultiple) {
   AddSearchEngine(1, 0);
   AddSearchEngine(1, 2);
   AddSearchEngine(1, 3);
-  TemplateURL* turl = CreateTestTemplateURL(0);
-  turl->SetURL("http://www.somethingelse.com/", 0, 0);
-  turl->set_keyword(ASCIIToUTF16("somethingelse.com"));
-  turl->set_sync_guid("somethingelse");
-  GetServiceForProfile(1)->Add(turl);
+  GetServiceForProfile(1)->Add(CreateTestTemplateURL(0,
+      "http://www.somethingelse.com/", ASCIIToUTF16("somethingelse.com"),
+      "somethingelse"));
 
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllServicesMatch());

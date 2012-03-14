@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,8 @@ GUIDToTURLMap CreateGUIDToTURLMap(TemplateURLService* service) {
   CHECK(service);
 
   GUIDToTURLMap map;
-  std::vector<const TemplateURL*> turls = service->GetTemplateURLs();
-  for (std::vector<const TemplateURL*>::iterator it = turls.begin();
+  TemplateURLService::TemplateURLVector turls = service->GetTemplateURLs();
+  for (TemplateURLService::TemplateURLVector::iterator it = turls.begin();
        it != turls.end(); ++it) {
     CHECK(*it);
     CHECK(map.find((*it)->sync_guid()) == map.end());
@@ -84,7 +84,8 @@ bool ServiceMatchesVerifier(int profile) {
   CHECK(verifier);
   CHECK(other);
 
-  std::vector<const TemplateURL*> verifier_turls = verifier->GetTemplateURLs();
+  TemplateURLService::TemplateURLVector verifier_turls =
+      verifier->GetTemplateURLs();
   if (verifier_turls.size() != other->GetTemplateURLs().size()) {
     LOG(ERROR) << "Verifier and other service have a different count of TURLs: "
                << verifier_turls.size() << " vs "
@@ -178,17 +179,31 @@ string16 CreateKeyword(int seed) {
 }
 
 TemplateURL* CreateTestTemplateURL(int seed) {
+  return CreateTestTemplateURL(seed, CreateKeyword(seed),
+                               base::StringPrintf("0000-0000-0000-%04d", seed));
+}
+
+TemplateURL* CreateTestTemplateURL(int seed,
+                                   const string16& keyword,
+                                   const std::string& sync_guid) {
+  return CreateTestTemplateURL(seed,
+      base::StringPrintf("http://www.test%d.com/", seed), keyword, sync_guid);
+}
+
+TemplateURL* CreateTestTemplateURL(int seed,
+                                   const std::string& url,
+                                   const string16& keyword,
+                                   const std::string& sync_guid) {
   TemplateURL* turl = new TemplateURL();
-  turl->SetURL(base::StringPrintf("http://www.test%d.com/", seed), 0, 0);
-  turl->set_keyword(CreateKeyword(seed));
-  turl->set_short_name(ASCIIToUTF16(base::StringPrintf("test%d", seed)));
+  turl->set_short_name(CreateKeyword(seed));
+  turl->set_keyword(keyword);
   turl->set_safe_for_autoreplace(true);
-  GURL favicon_url("http://favicon.url");
-  turl->SetFaviconURL(favicon_url);
   turl->set_date_created(base::Time::FromTimeT(100));
   turl->set_last_modified(base::Time::FromTimeT(100));
   turl->SetPrepopulateId(999999);
-  turl->set_sync_guid(base::StringPrintf("0000-0000-0000-%04d", seed));
+  turl->set_sync_guid(sync_guid);
+  turl->SetURL(url, 0, 0);
+  turl->SetFaviconURL(GURL("http://favicon.url"));
   return turl;
 }
 
@@ -199,32 +214,30 @@ void AddSearchEngine(int profile, int seed) {
 }
 
 void EditSearchEngine(int profile,
-                      const std::string& keyword,
-                      const std::string& short_name,
-                      const std::string& new_keyword,
+                      const string16& keyword,
+                      const string16& short_name,
+                      const string16& new_keyword,
                       const std::string& url) {
-  const TemplateURL* turl = GetServiceForProfile(profile)->
-      GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+  DCHECK(!url.empty());
+  const TemplateURL* turl =
+      GetServiceForProfile(profile)->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
-  GetServiceForProfile(profile)->ResetTemplateURL(turl,
-                                                  ASCIIToUTF16(short_name),
-                                                  ASCIIToUTF16(new_keyword),
+  ASSERT_FALSE(new_keyword.empty());
+  GetServiceForProfile(profile)->ResetTemplateURL(turl, short_name, new_keyword,
                                                   url);
   // Make sure we do the same on the verifier.
   if (test()->use_verifier()) {
     const TemplateURL* verifier_turl =
-        GetVerifierService()->GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+        GetVerifierService()->GetTemplateURLForKeyword(keyword);
     EXPECT_TRUE(verifier_turl);
-    GetVerifierService()->ResetTemplateURL(verifier_turl,
-                                           ASCIIToUTF16(short_name),
-                                           ASCIIToUTF16(new_keyword),
-                                           url);
+    GetVerifierService()->ResetTemplateURL(verifier_turl, short_name,
+                                           new_keyword, url);
   }
 }
 
-void DeleteSearchEngineByKeyword(int profile, const string16 keyword) {
-  const TemplateURL* turl = GetServiceForProfile(profile)->
-      GetTemplateURLForKeyword(keyword);
+void DeleteSearchEngineByKeyword(int profile, const string16& keyword) {
+  const TemplateURL* turl =
+      GetServiceForProfile(profile)->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
   GetServiceForProfile(profile)->Remove(turl);
   // Make sure we do the same on the verifier.
@@ -243,8 +256,8 @@ void DeleteSearchEngineBySeed(int profile, int seed) {
 void ChangeDefaultSearchProvider(int profile, int seed) {
   TemplateURLService* service = GetServiceForProfile(profile);
   ASSERT_TRUE(service);
-  const TemplateURL* turl = service->GetTemplateURLForKeyword(
-      CreateKeyword(seed));
+  const TemplateURL* turl =
+      service->GetTemplateURLForKeyword(CreateKeyword(seed));
   ASSERT_TRUE(turl);
   service->SetDefaultSearchProvider(turl);
   if (test()->use_verifier()) {
