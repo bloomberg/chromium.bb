@@ -19,8 +19,6 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
-#else
-#include "ui/gfx/linux_util.h"
 #endif
 
 #include "ui/gfx/skia_util.h"

@@ -20,7 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/linux_util.h"
 #include "ui/gfx/pango_util.h"
 
 #if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
