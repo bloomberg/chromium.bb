@@ -486,18 +486,29 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkTiming) {
   RunTest("testNetworkTiming", kSlowTestPage);
 }
 
+// crbug.com/118165
+#if defined(OS_MACOSX)
+#define MAYBE_TestNetworkSize FAILS_TestNetworkSize
+#define MAYBE_TestNetworkSyncSize FAILS_TestNetworkSyncSize
+#define MAYBE_TestNetworkRawHeadersText FAILS_TestNetworkRawHeadersText
+#else
+#define MAYBE_TestNetworkSize TestNetworkSize
+#define MAYBE_TestNetworkSyncSize TestNetworkSyncSize
+#define MAYBE_TestNetworkRawHeadersText TestNetworkRawHeadersText
+#endif
+
 // Tests network size.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSize) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestNetworkSize) {
   RunTest("testNetworkSize", kChunkedTestPage);
 }
 
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSyncSize) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestNetworkSyncSize) {
   RunTest("testNetworkSyncSize", kChunkedTestPage);
 }
 
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
