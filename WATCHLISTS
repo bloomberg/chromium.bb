@@ -402,7 +402,7 @@
                  'isherman@chromium.org', 'dyu@chromium.org'],
     'webdata': ['dhollowa+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
-    'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
+    'pyauto': ['anantha@chromium.org', 
                'nirnimesh@chromium.org', 'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
     'labs': ['thakis@chromium.org'],
