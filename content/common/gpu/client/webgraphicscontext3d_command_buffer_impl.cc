@@ -1167,6 +1167,24 @@ DELEGATE_TO_GL_5(texImageIOSurface2DCHROMIUM, TexImageIOSurface2DCHROMIUM,
 DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
                  WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
 
+WebGLId WebGraphicsContext3DCommandBufferImpl::createQueryEXT() {
+  GLuint o;
+  gl_->GenQueriesEXT(1, &o);
+  return o;
+}
+
+void WebGraphicsContext3DCommandBufferImpl::deleteQueryEXT(
+    WebGLId query) {
+  gl_->DeleteQueriesEXT(1, &query);
+}
+
+DELEGATE_TO_GL_1R(isQueryEXT, IsQueryEXT, WebGLId, WGC3Dboolean)
+DELEGATE_TO_GL_2(beginQueryEXT, BeginQueryEXT, WGC3Denum, WebGLId)
+DELEGATE_TO_GL_1(endQueryEXT, EndQueryEXT, WGC3Denum)
+DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
+DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
+                 WebGLId, WGC3Denum, WGC3Duint*)
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();

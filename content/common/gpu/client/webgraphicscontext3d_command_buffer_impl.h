@@ -483,6 +483,16 @@ class WebGraphicsContext3DCommandBufferImpl
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);
 
+  virtual WebGLId createQueryEXT();
+  virtual void deleteQueryEXT(WebGLId query);
+  virtual WGC3Dboolean isQueryEXT(WGC3Duint query);
+  virtual void beginQueryEXT(WGC3Denum target, WebGLId query);
+  virtual void endQueryEXT(WGC3Denum target);
+  virtual void getQueryivEXT(
+      WGC3Denum target, WGC3Denum pname, WGC3Dint* params);
+  virtual void getQueryObjectuivEXT(
+      WebGLId query, WGC3Denum pname, WGC3Duint* params);
+
   ContentGLContext* content_gl_context() const { return context_; }
 
  protected:

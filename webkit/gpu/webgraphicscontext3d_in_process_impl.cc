@@ -1635,6 +1635,27 @@ void WebGraphicsContext3DInProcessImpl::texImageIOSurface2DCHROMIUM(
 DELEGATE_TO_GL_5(texStorage2DEXT, TexStorage2DEXT,
                  WGC3Denum, WGC3Dint, WGC3Duint, WGC3Dint, WGC3Dint)
 
+WebGLId WebGraphicsContext3DInProcessImpl::createQueryEXT()
+{
+  makeContextCurrent();
+  GLuint o = 0;
+  glGenQueriesARB(1, &o);
+  return o;
+}
+
+void WebGraphicsContext3DInProcessImpl::deleteQueryEXT(WebGLId query)
+{
+  makeContextCurrent();
+  glDeleteQueriesARB(1, &query);
+}
+
+DELEGATE_TO_GL_1R(isQueryEXT, IsQueryARB, WebGLId, WGC3Dboolean)
+DELEGATE_TO_GL_2(beginQueryEXT, BeginQueryARB, WGC3Denum, WebGLId)
+DELEGATE_TO_GL_1(endQueryEXT, EndQueryARB, WGC3Denum)
+DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivARB, WGC3Denum, WGC3Denum, WGC3Dint*)
+DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivARB,
+                 WebGLId, WGC3Denum, WGC3Duint*)
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();

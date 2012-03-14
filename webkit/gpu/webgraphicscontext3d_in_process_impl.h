@@ -458,6 +458,16 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);
 
+  virtual WebGLId createQueryEXT();
+  virtual void deleteQueryEXT(WebGLId query);
+  virtual WGC3Dboolean isQueryEXT(WebGLId query);
+  virtual void beginQueryEXT(WGC3Denum target, WebGLId query);
+  virtual void endQueryEXT(WGC3Denum target);
+  virtual void getQueryivEXT(
+      WGC3Denum target, WGC3Denum pname, WGC3Dint* params);
+  virtual void getQueryObjectuivEXT(
+      WebGLId query, WGC3Denum pname, WGC3Duint* params);
+
  protected:
 #if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();
