@@ -15,7 +15,7 @@
 
 namespace {
 const int kBarHeight = 4;
-const int kBarSpacing = 10;
+const int kBarSpacing = 6;
 const int kIconHeight = 32;
 const int kIconWidth = 48;
 const int kHopSpacing = 2;
@@ -186,7 +186,11 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   int image_x = (width() - icon_view_->width()) / 2;
-  int image_y = ShouldHop(state_) ? 0 : kHopSpacing;
+  int image_y = height() - (icon_view_->height() + kBarHeight + kBarSpacing);
+
+  if (ShouldHop(state_))
+    image_y -= kHopSpacing;
+
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
   bar_->SetBounds(0, height() - kBarHeight, width(), kBarHeight);
 }
