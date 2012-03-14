@@ -11,7 +11,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/event_executor.h"
 
-#if defined(OS_WIN)
+#if defined(USE_CHROMOTING_IPC)
 #include "remoting/host/session_event_executor_win.h"
 #endif
 
@@ -30,7 +30,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
     return scoped_ptr<DesktopEnvironment>();
   }
 
-#if defined(OS_WIN)
+#if defined(USE_CHROMOTING_IPC)
   event_executor.reset(new SessionEventExecutorWin(
       context->desktop_message_loop(),
       context->io_message_loop(),

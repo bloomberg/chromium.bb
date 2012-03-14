@@ -19,8 +19,8 @@
 
 namespace {
 
-// The command line switch specifying the name of the session IPC channel.
-const char kProcessChannelId[] = "channel";
+// The command line switch specifying the name of the Chromoting IPC channel.
+const char kProcessChannelId[] = "chromoting-ipc";
 
 } // namespace
 

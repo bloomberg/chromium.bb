@@ -44,7 +44,7 @@ const char kDefaultDesktopName[] = "winsta0\\default";
 const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 
 // Generates the command line of the host process.
-const char kHostProcessCommandLineFormat[] = "\"%ls\" --channel=%ls";
+const char kHostProcessCommandLineFormat[] = "\"%ls\" --chromoting-ipc=%ls";
 
 // The security descriptor of the Chromoting IPC channel. It gives full access
 // to LocalSystem and denies access by anyone else.
