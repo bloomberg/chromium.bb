@@ -53,8 +53,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
 
   const ash::ScreenAsh* screen = Shell::GetInstance()->screen();
   ASSERT_TRUE(screen);
-  // Bottom inset should be the max of widget heights.
-  EXPECT_EQ(shelf->max_height(), screen->work_area_insets().bottom());
+  // Bottom inset should be the max of widget heights plus an adjustment.
+  EXPECT_EQ(shelf->max_height() + ShelfLayoutManager::kWorkspaceAreaBottomInset,
+            screen->work_area_insets().bottom());
 
   // Hide the shelf.
   shelf->SetVisible(false);
@@ -76,7 +77,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf->launcher());
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_TRUE(shelf->visible());
-  EXPECT_EQ(shelf->max_height(), screen->work_area_insets().bottom());
+  EXPECT_EQ(shelf->max_height() + ShelfLayoutManager::kWorkspaceAreaBottomInset,
+            screen->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   gfx::Rect launcher_bounds(shelf->launcher()->GetNativeView()->bounds());

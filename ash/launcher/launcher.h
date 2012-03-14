@@ -55,8 +55,7 @@ class ASH_EXPORT Launcher {
 
   scoped_ptr<LauncherModel> model_;
 
-  // Widget hosting the view.  May be hidden if we're not using a launcher,
-  // e.g. Aura compact window mode.
+  // Widget hosting the view.
   scoped_ptr<views::Widget> widget_;
 
   aura::Window* window_container_;

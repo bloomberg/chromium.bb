@@ -27,7 +27,8 @@ class Widget;
 namespace ash {
 
 // Helper class for painting window frames.  Exists to share code between
-// various implementations of views::NonClientFrameView.
+// various implementations of views::NonClientFrameView.  Canonical source of
+// layout constants for Ash window frames.
 class ASH_EXPORT FramePainter {
  public:
   FramePainter();

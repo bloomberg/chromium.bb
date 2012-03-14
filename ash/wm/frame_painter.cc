@@ -28,8 +28,12 @@ const int kTopThickness = 1;
 // TODO(jamescook): Border is specified to be a single pixel overlapping
 // the web content and may need to be built into the shadow layers instead.
 const int kBorderThickness = 0;
-// Number of pixels outside the window frame to look for resize events.
-const int kResizeAreaOutsideBounds = 6;
+// Ash windows do not have a traditional visible window frame.  Window content
+// extends to the edge of the window.  We consider a small region outside the
+// window bounds and an even smaller region overlapping the window to be the
+// "non-client" area and use it for resizing.
+const int kResizeOutsideBoundsSize = 6;
+const int kResizeInsideBoundsSize = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
@@ -137,8 +141,8 @@ void FramePainter::Init(views::Widget* frame,
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToSkBitmap();
 
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  frame_->GetNativeWindow()->set_hit_test_bounds_inset(
-      -kResizeAreaOutsideBounds);
+  frame_->GetNativeWindow()->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
+                                                      kResizeInsideBoundsSize);
 }
 
 gfx::Rect FramePainter::GetBoundsForClientView(
@@ -163,13 +167,26 @@ gfx::Rect FramePainter::GetWindowBoundsForClientBounds(
 int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
                                    const gfx::Point& point) {
   gfx::Rect expanded_bounds = view->bounds();
-  expanded_bounds.Inset(-kResizeAreaOutsideBounds, -kResizeAreaOutsideBounds);
+  expanded_bounds.Inset(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize);
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
 
   // No avatar button.
 
-  // Check the client view first, as it overlaps the window caption area.
+  // Check the frame first, as we allow a small area overlapping the contents
+  // to be used for resize handles.
+  bool can_resize = frame_->widget_delegate() ?
+      frame_->widget_delegate()->CanResize() :
+      false;
+  int frame_component = view->GetHTComponentForFrame(point,
+                                                     kResizeInsideBoundsSize,
+                                                     kResizeInsideBoundsSize,
+                                                     kResizeAreaCornerSize,
+                                                     kResizeAreaCornerSize,
+                                                     can_resize);
+  if (frame_component != HTNOWHERE)
+    return frame_component;
+
   int client_component = frame_->client_view()->NonClientHitTest(point);
   if (client_component != HTNOWHERE)
     return client_component;
@@ -181,18 +198,6 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   if (maximize_button_->visible() &&
       maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-
-  bool can_resize = frame_->widget_delegate() ?
-      frame_->widget_delegate()->CanResize() :
-      false;
-  int frame_component = view->GetHTComponentForFrame(point,
-                                                     kTopThickness,
-                                                     kBorderThickness,
-                                                     kResizeAreaCornerSize,
-                                                     kResizeAreaCornerSize,
-                                                     can_resize);
-  if (frame_component != HTNOWHERE)
-    return frame_component;
 
   // Caption is a safe default.
   return HTCAPTION;
