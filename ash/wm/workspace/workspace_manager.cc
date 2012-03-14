@@ -18,8 +18,11 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "ui/aura/env.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -159,7 +162,7 @@ void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
   SetWorkspaceBounds();
 }
 
-void WorkspaceManager::OnScreenWorkAreaInsetsChanged() {
+void WorkspaceManager::OnMonitorWorkAreaInsetsChanged() {
   SetWorkspaceBounds();
 }
 
@@ -288,9 +291,13 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
   is_overview_ = false;
 }
 
-gfx::Rect WorkspaceManager::GetWorkAreaBounds() {
+gfx::Rect WorkspaceManager::GetWorkAreaBounds() const {
   gfx::Rect bounds(workspace_size_);
-  bounds.Inset(Shell::GetInstance()->screen()->work_area_insets());
+  const aura::MonitorManager* monitor_manager =
+      aura::Env::GetInstance()->monitor_manager();
+  const aura::Monitor* monitor =
+      monitor_manager->GetMonitorNearestWindow(contents_view_);
+  bounds.Inset(monitor->work_area_insets());
   return bounds;
 }
 

@@ -47,7 +47,8 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
 
 ShelfLayoutManager::~ShelfLayoutManager() {
   // Without a shelf we don't need special insets anymore.
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets());
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(), gfx::Insets());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -62,7 +63,8 @@ void ShelfLayoutManager::LayoutShelf() {
   status_->SetBounds(target_bounds.status_bounds);
   Shell::GetInstance()->launcher()->SetStatusWidth(
       target_bounds.status_bounds.width());
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(),
       target_bounds.work_area_insets);
 }
 
@@ -155,7 +157,8 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
 void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
   TargetBounds target_bounds;
   CalculateTargetBounds(visible_, &target_bounds);
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(),
       target_bounds.work_area_insets);
 }
 

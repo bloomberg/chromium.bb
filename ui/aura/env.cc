@@ -4,6 +4,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 
@@ -15,7 +16,11 @@ Env* Env::instance_ = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
 
-Env::Env() : mouse_button_flags_(0), stacking_client_(NULL) {
+Env::Env()
+    : mouse_button_flags_(0),
+      stacking_client_(NULL),
+      monitor_manager_(NULL)
+{
 #if !defined(OS_MACOSX)
   dispatcher_.reset(CreateDispatcher());
 #endif
@@ -42,6 +47,10 @@ void Env::AddObserver(EnvObserver* observer) {
 
 void Env::RemoveObserver(EnvObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void Env::SetMonitorManager(MonitorManager* monitor_manager) {
+  monitor_manager_.reset(monitor_manager);
 }
 
 #if !defined(OS_MACOSX)

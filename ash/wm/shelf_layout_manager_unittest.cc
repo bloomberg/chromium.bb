@@ -9,11 +9,15 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/aura/env.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -50,12 +54,14 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   // Force an initial layout.
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
-
-  const ash::ScreenAsh* screen = Shell::GetInstance()->screen();
-  ASSERT_TRUE(screen);
+  const aura::MonitorManager* manager =
+      aura::Env::GetInstance()->monitor_manager();
+  const aura::Monitor* monitor =
+      manager->GetMonitorNearestWindow(Shell::GetRootWindow());
+  ASSERT_TRUE(monitor);
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf->max_height() + ShelfLayoutManager::kWorkspaceAreaBottomInset,
-            screen->work_area_insets().bottom());
+            monitor->work_area_insets().bottom());
 
   // Hide the shelf.
   shelf->SetVisible(false);
@@ -63,7 +69,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf->launcher());
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_FALSE(shelf->visible());
-  EXPECT_EQ(0, screen->work_area_insets().bottom());
+  EXPECT_EQ(0, monitor->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   EXPECT_GE(shelf->launcher()->GetNativeView()->bounds().y(),
@@ -78,7 +84,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_TRUE(shelf->visible());
   EXPECT_EQ(shelf->max_height() + ShelfLayoutManager::kWorkspaceAreaBottomInset,
-            screen->work_area_insets().bottom());
+            monitor->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.
   gfx::Rect launcher_bounds(shelf->launcher()->GetNativeView()->bounds());
@@ -98,14 +104,17 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
 
-  const ash::ScreenAsh* screen = Shell::GetInstance()->screen();
+  const aura::MonitorManager* manager =
+      aura::Env::GetInstance()->monitor_manager();
+  const aura::Monitor* monitor =
+      manager->GetMonitorNearestWindow(Shell::GetRootWindow());
 
   // Hide the shelf.
   shelf->SetVisible(false);
   shelf->LayoutShelf();
   EXPECT_FALSE(shelf->visible());
   EXPECT_FALSE(shelf->visible());
-  EXPECT_EQ(0, screen->work_area_insets().bottom());
+  EXPECT_EQ(0, monitor->work_area_insets().bottom());
   // Make sure the bounds of the two widgets changed.
   EXPECT_GE(shelf->launcher()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());

@@ -15,6 +15,7 @@
 namespace aura {
 
 class EnvObserver;
+class MonitorManager;
 class Window;
 
 #if !defined(OS_MACOSX)
@@ -50,6 +51,11 @@ class AURA_EXPORT Env {
     stacking_client_ = stacking_client;
   }
 
+  // Gets/sets MonitorManager. The MonitorManager's ownership is
+  // transfered.
+  MonitorManager* monitor_manager() { return monitor_manager_.get(); }
+  void SetMonitorManager(MonitorManager* monitor_manager);
+
   // Returns the native event dispatcher. The result should only be passed to
   // MessageLoopForUI::RunWithDispatcher() or
   // MessageLoopForUI::RunAllPendingWithDispatcher(), or used to dispatch
@@ -72,6 +78,7 @@ class AURA_EXPORT Env {
   static Env* instance_;
   int mouse_button_flags_;
   client::StackingClient* stacking_client_;
+  scoped_ptr<MonitorManager> monitor_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

@@ -101,8 +101,8 @@ void WorkspaceLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
   workspace_manager_->SetWorkspaceSize(new_size);
 }
 
-void WorkspaceLayoutManager::OnScreenWorkAreaInsetsChanged() {
-  workspace_manager_->OnScreenWorkAreaInsetsChanged();
+void WorkspaceLayoutManager::OnMonitorWorkAreaInsetsChanged() {
+  workspace_manager_->OnMonitorWorkAreaInsetsChanged();
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,

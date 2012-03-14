@@ -66,8 +66,8 @@ class ASH_EXPORT WorkspaceManager {
   // Sets the size of a single workspace (all workspaces have the same size).
   void SetWorkspaceSize(const gfx::Size& workspace_size);
 
-  // Called when screen work area insets changes.
-  void OnScreenWorkAreaInsetsChanged();
+  // Called when monitor's work area insets changes.
+  void OnMonitorWorkAreaInsetsChanged();
 
   // Returns the window the layout manager should allow the size to be set for.
   // TODO: maybe this should be set on WorkspaceLayoutManager.
@@ -126,7 +126,7 @@ class ASH_EXPORT WorkspaceManager {
   void SetActiveWorkspace(Workspace* workspace);
 
   // Returns the bounds of the work area.
-  gfx::Rect GetWorkAreaBounds();
+  gfx::Rect GetWorkAreaBounds() const;
 
   // Returns the index of the workspace that contains the |window|.
   int GetWorkspaceIndexContaining(aura::Window* window) const;

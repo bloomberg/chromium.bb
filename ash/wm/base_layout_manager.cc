@@ -76,7 +76,7 @@ void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, ash::ShellObserver overrides:
 
-void BaseLayoutManager::OnScreenWorkAreaInsetsChanged() {
+void BaseLayoutManager::OnMonitorWorkAreaInsetsChanged() {
   AdjustWindowSizesForScreenChange();
 }
 

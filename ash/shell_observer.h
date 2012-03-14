@@ -13,7 +13,7 @@ namespace ash {
 class ASH_EXPORT ShellObserver {
  public:
   // Invoked after the screen's work area insets changes.
-  virtual void OnScreenWorkAreaInsetsChanged() {}
+  virtual void OnMonitorWorkAreaInsetsChanged() {}
 
  protected:
   virtual ~ShellObserver() {}

@@ -13,8 +13,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/insets.h"
 
 namespace ash {
 
@@ -27,7 +28,8 @@ class BaseLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->SetScreenWorkAreaInsets(
+    Shell::GetInstance()->SetMonitorWorkAreaInsets(
+        Shell::GetRootWindow(),
         gfx::Insets(1, 2, 3, 4));
     Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
     aura::Window* default_container = Shell::GetInstance()->GetContainer(

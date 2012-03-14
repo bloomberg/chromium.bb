@@ -174,8 +174,9 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
   EXPECT_EQ(251, w1->bounds().height());
 
   // Maximize the window.
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
-        gfx::Insets(0, 0, 30, 0));
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(),
+      gfx::Insets(0, 0, 30, 0));
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 
   // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the work area bounds.
@@ -187,8 +188,9 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
   EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
 
   // Change work area insets.
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
-        gfx::Insets(0, 0, 60, 0));
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(),
+      gfx::Insets(0, 0, 60, 0));
 
   // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the changed work
   // area bounds.

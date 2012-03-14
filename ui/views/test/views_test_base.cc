@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
@@ -79,6 +80,8 @@ void ViewsTestBase::SetUp() {
     views_delegate_.reset(new TestViewsDelegate());
 #if defined(USE_AURA)
   root_window_.reset(new aura::RootWindow);
+  aura::Env::GetInstance()->SetMonitorManager(
+      aura::CreateSingleMonitorManager(root_window_.get()));
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   root_window_->SetProperty(
       aura::client::kRootWindowInputMethodKey,

@@ -57,12 +57,14 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -333,6 +335,8 @@ Shell::Shell(ShellDelegate* delegate)
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
+  aura::Env::GetInstance()->SetMonitorManager(
+      aura::CreateSingleMonitorManager(root_window_.get()));
   gfx::Screen::SetInstance(screen_);
 }
 
@@ -618,12 +622,15 @@ void Shell::RotateFocus(Direction direction) {
                              internal::FocusCycler::BACKWARD);
 }
 
-void Shell::SetScreenWorkAreaInsets(const gfx::Insets& insets) {
-  if (screen_->work_area_insets() == insets)
+void Shell::SetMonitorWorkAreaInsets(Window* contains,
+                                     const gfx::Insets& insets) {
+  aura::Monitor* monitor = aura::Env::GetInstance()->monitor_manager()->
+      GetMonitorNearestWindow(contains);
+  if (monitor->work_area_insets() == insets)
     return;
-  screen_->set_work_area_insets(insets);
+  monitor->set_work_area_insets(insets);
   FOR_EACH_OBSERVER(ShellObserver, observers_,
-                    OnScreenWorkAreaInsetsChanged());
+                    OnMonitorWorkAreaInsetsChanged());
 }
 
 void Shell::AddShellObserver(ShellObserver* observer) {

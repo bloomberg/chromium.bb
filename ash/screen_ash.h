@@ -24,11 +24,6 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   explicit ScreenAsh(aura::RootWindow* root_window);
   virtual ~ScreenAsh();
 
-  void set_work_area_insets(const gfx::Insets& insets) {
-    work_area_insets_ = insets;
-  }
-  const gfx::Insets& work_area_insets() const { return work_area_insets_; }
-
  protected:
   virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;
   virtual gfx::Rect GetMonitorWorkAreaNearestWindowImpl(
@@ -44,14 +39,6 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   virtual int GetNumMonitorsImpl() OVERRIDE;
 
  private:
-  // We currently support only one monitor. These two methods return the bounds
-  // and work area.
-  gfx::Rect GetBounds();
-  gfx::Rect GetWorkAreaBounds();
-
-  // Insets for the work area.
-  gfx::Insets work_area_insets_;
-
   aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);

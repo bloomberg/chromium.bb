@@ -5,11 +5,18 @@
 #include "ash/screen_ash.h"
 
 #include "base/logging.h"
+#include "ui/aura/env.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace ash {
+
+namespace {
+const aura::MonitorManager* GetMonitorManager() {
+  return aura::Env::GetInstance()->monitor_manager();
+}
+}  // namespace
 
 ScreenAsh::ScreenAsh(aura::RootWindow* root_window)
     : root_window_(root_window) {
@@ -24,21 +31,23 @@ gfx::Point ScreenAsh::GetCursorScreenPointImpl() {
 
 gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestWindowImpl(
     gfx::NativeWindow window) {
-  return GetWorkAreaBounds();
+  return GetMonitorManager()->GetMonitorNearestWindow(window)->
+      GetWorkAreaBounds();
 }
 
 gfx::Rect ScreenAsh::GetMonitorAreaNearestWindowImpl(
     gfx::NativeWindow window) {
-  return GetBounds();
+  return GetMonitorManager()->GetMonitorNearestWindow(window)->bounds();
 }
 
 gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestPointImpl(
     const gfx::Point& point) {
-  return GetWorkAreaBounds();
+  return GetMonitorManager()->GetMonitorNearestPoint(point)->
+      GetWorkAreaBounds();
 }
 
 gfx::Rect ScreenAsh::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
-  return GetBounds();
+  return GetMonitorManager()->GetMonitorNearestPoint(point)->bounds();
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPointImpl() {
@@ -46,22 +55,12 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPointImpl() {
   return root_window_->GetTopWindowContainingPoint(point);
 }
 
-gfx::Rect ScreenAsh::GetBounds() {
-  return gfx::Rect(root_window_->bounds().size());
-}
-
-gfx::Rect ScreenAsh::GetWorkAreaBounds() {
-  gfx::Rect bounds(GetBounds());
-  bounds.Inset(work_area_insets_);
-  return bounds;
-}
-
 gfx::Size ScreenAsh::GetPrimaryMonitorSizeImpl() {
-  return GetMonitorWorkAreaNearestPoint(gfx::Point()).size();
+  return GetMonitorManager()->GetPrimaryMonitor()->size();
 }
 
 int ScreenAsh::GetNumMonitorsImpl() {
-  return 1;
+  return GetMonitorManager()->GetNumMonitors();
 }
 
 }  // namespace ash

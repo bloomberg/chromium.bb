@@ -158,8 +158,10 @@ class ASH_EXPORT Shell {
   // Rotate focus through containers that can receive focus.
   void RotateFocus(Direction direction);
 
-  // Sets the screen's work area insets, this notifies observers too.
-  void SetScreenWorkAreaInsets(const gfx::Insets& insets);
+  // Sets the work area insets of the monitor that contains |window|,
+  // this notifies observers too.
+  void SetMonitorWorkAreaInsets(aura::Window* window,
+                                const gfx::Insets& insets);
 
   // Add/remove observer.
   void AddShellObserver(ShellObserver* observer);

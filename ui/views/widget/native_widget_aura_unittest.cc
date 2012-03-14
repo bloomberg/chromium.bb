@@ -8,7 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
@@ -35,6 +37,8 @@ class NativeWidgetAuraTest : public testing::Test {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     root_window_.reset(new aura::RootWindow);
+    aura::Env::GetInstance()->SetMonitorManager(
+        aura::CreateSingleMonitorManager(root_window_.get()));
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));

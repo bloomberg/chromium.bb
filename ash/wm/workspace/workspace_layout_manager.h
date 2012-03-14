@@ -48,7 +48,7 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
-  virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
+  virtual void OnMonitorWorkAreaInsetsChanged() OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
