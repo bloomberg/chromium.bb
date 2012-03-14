@@ -67,7 +67,11 @@ bool ShouldShowExtension(const Extension* extension) {
   if (extension->location() == Extension::LOAD)
     return true;
 
-  // Unless they are unpacked, never show hosted apps.
+  // Unless they are unpacked, never show hosted apps. Note: We intentionally
+  // show packaged apps and platform apps because there are some pieces of
+  // functionality that are only available in chrome://extensions/ but which
+  // are needed for packaged and platform apps. For example, inspecting
+  // background pages. See http://crbug.com/116134.
   if (extension->is_hosted_app())
     return false;
 
