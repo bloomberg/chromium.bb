@@ -78,7 +78,6 @@ CONTENT_EXPORT extern const char kEnableAcceleratedPainting[];
 CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAccessibilityLogging[];
-extern const char kEnableBrowserPlugin[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 extern const char kEnableCssRegions[];
 CONTENT_EXPORT extern const char kEnableDeferred2dCanvas[];

@@ -223,9 +223,6 @@ const char kEnableAccessibility[]           = "enable-accessibility";
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
-// Turns on the browser plugin.
-const char kEnableBrowserPlugin[]           = "enable-browser-plugin";
-
 // Enables the creation of compositing layers for fixed position elements.
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
