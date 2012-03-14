@@ -4435,6 +4435,9 @@
         ['OS=="android"', {
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
+            # Bookmark export/import are handled via the BookmarkColumns
+            # ContentProvider.
+            'browser/bookmarks/bookmark_html_writer.cc',
             'browser/jankometer.cc',
             'browser/ui/sad_tab_helper.cc',
             'browser/ui/sync/one_click_signin_dialog.h',

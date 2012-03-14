@@ -941,6 +941,11 @@ bool ExportBookmarksFunction::RunImpl() {
 void ExportBookmarksFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
+#if !defined(OS_ANDROID)
+  // Android does not have support for the standard exporter.
+  // TODO(jgreenwald): remove ifdef once extensions are no longer built on
+  // Android.
   bookmark_html_writer::WriteBookmarks(profile(), path, NULL);
+#endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }

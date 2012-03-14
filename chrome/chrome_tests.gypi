@@ -2456,10 +2456,14 @@
         }],
         ['OS=="android"', {
           'sources!': [
+            # Bookmark export/import are handled via the BookmarkColumns
+            # ContentProvider.
+            'browser/bookmarks/bookmark_html_writer_unittest.cc',
+
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/shell_integration_unittest.cc',
 
-            # No service process (which also requires multiprocess lock)
+            # No service process (which also requires multiprocess lock).
             'common/multi_process_lock_unittest.cc',
             'common/service_process_util_unittest.cc',
 
