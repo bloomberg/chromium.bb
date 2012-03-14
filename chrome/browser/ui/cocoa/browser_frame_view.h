@@ -1,11 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 // BrowserFrameView is a class whose methods we swizzle into NSGrayFrame
-// (an AppKit framework class) so that we can support custom frame drawing.
+// on 10.7 and below, or NSThemeFrame on 10.8 and above, so that we can
+// support custom frame drawing. This is used with a textured window so that
+// AppKit does not draw a title bar.
 // This class is never to be instantiated on its own.
 // We explored a variety of ways to support custom frame drawing and custom
 // window widgets.

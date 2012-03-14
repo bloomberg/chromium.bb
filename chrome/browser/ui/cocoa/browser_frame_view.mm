@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
@@ -46,22 +47,27 @@ static BOOL gCanGetCornerRadius = NO;
   // roll overs for our close widgets, but things should still function
   // correctly.
   base::mac::ScopedNSAutoreleasePool pool;
-  Class grayFrameClass = NSClassFromString(@"NSGrayFrame");
-  DCHECK(grayFrameClass);
-  if (!grayFrameClass) return;
+
+  // On 10.8+ the background for textured windows are no longer drawn by
+  // NSGrayFrame, and NSThemeFrame is used instead <http://crbug.com/114745>.
+  Class borderViewClass = NSClassFromString(
+      base::mac::IsOSMountainLionOrLater() ? @"NSThemeFrame" : @"NSGrayFrame");
+  DCHECK(borderViewClass);
+  if (!borderViewClass) return;
 
   // Exchange draw rect.
   Method m0 = class_getInstanceMethod([self class], @selector(drawRect:));
   DCHECK(m0);
   if (m0) {
-    BOOL didAdd = class_addMethod(grayFrameClass,
+    BOOL didAdd = class_addMethod(borderViewClass,
                                   @selector(drawRectOriginal:),
                                   method_getImplementation(m0),
                                   method_getTypeEncoding(m0));
     DCHECK(didAdd);
     if (didAdd) {
-      Method m1 = class_getInstanceMethod(grayFrameClass, @selector(drawRect:));
-      Method m2 = class_getInstanceMethod(grayFrameClass,
+      Method m1 = class_getInstanceMethod(borderViewClass,
+                                          @selector(drawRect:));
+      Method m2 = class_getInstanceMethod(borderViewClass,
                                           @selector(drawRectOriginal:));
       DCHECK(m1 && m2);
       if (m1 && m2) {
@@ -71,12 +77,12 @@ static BOOL gCanGetCornerRadius = NO;
   }
 
   gCanDrawTitle =
-      [grayFrameClass
+      [borderViewClass
         instancesRespondToSelector:@selector(_titlebarTitleRect)] &&
-      [grayFrameClass
+      [borderViewClass
         instancesRespondToSelector:@selector(_drawTitleStringIn:withColor:)];
   gCanGetCornerRadius =
-      [grayFrameClass
+      [borderViewClass
         instancesRespondToSelector:@selector(roundedCornerRadius)];
 
   // Add _shadowFlags. This is a method on NSThemeFrame, not on NSGrayFrame.
