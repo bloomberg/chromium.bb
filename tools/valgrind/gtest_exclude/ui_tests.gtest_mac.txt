@@ -277,6 +277,7 @@ LoadtimesExtensionBindingsUITest.LoadTimesSameAfterUserInDocNavigation
 
 # crbug.com/110612
 IndexedDBUILayoutTest.LayoutTests
+IndexedDBUILayoutTest.WorkerLayoutTests
 
 # crbug.com/113675
 WorkerFileSystemTest.SyncPersistent
