@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,18 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 
+// TODO(yusukes): Rename this file to input_method_preference.cc. Since
+// "language" usually means UI language, the current file name is confusing.
+// The namespace should also be changed to "namespace input_method {".
+
 // This file defines types and declare variables used in "Languages and
 // Input" settings in Chromium OS.
 namespace chromeos {
 namespace language_prefs {
+
+// TODO(yusukes): Remove the "Language" prefix from all structs and variables.
+// They're redundant (we already have the language_prefs namespace) and even
+// confusing.
 
 // The struct is used for preferences consisting of multiple choices, like
 // punctuation types used in Japanese input method.
