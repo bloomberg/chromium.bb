@@ -43,6 +43,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="fileBrowserHandler.html">file_browser_handlers</a>": [...],
   "<a href="#homepage_url">homepage_url</a>": "http://<em>path/to/homepage</em>",
   "<a href="#incognito">incognito</a>": "spanning" <em>or</em> "split",
+  "<a href="#intents">intents</a>": {...}
   "<a href="#key">key</a>": "<em>publicKey</em>",
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
 
@@ -209,6 +210,51 @@ As a rule of thumb, if your extension or app needs to load a tab in an incognito
 <em>split</em> incognito behavior. If your extension or app needs to be logged
 into a remote server or persist settings locally, use <em>spanning</em>
 incognito behavior.
+</p>
+
+<h3 id="intents">intents</h3>
+
+<p>
+A dictionary that specifies all intent handlers provided by this extension or app. Each key in the dictionary specifies the an action verb that is handled by this extension. The following example specifies two handlers for the action verb "<a href="http://webintents.org/share">http://webintents.org/share</a>".
+</p>
+
+<pre>
+{
+  "name": "test",
+  "version": "1",
+  "intents": {
+    "http://webintents.org/share": [
+      { 
+        "type": ["text/uri-list"],
+        "href": "/services/sharelink.html",
+        "title" : "Sample Link Sharing Intent",
+        "disposition" : "inline"
+      },
+      {
+        "type": ["image/*"],
+        "href": "/services/shareimage.html",
+        "title" : "Sample Image Sharing Intent",
+        "disposition" : "window"
+      }
+    ]
+  }  
+}
+</pre>
+
+<p>
+The value of "type" is an array of mime types that is supported by this handler. The "href" indicates the URL of the page that handles the intent. For hosted apps, these URLs must be within the allowed set of URLs. For extensions, all URLs are inside the extension and considered relative to the extension root URL. 
+</p>
+
+<p>
+The "title" is displayed in the intent picker UI when the user initiates the action specific to the handler.
+</p>
+
+<p>
+The "disposition" is either "inline" or "window". Intents with "window" disposition will open a new tab when invoked. Intents with "inline" disposition will be displayed inside the intent picker when invoked.
+</p>
+
+<p>
+For more information on intents, refer to the <a href="http://dvcs.w3.org/hg/web-intents/raw-file/tip/spec/Overview.html">Web Intents specification</a> and <a href="http://www.webintents.org">webintents.org</a>.
 </p>
 
 <h3 id="key">key</h3>
@@ -758,3 +804,4 @@ by default, but <em>if</em> you do set this property, then it will be treated as
 a complete list of all whitelisted resources. Resources not listed will be
 blocked.
 </p>
+
