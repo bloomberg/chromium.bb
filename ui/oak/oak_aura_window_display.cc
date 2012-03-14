@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/table_model_observer.h"
@@ -34,6 +35,7 @@ ROW_USERDATA,
 ROW_STOPSEVENTPROPAGATION,
 ROW_IGNOREEVENTS,
 ROW_CANFOCUS,
+ROW_HITTESTBOUNDSOVERRIDE,
 ROW_COUNT
 };
 
@@ -143,6 +145,13 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
                               window_->CanReceiveEvents());
     case ROW_CANFOCUS:
       return PropertyWithBool("Can Focus: ", window_->CanFocus());
+    case ROW_HITTESTBOUNDSOVERRIDE: {
+      int outer, inner;
+      window_->GetHitTestBoundsOverride(&outer, &inner);
+      return ASCIIToUTF16(
+          base::StringPrintf("Hit test bounds override: outer %d, inner %d",
+                             outer, inner));
+    }
     default:
       NOTREACHED();
       break;

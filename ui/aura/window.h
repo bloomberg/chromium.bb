@@ -236,6 +236,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // need to have resize edges.  Both |outer| and |inner| must be >= 0.
   void SetHitTestBoundsOverride(int outer, int inner);
 
+  // Returns the hit test bounds override set above.
+  void GetHitTestBoundsOverride(int* outer, int* inner);
+
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
   // from root window.

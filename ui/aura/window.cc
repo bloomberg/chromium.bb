@@ -380,6 +380,11 @@ void Window::SetHitTestBoundsOverride(int outer, int inner) {
   hit_test_bounds_override_inner_ = inner;
 }
 
+void Window::GetHitTestBoundsOverride(int* outer, int* inner) {
+  *outer = hit_test_bounds_override_outer_;
+  *inner = hit_test_bounds_override_inner_;
+}
+
 bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) {
   Window* root_window = GetRootWindow();
   if (!root_window)
