@@ -37,6 +37,16 @@ def relpath(path, root):
   return out
 
 
+def to_relative(path, root, relative):
+  """Converts any absolute path to a relative path, only if under root."""
+  if path.startswith(root):
+    logging.info('%s starts with %s' % (path, root))
+    path = os.path.relpath(path, relative)
+  else:
+    logging.info('%s not under %s' % (path, root))
+  return path
+
+
 def separate_inputs_command(args, root, files):
   """Strips off the command line from the inputs.
 
@@ -78,11 +88,15 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   # file from this directory is needed to run the test. Otherwise it won't be
   # created and the process creation will fail. It's up to the caller to create
   # this directory manually before starting the test.
-  relative_cwd = os.path.relpath(os.getcwd(), indir)
+  cwd = os.getcwd()
+  relative_cwd = os.path.relpath(cwd, indir)
+
+  # Workaround make behavior of passing absolute paths.
+  cmd = [to_relative(i, indir, cwd) for i in cmd]
 
   if not cmd:
     # Note that it is exactly the reverse of relative_cwd.
-    cmd = [os.path.join(os.path.relpath(indir, os.getcwd()), infiles[0])]
+    cmd = [os.path.join(os.path.relpath(indir, cwd), infiles[0])]
   if cmd[0].endswith('.py'):
     cmd.insert(0, sys.executable)
 

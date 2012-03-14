@@ -132,6 +132,18 @@ class Isolate(unittest.TestCase):
       pass
     self._expected_tree([])
 
+  def test_check_abs_path(self):
+    cmd = [
+        '--mode', 'check',
+        'isolate_test.py',
+        '--',
+        os.path.join(ROOT_DIR, 'isolate_test.py'),
+    ]
+    self._execute(cmd)
+    self._expected_tree(['result'])
+    self._expected_result(
+        False, ['isolate_test.py'], ['isolate_test.py'], False)
+
   def test_hashtable(self):
     cmd = [
         '--mode', 'hashtable',
