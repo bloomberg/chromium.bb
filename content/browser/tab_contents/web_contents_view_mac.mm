@@ -54,9 +54,6 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)clearTabContentsView;
 - (void)closeTabAfterEvent;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
-// Notify the RenderWidgetHost that the frame was updated so it can resize
-// its contents.
-- (void)renderWidgetHostWasResized;
 @end
 
 namespace web_contents_view_mac {
@@ -491,19 +488,6 @@ void WebContentsViewMac::CloseTab() {
             pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
      dragOperationMask:operationMask]);
   [dragSource_ startDrag];
-}
-
-- (void)setFrameWithDeferredUpdate:(NSRect)frameRect {
-  [super setFrame:frameRect];
-  [self performSelector:@selector(renderWidgetHostWasResized)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)renderWidgetHostWasResized {
-  TabContents* tabContents = [self tabContents];
-  if (tabContents && tabContents->GetRenderViewHost())
-    tabContents->GetRenderViewHost()->WasResized();
 }
 
 // NSDraggingSource methods

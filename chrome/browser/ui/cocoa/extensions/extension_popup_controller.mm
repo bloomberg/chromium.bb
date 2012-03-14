@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/tab_contents/web_contents_view_mac.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -347,14 +346,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (NSIsEmptyRect(frame))
     return;
 
-  DCHECK([extensionView_ isKindOfClass:[WebContentsViewCocoa class]]);
-  WebContentsViewCocoa* hostView = (WebContentsViewCocoa*)extensionView_;
-
-  // WebContentsViewCocoa overrides setFrame but not setFrameSize.
-  // We need to defer the update back to the RenderWidgetHost so we don't
-  // get the flickering effect on 10.5 of http://crbug.com/31970
-  [hostView setFrameWithDeferredUpdate:frame];
-  [hostView setNeedsDisplay:YES];
+  [extensionView_ setFrame:frame];
+  [extensionView_ setNeedsDisplay:YES];
 }
 
 - (void)onViewDidShow {
