@@ -4357,7 +4357,6 @@
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
-            'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
             'test/perf/perftests.cc',
@@ -4368,10 +4367,6 @@
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
                 '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-              'sources!': [
-                # TODO(port):
-                'browser/safe_browsing/filter_false_positive_perftest.cc',
               ],
             }],
             ['OS=="win"', {
