@@ -41,7 +41,7 @@ class KioskModeScreensaverTest : public testing::Test {
   bool LoginUserObserverRegistered() {
     return screensaver_->registrar_.IsRegistered(
         screensaver_,
-        chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+        chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources());
   }
 
@@ -65,11 +65,8 @@ TEST_F(KioskModeScreensaverTest, CheckObservers) {
 
 TEST_F(KioskModeScreensaverTest, CheckObserversAfterUserLogin) {
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+      chrome::NOTIFICATION_SESSION_STARTED,
       content::Source<UserManager>(UserManager::Get()),
-      // Ideally this should be the user logged in, but since we won't really be
-      // checking for the current logged in user in our observer anyway, giving
-      // NoDetails here is fine.
       content::NotificationService::NoDetails());
 
   EXPECT_FALSE(PowerManagerObserverRegistered());

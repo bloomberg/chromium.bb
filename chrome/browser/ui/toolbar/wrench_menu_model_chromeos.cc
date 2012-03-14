@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
@@ -72,11 +73,13 @@ void WrenchMenuModel::Build() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     AddItemWithStringId(IDC_EXIT, IDS_EXIT_GUEST_MODE);
+    AddItemWithStringId(IDC_SHUTDOWN, IDS_SHUTDOWN_BUTTON);
+  } else if (chromeos::UserManager::Get()->IsLoggedInAsDemoUser()) {
+    AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
   } else {
     AddItemWithStringId(IDC_LOCK_SCREEN, IDS_LOCK_SCREEN);
     AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
+    AddItemWithStringId(IDC_SHUTDOWN, IDS_SHUTDOWN_BUTTON);
   }
-
-  AddItemWithStringId(IDC_SHUTDOWN, IDS_SHUTDOWN_BUTTON);
 }
 

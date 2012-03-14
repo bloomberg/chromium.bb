@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui/screensaver_extension_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -37,7 +38,7 @@ void KioskModeScreensaver::Setup() {
   // We should NOT be created if already logged in.
   CHECK(!chromeos::UserManager::Get()->IsUserLoggedIn());
 
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
 
   // We will register ourselves now and unregister if a user logs in.
@@ -46,10 +47,11 @@ void KioskModeScreensaver::Setup() {
   if (!power_manager->HasObserver(this))
     power_manager->AddObserver(this);
 
-  // Register for the next Idle for kScreensaverIdleTimeout event.
+  // We need to disappear and login the demo user if we go active.
   chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RequestIdleNotification(
-          chromeos::KioskModeHelper::Get()->GetScreensaverTimeout() * 1000);
+      GetPowerManagerClient()->RequestActiveNotification();
+
+  browser::ShowScreensaverDialog();
 }
 
 // NotificationObserver overrides:
@@ -57,31 +59,30 @@ void KioskModeScreensaver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_USER_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_SESSION_STARTED);
   // User logged in, remove our observers, screensaver will be deactivated.
   chromeos::PowerManagerClient* power_manager =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   if (power_manager->HasObserver(this))
     power_manager->RemoveObserver(this);
 
+  browser::CloseScreensaverDialog();
   ShutdownKioskModeScreensaver();
 }
 
-void KioskModeScreensaver::IdleNotify(int64 threshold) {
-  // We're idle; close screensaver when we go active.
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RequestActiveNotification();
-
-  browser::ShowScreensaverDialog();
-}
-
 void KioskModeScreensaver::ActiveNotify() {
-  browser::CloseScreensaverDialog();
+  // User is active, log us in.
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
 
-  // Request notification for Idle so we can start up the screensaver.
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RequestIdleNotification(
-          chromeos::KioskModeHelper::Get()->GetScreensaverTimeout() * 1000);}
+  if (controller)
+    // Logging in will shut us down, removing the screen saver.
+    controller->LoginAsDemoUser();
+  else
+    // Remove the screensaver so the user can at least use the underlying
+    // login screen to be able to log in.
+    browser::CloseScreensaverDialog();
+}
 
 static KioskModeScreensaver* g_kiosk_mode_screensaver = NULL;
 

@@ -28,7 +28,6 @@ class KioskModeScreensaver : public PowerManagerClient::Observer,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // PowerManagerClient::Observer overrides:
-  virtual void IdleNotify(int64 threshold) OVERRIDE;
   virtual void ActiveNotify() OVERRIDE;
 
  private:
