@@ -1247,6 +1247,7 @@ void SyncManager::SyncInternal::SetPassphrase(
   //    encrypted account (after changing passwords).
   // 5. The user is providing a previously set explicit passphrase to decrypt
   //    the pending keys.
+  // Note: android always has a user-provided passphrase.
   // Furthermore, we enforce the following: The bootstrap encryption token will
   // always be derived from the newest GAIA password if the account is using
   // an implicit passphrase (even if the data is encrypted with an old GAIA
@@ -1448,14 +1449,18 @@ bool SyncManager::SyncInternal::SetDecryptionPassphrase(
             return false;
           }
         } else if (cryptographer->DecryptPendingKeys(key_params)) {
-          // This can happpen if this is a client that has lost the credentials
-          // from the current gaia password, and has data encrypted with an old
-          // gaia password. We won't be able to re-encrypt to the most recent
-          // GAIA password, so for now just continue and initialize the
-          // cryptographer.
-          // This is a subset of case 4 that we don't handle properly yet.
-          // TODO(zea): trigger prompting for re-auth here. See part 2 of
-          // http://crbug.com/104508.
+          // This can happpen in two cases:
+          // - First time sync on android, where we'll never have a
+          //   !user_provided passphrase.
+          // - This is a restart for a client that lost their bootstrap token.
+          // In both cases, we should go ahead and initialize the cryptographer
+          // and persist the new bootstrap token.
+          //
+          // Note: at this point, we cannot distinguish between cases 3 and 4
+          // above. This user provided passphrase could be the current or the
+          // old. But, as long as we persist the token, there's nothing more
+          // we can do.
+          cryptographer->GetBootstrapToken(bootstrap_token);
           DVLOG(1) << "Implicit user provided passphrase accepted, initializing"
                    << " cryptographer.";
           return true;

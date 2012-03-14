@@ -1719,6 +1719,40 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   }
 }
 
+// Manually set the pending keys in the cryptographer/nigori to reflect the data
+// being encrypted with a new (unprovided) GAIA password, then supply the
+// password as a user-provided password.
+// This is the android case 3/4.
+TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
+  EXPECT_FALSE(SetUpEncryption(DONT_WRITE_NIGORI, UNINITIALIZED));
+    Cryptographer other_cryptographer(&encryptor_);
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    // Now update the nigori to reflect the new keys, and update the
+    // cryptographer to have pending keys.
+    KeyParams params = {"localhost", "dummy", "passphrase"};
+    other_cryptographer.AddKey(params);
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    sync_pb::NigoriSpecifics nigori;
+    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    node.SetNigoriSpecifics(nigori);
+    cryptographer->Update(nigori);
+    EXPECT_FALSE(cryptographer->is_ready());
+  }
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
+  EXPECT_CALL(observer_, OnPassphraseAccepted());
+  EXPECT_CALL(observer_, OnEncryptionComplete());
+  sync_manager_.SetPassphrase("passphrase", false, true);
+  EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+  }
+}
+
 TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   int64 node_id = 0;
