@@ -27,12 +27,30 @@ const int kUpdateDeviceAddressIndex = 0;
 const int kUpdateDeviceCommandIndex = 1;
 const int kUpdateDevicePasskeyIndex = 2;
 
+// |UpdateDeviceCallback| provides a command value of one of the following
+// constants that indicates what update it is providing to us.
+const char kConnectCommand[] = "connect";
+const char kCancelCommand[] = "cancel";
+const char kAcceptCommand[] = "accept";
+const char kRejectCommand[] = "reject";
+const char kDisconnectCommand[] = "disconnect";
+const char kForgetCommand[] = "forget";
+
+// |SendDeviceNotification| may include a pairing parameter whose value
+// is one of the following constants instructing the UI to perform a certain
+// action.
+const char kEnterPinCode[] = "bluetoothEnterPinCode";
+const char kEnterPasskey[] = "bluetoothEnterPasskey";
+const char kRemotePinCode[] = "bluetoothRemotePinCode";
+const char kRemotePasskey[] = "bluetoothRemotePasskey";
+const char kConfirmPasskey[] = "bluetoothConfirmPasskey";
+
 }  // namespace
 
 namespace chromeos {
 namespace options2 {
 
-BluetoothOptionsHandler::BluetoothOptionsHandler() {
+BluetoothOptionsHandler::BluetoothOptionsHandler() : weak_ptr_factory_(this) {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
@@ -192,33 +210,70 @@ void BluetoothOptionsHandler::EnableChangeCallback(
 
   adapter_->SetPowered(bluetooth_enabled,
                        base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                  base::Unretained(this)));
+                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
     const ListValue* args) {
   adapter_->SetDiscovering(true,
                            base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                      base::Unretained(this)));
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
     const ListValue* args) {
-  // TODO(kevers): Trigger connect/disconnect.
-  int size = args->GetSize();
   std::string address;
-  std::string command;
   args->GetString(kUpdateDeviceAddressIndex, &address);
+
+  BluetoothDevice* device = adapter_->GetDevice(address);
+  if (!device)
+    return;
+
+  std::string command;
   args->GetString(kUpdateDeviceCommandIndex, &command);
-  if (size > kUpdateDevicePasskeyIndex) {
-    // Passkey confirmation as part of the pairing process.
-    std::string passkey;
-    args->GetString(kUpdateDevicePasskeyIndex, &passkey);
-    DVLOG(1) << "UpdateDeviceCallback: " << address << ": " << command
-            << " [" << passkey << "]";
+
+  if (command == kConnectCommand) {
+    int size = args->GetSize();
+    if (size > kUpdateDevicePasskeyIndex) {
+      // PIN code or Passkey entry during the pairing process.
+      // TODO(keybuk, kevers): disambiguate PIN (string) vs. Passkey (integer)
+      std::string pincode;
+      args->GetString(kUpdateDevicePasskeyIndex, &pincode);
+      DVLOG(1) << "PIN code supplied: " << address << ": " << pincode;
+
+      device->SetPinCode(pincode);
+    } else {
+      // Connection request.
+      DVLOG(1) << "Connect: " << address;
+      if (device->WasDiscovered()) {
+        device->PairAndConnect(
+            this, base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                             weak_ptr_factory_.GetWeakPtr()));
+      } else {
+        device->Connect(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                                   weak_ptr_factory_.GetWeakPtr()));
+      }
+    }
+  } else if (command == kCancelCommand) {
+    // Cancel pairing.
+    DVLOG(1) << "Cancel pairing: " << address;
+    device->CancelPairing();
+  } else if (command == kAcceptCommand) {
+    // Confirm displayed Passkey.
+    DVLOG(1) << "Confirm pairing: " << address;
+    device->ConfirmPairing();
+  } else if (command == kRejectCommand) {
+    // Reject displayed Passkey.
+    DVLOG(1) << "Reject pairing: " << address;
+    device->RejectPairing();
+  } else if (command == kDisconnectCommand) {
+    // TODO(keybuk): implement
+    DVLOG(1) << "Disconnect device: " << address;
+  } else if (command == kForgetCommand) {
+    // TODO(keybuk): implement
+    DVLOG(1) << "Forget device: " << address;
   } else {
-    // Initiating a device connection or disconnecting
-    DVLOG(1) << "UpdateDeviceCallback: " << address << ": " << command;
+    LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }
 }
 
@@ -226,7 +281,7 @@ void BluetoothOptionsHandler::StopDiscoveryCallback(
     const ListValue* args) {
   adapter_->SetDiscovering(false,
                            base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                      base::Unretained(this)));
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(
@@ -255,52 +310,50 @@ void BluetoothOptionsHandler::SendDeviceNotification(
       js_properties);
 }
 
-void BluetoothOptionsHandler::DisplayPinCode(
-    const BluetoothDevice* device,
-    const std::string& pincode) {
+void BluetoothOptionsHandler::RequestPinCode(BluetoothDevice* device) {
   DictionaryValue params;
-  params.SetString("pairing", "bluetoothRemotePinCode");
+  params.SetString("pairing", kEnterPinCode);
+  SendDeviceNotification(device, &params);
+}
+
+void BluetoothOptionsHandler::RequestPasskey(BluetoothDevice* device) {
+  DictionaryValue params;
+  params.SetString("pairing", kEnterPasskey);
+  SendDeviceNotification(device, &params);
+}
+
+void BluetoothOptionsHandler::DisplayPinCode(BluetoothDevice* device,
+                                             const std::string& pincode) {
+  DictionaryValue params;
+  params.SetString("pairing", kRemotePinCode);
   params.SetString("pincode", pincode);
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::DisplayPasskey(
-    const BluetoothDevice* device,
-    int passkey,
-    int entered) {
+void BluetoothOptionsHandler::DisplayPasskey(BluetoothDevice* device,
+                                             uint32 passkey) {
   DictionaryValue params;
-  params.SetString("pairing", "bluetoothRemotePasskey");
-  params.SetInteger("passkey", passkey);
-  params.SetInteger("entered", entered);
-  SendDeviceNotification(device, &params);
-}
-
-void BluetoothOptionsHandler::RequestPinCode(
-    const BluetoothDevice* device) {
-  DictionaryValue params;
-  params.SetString("pairing", "bluetoothEnterPinCode");
-  SendDeviceNotification(device, &params);
-}
-
-void BluetoothOptionsHandler::RequestPasskey(
-    const BluetoothDevice* device) {
-  DictionaryValue params;
-  params.SetString("pairing", "bluetoothEnterPasskey");
-  SendDeviceNotification(device, &params);
-}
-
-void BluetoothOptionsHandler::RequestConfirmation(
-    const BluetoothDevice* device,
-    int passkey) {
-  DictionaryValue params;
-  params.SetString("pairing", "bluetoothConfirmPasskey");
+  params.SetString("pairing", kRemotePasskey);
   params.SetInteger("passkey", passkey);
   SendDeviceNotification(device, &params);
+}
+
+void BluetoothOptionsHandler::ConfirmPasskey(BluetoothDevice* device,
+                                             uint32 passkey) {
+  DictionaryValue params;
+  params.SetString("pairing", kConfirmPasskey);
+  params.SetInteger("passkey", passkey);
+  SendDeviceNotification(device, &params);
+}
+
+void BluetoothOptionsHandler::DismissDisplayOrConfirm() {
+  // TODO(kevers): please fill this in
 }
 
 void BluetoothOptionsHandler::ReportError(
     const BluetoothDevice* device,
     ConnectionError error) {
+  // TODO(keybuk): not called from anywhere
   std::string errorCode;
   switch (error) {
   case DEVICE_NOT_FOUND:

@@ -72,12 +72,17 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
       var self = this;
-      var cancel = function() {
+      $('bluetooth-pair-device-cancel-button').onclick = function() {
         chrome.send('updateBluetoothDevice',
                     [self.device_.address, 'cancel']);
         OptionsPage.closeOverlay();
       };
-      var connect = function() {
+      $('bluetooth-pair-device-reject-button').onclick = function() {
+        chrome.send('updateBluetoothDevice',
+                    [self.device_.address, 'reject']);
+        OptionsPage.closeOverlay();
+      };
+      $('bluetooth-pair-device-connect-button').onclick = function() {
         var args = [self.device_.address, 'connect'];
         var passkey = self.device_.passkey;
         if (!passkey && !$('bluetooth-pairing-passkey-entry').hidden)
@@ -87,10 +92,11 @@ cr.define('options', function() {
         chrome.send('updateBluetoothDevice', args);
         OptionsPage.closeOverlay();
       };
-      $('bluetooth-pair-device-cancel-button').onclick = cancel;
-      $('bluetooth-pair-device-reject-button').onclick = cancel;
-      $('bluetooth-pair-device-connect-button').onclick = connect;
-      $('bluetooth-pair-device-accept-button').onclick = connect;
+      $('bluetooth-pair-device-accept-button').onclick = function() {
+        chrome.send('updateBluetoothDevice',
+                    [self.device_.address, 'accept']);
+        OptionsPage.closeOverlay();
+      };
       $('bluetooth-pair-device-dismiss-button').onclick = function() {
         OptionsPage.closeOverlay();
       };

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
@@ -23,7 +24,8 @@ namespace options2 {
 
 // Handler for Bluetooth options on the system options page.
 class BluetoothOptionsHandler : public OptionsPageUIHandler,
-                                public chromeos::BluetoothAdapter::Observer {
+                                public chromeos::BluetoothAdapter::Observer,
+                                public BluetoothDevice::PairingDelegate {
  public:
   BluetoothOptionsHandler();
   virtual ~BluetoothOptionsHandler();
@@ -49,45 +51,75 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   void SendDeviceNotification(const BluetoothDevice* device,
                               base::DictionaryValue* params);
 
-  // Displays a PIN code for a device, which is being typed remotely. This
-  // method is used for pairing Bluetooth 2.0 and older keyboards.
-  // |device| is the Bluetooth device being paired.
-  // |pincode| is the required pincode.
-  void DisplayPinCode(const BluetoothDevice* device,
-                      const std::string& pincode);
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when the Bluetooth daemon requires a
+  // PIN Code for authentication of the device |device|, the UI will display
+  // a blank entry form to obtain the PIN code from the user.
+  //
+  // PIN Codes are generally required for Bluetooth 2.0 and earlier devices
+  // for which there is no automatic pairing or special handling.
+  virtual void RequestPinCode(BluetoothDevice* device) OVERRIDE;
 
-  // Displays a passkey for a device, which is being typed remotely. During
-  // the pairing process, this method may be called repeatedly to track the
-  // number of characters entered.  This method is commonly used for pairing
-  // keyboards.
-  // |device| is the Bluetooth device being paired.
-  // |passkey| is the required passkey.
-  // |entered| is the number of characters that have already been entered on
-  // the remote device.
-  void DisplayPasskey(const BluetoothDevice* device,
-                      int passkey,
-                      int entered);
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when the Bluetooth daemon requires a
+  // Passkey for authentication of the device |device|, the UI will display
+  // a blank entry form to obtain the passkey from the user (a numeric in the
+  // range 0-999999).
+  //
+  // Passkeys are generally required for Bluetooth 2.1 and later devices
+  // which cannot provide input or display on their own, and don't accept
+  // passkey-less pairing.
+  virtual void RequestPasskey(BluetoothDevice* device) OVERRIDE;
 
-  // Displays a blank field for entering a PIN code.  The PIN code may be
-  // a set value specified by the manufacturer of the Bluetooth device, or
-  // on a remote display.
-  // |device| is the Bluetooth device being paired.
-  void RequestPinCode(const BluetoothDevice* device);
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when the Bluetooth daemon requires that the
+  // user enter the PIN code |pincode| into the device |device| so that it
+  // may be authenticated, the UI will display the PIN code with accompanying
+  // instructions.
+  //
+  // This is used for Bluetooth 2.0 and earlier keyboard devices, the
+  // |pincode| will always be a six-digit numeric in the range 000000-999999
+  // for compatibilty with later specifications.
+  virtual void DisplayPinCode(BluetoothDevice* device,
+                              const std::string& pincode) OVERRIDE;
 
-  // Displays a blank field for entering a passkey.  The passkey may be
-  // a set value specified by the manufacturer of the Bluetooth device, or
-  // on a remote display.  The validation is asychronous, and a call is made
-  // to |ValidatePasskeyCallback| when the passkey entry is complete.
-  // |device| is the Bluetooth device being paired.
-  void RequestPasskey(const BluetoothDevice* device);
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when the Bluetooth daemon requires that the
+  // user enter the Passkey |passkey| into the device |device| so that it
+  // may be authenticated, the UI will display the passkey with accompanying
+  // instructions.
+  //
+  // This is used for Bluetooth 2.1 and later devices that support input
+  // but not display, such as keyboards. The Passkey is a numeric in the
+  // range 0-999999 and should be always presented zero-padded to six
+  // digits.
+  virtual void DisplayPasskey(BluetoothDevice* device,
+                              uint32 passkey) OVERRIDE;
 
-  // Displays a passkey for a device, requesting user confirmation that the
-  // key matches an expected value (value displayed on a smartphone for
-  // example).
-  // |device| is the Bluetooth device being paired.
-  // |passkey| is the passkey to display for confirmation.
-  void RequestConfirmation(const BluetoothDevice* device,
-                           int passkey);
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when the Bluetooth daemon requires that the
+  // user confirm that the Passkey |passkey| is displayed on the screen
+  // of the device |device| so that it may be authenticated, the UI will
+  // display the passkey with accompanying instructions.
+  //
+  // This is used for Bluetooth 2.1 and later devices that support display,
+  // such as other computers or phones. The Passkey is a numeric in the
+  // range 0-999999 and should be always present zero-padded to six
+  // digits.
+  virtual void ConfirmPasskey(BluetoothDevice* device,
+                              uint32 passkey) OVERRIDE;
+
+  // BluetoothDevice::PairingDelegate override.
+  //
+  // This method will be called when any previous DisplayPinCode(),
+  // DisplayPasskey() or ConfirmPasskey() request should be concluded
+  // and removed from the user.
+  virtual void DismissDisplayOrConfirm() OVERRIDE;
 
   // Displays an error that occurred during the pairing or connection process.
   // |device| is the Bluetooth device being paired or connected.
@@ -145,6 +177,10 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
 
   // Default bluetooth adapter, used for all operations. Owned by this object.
   scoped_ptr<BluetoothAdapter> adapter_;
+
+  // Weak pointer factory for generating 'this' pointers that might live longer
+  // than this object does.
+  base::WeakPtrFactory<BluetoothOptionsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothOptionsHandler);
 };

@@ -31,9 +31,9 @@ class BluetoothDevice;
 //
 // The class may be instantiated for either a specific adapter, or for the
 // generic "default adapter" which may change depending on availability.
-class BluetoothAdapter : public BluetoothManagerClient::Observer,
-                         public BluetoothAdapterClient::Observer,
-                         public BluetoothDeviceClient::Observer {
+class BluetoothAdapter : private BluetoothManagerClient::Observer,
+                         private BluetoothAdapterClient::Observer,
+                         private BluetoothDeviceClient::Observer {
  public:
   // Interface for observing changes from bluetooth adapters.
   class Observer {
@@ -121,6 +121,10 @@ class BluetoothAdapter : public BluetoothManagerClient::Observer,
   typedef std::vector<BluetoothDevice*> DeviceList;
   DeviceList GetDevices();
 
+  // Returns a pointer to the device with the given address |address| or
+  // NULL if no such device is known.
+  BluetoothDevice* GetDevice(const std::string& address);
+
   // Creates the instance for the default adapter, whichever that may
   // be at the time. Use IsPresent() and the AdapterPresentChanged() observer
   // method to determine whether an adapter is actually available or not.
@@ -132,6 +136,8 @@ class BluetoothAdapter : public BluetoothManagerClient::Observer,
   static BluetoothAdapter* Create(const std::string& address);
 
  private:
+  friend class BluetoothDevice;
+
   BluetoothAdapter();
 
   // Obtains the default adapter object path from the Bluetooth Daemon

@@ -124,7 +124,7 @@ class BluetoothAgentServiceProvider {
     // This method will be called when the Bluetooth daemon requires that the
     // user confirm that the Passkey |passkey| is displayed on the screen
     // of the device with object path |object_path| so that it may be
-    // authentication. The agent should display to the user and ask for
+    // authenticated. The agent should display to the user and ask for
     // confirmation, then call |callback| to provide their response (success,
     // rejected or cancelled).
     //

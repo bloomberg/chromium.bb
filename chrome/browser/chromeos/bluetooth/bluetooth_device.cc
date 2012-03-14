@@ -7,19 +7,29 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
-BluetoothDevice::BluetoothDevice() : bluetooth_class_(0),
-                                     paired_(false),
-                                     connected_(false) {
+BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
+  : weak_ptr_factory_(this),
+    adapter_(adapter),
+    bluetooth_class_(0),
+    paired_(false),
+    connected_(false),
+    pairing_delegate_(NULL) {
 }
 
 BluetoothDevice::~BluetoothDevice() {
@@ -150,12 +160,234 @@ bool BluetoothDevice::IsConnected() const {
   return connected_;
 }
 
+void BluetoothDevice::Connect(ErrorCallback error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      CreateDevice(adapter_->object_path_,
+                   address_,
+                   base::Bind(&BluetoothDevice::ConnectCallback,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              error_callback));
+}
+
+void BluetoothDevice::PairAndConnect(PairingDelegate* pairing_delegate,
+                                     ErrorCallback error_callback) {
+  DCHECK(!pairing_delegate_);
+  pairing_delegate_ = pairing_delegate;
+
+  // The agent path is relatively meaningless, we use the device address
+  // to generate it as we only support one pairing attempt at a time for
+  // a given bluetooth device.
+  DCHECK(agent_.get() == NULL);
+
+  std::string agent_path_basename;
+  ReplaceChars(address_, ":", "_", &agent_path_basename);
+  dbus::ObjectPath agent_path("/org/chromium/bluetooth_agent/" +
+                              agent_path_basename);
+
+  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
+  agent_.reset(BluetoothAgentServiceProvider::Create(system_bus,
+                                                     agent_path,
+                                                     this));
+
+  DVLOG(1) << "Pairing: " << address_;
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      CreatePairedDevice(adapter_->object_path_,
+                         address_,
+                         agent_path,
+                         bluetooth_agent::kDisplayYesNoCapability,
+                         base::Bind(&BluetoothDevice::ConnectCallback,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    error_callback));
+}
+
+void BluetoothDevice::ConnectCallback(ErrorCallback error_callback,
+                                      const dbus::ObjectPath& device_path,
+                                      bool success) {
+  if (success) {
+    DVLOG(1) << "Connection successful: " << device_path.value();
+    if (object_path_.value().empty()) {
+      object_path_ = device_path;
+    } else {
+      LOG_IF(WARNING, object_path_ != device_path)
+          << "Conflicting device paths for objects, result gave: "
+          << device_path.value() << " but signal gave: "
+          << object_path_.value();
+    }
+  } else {
+    LOG(WARNING) << "Connection failed: " << address_;
+    error_callback.Run();
+  }
+}
+
+void BluetoothDevice::SetPinCode(const std::string& pincode) {
+  if (!agent_.get() || pincode_callback_.is_null())
+    return;
+
+  pincode_callback_.Run(SUCCESS, pincode);
+  pincode_callback_.Reset();
+}
+
+void BluetoothDevice::SetPasskey(uint32 passkey) {
+  if (!agent_.get() || passkey_callback_.is_null())
+    return;
+
+  passkey_callback_.Run(SUCCESS, passkey);
+  passkey_callback_.Reset();
+}
+
+void BluetoothDevice::ConfirmPairing() {
+  if (!agent_.get() || confirmation_callback_.is_null())
+    return;
+
+  confirmation_callback_.Run(SUCCESS);
+  confirmation_callback_.Reset();
+}
+
+void BluetoothDevice::RejectPairing() {
+  if (!agent_.get())
+    return;
+
+  if (!pincode_callback_.is_null()) {
+    pincode_callback_.Run(REJECTED, "");
+    pincode_callback_.Reset();
+  }
+  if (!passkey_callback_.is_null()) {
+    passkey_callback_.Run(REJECTED, 0);
+    passkey_callback_.Reset();
+  }
+  if (!confirmation_callback_.is_null()) {
+    confirmation_callback_.Run(REJECTED);
+    confirmation_callback_.Reset();
+  }
+}
+
+void BluetoothDevice::CancelPairing() {
+  if (!agent_.get())
+    return;
+
+  if (!pincode_callback_.is_null()) {
+    pincode_callback_.Run(CANCELLED, "");
+    pincode_callback_.Reset();
+  }
+  if (!passkey_callback_.is_null()) {
+    passkey_callback_.Run(CANCELLED, 0);
+    passkey_callback_.Reset();
+  }
+  if (!confirmation_callback_.is_null()) {
+    confirmation_callback_.Run(CANCELLED);
+    confirmation_callback_.Reset();
+  }
+}
+
+void BluetoothDevice::DisconnectRequested(const dbus::ObjectPath& object_path) {
+  DCHECK(object_path == object_path_);
+}
+
+void BluetoothDevice::Release() {
+  DCHECK(agent_.get());
+  DVLOG(1) << "Release: " << address_;
+
+  DCHECK(pairing_delegate_);
+  pairing_delegate_->DismissDisplayOrConfirm();
+  pairing_delegate_ = NULL;
+
+  pincode_callback_.Reset();
+  passkey_callback_.Reset();
+  confirmation_callback_.Reset();
+
+  agent_.reset();
+}
+
+void BluetoothDevice::RequestPinCode(const dbus::ObjectPath& device_path,
+                                     const PinCodeCallback& callback) {
+  DCHECK(agent_.get());
+  DVLOG(1) << "RequestPinCode: " << device_path.value();
+
+  DCHECK(pairing_delegate_);
+  DCHECK(pincode_callback_.is_null());
+  pincode_callback_ = callback;
+  pairing_delegate_->RequestPinCode(this);
+}
+
+void BluetoothDevice::RequestPasskey(const dbus::ObjectPath& device_path,
+                                     const PasskeyCallback& callback) {
+  DCHECK(agent_.get());
+  DCHECK(device_path == object_path_);
+  DVLOG(1) << "RequestPasskey: " << device_path.value();
+
+  DCHECK(pairing_delegate_);
+  DCHECK(passkey_callback_.is_null());
+  passkey_callback_ = callback;
+  pairing_delegate_->RequestPasskey(this);
+}
+
+void BluetoothDevice::DisplayPinCode(const dbus::ObjectPath& device_path,
+                                     const std::string& pincode) {
+  DCHECK(agent_.get());
+  DCHECK(device_path == object_path_);
+  DVLOG(1) << "DisplayPinCode: " << device_path.value() << " " << pincode;
+
+  DCHECK(pairing_delegate_);
+  pairing_delegate_->DisplayPinCode(this, pincode);
+}
+
+void BluetoothDevice::DisplayPasskey(const dbus::ObjectPath& device_path,
+                                     uint32 passkey) {
+  DCHECK(agent_.get());
+  DCHECK(device_path == object_path_);
+  DVLOG(1) << "DisplayPasskey: " << device_path.value() << " " << passkey;
+
+  DCHECK(pairing_delegate_);
+  pairing_delegate_->DisplayPasskey(this, passkey);
+}
+
+void BluetoothDevice::RequestConfirmation(
+    const dbus::ObjectPath& device_path,
+    uint32 passkey,
+    const ConfirmationCallback& callback) {
+  DCHECK(agent_.get());
+  DCHECK(device_path == object_path_);
+  DVLOG(1) << "RequestConfirmation: " << device_path.value() << " " << passkey;
+
+  DCHECK(pairing_delegate_);
+  DCHECK(confirmation_callback_.is_null());
+  confirmation_callback_ = callback;
+  pairing_delegate_->ConfirmPasskey(this, passkey);
+}
+
+void BluetoothDevice::Authorize(const dbus::ObjectPath& device_path,
+                                const std::string& uuid,
+                                const ConfirmationCallback& callback) {
+  DCHECK(agent_.get());
+  DCHECK(device_path == object_path_);
+  LOG(WARNING) << "Rejected authorization for service: " << uuid
+               << " requested from device: " << device_path.value();
+  callback.Run(REJECTED);
+}
+
+void BluetoothDevice::ConfirmModeChange(Mode mode,
+                                        const ConfirmationCallback& callback) {
+  DCHECK(agent_.get());
+  LOG(WARNING) << "Rejected adapter-level mode change: " << mode
+               << " made on agent for device: " << address_;
+  callback.Run(REJECTED);
+}
+
+void BluetoothDevice::Cancel() {
+  DCHECK(agent_.get());
+  DVLOG(1) << "Cancel: " << address_;
+
+  DCHECK(pairing_delegate_);
+  pairing_delegate_->DismissDisplayOrConfirm();
+}
+
 
 // static
 BluetoothDevice* BluetoothDevice::CreateBound(
+    BluetoothAdapter* adapter,
     const dbus::ObjectPath& object_path,
     const BluetoothDeviceClient::Properties* properties) {
-  BluetoothDevice* device = new BluetoothDevice;
+  BluetoothDevice* device = new BluetoothDevice(adapter);
   device->SetObjectPath(object_path);
   device->Update(properties, true);
   return device;
@@ -163,8 +395,9 @@ BluetoothDevice* BluetoothDevice::CreateBound(
 
 // static
 BluetoothDevice* BluetoothDevice::CreateUnbound(
+    BluetoothAdapter* adapter,
     const BluetoothDeviceClient::Properties* properties) {
-  BluetoothDevice* device = new BluetoothDevice;
+  BluetoothDevice* device = new BluetoothDevice(adapter);
   device->Update(properties, false);
   return device;
 }

@@ -287,7 +287,7 @@ void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
 
   // Device has an address and was not previously known, add to the map
   // and notify observers.
-  BluetoothDevice* device = BluetoothDevice::CreateBound(device_path,
+  BluetoothDevice* device = BluetoothDevice::CreateBound(this, device_path,
                                                          properties);
   devices_[address] = device;
 
@@ -302,6 +302,14 @@ BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
     devices.push_back(iter->second);
 
   return devices;
+}
+
+BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
+  DevicesMap::iterator iter = devices_.find(address);
+  if (iter != devices_.end())
+    return iter->second;
+
+  return NULL;
 }
 
 void BluetoothAdapter::ClearDevices() {
@@ -381,7 +389,7 @@ void BluetoothAdapter::DeviceFound(
   BluetoothDevice* device;
   DevicesMap::iterator iter = devices_.find(address);
   if (iter == devices_.end()) {
-    device = BluetoothDevice::CreateUnbound(&properties);
+    device = BluetoothDevice::CreateUnbound(this, &properties);
     devices_[address] = device;
 
     if (device->IsSupported())
