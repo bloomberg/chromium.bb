@@ -25,6 +25,10 @@ using protocol::KeyEvent;
 
 namespace {
 
+// USB to XKB keycode map table.
+#define USB_KEYMAP(usb, xkb, win, mac) {usb, xkb}
+#include "remoting/host/usb_keycode_map.h"
+
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
@@ -254,6 +258,17 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   return kUsVkeyToKeysym[keycode];
 }
 
+uint16_t UsbKeycodeToXkbKeycode(uint32_t usb_keycode) {
+  if (usb_keycode == 0)
+    return 0;
+
+  for (uint i = 0; i < arraysize(usb_keycode_map); i++)
+    if (usb_keycode_map[i].usb_keycode == usb_keycode)
+      return usb_keycode_map[i].native_keycode;
+
+  return 0;
+}
+
 EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop,
                                        Capturer* capturer)
     : message_loop_(message_loop),
@@ -308,25 +323,37 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
     return;
   }
 
-  // TODO(ajwong): This will only work for QWERTY keyboards.
-  int keysym = ChromotocolKeycodeToX11Keysym(event.keycode());
+  int keycode = 0;
+  if (event.has_usb_keycode() && event.usb_keycode() != 0) {
+    keycode = UsbKeycodeToXkbKeycode(event.usb_keycode());
+    VLOG(3) << "Got usb keycode: " << std::hex << event.usb_keycode()
+            << " to xkb keycode: " << keycode << std::dec;
+  } else {
+    // Fall back to keysym translation.
+    // TODO(garykac) Remove this once we switch entirely over to USB keycodes.
+    int keysym = ChromotocolKeycodeToX11Keysym(event.keycode());
 
-  if (keysym == -1) {
-    LOG(WARNING) << "Ignoring unknown key: " << event.keycode();
-    return;
+    VLOG(3) << "Converting Win vkey: " << std::hex << event.keycode()
+            << " to xkeysym: " << keysym << std::dec;
+    if (keysym == -1) {
+      LOG(WARNING) << "Ignoring unknown key: " << event.keycode();
+      return;
+    }
+
+    // Translate the keysym into a keycode understandable by the X display.
+    keycode = XKeysymToKeycode(display_, keysym);
+    VLOG(3) << "Converting xkeysym: " << std::hex << keysym
+            << " to x11 keycode: " << keycode << std::dec;
+    if (keycode == 0) {
+      LOG(WARNING) << "Ignoring undefined keysym: " << keysym
+                   << " for key: " << event.keycode();
+      return;
+    }
+
+    VLOG(3) << "Got pepper key: " << event.keycode()
+            << " sending keysym: " << keysym
+            << " to keycode: " << keycode;
   }
-
-  // Translate the keysym into a keycode understandable by the X display.
-  int keycode = XKeysymToKeycode(display_, keysym);
-  if (keycode == 0) {
-    LOG(WARNING) << "Ignoring undefined keysym: " << keysym
-                 << " for key: " << event.keycode();
-    return;
-  }
-
-  VLOG(3) << "Got pepper key: " << event.keycode()
-          << " sending keysym: " << keysym
-          << " to keycode: " << keycode;
 
   if (event.pressed()) {
     if (pressed_keys_.find(keycode) != pressed_keys_.end()) {

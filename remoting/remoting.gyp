@@ -581,6 +581,7 @@
         'host/signaling_connector.h',
         'host/ui_strings.cc',
         'host/ui_strings.h',
+        'host/usb_keycode_map.h',
         'host/user_authenticator.h',
         'host/user_authenticator_linux.cc',
         'host/user_authenticator_mac.cc',
