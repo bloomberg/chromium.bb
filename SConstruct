@@ -3350,8 +3350,6 @@ nonvariant_tests = [
     'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',
     'tests/inbrowser_test_runner/nacl.scons',
-    'tests/mach_crash_filter/nacl.scons',
-    'tests/mach_crash_forwarding/nacl.scons',
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
@@ -3395,9 +3393,11 @@ nonvariant_tests = [
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
+    'tests/trusted_crash/osx_crash_filter/nacl.scons',
+    'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
+    'tests/trusted_crash/win_crash_in_syscall/nacl.scons',
     'tests/unittests/shared/imc/nacl.scons',
     'tests/unittests/shared/srpc/nacl.scons',
-    'tests/windows_crash_in_syscall/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
 

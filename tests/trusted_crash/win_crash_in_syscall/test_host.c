@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,7 +16,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/tests/windows_crash_in_syscall/test_syscalls.h"
+#include "native_client/tests/trusted_crash/win_crash_in_syscall/test_syscalls.h"
 
 /*
  * This test case checks that an exception handler registered via
