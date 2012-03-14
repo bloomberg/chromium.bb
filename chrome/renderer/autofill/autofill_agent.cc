@@ -418,18 +418,21 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (element.nameForAutofill().isEmpty())
     return;
 
-  // Don't attempt to autofill with values that are too large.
+  // Don't attempt to autofill with values that are too large or if filling
+  // criteria are not met.
   WebString value = element.value();
-  if (value.length() > kMaximumTextSizeForAutofill)
-    return;
+  if (value.length() > kMaximumTextSizeForAutofill ||
+      (!autofill_on_empty_values && value.isEmpty()) ||
+      (requires_caret_at_end &&
+       (element.selectionStart() != element.selectionEnd() ||
+        element.selectionEnd() != static_cast<int>(value.length())))) {
+    // Any popup currently showing is obsolete.
+    WebKit::WebView* web_view = render_view()->GetWebView();
+    if (web_view)
+      web_view->hidePopups();
 
-  if (!autofill_on_empty_values && value.isEmpty())
     return;
-
-  if (requires_caret_at_end &&
-      (element.selectionStart() != element.selectionEnd() ||
-       element.selectionEnd() != static_cast<int>(value.length())))
-    return;
+  }
 
   QueryAutofillSuggestions(element, display_warning_if_disabled);
 }
