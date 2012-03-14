@@ -24,22 +24,24 @@ function setListenersOnTab(tabId) {
   }
 }
 
+/**
+ * Sends true if next event was a onPageEvent and pop it from |receivedEvents|.
+ */
 function testReceivePageEvent() {
   var sawPage = false;
-  if (receivedEvents.length == 1) {
+  if (receivedEvents.length >= 1) {
     var eventName = receivedEvents.pop();
     if (eventName === "onPageEvent")
       sawPage = true;
     else
       console.warn('received ' + eventName + '; expecting onPageEvent');
-  } else {
-    console.warn('received ' + receivedEvents.toString() +
-                 '; expecting onPageEvent');
-    receivedEvents = [];
   }
   window.domAutomationController.send(sawPage);
 }
 
+/**
+ * Sends true if any event is onTabClose and clear |receivedEvents|.
+ */
 function testReceiveTabCloseEvent() {
   var sawTabClose = false;
   for(var i = 0; i < receivedEvents.length; i++) {
