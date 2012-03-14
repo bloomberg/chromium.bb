@@ -432,6 +432,12 @@ function selectCurrentPageOnLeftNav() {
  * template
  */
 
+function filterDocumented(things) {
+  return !things ? [] : things.filter(function(thing) {
+    return !disableDocs(thing);
+  });
+}
+
 function stableAPIs() {
   return schema.filter(function(module) {
     return !disableDocs(module) &&

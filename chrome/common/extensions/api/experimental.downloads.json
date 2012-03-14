@@ -5,11 +5,11 @@
 [
   {
     "namespace": "experimental.downloads",
-    "nodoc": "true",
     "events": [
       {
         "name": "onCreated",
         "type": "function",
+        "nodoc": "true",
         "description": "This event fires with the DownloadItem object when a download begins.",
         "parameters": [
           {"name": "downloadItem", "$ref": "DownloadItem"}
@@ -18,7 +18,8 @@
       {
         "name": "onChanged",
         "type": "function",
-        "description": "When any of a DownloadItem's properties except |bytesReceived| changes, this event fires with the download id and an object containing the properties that changed.",
+        "nodoc": "true",
+        "description": "When any of a DownloadItem's properties except <code>bytesReceived</code> changes, this event fires with the download id and an object containing the properties that changed.",
         "parameters": [
           {"name": "downloadDelta", "$ref": "DownloadDelta"}
         ]
@@ -26,6 +27,7 @@
       {
         "name": "onErased",
         "type": "function",
+        "nodoc": "true",
         "description": "Fires with the download id when a download is erased from history.",
         "parameters": [
           {"type": "integer", "name": "downloadId"}
@@ -35,36 +37,43 @@
     "properties": {
       "STATE_IN_PROGRESS": {
         "type": "string",
+        "nodoc": "true",
         "value": "in_progress",
         "description": "The download is currently receiving data from the server."
       },
       "STATE_INTERRUPTED": {
         "type": "string",
+        "nodoc": "true",
         "value": "interrupted",
         "description": "An error broke the connection with the file host."
       },
       "STATE_COMPLETE": {
         "type": "string",
+        "nodoc": "true",
         "value": "complete",
         "description": "The download has completed."
       },
       "DANGER_SAFE": {
         "type": "string",
+        "nodoc": "true",
         "value": "safe",
         "description": "The file has been determined to present no known danger to the user's computer."
       },
       "DANGER_FILE": {
         "type": "string",
+        "nodoc": "true",
         "value": "file",
         "description": "The download's filename is suspicious."
       },
       "DANGER_URL": {
         "type": "string",
+        "nodoc": "true",
         "value": "url",
         "description": "The download's URL is malicious."
       },
       "DANGER_CONTENT": {
         "type": "string",
+        "nodoc": "true",
         "value": "content",
         "description": "The download's content is malicious."
       },
@@ -80,6 +89,7 @@
       },
       "ERROR_INVALID_OPERATION": {
         "type": "string",
+        "nodoc": "true",
         "value": "Invalid operation.",
         "description": "The requested operation cannot be performed at this time. This maybe due to the download being in a state where the requested operation is not allowed."
       }
@@ -106,6 +116,7 @@
       {
         "id": "DownloadItem",
         "type": "object",
+        "nodoc": "true",
         "description": "The state of a file as it is downloaded from the internet.",
         "properties": {
           "id": {
@@ -173,45 +184,9 @@
         }
       },
       {
-        "id": "DownloadOptions",
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "The URL to download.",
-            "minLength": 1
-          },
-          "filename": {
-            "type": "string",
-            "description": "A file path relative to the Downloads directory to contain the downloaded file.",
-            "optional": true
-          },
-          "saveAs": {
-            "type": "boolean",
-            "optional": true,
-            "description": "Use a file-chooser to allow the user to select a filename."
-          },
-          "method": {
-            "type": "string",
-            "description": "The HTTP method to use if the URL uses the HTTP[S] protocol.",
-            "optional": true,
-            "enum": ["GET", "POST"]
-          },
-          "headers": {
-            "$ref": "HttpHeaders",
-            "description": "Extra HTTP headers to send with the request if the URL uses the HTTP[s] protocol, restricted to those allowed by XMLHttpRequest.",
-            "optional": true
-          },
-          "body": {
-            "type": "string",
-            "description": "post body",
-            "optional": true
-          }
-        }
-      },
-      {
         "id": "DownloadQuery",
         "type": "object",
+        "nodoc": "true",
         "description": "",
         "properties": {
           "query": {
@@ -267,7 +242,7 @@
           "orderBy": {
             "type": "string",
             "optional": true,
-            "description": "Setting this string to a DownloadItem property sorts the DownloadItems prior to applying the above filters. For example, setting |orderBy|=”startTime” sorts the DownloadItems by their start time in ascending order. To specify descending order, prefix |orderBy| with a hyphen: “-startTime”."
+            "description": "Setting this string to a DownloadItem property sorts the DownloadItems prior to applying the above filters. For example, setting <code>orderBy=”startTime”</code> sorts the DownloadItems by their start time in ascending order. To specify descending order, prefix <code>orderBy</code> with a hyphen: “-startTime”."
           },
           "id": {
             "type": "integer",
@@ -346,6 +321,7 @@
       {
         "id": "DownloadBooleanDiff",
         "type": "object",
+        "nodoc": "true",
         "description": "Encapsulates a change in a boolean DownloadItem field.",
         "properties": {
           "old": {
@@ -361,6 +337,7 @@
       {
         "id": "DownloadIntegerDiff",
         "type": "object",
+        "nodoc": "true",
         "description": "Encapsulates a change in an integer DownloadItem field.",
         "properties": {
           "old": {
@@ -376,6 +353,7 @@
       {
         "id": "DownloadStringDiff",
         "type": "object",
+        "nodoc": "true",
         "description": "Encapsulates a change in a string DownloadItem field.",
         "properties": {
           "old": {
@@ -391,6 +369,7 @@
       {
         "id": "DownloadDelta",
         "type": "object",
+        "nodoc": "true",
         "description": "Encapsulates a change in a DownloadItem.",
         "properties": {
           "id": {
@@ -450,34 +429,61 @@
             "optional": true
           }
         }
-      },
-      {
-        "id": "DownloadFileIconOptions",
-        "type": "object",
-        "description": "Options for fetching the file icon for a download. See chrome.experimental.downloads.getFileIcon.",
-        "properties": {
-          "size": {
-            "type": "integer",
-            "description": "The size of the icon.  The returned icon will be square with dimensions size * size pixels.  The default size for the icon is 32x32 pixels.",
-            "enum": [16, 32],
-            "optional": true
-          }
-        }
       }
     ],
     "functions": [
       {
         "name": "download",
         "type": "function",
-        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, |callback| will be called with the new DownloadItem’s |id|. If there was an error starting the download, then |callback| will be called with |downloadId|=undefined and chrome.extension.lastError will be set. If the URL’s hostname is not specified in the |permissions| section of the extension’s manifest, then the |chrome.extensions.lastError| object will indicate that the extension does not have permission to access that hostname.",
+        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, <code>callback</code> will be called with the new DownloadItem’s <code>downloadId</code>. If there was an error starting the download, then <code>callback</code> will be called with <code>downloadId=undefined</code> and <code>chrome.extension.lastError</code> will be set. If both <code>filename</code> and <code>saveAs</code> are specified, then the Save As dialog will be displayed, pre-populated with the specified <code>filename</code>.",
         "parameters": [
-          {"name": "options", "$ref": "DownloadOptions"},
           {
-            "name": "callback",
+            "type": "object",
+            "name": "options",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "The URL to download.",
+                "minLength": 1
+              },
+              "filename": {
+                "type": "string",
+                "description": "A file path relative to the Downloads directory to contain the downloaded file.",
+                "optional": true
+              },
+              "saveAs": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Use a file-chooser to allow the user to select a filename."
+              },
+              "method": {
+                "type": "string",
+                "description": "The HTTP method to use if the URL uses the HTTP[S] protocol.",
+                "optional": true,
+                "enum": ["GET", "POST"]
+              },
+              "headers": {
+                "$ref": "HttpHeaders",
+                "description": "Extra HTTP headers to send with the request if the URL uses the HTTP[s] protocol, restricted to those allowed by XMLHttpRequest.",
+                "optional": true
+              },
+              "body": {
+                "type": "string",
+                "description": "post body",
+                "optional": true
+              }
+            }
+          },
+          {
             "type": "function",
+            "name": "callback",
             "optional": true,
             "parameters": [
-              {"name": "id", "type": "integer"}
+              {
+                "name": "downloadId",
+                "type": "integer",
+                "description": "If not null, the identifier of the resulting Download Item."
+              }
             ]
           }
         ]
@@ -485,7 +491,8 @@
       {
         "name": "search",
         "type": "function",
-        "description": "Find DownloadItems. Set |query| to the empty object to get all DownloadItems. To get a specific DownloadItem, set only the |id| field.",
+        "nodoc": "true",
+        "description": "Find DownloadItems. Set <code>query</code> to the empty object to get all DownloadItems. To get a specific DownloadItem, set only the <code>id</code> field.",
         "parameters": [
           {"name": "query", "$ref": "DownloadQuery"},
           {
@@ -501,6 +508,7 @@
       {
         "name": "erase",
         "type": "function",
+        "nodoc": "true",
         "description": "Erase matching DownloadItems from history",
         "parameters": [
           {"name": "query", "$ref": "DownloadQuery"},
@@ -509,7 +517,11 @@
             "type": "function",
             "optional": true,
             "parameters": [
-              {"name": "ids", "type": "array"}
+              {
+                "name": "ids",
+                "type": "array",
+                "description": "The identifiers of the downloads that were erased."
+              }
             ]
           }
         ]
@@ -517,7 +529,8 @@
       {
         "name": "setDestination",
         "type": "function",
-        "description": "Move the file to Downloads/relativePath instead of the Downloads directory if it has completed and pass true to callback. If |relativePath| specifies a directory that does not exist then it will be created. If it has not completed, store |relativePath| such that the file will be moved there when it completes and pass true to callback without waiting for the download to complete. Does nothing if the download is cancelled or if |downloadId| does not reference an existing DownloadItem, but pass false to callback. If the file could not be moved, then the DownloadItem will transition to STATE_INTERRUPTED, its |error| property will be set accordingly, false will be passed to callback, and the OnChanged event will fire.",
+        "nodoc": "true",
+        "description": "Move the file to Downloads/relativePath instead of the Downloads directory if it has completed and pass true to callback. If <code>relativePath</code> specifies a directory that does not exist then it will be created. If it has not completed, store <code>relativePath</code> such that the file will be moved there when it completes and pass true to callback without waiting for the download to complete. Does nothing if the download is cancelled or if <code>downloadId</code> does not reference an existing DownloadItem, but pass false to callback. If the file could not be moved, then the DownloadItem will transition to STATE_INTERRUPTED, its <code>error</code> property will be set accordingly, false will be passed to callback, and the OnChanged event will fire.",
         "parameters": [
           {"name": "id", "type": "integer"},
           {"name": "relativePath", "type": "string"}
@@ -526,6 +539,7 @@
       {
         "name": "acceptDanger",
         "type": "function",
+        "nodoc": "true",
         "description": "Accept a dangerous download. If a download is dangerous, then it will not transition to the completed state until this function is called.",
         "parameters": [
           {"name": "id", "type": "integer"}
@@ -534,6 +548,7 @@
       {
         "name": "show",
         "type": "function",
+        "nodoc": "true",
         "description": "Show the downloaded file in its folder.",
         "parameters": [
           {"name": "id", "type": "integer"}
@@ -542,6 +557,7 @@
       {
         "name": "drag",
         "type": "function",
+        "nodoc": "true",
         "description": "Drag the file to another application",
         "parameters": [
           {"name": "id", "type": "integer"}
@@ -550,6 +566,7 @@
       {
         "name": "pause",
         "type": "function",
+        "nodoc": "true",
         "description": "Pause the download.",
         "parameters": [
           {"name": "id", "type": "integer"},
@@ -565,6 +582,7 @@
       {
         "name": "resume",
         "type": "function",
+        "nodoc": "true",
         "description": "Resume a paused download.",
         "parameters": [
           {"name": "id", "type": "integer"},
@@ -580,6 +598,7 @@
       {
         "name": "cancel",
         "type": "function",
+        "nodoc": "true",
         "description": "Cancel a download.",
         "parameters": [
           {"name": "id", "type": "integer"},
@@ -595,17 +614,25 @@
       {
         "name": "getFileIcon",
         "type": "function",
+        "nodoc": "true",
         "description": "Retrieve an icon for the specified download. For new downloads, file icons are available after the onCreated event has been received. The image returned by this function while a download is in progress may be different from the image returned after the download is complete. Icon retrieval is done by querying the underlying operating system or toolkit depending on the platform. The icon that is returned will therefore depend on a number of factors including state of the download, platform, registered file types and visual theme.",
         "parameters": [
           {
-            "name": "id",
             "type": "integer",
+            "name": "id",
             "description": "The identifier for the download."
           },
           {
+            "type": "object",
             "name": "options",
-            "$ref": "DownloadFileIconOptions",
-            "description": "Options for the returned image."
+            "properties": {
+              "size": {
+                "type": "integer",
+                "description": "The size of the icon.  The returned icon will be square with dimensions size * size pixels.  The default size for the icon is 32x32 pixels.",
+                "enum": [16, 32],
+                "optional": true
+              }
+            }
           },
           {
             "name": "callback",

@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.managedMode module, which is part of the Google Chrome  extension APIs."><title>Managed Mode API - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.downloads module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.downloads - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -185,7 +185,7 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Managed Mode API</h1>
+        <h1 class="page_title">chrome.experimental.downloads</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -196,24 +196,38 @@
               <ol>
               </ol>
             </li><li>
-              <a href="#about">About Managed Mode</a>
-              <ol>
-              </ol>
-            </li><li>
-              <a href="#usage">Usage</a>
+              <a href="#examples"> Examples </a>
               <ol>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.managedMode</a>
+                <a href="#apiReference">API reference: chrome.experimental.downloads</a>
                 <ol>
+                  <li>
+            <a href="#properties">Properties</a>
+            <ol>
+              <li>
+                <a href="#property-ERROR_GENERIC">ERROR_GENERIC</a>
+              </li><li>
+                <a href="#property-ERROR_INVALID_URL">ERROR_INVALID_URL</a>
+              </li>
+            </ol>
+          </li>
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
-                <a href="#method-enter">enter</a>
-              </li><li>
-                <a href="#method-get">get</a>
+                <a href="#method-download">download</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#type-HttpHeaders">HttpHeaders</a>
+                <ol>
+                </ol>
               </li>
             </ol>
           </li>
@@ -223,101 +237,293 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
+        <p id="classSummary">
+          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Managed Mode API</div>
-<!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-  The <code>chrome.experimental.managedMode</code> module allows extensions to
-  request that the browser enter managed mode, as well as to query whether it
-  is currently in managed mode.
-</p>
-<p class="note">
-  <b>Note: </b>Extensions cannot request that the browser leave managed mode.
-  This must be done by the user from within the browser itself.
-</p>
+        <div id="static"><p>The downloads API allows you to programmatically initiate downloads. In the
+future, you will also be able to monitor and manipulate downloads.</p>
 <h2 id="manifest">Manifest</h2>
-<p>
-  You must declare the "managedMode" and "experimental" permissions in your
-  extension's <a href="manifest.html">manifest</a> to use the API. For example:
-</p>
+<p>The downloads API is currently experimental, so you must declare the
+"experimental" permission to use it. Also, you must specify the hostname of any
+URLs to be downloaded. For example:</p>
 <pre>{
-  "name": "My extension",
-  ...
-  <b>"permissions": [
-    "experimental",
-    "managedMode"
-  ]</b>,
-  ...
+  "name": "Download Selected Links",
+  "description": "Select links on a page and download them.",
+  "version": "0.1",
+  "permissions": [
+    "experimental", "http://*/*", "https://*/*"
+  ]
 }</pre>
-<h2 id="about">About Managed Mode</h2>
-<p>
-  Managed mode allows one person to manage the Chrome experience for another
-  person by pre-configuring and then locking a managed User profile.
-  <span class="todo">For more information about Chrome's managed mode, see
-  <b>[TBD]</b>.</span>
-</p>
-<h2 id="usage">Usage</h2>
-<p>
-  Querying managed mode is straightforward. Simply call <code>get()</code>,
-  providing a callback function to receive the result. For example:
-</p>
-<pre>chrome.experimental.managedMode.get(function(details) {
-  if (details.value)
-    console.log('Managed mode is on.');
-  else
-    console.log('Managed mode is off.');
-});</pre>
-<p>
-  Entering managed mode is a little bit more complex, because if the browser is
-  already in managed mode, trying to enter it again will have no effect. To
-  avoid confusing users, it's advisable to check whether your extension can
-  enter managed mode (i.e., if it is not already in effect), and visually
-  disable the functionality in your extension if not. You can optionally
-  provide a callback function to <code>enter()</code> to receive the result.
-  For example:
-</p>
-<pre>chrome.experimental.managedMode.get(function(details) {
-  if (details.value) {
-    console.log("Managed mode is already in effect.");
-  } else {
-    chrome.experimental.managedMode.enter(function(result) {
-      if (chrome.extension.lastError === undefined) {
-        if (result.success)
-          console.log("Hooray, it worked!");
-        else
-          console.log("Oops, the user changed her mind.");
-      } else {
-        console.log("Aw, snap!", chrome.extension.lastError);
-      }
-    });
-  }
-});</pre>
-<!-- END AUTHORED CONTENT -->
+<p>If the URL’s hostname is not specified in the permissions, then the
+chrome.extensions.lastError object will indicate that the extension does not
+have permission to access that hostname.
+<a href="#properties">downloads.ERROR_*</a> are some of the errors that may be
+returned.</p>
+<h2 id="examples"> Examples </h2>
+<p>You can find simple examples of using the downloads module in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/downloads/">examples/api/downloads</a>
+directory. For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.</p>
 </div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.managedMode</h2>
+        <h2>API reference: chrome.experimental.downloads</h2>
           <!-- PROPERTIES -->
-           <!-- /apiGroup -->
+          <div class="apiGroup">
+            <a name="properties"></a>
+            <h3 id="properties">Properties</h3>
+            <div>
+              <a name="property-ERROR_GENERIC"></a>
+              <h4>ERROR_GENERIC</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.experimental.downloads.</span><span>ERROR_GENERIC</span>
+              </div>
+              <div>
+          <dt>
+            <var>ERROR_GENERIC</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <code>"I'm afraid I can't do that."</code>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Generic error.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div>
+              <a name="property-ERROR_INVALID_URL"></a>
+              <h4>ERROR_INVALID_URL</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.experimental.downloads.</span><span>ERROR_INVALID_URL</span>
+              </div>
+              <div>
+          <dt>
+            <var>ERROR_INVALID_URL</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <code>"Invalid URL."</code>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The URL was invalid.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </div> <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>
             <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-enter"></a> <!-- method-anchor -->
-              <h4>enter</h4>
+              <a name="method-download"></a> <!-- method-anchor -->
+              <h4>download</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.managedMode.enter</span>(<span class="optional"><span>function</span>
+                  <span>chrome.experimental.downloads.download</span>(<span class="null"><span>object</span>
+                      <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Shows a confirmation dialog, then puts the browser into managed mode. The callback parameter will be true if managed mode was entered successfully, false if the user cancelled the confirmation. If managed mode is already on, trying to enter it again will have no effect.</p>
+                <p>Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, <code>callback</code> will be called with the new DownloadItem’s <code>downloadId</code>. If there was an error starting the download, then <code>callback</code> will be called with <code>downloadId=undefined</code> and <code>chrome.extension.lastError</code> will be set. If both <code>filename</code> and <code>saveAs</code> are specified, then the Save As dialog will be displayed, pre-populated with the specified <code>filename</code>.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
+                    <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The URL to download.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>filename</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A file path relative to the Downloads directory to contain the downloaded file.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>saveAs</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Use a file-chooser to allow the user to select a filename.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>method</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["GET", "POST"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The HTTP method to use if the URL uses the HTTP[S] protocol.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>headers</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Extra HTTP headers to send with the request if the URL uses the HTTP[s] protocol, restricted to those allowed by XMLHttpRequest.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>body</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>post body</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
                     <div>
           <dt>
             <var>callback</var>
@@ -357,165 +563,27 @@
                     specify a function that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object result</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>integer downloadId</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>result</var>
+            <var>downloadId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>object</span>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The result of the attempt to enter managed mode.</dd>
+          <dd>If not null, the identifier of the resulting Download Item.</dd>
           <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>success</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>boolean</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>True if managed mode was entered successfully, false if the user cancelled the confirmation.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-get"></a> <!-- method-anchor -->
-              <h4>get</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.managedMode.get</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Gets the value of the setting describing whether managed mode is in effect.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object details</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>details</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Details of the currently effective value.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>value</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>boolean</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The value of the setting.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
@@ -531,7 +599,124 @@
           <!-- EVENTS -->
            <!-- /apiGroup -->
           <!-- TYPES -->
-           <!-- /apiGroup -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-HttpHeaders"></a>
+              <h4>HttpHeaders</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and either <code>value</code> or <code>binaryValue</code>.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Name of the HTTP header.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the HTTP header if it can be represented by UTF-8.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>binaryValue</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the HTTP header if it cannot be represented by UTF-8, stored as individual byte values (0..255).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
         </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->

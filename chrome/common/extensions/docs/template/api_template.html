@@ -83,14 +83,14 @@
 
           <!-- OBJECT METHODS -->
           <dd jsdisplay="$this.type === 'object' &&
-                         $this.functions && $this.functions.length > 0"
+                         filterDocumented($this.functions).length > 0"
               jsvalues="$scope:id">
             <div transclude="methodsTemplate"></div>
           </dd>
 
           <!-- OBJECT EVENT FIELDS -->
           <dd jsdisplay="$this.type === 'object' &&
-                         $this.events && $this.events.length > 0"
+                         filterDocumented($this.events).length > 0"
               jsvalues="$scope:id">
             <div transclude="eventsTemplate"></div>
           </dd>
@@ -125,33 +125,30 @@
               </li>
             </ol>
           </li>
-          <li id="methodsTocTemplate" jsdisplay="functions && functions.length > 0">
+          <li id="methodsTocTemplate" jsdisplay="filterDocumented(functions).length > 0">
             <a jsvalues=".href:'#' + getAnchorName('global', 'methods', $type)">Methods</a>
             <ol>
-              <li jsselect="functions.sort(sortByName)"
-                  jsdisplay="!disableDocs($this)">
+              <li jsselect="filterDocumented(functions).sort(sortByName)">
                 <a jscontent="name"
                    jsvalues=".href:'#' + getAnchorName('method', name, $type)"
                    href="#method-anchor">methodName</a>
               </li>
             </ol>
           </li>
-          <li id="eventsTocTemplate" jsdisplay="events && events.length > 0">
+          <li id="eventsTocTemplate" jsdisplay="filterDocumented(events).length > 0">
             <a jsvalues=".href:'#' + getAnchorName('global', 'events', $type)">Events</a>
             <ol>
-              <li jsselect="events.sort(sortByName)"
-                  jsdisplay="!disableDocs($this)">
+              <li jsselect="filterDocumented(events).sort(sortByName)">
                 <a jscontent="name"
                    jsvalues=".href:'#' + getAnchorName('event', name, $type)"
                    href="#event-anchor">eventName</a>
               </li>
             </ol>
           </li>
-          <li id="typesTocTemplate" jsdisplay="types && types.length > 0">
+          <li id="typesTocTemplate" jsdisplay="filterDocumented(types).length > 0">
             <a href="#types">Types</a>
             <ol>
-              <li jsselect="types.sort(sortByName)"
-                  jsdisplay="!($this.nodoc)">
+              <li jsselect="filterDocumented(types).sort(sortByName)">
                 <a jscontent="id"
                    jsvalues=".href:'#type-' + id"
                    href="#id-anchor">id</a>
@@ -376,13 +373,12 @@
 
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup"
-               jsdisplay="$this.functions && $this.functions.length > 0">
+               jsdisplay="filterDocumented($this.functions).length > 0">
             <a jsvalues=".name:getAnchorName('global', 'methods', $scope)"></a>
             <h3 jscontent="$scope ? 'Methods of ' + $scope : 'Methods'">Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" jsselect="functions.sort(sortByName)"
-                 jsdisplay="!disableDocs($this)">
+            <div class="apiItem" jsselect="filterDocumented(functions).sort(sortByName)">
               <a jsvalues=".name:getAnchorName('method', name, $scope)"></a> <!-- method-anchor -->
               <h4 jscontent="name">method name</h4>
 
@@ -454,12 +450,11 @@
 
           <!-- EVENTS -->
           <div id="eventsTemplate" class="apiGroup"
-               jsdisplay="$this.events && $this.events.length > 0">
+               jsdisplay="filterDocumented($this.events).length > 0">
             <a jsvalues=".name:getAnchorName('global', 'events', $scope)"></a>
             <h3 jscontent="$scope ? 'Events of ' + $scope : 'Events'">Events</h3>
             <!-- iterates over all events -->
-            <div class="apiItem" jsselect="$this.events.sort(sortByName)"
-                 jsdisplay="!disableDocs($this)">
+            <div class="apiItem" jsselect="filterDocumented($this.events).sort(sortByName)">
               <a jsvalues=".name:getAnchorName('event', name, $scope)"></a>
               <h4 jscontent="name">event name</h4>
 
@@ -511,13 +506,12 @@
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div jsdisplay="types && types.length > 0" class="apiGroup">
+          <div jsdisplay="filterDocumented(types).length > 0" class="apiGroup">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 
             <!-- iterates over all types -->
-            <div jsselect="types.sort(sortByName)" jsdisplay="!($this.nodoc)"
-                 class="apiItem">
+            <div jsselect="filterDocumented(types).sort(sortByName)" class="apiItem">
               <a jsvalues=".name:'type-' + id"></a>
               <h4 jscontent="id">type name</h4>
 
