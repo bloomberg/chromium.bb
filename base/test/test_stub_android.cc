@@ -201,11 +201,4 @@ void MessagePumpForUI::ScheduleWork() {}
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
 }
 
-// TODO(michaelbai): The below PathProviderAndroid was added because we
-// excluded base_paths_android.cc which requires JNI to compile. Remove them
-// when this file added.
-bool PathProviderAndroid(int key, FilePath* result) {
-  return false;
-}
-
 }  // namespace base

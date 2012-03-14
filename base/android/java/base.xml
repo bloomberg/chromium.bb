@@ -2,10 +2,13 @@
   <description>
     building base java source code with ant
   </description>
-  <!-- set global properties for this build -->
+  <!-- Set global properties for this build -->
+  <property environment="env"/>
+  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
   <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
+  <property name="dist" location="dist"/>
 
   <target name="init">
     <!-- Create the time stamp -->
@@ -17,7 +20,11 @@
   <target name="compile" depends="init"
           description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}">
+      <classpath>
+        <path location="${sdk.dir}/platforms/android-${sdk.version}/android.jar"/>
+      </classpath>
+    </javac>
   </target>
 
   <target name="dist" depends="compile"
