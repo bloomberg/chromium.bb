@@ -364,8 +364,8 @@ bool NaClProcessHost::Launch(
   return true;
 }
 
-scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(FilePath nacl_gdb,
-                                                           CommandLine* line) {
+scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(
+    const FilePath& nacl_gdb, CommandLine* line) {
   CommandLine* cmd_line = new CommandLine(nacl_gdb);
   // We can't use PrependWrapper because our parameters contain spaces.
   cmd_line->AppendArg("--eval-command");

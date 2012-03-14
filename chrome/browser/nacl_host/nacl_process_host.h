@@ -57,7 +57,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   struct NaClInternal;
 
   // Create command line for launching loader under nacl-gdb.
-  scoped_ptr<CommandLine> LaunchWithNaClGdb(FilePath nacl_gdb,
+  scoped_ptr<CommandLine> LaunchWithNaClGdb(const FilePath& nacl_gdb,
                                             CommandLine* line);
   bool LaunchSelLdr();
 
