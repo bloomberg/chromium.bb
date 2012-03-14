@@ -30,6 +30,8 @@ class TestFullscreen : public TestCase {
   virtual bool HandleInputEvent(const pp::InputEvent& event);
   virtual void DidChangeView(const pp::View& view);
 
+  void CheckPluginPaint();
+
  private:
   std::string TestGetScreenSize();
   std::string TestNormalToFullscreenToNormal();
@@ -49,6 +51,8 @@ class TestFullscreen : public TestCase {
   pp::Fullscreen screen_mode_;
   pp::Size screen_size_;
   pp::Rect normal_position_;
+  pp::Size painted_size_;
+  uint32_t painted_color_;
 
   bool fullscreen_pending_;
   bool normal_pending_;

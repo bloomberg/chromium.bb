@@ -43,7 +43,8 @@ bool HasMidScreen(const pp::Rect& position, const pp::Size& screen_size) {
   return (position.Contains(mid_x, mid_y));
 }
 
-void FlushCallback(void* user_data, int32_t result) {
+void FlushCallbackCheckImageData(void* data, int32_t result) {
+  static_cast<TestFullscreen*>(data)->CheckPluginPaint();
 }
 
 }  // namespace
@@ -52,6 +53,7 @@ TestFullscreen::TestFullscreen(TestingInstance* instance)
     : TestCase(instance),
       error_(),
       screen_mode_(instance),
+      painted_color_(0),
       fullscreen_pending_(false),
       normal_pending_(false),
       set_fullscreen_true_callback_(instance->pp_instance()),
@@ -135,6 +137,8 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
     return ReportError("SetFullscreen(false) in fullscreen", false);
   // DidChangeView() will call the callback once out of fullscreen mode.
   normal_callback_.WaitForResult();
+  if (GotError())
+    return Error();
   if (normal_pending_)
     return "normal_pending_ has not been reset";
   if (screen_mode_.IsFullscreen())
@@ -209,9 +213,10 @@ bool TestFullscreen::HandleInputEvent(const pp::InputEvent& event) {
 }
 
 bool TestFullscreen::PaintPlugin(pp::Size size, ColorPremul color) {
+  painted_size_ = size;
   PP_ImageDataFormat image_format = pp::ImageData::GetNativeImageDataFormat();
-  uint32_t pixel_color = FormatColor(image_format, color);
-  if (pixel_color == 0)
+  painted_color_ = FormatColor(image_format, color);
+  if (painted_color_ == 0)
     return false;
   pp::Point origin(0, 0);
 
@@ -221,29 +226,39 @@ bool TestFullscreen::PaintPlugin(pp::Size size, ColorPremul color) {
   uint32_t* pixels = static_cast<uint32_t*>(image.data());
   int num_pixels = image.stride() / kBytesPerPixel * image.size().height();
   for (int i = 0; i < num_pixels; i++)
-    pixels[i] = pixel_color;
+    pixels[i] = painted_color_;
   graphics2d_.PaintImageData(image, origin);
-  pp::CompletionCallback cc(FlushCallback, NULL);
+  pp::CompletionCallback cc(FlushCallbackCheckImageData, this);
   if (graphics2d_.Flush(cc) != PP_OK_COMPLETIONPENDING)
     return false;
 
-  // Confirm that painting was successful.
-  pp::ImageData readback(instance_, image_format, graphics2d_.size(), false);
-  if (readback.is_null())
-    return false;
-  if (PP_TRUE != testing_interface_->ReadImageData(graphics2d_.pp_resource(),
+  return true;
+}
+
+void TestFullscreen::CheckPluginPaint() {
+  PP_ImageDataFormat image_format = pp::ImageData::GetNativeImageDataFormat();
+  pp::ImageData readback(instance_, image_format, painted_size_, false);
+  pp::Point origin(0, 0);
+  if (readback.is_null() ||
+      PP_TRUE != testing_interface_->ReadImageData(graphics2d_.pp_resource(),
                                                    readback.pp_resource(),
-                                                   &origin.pp_point()))
-    return false;
-  bool error = false;
-  for (int y = 0; y < size.height() && !error; y++) {
-    for (int x = 0; x < size.width() && !error; x++) {
+                                                   &origin.pp_point())) {
+    error_ = "Can't read plugin image";
+    return;
+  }
+  for (int y = 0; y < painted_size_.height(); y++) {
+    for (int x = 0; x < painted_size_.width(); x++) {
       uint32_t* readback_color = readback.GetAddr32(pp::Point(x, y));
-      if (pixel_color != *readback_color)
-        return false;
+      if (painted_color_ != *readback_color) {
+        error_ = "Plugin image contains incorrect pixel value";
+        return;
+      }
     }
   }
-  return true;
+  if (screen_mode_.IsFullscreen())
+    PassFullscreenTest();
+  else
+    PassNormalTest();
 }
 
 // Transitions to/from fullscreen is asynchronous ending at DidChangeView.
@@ -261,11 +276,8 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
   pp::Rect position = view.GetRect();
   pp::Rect clip = view.GetClipRect();
 
-  if (normal_position_.IsEmpty()) {
+  if (normal_position_.IsEmpty())
     normal_position_ = position;
-    if (!PaintPlugin(position.size(), kSheerRed))
-      error_ = "Failed to initialize plugin image";
-  }
 
   bool is_fullscreen = screen_mode_.IsFullscreen();
   if (fullscreen_pending_ && is_fullscreen) {
@@ -280,8 +292,6 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
       FailFullscreenTest("Failed to BindGraphics() in fullscreen");
     else if (!PaintPlugin(position.size(), kOpaqueYellow))
       FailFullscreenTest("Failed to paint plugin image in fullscreen");
-    else
-      PassFullscreenTest();
   } else if (normal_pending_ && !is_fullscreen) {
     normal_pending_ = false;
     if (screen_mode_.IsFullscreen())
@@ -292,7 +302,5 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
       FailNormalTest("Failed to BindGraphics() in normal");
     else if (!PaintPlugin(position.size(), kSheerBlue))
       FailNormalTest("Failed to paint plugin image in normal");
-    else
-      PassNormalTest();
   }
 }
