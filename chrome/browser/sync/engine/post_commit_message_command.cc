@@ -25,8 +25,9 @@ SyncerError PostCommitMessageCommand::ExecuteImpl(
   ClientToServerResponse response;
   syncable::Directory* dir = session->context()->directory();
   sessions::StatusController* status = session->mutable_status_controller();
-  if (!SyncerProtoUtil::PostClientToServerMessage(status->commit_message(),
-          &response, session)) {
+  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
+      status->commit_message(), &response, session);
+  if (result != SYNCER_OK) {
     // None of our changes got through.  Clear the SYNCING bit which was
     // set to true during BuildCommitCommand, and which may still be true.
     // Not to be confused with IS_UNSYNCED, this bit is used to detect local
@@ -37,11 +38,10 @@ SyncerError PostCommitMessageCommand::ExecuteImpl(
       syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);
       entry.Put(syncable::SYNCING, false);
     }
-    return SYNCER_OK; // TODO(rlarocque): Return an error here.
-  } else {
-    status->set_items_committed();
+    return result;
   }
 
+  status->set_items_committed();
   status->mutable_commit_response()->CopyFrom(response);
   return SYNCER_OK;
 }
