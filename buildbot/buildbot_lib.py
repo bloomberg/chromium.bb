@@ -44,6 +44,9 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Inside toolchain build.')
   parser.add_option('--clang', dest='clang', default=False,
                     action='store_true', help='Build trusted code with Clang.')
+  parser.add_option('--validator', dest='validator', default=False,
+                    action='store_true',
+                    help='Only run validator regression test')
   parser.add_option('--asan', dest='asan', default=False,
                     action='store_true', help='Build trusted code with ASan.')
   parser.add_option('--step-suffix', metavar='SUFFIX', default='',
@@ -72,6 +75,7 @@ def ParseStandardCommandLine(context):
   context['mode'] = mode
   context['bits'] = bits
   context['clang'] = options.clang
+  context['validator'] = options.validator
   context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
   context['gyp_mode'] = {'opt': 'Release', 'dbg': 'Debug'}[mode]

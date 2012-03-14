@@ -71,7 +71,7 @@ BOT_ASSIGNMENT = {
     'lucid-64-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'lucid-64-validator-opt':
-        'true',  # TODO(bradnelson): add a real build when archive is in place.
+        python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'lucid-32-bare-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'lucid-32-bare-glibc-opt':
@@ -175,7 +175,7 @@ BOT_ASSIGNMENT = {
     'nacl-lucid64_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc',
     'nacl-lucid64_validator_opt':
-        'true',  # TODO(bradnelson): add a real build when archive is in place.
+        python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
     'nacl-lucid64_newlib_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh newlib',
     'nacl-lucid64_glibc_dbg_valgrind':

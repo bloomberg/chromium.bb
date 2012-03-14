@@ -184,6 +184,18 @@ def BuildScript(status, context):
     with Step('update_clang', status):
       Command(context, cmd=['../tools/clang/scripts/update.sh'])
 
+  # Just build both bitages of validator and test for --validator mode.
+  if context['validator']:
+    with Step('ncval-x86-32', status):
+      SCons(context, platform='x86-32', parallel=True, args=['ncval'])
+    with Step('ncval-x86-64', status):
+      SCons(context, platform='x86-64', parallel=True, args=['ncval'])
+    with Step('validator_regression_test', status):
+      Command(context,
+          cmd=[sys.executable,
+               'tests/validator_regression/validator_regression_test.py'])
+    return
+
   # Make sure our Gyp build is working.
   with Step('gyp_compile', status):
     if context.Windows():
@@ -202,7 +214,6 @@ def BuildScript(status, context):
                             '-configuration', context['gyp_mode']])
     else:
       raise Exception('Unknown platform')
-
 
   # The main compile step.
   with Step('scons_compile', status):
