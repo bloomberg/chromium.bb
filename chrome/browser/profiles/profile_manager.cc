@@ -795,6 +795,9 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 
 #if defined(OS_WIN)
 void ProfileManager::CreateDesktopShortcut(Profile* profile) {
+  // TODO(sail): Disable creating new shortcuts for now.
+  return;
+
   // Some distributions and tests cannot create desktop shortcuts, in which case
   // profile_shortcut_manager_ will not be set.
   if (!profile_shortcut_manager_.get())
