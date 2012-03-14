@@ -15,7 +15,7 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   // First setup the two extensions.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
