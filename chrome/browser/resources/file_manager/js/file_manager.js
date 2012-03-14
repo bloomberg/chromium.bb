@@ -1277,50 +1277,42 @@ FileManager.prototype = {
                                  this.onGridOrTableMouseDown_.bind(this));
   };
 
+  FileManager.prototype.initButter_ = function() {
+    var self = this;
+    var progress = this.copyManager_.getProgress();
+
+    var options = {progress: progress.percentage, actions:{}};
+    options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
+      self.copyManager_.requestCancel();
+    };
+    this.showButter(strf('PASTE_ITEMS_REMAINING', progress.pendingItems),
+                    options);
+  };
+
   FileManager.prototype.onCopyProgress_ = function(event) {
-    var status = this.copyManager_.getStatus();
-
-    // TODO(bshe): Need to figure out a way to get completed bytes in real
-    // time. We currently use completedItems and totalItems to estimate the
-    // progress. There are completeBytes and totalBytes ready to use.
-    // However, the completedBytes is not in real time. It only updates
-    // itself after each item finished. So if there is a large item to
-    // copy, the progress bar will stop moving until it finishes and jump
-    // a large portion of the bar.
-    // There is case that when user copy a large file, we want to show an
-    // 100% animated progress bar. So we use completedItems + 1 here.
-    var progress = (status.completedItems + 1) / status.totalItems;
-
-    // If the files we're copying is larger than 100MB or more than 25,
-    // update the user on the current status with a progress bar and give
-    // an option to cancel. The rule of thumb here is if the pasting
-    // process is less than 500ms. We dont want to show progress bar.
-    var shouldShow = status.totalItems > 0 &&
-                     status.completedItems < status.totalItems &&
-                     (status.totalBytes > 100000000 || status.totalItems > 25);
+    var progress = this.copyManager_.getProgress();
 
     if (event.reason == 'BEGIN') {
-      if (shouldShow) {
-        var self = this;
-        var options = {timeout:0, progress: progress, actions:{}};
-        // We can't cancel the operation when pasting one file.
-        if (status.totalItems > 1) {
-          options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
-            self.copyManager_.requestCancel();
-          };
-        }
-        this.showButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
-                             options);
-      }
+      if (this.currentButter_)
+        this.hideButter();
+
+      clearTimeout(this.butterTimeout_);
+      // If the copy process lasts more than 500 ms, we show a progress bar.
+      this.butterTimeout_ = setTimeout(this.initButter_.bind(this), 500);
+      return;
     }
-    else if (event.reason == 'PROGRESS') {
-      if (shouldShow) {
-        var options = {timeout:0, progress: progress};
-        this.updateButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
-                               options);
+    if (event.reason == 'PROGRESS') {
+      // Perform this check inside Progress event handler, avoid to log error
+      // message 'Unknown event reason: PROGRESS' in console.
+      if (this.currentButter_) {
+        var options = {progress: progress.percentage};
+        this.updateButter(strf('PASTE_ITEMS_REMAINING', progress.pendingItems),
+                          options);
       }
+      return;
     }
-    else if (event.reason == 'SUCCESS') {
+    if (event.reason == 'SUCCESS') {
+      clearTimeout(this.butterTimeout_);
       if (this.currentButter_)
         this.hideButter();
 
@@ -1343,6 +1335,7 @@ FileManager.prototype = {
         this.directoryModel_.rescanLater();
       }
     } else if (event.reason == 'ERROR') {
+      clearTimeout(this.butterTimeout_);
       switch (event.error.reason) {
         case 'TARGET_EXISTS':
           var name = event.error.data.name;
@@ -2996,10 +2989,6 @@ FileManager.prototype = {
 
     if (!event.clipboardData.getData('fs/isCut'))
       return;
-
-    // Pass an empty string so that the butter bar remains invisible until
-    // the first progress update. This prevents the flicker on short operations.
-    this.showButter('', {timeout: 0});
 
     var clipboard = {
       isCut: event.clipboardData.getData('fs/isCut'),

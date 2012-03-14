@@ -60,22 +60,38 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 }
 
-FileCopyManager.Task.prototype.takeNextEntry = function() {
-  if (this.pendingDirectories.length)
-    return this.pendingDirectories.shift();
+FileCopyManager.Task.prototype.getNextEntry = function() {
+  // We should keep the file in pending list and remove it after complete.
+  // Otherwise, if we try to get status in the middle of copying. The returned
+  // status is wrong (miss count the pasting item in totalItems).
+  if (this.pendingDirectories.length) {
+    this.pendingDirectories[0].inProgress = true;
+    return this.pendingDirectories[0];
+  }
 
-  if (this.pendingFiles.length)
-    return this.pendingFiles.shift();
+  if (this.pendingFiles.length) {
+    this.pendingFiles[0].inProgress = true;
+    return this.pendingFiles[0];
+  }
 
   return null;
 };
 
 FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
-  if (entry.isDirectory) {
+  // It is probably not safe to directly remove the first entry in pending list.
+  // We need to check if the removed entry (srcEntry) corresponding to the added
+  // entry (target entry).
+  if (entry.isDirectory && this.pendingDirectories &&
+      this.pendingDirectories[0].inProgress) {
     this.completedDirectories.push(entry);
-  } else {
+    this.pendingDirectories.shift();
+  } else if (this.pendingFiles && this.pendingFiles[0].inProgress) {
     this.completedFiles.push(entry);
     this.completedBytes += size;
+    this.pendingFiles.shift();
+  } else {
+    throw new Error('Try to remove a source entry which is not correspond to' +
+                    ' the finished target entry');
   }
 };
 
@@ -133,14 +149,13 @@ FileCopyManager.prototype.getStatus = function() {
     rv.pendingFiles += task.pendingFiles.length;
     rv.pendingDirectories += task.pendingDirectories.length;
     rv.pendingBytes += task.pendingBytes;
-    rv.pendingItems += rv.pendingFiles + rv.pendingDirectories;
 
     rv.completedFiles += task.completedFiles.length;
     rv.completedDirectories += task.completedDirectories.length;
     rv.completedBytes += task.completedBytes;
-    rv.completedItems += rv.completedFiles + rv.completedDirectories;
-
   }
+  rv.pendingItems = rv.pendingFiles + rv.pendingDirectories;
+  rv.completedItems = rv.completedFiles + rv.completedDirectories;
 
   rv.totalFiles = rv.pendingFiles + rv.completedFiles;
   rv.totalDirectories = rv.pendingDirectories + rv.completedDirectories;
@@ -148,6 +163,40 @@ FileCopyManager.prototype.getStatus = function() {
   rv.totalBytes = rv.pendingBytes + rv.completedBytes;
 
   return rv;
+};
+
+/**
+ * Get the overall progress data of all queued copy tasks.
+ * @return {Object} An object containing the following parameters:
+ *    percentage - The percentage (0-1) of finished items.
+ *    pendingItems - The number of pending/unfinished items.
+ */
+FileCopyManager.prototype.getProgress = function() {
+  var status = this.getStatus();
+  return {
+    // TODO(bshe): Need to figure out a way to get completed bytes in real
+    // time. We currently use completedItems and totalItems to estimate the
+    // progress. There are completeBytes and totalBytes ready to use.
+    // However, the completedBytes is not in real time. It only updates
+    // itself after each item finished. So if there is a large item to
+    // copy, the progress bar will stop moving until it finishes and jump
+    // a large portion of the bar.
+    // There is case that when user copy a large file, we want to show an
+    // 100% animated progress bar. So we use completedItems + 1 here.
+    percentage: (status.completedItems + 1) / status.totalItems,
+    pendingItems: status.pendingItems
+  };
+};
+
+/**
+ * Dispatch a simple copy-progress event with reason and optional err data.
+ */
+FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
+  var event = new cr.Event('copy-progress');
+  event.reason = reason;
+  if (opt_err)
+    event.error = opt_err;
+  this.dispatchEvent(event);
 };
 
 /**
@@ -176,9 +225,7 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
  * Perform the bookeeping required to cancel.
  */
 FileCopyManager.prototype.doCancel_ = function() {
-  var event = new cr.Event('copy-progress');
-  event.reason = 'CANCELLED';
-  this.dispatchEvent(event);
+  this.sendProgressEvent_('CANCELLED');
   this.resetQueue_();
 };
 
@@ -207,10 +254,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry,
   };
 
   function onPathError(err) {
-    var event = new cr.Event('copy-progress');
-    event.reason = 'ERROR';
-    event.error = new FileCopyManager.Error('FILESYSTEM_ERROR', err);
-    self.dispatchEvent(event);
+    self.sendProgressEvent_('ERROR',
+                            new FileCopyManager.Error('FILESYSTEM_ERROR', err));
   }
 
   function onSourceEntryFound(dirEntry) {
@@ -279,6 +324,10 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
     if (self.copyTasks_.length == 1) {
       // This moved us from 0 to 1 active tasks, let the servicing begin!
       self.serviceAllTasks_();
+    } else {
+      // Force to update the progress of butter bar when there are new tasks
+      // coming while servicing current task.
+      self.sendProgressEvent_('PROGRESS');
     }
   });
 
@@ -293,28 +342,31 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
   var self = this;
 
   function onTaskError(err) {
-    var event = new cr.Event('copy-progress');
-    event.reason = 'ERROR';
-    event.error = err;
-    self.dispatchEvent(event);
+    self.sendProgressEvent_('ERROR', err);
     self.resetQueue_();
   }
 
   function onTaskSuccess(task) {
-    if (task == null) {
+    if (!self.copyTasks_.length) {
       // All tasks have been serviced, clean up and exit.
-      var event = new cr.Event('copy-progress');
-      event.reason = 'SUCCESS';
-      self.dispatchEvent(event);
+      self.sendProgressEvent_('SUCCESS');
       self.resetQueue_();
       return;
     }
+
+    // We want to dispatch a PROGRESS event when there are more tasks to serve
+    // right after one task finished in the queue. We treat all tasks as one
+    // big task logically, so there is only one BEGIN/SUCCESS event pair for
+    // these continuous tasks.
+    self.sendProgressEvent_('PROGRESS');
 
     self.serviceNextTask_(onTaskSuccess, onTaskError);
   }
 
   // If the queue size is 1 after pushing our task, it was empty before,
-  // so we need to kick off queue processing.
+  // so we need to kick off queue processing and dispatch BEGIN event.
+
+  this.sendProgressEvent_('BEGIN');
   this.serviceNextTask_(onTaskSuccess, onTaskError);
 };
 
@@ -325,11 +377,6 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     successCallback, errorCallback) {
   if (this.maybeCancel_())
     return;
-
-  if (!this.copyTasks_.length) {
-    successCallback(null);
-    return;
-  }
 
   var self = this;
   var task = this.copyTasks_[0];
@@ -359,7 +406,9 @@ FileCopyManager.prototype.serviceNextTask_ = function(
   }
 
   function onEntryServiced(targetEntry, size) {
-    if (!targetEntry) {
+    // We should not dispatch a PROGRESS event when there is no pending items
+    // in the task.
+    if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
       // All done with the entries in this task.
       // If files are moved within GData, FileEntry.moveTo() is used and
       // there is no need to delete the original files.
@@ -371,9 +420,7 @@ FileCopyManager.prototype.serviceNextTask_ = function(
       return;
     }
 
-    var event = new cr.Event('copy-progress');
-    event.reason = 'PROGRESS';
-    self.dispatchEvent(event);
+    self.sendProgressEvent_('PROGRESS');
 
     // We yield a few ms between copies to give the browser a chance to service
     // events (like perhaps the user clicking to cancel the copy, for example).
@@ -382,9 +429,6 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     }, 10);
   }
 
-  var event = new cr.Event('copy-progress');
-  event.reason = 'BEGIN';
-  this.dispatchEvent(event);
   this.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
 }
 
@@ -397,7 +441,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     return;
 
   var self = this;
-  var sourceEntry = task.takeNextEntry();
+  var sourceEntry = task.getNextEntry();
 
   if (!sourceEntry) {
     // All entries in this task have been copied.
