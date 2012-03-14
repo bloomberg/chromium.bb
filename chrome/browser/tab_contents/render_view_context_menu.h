@@ -167,7 +167,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) = 0;
-  virtual void LookUpInDictionary();
 
   // Attempts to get an ExtensionMenuItem given the id of a context menu item.
   ExtensionMenuItem* GetExtensionMenuItem(int id) const;
@@ -180,7 +179,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // True if we are showing for an external tab contents. The default is false.
   bool external_;
-
 
   // Maps the id from a context menu item to the ExtensionMenuItem's internal
   // id.
@@ -236,7 +234,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       const std::vector<ExtensionMenuItem*>& items,
       bool can_cross_incognito,
       ui::SimpleMenuModel* menu_model,
-      int *index);
+      int* index);
   // This will set the icon on the most recently-added item in the menu_model_.
   void SetExtensionIcon(const std::string& extension_id);
 

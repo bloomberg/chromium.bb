@@ -672,11 +672,6 @@ void RenderViewContextMenu::AppendPopupExtensionItems() {
   AppendDeveloperItems();
 }
 
-void RenderViewContextMenu::LookUpInDictionary() {
-  // Used only in the Mac port.
-  NOTREACHED();
-}
-
 void RenderViewContextMenu::AddMenuItem(int command_id,
                                         const string16& title) {
   menu_model_.AddItem(command_id, title);
@@ -1329,10 +1324,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           WebContextMenuData::CheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_MENU:
       return true;
-    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
-      // This is OK because the menu is not shown when it isn't
-      // appropriate.
-      return true;
 #elif defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.
     case IDC_INPUT_METHODS_MENU:
@@ -1423,7 +1414,7 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id) {
-  return ExecuteCommand(id, 0);
+  ExecuteCommand(id, 0);
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
@@ -1806,9 +1797,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       rvh->NotifyTextDirection();
       break;
     }
-    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
-      LookUpInDictionary();
-      break;
 #endif  // OS_MACOSX
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS: {
       content::RecordAction(

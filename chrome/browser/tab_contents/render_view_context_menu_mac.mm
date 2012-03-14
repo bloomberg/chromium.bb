@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,16 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
+
+// These are not documented, so use only after checking -respondsToSelector:.
+@interface NSApplication (UndocumentedSpeechMethods)
+- (void)speakString:(NSString*)string;
+- (void)stopSpeaking:(id)sender;
+- (BOOL)isSpeaking;
+@end
 
 namespace {
 
@@ -53,6 +61,7 @@ RenderViewContextMenuMac::RenderViewContextMenuMac(
     const content::ContextMenuParams& params,
     NSView* parent_view)
     : RenderViewContextMenu(web_contents, params),
+      ALLOW_THIS_IN_INITIALIZER_LIST(speech_submenu_model_(this)),
       parent_view_(parent_view) {
 }
 
@@ -61,7 +70,7 @@ RenderViewContextMenuMac::~RenderViewContextMenuMac() {
 
 void RenderViewContextMenuMac::PlatformInit() {
   InitPlatformMenu();
-  menuController_.reset(
+  menu_controller_.reset(
       [[MenuController alloc] initWithModel:&menu_model_
                      useWithPopUpButtonCell:NO]);
 
@@ -93,7 +102,7 @@ void RenderViewContextMenuMac::PlatformInit() {
     base::mac::ScopedSendingEvent sendingEventScoper;
 
     // Show the menu.
-    [NSMenu popUpContextMenu:[menuController_ menu]
+    [NSMenu popUpContextMenu:[menu_controller_ menu]
                    withEvent:clickEvent
                      forView:parent_view_];
   }
@@ -107,7 +116,48 @@ void RenderViewContextMenuMac::ExecuteCommand(int id) {
       [BrowserWindowController browserWindowControllerForWindow:parent_window];
   [controller commitInstant];  // It's ok if controller is nil.
 
-  RenderViewContextMenu::ExecuteCommand(id);
+  ExecuteCommand(id, 0);
+}
+
+void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+      LookUpInDictionary();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING:
+      StartSpeaking();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING:
+      StopSpeaking();
+      break;
+
+    default:
+      RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
+      break;
+  }
+}
+
+bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
+    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+      // This is OK because the menu is not shown when it isn't
+      // appropriate.
+      return true;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING:
+      // This is OK because the menu is not shown when it isn't
+      // appropriate.
+      return true;
+
+    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING:
+      return [NSApp respondsToSelector:@selector(isSpeaking)] &&
+             [NSApp isSpeaking];
+
+    default:
+      return RenderViewContextMenu::IsCommandIdEnabled(command_id);
+  }
 }
 
 bool RenderViewContextMenuMac::GetAcceleratorForCommandId(
@@ -120,12 +170,26 @@ void RenderViewContextMenuMac::InitPlatformMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (has_selection) {
-      menu_model_.AddSeparator();
-      menu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
-          IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);
-  }
+    menu_model_.AddSeparator();
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
+        IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);
 
+    // Add speech items only if NSApp supports the private API we're using.
+    if ([NSApp respondsToSelector:@selector(speakString:)] &&
+        [NSApp respondsToSelector:@selector(stopSpeaking:)]) {
+      speech_submenu_model_.AddItemWithStringId(
+          IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING,
+          IDS_CONTENT_CONTEXT_SPEECH_START_SPEAKING);
+      speech_submenu_model_.AddItemWithStringId(
+          IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING,
+          IDS_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING);
+      menu_model_.AddSubMenu(
+          IDC_CONTENT_CONTEXT_SPEECH_MENU,
+          l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPEECH_MENU),
+          &speech_submenu_model_);
+    }
+  }
 }
 
 void RenderViewContextMenuMac::LookUpInDictionary() {
@@ -143,11 +207,20 @@ void RenderViewContextMenuMac::LookUpInDictionary() {
     NSPerformService(@"Look Up in Dictionary", pboard);
 }
 
+void RenderViewContextMenuMac::StartSpeaking() {
+  NSString* text = base::SysUTF16ToNSString(params_.selection_text);
+  [NSApp speakString:text];
+}
+
+void RenderViewContextMenuMac::StopSpeaking() {
+  [NSApp stopSpeaking:menu_controller_];
+}
+
 void RenderViewContextMenuMac::UpdateMenuItem(int command_id,
                                               bool enabled,
                                               bool hidden,
                                               const string16& title) {
-  NSMenuItem* item = GetMenuItemByID(&menu_model_, [menuController_ menu],
+  NSMenuItem* item = GetMenuItemByID(&menu_model_, [menu_controller_ menu],
                                      command_id);
   if (!item)
     return;
