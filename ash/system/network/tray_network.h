@@ -15,7 +15,6 @@ namespace internal {
 
 namespace tray {
 class NetworkDefaultView;
-class NetworkDetailedView;
 class NetworkTrayView;
 }
 
@@ -39,7 +38,6 @@ class TrayNetwork : public SystemTrayItem,
 
   scoped_ptr<tray::NetworkTrayView> tray_;
   scoped_ptr<tray::NetworkDefaultView> default_;
-  scoped_ptr<tray::NetworkDetailedView> detailed_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

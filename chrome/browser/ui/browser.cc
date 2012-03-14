@@ -641,7 +641,7 @@ bool Browser::is_devtools() const {
 // Browser, Creation Helpers:
 
 // static
-Browser* Browser::NewEmptyWindow(Profile* profile) {
+void Browser::NewEmptyWindow(Profile* profile) {
   bool incognito = profile->IsOffTheRecord();
   PrefService* prefs = profile->GetPrefs();
   if (incognito) {
@@ -659,25 +659,23 @@ Browser* Browser::NewEmptyWindow(Profile* profile) {
 
   if (incognito) {
     content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
-    return OpenEmptyWindow(profile->GetOffTheRecordProfile());
+    OpenEmptyWindow(profile->GetOffTheRecordProfile());
   } else {
     content::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile->GetOriginalProfile());
     if (!session_service ||
         !session_service->RestoreIfNecessary(std::vector<GURL>())) {
-      return OpenEmptyWindow(profile->GetOriginalProfile());
+      OpenEmptyWindow(profile->GetOriginalProfile());
     }
   }
-  return NULL;
 }
 
 // static
-Browser* Browser::OpenEmptyWindow(Profile* profile) {
+void Browser::OpenEmptyWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->AddBlankTab(true);
   browser->window()->Show();
-  return browser;
 }
 
 // static

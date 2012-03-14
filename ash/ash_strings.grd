@@ -190,18 +190,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
-        Network
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
-        Network settings ...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
-        Change proxy settings ...
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_AIRPLANE_MODE" desc="The label used in the network dialog to turn on airplane mode.">
-        Airplane mode
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
       </message>

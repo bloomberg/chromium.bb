@@ -260,9 +260,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowDateSettings() OVERRIDE {
   }
 
-  virtual void ShowNetworkSettings() OVERRIDE {
-  }
-
   virtual void ShowHelp() OVERRIDE {
   }
 
@@ -285,20 +282,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShutDown() OVERRIDE {}
   virtual void SignOut() OVERRIDE {}
   virtual void RequestLockScreen() OVERRIDE {}
-  virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
+  virtual NetworkIconInfo GetMostRelevantNetworkIcon() {
     return NetworkIconInfo();
-  }
-  virtual void GetAvailableNetworks(
-      std::vector<NetworkIconInfo>* list) OVERRIDE {
-  }
-
-  virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
-  }
-
-  virtual void ToggleAirplaneMode() OVERRIDE {
-  }
-
-  virtual void ChangeProxySettings() OVERRIDE {
   }
 
   bool muted_;

@@ -239,9 +239,6 @@
         <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="aura/status_brightness.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_SETTINGS" file="aura/status_settings.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="aura/status_power_small_all.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="aura/status_network_airplane.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_MORE" file="aura/status_more.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LESS" file="aura/status_less.png" type="BINDATA" />
 
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
       </if>
