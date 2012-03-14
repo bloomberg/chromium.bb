@@ -526,8 +526,8 @@ class Zygote {
   bool HandleGetSandboxStatus(int fd,
                               const Pickle& pickle,
                               PickleIterator iter) {
-    if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_)) !=
-                     sizeof(sandbox_flags_))) {
+    if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_))) !=
+                     sizeof(sandbox_flags_)) {
       PLOG(ERROR) << "write";
     }
 
