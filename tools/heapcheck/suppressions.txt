@@ -1776,8 +1776,9 @@
    bug_116996_a
    Heapcheck:Leak
    fun:chromeos::UserManagerImpl::CreateUser
+   ...
    fun:chromeos::UserManagerImpl::UserLoggedIn
-   fun:chromeos::OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test::TestBody
+   fun:chromeos::*_Test::TestBody
 }
 {
    bug_116996_b
@@ -1795,11 +1796,8 @@
    fun:ui::ResourceBundle::LoadBitmap
    fun:ui::ResourceBundle::GetImageNamed
    fun:ui::ResourceBundle::GetBitmapNamed
-   fun:chromeos::GetDefaultImage
-   fun:chromeos::UserManagerImpl::SaveUserDefaultImageIndex
-   fun:chromeos::UserManagerImpl::SetInitialUserImage
-   fun:chromeos::UserManagerImpl::UserLoggedIn
-   fun:chromeos::OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test::TestBody
+   ...
+   fun:chromeos::*_Test::TestBody
 }
 {
    bug_116996_c
@@ -1807,7 +1805,15 @@
    fun:std::string::_Rep::_S_create
    fun:std::string::copy
    fun:std::basic_string::basic_string
-   fun:chromeos::OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test::TestBody
+   fun:chromeos::*_Test::TestBody
+}
+{
+   bug_116996_d
+   Heapcheck:Leak
+   fun:chromeos::UserManagerImpl::CreateUser
+   fun:chromeos::UserManagerImpl::EnsureUsersLoaded
+   fun:chromeos::UserManagerImpl::GetUsers
+   fun:chromeos::UserManagerTest_*_Test::TestBody
 }
 {
    bug_117098_a
@@ -1867,4 +1873,12 @@
    fun:net::HostResolverImpl::CacheResult
    fun:net::HostResolverImpl::Job::CompleteRequests
    fun:net::HostResolverImpl::Job::OnProcTaskComplete
+}
+{
+   bug_117995
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::copy
+   fun:std::basic_string::basic_string
+   fun:chromeos::UserManagerTest_*_Test::TestBody
 }
