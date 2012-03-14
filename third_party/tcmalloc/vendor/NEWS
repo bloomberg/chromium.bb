@@ -1,130 +1,4 @@
-== 03 February 2012 ==
-
-I've just released gperftools 2.0
-
-The `google-perftools` project has been renamed to `gperftools`.  I
-(csilvers) am stepping down as maintainer, to be replaced by
-David Chappelle.  Welcome to the team, David!  David has been an
-an active contributor to perftools in the past -- in fact, he's the
-only person other than me that already has commit status.  I am
-pleased to have him take over as maintainer.
-
-I have both renamed the project (the Google Code site renamed a few
-weeks ago), and bumped the major version number up to 2, to reflect
-the new community ownership of the project.  Almost all the
-[http://gperftools.googlecode.com/svn/tags/gperftools-2.0/ChangeLog changes]
-are related to the renaming.
-
-The main functional change from google-perftools 1.10 is that
-I've renamed the `google/` include-directory to be `gperftools/`
-instead.  New code should `#include <gperftools/tcmalloc.h>`/etc.
-(Most users of perftools don't need any perftools-specific includes at
-all, so this is mostly directed to "power users.")  I've kept the old
-names around as forwarding headers to the new, so `#include
-<google/tcmalloc.h>` will continue to work.
-
-(The other functional change which I snuck in is getting rid of some
-bash-isms in one of the unittest driver scripts, so it could run on
-Solaris.)
-
-Note that some internal names still contain the text `google`, such as
-the `google_malloc` internal linker section.  I think that's a
-trickier transition, and can happen in a future release (if at all).
-
-
-=== 31 January 2012 ===
-
-I've just released perftools 1.10
-
-There is an API-incompatible change: several of the methods in the
-`MallocExtension` class have changed from taking a `void*` to taking a
-`const void*`.  You should not be affected by this API change
-unless you've written your own custom malloc extension that derives
-from `MallocExtension`, but since it is a user-visible change, I have
-upped the `.so` version number for this release.
-
-This release focuses on improvements to linux-syscall-support.h,
-including ARM and PPC fixups and general cleanups.  I hope this will
-magically fix an array of bugs people have been seeing.
-
-There is also exciting news on the porting front, with support for
-patching win64 assembly contributed by IBM Canada!  This is an
-important step -- perhaps the most difficult -- to getting perftools
-to work on 64-bit windows using the patching technique (it doesn't
-affect the libc-modification technique).  `premable_patcher_test` has
-been added to help test these changes; it is meant to compile under
-x86_64, and won't work under win32.
-
-For the full list of changes, including improved `HEAP_PROFILE_MMAP`
-support, see the
-[http://gperftools.googlecode.com/svn/tags/google-perftools-1.10/ChangeLog ChangeLog].
-
-
-=== 24 January 2011 ===
-
-The `google-perftools` Google Code page has been renamed to
-`gperftools`, in preparation for the project being renamed to
-`gperftools`.  In the coming weeks, I'll be stepping down as
-maintainer for the perftools project, and as part of that Google is
-relinquishing ownership of the project; it will now be entirely
-community run.  The name change reflects that shift.  The 'g' in
-'gperftools' stands for 'great'. :-)
-
-=== 23 December 2011 ===
-
-I've just released perftools 1.9.1
-
-I missed including a file in the tarball, that is needed to compile on
-ARM.  If you are not compiling on ARM, or have successfully compiled
-perftools 1.9, there is no need to upgrade.
-
-
-=== 22 December 2011 ===
-
-I've just released perftools 1.9
-
-This change has a slew of improvements, from better ARM and freebsd
-support, to improved performance by moving some code outside of locks,
-to better pprof reporting of code with overloaded functions.
-
-The full list of changes is in the
-[http://google-perftools.googlecode.com/svn/tags/google-perftools-1.9/ChangeLog ChangeLog].
-
-
-=== 26 August 2011 ===
-
-I've just released perftools 1.8.3
-
-The star-crossed 1.8 series continues; in 1.8.1, I had accidentally
-removed some code that was needed for FreeBSD.  (Without this code
-many apps would crash at startup.)  This release re-adds that code.
-If you are not on FreeBSD, or are using FreeBSD with perftools 1.8 or
-earlier, there is no need to upgrade.
-
-=== 11 August 2011 ===
-
-I've just released perftools 1.8.2
-
-I was incorrectly calculating the patch-level in the configuration
-step, meaning the TC_VERSION_PATCH #define in tcmalloc.h was wrong.
-Since the testing framework checks for this, it was failing.  Now it
-should work again.  This time, I was careful to re-run my tests after
-upping the version number. :-)
-
-If you don't care about the TC_VERSION_PATCH #define, there's no
-reason to upgrae.
-
-=== 26 July 2011 ===
-
-I've just released perftools 1.8.1
-
-I was missing an #include that caused the build to break under some
-compilers, especially newer gcc's, that wanted it.  This only affects
-people who build from source, so only the .tar.gz file is updated from
-perftools 1.8.  If you didn't have any problems compiling perftools
-1.8, there's no reason to upgrade.
-
-=== 15 July 2011 ===
+== 15 July 2011 ==
 
 I've just released perftools 1.8
 
@@ -152,7 +26,7 @@ running (likely not noticeably) slower.
 
 There are many other changes as well, too numerous to recount here,
 but present in the
-[http://google-perftools.googlecode.com/svn/tags/google-perftools-1.8/ChangeLog ChangeLog].
+[http://google-perftools.googlecode.com/svn/tags/perftools-1.8/ChangeLog ChangeLog].
 
 
 === 7 February 2011 ===
@@ -179,7 +53,7 @@ Among the many new features in this release is a multi-megabyte
 reduction in the amount of tcmalloc overhead uder x86_64, improved
 performance in the case of contention, and many many bugfixes,
 especially architecture-specific bugfixes.  See the
-[http://google-perftools.googlecode.com/svn/tags/google-perftools-1.7/ChangeLog ChangeLog]
+[http://google-perftools.googlecode.com/svn/tags/perftools-1.7/ChangeLog ChangeLog]
 for full details.
 
 One architecture-specific change of note is added comments in the

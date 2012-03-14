@@ -47,11 +47,6 @@
 
 #include "base/basictypes.h"   // make sure we get the def for int64
 #include "base/arm_instruction_set_select.h"
-// base/sysinfo.h is really big and we don't want to include it unless
-// it is necessary.
-#if defined(__arm__) || defined(__mips__)
-# include "base/sysinfo.h"
-#endif
 #if defined(__MACH__) && defined(__APPLE__)
 # include <mach/mach_time.h>
 #endif
@@ -66,7 +61,7 @@
 extern "C" uint64 __rdtsc();
 #pragma intrinsic(__rdtsc)
 #endif
-#if defined(ARMV3) || defined(__mips__)
+#ifdef ARMV3
 #include <sys/time.h>
 #endif
 
@@ -129,11 +124,11 @@ struct CycleClock {
     uint32 pmuseren;
     uint32 pmcntenset;
     // Read the user mode perf monitor counter access permissions.
-    asm volatile ("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
+    asm("mrc p15, 0, %0, c9, c14, 0" : "=r" (pmuseren));
     if (pmuseren & 1) {  // Allows reading perfmon counters for user mode code.
-      asm volatile ("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
+      asm("mrc p15, 0, %0, c9, c12, 1" : "=r" (pmcntenset));
       if (pmcntenset & 0x80000000ul) {  // Is it counting?
-        asm volatile ("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
+        asm("mrc p15, 0, %0, c9, c13, 0" : "=r" (pmccntr));
         // The counter is set up to count every 64th cycle
         return static_cast<int64>(pmccntr) * 64;  // Should optimize to << 6
       }
@@ -141,15 +136,7 @@ struct CycleClock {
 #endif
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    return static_cast<int64>((tv.tv_sec + tv.tv_usec * 0.000001)
-                              * CyclesPerSecond());
-#elif defined(__mips__)
-    // mips apparently only allows rdtsc for superusers, so we fall
-    // back to gettimeofday.  It's possible clock_gettime would be better.
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return static_cast<int64>((tv.tv_sec + tv.tv_usec * 0.000001)
-                              * CyclesPerSecond());
+    return static_cast<int64>(tv.tv_sec) * 1000000 + tv.tv_usec;
 #else
 // The soft failover to a generic implementation is automatic only for ARM.
 // For other platforms the developer is expected to make an attempt to create

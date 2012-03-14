@@ -99,12 +99,10 @@ int SizeMap::NumMoveSize(size_t size) {
 void SizeMap::Init() {
   // Do some sanity checking on add_amount[]/shift_amount[]/class_array[]
   if (ClassIndex(0) < 0) {
-    Log(kCrash, __FILE__, __LINE__,
-        "Invalid class index for size 0", ClassIndex(0));
+    CRASH("Invalid class index %d for size 0\n", ClassIndex(0));
   }
   if (ClassIndex(kMaxSize) >= sizeof(class_array_)) {
-    Log(kCrash, __FILE__, __LINE__,
-        "Invalid class index for kMaxSize", ClassIndex(kMaxSize));
+    CRASH("Invalid class index %d for kMaxSize\n", ClassIndex(kMaxSize));
   }
 
   // Compute the size classes we want to use
@@ -149,8 +147,8 @@ void SizeMap::Init() {
     sc++;
   }
   if (sc != kNumClasses) {
-    Log(kCrash, __FILE__, __LINE__,
-        "wrong number of size classes: (found vs. expected )", sc, kNumClasses);
+    CRASH("wrong number of size classes: found %d instead of %d\n",
+          sc, int(kNumClasses));
   }
 
   // Initialize the mapping arrays
@@ -167,23 +165,41 @@ void SizeMap::Init() {
   for (size_t size = 0; size <= kMaxSize; size++) {
     const int sc = SizeClass(size);
     if (sc <= 0 || sc >= kNumClasses) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Bad size class (class, size)", sc, size);
+      CRASH("Bad size class %d for %" PRIuS "\n", sc, size);
     }
     if (sc > 1 && size <= class_to_size_[sc-1]) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Allocating unnecessarily large class (class, size)", sc, size);
+      CRASH("Allocating unnecessarily large class %d for %" PRIuS
+            "\n", sc, size);
     }
     const size_t s = class_to_size_[sc];
-    if (size > s || s == 0) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Bad (class, size, requested)", sc, s, size);
+    if (size > s) {
+      CRASH("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
+    }
+    if (s == 0) {
+      CRASH("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
     }
   }
 
   // Initialize the num_objects_to_move array.
   for (size_t cl = 1; cl  < kNumClasses; ++cl) {
     num_objects_to_move_[cl] = NumMoveSize(ByteSizeForClass(cl));
+  }
+}
+
+void SizeMap::Dump(TCMalloc_Printer* out) {
+  // Dump class sizes and maximum external wastage per size class
+  for (size_t cl = 1; cl  < kNumClasses; ++cl) {
+    const int alloc_size = class_to_pages_[cl] << kPageShift;
+    const int alloc_objs = alloc_size / class_to_size_[cl];
+    const int min_used = (class_to_size_[cl-1] + 1) * alloc_objs;
+    const int max_waste = alloc_size - min_used;
+    out->printf("SC %3d [ %8d .. %8d ] from %8d ; %2.0f%% maxwaste\n",
+                int(cl),
+                int(class_to_size_[cl-1] + 1),
+                int(class_to_size_[cl]),
+                int(class_to_pages_[cl] << kPageShift),
+                max_waste * 100.0 / alloc_size
+                );
   }
 }
 

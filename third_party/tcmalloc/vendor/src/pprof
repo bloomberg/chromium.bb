@@ -72,7 +72,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 
-my $PPROF_VERSION = "2.0";
+my $PPROF_VERSION = "1.8";
 
 # These are the object tools we use which can come from a
 # user-specified location using --tools, from the PPROF_TOOLS
@@ -87,14 +87,13 @@ my %obj_tool_map = (
   #"addr2line_pdb" => "addr2line-pdb",                                # ditto
   #"otool" => "otool",         # equivalent of objdump on OS X
 );
-# NOTE: these are lists, so you can put in commandline flags if you want.
-my @DOT = ("dot");          # leave non-absolute, since it may be in /usr/local
-my @GV = ("gv");
-my @EVINCE = ("evince");    # could also be xpdf or perhaps acroread
-my @KCACHEGRIND = ("kcachegrind");
-my @PS2PDF = ("ps2pdf");
+my $DOT = "dot";          # leave non-absolute, since it may be in /usr/local
+my $GV = "gv";
+my $EVINCE = "evince";    # could also be xpdf or perhaps acroread
+my $KCACHEGRIND = "kcachegrind";
+my $PS2PDF = "ps2pdf";
 # These are used for dynamic profiles
-my @URL_FETCHER = ("curl", "-s");
+my $URL_FETCHER = "curl -s";
 
 # These are the web pages that servers need to support for dynamic profiles
 my $HEAP_PAGE = "/pprof/heap";
@@ -105,10 +104,7 @@ my $GROWTH_PAGE = "/pprof/growth";
 my $CONTENTION_PAGE = "/pprof/contention";
 my $WALL_PAGE = "/pprof/wall(?:\\?.*)?";  # accepts options like namefilter
 my $FILTEREDPROFILE_PAGE = "/pprof/filteredprofile(?:\\?.*)?";
-my $CENSUSPROFILE_PAGE = "/pprof/censusprofile(?:\\?.*)?"; # must support cgi-param
-                                                       # "?seconds=#",
-                                                       # "?tags_regexp=#" and
-                                                       # "?type=#".
+my $CENSUSPROFILE_PAGE = "/pprof/censusprofile";  # must support "?seconds=#"
 my $SYMBOL_PAGE = "/pprof/symbol";     # must support symbol lookup via POST
 my $PROGRAM_NAME_PAGE = "/pprof/cmdline";
 
@@ -172,7 +168,7 @@ pprof --symbols <program>
    For more help with querying remote servers, including how to add the
    necessary server-side support code, see this filename (or one like it):
 
-   /usr/doc/gperftools-$PPROF_VERSION/pprof_remote_servers.html
+   /usr/doc/google-perftools-$PPROF_VERSION/pprof_remote_servers.html
 
 Options:
    --cum               Sort by cumulative data
@@ -270,7 +266,7 @@ EOF
 
 sub version_string {
   return <<EOF
-pprof (part of gperftools $PPROF_VERSION)
+pprof (part of google-perftools $PPROF_VERSION)
 
 Copyright 1998-2007 Google Inc.
 
@@ -502,13 +498,11 @@ sub Init() {
   @main::pfile_args = ();
 
   # Remote profiling without a binary (using $SYMBOL_PAGE instead)
-  if (@ARGV > 0) {
-    if (IsProfileURL($ARGV[0])) {
-      $main::use_symbol_page = 1;
-    } elsif (IsSymbolizedProfileFile($ARGV[0])) {
-      $main::use_symbolized_profile = 1;
-      $main::prog = $UNKNOWN_BINARY;  # will be set later from the profile file
-    }
+  if (IsProfileURL($ARGV[0])) {
+    $main::use_symbol_page = 1;
+  } elsif (IsSymbolizedProfileFile($ARGV[0])) {
+    $main::use_symbolized_profile = 1;
+    $main::prog = $UNKNOWN_BINARY;  # will be set later from the profile file
   }
 
   if ($main::use_symbol_page || $main::use_symbolized_profile) {
@@ -668,7 +662,7 @@ sub Main() {
         if ($main::opt_gv) {
           RunGV(TempName($main::next_tmpfile, "ps"), "");
         } elsif ($main::opt_evince) {
-          RunEvince(TempName($main::next_tmpfile, "pdf"), "");
+	  RunEvince(TempName($main::next_tmpfile, "pdf"), "");
         } elsif ($main::opt_web) {
           my $tmp = TempName($main::next_tmpfile, "svg");
           RunWeb($tmp);
@@ -717,25 +711,24 @@ sub ReadlineMightFail {
 sub RunGV {
   my $fname = shift;
   my $bg = shift;       # "" or " &" if we should run in background
-  if (!system(ShellEscape(@GV, "--version") . " >$dev_null 2>&1")) {
+  if (!system("$GV --version >$dev_null 2>&1")) {
     # Options using double dash are supported by this gv version.
     # Also, turn on noantialias to better handle bug in gv for
     # postscript files with large dimensions.
     # TODO: Maybe we should not pass the --noantialias flag
     # if the gv version is known to work properly without the flag.
-    system(ShellEscape(@GV, "--scale=$main::opt_scale", "--noantialias", $fname)
-           . $bg);
+    system("$GV --scale=$main::opt_scale --noantialias " . $fname . $bg);
   } else {
     # Old gv version - only supports options that use single dash.
-    print STDERR ShellEscape(@GV, "-scale", $main::opt_scale) . "\n";
-    system(ShellEscape(@GV, "-scale", "$main::opt_scale", $fname) . $bg);
+    print STDERR "$GV -scale $main::opt_scale\n";
+    system("$GV -scale $main::opt_scale " . $fname . $bg);
   }
 }
 
 sub RunEvince {
   my $fname = shift;
   my $bg = shift;       # "" or " &" if we should run in background
-  system(ShellEscape(@EVINCE, $fname) . $bg);
+  system("$EVINCE " . $fname . $bg);
 }
 
 sub RunWeb {
@@ -769,8 +762,8 @@ sub RunWeb {
 sub RunKcachegrind {
   my $fname = shift;
   my $bg = shift;       # "" or " &" if we should run in background
-  print STDERR "Starting '@KCACHEGRIND " . $fname . $bg . "'\n";
-  system(ShellEscape(@KCACHEGRIND, $fname) . $bg);
+  print STDERR "Starting '$KCACHEGRIND " . $fname . $bg . "'\n";
+  system("$KCACHEGRIND " . $fname . $bg);
 }
 
 
@@ -1039,8 +1032,8 @@ parameters will be ignored.
 
 Further pprof details are available at this location (or one similar):
 
- /usr/doc/gperftools-$PPROF_VERSION/cpu_profiler.html
- /usr/doc/gperftools-$PPROF_VERSION/heap_profiler.html
+ /usr/doc/google-perftools-$PPROF_VERSION/cpu_profiler.html
+ /usr/doc/google-perftools-$PPROF_VERSION/heap_profiler.html
 
 ENDOFHELP
 }
@@ -1194,42 +1187,17 @@ sub PrintText {
   }
 }
 
-# Callgrind format has a compression for repeated function and file
-# names.  You show the name the first time, and just use its number
-# subsequently.  This can cut down the file to about a third or a
-# quarter of its uncompressed size.  $key and $val are the key/value
-# pair that would normally be printed by callgrind; $map is a map from
-# value to number.
-sub CompressedCGName {
-  my($key, $val, $map) = @_;
-  my $idx = $map->{$val};
-  # For very short keys, providing an index hurts rather than helps.
-  if (length($val) <= 3) {
-    return "$key=$val\n";
-  } elsif (defined($idx)) {
-    return "$key=($idx)\n";
-  } else {
-    # scalar(keys $map) gives the number of items in the map.
-    $idx = scalar(keys(%{$map})) + 1;
-    $map->{$val} = $idx;
-    return "$key=($idx) $val\n";
-  }
-}
-
 # Print the call graph in a way that's suiteable for callgrind.
 sub PrintCallgrind {
   my $calls = shift;
   my $filename;
-  my %filename_to_index_map;
-  my %fnname_to_index_map;
-
   if ($main::opt_interactive) {
     $filename = shift;
     print STDERR "Writing callgrind file to '$filename'.\n"
   } else {
     $filename = "&STDOUT";
   }
-  open(CG, ">$filename");
+  open(CG, ">".$filename );
   printf CG ("events: Hits\n\n");
   foreach my $call ( map { $_->[0] }
                      sort { $a->[1] cmp $b ->[1] ||
@@ -1243,14 +1211,11 @@ sub PrintCallgrind {
          $callee_file, $callee_line, $callee_function ) =
        ( $1, $2, $3, $5, $6, $7 );
 
-    # TODO(csilvers): for better compression, collect all the
-    # caller/callee_files and functions first, before printing
-    # anything, and only compress those referenced more than once.
-    printf CG CompressedCGName("fl", $caller_file, \%filename_to_index_map);
-    printf CG CompressedCGName("fn", $caller_function, \%fnname_to_index_map);
+      
+    printf CG ("fl=$caller_file\nfn=$caller_function\n");
     if (defined $6) {
-      printf CG CompressedCGName("cfl", $callee_file, \%filename_to_index_map);
-      printf CG CompressedCGName("cfn", $callee_function, \%fnname_to_index_map);
+      printf CG ("cfl=$callee_file\n");
+      printf CG ("cfn=$callee_function\n");
       printf CG ("calls=$count $callee_line\n");
     }
     printf CG ("$caller_line $count\n\n");
@@ -1299,10 +1264,10 @@ sub Disassemble {
   my $end_addr = shift;
 
   my $objdump = $obj_tool_map{"objdump"};
-  my $cmd = ShellEscape($objdump, "-C", "-d", "-l", "--no-show-raw-insn",
-                        "--start-address=0x$start_addr",
-                        "--stop-address=0x$end_addr", $prog);
-  open(OBJDUMP, "$cmd |") || error("$cmd: $!\n");
+  my $cmd = sprintf("$objdump -C -d -l --no-show-raw-insn " .
+                    "--start-address=0x$start_addr " .
+                    "--stop-address=0x$end_addr $prog");
+  open(OBJDUMP, "$cmd |") || error("$objdump: $!\n");
   my @result = ();
   my $filename = "";
   my $linenumber = -1;
@@ -2007,24 +1972,19 @@ sub PrintDot {
 
   # Open DOT output file
   my $output;
-  my $escaped_dot = ShellEscape(@DOT);
-  my $escaped_ps2pdf = ShellEscape(@PS2PDF);
   if ($main::opt_gv) {
-    my $escaped_outfile = ShellEscape(TempName($main::next_tmpfile, "ps"));
-    $output = "| $escaped_dot -Tps2 >$escaped_outfile";
+    $output = "| $DOT -Tps2 >" . TempName($main::next_tmpfile, "ps");
   } elsif ($main::opt_evince) {
-    my $escaped_outfile = ShellEscape(TempName($main::next_tmpfile, "pdf"));
-    $output = "| $escaped_dot -Tps2 | $escaped_ps2pdf - $escaped_outfile";
+    $output = "| $DOT -Tps2 | $PS2PDF - " . TempName($main::next_tmpfile, "pdf");
   } elsif ($main::opt_ps) {
-    $output = "| $escaped_dot -Tps2";
+    $output = "| $DOT -Tps2";
   } elsif ($main::opt_pdf) {
-    $output = "| $escaped_dot -Tps2 | $escaped_ps2pdf - -";
+    $output = "| $DOT -Tps2 | $PS2PDF - -";
   } elsif ($main::opt_web || $main::opt_svg) {
     # We need to post-process the SVG, so write to a temporary file always.
-    my $escaped_outfile = ShellEscape(TempName($main::next_tmpfile, "svg"));
-    $output = "| $escaped_dot -Tsvg >$escaped_outfile";
+    $output = "| $DOT -Tsvg >" . TempName($main::next_tmpfile, "svg");
   } elsif ($main::opt_gif) {
-    $output = "| $escaped_dot -Tgif";
+    $output = "| $DOT -Tgif";
   } else {
     $output = ">&STDOUT";
   }
@@ -2105,12 +2065,10 @@ sub PrintDot {
   # Get edges and counts per edge
   my %edge = ();
   my $n;
-  my $fullname_to_shortname_map = {};
-  FillFullnameToShortnameMap($symbols, $fullname_to_shortname_map);
   foreach my $k (keys(%{$raw})) {
     # TODO: omit low %age edges
     $n = $raw->{$k};
-    my @translated = TranslateStack($symbols, $fullname_to_shortname_map, $k);
+    my @translated = TranslateStack($symbols, $k);
     for (my $i = 1; $i <= $#translated; $i++) {
       my $src = $translated[$i];
       my $dst = $translated[$i-1];
@@ -2494,50 +2452,6 @@ function handleMouseUp(evt) {
 EOF
 }
 
-# Provides a map from fullname to shortname for cases where the
-# shortname is ambiguous.  The symlist has both the fullname and
-# shortname for all symbols, which is usually fine, but sometimes --
-# such as overloaded functions -- two different fullnames can map to
-# the same shortname.  In that case, we use the address of the
-# function to disambiguate the two.  This function fills in a map that
-# maps fullnames to modified shortnames in such cases.  If a fullname
-# is not present in the map, the 'normal' shortname provided by the
-# symlist is the appropriate one to use.
-sub FillFullnameToShortnameMap {
-  my $symbols = shift;
-  my $fullname_to_shortname_map = shift;
-  my $shortnames_seen_once = {};
-  my $shortnames_seen_more_than_once = {};
-
-  foreach my $symlist (values(%{$symbols})) {
-    # TODO(csilvers): deal with inlined symbols too.
-    my $shortname = $symlist->[0];
-    my $fullname = $symlist->[2];
-    if ($fullname !~ /<[0-9a-fA-F]+>$/) {  # fullname doesn't end in an address
-      next;       # the only collisions we care about are when addresses differ
-    }
-    if (defined($shortnames_seen_once->{$shortname}) &&
-        $shortnames_seen_once->{$shortname} ne $fullname) {
-      $shortnames_seen_more_than_once->{$shortname} = 1;
-    } else {
-      $shortnames_seen_once->{$shortname} = $fullname;
-    }
-  }
-
-  foreach my $symlist (values(%{$symbols})) {
-    my $shortname = $symlist->[0];
-    my $fullname = $symlist->[2];
-    # TODO(csilvers): take in a list of addresses we care about, and only
-    # store in the map if $symlist->[1] is in that list.  Saves space.
-    next if defined($fullname_to_shortname_map->{$fullname});
-    if (defined($shortnames_seen_more_than_once->{$shortname})) {
-      if ($fullname =~ /<0*([^>]*)>$/) {   # fullname has address at end of it
-        $fullname_to_shortname_map->{$fullname} = "$shortname\@$1";
-      }
-    }
-  }
-}
-
 # Return a small number that identifies the argument.
 # Multiple calls with the same argument will return the same number.
 # Calls with different arguments will return different numbers.
@@ -2554,7 +2468,6 @@ sub ShortIdFor {
 # Translate a stack of addresses into a stack of symbols
 sub TranslateStack {
   my $symbols = shift;
-  my $fullname_to_shortname_map = shift;
   my $k = shift;
 
   my @addrs = split(/\n/, $k);
@@ -2586,9 +2499,6 @@ sub TranslateStack {
       my $func = $symlist->[$j-2];
       my $fileline = $symlist->[$j-1];
       my $fullfunc = $symlist->[$j];
-      if (defined($fullname_to_shortname_map->{$fullfunc})) {
-        $func = $fullname_to_shortname_map->{$fullfunc};
-      }
       if ($j > 2) {
         $func = "$func (inline)";
       }
@@ -2841,13 +2751,13 @@ sub RemoveUninterestingFrames {
                       '__builtin_vec_new',
                       'operator new',
                       'operator new[]',
-                      # The entry to our memory-allocation routines on OS X
-                      'malloc_zone_malloc',
-                      'malloc_zone_calloc',
-                      'malloc_zone_valloc',
-                      'malloc_zone_realloc',
-                      'malloc_zone_memalign',
-                      'malloc_zone_free',
+		      # The entry to our memory-allocation routines on OS X
+		      'malloc_zone_malloc',
+		      'malloc_zone_calloc',
+		      'malloc_zone_valloc',
+		      'malloc_zone_realloc',
+		      'malloc_zone_memalign',
+		      'malloc_zone_free',
                       # These mark the beginning/end of our custom sections
                       '__start_google_malloc',
                       '__stop_google_malloc',
@@ -2939,11 +2849,9 @@ sub ReduceProfile {
   my $symbols = shift;
   my $profile = shift;
   my $result = {};
-  my $fullname_to_shortname_map = {};
-  FillFullnameToShortnameMap($symbols, $fullname_to_shortname_map);
   foreach my $k (keys(%{$profile})) {
     my $count = $profile->{$k};
-    my @translated = TranslateStack($symbols, $fullname_to_shortname_map, $k);
+    my @translated = TranslateStack($symbols, $k);
     my @path = ();
     my %seen = ();
     $seen{''} = 1;      # So that empty keys are skipped
@@ -3150,8 +3058,7 @@ sub AddEntries {
 
 sub CheckSymbolPage {
   my $url = SymbolPageURL();
-  my $command = ShellEscape(@URL_FETCHER, $url);
-  open(SYMBOL, "$command |") or error($command);
+  open(SYMBOL, "$URL_FETCHER '$url' |");
   my $line = <SYMBOL>;
   $line =~ s/\r//g;         # turn windows-looking lines into unix-looking lines
   close(SYMBOL);
@@ -3208,7 +3115,7 @@ sub SymbolPageURL {
 sub FetchProgramName() {
   my ($host, $baseURL, $path) = ParseProfileURL($main::pfile_args[0]);
   my $url = "$baseURL$PROGRAM_NAME_PAGE";
-  my $command_line = ShellEscape(@URL_FETCHER, $url);
+  my $command_line = "$URL_FETCHER '$url'";
   open(CMDLINE, "$command_line |") or error($command_line);
   my $cmdline = <CMDLINE>;
   $cmdline =~ s/\r//g;   # turn windows-looking lines into unix-looking lines
@@ -3225,7 +3132,7 @@ sub FetchProgramName() {
 # curl.  Redirection happens on borg hosts.
 sub ResolveRedirectionForCurl {
   my $url = shift;
-  my $command_line = ShellEscape(@URL_FETCHER, "--head", $url);
+  my $command_line = "$URL_FETCHER --head '$url'";
   open(CMDLINE, "$command_line |") or error($command_line);
   while (<CMDLINE>) {
     s/\r//g;         # turn windows-looking lines into unix-looking lines
@@ -3237,18 +3144,18 @@ sub ResolveRedirectionForCurl {
   return $url;
 }
 
-# Add a timeout flat to URL_FETCHER.  Returns a new list.
+# Add a timeout flat to URL_FETCHER
 sub AddFetchTimeout {
+  my $fetcher = shift;
   my $timeout = shift;
-  my @fetcher = shift;
   if (defined($timeout)) {
-    if (join(" ", @fetcher) =~ m/\bcurl -s/) {
-      push(@fetcher, "--max-time", sprintf("%d", $timeout));
-    } elsif (join(" ", @fetcher) =~ m/\brpcget\b/) {
-      push(@fetcher, sprintf("--deadline=%d", $timeout));
+    if ($fetcher =~ m/\bcurl -s/) {
+      $fetcher .= sprintf(" --max-time %d", $timeout);
+    } elsif ($fetcher =~ m/\brpcget\b/) {
+      $fetcher .= sprintf(" --deadline=%d", $timeout);
     }
   }
-  return @fetcher;
+  return $fetcher;
 }
 
 # Reads a symbol map from the file handle name given as $1, returning
@@ -3308,17 +3215,15 @@ sub FetchSymbols {
     my $url = SymbolPageURL();
 
     my $command_line;
-    if (join(" ", @URL_FETCHER) =~ m/\bcurl -s/) {
+    if ($URL_FETCHER =~ m/\bcurl -s/) {
       $url = ResolveRedirectionForCurl($url);
-      $command_line = ShellEscape(@URL_FETCHER, "-d", "\@$main::tmpfile_sym",
-                                  $url);
+      $command_line = "$URL_FETCHER -d '\@$main::tmpfile_sym' '$url'";
     } else {
-      $command_line = (ShellEscape(@URL_FETCHER, "--post", $url)
-                       . " < " . ShellEscape($main::tmpfile_sym));
+      $command_line = "$URL_FETCHER --post '$url' < '$main::tmpfile_sym'";
     }
     # We use c++filt in case $SYMBOL_PAGE gives us mangled symbols.
-    my $escaped_cppfilt = ShellEscape($obj_tool_map{"c++filt"});
-    open(SYMBOL, "$command_line | $escaped_cppfilt |") or error($command_line);
+    my $cppfilt = $obj_tool_map{"c++filt"};
+    open(SYMBOL, "$command_line | $cppfilt |") or error($command_line);
     $symbol_map = ReadSymbols(*SYMBOL{IO});
     close(SYMBOL);
   }
@@ -3334,8 +3239,8 @@ sub FetchSymbols {
     my $shortpc = $pc;
     $shortpc =~ s/^0*//;
     # Each line may have a list of names, which includes the function
-    # and also other functions it has inlined.  They are separated (in
-    # PrintSymbolizedProfile), by --, which is illegal in function names.
+    # and also other functions it has inlined.  They are separated
+    # (in PrintSymbolizedFile), by --, which is illegal in function names.
     my $fullnames;
     if (defined($symbol_map->{$shortpc})) {
       $fullnames = $symbol_map->{$shortpc};
@@ -3413,8 +3318,8 @@ sub FetchDynamicProfile {
       return $real_profile;
     }
 
-    my @fetcher = AddFetchTimeout($fetch_timeout, @URL_FETCHER);
-    my $cmd = ShellEscape(@fetcher, $url) . " > " . ShellEscape($tmp_profile);
+    my $fetcher = AddFetchTimeout($URL_FETCHER, $fetch_timeout);
+    my $cmd = "$fetcher '$url' > '$tmp_profile'";
     if ($path =~ m/$PROFILE_PAGE|$PMUPROFILE_PAGE|$CENSUSPROFILE_PAGE/){
       print STDERR "Gathering CPU profile from $url for $main::opt_seconds seconds to\n  ${real_profile}\n";
       if ($encourage_patience) {
@@ -3425,7 +3330,7 @@ sub FetchDynamicProfile {
     }
 
     (system($cmd) == 0) || error("Failed to get profile: $cmd: $!\n");
-    (system("mv", $tmp_profile, $real_profile) == 0) || error("Unable to rename profile\n");
+    (system("mv $tmp_profile $real_profile") == 0) || error("Unable to rename profile\n");
     print STDERR "Wrote profile to $real_profile\n";
     $main::collected_profile = $real_profile;
     return $main::collected_profile;
@@ -3539,7 +3444,7 @@ BEGIN {
       my $has_q = 0;
       eval { $has_q = pack("Q", "1") ? 1 : 1; };
       if (!$has_q) {
-        $self->{perl_is_64bit} = 0;
+	$self->{perl_is_64bit} = 0;
       }
       read($self->{file}, $str, 8);
       if (substr($str, 4, 4) eq chr(0)x4) {
@@ -3575,17 +3480,17 @@ BEGIN {
         # TODO(csilvers): if this is a 32-bit perl, the math below
         #    could end up in a too-large int, which perl will promote
         #    to a double, losing necessary precision.  Deal with that.
-        #    Right now, we just die.
-        my ($lo, $hi) = ($b32_values[$i], $b32_values[$i+1]);
+	#    Right now, we just die.
+	my ($lo, $hi) = ($b32_values[$i], $b32_values[$i+1]);
         if ($self->{unpack_code} eq 'N') {    # big-endian
-          ($lo, $hi) = ($hi, $lo);
-        }
-        my $value = $lo + $hi * (2**32);
-        if (!$self->{perl_is_64bit} &&   # check value is exactly represented
-            (($value % (2**32)) != $lo || int($value / (2**32)) != $hi)) {
-          ::error("Need a 64-bit perl to process this 64-bit profile.\n");
-        }
-        push(@b64_values, $value);
+	  ($lo, $hi) = ($hi, $lo);
+	}
+	my $value = $lo + $hi * (2**32);
+	if (!$self->{perl_is_64bit} &&   # check value is exactly represented
+	    (($value % (2**32)) != $lo || int($value / (2**32)) != $hi)) {
+	  ::error("Need a 64-bit perl to process this 64-bit profile.\n");
+	}
+	push(@b64_values, $value);
       }
       @$slots = @b64_values;
     }
@@ -3713,7 +3618,7 @@ sub ReadProfile {
     if (!$main::use_symbolized_profile) {
       # we have both a binary and symbolized profiles, abort
       error("FATAL ERROR: Symbolized profile\n   $fname\ncannot be used with " .
-            "a binary arg. Try again without passing\n   $prog\n");
+	    "a binary arg. Try again without passing\n   $prog\n");
     }
     # Read the symbol section of the symbolized profile file.
     $symbols = ReadSymbols(*PROFILE{IO});
@@ -4014,18 +3919,18 @@ sub ReadHeapProfile {
           # The sampling frequency is the rate of a Poisson process.
           # This means that the probability of sampling an allocation of
           # size X with sampling rate Y is 1 - exp(-X/Y)
-          if ($n1 != 0) {
-            my $ratio = (($s1*1.0)/$n1)/($sample_adjustment);
-            my $scale_factor = 1/(1 - exp(-$ratio));
-            $n1 *= $scale_factor;
-            $s1 *= $scale_factor;
-          }
-          if ($n2 != 0) {
-            my $ratio = (($s2*1.0)/$n2)/($sample_adjustment);
-            my $scale_factor = 1/(1 - exp(-$ratio));
-            $n2 *= $scale_factor;
-            $s2 *= $scale_factor;
-          }
+	  if ($n1 != 0) {
+	    my $ratio = (($s1*1.0)/$n1)/($sample_adjustment);
+	    my $scale_factor = 1/(1 - exp(-$ratio));
+	    $n1 *= $scale_factor;
+	    $s1 *= $scale_factor;
+	  }
+	  if ($n2 != 0) {
+	    my $ratio = (($s2*1.0)/$n2)/($sample_adjustment);
+	    my $scale_factor = 1/(1 - exp(-$ratio));
+	    $n2 *= $scale_factor;
+	    $s2 *= $scale_factor;
+	  }
         } else {
           # Remote-heap version 1
           my $ratio;
@@ -4149,19 +4054,19 @@ sub ReadSynchProfile {
   return $r;
 }
 
-# Given a hex value in the form "0x1abcd" or "1abcd", return either
-# "0001abcd" or "000000000001abcd", depending on the current (global)
-# address length.
+# Given a hex value in the form "0x1abcd" return "0001abcd" or
+# "000000000001abcd", depending on the current address length.
+# There's probably a more idiomatic (or faster) way to do this...
 sub HexExtend {
   my $addr = shift;
 
-  $addr =~ s/^(0x)?0*//;
-  my $zeros_needed = $address_length - length($addr);
-  if ($zeros_needed < 0) {
-    printf STDERR "Warning: address $addr is longer than address length $address_length\n";
-    return $addr;
+  $addr =~ s/^0x//;
+
+  if (length $addr > $address_length) {
+    printf STDERR "Warning:  address $addr is longer than address length $address_length\n";
   }
-  return ("0" x $zeros_needed) . $addr;
+
+  return substr("000000000000000".$addr, -$address_length);
 }
 
 ##### Symbol extraction #####
@@ -4212,8 +4117,9 @@ sub ParseTextSectionHeaderFromObjdump {
   my $file_offset;
   # Get objdump output from the library file to figure out how to
   # map between mapped addresses and addresses in the library.
-  my $cmd = ShellEscape($obj_tool_map{"objdump"}, "-h", $lib);
-  open(OBJDUMP, "$cmd |") || error("$cmd: $!\n");
+  my $objdump = $obj_tool_map{"objdump"};
+  open(OBJDUMP, "$objdump -h $lib |")
+                || error("$objdump $lib: $!\n");
   while (<OBJDUMP>) {
     s/\r//g;         # turn windows-looking lines into unix-looking lines
     # Idx Name          Size      VMA       LMA       File off  Algn
@@ -4251,8 +4157,9 @@ sub ParseTextSectionHeaderFromOtool {
   my $file_offset = undef;
   # Get otool output from the library file to figure out how to
   # map between mapped addresses and addresses in the library.
-  my $command = ShellEscape($obj_tool_map{"otool"}, "-l", $lib);
-  open(OTOOL, "$command |") || error("$command: $!\n");
+  my $otool = $obj_tool_map{"otool"};
+  open(OTOOL, "$otool -l $lib |")
+                || error("$otool $lib: $!\n");
   my $cmd = "";
   my $sectname = "";
   my $segname = "";
@@ -4594,18 +4501,18 @@ sub ExtractSymbols {
     my ($start_pc_index, $finish_pc_index);
     # Find smallest finish_pc_index such that $finish < $pc[$finish_pc_index].
     for ($finish_pc_index = $#pcs + 1; $finish_pc_index > 0;
-         $finish_pc_index--) {
+	 $finish_pc_index--) {
       last if $pcs[$finish_pc_index - 1] le $finish;
     }
     # Find smallest start_pc_index such that $start <= $pc[$start_pc_index].
     for ($start_pc_index = $finish_pc_index; $start_pc_index > 0;
-         $start_pc_index--) {
+	 $start_pc_index--) {
       last if $pcs[$start_pc_index - 1] lt $start;
     }
     # This keeps PC values higher than $pc[$finish_pc_index] in @pcs,
     # in case there are overlaps in libraries and the main binary.
     @{$contained} = splice(@pcs, $start_pc_index,
-                           $finish_pc_index - $start_pc_index);
+			   $finish_pc_index - $start_pc_index);
     # Map to symbols
     MapToSymbols($libname, AddressSub($start, $offset), $contained, $symbols);
   }
@@ -4627,15 +4534,15 @@ sub MapToSymbols {
 
   # Figure out the addr2line command to use
   my $addr2line = $obj_tool_map{"addr2line"};
-  my $cmd = ShellEscape($addr2line, "-f", "-C", "-e", $image);
+  my $cmd = "$addr2line -f -C -e $image";
   if (exists $obj_tool_map{"addr2line_pdb"}) {
     $addr2line = $obj_tool_map{"addr2line_pdb"};
-    $cmd = ShellEscape($addr2line, "--demangle", "-f", "-C", "-e", $image);
+    $cmd = "$addr2line --demangle -f -C -e $image";
   }
 
   # If "addr2line" isn't installed on the system at all, just use
   # nm to get what info we can (function names, but not line numbers).
-  if (system(ShellEscape($addr2line, "--help") . " >$dev_null 2>&1") != 0) {
+  if (system("$addr2line --help >$dev_null 2>&1") != 0) {
     MapSymbolsWithNM($image, $offset, $pclist, $symbols);
     return;
   }
@@ -4649,6 +4556,7 @@ sub MapToSymbols {
   $sep_address = undef;  # May be filled in by MapSymbolsWithNM()
   my $nm_symbols = {};
   MapSymbolsWithNM($image, $offset, $pclist, $nm_symbols);
+  # TODO(csilvers): only add '-i' if addr2line supports it.
   if (defined($sep_address)) {
     # Only add " -i" to addr2line if the binary supports it.
     # addr2line --help returns 0, but not if it sees an unknown flag first.
@@ -4674,14 +4582,13 @@ sub MapToSymbols {
   close(ADDRESSES);
   if ($debug) {
     print("----\n");
-    system("cat", $main::tmpfile_sym);
+    system("cat $main::tmpfile_sym");
     print("----\n");
-    system("$cmd < " . ShellEscape($main::tmpfile_sym));
+    system("$cmd <$main::tmpfile_sym");
     print("----\n");
   }
 
-  open(SYMBOLS, "$cmd <" . ShellEscape($main::tmpfile_sym) . " |")
-      || error("$cmd: $!\n");
+  open(SYMBOLS, "$cmd <$main::tmpfile_sym |") || error("$cmd: $!\n");
   my $count = 0;   # Index in pclist
   while (<SYMBOLS>) {
     # Read fullfunction and filelineinfo from next pair of lines
@@ -4701,29 +4608,15 @@ sub MapToSymbols {
 
     my $pcstr = $pclist->[$count];
     my $function = ShortFunctionName($fullfunction);
-    my $nms = $nm_symbols->{$pcstr};
-    if (defined($nms)) {
-      if ($fullfunction eq '??') {
-        # nm found a symbol for us.
+    if ($fullfunction eq '??') {
+      # See if nm found a symbol
+      my $nms = $nm_symbols->{$pcstr};
+      if (defined($nms)) {
         $function = $nms->[0];
         $fullfunction = $nms->[2];
-      } else {
-	# MapSymbolsWithNM tags each routine with its starting address,
-	# useful in case the image has multiple occurrences of this
-	# routine.  (It uses a syntax that resembles template paramters,
-	# that are automatically stripped out by ShortFunctionName().)
-	# addr2line does not provide the same information.  So we check
-	# if nm disambiguated our symbol, and if so take the annotated
-	# (nm) version of the routine-name.  TODO(csilvers): this won't
-	# catch overloaded, inlined symbols, which nm doesn't see.
-	# Better would be to do a check similar to nm's, in this fn.
-	if ($nms->[2] =~ m/^\Q$function\E/) {  # sanity check it's the right fn
-	  $function = $nms->[0];
-	  $fullfunction = $nms->[2];
-	}
       }
     }
-    
+
     # Prepend to accumulated symbols for pcstr
     # (so that caller comes before callee)
     my $sym = $symbols->{$pcstr};
@@ -4734,7 +4627,7 @@ sub MapToSymbols {
     unshift(@{$sym}, $function, $filelinenum, $fullfunction);
     if ($debug) { printf STDERR ("%s => [%s]\n", $pcstr, join(" ", @{$sym})); }
     if (!defined($sep_address)) {
-      # Inlining is off, so this entry ends immediately
+      # Inlining is off, se this entry ends immediately
       $count++;
     }
   }
@@ -4841,9 +4734,7 @@ sub ConfigureObjTools {
   my $file_type = undef;
   if (-e "/usr/bin/file") {
     # Follow symlinks (at least for systems where "file" supports that).
-    my $escaped_prog_file = ShellEscape($prog_file);
-    $file_type = `/usr/bin/file -L $escaped_prog_file 2>$dev_null ||
-                  /usr/bin/file $escaped_prog_file`;
+    $file_type = `/usr/bin/file -L $prog_file 2>$dev_null || /usr/bin/file $prog_file`;
   } elsif ($^O == "MSWin32") {
     $file_type = "MS Windows";
   } else {
@@ -4925,19 +4816,6 @@ sub ConfigureTool {
   return $path;
 }
 
-sub ShellEscape {
-  my @escaped_words = ();
-  foreach my $word (@_) {
-    my $escaped_word = $word;
-    if ($word =~ m![^a-zA-Z0-9/.,_=-]!) {  # check for anything not in whitelist
-      $escaped_word =~ s/'/'\\''/;
-      $escaped_word = "'$escaped_word'";
-    }
-    push(@escaped_words, $escaped_word);
-  }
-  return join(" ", @escaped_words);
-}
-
 sub cleanup {
   unlink($main::tmpfile_sym);
   unlink(keys %main::tempnames);
@@ -4975,11 +4853,11 @@ sub error {
 # names match "$regexp" and returns them in a hashtable mapping from
 # procedure name to a two-element vector of [start address, end address]
 sub GetProcedureBoundariesViaNm {
-  my $escaped_nm_command = shift;    # shell-escaped
+  my $nm_command = shift;
   my $regexp = shift;
 
   my $symbol_table = {};
-  open(NM, "$escaped_nm_command |") || error("$escaped_nm_command: $!\n");
+  open(NM, "$nm_command |") || error("$nm_command: $!\n");
   my $last_start = "0";
   my $routine = "";
   while (<NM>) {
@@ -5057,21 +4935,6 @@ sub GetProcedureBoundaries {
   my $image = shift;
   my $regexp = shift;
 
-  # If $image doesn't start with /, then put ./ in front of it.  This works
-  # around an obnoxious bug in our probing of nm -f behavior.
-  # "nm -f $image" is supposed to fail on GNU nm, but if:
-  #
-  # a. $image starts with [BbSsPp] (for example, bin/foo/bar), AND
-  # b. you have a.out in your current directory (a not uncommon occurence)
-  #
-  # then "nm -f $image" succeeds because -f only looks at the first letter of
-  # the argument, which looks valid because it's [BbSsPp], and then since
-  # there's no image provided, it looks for a.out and finds it.
-  #
-  # This regex makes sure that $image starts with . or /, forcing the -f
-  # parsing to fail since . and / are not valid formats.
-  $image =~ s#^[^/]#./$&#;
-
   # For libc libraries, the copy in /usr/lib/debug contains debugging symbols
   my $debugging = DebuggingLibrary($image);
   if ($debugging) {
@@ -5089,29 +4952,28 @@ sub GetProcedureBoundaries {
   # --demangle and -f.
   my $demangle_flag = "";
   my $cppfilt_flag = "";
-  my $to_devnull = ">$dev_null 2>&1";
-  if (system(ShellEscape($nm, "--demangle", "image") . $to_devnull) == 0) {
+  if (system("$nm --demangle $image >$dev_null 2>&1") == 0) {
     # In this mode, we do "nm --demangle <foo>"
     $demangle_flag = "--demangle";
     $cppfilt_flag = "";
-  } elsif (system(ShellEscape($cppfilt, $image) . $to_devnull) == 0) {
+  } elsif (system("$cppfilt $image >$dev_null 2>&1") == 0) {
     # In this mode, we do "nm <foo> | c++filt"
-    $cppfilt_flag = " | " . ShellEscape($cppfilt);
+    $cppfilt_flag = " | $cppfilt";
   };
   my $flatten_flag = "";
-  if (system(ShellEscape($nm, "-f", $image) . $to_devnull) == 0) {
+  if (system("$nm -f $image >$dev_null 2>&1") == 0) {
     $flatten_flag = "-f";
   }
 
   # Finally, in the case $imagie isn't a debug library, we try again with
   # -D to at least get *exported* symbols.  If we can't use --demangle,
   # we use c++filt instead, if it exists on this system.
-  my @nm_commands = (ShellEscape($nm, "-n", $flatten_flag, $demangle_flag,
-                                 $image) . " 2>$dev_null $cppfilt_flag",
-                     ShellEscape($nm, "-D", "-n", $flatten_flag, $demangle_flag,
-                                 $image) . " 2>$dev_null $cppfilt_flag",
+  my @nm_commands = ("$nm -n $flatten_flag $demangle_flag" .
+                     " $image 2>$dev_null $cppfilt_flag",
+                     "$nm -D -n $flatten_flag $demangle_flag" .
+                     " $image 2>$dev_null $cppfilt_flag",
                      # 6nm is for Go binaries
-                     ShellEscape("6nm", "$image") . " 2>$dev_null | sort",
+		     "6nm $image 2>$dev_null | sort",
                      );
 
   # If the executable is an MS Windows PDB-format executable, we'll
@@ -5119,9 +4981,8 @@ sub GetProcedureBoundaries {
   # want to use both unix nm and windows-specific nm_pdb, since
   # PDB-format executables can apparently include dwarf .o files.
   if (exists $obj_tool_map{"nm_pdb"}) {
-    push(@nm_commands,
-         ShellEscape($obj_tool_map{"nm_pdb"}, "--demangle", $image)
-         . " 2>$dev_null");
+    my $nm_pdb = $obj_tool_map{"nm_pdb"};
+    push(@nm_commands, "$nm_pdb --demangle $image 2>$dev_null");
   }
 
   foreach my $nm_command (@nm_commands) {

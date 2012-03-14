@@ -43,7 +43,7 @@
 
 #include <stdint.h>   // for uintptr_t
 #include <stdlib.h>   // for NULL
-#include <gperftools/stacktrace.h>
+#include <google/stacktrace.h>
 
 // Given a pointer to a stack frame, locate and return the calling
 // stackframe, or return NULL if no stackframe can be found. Perform sanity
@@ -126,12 +126,16 @@ int GET_STACK_TRACE_OR_FRAMES {
 
   int n = 0;
   while (sp && n < max_depth) {
+#if IS_STACK_FRAMES
     // The GetStackFrames routine is called when we are in some
     // informational context (the failure signal handler for example).
     // Use the non-strict unwinding rules to produce a stack trace
-    // that is as complete as possible (even if it contains a few
-    // bogus entries in some rare cases).
-    void **next_sp = NextStackFrame<!IS_STACK_FRAMES>(sp);
+    // that is as complete as possible (even if it contains a few bogus
+    // entries in some rare cases).
+    void **next_sp = NextStackFrame<false>(sp);
+#else
+    void **next_sp = NextStackFrame<true>(sp);
+#endif
 
     if (skip_count > 0) {
       skip_count--;
@@ -141,20 +145,20 @@ int GET_STACK_TRACE_OR_FRAMES {
       // linux ppc64), it's in sp[2].  For SYSV (used by linux ppc),
       // it's in sp[1].
 #if defined(_CALL_AIX) || defined(_CALL_DARWIN)
-      result[n] = *(sp+2);
+      result[n++] = *(sp+2);
 #elif defined(_CALL_SYSV)
-      result[n] = *(sp+1);
+      result[n++] = *(sp+1);
 #elif defined(__APPLE__) || (defined(__linux) && defined(__PPC64__))
       // This check is in case the compiler doesn't define _CALL_AIX/etc.
-      result[n] = *(sp+2);
+      result[n++] = *(sp+2);
 #elif defined(__linux)
       // This check is in case the compiler doesn't define _CALL_SYSV.
-      result[n] = *(sp+1);
+      result[n++] = *(sp+1);
 #else
 #error Need to specify the PPC ABI for your archiecture.
 #endif
 
-#if IS_STACK_FRAMES
+#if IS_STACK_FRAME
       if (next_sp > sp) {
         sizes[n] = (uintptr_t)next_sp - (uintptr_t)sp;
       } else {
@@ -162,7 +166,6 @@ int GET_STACK_TRACE_OR_FRAMES {
         sizes[n] = 0;
       }
 #endif
-      n++;
     }
     sp = next_sp;
   }

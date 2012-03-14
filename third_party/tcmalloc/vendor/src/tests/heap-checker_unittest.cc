@@ -101,10 +101,10 @@
 #include "base/logging.h"
 #include "base/commandlineflags.h"
 #include "base/thread_lister.h"
-#include <gperftools/heap-checker.h>
+#include <google/heap-checker.h>
 #include "memory_region_map.h"
-#include <gperftools/malloc_extension.h>
-#include <gperftools/stacktrace.h>
+#include <google/malloc_extension.h>
+#include <google/stacktrace.h>
 
 // On systems (like freebsd) that don't define MAP_ANONYMOUS, use the old
 // form of the name instead.
@@ -1381,13 +1381,7 @@ int main(int argc, char** argv) {
     RunHidden(NewCallback(MakeALeak, &arr));
     Use(&arr);
     LogHidden("Leaking", arr);
-    if (FLAGS_test_cancel_global_check) {
-      HeapLeakChecker::CancelGlobalCheck();
-    } else {
-      // Verify we can call NoGlobalLeaks repeatedly without deadlocking
-      HeapLeakChecker::NoGlobalLeaks();
-      HeapLeakChecker::NoGlobalLeaks();
-    }
+    if (FLAGS_test_cancel_global_check)  HeapLeakChecker::CancelGlobalCheck();
     return Pass();
       // whole-program leak-check should (with very high probability)
       // catch the leak of arr (10 * sizeof(int) bytes)
@@ -1402,13 +1396,7 @@ int main(int argc, char** argv) {
     Use(&arr2);
     LogHidden("Loop leaking", arr1);
     LogHidden("Loop leaking", arr2);
-    if (FLAGS_test_cancel_global_check) {
-      HeapLeakChecker::CancelGlobalCheck();
-    } else {
-      // Verify we can call NoGlobalLeaks repeatedly without deadlocking
-      HeapLeakChecker::NoGlobalLeaks();
-      HeapLeakChecker::NoGlobalLeaks();
-    }
+    if (FLAGS_test_cancel_global_check)  HeapLeakChecker::CancelGlobalCheck();
     return Pass();
       // whole-program leak-check should (with very high probability)
       // catch the leak of arr1 and arr2 (4 * sizeof(void*) bytes)

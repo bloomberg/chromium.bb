@@ -31,7 +31,6 @@
 #define _BASICTYPES_H_
 
 #include <config.h>
-#include <string.h>       // for memcpy()
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>     // gets us PRId64, etc
 #endif
@@ -194,28 +193,6 @@ struct CompileAssert {
    (reinterpret_cast<char*>(&reinterpret_cast<strct*>(16)->field) -     \
     reinterpret_cast<char*>(16))
 
-// bit_cast<Dest,Source> implements the equivalent of
-// "*reinterpret_cast<Dest*>(&source)".
-//
-// The reinterpret_cast method would produce undefined behavior
-// according to ISO C++ specification section 3.10 -15 -.
-// bit_cast<> calls memcpy() which is blessed by the standard,
-// especially by the example in section 3.9.
-//
-// Fortunately memcpy() is very fast.  In optimized mode, with a
-// constant size, gcc 2.95.3, gcc 4.0.1, and msvc 7.1 produce inline
-// code with the minimal amount of data movement.  On a 32-bit system,
-// memcpy(d,s,4) compiles to one load and one store, and memcpy(d,s,8)
-// compiles to two loads and two stores.
-
-template <class Dest, class Source>
-inline Dest bit_cast(const Source& source) {
-  COMPILE_ASSERT(sizeof(Dest) == sizeof(Source), bitcasting_unequal_sizes);
-  Dest dest;
-  memcpy(&dest, &source, sizeof(dest));
-  return dest;
-}
-
 #ifdef HAVE___ATTRIBUTE__
 # define ATTRIBUTE_WEAK      __attribute__((weak))
 # define ATTRIBUTE_NOINLINE  __attribute__((noinline))
@@ -332,7 +309,8 @@ class AssignAttributeStartEnd {
 #endif  // HAVE___ATTRIBUTE__ and __ELF__ or __MACH__
 
 #if defined(HAVE___ATTRIBUTE__) && (defined(__i386__) || defined(__x86_64__))
-# define CACHELINE_ALIGNED __attribute__((aligned(64)))
+# define CACHELINE_SIZE 64
+# define CACHELINE_ALIGNED __attribute__((aligned(CACHELINE_SIZE)))
 #else
 # define CACHELINE_ALIGNED
 #endif  // defined(HAVE___ATTRIBUTE__) && (__i386__ || __x86_64__)

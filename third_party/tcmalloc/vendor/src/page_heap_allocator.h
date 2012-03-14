@@ -36,7 +36,7 @@
 #include <stddef.h>                     // for NULL, size_t
 
 #include "common.h"            // for MetaDataAlloc
-#include "internal_logging.h"  // for ASSERT
+#include "internal_logging.h"  // for ASSERT, CRASH
 
 namespace tcmalloc {
 
@@ -70,10 +70,9 @@ class PageHeapAllocator {
         // suitably aligned memory.
         free_area_ = reinterpret_cast<char*>(MetaDataAlloc(kAllocIncrement));
         if (free_area_ == NULL) {
-          Log(kCrash, __FILE__, __LINE__,
-              "FATAL ERROR: Out of memory trying to allocate internal "
-              "tcmalloc data (bytes, object-size)",
-              kAllocIncrement, sizeof(T));
+          CRASH("FATAL ERROR: Out of memory trying to allocate internal "
+                "tcmalloc data (%d bytes, object-size %d)\n",
+                kAllocIncrement, static_cast<int>(sizeof(T)));
         }
         free_avail_ = kAllocIncrement;
       }

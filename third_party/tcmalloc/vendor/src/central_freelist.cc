@@ -319,8 +319,7 @@ void CentralFreeList::Populate() {
     if (span) Static::pageheap()->RegisterSizeClass(span, size_class_);
   }
   if (span == NULL) {
-    Log(kLog, __FILE__, __LINE__,
-        "tcmalloc: allocation failed", npages << kPageShift);
+    MESSAGE("tcmalloc: allocation failed", npages << kPageShift);
     lock_.Lock();
     return;
   }

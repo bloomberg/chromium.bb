@@ -53,7 +53,7 @@
 // Some code may do that.
 
 #include <config.h>
-#include <gperftools/stacktrace.h>
+#include <google/stacktrace.h>
 #include "stacktrace_config.h"
 
 #if defined(STACKTRACE_INL_HEADER)
@@ -103,8 +103,8 @@
 # include "stacktrace_libunwind-inl.h"
 # include "stacktrace_generic-inl.h"
 # include "stacktrace_powerpc-inl.h"
+# include "stacktrace_nacl-inl.h"
 # include "stacktrace_win32-inl.h"
-# include "stacktrace_arm-inl.h"
 #else
 # error Cannot calculate stack trace: will need to write for your environment
 #endif

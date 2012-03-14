@@ -213,25 +213,25 @@
 #undef NO_MINUS_C_MINUS_O
 
 /* Name of package */
-#define PACKAGE "gperftools"
+#define PACKAGE "google-perftools"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "opensource@google.com"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "gperftools"
+#define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gperftools 2.0"
+#define PACKAGE_STRING "google-perftools 1.8"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "gperftools"
+#define PACKAGE_TARNAME "google-perftools"
 
 /* Define to the home page for this package. */
 #undef PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.0"
+#define PACKAGE_VERSION "1.8"
 
 /* How to access the PC from a struct ucontext */
 #undef PC_FROM_UCONTEXT

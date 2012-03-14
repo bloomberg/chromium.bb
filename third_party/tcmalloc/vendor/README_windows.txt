@@ -2,7 +2,7 @@
 
 This project has begun being ported to Windows.  A working solution
 file exists in this directory:
-    gperftools.sln
+    google-perftools.sln
 
 You can load this solution file into VC++ 7.1 (Visual Studio 2003) or
 later -- in the latter case, it will automatically convert the files
@@ -78,16 +78,11 @@ both x86 and x64.  In particular, if you use the 'statically link with
 libc, and replace its malloc with tcmalloc' approach, mentioned above,
 it should be possible to use tcmalloc with 64-bit windows.
 
-As of perftools 1.10, there is some support for disassembling x86_64
-instructions, for work with win64.  This work is preliminary, but the
-test file preamble_patcher_test.cc is provided to play around with
-that a bit.  preamble_patcher_test will not compile on win32.
-
 
 --- ISSUES
 
 NOTE FOR WIN2K USERS: According to reports
-(http://code.google.com/p/gperftools/issues/detail?id=127)
+(http://code.google.com/p/google-perftools/issues/detail?id=127)
 the stack-tracing necessary for the heap-profiler does not work on
 Win2K.  The best workaround is, if you are building on a Win2k system
 is to add "/D NO_TCMALLOC_SAMPLES=" to your build, to turn off the
@@ -109,10 +104,10 @@ use with realloc, for instance).
 I have little experience with Windows programming, so there may be
 better ways to set this up than I've done!  If you run across any
 problems, please post to the google-perftools Google Group, or report
-them on the gperftools Google Code site:
+them on the google-perftools Google Code site:
    http://groups.google.com/group/google-perftools
-   http://code.google.com/p/gperftools/issues/list
+   http://code.google.com/p/google-perftools/issues/list
 
 -- craig
 
-Last modified: 2 February 2012
+Last modified: 6 April 2011

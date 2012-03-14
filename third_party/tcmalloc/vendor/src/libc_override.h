@@ -55,7 +55,7 @@
 #ifdef HAVE_FEATURES_H
 #include <features.h>   // for __GLIBC__
 #endif
-#include <gperftools/tcmalloc.h>
+#include <google/tcmalloc.h>
 
 static void ReplaceSystemAlloc();  // defined in the .h files below
 

@@ -41,7 +41,7 @@
 #include <unistd.h>                 // for fork()
 #endif
 #include <sys/wait.h>               // for wait()
-#include "gperftools/profiler.h"
+#include "google/profiler.h"
 #include "base/simple_mutex.h"
 #include "tests/testutil.h"
 

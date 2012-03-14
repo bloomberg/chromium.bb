@@ -46,8 +46,11 @@
 #ifndef BASE_STACKTRACE_CONFIG_H_
 #define BASE_STACKTRACE_CONFIG_H_
 
-// First, the i386 and x86_64 case.
-#if (defined(__i386__) || defined(__x86_64__)) && __GNUC__ >= 2
+#ifdef __native_client__
+#  define STACKTRACE_INL_HEADER "base/stacktrace_nacl-inl.h"
+
+// i386 and x86_64 case.
+#elif (defined(__i386__) || defined(__x86_64__)) && __GNUC__ >= 2
 # if !defined(NO_FRAME_POINTER)
 #   define STACKTRACE_INL_HEADER "stacktrace_x86-inl.h"
 #   define STACKTRACE_SKIP_CONTEXT_ROUTINES 1
@@ -66,14 +69,6 @@
 #   define STACKTRACE_INL_HEADER "stacktrace_powerpc-inl.h"
 # else
 #   define STACKTRACE_INL_HEADER "stacktrace_generic-inl.h"
-# endif
-
-// The ARM case
-#elif defined(__arm__)  && __GNUC__ >= 2
-# if !defined(NO_FRAME_POINTER)
-#   define STACKTRACE_INL_HEADER "stacktrace_arm-inl.h"
-# else
-#   error stacktrace without frame pointer is not supported on ARM
 # endif
 
 // The Windows case -- probably cygwin and mingw will use one of the

@@ -7,10 +7,10 @@ Summary: Performance tools for C++
 Version: %VERSION
 Release: %rel
 Group: Development/Libraries
-URL: http://code.google.com/p/gperftools/
+URL: http://code.google.com/p/google-perftools/
 License: BSD
-Vendor: Google Inc. and others
-Packager: Google Inc. and others <google-perftools@googlegroups.com>
+Vendor: Google
+Packager: Google <google-perftools@googlegroups.com>
 Source: http://%{NAME}.googlecode.com/files/%{NAME}-%{VERSION}.tar.gz
 Distribution: Redhat 7 and above.
 Buildroot: %{_tmppath}/%{name}-root
@@ -70,7 +70,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %{_includedir}/google
-%{_includedir}/gperftools
 %{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
