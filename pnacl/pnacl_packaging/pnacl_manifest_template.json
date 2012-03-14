@@ -1,8 +1,7 @@
 {
-    "description": "Portable Native Client",
-    "name": "PNaCl",
-    "manifest_version": 2,
-    "version": "%(version)s",
-    %(extra)s
-    "x-pnacl-arch": "%(arch)s"
+  "description": "Portable Native Client",
+  "name": "PNaCl",
+  "manifest_version": 2,
+  %(extra)s
+  "version": "%(version)s"
 }

@@ -171,26 +171,50 @@ class PnaclPackaging(object):
   WEBSTORE_PUBLIC_KEY="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7zhW8iytdYid7SXLokWfxNoz2Co9x2ItkVUS53Iq12xDLfcKkUZ2RNXQtua+yKgRTRMP0HigPtn2KZeeJYzvBYLP/kz62B3nM5nS8Mo0qQKEsJiNgTf1uOgYGPyrE6GrFBFolLGstnZ1msVgNHEv2dZruC2XewOJihvmeQsOjjwIDAQAB"
 
   package_base = os.path.dirname(__file__)
+  # The extension system's manifest.json.
   manifest_template = J(package_base, 'pnacl_manifest_template.json')
+  # Pnacl-specific info
+  pnacl_template = J(package_base, 'pnacl_info_template.json')
+
+  # Agreed-upon name for pnacl-specific info.
+  pnacl_json = 'pnacl.json'
 
   @staticmethod
-  def GenerateManifest(output, version, arch,
-                       web_accessible_resources,
-                       manifest_key=None):
-    template_fd = open(PnaclPackaging.manifest_template, 'r')
-    template = template_fd.read()
-    template_fd.close()
-    output_fd = open(output, 'w')
+  def GenerateManifests(target_dir, version, arch, web_accessible,
+                        manifest_key=None):
+    PnaclPackaging.GenerateExtensionManifest(target_dir, version,
+                              web_accessible, manifest_key)
+    PnaclPackaging.GeneratePnaclInfo(target_dir, version, arch)
+
+  @staticmethod
+  def GenerateExtensionManifest(target_dir, version,
+                                web_accessible, manifest_key):
+    manifest_template_fd = open(PnaclPackaging.manifest_template, 'r')
+    manifest_template = manifest_template_fd.read()
+    manifest_template_fd.close()
+    output_fd = open(J(target_dir, 'manifest.json'), 'w')
     extra = ''
-    if web_accessible_resources != []:
-      extra += '"web_accessible_resources": [%s],\n' % ',\n'.join(
-          [ '"' + to_quote + '"' for to_quote in web_accessible_resources ])
+    if web_accessible != []:
+      extra += '"web_accessible_resources": [\n%s],\n' % ',\n'.join(
+          [ '    "%s"' % to_quote for to_quote in web_accessible ])
     if manifest_key is not None:
-      extra += '"key": "%s",\n' % manifest_key
-    output_fd.write(template % { "version" : version,
-                                 "extra" : extra,
-                                 "arch" : arch, })
+      extra += '  "key": "%s",\n' % manifest_key
+    output_fd.write(manifest_template % { "version" : version,
+                                          "extra" : extra, })
     output_fd.close()
+
+  @staticmethod
+  def GeneratePnaclInfo(target_dir, version, arch):
+    pnacl_template_fd = open(PnaclPackaging.pnacl_template, 'r')
+    pnacl_template = pnacl_template_fd.read()
+    pnacl_template_fd.close()
+    output_fd = open(J(target_dir, PnaclPackaging.pnacl_json), 'w')
+    # For now, make the ABI version the same as pnacl-version.
+    output_fd.write(pnacl_template % { "abi-version" : version,
+                                       "arch" : arch, })
+    output_fd.close()
+
+
 
 ######################################################################
 
@@ -280,6 +304,14 @@ def ListDirectoryRecursivelyAsURLs(base_dir):
   os.path.walk(base_dir, visit, file_list)
   return file_list
 
+def GetWebAccessibleResources(base_dir):
+  ''' Return the default list of web_accessible_resources to allow us
+  to do a CORS request to get extension files. '''
+  resources = ListDirectoryRecursivelyAsURLs(base_dir)
+  # Make sure that the pnacl.json file is accessible.
+  resources.append(os.path.basename(PnaclPackaging.pnacl_json))
+  return resources
+
 def GeneratePrivateKey():
   """ Generate a dummy extension to generate a fresh private key. This will
   be left in the build dir, and the dummy extension will be cleaned up.
@@ -288,10 +320,10 @@ def GeneratePrivateKey():
   tempdir = tempfile.mkdtemp(dir=PnaclDirs.OutputDir())
   ext_dir = J(tempdir, 'dummy_extension')
   os.mkdir(ext_dir)
-  PnaclPackaging.GenerateManifest(J(ext_dir, 'manifest.json'),
-                                  '0.0.0.0',
-                                  'dummy_arch',
-                                  [])
+  PnaclPackaging.GenerateManifests(ext_dir,
+                                   '0.0.0.0',
+                                   'dummy_arch',
+                                   [])
   CRXGen.RunCRXGen(ext_dir)
   shutil.copy2(J(tempdir, 'dummy_extension.pem'),
                PnaclDirs.OutputDir())
@@ -329,13 +361,13 @@ def BuildArchCRX(version_quad, arch, lib_overrides, options):
   if options.unpacked_only:
     return
 
-  web_accessible_files = ListDirectoryRecursivelyAsURLs(parent_dir)
+  web_accessible = GetWebAccessibleResources(parent_dir)
 
   # Generate manifest one level up (to have layout look like the "all" package).
-  PnaclPackaging.GenerateManifest(J(parent_dir, 'manifest.json'),
-                                  version_quad,
-                                  arch,
-                                  web_accessible_files)
+  PnaclPackaging.GenerateManifests(parent_dir,
+                                   version_quad,
+                                   arch,
+                                   web_accessible)
   CRXGen.RunCRXGen(parent_dir, options.prev_priv_key)
 
 
@@ -360,13 +392,13 @@ def BuildCWSZip(version_quad):
   StepBanner("CWS ZIP", "Making a zip with all architectures.")
   target_dir = PnaclDirs.OutputAllDir()
 
-  web_accessible_files = ListDirectoryRecursivelyAsURLs(target_dir)
+  web_accessible = GetWebAccessibleResources(target_dir)
 
   # Overwrite the arch-specific 'manifest.json' that was there.
-  PnaclPackaging.GenerateManifest(J(target_dir, 'manifest.json'),
-                                  version_quad,
-                                  'all',
-                                  web_accessible_files)
+  PnaclPackaging.GenerateManifests(target_dir,
+                                   version_quad,
+                                   'all',
+                                   web_accessible)
   target_zip = J(PnaclDirs.OutputDir(), 'pnacl_all.zip')
   zipf = zipfile.ZipFile(target_zip, 'w', compression=zipfile.ZIP_DEFLATED)
   ZipDirectory(target_dir, zipf)
@@ -380,13 +412,13 @@ def BuildUnpacked(version_quad):
   StepBanner("UNPACKED CRX", "Making an unpacked CRX of all architectures.")
 
   target_dir = PnaclDirs.OutputAllDir()
-  web_accessible_files = ListDirectoryRecursivelyAsURLs(target_dir)
+  web_accessible = GetWebAccessibleResources(target_dir)
   # Overwrite the manifest file (if there was one already).
-  PnaclPackaging.GenerateManifest(J(target_dir, 'manifest.json'),
-                                  version_quad,
-                                  'all',
-                                  web_accessible_files,
-                                  PnaclPackaging.WEBSTORE_PUBLIC_KEY)
+  PnaclPackaging.GenerateManifests(target_dir,
+                                   version_quad,
+                                   'all',
+                                   web_accessible,
+                                   PnaclPackaging.WEBSTORE_PUBLIC_KEY)
 
 
 def BuildAll(version_quad, lib_overrides, options):
