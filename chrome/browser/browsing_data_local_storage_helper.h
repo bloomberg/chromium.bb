@@ -99,10 +99,10 @@ class BrowsingDataLocalStorageHelper
   std::list<LocalStorageInfo> local_storage_info_;
 
  private:
-  // Enumerates all local storage files in the WEBKIT thread.
-  void FetchLocalStorageInfoInWebKitThread();
-  // Delete a single local storage file in the WEBKIT thread.
-  void DeleteLocalStorageFileInWebKitThread(const FilePath& file_path);
+  // Enumerates all local storage files in a sequenced task.
+  void FetchLocalStorageInfoHelper();
+  // Delete a single local storage file in a sequenced task.
+  void DeleteLocalStorageFileHelper(const FilePath& file_path);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };
@@ -140,12 +140,8 @@ class CannedBrowsingDataLocalStorageHelper
   virtual ~CannedBrowsingDataLocalStorageHelper();
 
   // Convert the pending local storage info to local storage info objects.
-  void ConvertPendingInfoInWebKitThread();
+  void ConvertPendingInfo();
 
-  // Used to protect access to pending_local_storage_info_.
-  mutable base::Lock lock_;
-
-  // May mutate on WEBKIT and UI threads.
   std::set<GURL> pending_local_storage_info_;
 
   Profile* profile_;

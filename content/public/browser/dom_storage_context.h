@@ -15,6 +15,7 @@
 class FilePath;
 
 namespace base {
+class SequencedTaskRunner;
 class Time;
 }
 
@@ -23,10 +24,14 @@ namespace content {
 class BrowserContext;
 
 // Represents the per-BrowserContext Local Storage data.
-// Call these methods only on the WebKit thread.
+// Call these methods only on tasks scheduled via it's task_runner().
 class DOMStorageContext : public base::RefCountedThreadSafe<DOMStorageContext> {
  public:
   virtual ~DOMStorageContext() {}
+
+  // Returns a task runner which should be used to schedule tasks
+  // which can invoke the other methods of this interface.
+  virtual base::SequencedTaskRunner* task_runner() const = 0;
 
   // Returns all the file paths of local storage files.
   virtual std::vector<FilePath> GetAllStorageFiles() = 0;

@@ -302,12 +302,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     }
   }
 
-  if (remove_mask & REMOVE_LOCAL_STORAGE &&
-      BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
+  if (remove_mask & REMOVE_LOCAL_STORAGE) {
     DOMStorageContext* context = BrowserContext::GetDOMStorageContext(profile_);
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&BrowsingDataRemover::ClearDOMStorageOnWebKitThread,
+    context->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowsingDataRemover::ClearDOMStorageInSequencedTask,
                    base::Unretained(this), make_scoped_refptr(context)));
   }
 
@@ -437,9 +436,10 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
   return delete_begin_time - diff;
 }
 
-void BrowsingDataRemover::ClearDOMStorageOnWebKitThread(
-    scoped_refptr<DOMStorageContext> dom_storage_context) {
+void BrowsingDataRemover::ClearDOMStorageInSequencedTask(
+    DOMStorageContext* dom_storage_context) {
   // We assume the end time is now.
+  DCHECK(dom_storage_context->task_runner()->RunsTasksOnCurrentThread());
   dom_storage_context->DeleteDataModifiedSince(delete_begin_);
 }
 

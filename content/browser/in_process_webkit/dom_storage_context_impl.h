@@ -19,6 +19,11 @@ class DOMStorageArea;
 class DOMStorageMessageFilter;
 class DOMStorageNamespace;
 
+namespace base {
+class MessageLoopProxy;
+class SequencedTaskRunner;
+}
+
 namespace quota {
 class SpecialStoragePolicy;
 }
@@ -37,6 +42,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   virtual ~DOMStorageContextImpl();
 
   // DOMStorageContext implementation:
+  virtual base::SequencedTaskRunner* task_runner() const OVERRIDE;
   virtual std::vector<FilePath> GetAllStorageFiles() OVERRIDE;
   virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
   virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
@@ -156,6 +162,7 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   StorageNamespaceMap storage_namespace_map_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<base::MessageLoopProxy> webkit_message_loop_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextImpl);
 };

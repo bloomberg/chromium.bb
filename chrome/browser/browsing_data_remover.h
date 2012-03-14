@@ -246,9 +246,9 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
-  // Invoked on the WEBKIT thread to clear local storage.
-  void ClearDOMStorageOnWebKitThread(
-      scoped_refptr<content::DOMStorageContext> dom_storage_context);
+  // Invoked in a background task to clear local storage.
+  void ClearDOMStorageInSequencedTask(
+      content::DOMStorageContext* dom_storage_context);
 
   // Returns true if we're all done.
   bool all_done() {

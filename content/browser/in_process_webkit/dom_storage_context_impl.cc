@@ -64,7 +64,10 @@ DOMStorageContextImpl::DOMStorageContextImpl(
       last_session_storage_namespace_id_on_io_thread_(kLocalStorageNamespaceId),
       clear_local_state_on_exit_(false),
       save_session_state_(false),
-      special_storage_policy_(special_storage_policy) {
+      special_storage_policy_(special_storage_policy),
+      webkit_message_loop_(
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::WEBKIT_DEPRECATED)) {
   data_path_ = data_path;
 }
 
@@ -290,6 +293,10 @@ void DOMStorageContextImpl::CompleteCloningSessionStorage(
   // If nothing exists, then there's nothing to clone.
   if (existing_namespace)
     RegisterStorageNamespace(existing_namespace->Copy(clone_id));
+}
+
+base::SequencedTaskRunner* DOMStorageContextImpl::task_runner() const {
+  return webkit_message_loop_;
 }
 
 std::vector<FilePath> DOMStorageContextImpl::GetAllStorageFiles() {

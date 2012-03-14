@@ -66,10 +66,10 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 
   is_fetching_ = true;
   completion_callback_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+  dom_storage_context_->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(
-          &BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread,
+          &BrowsingDataLocalStorageHelper::FetchLocalStorageInfoHelper,
           this));
 }
 
@@ -81,15 +81,15 @@ void BrowsingDataLocalStorageHelper::CancelNotification() {
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+  dom_storage_context_->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(
-          &BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread,
+          &BrowsingDataLocalStorageHelper::DeleteLocalStorageFileHelper,
           this, file_path));
 }
 
-void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoHelper() {
+  DCHECK(dom_storage_context_->task_runner()->RunsTasksOnCurrentThread());
   std::vector<FilePath> files = dom_storage_context_->GetAllStorageFiles();
   for (size_t i = 0; i < files.size(); ++i) {
     FilePath file_path = files[i];
@@ -132,11 +132,13 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
   is_fetching_ = false;
 }
 
-void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
+void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileHelper(
     const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  DCHECK(dom_storage_context_->task_runner()->RunsTasksOnCurrentThread());
   dom_storage_context_->DeleteLocalStorageFile(file_path);
 }
+
+//---------------------------------------------------------
 
 CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
     Profile* profile)
@@ -150,7 +152,6 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
   CannedBrowsingDataLocalStorageHelper* clone =
       new CannedBrowsingDataLocalStorageHelper(profile_);
 
-  base::AutoLock auto_lock(lock_);
   clone->pending_local_storage_info_ = pending_local_storage_info_;
   clone->local_storage_info_ = local_storage_info_;
   return clone;
@@ -158,18 +159,15 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
-  base::AutoLock auto_lock(lock_);
   pending_local_storage_info_.insert(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
-  base::AutoLock auto_lock(lock_);
   local_storage_info_.clear();
   pending_local_storage_info_.clear();
 }
 
 bool CannedBrowsingDataLocalStorageHelper::empty() const {
-  base::AutoLock auto_lock(lock_);
   return local_storage_info_.empty() && pending_local_storage_info_.empty();
 }
 
@@ -181,16 +179,17 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
 
   is_fetching_ = true;
   completion_callback_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+
+  // We post a task to emulate async fetching behavior.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(&CannedBrowsingDataLocalStorageHelper::
-          ConvertPendingInfoInWebKitThread, this));
+          ConvertPendingInfo, this));
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
 
-void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfoInWebKitThread() {
-  base::AutoLock auto_lock(lock_);
+void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo() {
   for (std::set<GURL>::iterator info = pending_local_storage_info_.begin();
        info != pending_local_storage_info_.end(); ++info) {
     WebSecurityOrigin web_security_origin =

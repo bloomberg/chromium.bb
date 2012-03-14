@@ -48,11 +48,13 @@ void ExtensionDataDeleter::StartDeleting(
       base::Bind(
           &ExtensionDataDeleter::DeleteCookiesOnIOThread, deleter));
 
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+  scoped_refptr<DOMStorageContext> dom_storage_context =
+      BrowserContext::GetDOMStorageContext(profile);
+  dom_storage_context->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(
-          &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread, deleter,
-          make_scoped_refptr(BrowserContext::GetDOMStorageContext(profile))));
+          &ExtensionDataDeleter::DeleteLocalStorageInSequencedTask, deleter,
+          dom_storage_context));
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
@@ -125,9 +127,9 @@ void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
   DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
 }
 
-void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread(
-    scoped_refptr<DOMStorageContext> dom_storage_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+void ExtensionDataDeleter::DeleteLocalStorageInSequencedTask(
+    DOMStorageContext* dom_storage_context) {
+  DCHECK(dom_storage_context->task_runner()->RunsTasksOnCurrentThread());
   dom_storage_context->DeleteForOrigin(origin_id_);
 }
 
