@@ -19,6 +19,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/selected_file_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
@@ -342,6 +343,11 @@ IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(params)
   IPC_STRUCT_TRAITS_MEMBER(time)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SelectedFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
@@ -1005,7 +1011,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetAltErrorPageURL,
                     GURL)
 
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
-                    std::vector<FilePath> /* selected files */)
+                    std::vector<content::SelectedFileInfo>)
 
 // Provides the results of directory enumeration.
 IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,

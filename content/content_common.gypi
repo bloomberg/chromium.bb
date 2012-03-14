@@ -72,6 +72,7 @@
     'public/common/sandbox_init.h',
     'public/common/sandbox_type_mac.h',
     'public/common/security_style.h',
+    'public/common/selected_file_info.h',
     'public/common/serialized_script_value.cc',
     'public/common/serialized_script_value.h',
     'public/common/show_desktop_notification_params.cc',

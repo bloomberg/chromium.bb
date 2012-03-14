@@ -49,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/selected_file_info.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -718,13 +719,13 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::FilesSelectedInChooser(
-    const std::vector<FilePath>& files,
+    const std::vector<SelectedFileInfo>& files,
     int permissions) {
   // Grant the security access requested to the given files.
-  for (std::vector<FilePath>::const_iterator file = files.begin();
-       file != files.end(); ++file) {
+  for (size_t i = 0; i < files.size(); ++i) {
+    const SelectedFileInfo& file = files[i];
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantPermissionsForFile(
-        GetProcess()->GetID(), *file, permissions);
+        GetProcess()->GetID(), file.path, permissions);
   }
   Send(new ViewMsg_RunFileChooserResponse(GetRoutingID(), files));
 }

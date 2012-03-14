@@ -92,6 +92,7 @@ class RenderViewObserver;
 class RenderViewTest;
 struct CustomContextMenuContext;
 struct FileChooserParams;
+struct SelectedFileInfo;
 }  // namespace content
 
 namespace gfx {
@@ -829,7 +830,8 @@ class RenderViewImpl : public RenderWidget,
   void OnDisableAutoResize(const gfx::Size& new_size);
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
-  void OnFileChooserResponse(const std::vector<FilePath>& paths);
+  void OnFileChooserResponse(
+      const std::vector<content::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);

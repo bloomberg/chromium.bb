@@ -44,6 +44,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/selected_file_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -4145,16 +4146,18 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
   enumeration_completions_.erase(id);
 }
 
-void RenderViewImpl::OnFileChooserResponse(const std::vector<FilePath>& paths) {
+void RenderViewImpl::OnFileChooserResponse(
+    const std::vector<content::SelectedFileInfo>& files) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
   if (file_chooser_completions_.empty())
     return;
 
-  WebVector<WebString> ws_file_names(paths.size());
-  for (size_t i = 0; i < paths.size(); ++i)
-    ws_file_names[i] = webkit_glue::FilePathToWebString(paths[i]);
+  WebVector<WebString> ws_file_names(files.size());
+  for (size_t i = 0; i < files.size(); ++i)
+    ws_file_names[i] = webkit_glue::FilePathToWebString(files[i].path);
 
+  // TODO(satorux,kinuko): Pass display names too. crosbug.com/27222
   if (file_chooser_completions_.front()->completion)
     file_chooser_completions_.front()->completion->didChooseFile(ws_file_names);
   file_chooser_completions_.pop_front();

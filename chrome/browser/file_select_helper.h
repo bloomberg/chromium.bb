@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class Profile;
 namespace content {
 class RenderViewHost;
 struct FileChooserParams;
+struct SelectedFileInfo;
 }
 
 // This class handles file-selection requests coming from WebUI elements
@@ -82,8 +83,15 @@ class FileSelectHelper
   // SelectFileDialog::Listener overrides.
   virtual void FileSelected(
       const FilePath& path, int index, void* params) OVERRIDE;
+  virtual void FileSelectedWithExtraInfo(
+      const content::SelectedFileInfo& file,
+      int index,
+      void* params) OVERRIDE;
   virtual void MultiFilesSelected(const std::vector<FilePath>& files,
                                   void* params) OVERRIDE;
+  virtual void MultiFilesSelectedWithExtraInfo(
+      const std::vector<content::SelectedFileInfo>& files,
+      void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   // content::NotificationObserver overrides.

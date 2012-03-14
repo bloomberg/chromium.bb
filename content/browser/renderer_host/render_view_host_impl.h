@@ -62,6 +62,7 @@ class RenderViewHostObserver;
 struct FileChooserParams;
 struct ContextMenuParams;
 struct Referrer;
+struct SelectedFileInfo;
 struct ShowDesktopNotificationHostMsgParams;
 
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
@@ -194,8 +195,9 @@ class CONTENT_EXPORT RenderViewHostImpl
                     const WebKit::WebFindOptions& options) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
-  virtual void FilesSelectedInChooser(const std::vector<FilePath>& files,
-                                      int permissions) OVERRIDE;
+  virtual void FilesSelectedInChooser(
+      const std::vector<SelectedFileInfo>& files,
+      int permissions) OVERRIDE;
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual SessionStorageNamespace*
