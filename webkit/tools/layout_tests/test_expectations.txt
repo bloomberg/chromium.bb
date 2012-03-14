@@ -37,3 +37,6 @@ BUGYANGGUO MAC : svg/css/stars-with-shadow.html = TEXT
 BUGYANGGUO WIN : fast/repaint/moving-shadow-on-container.html = TEXT
 BUGYANGGUO WIN : fast/repaint/moving-shadow-on-path.html = TEXT
 BUGYANGGUO WIN : svg/css/stars-with-shadow.html = TEXT
+
+BUGCR117799 : fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
+
