@@ -20,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 namespace gfx {
 class Size;
 }
@@ -136,6 +140,10 @@ class ViewEventTestBase : public views::WidgetDelegate,
   MessageLoopForUI message_loop_;
 
   content::TestBrowserThread ui_thread_;
+
+#if defined(OS_WIN)
+  ui::ScopedOleInitializer ole_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestBase);
 };

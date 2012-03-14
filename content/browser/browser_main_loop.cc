@@ -47,7 +47,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
-#include <ole2.h>
 #include <shellapi.h>
 
 #include "content/browser/system_message_window_win.h"
@@ -219,17 +218,11 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {
   DCHECK(!g_current_browser_main_loop);
   g_current_browser_main_loop = this;
-#if defined(OS_WIN)
-  OleInitialize(NULL);
-#endif
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
   DCHECK_EQ(this, g_current_browser_main_loop);
   g_current_browser_main_loop = NULL;
-#if defined(OS_WIN)
-  OleUninitialize();
-#endif
 }
 
 void BrowserMainLoop::Init() {

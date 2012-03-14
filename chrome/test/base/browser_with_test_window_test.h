@@ -14,6 +14,10 @@
 #include "content/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 class GURL;
 
 #if defined(USE_AURA)
@@ -124,6 +128,10 @@ class BrowserWithTestWindowTest : public testing::Test {
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
+#endif
+
+#if defined(OS_WIN)
+  ui::ScopedOleInitializer ole_initializer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWithTestWindowTest);

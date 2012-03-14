@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome_frame/test/net/process_singleton_subclass.h"
 #include "chrome_frame/test/net/test_automation_provider.h"

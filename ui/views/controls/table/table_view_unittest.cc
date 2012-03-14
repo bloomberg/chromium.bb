@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -174,10 +175,10 @@ class TableViewTest : public testing::Test, views::WidgetDelegate {
  private:
   MessageLoopForUI message_loop_;
   views::Widget* window_;
+  ui::ScopedOleInitializer ole_initializer_;
 };
 
 void TableViewTest::SetUp() {
-  OleInitialize(NULL);
   model_.reset(CreateModel());
   std::vector<ui::TableColumn> columns;
   columns.resize(2);
@@ -194,7 +195,6 @@ void TableViewTest::TearDown() {
   window_->Close();
   // Temporary workaround to avoid leak of RootView::pending_paint_task_.
   message_loop_.RunAllPending();
-  OleUninitialize();
 }
 
 void TableViewTest::VerifyViewOrder(int first, ...) {

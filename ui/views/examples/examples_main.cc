@@ -16,9 +16,13 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
-  OleInitialize(NULL);
+  ui::ScopedOleInitializer ole_initializer;
 #elif defined(OS_LINUX)
   // Initializes gtk stuff.
   g_type_init();
@@ -51,8 +55,5 @@ int main(int argc, char** argv) {
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
 
-#if defined(OS_WIN)
-  OleUninitialize();
-#endif
   return 0;
 }

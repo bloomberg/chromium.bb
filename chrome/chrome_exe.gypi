@@ -24,7 +24,6 @@
         'app/client_util.h',
         'app/hard_error_handler_win.cc',
         'app/hard_error_handler_win.h',
-        'app/scoped_ole_initializer.h',
         '../content/app/startup_helper_win.cc',
       ],
       'mac_bundle_resources': [

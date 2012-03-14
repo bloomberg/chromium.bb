@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,19 +8,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/win/scoped_ole_initializer.h"
 
 namespace views {
 namespace {
 
 class NativeWidgetWinTest : public testing::Test {
  public:
-  NativeWidgetWinTest() {
-    OleInitialize(NULL);
-  }
-
-  ~NativeWidgetWinTest() {
-    OleUninitialize();
-  }
+  NativeWidgetWinTest() {}
+  ~NativeWidgetWinTest() {}
 
   virtual void TearDown() {
     // Flush the message loop because we have pending release tasks
@@ -38,6 +34,7 @@ class NativeWidgetWinTest : public testing::Test {
 
  private:
   MessageLoopForUI message_loop_;
+  ui::ScopedOleInitializer ole_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWinTest);
 };

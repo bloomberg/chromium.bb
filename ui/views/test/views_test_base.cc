@@ -4,10 +4,6 @@
 
 #include "ui/views/test/views_test_base.h"
 
-#if defined(OS_WIN)
-#include <ole2.h>
-#endif
-
 #if defined(USE_AURA)
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -64,18 +60,12 @@ namespace views {
 ViewsTestBase::ViewsTestBase()
     : setup_called_(false),
       teardown_called_(false) {
-#if defined(OS_WIN)
-  OleInitialize(NULL);
-#endif
 #if defined(USE_AURA)
   test_input_method_.reset(new DummyInputMethod);
 #endif
 }
 
 ViewsTestBase::~ViewsTestBase() {
-#if defined(OS_WIN)
-  OleUninitialize();
-#endif
   CHECK(setup_called_)
       << "You have overridden SetUp but never called super class's SetUp";
   CHECK(teardown_called_)

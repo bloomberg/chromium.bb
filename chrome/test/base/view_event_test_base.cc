@@ -4,10 +4,6 @@
 
 #include "chrome/test/base/view_event_test_base.h"
 
-#if defined(OS_WIN)
-#include <ole2.h>
-#endif
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
@@ -82,9 +78,6 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
-#if defined(OS_WIN)
-  OleInitialize(NULL);
-#endif
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
   ash::Shell::CreateInstance(NULL);
@@ -107,9 +100,6 @@ void ViewEventTestBase::TearDown() {
   aura::Env::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();
-#if defined(OS_WIN)
-  OleUninitialize();
-#endif
 }
 
 bool ViewEventTestBase::CanResize() const {

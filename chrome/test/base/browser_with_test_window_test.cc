@@ -4,10 +4,6 @@
 
 #include "chrome/test/base/browser_with_test_window_test.h"
 
-#if defined(OS_WIN)
-#include <ole2.h>
-#endif  // defined(OS_WIN)
-
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -37,9 +33,6 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
       file_thread_(BrowserThread::FILE, message_loop()),
       file_user_blocking_thread_(
           BrowserThread::FILE_USER_BLOCKING, message_loop()) {
-#if defined(OS_WIN)
-  OleInitialize(NULL);
-#endif
 }
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -76,10 +69,6 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
 
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-
-#if defined(OS_WIN)
-  OleUninitialize();
-#endif
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {

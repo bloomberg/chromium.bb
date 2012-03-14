@@ -11,6 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/test_views_delegate.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 namespace aura {
 class RootWindow;
 namespace test {
@@ -60,6 +64,10 @@ class ViewsTestBase : public testing::Test {
 #endif
   bool setup_called_;
   bool teardown_called_;
+
+#if defined(OS_WIN)
+  ui::ScopedOleInitializer ole_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestBase);
 };

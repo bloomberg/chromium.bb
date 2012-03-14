@@ -9,6 +9,10 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 namespace aura {
 class RootWindow;
 namespace test {
@@ -35,6 +39,10 @@ class AuraTestHelper {
   MessageLoopForUI message_loop_;
   bool setup_called_;
   bool teardown_called_;
+
+#if defined(OS_WIN)
+  ui::ScopedOleInitializer ole_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };
