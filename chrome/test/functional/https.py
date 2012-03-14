@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -89,6 +89,46 @@ class SSLTest(pyauto.PyUITest):
                       msg="Was not able to go back from the interstitial page.")
       self.assertEqual(self.GetActiveTabTitle(), first_page_title,
                        msg="Did not go back to previous page correctly.")
+
+  def testSSLCertOK(self):
+    """Verify Certificate OK does not display interstitial page.
+
+    This test also asserts that the page type is normal.
+    """
+    url = self._https_server_ok.GetURL('google.html').spec()
+    self.NavigateToURL(url)
+    tab_proxy = self.GetBrowserWindow(0).GetTab(0)
+    result_dict = tab_proxy.GetPageType()
+    self.assertTrue(result_dict, msg='Could not determine the type of the page')
+    self.assertEqual(
+        result_dict['page_type'], pyauto.PAGE_TYPE_NORMAL,
+        msg="Cert OK displayed page type %s." % result_dict['page_type'])
+
+  def testSSLCertIsExpiredAndCertNameMismatches(self):
+    """Verify Certificate Expiration and Certificate Mismatched name."""
+    for server, cert_status_flag, msg in zip(
+        (self._https_server_expired, self._https_server_mismatched),
+        (pyauto.CERT_STATUS_DATE_INVALID,
+         pyauto.CERT_STATUS_COMMON_NAME_INVALID),
+        ('Cert has not expired', 'Cert name does not mismatch')):
+      self.NavigateToURL(server.GetURL('google.html').spec())
+      result_dict = self.GetBrowserWindow(0).GetTab(0).GetSecurityState()
+      self.assertTrue(result_dict, msg='Could not get security state info')
+      self.assertTrue(
+          result_dict['ssl_cert_status'] & pyauto.uint32_ptr.frompointer(
+              cert_status_flag).value(),
+          msg=msg)
+
+  def testSSLCertAuthorityOK(self):
+    """Verify Certificate OK is valid."""
+    self.NavigateToURL(
+        self._https_server_mismatched.GetURL('google.html').spec())
+    result_dict = self.GetBrowserWindow(0).GetTab(0).GetSecurityState()
+    self.assertTrue(result_dict, msg='Could not get security state info')
+    self.assertFalse(
+        result_dict['ssl_cert_status'] & pyauto.uint32_ptr.frompointer(
+            pyauto.CERT_STATUS_AUTHORITY_INVALID).value(),
+        msg='Cert OK is invalid')
 
 
 if __name__ == '__main__':
