@@ -1033,6 +1033,7 @@ li.table-row {
 
 /* The selection summary text at the bottom of the preview pane. */
 .preview-summary {
+  -webkit-box-flex: 1;
   color: #666666;
   overflow: hidden;
   padding: 5px;
