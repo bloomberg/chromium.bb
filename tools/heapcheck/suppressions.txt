@@ -1882,3 +1882,12 @@
    fun:std::basic_string::basic_string
    fun:chromeos::UserManagerTest_*_Test::TestBody
 }
+{
+   bug_118203
+   Heapcheck:Leak
+   ...
+   fun:invalidation::NewPermanentCallback
+   fun:invalidation::InvalidationClientImpl::ScheduleStartAfterReadingStateBlob
+   fun:invalidation::InvalidationClientImpl::Start
+   fun:sync_notifier::ChromeInvalidationClient::Start
+}
