@@ -115,6 +115,10 @@ class VolumeView : public views::View,
 
   void SetVolumeLevel(float percent) {
     slider_->SetValue(percent);
+    // It is possible that the volume was (un)muted, but the actual volume level
+    // did not change. In that case, setting the value of the slider won't
+    // trigger a repaint. So explicitly trigger a repaint.
+    icon_->SchedulePaint();
   }
 
  private:
