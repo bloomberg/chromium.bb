@@ -73,6 +73,8 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/browser_plugin/browser_plugin_constants.h"
+#include "content/renderer/browser_plugin/browser_plugin_placeholder.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -2066,6 +2068,15 @@ bool RenderViewImpl::isPointerLocked() {
 
 WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                         const WebPluginParams& params) {
+  // The browser plugin is a special kind of pepper plugin
+  // that loads asynchronously. We first create a placeholder here.
+  // When a guest is ready to be displayed, we swap out the placeholder
+  // with the guest.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableBrowserPlugin) &&
+      UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType)
+    return BrowserPluginPlaceholder::Create(this, frame, params);
+
   WebPlugin* plugin = NULL;
   if (content::GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
