@@ -6,7 +6,6 @@
 """The deep heap profiler script for Chrome."""
 
 from collections import defaultdict
-from datetime import datetime
 import os
 import re
 import subprocess
@@ -30,34 +29,29 @@ PPROF_PATH = os.path.join(os.path.dirname(__file__),
 
 # Heap Profile Dump versions
 
-"""DUMP_DEEP_1 DOES NOT distinct mmap regions and malloc chunks.
-Their stacktraces DO contain mmap* or tc-* at their tops.
-They should be processed by POLICY_DEEP_1.
-"""
+# DUMP_DEEP_1 DOES NOT distinct mmap regions and malloc chunks.
+# Their stacktraces DO contain mmap* or tc-* at their tops.
+# They should be processed by POLICY_DEEP_1.
 DUMP_DEEP_1 = 'DUMP_DEEP_1'
 
-"""DUMP_DEEP_2 DOES distinct mmap regions and malloc chunks.
-Their stacktraces still DO contain mmap* or tc-*.
-They should be processed by POLICY_DEEP_1.
-"""
+# DUMP_DEEP_2 DOES distinct mmap regions and malloc chunks.
+# Their stacktraces still DO contain mmap* or tc-*.
+# They should be processed by POLICY_DEEP_1.
 DUMP_DEEP_2 = 'DUMP_DEEP_2'
 
-"""DUMP_DEEP_3 DOES distinct mmap regions and malloc chunks.
-Their stacktraces DO NOT contain mmap* or tc-*.
-They should be processed by POLICY_DEEP_2.
-"""
+# DUMP_DEEP_3 DOES distinct mmap regions and malloc chunks.
+# Their stacktraces DO NOT contain mmap* or tc-*.
+# They should be processed by POLICY_DEEP_2.
 DUMP_DEEP_3 = 'DUMP_DEEP_3'
 
 # Heap Profile Policy versions
 
-"""POLICY_DEEP_1 DOES NOT include allocation_type columns.
-mmap regions are distincted w/ mmap frames in the pattern column.
-"""
+# POLICY_DEEP_1 DOES NOT include allocation_type columns.
+# mmap regions are distincted w/ mmap frames in the pattern column.
 POLICY_DEEP_1 = 'POLICY_DEEP_1'
 
-"""POLICY_DEEP_2 DOES include allocation_type columns.
-mmap regions are distincted w/ the allocation_type column.
-"""
+# POLICY_DEEP_2 DOES include allocation_type columns.
+# mmap regions are distincted w/ the allocation_type column.
 POLICY_DEEP_2 = 'POLICY_DEEP_2'
 
 # TODO(dmikurube): Avoid global variables.
@@ -123,7 +117,8 @@ class Log(object):
     self.log_time = os.stat(self.log_path).st_mtime
     self.parse_log(buckets)
 
-  def dump_stacktrace_lines(self, stacktrace_lines, buckets):
+  @staticmethod
+  def dump_stacktrace_lines(stacktrace_lines, buckets):
     """Prints a given stacktrace.
 
     Args:
@@ -152,7 +147,8 @@ class Log(object):
     self.dump_stacktrace_lines(self.mmap_stacktrace_lines, buckets)
     self.dump_stacktrace_lines(self.malloc_stacktrace_lines, buckets)
 
-  def accumulate_size_for_pprof(self, stacktrace_lines, policy_list, buckets,
+  @staticmethod
+  def accumulate_size_for_pprof(stacktrace_lines, policy_list, buckets,
                                 component_name, mmap):
     """Accumulates size of committed chunks and the number of allocated chunks.
 
@@ -184,7 +180,8 @@ class Log(object):
 
     return com_committed, com_allocs
 
-  def dump_stacktrace_lines_for_pprof(self, stacktrace_lines, policy_list,
+  @staticmethod
+  def dump_stacktrace_lines_for_pprof(stacktrace_lines, policy_list,
                                       buckets, component_name, mmap):
     """Prints information of stacktrace lines for pprof.
 
@@ -249,7 +246,8 @@ class Log(object):
     for l in mapping_lines:
       sys.stdout.write(l)
 
-  def check_stacktrace_line(self, stacktrace_line, buckets):
+  @staticmethod
+  def check_stacktrace_line(stacktrace_line, buckets):
     """Checks if a given stacktrace_line is valid as stacktrace.
 
     Args:
@@ -271,7 +269,8 @@ class Log(object):
         address_symbol_dict[address] = ''
     return True
 
-  def skip_lines_while(self, line_number, max_line_number, skipping_condition):
+  @staticmethod
+  def skip_lines_while(line_number, max_line_number, skipping_condition):
     """Increments line_number until skipping_condition(line_number) is false.
     """
     while skipping_condition(line_number):
@@ -391,7 +390,8 @@ class Log(object):
     self.parse_global_stats()
     self.log_version = self.parse_stacktraces(buckets)
 
-  def accumulate_size_for_policy(self, stacktrace_lines,
+  @staticmethod
+  def accumulate_size_for_policy(stacktrace_lines,
                                  policy_list, buckets, sizes, mmap):
     for l in stacktrace_lines:
       words = l.split()
@@ -470,7 +470,8 @@ class Log(object):
 
     return sizes
 
-  def accumulate_size_for_expand(self, stacktrace_lines, policy_list, buckets,
+  @staticmethod
+  def accumulate_size_for_expand(stacktrace_lines, policy_list, buckets,
                                  component_name, depth, sizes, mmap):
     for line in stacktrace_lines:
       words = line.split()
@@ -526,9 +527,9 @@ def read_symbols(symbol_path, mapping_lines, chrome_path):
     symbol_lines = symbol_f.readlines()
 
     if not symbol_lines:
-      with NamedTemporaryFile(
+      with tempfile.NamedTemporaryFile(
           suffix='maps', prefix="dmprof", mode='w+') as pprof_in:
-        with NamedTemporaryFile(
+        with tempfile.NamedTemporaryFile(
             suffix='symbols', prefix="dmprof", mode='w+') as pprof_out:
           for line in mapping_lines:
             pprof_in.write(line)
@@ -546,7 +547,6 @@ def read_symbols(symbol_path, mapping_lines, chrome_path):
 
           pprof_out.seek(0)
           symbols = pprof_out.readlines()
-          i = 0
           for address, symbol in zip(address_list, symbols):
             address_symbol_dict[address] = symbol.strip()
 
@@ -592,8 +592,8 @@ def parse_policy(policy_path):
         if allocation_type == 'mmap':
           mmap = True
       elif policy_version == POLICY_DEEP_1:
-        name = l.split()[0]
-        pattern = l[len(name) : len(l)].strip()
+        name = line.split()[0]
+        pattern = line[len(name) : len(line)].strip()
         mmap = False
 
       if pattern != 'default':
