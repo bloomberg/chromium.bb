@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
-#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -178,20 +177,6 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   base::ListValue* referral_list =
       static_cast<base::ListValue*>(user_prefs->GetList(
           prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
-
-  // Remove obsolete preferences from local state if necessary.
-  int current_version =
-      local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
-  if ((current_version & browser::DNS_PREFS) == 0) {
-    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList,
-                                  PrefService::UNSYNCABLE_PREF);
-    local_state->RegisterListPref(prefs::kDnsHostReferralList,
-                                  PrefService::UNSYNCABLE_PREF);
-    local_state->ClearPref(prefs::kDnsStartupPrefetchList);
-    local_state->ClearPref(prefs::kDnsHostReferralList);
-    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
-        current_version | browser::DNS_PREFS);
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO,

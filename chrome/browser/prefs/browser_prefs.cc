@@ -247,8 +247,21 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
   int current_version =
       local_state->GetInteger(prefs::kMultipleProfilePrefMigration);
 
-  if ((current_version & WINDOWS_PREFS) == 0) {
-    // Migrate the devtools split location preference.
+  if (!(current_version & DNS_PREFS)) {
+    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList,
+                                  PrefService::UNSYNCABLE_PREF);
+    local_state->ClearPref(prefs::kDnsStartupPrefetchList);
+
+    local_state->RegisterListPref(prefs::kDnsHostReferralList,
+                                  PrefService::UNSYNCABLE_PREF);
+    local_state->ClearPref(prefs::kDnsHostReferralList);
+
+    current_version |= DNS_PREFS;
+    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
+                            current_version);
+  }
+
+  if (!(current_version & WINDOWS_PREFS)) {
     local_state->RegisterIntegerPref(prefs::kDevToolsHSplitLocation, -1);
     if (local_state->HasPrefPath(prefs::kDevToolsHSplitLocation)) {
       user_prefs->SetInteger(prefs::kDevToolsHSplitLocation,
@@ -256,7 +269,6 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
     }
     local_state->ClearPref(prefs::kDevToolsHSplitLocation);
 
-    // Migrate the browser window placement preference.
     local_state->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
     if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
       const PrefService::Preference* pref =
@@ -266,8 +278,9 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
     }
     local_state->ClearPref(prefs::kBrowserWindowPlacement);
 
+    current_version |= WINDOWS_PREFS;
     local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
-                            current_version | WINDOWS_PREFS);
+                            current_version);
   }
 }
 
