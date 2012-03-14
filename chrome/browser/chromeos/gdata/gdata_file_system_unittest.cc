@@ -410,6 +410,19 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
       "gdata/Slash \xE2\x88\x95 in directory/SubDirectory File 1.txt")));
 }
 
+TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Slash / in file 1.txt"))));
+
+  EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in file 1.txt")));
+
+  EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in directory/SubDirectory File 1.txt")));
+}
+
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
   scoped_refptr<MockFindFileDelegate> mock_find_file_delegate =
@@ -529,6 +542,40 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
 
   file_system_->FindFileByPath(
       FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")),
+      mock_find_file_delegate);
+}
+
+// Check the reconstruction of the directory structure from only the root feed.
+TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
+  LoadRootFeedDocument("root_feed.json");
+
+  scoped_refptr<MockFindFileDelegate> mock_find_file_delegate =
+      new MockFindFileDelegate();
+
+  EXPECT_CALL(*mock_find_file_delegate.get(),
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
+      .Times(1)
+      .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
+
+  EXPECT_CALL(*mock_find_file_delegate.get(),
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                               _))
+      .Times(1)
+      .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
+
+  EXPECT_CALL(*mock_find_file_delegate.get(),
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL(
+                                   "gdata/Directory 1/Sub Directory Folder")),
+                               _))
+      .Times(1)
+      .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
+
+  EXPECT_CALL(*mock_find_file_delegate.get(), OnDirectoryFound(_, _))
+      .Times(1);
+
+  file_system_->FindFileByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
+                                 "Sub Sub Directory Folder")),
       mock_find_file_delegate);
 }
 
@@ -1096,7 +1143,7 @@ TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   GDataFileBase* file_info = file_system_->GetGDataFileInfoFromPath(
       FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
   ASSERT_TRUE(file_info != NULL);
-  EXPECT_EQ("https://file_link_self/", file_info->self_url().spec());
+  EXPECT_EQ("https://file1_link_self/", file_info->self_url().spec());
   EXPECT_EQ("https://file_content_url/", file_info->content_url().spec());
 
   GDataFileBase* non_existent = file_system_->GetGDataFileInfoFromPath(

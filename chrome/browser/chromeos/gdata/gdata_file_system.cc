@@ -1277,7 +1277,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   {
     base::AutoLock lock(lock_);
     GDataFileBase* file =
-        GDataFileBase::FromDocumentEntry(root_.get(), entry.get());
+        GDataFileBase::FromDocumentEntry(root_.get(), entry.get(), root_.get());
     if (!file) {
       if (!callback.is_null())
         callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
@@ -1522,6 +1522,62 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
   return DocumentFeed::CreateFrom(feed_dict);
 }
 
+base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
+    base::ListValue* feed_list) {
+// A map of self URLs to pairs of gdata file and parent URL.
+  typedef std::map<GURL, std::pair<GDataFileBase*, GURL> >
+      UrlToFileAndParentMap;
+  UrlToFileAndParentMap file_by_url;
+  bool first_feed = true;
+
+  for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
+       feeds_iter != feed_list->end(); ++feeds_iter) {
+    scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
+    if (!feed.get())
+      return base::PLATFORM_FILE_ERROR_FAILED;
+
+    // Get upload url from the root feed. Links for all other collections will
+    // be handled in GDatadirectory::FromDocumentEntry();
+    if (first_feed) {
+      const Link* root_feed_upload_link =
+          feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+      if (root_feed_upload_link)
+        root_->set_upload_url(root_feed_upload_link->href());
+      first_feed = false;
+    }
+
+    for (ScopedVector<DocumentEntry>::const_iterator iter =
+             feed->entries().begin();
+         iter != feed->entries().end(); ++iter) {
+      DocumentEntry* doc = *iter;
+      GDataFileBase* file = GDataFileBase::FromDocumentEntry(NULL, doc,
+                                                             root_.get());
+      GURL parent_url;
+      const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+      if (parent_link)
+        parent_url = parent_link->href();
+      file_by_url[file->self_url()] = std::make_pair(file, parent_url);
+    }
+  }
+
+  for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
+       it != file_by_url.end(); ++it) {
+    GDataFileBase* file = it->second.first;
+    GURL parent_url = it->second.second;
+    GDataDirectory* dir = root_.get();
+    if (!parent_url.is_empty()) {
+      DCHECK(file_by_url.find(parent_url) != file_by_url.end());
+      dir = file_by_url[parent_url].first->AsGDataDirectory();
+    }
+    DCHECK(dir);
+
+    dir->AddFile(file);
+  }
+
+  NotifyDirectoryChanged(root_->GetFilePath());
+
+  return base::PLATFORM_FILE_OK;
+}
 
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     const FilePath& directory_path,
@@ -1548,7 +1604,9 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   // Remove all child elements if we are refreshing the entire content.
   dir->RemoveChildren();
 
-  bool first_feed = true;
+  if (dir == root_.get())
+    return UpdateRootWithDocumentFeed(feed_list);
+
   // Get through all collected feeds and fill in directory structure for all
   // of them.
   for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
@@ -1556,17 +1614,6 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
     if (!feed.get())
       return base::PLATFORM_FILE_ERROR_FAILED;
-
-    // Get upload url from the root feed. Links for all other collections will
-    // be handled in GDatadirectory::FromDocumentEntry();
-    if (dir == root_.get() && first_feed) {
-      const Link* root_feed_upload_link =
-          feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
-      if (root_feed_upload_link)
-        dir->set_upload_url(root_feed_upload_link->href());
-    }
-
-    first_feed = false;
 
     for (ScopedVector<DocumentEntry>::const_iterator iter =
              feed->entries().begin();
@@ -1583,7 +1630,8 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
           continue;
       }
 
-      GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc);
+      GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc,
+                                                             root_.get());
       if (file)
         dir->AddFile(file);
     }
@@ -1629,7 +1677,8 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   GDataFileBase* new_file = GDataFileBase::FromDocumentEntry(parent_dir,
-                                                             entry.get());
+                                                             entry.get(),
+                                                             root_.get());
   if (!new_file)
     return base::PLATFORM_FILE_ERROR_FAILED;
 

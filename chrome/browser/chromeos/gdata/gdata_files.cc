@@ -26,24 +26,9 @@ namespace gdata {
 
 // GDataFileBase class.
 
-GDataFileBase::GDataFileBase(GDataDirectory* parent)
+GDataFileBase::GDataFileBase(GDataDirectory* parent, GDataRootDirectory* root)
     : parent_(parent),
-      root_(NULL) {
-  // Traverse up the tree to find the root which is the directory that has no
-  // parent.
-  // Only do so if there's parent, because for GDataRootDirectory that has no
-  // parent, its overriding AsGDataDirectory() won't be invoked here when
-  // constructing its base class; instead GDataFileBase::AsGDataRootDirectory
-  // will be the one that's invoked.
-  // GDataRootDirectory will initialize root_ itself.
-  if (parent) {
-    GDataFileBase* current = this;
-    while (current->parent()) {
-      current = current->parent();
-    }
-    root_ = current->AsGDataRootDirectory();
-    DCHECK(root_);
-  }
+      root_(root) {
 }
 
 GDataFileBase::~GDataFileBase() {
@@ -83,13 +68,13 @@ void GDataFileBase::SetFileNameFromTitle() {
 
 // static.
 GDataFileBase* GDataFileBase::FromDocumentEntry(GDataDirectory* parent,
-                                                DocumentEntry* doc) {
-  DCHECK(parent);
+                                                DocumentEntry* doc,
+                                                GDataRootDirectory* root) {
   DCHECK(doc);
   if (doc->is_folder())
-    return GDataDirectory::FromDocumentEntry(parent, doc);
+    return GDataDirectory::FromDocumentEntry(parent, doc, root);
   else if (doc->is_hosted_document() || doc->is_file())
-    return GDataFile::FromDocumentEntry(parent, doc);
+    return GDataFile::FromDocumentEntry(parent, doc, root);
 
   return NULL;
 }
@@ -112,11 +97,10 @@ std::string GDataFileBase::UnescapeUtf8FileName(const std::string& input) {
 
 // GDataFile class implementation.
 
-GDataFile::GDataFile(GDataDirectory* parent)
-    : GDataFileBase(parent),
+GDataFile::GDataFile(GDataDirectory* parent, GDataRootDirectory* root)
+    : GDataFileBase(parent, root),
       kind_(gdata::DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
-  DCHECK(parent);
 }
 
 GDataFile::~GDataFile() {
@@ -135,9 +119,10 @@ void GDataFile::SetFileNameFromTitle() {
 }
 
 GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
-                                            DocumentEntry* doc) {
+                                            DocumentEntry* doc,
+                                            GDataRootDirectory* root) {
   DCHECK(doc->is_hosted_document() || doc->is_file());
-  GDataFile* file = new GDataFile(parent);
+  GDataFile* file = new GDataFile(parent, root);
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
@@ -162,8 +147,8 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   }
   file->kind_ = doc->kind();
   const Link* self_link = doc->GetLinkByType(Link::SELF);
-  if (self_link)
-    file->self_url_ = self_link->href();
+  DCHECK(self_link);
+  file->self_url_ = self_link->href();
   file->content_url_ = doc->content_url();
   file->content_mime_type_ = doc->content_mime_type();
   file->etag_ = doc->etag();
@@ -195,8 +180,8 @@ int GDataFile::GetCacheState() {
 
 // GDataDirectory class implementation.
 
-GDataDirectory::GDataDirectory(GDataDirectory* parent)
-    : GDataFileBase(parent) {
+GDataDirectory::GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root)
+    : GDataFileBase(parent, root) {
   file_info_.is_directory = true;
 }
 
@@ -210,10 +195,10 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
 
 // static
 GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
-                                                 DocumentEntry* doc) {
-  DCHECK(parent);
+                                                 DocumentEntry* doc,
+                                                 GDataRootDirectory* root) {
   DCHECK(doc->is_folder());
-  GDataDirectory* dir = new GDataDirectory(parent);
+  GDataDirectory* dir = new GDataDirectory(parent, root);
   dir->title_ = UTF16ToUTF8(doc->title());
   // SetFileNameFromTitle() must be called after |title_| is set.
   dir->SetFileNameFromTitle();
@@ -224,10 +209,9 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   dir->start_feed_url_ = doc->content_url();
   dir->resource_id_ = doc->resource_id();
   dir->content_url_ = doc->content_url();
-
   const Link* self_link = doc->GetLinkByType(Link::SELF);
-  if (self_link)
-    dir->self_url_ = self_link->href();
+  DCHECK(self_link);
+  dir->self_url_ = self_link->href();
 
   const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
@@ -278,6 +262,8 @@ void GDataDirectory::AddFile(GDataFileBase* file) {
 
   // Add file to resource map.
   root_->AddFileToResourceMap(file);
+
+  file->set_parent(this);
 }
 
 bool GDataDirectory::TakeFile(GDataFileBase* file) {
@@ -292,9 +278,6 @@ bool GDataDirectory::TakeFile(GDataFileBase* file) {
   file->SetFileNameFromTitle();
   AddFile(file);
 
-  // Use GDataFileBase::set_parent() to change the parent of GDataFileBase
-  // as GDataDirectory:AddFile() does not do that.
-  file->set_parent(this);
   return true;
 }
 
@@ -330,8 +313,7 @@ bool GDataDirectory::RemoveFileFromChildrenList(GDataFileBase* file) {
 // GDataRootDirectory class implementation.
 
 GDataRootDirectory::GDataRootDirectory()
-    : GDataDirectory(NULL) {
-  root_ = this;
+    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)) {
 }
 
 GDataRootDirectory::~GDataRootDirectory() {

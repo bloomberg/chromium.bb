@@ -32,7 +32,7 @@ class GDataRootDirectory;
 // system.
 class GDataFileBase {
  public:
-  explicit GDataFileBase(GDataDirectory* parent);
+  explicit GDataFileBase(GDataDirectory* parent, GDataRootDirectory* root);
   virtual ~GDataFileBase();
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
@@ -40,7 +40,8 @@ class GDataFileBase {
 
   // Converts DocumentEntry into GDataFileBase.
   static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
+                                          DocumentEntry* doc,
+                                          GDataRootDirectory* root);
 
   // Escapes forward slashes from file names with magic unicode character
   // \u2215 pretty much looks the same in UI.
@@ -83,7 +84,7 @@ class GDataFileBase {
   friend class GDataDirectory;
 
   // Sets the parent directory of this file system entry.
-  // It is intended to be used by GDataDirectory::TakeFile() only.
+  // It is intended to be used by GDataDirectory::AddFile() only.
   void set_parent(GDataDirectory* parent) { parent_ = parent; }
 
   base::PlatformFileInfo file_info_;
@@ -123,12 +124,13 @@ class GDataFile : public GDataFileBase {
     CACHE_STATE_DIRTY   = 0x1 << 2,
   };
 
-  explicit GDataFile(GDataDirectory* parent);
+  explicit GDataFile(GDataDirectory* parent, GDataRootDirectory* root);
   virtual ~GDataFile();
   virtual GDataFile* AsGDataFile() OVERRIDE;
 
   static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
+                                          DocumentEntry* doc,
+                                          GDataRootDirectory* root);
 
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
@@ -166,12 +168,13 @@ class GDataFile : public GDataFileBase {
 // collection element.
 class GDataDirectory : public GDataFileBase {
  public:
-  explicit GDataDirectory(GDataDirectory* parent);
+  GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root);
   virtual ~GDataDirectory();
   virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 
   static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
+                                          DocumentEntry* doc,
+                                          GDataRootDirectory* root);
 
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name de-duplication to ensure that the

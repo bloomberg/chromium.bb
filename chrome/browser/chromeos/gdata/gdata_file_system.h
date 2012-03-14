@@ -418,6 +418,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // represeting it.
   DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
 
+  // Load the whole directory structure from the root feed.
+  base::PlatformFileError UpdateRootWithDocumentFeed(
+      base::ListValue* feed_list);
+
   // Updates content of the directory identified with |directory_path| with
   // feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK.
