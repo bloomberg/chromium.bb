@@ -53,7 +53,7 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   Delegate* delegate_;
   std::string current_attempt_hash_;
   std::string current_username_;
-  scoped_refptr<OnlineAttempt> online_attempt_;
+  scoped_ptr<OnlineAttempt> online_attempt_;
   scoped_ptr<AuthAttemptState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(OnlineAttemptHost);

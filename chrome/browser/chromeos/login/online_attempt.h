@@ -8,8 +8,8 @@
 
 #include <string>
 
-
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -27,8 +27,7 @@ class AuthAttemptState;
 class AuthAttemptStateResolver;
 
 class OnlineAttempt
-    : public base::RefCountedThreadSafe<OnlineAttempt>,
-      public GaiaAuthConsumer,
+    : public GaiaAuthConsumer,
       public GaiaOAuthConsumer {
  public:
   OnlineAttempt(bool using_oauth,
@@ -56,6 +55,9 @@ class OnlineAttempt
       const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OnlineAttemptTest, LoginSuccess);
+  FRIEND_TEST_ALL_PREFIXES(OnlineAttemptTest, TwoFactorSuccess);
+
   // Milliseconds until we timeout our attempt to hit ClientLogin.
   static const int kClientLoginTimeoutMs;
 

@@ -40,22 +40,22 @@ void OnlineAttemptHost::Check(Profile* profile,
             std::string(),
             std::string(),
             false));  // Isn't a new user.
-    online_attempt_ = new OnlineAttempt(false,  // Don't use oauth.
-                                        state_.get(),
-                                        this);
+    online_attempt_.reset(new OnlineAttempt(false,  // Don't use oauth.
+                                            state_.get(),
+                                            this));
     online_attempt_->Initiate(profile);
   }
 }
 
 void OnlineAttemptHost::Reset() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  online_attempt_ = NULL;
+  online_attempt_.reset(NULL);
   current_attempt_hash_.clear();
   current_username_.clear();
 }
 
 void OnlineAttemptHost::Resolve() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (state_->online_complete()) {
     bool success = state_->online_outcome().reason() == LoginFailure::NONE;
     content::BrowserThread::PostTask(

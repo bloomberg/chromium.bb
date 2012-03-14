@@ -41,7 +41,7 @@ void TriggerResolve(AuthAttemptState* attempt,
                     AuthAttemptStateResolver* resolver,
                     bool success,
                     cryptohome::MountError return_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   attempt->RecordCryptohomeStatus(success, return_code);
   resolver->Resolve();
 }
@@ -51,8 +51,9 @@ void TriggerResolveOnIoThread(AuthAttemptState* attempt,
                               AuthAttemptStateResolver* resolver,
                               bool success,
                               cryptohome::MountError return_code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&TriggerResolve, attempt, resolver, success, return_code));
 }
 
@@ -150,14 +151,6 @@ void CheckKey(AuthAttemptState* attempt,
       base::Bind(&TriggerResolveOnIoThread, attempt, resolver));
 }
 
-// Resets |current_state| and runs |callback| on the UI thread.
-void ResetCryptohomeStatusAndRunCallback(AuthAttemptState* current_state,
-                                         base::Closure callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  current_state->ResetCryptohomeStatus();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
 // Returns whether the login failure was connection issue.
 bool WasConnectionIssue(const LoginFailure& online_outcome) {
   return ((online_outcome.reason() == LoginFailure::LOGIN_TIMED_OUT) ||
@@ -214,9 +207,9 @@ void ParallelAuthenticator::AuthenticateToLogin(
   // We should not try OAuthLogin check until the profile loads.
   if (!using_oauth_) {
     // Initiate ClientLogin-based post authentication.
-    current_online_ = new OnlineAttempt(using_oauth_,
-                                        current_state_.get(),
-                                        this);
+    current_online_.reset(new OnlineAttempt(using_oauth_,
+                                            current_state_.get(),
+                                            this));
     current_online_->Initiate(profile);
   }
 }
@@ -245,16 +238,16 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
     // services not being able to fetch a token, leading to browser crashes.
     // So initiate ClientLogin-based post authentication.
     // TODO(xiyuan): This should not be required.
-    current_online_ = new OnlineAttempt(using_oauth_,
-                                        current_state_.get(),
-                                        this);
+    current_online_.reset(new OnlineAttempt(using_oauth_,
+                                            current_state_.get(),
+                                            this));
     current_online_->Initiate(profile);
   } else {
     // For login completion from extension, we just need to resolve the current
     // auth attempt state, the rest of OAuth related tasks will be done in
     // parallel.
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&ParallelAuthenticator::ResolveLoginCompletionStatus, this));
   }
 }
@@ -364,26 +357,24 @@ void ParallelAuthenticator::RecoverEncryptedData(
   std::string old_hash =
       CrosLibrary::Get()->GetCryptohomeLibrary()->HashPassword(old_password);
   migrate_attempted_ = true;
+  current_state_->ResetCryptohomeStatus();
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResetCryptohomeStatusAndRunCallback,
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Migrate,
                  current_state_.get(),
-                 base::Bind(&Migrate,
-                            current_state_.get(),
-                            static_cast<AuthAttemptStateResolver*>(this),
-                            true,
-                            old_hash)));
+                 static_cast<AuthAttemptStateResolver*>(this),
+                 true,
+                 old_hash));
 }
 
 void ParallelAuthenticator::ResyncEncryptedData() {
   remove_attempted_ = true;
+  current_state_->ResetCryptohomeStatus();
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResetCryptohomeStatusAndRunCallback,
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Remove,
                  current_state_.get(),
-                 base::Bind(&Remove,
-                            current_state_.get(),
-                            static_cast<AuthAttemptStateResolver*>(this))));
+                 static_cast<AuthAttemptStateResolver*>(this)));
 }
 
 void ParallelAuthenticator::RetryAuth(Profile* profile,
@@ -403,15 +394,15 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
   // we are unable to renew oauth token on lock screen currently and will
   // stuck with lock screen if we use OAuthLogin here.
   // TODO(xiyuan): Revisit this after we support Gaia in lock screen.
-  current_online_ = new OnlineAttempt(false /* using_oauth */,
-                                      reauth_state_.get(),
-                                      this);
+  current_online_.reset(new OnlineAttempt(false /* using_oauth */,
+                                          reauth_state_.get(),
+                                          this));
   current_online_->Initiate(profile);
 }
 
 
 void ParallelAuthenticator::Resolve() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool request_pending = false;
   bool create = false;
   ParallelAuthenticator::AuthState state = ResolveState();
@@ -562,7 +553,7 @@ void ParallelAuthenticator::Resolve() {
 }
 
 ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we haven't mounted the user's home dir yet, we can't be done.
   // We never get past here if a cryptohome op is still pending.
   // This is an important invariant.
@@ -603,7 +594,7 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
 
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveReauthState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (reauth_state_->cryptohome_complete()) {
     if (!reauth_state_->cryptohome_outcome()) {
       // If we've tried to migrate and failed, log the error and just wait
@@ -625,7 +616,7 @@ ParallelAuthenticator::ResolveReauthState() {
 
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveCryptohomeFailureState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (remove_attempted_)
     return FAILED_REMOVE;
   if (mount_guest_attempted_)
@@ -661,7 +652,7 @@ ParallelAuthenticator::ResolveCryptohomeFailureState() {
 
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveCryptohomeSuccessState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (remove_attempted_)
     return CREATE_NEW;
   if (mount_guest_attempted_) {
@@ -680,7 +671,7 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveOnlineFailureState(
     ParallelAuthenticator::AuthState offline_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (offline_state == OFFLINE_LOGIN) {
     if (WasConnectionIssue(current_state_->online_outcome())) {
       // Couldn't do an online check, so just go with the offline result.
@@ -699,7 +690,7 @@ ParallelAuthenticator::ResolveOnlineFailureState(
 ParallelAuthenticator::AuthState
 ParallelAuthenticator::ResolveOnlineSuccessState(
     ParallelAuthenticator::AuthState offline_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (offline_state) {
     case POSSIBLE_PW_CHANGE:
       return NEED_OLD_PW;

@@ -10,8 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/synchronization/lock.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
@@ -138,13 +139,15 @@ class ParallelAuthenticator : public Authenticator,
   // can't be made, defers until the next time this is called.
   // When a decision is made, will call back to |consumer_| on the UI thread.
   //
-  // Must be called on the IO thread.
+  // Must be called on the UI thread.
   virtual void Resolve() OVERRIDE;
 
   void OnOffTheRecordLoginSuccess();
   void OnPasswordChangeDetected();
 
  private:
+  friend class ParallelAuthenticatorTest;
+
   // Returns the AuthState we're in, given the status info we have at
   // the time of call.
   // Must be called on the IO thread.
@@ -193,7 +196,7 @@ class ParallelAuthenticator : public Authenticator,
 
   // Sets an online attemp for testing.
   void set_online_attempt(OnlineAttempt* attempt) {
-    current_online_ = attempt;
+    current_online_.reset(attempt);
   }
 
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
@@ -214,7 +217,7 @@ class ParallelAuthenticator : public Authenticator,
   scoped_ptr<AuthAttemptState> reauth_state_;
 
   scoped_ptr<AuthAttemptState> current_state_;
-  scoped_refptr<OnlineAttempt> current_online_;
+  scoped_ptr<OnlineAttempt> current_online_;
   bool migrate_attempted_;
   bool remove_attempted_;
   bool mount_guest_attempted_;
@@ -230,8 +233,6 @@ class ParallelAuthenticator : public Authenticator,
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;
 
-  friend class ResolveChecker;
-  friend class ParallelAuthenticatorTest;
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };
 

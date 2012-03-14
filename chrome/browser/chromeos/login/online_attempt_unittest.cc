@@ -35,7 +35,6 @@ class OnlineAttemptTest : public testing::Test {
   OnlineAttemptTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO),
         state_("", "", "", "", "", false),
         resolver_(new MockAuthAttemptStateResolver) {
   }
@@ -54,9 +53,7 @@ class OnlineAttemptTest : public testing::Test {
     // Passes ownership of |loader| to CrosLibrary.
     test_api->SetLibraryLoader(loader, true);
 
-    attempt_ = new OnlineAttempt(false, &state_, resolver_.get());
-
-    io_thread_.Start();
+    attempt_.reset(new OnlineAttempt(false, &state_, resolver_.get()));
   }
 
   virtual void TearDown() {
@@ -72,18 +69,20 @@ class OnlineAttemptTest : public testing::Test {
         .RetiresOnSaturation();
 
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&OnlineAttempt::OnClientLoginFailure, attempt_.get(),
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&OnlineAttempt::OnClientLoginFailure,
+                   attempt_->weak_factory_.GetWeakPtr(),
                    error));
-    // Force IO thread to finish tasks so I can verify |state_|.
-    io_thread_.Stop();
+    // Force UI thread to finish tasks so I can verify |state_|.
+    message_loop_.RunAllPending();
     EXPECT_TRUE(error == state_.online_outcome().error());
   }
 
   void CancelLogin(OnlineAttempt* auth) {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&OnlineAttempt::CancelClientLogin, auth));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&OnlineAttempt::CancelClientLogin,
+                   auth->weak_factory_.GetWeakPtr()));
   }
 
   static void Quit() {
@@ -97,10 +96,9 @@ class OnlineAttemptTest : public testing::Test {
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
   TestAttemptState state_;
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
-  scoped_refptr<OnlineAttempt> attempt_;
+  scoped_ptr<OnlineAttempt> attempt_;
 
   // Initializes / shuts down a stub CrosLibrary.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
@@ -112,11 +110,12 @@ TEST_F(OnlineAttemptTest, LoginSuccess) {
       .RetiresOnSaturation();
 
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&OnlineAttempt::OnClientLoginSuccess, attempt_.get(),
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnlineAttempt::OnClientLoginSuccess,
+                 attempt_->weak_factory_.GetWeakPtr(),
                  GaiaAuthConsumer::ClientLoginResult()));
-  // Force IO thread to finish tasks so I can verify |state_|.
-  io_thread_.Stop();
+  // Force UI thread to finish tasks so I can verify |state_|.
+  message_loop_.RunAllPending();
 }
 
 TEST_F(OnlineAttemptTest, LoginCancelRetry) {
@@ -129,12 +128,12 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
 
   // This is how we inject fake URLFetcher objects, with a factory.
   // This factory creates fake URLFetchers that Start() a fake fetch attempt
-  // and then come back on the IO thread saying they've been canceled.
+  // and then come back on the UI thread saying they've been canceled.
   MockURLFetcherFactory<GotCanceledFetcher> factory;
 
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
@@ -154,12 +153,12 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
 
   // This is how we inject fake URLFetcher objects, with a factory.
   // This factory creates fake URLFetchers that Start() a fake fetch attempt
-  // and then come back on the IO thread saying they've been canceled.
+  // and then come back on the UI thread saying they've been canceled.
   MockURLFetcherFactory<ExpectCanceledFetcher> factory;
 
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   // Post a task to cancel the login attempt.
@@ -185,10 +184,10 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   MockURLFetcherFactory<HostedFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
-  attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());
+  attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
@@ -209,10 +208,10 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   MockURLFetcherFactory<SuccessFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
-  attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());
+  attempt_.reset(new OnlineAttempt(false, &local_state, resolver_.get()));
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttemptTest::RunThreadTest));
 
   MessageLoop::current()->Run();
@@ -260,11 +259,13 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
       .RetiresOnSaturation();
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&OnlineAttempt::OnClientLoginFailure, attempt_.get(), error));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnlineAttempt::OnClientLoginFailure,
+                 attempt_->weak_factory_.GetWeakPtr(),
+                 error));
 
-  // Force IO thread to finish tasks so I can verify |state_|.
-  io_thread_.Stop();
+  // Force UI thread to finish tasks so I can verify |state_|.
+  message_loop_.RunAllPending();
   EXPECT_TRUE(GoogleServiceAuthError::None() ==
               state_.online_outcome().error());
 }

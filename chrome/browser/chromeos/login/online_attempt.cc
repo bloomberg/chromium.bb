@@ -72,13 +72,13 @@ void OnlineAttempt::Initiate(Profile* auth_profile) {
                             auth_profile->GetRequestContext()));
   }
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&OnlineAttempt::TryClientLogin, this));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&OnlineAttempt::TryClientLogin, weak_factory_.GetWeakPtr()));
 }
 
 void OnlineAttempt::OnClientLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& unused) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Online login successful!";
 
   weak_factory_.InvalidateWeakPtrs();
@@ -101,7 +101,7 @@ void OnlineAttempt::OnClientLoginSuccess(
 
 void OnlineAttempt::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   weak_factory_.InvalidateWeakPtrs();
 
@@ -152,10 +152,10 @@ void OnlineAttempt::OnOAuthLoginFailure(const GoogleServiceAuthError& error) {
 }
 
 void OnlineAttempt::TryClientLogin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttempt::CancelClientLogin, weak_factory_.GetWeakPtr()),
       kClientLoginTimeoutMs);
 
@@ -194,7 +194,7 @@ void OnlineAttempt::CancelRequest() {
 }
 
 void OnlineAttempt::CancelClientLogin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (HasPendingFetch()) {
     LOG(WARNING) << "Canceling ClientLogin attempt.";
     CancelRequest();

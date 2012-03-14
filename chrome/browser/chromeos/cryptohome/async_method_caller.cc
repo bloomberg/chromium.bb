@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/hash_tables.h"
+#include "base/location.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 
@@ -86,7 +88,18 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
  private:
-  typedef base::hash_map<int, Callback> CallbackMap;
+  struct CallbackElement {
+    CallbackElement() {}
+    explicit CallbackElement(
+        const AsyncMethodCaller::Callback& callback)
+        : callback(callback),
+          proxy(base::MessageLoopProxy::current()) {
+    }
+    AsyncMethodCaller::Callback callback;
+    scoped_refptr<base::MessageLoopProxy> proxy;
+  };
+
+  typedef base::hash_map<int, CallbackElement> CallbackMap;
 
   // Hanldes the response for async calls.
   // Below is described how async calls work.
@@ -103,7 +116,10 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;
       return;
     }
-    it->second.Run(return_status, static_cast<MountError>(return_code));
+    it->second.proxy->PostTask(FROM_HERE,
+        base::Bind(it->second.callback,
+                   return_status,
+                   static_cast<MountError>(return_code)));
     callback_map_.erase(it);
   }
 
@@ -116,7 +132,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     }
     VLOG(1) << "Adding handler for " << async_id;
     DCHECK_EQ(callback_map_.count(async_id), 0U);
-    callback_map_[async_id] = callback;
+    callback_map_[async_id] = CallbackElement(callback);
   }
 
   base::WeakPtrFactory<AsyncMethodCallerImpl> weak_ptr_factory_;
