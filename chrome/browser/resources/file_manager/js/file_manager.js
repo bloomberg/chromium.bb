@@ -495,7 +495,7 @@ FileManager.prototype = {
         (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
          this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
 
-    this.table_.list.startBatchUpdates();
+    this.table_.startBatchUpdates();
     this.grid_.startBatchUpdates();
 
     this.initFileList_();
@@ -563,7 +563,7 @@ FileManager.prototype = {
        return self.getMetadataProvider().isInitialized();
     });
 
-    this.table_.list.endBatchUpdates();
+    this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
 
     metrics.recordInterval('Load.DOM');
@@ -774,6 +774,7 @@ FileManager.prototype = {
   FileManager.prototype.initRootsList_ = function() {
     this.rootsList_ = this.dialogDom_.querySelector('.roots-list');
     cr.ui.List.decorate(this.rootsList_);
+    this.rootsList_.startBatchUpdates();
 
     var self = this;
     this.rootsList_.itemConstructor = function(entry) {
@@ -784,7 +785,9 @@ FileManager.prototype = {
 
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.rootsList;
-    this.directoryModel_.updateRoots();
+    this.directoryModel_.updateRoots(function() {
+        self.rootsList_.endBatchUpdates();
+    });
   };
 
   FileManager.prototype.initGData_ = function() {
@@ -1477,6 +1480,14 @@ FileManager.prototype = {
    * window has neither.
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
+    // Avoid a bunch of intermediate list redraws while the data model is
+    // cleared and updated.  Note that it may (or may not) be desirable to draw
+    // partial results as we get them, but today the DirectoryReader API
+    // generally returns all entries in one chunk so even without this batching
+    // we wouldn't have incremental updates.
+    this.table_.startBatchUpdates();
+    var onLoaded = this.table_.endBatchUpdates.bind(this.table_);
+
     if (location.hash) {
       // Location hash has the highest priority.
       var path = decodeURI(location.hash.substr(1));
@@ -1492,10 +1503,15 @@ FileManager.prototype = {
         this.document_.body.appendChild(shade);
         function removeShade() { shade.parentNode.removeChild(shade) }
 
+        // Keep track of whether the path is identified as an existing leaf
+        // node.  Note that onResolve is guaranteed to be called (exactly once)
+        // before onLoadedActivateLeaf.
+        var foundLeaf = true;
         function onResolve(baseName, leafName, exists) {
           if (!exists || leafName == '') {
             // Non-existent file or a directory. Remove the shade immediately.
             removeShade();
+            foundLeaf = false;
           }
         }
 
@@ -1503,33 +1519,38 @@ FileManager.prototype = {
         // of urls instead of a selection. This will remove the need to wait
         // until the selection is done.
         var self = this;
-        function onFileSelected() {
-          self.dispatchDefaultTask_();
-          setTimeout(removeShade, 1000);
+        function onLoadedActivateLeaf() {
+          onLoaded();
+          if (foundLeaf) {
+            self.dispatchDefaultTask_();
+            setTimeout(removeShade, 1000);
+          }
         }
-        this.directoryModel_.setupPath(path, onResolve, onFileSelected);
+        this.directoryModel_.setupPath(path, onLoadedActivateLeaf, onResolve);
+
         return;
       }
 
-      this.directoryModel_.setupPath(path);
+      this.directoryModel_.setupPath(path, onLoaded);
       return;
     }
 
     if (this.params_.defaultPath) {
       var path = this.params_.defaultPath;
       if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-        this.directoryModel_.setupPath(path, function(basePath, leafName) {
-          this.filenameInput_.value = leafName;
-          this.selectDefaultPathInFilenameInput_();
-        }.bind(this));
+        this.directoryModel_.setupPath(path, onLoaded,
+            function(basePath, leafName) {
+              this.filenameInput_.value = leafName;
+              this.selectDefaultPathInFilenameInput_();
+            }.bind(this));
         return;
       }
 
-      this.directoryModel_.setupPath(path);
+      this.directoryModel_.setupPath(path, onLoaded);
       return;
     }
 
-    this.directoryModel_.setupDefaultPath();
+    this.directoryModel_.setupDefaultPath(onLoaded);
   };
 
   /**
@@ -2475,7 +2496,11 @@ FileManager.prototype = {
       // Even if something failed root list should be rescanned.
       // Failed mounts can "give" us new devices which might be formatted,
       // so we have to refresh root list then.
-      self.directoryModel_.updateRoots(changeDirectoryTo);
+      self.directoryModel_.updateRoots(function() {
+        if (changeDirectoryTo) {
+          self.directoryModel_.changeDirectory(changeDirectoryTo);
+        }
+      });
     });
   };
 
