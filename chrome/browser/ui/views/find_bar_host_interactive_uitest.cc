@@ -291,7 +291,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 }
 
 // Flaky on Win. http://crbug.com/92467
-#if defined(OS_WIN)
+// Flaky on ChromeOS. http://crbug.com/118216
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_PasteWithoutTextChange DISABLED_PasteWithoutTextChange
 #else
 #define MAYBE_PasteWithoutTextChange PasteWithoutTextChange
