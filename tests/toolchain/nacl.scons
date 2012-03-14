@@ -158,15 +158,22 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               # TODO(mcgrathr): This test has bad assumptions and needs
               # to be rewritten.  Disabling it for now.
               # 'stack_frame.cc',
+              'eh_return.c',
               'eh_virtual_dtor.cc',
               'eh_loop_single.cc',
               'eh_loop_many.cc',
               'eh_catch_many.cc',
-              'eh_loop_break.cc']:
+              'eh_loop_break.cc',
+              ]:
     is_broken = False
     if src in ['unwind_trace.cc', 'stack_frame.cc']:
       # the tracing gets messed up by optimizations
       is_broken |= tag.startswith('opt')
+
+    if not env.Bit('bitcode') and src in ['eh_return.c']:
+      # for some reason gcc does not allow us to use
+      #  __builtin_eh_return
+      continue
 
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2644
     if env.Bit('bitcode'):
