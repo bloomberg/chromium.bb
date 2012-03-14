@@ -12373,10 +12373,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Network options...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
-        Turn off Wi-Fi
+        Disable Wi-Fi
       </message>
       <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
-        Turn off cellular
+        Disable cellular
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE" desc="Control on the settings page for disabling all wireless communication.">
         Airplane mode
