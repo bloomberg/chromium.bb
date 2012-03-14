@@ -277,15 +277,6 @@ WebDataService* OffTheRecordProfileImpl::GetWebDataServiceWithoutCreating() {
   return profile_->GetWebDataServiceWithoutCreating();
 }
 
-PasswordStore* OffTheRecordProfileImpl::GetPasswordStore(
-    ServiceAccessType sat) {
-  if (sat == EXPLICIT_ACCESS)
-    return profile_->GetPasswordStore(sat);
-
-  NOTREACHED() << "This profile is OffTheRecord";
-  return NULL;
-}
-
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }

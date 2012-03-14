@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/passive_model_worker.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
@@ -87,7 +88,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   }
 
   PasswordStore* password_store =
-      profile->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+      PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (password_store) {
     workers_[GROUP_PASSWORD] = new PasswordModelWorker(password_store);
   } else {

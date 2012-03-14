@@ -536,10 +536,6 @@ WebDataService* TestingProfile::GetWebDataServiceWithoutCreating() {
   return web_data_service_.get();
 }
 
-PasswordStore* TestingProfile::GetPasswordStore(ServiceAccessType access) {
-  return NULL;
-}
-
 void TestingProfile::SetPrefService(PrefService* prefs) {
   prefs_.reset(prefs);
 }

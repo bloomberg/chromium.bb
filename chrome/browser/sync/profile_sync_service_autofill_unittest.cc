@@ -412,8 +412,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         factory->CreateDataTypeController(components_factory,
             &profile_,
             service_.get());
-    SyncBackendHostForProfileSyncTest::
-        SetDefaultExpectationsForWorkerCreation(&profile_);
 
     factory->SetExpectation(components_factory,
                             service_.get(),

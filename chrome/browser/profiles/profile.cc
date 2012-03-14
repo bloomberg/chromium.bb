@@ -76,12 +76,6 @@ TestingProfile* Profile::AsTestingProfile() {
 // static
 const char* const Profile::kProfileKey = "__PROFILE__";
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// static
-const LocalProfileId Profile::kInvalidLocalProfileId =
-    static_cast<LocalProfileId>(0);
-#endif
-
 // static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled,

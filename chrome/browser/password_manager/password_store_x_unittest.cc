@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -434,7 +434,7 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   STLDeleteElements(&expected_blacklisted);
 
   // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->Shutdown();
+  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
 }
 
 TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
@@ -501,7 +501,7 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
   STLDeleteElements(&unexpected_autofillable);
 
   // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->Shutdown();
+  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
@@ -597,7 +597,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   done.Wait();
 
   // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->Shutdown();
+  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
@@ -740,7 +740,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   STLDeleteElements(&expected_blacklisted);
 
   // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->Shutdown();
+  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

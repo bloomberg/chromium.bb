@@ -1519,6 +1519,8 @@
         'browser/password_manager/password_store_consumer.h',
         'browser/password_manager/password_store_default.cc',
         'browser/password_manager/password_store_default.h',
+        'browser/password_manager/password_store_factory.cc',
+        'browser/password_manager/password_store_factory.h',
         'browser/password_manager/password_store_mac.cc',
         'browser/password_manager/password_store_mac.h',
         'browser/password_manager/password_store_mac_internal.h',

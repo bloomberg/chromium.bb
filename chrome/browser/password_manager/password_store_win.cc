@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -185,11 +185,11 @@ PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
   return new FormGetLoginsRequest(callback);
 }
 
-void PasswordStoreWin::Shutdown() {
+void PasswordStoreWin::ShutdownOnUIThread() {
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&PasswordStoreWin::ShutdownOnDBThread, this));
-  PasswordStoreDefault::Shutdown();
+  PasswordStoreDefault::ShutdownOnUIThread();
 }
 
 void PasswordStoreWin::ForwardLoginsResult(GetLoginsRequest* request) {

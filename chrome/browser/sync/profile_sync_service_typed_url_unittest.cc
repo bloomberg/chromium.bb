@@ -206,9 +206,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(profile_, GetHistoryServiceWithoutCreating()).
           WillRepeatedly(Return(history_service_.get()));
 
-      EXPECT_CALL(profile_, GetPasswordStore(_)).
-          WillOnce(Return(static_cast<PasswordStore*>(NULL)));
-
       EXPECT_CALL(profile_, GetHistoryService(_)).
           WillRepeatedly(Return(history_service_.get()));
 

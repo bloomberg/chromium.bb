@@ -155,6 +155,8 @@
         'browser/mock_browsing_data_quota_helper.h',
         'browser/notifications/notification_test_util.cc',
         'browser/notifications/notification_test_util.h',
+        'browser/password_manager/mock_password_store.cc',
+        'browser/password_manager/mock_password_store.h',
         'browser/policy/mock_cloud_policy_data_store.cc',
         'browser/policy/mock_cloud_policy_data_store.h',
         'browser/prefs/pref_observer_mock.cc',

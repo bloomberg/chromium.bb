@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -371,7 +371,7 @@ TEST_F(PasswordStoreDefaultTest, Migration) {
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
@@ -431,7 +431,7 @@ TEST_F(PasswordStoreDefaultTest, MigrationAlreadyDone) {
 
   STLDeleteElements(&unexpected_autofillable);
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
@@ -524,5 +524,5 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
-  store->Shutdown();
+  store->ShutdownOnUIThread();
 }

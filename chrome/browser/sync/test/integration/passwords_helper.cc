@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
@@ -116,11 +117,13 @@ void SetPassphrase(int index, const std::string& passphrase) {
 }
 
 PasswordStore* GetPasswordStore(int index) {
-  return test()->GetProfile(index)->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+  return PasswordStoreFactory::GetForProfile(test()->GetProfile(index),
+                                             Profile::IMPLICIT_ACCESS);
 }
 
 PasswordStore* GetVerifierPasswordStore() {
-  return test()->verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+  return PasswordStoreFactory::GetForProfile(test()->verifier(),
+                                             Profile::IMPLICIT_ACCESS);
 }
 
 bool ProfileContainsSamePasswordFormsAsVerifier(int index) {

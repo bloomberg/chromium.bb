@@ -80,14 +80,6 @@ namespace net {
 class SSLConfigService;
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// Local profile ids are used to associate resources stored outside the profile
-// directory, like saved passwords in GNOME Keyring / KWallet, with a profile.
-// With high probability, they are unique on the local machine. They are almost
-// certainly not unique globally, by design. Do not send them over the network.
-typedef int LocalProfileId;
-#endif
-
 class Profile : public content::BrowserContext {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -159,11 +151,6 @@ class Profile : public content::BrowserContext {
 
   // Key used to bind profile to the widget with which it is associated.
   static const char* const kProfileKey;
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  // Value that represents no local profile id.
-  static const LocalProfileId kInvalidLocalProfileId;
-#endif
 
   Profile();
   virtual ~Profile() {}
@@ -306,11 +293,6 @@ class Profile : public content::BrowserContext {
   // Similar to GetWebDataService(), but won't create the web data service if it
   // doesn't already exist.
   virtual WebDataService* GetWebDataServiceWithoutCreating() = 0;
-
-  // Returns the PasswordStore for this profile. This is owned by the Profile.
-  // This may return NULL if the implementation is unable to create a
-  // password store (e.g. a corrupt database).
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType access) = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences
   // for this user profile.  The PrefService is lazily created the first

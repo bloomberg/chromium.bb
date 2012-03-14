@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -87,7 +88,8 @@ bool ProfileWriter::TemplateURLServiceIsLoaded() const {
 }
 
 void ProfileWriter::AddPasswordForm(const webkit::forms::PasswordForm& form) {
-  profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS)->AddLogin(form);
+  PasswordStoreFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS)->AddLogin(form);
 }
 
 #if defined(OS_WIN)

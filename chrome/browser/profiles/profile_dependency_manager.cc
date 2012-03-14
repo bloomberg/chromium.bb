@@ -15,6 +15,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -175,6 +176,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   GlobalErrorServiceFactory::GetInstance();
   NetworkActionPredictorFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
+  PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
   PinnedTabServiceFactory::GetInstance();
   PluginPrefsFactory::GetInstance();

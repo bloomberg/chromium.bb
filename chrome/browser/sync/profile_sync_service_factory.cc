@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -48,6 +49,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(ThemeServiceFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(PasswordStoreFactory::GetInstance());
 
   // The following have not been converted to ProfileKeyedServices yet, and for
   // now they are explicitly destroyed after the ProfileDependencyManager is
@@ -58,7 +60,6 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // DependsOn(HistoryServiceFactory::GetInstance());
   // DependsOn(BookmarkBarModelFactory::GetInstance());
   // DependsOn(FaviconServiceFactory::GetInstance());
-  // DependsOn(PasswordStoreService::GetInstance());
   // DependsOn(ExtensionServiceFactory::GetInstance());
 }
 

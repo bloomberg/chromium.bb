@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -41,7 +42,7 @@ void UpdateLogin(PasswordStore* store, const webkit::forms::PasswordForm& form);
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
 class PasswordStore
-    : public base::RefCountedThreadSafe<PasswordStore>,
+    : public RefcountedProfileKeyedService,
       public CancelableRequestProvider {
  public:
   typedef base::Callback<
@@ -83,9 +84,6 @@ class PasswordStore
 
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init();
-
-  // Invoked from the profiles destructor to shutdown the PasswordStore.
-  virtual void Shutdown();
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const webkit::forms::PasswordForm& form);

@@ -12,7 +12,9 @@
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -100,28 +102,6 @@ static void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
-class MockPasswordStore : public PasswordStore {
- public:
-  MOCK_METHOD1(RemoveLogin, void(const PasswordForm&));
-  MOCK_METHOD2(GetLogins, int(const PasswordForm&, PasswordStoreConsumer*));
-  MOCK_METHOD1(AddLogin, void(const PasswordForm&));
-  MOCK_METHOD1(UpdateLogin, void(const PasswordForm&));
-  MOCK_METHOD0(ReportMetrics, void());
-  MOCK_METHOD0(ReportMetricsImpl, void());
-  MOCK_METHOD1(AddLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD1(UpdateLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD1(RemoveLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
-               const base::Time&));
-  MOCK_METHOD2(GetLoginsImpl, void(GetLoginsRequest*, const PasswordForm&));
-  MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
-  MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
-  MOCK_METHOD1(FillAutofillableLogins,
-      bool(std::vector<PasswordForm*>*));
-  MOCK_METHOD1(FillBlacklistLogins,
-      bool(std::vector<PasswordForm*>*));
-};
-
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
   PasswordTestProfileSyncService(
@@ -177,7 +157,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
-    password_store_ = new MockPasswordStore();
+    password_store_ = static_cast<MockPasswordStore*>(
+        PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, MockPasswordStore::Build));
 
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
@@ -188,7 +170,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   }
 
   virtual void TearDown() {
-    password_store_->Shutdown();
+    password_store_->ShutdownOnUIThread();
     service_.reset();
     profile_.ResetRequestContext();
     AbstractProfileSyncServiceTest::TearDown();
@@ -240,10 +222,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       // We need tokens to get the tests going
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
-
-      EXPECT_CALL(profile_, GetPasswordStore(_)).
-          Times(AtLeast(2)).  // Can be more if we hit NEEDS_CRYPTO.
-          WillRepeatedly(Return(password_store_.get()));
 
       EXPECT_CALL(observer_,
           Observe(

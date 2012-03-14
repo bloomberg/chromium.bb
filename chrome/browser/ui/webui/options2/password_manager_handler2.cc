@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -115,8 +116,9 @@ void PasswordManagerHandler::OnLoginsChanged() {
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return Profile::FromWebUI(web_ui())->
-      GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  return PasswordStoreFactory::GetForProfile(
+      Profile::FromWebUI(web_ui()),
+      Profile::EXPLICIT_ACCESS);
 }
 
 void PasswordManagerHandler::Observe(

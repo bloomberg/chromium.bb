@@ -119,7 +119,7 @@ class PasswordStoreWinTest : public testing::Test {
 
   virtual void TearDown() {
     if (store_.get())
-      store_->Shutdown();
+      store_->ShutdownOnUIThread();
     if (wds_.get())
       wds_->Shutdown();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -260,7 +260,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   store_->GetLogins(*form, &consumer);
 
   // Release the PSW and the WDS before the query can return.
-  store_->Shutdown();
+  store_->ShutdownOnUIThread();
   store_ = NULL;
   wds_->Shutdown();
   wds_ = NULL;

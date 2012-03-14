@@ -91,7 +91,6 @@ class ProfileImpl : public Profile,
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) OVERRIDE;
   virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType sat) OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;
@@ -158,12 +157,6 @@ class ProfileImpl : public Profile,
 
   void CreateWebDataService();
   FilePath GetPrefFilePath();
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  LocalProfileId GetLocalProfileId();
-#endif
-
-  void CreatePasswordStore();
 
   void StopCreateSessionServiceTimer();
 
@@ -245,11 +238,9 @@ class ProfileImpl : public Profile,
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   scoped_refptr<WebDataService> web_data_service_;
-  scoped_refptr<PasswordStore> password_store_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;
-  bool created_password_store_;
   bool clear_local_state_on_exit_;
 
   // Whether or not the last session exited cleanly. This is set only once.

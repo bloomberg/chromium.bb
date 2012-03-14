@@ -69,6 +69,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -3983,8 +3984,8 @@ void TestingAutomationProvider::AddSavedPassword(
       GetPasswordFormFromDict(*password_dict);
 
   // Use IMPLICIT_ACCESS since new passwords aren't added in incognito mode.
-  PasswordStore* password_store =
-      browser->profile()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
+      browser->profile(), Profile::IMPLICIT_ACCESS);
 
   // The password store does not exist for an incognito window.
   if (password_store == NULL) {
@@ -4029,8 +4030,8 @@ void TestingAutomationProvider::RemoveSavedPassword(
       GetPasswordFormFromDict(*password_dict);
 
   // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.
-  PasswordStore* password_store =
-      browser->profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
+      browser->profile(), Profile::EXPLICIT_ACCESS);
   if (password_store == NULL) {
     AutomationJSONReply(this, reply_message).SendError(
         "Unable to get password store.");
@@ -4055,8 +4056,8 @@ void TestingAutomationProvider::GetSavedPasswords(
     IPC::Message* reply_message) {
   // Use EXPLICIT_ACCESS since saved passwords can be retrieved in
   // incognito mode.
-  PasswordStore* password_store =
-      browser->profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
+      browser->profile(), Profile::EXPLICIT_ACCESS);
 
   if (password_store == NULL) {
     AutomationJSONReply reply(this, reply_message);

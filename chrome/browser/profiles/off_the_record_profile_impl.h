@@ -57,7 +57,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) OVERRIDE;
   virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType sat) OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual TemplateURLFetcher* GetTemplateURLFetcher() OVERRIDE;

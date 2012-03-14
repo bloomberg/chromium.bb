@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -42,7 +43,8 @@ bool PasswordDataTypeController::PostTaskOnBackendThread(
 bool PasswordDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), MODEL_STARTING);
-  password_store_ = profile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  password_store_ = PasswordStoreFactory::GetForProfile(
+      profile(), Profile::EXPLICIT_ACCESS);
   if (!password_store_.get()) {
     SyncError error(
         FROM_HERE,

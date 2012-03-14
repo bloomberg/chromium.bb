@@ -201,7 +201,6 @@ class TestingProfile : public Profile {
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual WebDataService* GetWebDataService(ServiceAccessType access) OVERRIDE;
   virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType access) OVERRIDE;
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
   // set GetPrefs creates one, so normally you need not invoke this. If you need
   // to set a pref service you must invoke this before GetPrefs.

@@ -96,12 +96,6 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
   }
 }
 
-void SyncBackendHostForProfileSyncTest::
-    SetDefaultExpectationsForWorkerCreation(ProfileMock* profile) {
-  EXPECT_CALL(*profile, GetPasswordStore(testing::_)).
-      WillOnce(testing::Return((PasswordStore*)NULL));
-}
-
 void SyncBackendHostForProfileSyncTest::SetHistoryServiceExpectations(
     ProfileMock* profile) {
   EXPECT_CALL(*profile, GetHistoryService(testing::_)).

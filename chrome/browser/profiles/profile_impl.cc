@@ -57,7 +57,6 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -105,21 +104,9 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/instant/promo_counter.h"
-#include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/installer/util/install_util.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/keychain_mac.h"
-#include "chrome/browser/mock_keychain_mac.h"
-#include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/enterprise_extension_observer.h"
-#elif defined(OS_POSIX)
-#include "base/nix/xdg_util.h"
-#if defined(USE_GNOME_KEYRING)
-#include "chrome/browser/password_manager/native_backend_gnome_x.h"
-#endif
-#include "chrome/browser/password_manager/native_backend_kwallet_x.h"
-#include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -219,14 +206,6 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRestoreSessionStateDialogShown,
                              false,
                              PrefService::SYNCABLE_PREF);
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  prefs->RegisterIntegerPref(prefs::kLocalProfileId,
-                             kInvalidLocalProfileId,
-                             PrefService::UNSYNCABLE_PREF);
-  // Notice that the preprocessor conditions above are exactly those that will
-  // result in using PasswordStoreX in CreatePasswordStore() below.
-  PasswordStoreX::RegisterUserPrefs(prefs);
-#endif
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path,
@@ -241,7 +220,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
-      created_password_store_(false),
       start_time_(Time::Now()),
 #if defined(OS_WIN)
       checked_instant_promo_(false),
@@ -583,10 +561,6 @@ ProfileImpl::~ProfileImpl() {
   DestroyOffTheRecordProfile();
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
-
-  // Password store uses WebDB, shut it down before the WebDB has been shutdown.
-  if (password_store_.get())
-    password_store_->Shutdown();
 
   // Both HistoryService and WebDataService maintain threads for background
   // processing. Its possible each thread still has tasks on it that have
@@ -985,126 +959,6 @@ void ProfileImpl::CreateWebDataService() {
   if (!wds->Init(GetPath()))
     return;
   web_data_service_.swap(wds);
-}
-
-PasswordStore* ProfileImpl::GetPasswordStore(ServiceAccessType sat) {
-  if (!created_password_store_)
-    CreatePasswordStore();
-  return password_store_.get();
-}
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-LocalProfileId ProfileImpl::GetLocalProfileId() {
-  PrefService* prefs = GetPrefs();
-  LocalProfileId id = prefs->GetInteger(prefs::kLocalProfileId);
-  if (id == kInvalidLocalProfileId) {
-    // Note that there are many more users than this. Thus, by design, this is
-    // not a unique id. However, it is large enough that it is very unlikely
-    // that it would be repeated twice on a single machine. It is still possible
-    // for that to occur though, so the potential results of it actually
-    // happening should be considered when using this value.
-    static const LocalProfileId kLocalProfileIdMask =
-        static_cast<LocalProfileId>((1 << 24) - 1);
-    do {
-      id = rand() & kLocalProfileIdMask;
-      // TODO(mdm): scan other profiles to make sure they are not using this id?
-    } while (id == kInvalidLocalProfileId);
-    prefs->SetInteger(prefs::kLocalProfileId, id);
-  }
-  return id;
-}
-#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-
-void ProfileImpl::CreatePasswordStore() {
-  DCHECK(!created_password_store_ && password_store_.get() == NULL);
-  created_password_store_ = true;
-  scoped_refptr<PasswordStore> ps;
-  FilePath login_db_file_path = GetPath();
-  login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
-  LoginDatabase* login_db = new LoginDatabase();
-  if (!login_db->Init(login_db_file_path)) {
-    LOG(ERROR) << "Could not initialize login database.";
-    delete login_db;
-    return;
-  }
-#if defined(OS_WIN)
-  ps = new PasswordStoreWin(login_db, this,
-                            GetWebDataService(Profile::IMPLICIT_ACCESS));
-#elif defined(OS_MACOSX)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
-    ps = new PasswordStoreMac(new MockKeychain(), login_db);
-  } else {
-    ps = new PasswordStoreMac(new MacKeychain(), login_db);
-  }
-#elif defined(OS_CHROMEOS)
-  // For now, we use PasswordStoreDefault. We might want to make a native
-  // backend for PasswordStoreX (see below) in the future though.
-  ps = new PasswordStoreDefault(login_db, this,
-                                GetWebDataService(Profile::IMPLICIT_ACCESS));
-#elif defined(OS_POSIX)
-  // On POSIX systems, we try to use the "native" password management system of
-  // the desktop environment currently running, allowing GNOME Keyring in XFCE.
-  // (In all cases we fall back on the basic store in case of failure.)
-  base::nix::DesktopEnvironment desktop_env;
-  std::string store_type =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kPasswordStore);
-  if (store_type == "kwallet") {
-    desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
-  } else if (store_type == "gnome") {
-    desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
-  } else if (store_type == "basic") {
-    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
-  } else {
-    // Detect the store to use automatically.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    desktop_env = base::nix::GetDesktopEnvironment(env.get());
-    const char* name = base::nix::GetDesktopEnvironmentName(desktop_env);
-    VLOG(1) << "Password storage detected desktop environment: "
-            << (name ? name : "(unknown)");
-  }
-
-  scoped_ptr<PasswordStoreX::NativeBackend> backend;
-  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
-    // KDE3 didn't use DBus, which our KWallet store uses.
-    VLOG(1) << "Trying KWallet for password storage.";
-    backend.reset(new NativeBackendKWallet(GetLocalProfileId(), GetPrefs()));
-    if (backend->Init())
-      VLOG(1) << "Using KWallet for password storage.";
-    else
-      backend.reset();
-  } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
-             desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
-#if defined(USE_GNOME_KEYRING)
-    VLOG(1) << "Trying GNOME keyring for password storage.";
-    backend.reset(new NativeBackendGnome(GetLocalProfileId(), GetPrefs()));
-    if (backend->Init())
-      VLOG(1) << "Using GNOME keyring for password storage.";
-    else
-      backend.reset();
-#endif  // defined(USE_GNOME_KEYRING)
-  }
-
-  if (!backend.get()) {
-    LOG(WARNING) << "Using basic (unencrypted) store for password storage. "
-        "See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage for "
-        "more information about password storage options.";
-  }
-
-  ps = new PasswordStoreX(login_db, this,
-                          GetWebDataService(Profile::IMPLICIT_ACCESS),
-                          backend.release());
-#else
-  NOTIMPLEMENTED();
-#endif
-  if (!ps)
-    delete login_db;
-
-  if (!ps || !ps->Init()) {
-    NOTREACHED() << "Could not initialize password manager.";
-    return;
-  }
-  password_store_.swap(ps);
 }
 
 DownloadManager* ProfileImpl::GetDownloadManager() {

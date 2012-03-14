@@ -7,9 +7,11 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,42 +39,6 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
 
-class TestingProfileWithPasswordStore : public TestingProfile {
- public:
-  explicit TestingProfileWithPasswordStore(PasswordStore* store)
-      : store_(store) {}
-  virtual ~TestingProfileWithPasswordStore() {
-    store_->Shutdown();
-  }
-  virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
-    return store_;
-  }
- private:
-  scoped_refptr<PasswordStore> store_;
-};
-
-class MockPasswordStore : public PasswordStore {
- public:
-  MOCK_METHOD1(RemoveLogin, void(const PasswordForm&));
-  MOCK_METHOD2(GetLogins, int(const PasswordForm&, PasswordStoreConsumer*));
-  MOCK_METHOD1(AddLogin, void(const PasswordForm&));
-  MOCK_METHOD1(UpdateLogin, void(const PasswordForm&));
-  MOCK_METHOD0(ReportMetrics, void());
-  MOCK_METHOD0(ReportMetricsImpl, void());
-  MOCK_METHOD1(AddLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD1(UpdateLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD1(RemoveLoginImpl, void(const PasswordForm&));
-  MOCK_METHOD2(RemoveLoginsCreatedBetweenImpl, void(const base::Time&,
-               const base::Time&));
-  MOCK_METHOD2(GetLoginsImpl, void(GetLoginsRequest*, const PasswordForm&));
-  MOCK_METHOD1(GetAutofillableLoginsImpl, void(GetLoginsRequest*));
-  MOCK_METHOD1(GetBlacklistLoginsImpl, void(GetLoginsRequest*));
-  MOCK_METHOD1(FillAutofillableLogins,
-      bool(std::vector<webkit::forms::PasswordForm*>*));
-  MOCK_METHOD1(FillBlacklistLogins,
-      bool(std::vector<webkit::forms::PasswordForm*>*));
-};
-
 ACTION_P2(InvokeConsumer, handle, forms) {
   arg0->OnPasswordStoreRequestDone(handle, forms);
 }
@@ -88,8 +54,11 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
 
   virtual void SetUp() {
-    store_ = new MockPasswordStore();
-    browser_context_.reset(new TestingProfileWithPasswordStore(store_));
+    TestingProfile* testing_profile = new TestingProfile;
+    store_ = static_cast<MockPasswordStore*>(
+        PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+            testing_profile, MockPasswordStore::Build));
+    browser_context_.reset(testing_profile);
     ChromeRenderViewHostTestHarness::SetUp();
 
     EXPECT_CALL(delegate_, GetProfileForPasswordManager())
