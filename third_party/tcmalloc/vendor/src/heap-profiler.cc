@@ -55,7 +55,7 @@
 #include <algorithm>
 #include <string>
 
-#include <google/heap-profiler.h>
+#include <gperftools/heap-profiler.h>
 
 #include "base/logging.h"
 #include "base/basictypes.h"   // for PRId64, among other things
@@ -63,8 +63,8 @@
 #include "base/commandlineflags.h"
 #include "malloc_hook-inl.h"
 #include "tcmalloc_guard.h"
-#include <google/malloc_hook.h>
-#include <google/malloc_extension.h>
+#include <gperftools/malloc_hook.h>
+#include <gperftools/malloc_extension.h>
 #include "base/spinlock.h"
 #include "base/low_level_alloc.h"
 #include "base/sysinfo.h"      // for GetUniquePathFromEnv()
@@ -175,29 +175,6 @@ static HeapProfileTable* heap_profile = NULL;  // the heap profile table
 // Profile generation
 //----------------------------------------------------------------------
 
-enum AddOrRemove { ADD, REMOVE };
-
-// Add or remove all MMap-allocated regions to/from *heap_profile.
-// Assumes heap_lock is held.
-static void AddRemoveMMapDataLocked(AddOrRemove mode) {
-  RAW_DCHECK(heap_lock.IsHeld(), "");
-  if (!FLAGS_mmap_profile || !is_on) return;
-  // MemoryRegionMap maintained all the data we need for all
-  // mmap-like allocations, so we just use it here:
-  MemoryRegionMap::LockHolder l;
-  for (MemoryRegionMap::RegionIterator r = MemoryRegionMap::BeginRegionLocked();
-       r != MemoryRegionMap::EndRegionLocked(); ++r) {
-    if (mode == ADD) {
-      heap_profile->RecordAllocWithStack(
-        reinterpret_cast<const void*>(r->start_addr),
-        r->end_addr - r->start_addr,
-        r->call_stack_depth, r->call_stack);
-    } else {
-      heap_profile->RecordFree(reinterpret_cast<void*>(r->start_addr));
-    }
-  }
-}
-
 // Input must be a buffer of size at least 1MB.
 static char* DoGetHeapProfileLocked(char* buf, int buflen) {
   // We used to be smarter about estimating the required memory and
@@ -208,16 +185,13 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
   RAW_DCHECK(heap_lock.IsHeld(), "");
   int bytes_written = 0;
   if (is_on) {
-    HeapProfileTable::Stats const stats = heap_profile->total();
-    (void)stats;   // avoid an unused-variable warning in non-debug mode.
-    AddRemoveMMapDataLocked(ADD);
+    if (FLAGS_mmap_profile) {
+      heap_profile->RefreshMMapData();
+    }
     bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
-    // FillOrderedProfile should not reduce the set of active mmap-ed regions,
-    // hence MemoryRegionMap will let us remove everything we've added above:
-    AddRemoveMMapDataLocked(REMOVE);
-    RAW_DCHECK(stats.Equivalent(heap_profile->total()), "");
-    // if this fails, we somehow removed by AddRemoveMMapDataLocked
-    // more than we have added.
+    if (FLAGS_mmap_profile) {
+      heap_profile->ClearMMapData();
+    }
   }
   buf[bytes_written] = '\0';
   RAW_DCHECK(bytes_written == strlen(buf), "");
@@ -324,9 +298,12 @@ static void MaybeDumpProfileLocked() {
 
 // Record an allocation in the profile.
 static void RecordAlloc(const void* ptr, size_t bytes, int skip_count) {
+  // Take the stack trace outside the critical section.
+  void* stack[HeapProfileTable::kMaxStackDepth];
+  int depth = HeapProfileTable::GetCallerStackTrace(skip_count + 1, stack);
   SpinLockHolder l(&heap_lock);
   if (is_on) {
-    heap_profile->RecordAlloc(ptr, bytes, skip_count + 1);
+    heap_profile->RecordAlloc(ptr, bytes, depth, stack);
     MaybeDumpProfileLocked();
   }
 }

@@ -87,7 +87,7 @@
 //   goes from about 1100 ns to about 300 ns.
 
 #include "config.h"
-#include <google/tcmalloc.h>
+#include <gperftools/tcmalloc.h>
 
 #include <errno.h>                      // for ENOMEM, EINVAL, errno
 #ifdef HAVE_SYS_CDEFS_H
@@ -111,8 +111,8 @@
 #include <new>                          // for nothrow_t (ptr only), etc
 #include <vector>                       // for vector
 
-#include <google/malloc_extension.h>
-#include <google/malloc_hook.h>         // for MallocHook
+#include <gperftools/malloc_extension.h>
+#include <gperftools/malloc_hook.h>         // for MallocHook
 #include "base/basictypes.h"            // for int64
 #include "base/commandlineflags.h"      // for RegisterFlagValidator, etc
 #include "base/dynamic_annotations.h"   // for RunningOnValgrind
@@ -147,6 +147,9 @@
 # define WIN32_DO_PATCHING 1
 #endif
 
+// Some windows file somewhere (at least on cygwin) #define's small (!)
+#undef small
+
 using STL_NAMESPACE::max;
 using STL_NAMESPACE::numeric_limits;
 using STL_NAMESPACE::vector;
@@ -162,6 +165,10 @@ using STL_NAMESPACE::vector;
 #endif
 
 using tcmalloc::AlignmentForSize;
+using tcmalloc::kLog;
+using tcmalloc::kCrash;
+using tcmalloc::kCrashWithStats;
+using tcmalloc::Log;
 using tcmalloc::PageHeap;
 using tcmalloc::PageHeapAllocator;
 using tcmalloc::SizeMap;
@@ -279,16 +286,18 @@ static int tc_new_mode = 0;  // See tc_set_new_mode().
 // required) kind of exception handling for these routines.
 namespace {
 void InvalidFree(void* ptr) {
-  CRASH("Attempt to free invalid pointer: %p\n", ptr);
+  Log(kCrash, __FILE__, __LINE__, "Attempt to free invalid pointer", ptr);
 }
 
-size_t InvalidGetSizeForRealloc(void* old_ptr) {
-  CRASH("Attempt to realloc invalid pointer: %p\n", old_ptr);
+size_t InvalidGetSizeForRealloc(const void* old_ptr) {
+  Log(kCrash, __FILE__, __LINE__,
+      "Attempt to realloc invalid pointer", old_ptr);
   return 0;
 }
 
-size_t InvalidGetAllocatedSize(void* ptr) {
-  CRASH("Attempt to get the size of an invalid pointer: %p\n", ptr);
+size_t InvalidGetAllocatedSize(const void* ptr) {
+  Log(kCrash, __FILE__, __LINE__,
+      "Attempt to get the size of an invalid pointer", ptr);
   return 0;
 }
 }  // unnamed namespace
@@ -303,7 +312,9 @@ struct TCMallocStats {
 };
 
 // Get stats into "r".  Also get per-size-class counts if class_count != NULL
-static void ExtractStats(TCMallocStats* r, uint64_t* class_count) {
+static void ExtractStats(TCMallocStats* r, uint64_t* class_count,
+                         PageHeap::SmallSpanStats* small_spans,
+                         PageHeap::LargeSpanStats* large_spans) {
   r->central_bytes = 0;
   r->transfer_bytes = 0;
   for (int cl = 0; cl < kNumClasses; ++cl) {
@@ -324,14 +335,30 @@ static void ExtractStats(TCMallocStats* r, uint64_t* class_count) {
     ThreadCache::GetThreadStats(&r->thread_bytes, class_count);
     r->metadata_bytes = tcmalloc::metadata_system_bytes();
     r->pageheap = Static::pageheap()->stats();
+    if (small_spans != NULL) {
+      Static::pageheap()->GetSmallSpanStats(small_spans);
+    }
+    if (large_spans != NULL) {
+      Static::pageheap()->GetLargeSpanStats(large_spans);
+    }
   }
+}
+
+static double PagesToMiB(uint64_t pages) {
+  return (pages << kPageShift) / 1048576.0;
 }
 
 // WRITE stats to "out"
 static void DumpStats(TCMalloc_Printer* out, int level) {
   TCMallocStats stats;
   uint64_t class_count[kNumClasses];
-  ExtractStats(&stats, (level >= 2 ? class_count : NULL));
+  PageHeap::SmallSpanStats small;
+  PageHeap::LargeSpanStats large;
+  if (level >= 2) {
+    ExtractStats(&stats, class_count, &small, &large);
+  } else {
+    ExtractStats(&stats, NULL, NULL, NULL);
+  }
 
   static const double MiB = 1048576.0;
 
@@ -404,8 +431,48 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
       }
     }
 
-    SpinLockHolder h(Static::pageheap_lock());
-    Static::pageheap()->Dump(out);
+    // append page heap info
+    int nonempty_sizes = 0;
+    for (int s = 0; s < kMaxPages; s++) {
+      if (small.normal_length[s] + small.returned_length[s] > 0) {
+        nonempty_sizes++;
+      }
+    }
+    out->printf("------------------------------------------------\n");
+    out->printf("PageHeap: %d sizes; %6.1f MiB free; %6.1f MiB unmapped\n",
+                nonempty_sizes, stats.pageheap.free_bytes / MiB,
+                stats.pageheap.unmapped_bytes / MiB);
+    out->printf("------------------------------------------------\n");
+    uint64_t total_normal = 0;
+    uint64_t total_returned = 0;
+    for (int s = 0; s < kMaxPages; s++) {
+      const int n_length = small.normal_length[s];
+      const int r_length = small.returned_length[s];
+      if (n_length + r_length > 0) {
+        uint64_t n_pages = s * n_length;
+        uint64_t r_pages = s * r_length;
+        total_normal += n_pages;
+        total_returned += r_pages;
+        out->printf("%6u pages * %6u spans ~ %6.1f MiB; %6.1f MiB cum"
+                    "; unmapped: %6.1f MiB; %6.1f MiB cum\n",
+                    s,
+                    (n_length + r_length),
+                    PagesToMiB(n_pages + r_pages),
+                    PagesToMiB(total_normal + total_returned),
+                    PagesToMiB(r_pages),
+                    PagesToMiB(total_returned));
+      }
+    }
+
+    total_normal += large.normal_pages;
+    total_returned += large.returned_pages;
+    out->printf(">255   large * %6u spans ~ %6.1f MiB; %6.1f MiB cum"
+                "; unmapped: %6.1f MiB; %6.1f MiB cum\n",
+                static_cast<unsigned int>(large.spans),
+                PagesToMiB(large.normal_pages + large.returned_pages),
+                PagesToMiB(total_normal + total_returned),
+                PagesToMiB(large.returned_pages),
+                PagesToMiB(total_returned));
   }
 }
 
@@ -435,8 +502,9 @@ static void** DumpHeapGrowthStackTraces() {
 
   void** result = new void*[needed_slots];
   if (result == NULL) {
-    MESSAGE("tcmalloc: allocation failed for stack trace slots",
-            needed_slots * sizeof(*result));
+    Log(kLog, __FILE__, __LINE__,
+        "tcmalloc: allocation failed for stack trace slots",
+        needed_slots * sizeof(*result));
     return NULL;
   }
 
@@ -562,7 +630,7 @@ class TCMallocImplementation : public MallocExtension {
 
     if (strcmp(name, "generic.current_allocated_bytes") == 0) {
       TCMallocStats stats;
-      ExtractStats(&stats, NULL);
+      ExtractStats(&stats, NULL, NULL, NULL);
       *value = stats.pageheap.system_bytes
                - stats.thread_bytes
                - stats.central_bytes
@@ -574,7 +642,7 @@ class TCMallocImplementation : public MallocExtension {
 
     if (strcmp(name, "generic.heap_size") == 0) {
       TCMallocStats stats;
-      ExtractStats(&stats, NULL);
+      ExtractStats(&stats, NULL, NULL, NULL);
       *value = stats.pageheap.system_bytes;
       return true;
     }
@@ -608,7 +676,7 @@ class TCMallocImplementation : public MallocExtension {
 
     if (strcmp(name, "tcmalloc.current_total_thread_cache_bytes") == 0) {
       TCMallocStats stats;
-      ExtractStats(&stats, NULL);
+      ExtractStats(&stats, NULL, NULL, NULL);
       *value = stats.thread_bytes;
       return true;
     }
@@ -689,7 +757,7 @@ class TCMallocImplementation : public MallocExtension {
   // This just calls GetSizeWithCallback, but because that's in an
   // unnamed namespace, we need to move the definition below it in the
   // file.
-  virtual size_t GetAllocatedSize(void* ptr);
+  virtual size_t GetAllocatedSize(const void* ptr);
 
   // This duplicates some of the logic in GetSizeWithCallback, but is
   // faster.  This is important on OS X, where this function is called
@@ -763,42 +831,39 @@ class TCMallocImplementation : public MallocExtension {
     }
 
     // append page heap info
-    int64 page_count_normal[kMaxPages];
-    int64 page_count_returned[kMaxPages];
-    int64 span_count_normal;
-    int64 span_count_returned;
+    PageHeap::SmallSpanStats small;
+    PageHeap::LargeSpanStats large;
     {
       SpinLockHolder h(Static::pageheap_lock());
-      Static::pageheap()->GetClassSizes(page_count_normal,
-                                        page_count_returned,
-                                        &span_count_normal,
-                                        &span_count_returned);
+      Static::pageheap()->GetSmallSpanStats(&small);
+      Static::pageheap()->GetLargeSpanStats(&large);
     }
 
-    // spans: mapped
+    // large spans: mapped
     MallocExtension::FreeListInfo span_info;
     span_info.type = kLargeSpanType;
     span_info.max_object_size = (numeric_limits<size_t>::max)();
     span_info.min_object_size = kMaxPages << kPageShift;
-    span_info.total_bytes_free = span_count_normal << kPageShift;
+    span_info.total_bytes_free = large.normal_pages << kPageShift;
     v->push_back(span_info);
 
-    // spans: unmapped
+    // large spans: unmapped
     span_info.type = kLargeUnmappedSpanType;
-    span_info.total_bytes_free = span_count_returned << kPageShift;
+    span_info.total_bytes_free = large.returned_pages << kPageShift;
     v->push_back(span_info);
 
+    // small spans
     for (int s = 1; s < kMaxPages; s++) {
       MallocExtension::FreeListInfo i;
       i.max_object_size = (s << kPageShift);
       i.min_object_size = ((s - 1) << kPageShift);
 
       i.type = kPageHeapType;
-      i.total_bytes_free = (s << kPageShift) * page_count_normal[s];
+      i.total_bytes_free = (s << kPageShift) * small.normal_length[s];
       v->push_back(i);
 
       i.type = kPageHeapUnmappedType;
-      i.total_bytes_free = (s << kPageShift) * page_count_returned[s];
+      i.total_bytes_free = (s << kPageShift) * small.returned_length[s];
       v->push_back(i);
     }
   }
@@ -824,12 +889,6 @@ TCMallocGuard::TCMallocGuard() {
     tcmalloc::CheckIfKernelSupportsTLS();
 #endif
     ReplaceSystemAlloc();    // defined in libc_override_*.h
-#if defined(__APPLE__)
-    // To break the recursive call of malloc, as malloc -> TCMALLOC_MESSAGE
-    // -> snprintf -> localeconv_l -> malloc, on MacOS.
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%d", tcmallocguard_refcount);
-#endif
     tc_free(tc_malloc(1));
     ThreadCache::InitTSD();
     tc_free(tc_malloc(1));
@@ -1036,7 +1095,15 @@ static inline ThreadCache* GetCacheIfPresent() {
 // It is used primarily by windows code which wants a specialized callback.
 inline void do_free_with_callback(void* ptr, void (*invalid_free_fn)(void*)) {
   if (ptr == NULL) return;
-  ASSERT(Static::pageheap() != NULL);  // Should not call free() before malloc()
+  if (Static::pageheap() == NULL) {
+    // We called free() before malloc().  This can occur if the
+    // (system) malloc() is called before tcmalloc is loaded, and then
+    // free() is called after tcmalloc is loaded (and tc_free has
+    // replaced free), but before the global constructor has run that
+    // sets up the tcmalloc data structures.
+    (*invalid_free_fn)(ptr);  // Decide how to handle the bad free request
+    return;
+  }
   const PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
   Span* span = NULL;
   size_t cl = Static::pageheap()->GetSizeClassIfCached(p);
@@ -1088,8 +1155,8 @@ inline void do_free(void* ptr) {
 
 // NOTE: some logic here is duplicated in GetOwnership (above), for
 // speed.  If you change this function, look at that one too.
-inline size_t GetSizeWithCallback(void* ptr,
-                                  size_t (*invalid_getsize_fn)(void*)) {
+inline size_t GetSizeWithCallback(const void* ptr,
+                                  size_t (*invalid_getsize_fn)(const void*)) {
   if (ptr == NULL)
     return 0;
   const PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
@@ -1114,7 +1181,7 @@ inline size_t GetSizeWithCallback(void* ptr,
 inline void* do_realloc_with_callback(
     void* old_ptr, size_t new_size,
     void (*invalid_free_fn)(void*),
-    size_t (*invalid_get_size_fn)(void*)) {
+    size_t (*invalid_get_size_fn)(const void*)) {
   // Get the size of the old entry
   const size_t old_size = GetSizeWithCallback(old_ptr, invalid_get_size_fn);
 
@@ -1255,7 +1322,7 @@ inline int do_mallopt(int cmd, int value) {
 #ifdef HAVE_STRUCT_MALLINFO
 inline struct mallinfo do_mallinfo() {
   TCMallocStats stats;
-  ExtractStats(&stats, NULL);
+  ExtractStats(&stats, NULL, NULL, NULL);
 
   // Just some of the fields are filled in.
   struct mallinfo info;
@@ -1379,7 +1446,7 @@ void* cpp_memalign(size_t align, size_t size) {
 }  // end unnamed namespace
 
 // As promised, the definition of this function, declared above.
-size_t TCMallocImplementation::GetAllocatedSize(void* ptr) {
+size_t TCMallocImplementation::GetAllocatedSize(const void* ptr) {
   ASSERT(TCMallocImplementation::GetOwnership(ptr)
          != TCMallocImplementation::kNotOwned);
   return GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);

@@ -1,3 +1,95 @@
+Fri Feb 03 15:40:45 2012  Google Inc. <google-perftools@googlegroups.com>
+
+	* gperftools: version 2.0
+	* Renamed the project from google-perftools to gperftools (csilvers)
+	* Renamed the .deb/.rpm packagse from google-perftools to gperftools too
+	* Renamed include directory from google/ to gperftools/ (csilvers)
+	* Changed the 'official' perftools email in setup.py/etc
+	* Renamed google-perftools.sln to gperftools.sln
+	* PORTING: Removed bash-isms & grep -q in heap-checker-death_unittest.sh
+	* Changed copyright text to reflect Google's relinquished ownership
+
+Tue Jan 31 10:43:50 2012    Google Inc. <opensource@google.com>
+
+	* google-perftools: version 1.10 release
+	* PORTING: Support for patching assembly on win x86_64! (scott.fr...)
+	* PORTING: Work around atexit-execution-order bug on freebsd (csilvers)
+	* PORTING: Patch _calloc_crt for windows (roger orr)
+	* PORTING: Add C++11 compatibility method for stl allocator (jdennett)
+	* PORTING: use MADV_FREE, not MADV_DONTNEED, on freebsd (csilvers)
+	* PORTING: Don't use SYS_open when not supported on solaris (csilvers)
+	* PORTING: Do not assume uname() returns 0 on success (csilvers)
+	* LSS: Improved ARM support in linux-syscall-support (dougkwan)
+	* LSS: Get rid of unused syscalls in linux-syscall-support (csilvers)
+	* LSS: Fix broken mmap wrapping for ppc (markus)
+	* LSS: Emit .cfi_adjust_cfa_offset when appropriate (ppluzhnikov)
+	* LSS: Be more accurate in register use in __asm__ (markus)
+	* LSS: Fix __asm__ calls to compile under clang (chandlerc)
+	* LSS: Fix ARM inline assembly bug around r7 and swi (lcwu)
+	* No longer log when an allocator fails (csilvers)
+	* void* -> const void* for MallocExtension methods (llib)
+	* Improve HEAP_PROFILE_MMAP and fix bugs with it (dmikurube)
+	* Replace int-based abs with more correct fabs in a test (pmurin)
+
+Thu Dec 22 16:22:45 2011    Google Inc. <opensource@google.com>
+
+	* google-perftools: version 1.9 release
+	* Lightweight check for double-frees (blount)
+	* BUGFIX: Fix pprof to exit properly if run with no args (dagitses)
+	* Suggest ASan as a way to diagnose buggy code (ppluzhnikov)
+	* Get rid of unused CACHELINE_SIZE (csilvers)
+	* Replace atexit() calls with global dtors; helps freebsd (csilvers)
+	* Disable heap-checker under AddressSanitizer (kcc)
+	* Fix bug in powerpc stacktracing (ppluzhnikov)
+	* PERF: Use exponential backoff waiting for spinlocks (m3b)
+	* Fix 64-bit nm on 32-bit binaries in pprof (csilvers)
+	* Add ProfileHandlerDisallowForever (rsc)
+	* BUGFIX: Shell escape when forking in pprof (csilvers)
+	* No longer combine overloaded functions in pprof (csilvers)
+	* Fix address-normalizing bug in pprof (csilvers)
+	* More consistently call abort() instead of exit() on failure (csilvers)
+	* Allow NoGlobalLeaks to be safely called more than once (csilvers)
+	* PORTING/BUGFIX: Fix ARM cycleclock to use volatile asm (dougkwan)
+	* PORTING: 64-bit atomic ops for ARMv7 (dougkwan)
+	* PORTING: Implement stacktrace for ARM (dougkwan)
+	* PORTING: Fix malloc_hook_mmap_linux for ARM (dougkwan)
+	* PORTING: Update linux_syscall_support.h for ARM/etc (evannier, sanek)
+	* PORTING: Fix freebsd to work on x86_64 (chapp...@gmail.com)
+	* PORTING: Added additional SYS_mmap fixes for FreeBSD (chappedm)
+	* PORTING: Allow us to compile on OS X 10.6 and run on 10.5 (raltherr)
+	* PORTING: Check for mingw compilers that *do* define timespec
+	* PORTING: Add "support" for MIPS cycletimer
+	* PORTING: Fix fallback cycle-timer to work with Now (dougkwan)
+	* PERF: Move stack trace collecting out of the mutex (taylorc)
+	* PERF: Get the deallocation stack trace outside the mutex (sean)
+	* Make PageHeap dynamically allocated for leak checks (maxim)
+	* BUGFIX: Fix probing of nm -f behavior in pprof (dpeng)
+	* BUGFIX: Fix a race with the CentralFreeList lock before main (sanjay)
+	* Support /pprof/censusprofile url arguments (rajatjain)
+	* Change IgnoreObject to return its argument (nlewycky)
+	* Update malloc-hook files to support more CPUs
+	* BUGFIX: write our own strstr to avoid libc problems (csilvers)
+	* Use simple callgrind compression facility in pprof
+	* Print an error message when we can't run pprof to symbolize (csilvers)
+	* Die in configure when g++ is't installed (csilvers)
+	* DOC: Beef up the documentation a bit about using libunwind (csilvers)
+
+Fri Aug 26 13:29:25 2011    Google Inc. <opensource@google.com>
+
+	* google-perftools: version 1.8.3 release
+	* Added back the 'pthreads unsafe early' #define, needed for FreeBSD
+
+Thu Aug 11 15:01:47 2011    Google Inc. <opensource@google.com>
+
+	* google-perftools: version 1.8.2 release
+	* Fixed calculation of patchlevel, 'make check' should all pass again
+
+Tue Jul 26 20:57:51 2011    Google Inc. <opensource@google.com>
+
+	* google-perftools: version 1.8.1 release
+	* Added an #include to fix compile breakage on latest gcc's
+	* Removed an extra , in the configure.ac script
+
 Fri Jul 15 16:10:51 2011    Google Inc. <opensource@google.com>
 
 	* google-perftools: version 1.8 release

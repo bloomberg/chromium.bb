@@ -36,6 +36,7 @@
 #ifndef GOOGLE_PERFTOOLS_MINI_DISASSEMBLER_H_
 #define GOOGLE_PERFTOOLS_MINI_DISASSEMBLER_H_
 
+#include "config.h"
 #include <windows.h>
 #include "mini_disassembler_types.h"
 
@@ -74,7 +75,7 @@ namespace sidestep {
 // IA-32 Intel® Architecture Software Developer’s Manual Volume 2:
 // Instruction Set Reference for information about operand decoding
 // etc.
-class MiniDisassembler {
+class PERFTOOLS_DLL_DECL MiniDisassembler {
  public:
 
   // Creates a new instance and sets defaults.
@@ -164,6 +165,12 @@ class MiniDisassembler {
 
   // Default address size is 32 bits if true, 16 bits if false.
   bool address_default_is_32_bits_;
+
+  // Determines if 64 bit operands are supported (x64).
+  bool operand_default_support_64_bits_;
+
+  // Current operand size is 64 bits if true, 32 bits if false.
+  bool operand_is_64_bits_;
 
   // Huge big opcode table based on the IA-32 manual, defined
   // in Ia32OpcodeMap.cc

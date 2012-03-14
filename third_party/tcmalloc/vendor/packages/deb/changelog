@@ -1,3 +1,22 @@
+gperftools (2.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Package renamed from google-perftools to gperftools.
+
+ -- Google Inc. and others <google-perftools@googlegroups.com>  Fri, 03 Feb 2012 15:40:45 -0800
+
+google-perftools (1.10-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Google Inc. <opensource@google.com>  Tue, 31 Jan 2012 10:43:50 -0800
+
+google-perftools (1.9-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Google Inc. <opensource@google.com>  Thu, 22 Dec 2011 16:22:45 -0800
+
 google-perftools (1.8-1) unstable; urgency=low
 
   * New upstream release.
@@ -146,7 +165,7 @@ google-perftools (0.5-1) unstable; urgency=low
 
   * New upstream release.
 
- -- Google Inc. <opensource@google.com>  Mon Nov 14 17:28:59 2005 -0800
+ -- Google Inc. <opensource@google.com>  Mon, Nov 14 17:28:59 2005 -0800
 
 google-perftools (0.4-1) unstable; urgency=low
 
