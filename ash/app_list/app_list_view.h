@@ -30,7 +30,9 @@ class AppListView : public views::WidgetDelegateView,
               const gfx::Rect& bounds);
   virtual ~AppListView();
 
-  // Closes app list.
+  void AnimateShow();
+  void AnimateHide();
+
   void Close();
 
  private:

@@ -22,7 +22,9 @@ namespace ash {
 
 namespace {
 
-const int kIconTitleSpacing = 5;
+const int kPadding = 10;
+const int kIconTitleSpacing = 10;
+const int kMinLabelWidth = 150;
 
 const SkColor kTitleColor = SK_ColorWHITE;
 
@@ -74,7 +76,6 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
   title_->SetFont(GetTitleFont());
   title_->SetBackgroundColor(0);
   title_->SetEnabledColor(kTitleColor);
-  title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   AddChildView(icon_);
   AddChildView(title_);
@@ -89,6 +90,16 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
 
 AppListItemView::~AppListItemView() {
   model_->RemoveObserver(this);
+}
+
+// static
+gfx::Size AppListItemView::GetPreferredSizeForIconSize(
+    const gfx::Size& icon_size) {
+  gfx::Size size(
+      std::max(icon_size.width() + icon_size.width() / 2, kMinLabelWidth),
+      icon_size.height() + kIconTitleSpacing + GetTitleFont().GetHeight());
+  size.Enlarge(2 * kPadding, 2 * kPadding);
+  return size;
 }
 
 void AppListItemView::SetSelected(bool selected) {
@@ -112,27 +123,24 @@ std::string AppListItemView::GetClassName() const {
 }
 
 gfx::Size AppListItemView::GetPreferredSize() {
-  gfx::Size title_size = title_->GetPreferredSize();
-
-  gfx::Size preferred_size(
-      icon_size_.width() + kIconTitleSpacing + title_size.width(),
-      std::max(icon_size_.height(), title_size.height()));
-  preferred_size.Enlarge(2 * kPadding, 2 * kPadding);
-  return preferred_size;
+  return GetPreferredSizeForIconSize(icon_size_);
 }
 
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
+  rect.Inset(kPadding, kPadding);
+  gfx::Size title_size = title_->GetPreferredSize();
 
   icon_->SetImageSize(icon_size_);
-  icon_->SetBounds(rect.x() + kPadding, rect.y(),
-                   icon_size_.width(), rect.height());
+  icon_->SetBounds(rect.x(),
+                   rect.y(),
+                   rect.width(),
+                   icon_size_.height());
 
-  title_->SetBounds(
-      icon_->bounds().right() + kIconTitleSpacing,
-      rect.y(),
-      rect.right() - kPadding - icon_->bounds().right() - kIconTitleSpacing,
-      rect.height());
+  title_->SetBounds(rect.x(),
+                    icon_->bounds().bottom() + kIconTitleSpacing,
+                    rect.width(),
+                    title_size.height());
 }
 
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {

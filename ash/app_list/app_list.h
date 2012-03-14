@@ -14,6 +14,9 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+class AppListView;
+
 namespace internal {
 
 // AppList is a controller that manages app list UI for shell. To show the UI,
@@ -35,12 +38,12 @@ class AppList : public aura::EventFilter,
   bool IsVisible();
 
  private:
-  // Sets app list widget. If we are in visible mode, start showing animation.
-  // Otherwise, we just close the widget.
-  void SetWidget(views::Widget* widget);
+  // Sets app list view. If we are in visible mode, start showing animation.
+  // Otherwise, we just close it.
+  void SetView(AppListView* view);
 
-  // Forgets the widget.
-  void ResetWidget();
+  // Forgets the view.
+  void ResetView();
 
   // Starts show/hide animation.
   void ScheduleAnimation();
@@ -70,8 +73,8 @@ class AppList : public aura::EventFilter,
   // Whether we should show or hide app list widget.
   bool is_visible_;
 
-  // App list widget we get from ShellDelegate.
-  views::Widget* widget_;
+  // The AppListView this class manages, owned by its widget.
+  AppListView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };

@@ -6,46 +6,31 @@
 
 #include "ash/app_list/app_list_item_view.h"
 #include "ash/app_list/app_list_model.h"
-#include "base/utf_string_conversions.h"
 
 namespace ash {
 
 namespace {
 
-// Minimum label width.
-const int kMinLabelWidth = 150;
-
-// Calculate preferred tile size for given |content_size| and |num_of_tiles|.
-gfx::Size CalculateTileSize(const gfx::Size& content_size, int num_of_tiles) {
+// Calculate preferred icon size for given |content_size| and |num_of_tiles|.
+gfx::Size CalculateIconSize(const gfx::Size& content_size, int num_of_tiles) {
   // Icon sizes to try.
-  const int kIconSizes[] = { 64, 48, 32, 16 };
-
-  int tile_height = 0;
-  int tile_width = 0;
-  int rows = 0;
-  int cols = 0;
+  const int kIconSizes[] = { 64, 48, 32 };
 
   // Chooses the biggest icon size that could fit all tiles.
+  gfx::Size icon_size;
   for (size_t i = 0; i < arraysize(kIconSizes); ++i) {
-    int icon_size = kIconSizes[i];
-    tile_height = icon_size + 2 * AppListItemView::kPadding;
-    tile_width = icon_size + std::min(kMinLabelWidth, icon_size * 2) +
-        2 * AppListItemView::kPadding;
+    icon_size.SetSize(kIconSizes[i], kIconSizes[i]);
+    gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(
+        icon_size);
 
-    rows = std::max(content_size.height() / tile_height, 1);
-    cols = std::min(content_size.width() / tile_width,
-                    (num_of_tiles - 1) / rows + 1);
+    int cols = std::max(content_size.width() / tile_size.width(), 1);
+    int rows = std::min(content_size.height() / tile_size.height(),
+                        (num_of_tiles - 1) / cols + 1);
     if (rows * cols >= num_of_tiles)
       break;
   }
 
-  if (rows && cols) {
-    // Adjusts tile width to fit |content_size| as much as possible.
-    tile_width = std::max(tile_width, content_size.width() / cols);
-    return gfx::Size(tile_width, tile_height);
-  }
-
-  return gfx::Size();
+  return icon_size;
 }
 
 }  // namespace
@@ -54,7 +39,7 @@ AppListModelView::AppListModelView(views::ButtonListener* listener)
     : model_(NULL),
       listener_(listener),
       selected_item_index_(-1),
-      items_per_col_(0) {
+      items_per_row_(0) {
   set_focusable(true);
 }
 
@@ -118,48 +103,34 @@ void AppListModelView::SetSelectedItemByIndex(int index) {
   }
 }
 
-int AppListModelView::SetTileIconSizeAndGetMaxWidth(int icon_dimension) {
-  gfx::Size icon_size(icon_dimension, icon_dimension);
-  int max_tile_width = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* view = child_at(i);
-    static_cast<AppListItemView*>(view)->set_icon_size(icon_size);
-    gfx::Size preferred_size = view->GetPreferredSize();
-    if (preferred_size.width() > max_tile_width)
-      max_tile_width = preferred_size.width();
-  }
-
-  return max_tile_width;
-}
-
 void AppListModelView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty()) {
-    items_per_col_ = 0;
+    items_per_row_ = 0;
     return;
   }
 
-  // Gets |tile_size| based on content rect and number of tiles.
-  gfx::Size tile_size = CalculateTileSize(rect.size(), child_count());
-  items_per_col_ = rect.height() / tile_size.height();
+  // Gets |icon_size| based on content rect and number of tiles.
+  gfx::Size icon_size = CalculateIconSize(rect.size(), child_count());
 
-  // Sets tile's icons size and caps tile width to the max tile width.
-  int max_tile_width = SetTileIconSizeAndGetMaxWidth(
-      tile_size.height() - 2 * AppListItemView::kPadding);
-  if (max_tile_width && tile_size.width() > max_tile_width)
-    tile_size.set_width(max_tile_width);
+  gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(icon_size);
+  int cols = std::max(rect.width() / tile_size.width(), 1);
+  tile_size.set_width(rect.width() / cols);
+  items_per_row_ = rect.width() / tile_size.width();
 
-  // Layouts tiles.
-  int col_bottom = rect.bottom();
+  // Layouts items.
+  int right = rect.right();
   gfx::Rect current_tile(rect.origin(), tile_size);
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
+    static_cast<AppListItemView*>(view)->set_icon_size(icon_size);
     view->SetBoundsRect(current_tile);
+    view->SetVisible(rect.Contains(current_tile));
 
-    current_tile.Offset(0, tile_size.height());
-    if (current_tile.bottom() >= col_bottom) {
-      current_tile.set_x(current_tile.x() + tile_size.width());
-      current_tile.set_y(rect.y());
+    current_tile.Offset(tile_size.width(), 0);
+    if (current_tile.right() > right) {
+      current_tile.set_x(rect.x());
+      current_tile.set_y(current_tile.y() + tile_size.height());
     }
   }
 }
@@ -172,23 +143,23 @@ bool AppListModelView::OnKeyPressed(const views::KeyEvent& event) {
   if (!handled) {
     switch (event.key_code()) {
       case ui::VKEY_LEFT:
-        SetSelectedItemByIndex(std::max(selected_item_index_ - items_per_col_,
-                                        0));
+        SetSelectedItemByIndex(std::max(selected_item_index_ - 1, 0));
         return true;
       case ui::VKEY_RIGHT:
+        SetSelectedItemByIndex(std::min(selected_item_index_ + 1,
+                                        child_count() - 1));
+        return true;
+      case ui::VKEY_UP:
+        SetSelectedItemByIndex(std::max(selected_item_index_ - items_per_row_,
+                                        0));
+        return true;
+      case ui::VKEY_DOWN:
         if (selected_item_index_ < 0) {
           SetSelectedItemByIndex(0);
         } else {
-          SetSelectedItemByIndex(std::min(selected_item_index_ + items_per_col_,
+          SetSelectedItemByIndex(std::min(selected_item_index_ + items_per_row_,
                                           child_count() - 1));
         }
-        return true;
-      case ui::VKEY_UP:
-        SetSelectedItemByIndex(std::max(selected_item_index_ - 1, 0));
-        return true;
-      case ui::VKEY_DOWN:
-        SetSelectedItemByIndex(std::min(selected_item_index_ + 1,
-                                        child_count() - 1));
         return true;
       default:
         break;

@@ -94,6 +94,7 @@
         'gfx/skia_util_unittest.cc',
         'gfx/test_suite.cc',
         'gfx/test_suite.h',
+        'gfx/transform_util_unittest.cc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
       ],
       'include_dirs': [

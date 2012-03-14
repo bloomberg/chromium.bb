@@ -9,7 +9,10 @@
 #include "ash/app_list/app_list_model_view.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/shell.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
@@ -18,10 +21,13 @@ namespace ash {
 namespace {
 
 // Margins in pixels from work area edges.
-const int kMargin = 50;
+const int kLeftRightMargin = 45;
+const int kTopBottomMargin = 32;
 
-// 0.4 black
-const SkColor kBackgroundColor = SkColorSetARGB(0x66, 0, 0, 0);
+// 0.2 black
+const SkColor kBackgroundColor = SkColorSetARGB(0x33, 0, 0, 0);
+
+const float kModelViewAnimationScaleFactor = 0.9f;
 
 }  // namespace
 
@@ -37,6 +43,21 @@ AppListView::AppListView(
 AppListView::~AppListView() {
 }
 
+void AppListView::AnimateShow() {
+  ui::Layer* layer = model_view_->layer();
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  model_view_->SetTransform(ui::Transform());
+}
+
+void AppListView::AnimateHide() {
+  ui::Layer* layer = model_view_->layer();
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  model_view_->SetTransform(
+      ui::GetScaleTransform(gfx::Point(model_view_->width() / 2,
+                                       model_view_->height() / 2),
+                            kModelViewAnimationScaleFactor));
+}
+
 void AppListView::Close() {
   if (GetWidget()->IsVisible())
     Shell::GetInstance()->ToggleAppList();
@@ -44,6 +65,8 @@ void AppListView::Close() {
 
 void AppListView::Init(const gfx::Rect& bounds) {
   model_view_ = new AppListModelView(this);
+  model_view_->SetPaintToLayer(true);
+  model_view_->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(model_view_);
 
   views::Widget::InitParams widget_params(
@@ -56,6 +79,15 @@ void AppListView::Init(const gfx::Rect& bounds) {
   widget->Init(widget_params);
   widget->SetContentsView(this);
   widget->SetBounds(bounds);
+
+  // Turns off default animation.
+  widget->SetVisibilityChangedAnimationsEnabled(false);
+
+  // Sets initial transform. AnimateShow changes it back to identity transform.
+  model_view_->SetTransform(
+      ui::GetScaleTransform(gfx::Point(model_view_->width() / 2,
+                                       model_view_->height() / 2),
+                            kModelViewAnimationScaleFactor));
 
   UpdateModel();
 }
@@ -88,7 +120,7 @@ void AppListView::Layout() {
   workarea.Offset(-origin.x(), -origin.y());
 
   rect = rect.Intersect(workarea);
-  rect.Inset(kMargin, kMargin);
+  rect.Inset(kLeftRightMargin, kTopBottomMargin);
   model_view_->SetBoundsRect(rect);
 }
 

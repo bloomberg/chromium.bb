@@ -13,11 +13,14 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/transform_util.h"
 
 namespace ash {
 namespace internal {
 
 namespace {
+
+const float kDefaultContainerAnimationScaleFactor = 1.05f;
 
 // Gets preferred bounds of app list window.
 gfx::Rect GetPreferredBounds() {
@@ -35,11 +38,11 @@ ui::Layer* GetLayer(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, public:
 
-AppList::AppList() : is_visible_(false), widget_(NULL) {
+AppList::AppList() : is_visible_(false), view_(NULL) {
 }
 
 AppList::~AppList() {
-  ResetWidget();
+  ResetView();
 }
 
 void AppList::SetVisible(bool visible) {
@@ -48,53 +51,53 @@ void AppList::SetVisible(bool visible) {
 
   is_visible_ = visible;
 
-  if (widget_) {
+  if (view_) {
     ScheduleAnimation();
   } else if (is_visible_) {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
-    AppListView* app_list_view = new AppListView(
+    SetView(new AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
-        GetPreferredBounds());
-    SetWidget(app_list_view->GetWidget());
+        GetPreferredBounds()));
   }
 }
 
 bool AppList::IsVisible() {
-  return widget_ && widget_->IsVisible();
+  return view_ && view_->GetWidget()->IsVisible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, private:
 
-void AppList::SetWidget(views::Widget* widget) {
-  DCHECK(widget_ == NULL);
+void AppList::SetView(AppListView* view) {
+  DCHECK(view_ == NULL);
 
   if (is_visible_) {
-    widget_ = widget;
-    widget_->AddObserver(this);
+    view_ = view;
+    views::Widget* widget = view_->GetWidget();
+    widget->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
 
-    widget_->SetOpacity(0);
+    widget->SetOpacity(0);
     ScheduleAnimation();
 
-    widget_->Show();
-    widget_->Activate();
+    view_->GetWidget()->Show();
   } else {
-    widget->Close();
+    view->GetWidget()->Close();
   }
 }
 
-void AppList::ResetWidget() {
-  if (!widget_)
+void AppList::ResetView() {
+  if (!view_)
     return;
 
-  widget_->RemoveObserver(this);
-  GetLayer(widget_)->GetAnimator()->RemoveObserver(this);
+  views::Widget* widget = view_->GetWidget();
+  widget->RemoveObserver(this);
+  GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
-  widget_->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
-  widget_ = NULL;
+  widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
+  view_ = NULL;
 }
 
 void AppList::ScheduleAnimation() {
@@ -104,7 +107,7 @@ void AppList::ScheduleAnimation() {
   if (!default_container)
     return;
 
-  ui::Layer* layer = GetLayer(widget_);
+  ui::Layer* layer = GetLayer(view_->GetWidget());
 
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
@@ -113,11 +116,22 @@ void AppList::ScheduleAnimation() {
   app_list_animation.AddObserver(this);
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 
+  if (is_visible_)
+    view_->AnimateShow();
+  else
+    view_->AnimateHide();
+
   ui::Layer* default_container_layer = default_container->layer();
   ui::ScopedLayerAnimationSettings default_container_animation(
       default_container_layer->GetAnimator());
   app_list_animation.AddObserver(this);
   default_container_layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
+  default_container_layer->SetTransform(is_visible_ ?
+      ui::GetScaleTransform(
+          gfx::Point(default_container_layer->bounds().width() / 2,
+                     default_container_layer->bounds().height() / 2),
+          kDefaultContainerAnimationScaleFactor) :
+      ui::Transform());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,9 +144,10 @@ bool AppList::PreHandleKeyEvent(aura::Window* target,
 
 bool AppList::PreHandleMouseEvent(aura::Window* target,
                                   aura::MouseEvent* event) {
-  if (widget_ && is_visible_ && event->type() == ui::ET_MOUSE_PRESSED) {
-    aura::MouseEvent translated(*event, target, widget_->GetNativeView());
-    if (!widget_->GetNativeView()->ContainsPoint(translated.location()))
+  if (view_ && is_visible_ && event->type() == ui::ET_MOUSE_PRESSED) {
+    views::Widget* widget = view_->GetWidget();
+    aura::MouseEvent translated(*event, target, widget->GetNativeView());
+    if (!widget->GetNativeView()->ContainsPoint(translated.location()))
       SetVisible(false);
   }
   return false;
@@ -152,31 +167,33 @@ ui::GestureStatus AppList::PreHandleGestureEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // AppList,  ura::RootWindowObserver implementation:
 void AppList::OnRootWindowResized(const gfx::Size& new_size) {
-  if (widget_ && is_visible_)
-    widget_->SetBounds(gfx::Rect(new_size));
+  if (view_&& is_visible_)
+    view_->GetWidget()->SetBounds(gfx::Rect(new_size));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, ui::ImplicitAnimationObserver implementation:
 
 void AppList::OnImplicitAnimationsCompleted() {
-  if (!is_visible_ )
-    widget_->Close();
+  if (is_visible_ )
+    view_->GetWidget()->Activate();
+  else
+    view_->GetWidget()->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, views::Widget::Observer implementation:
 
 void AppList::OnWidgetClosing(views::Widget* widget) {
-  DCHECK(widget_ == widget);
+  DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
     SetVisible(false);
-  ResetWidget();
+  ResetView();
 }
 
 void AppList::OnWidgetActivationChanged(views::Widget* widget, bool active) {
-  DCHECK(widget_ == widget);
-  if (widget_ && is_visible_ && !active)
+  DCHECK(view_->GetWidget() == widget);
+  if (view_ && is_visible_ && !active)
     SetVisible(false);
 }
 

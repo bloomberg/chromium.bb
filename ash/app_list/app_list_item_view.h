@@ -33,6 +33,8 @@ class AppListItemView : public views::CustomButton,
                   views::ButtonListener* listener);
   virtual ~AppListItemView();
 
+  static gfx::Size GetPreferredSizeForIconSize(const gfx::Size& icon_size);
+
   void SetSelected(bool selected);
   bool selected() const {
     return selected_;
@@ -45,9 +47,6 @@ class AppListItemView : public views::CustomButton,
   void set_icon_size(const gfx::Size& size) {
     icon_size_ = size;
   }
-
-  // Icon padding
-  static const int kPadding = 5;
 
   // Internal class name.
   static const char kViewClassName[];

@@ -37,7 +37,6 @@ class AppListModelView : public views::View,
 
   AppListItemView* GetItemViewAtIndex(int index);
   void SetSelectedItemByIndex(int index);
-  int SetTileIconSizeAndGetMaxWidth(int icon_dimension);
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
@@ -54,7 +53,7 @@ class AppListModelView : public views::View,
   views::ButtonListener* listener_;
 
   int selected_item_index_;
-  int items_per_col_;
+  int items_per_row_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModelView);
 };
