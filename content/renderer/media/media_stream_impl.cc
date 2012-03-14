@@ -29,8 +29,8 @@
 
 namespace {
 
-const int kVideoCaptureWidth = 352;
-const int kVideoCaptureHeight = 288;
+const int kVideoCaptureWidth = 640;
+const int kVideoCaptureHeight = 480;
 const int kVideoCaptureFramePerSecond = 30;
 
 }  // namespace
