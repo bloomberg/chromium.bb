@@ -38,6 +38,11 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   if (!client)
     return false;
 
+  scoped_refptr<media::VideoDecoder> video_decoder = client->GetVideoDecoder(
+      url, message_loop_factory);
+  if (!video_decoder)
+    return false;
+
   // Remove any "traditional" decoders (e.g. GpuVideoDecoder) from the
   // collection.
   // NOTE: http://crbug.com/110800 is about replacing this ad-hockery with
@@ -46,11 +51,6 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   do {
     filter_collection->SelectVideoDecoder(&old_videodecoder);
   } while (old_videodecoder);
-
-  scoped_refptr<media::VideoDecoder> video_decoder = client->GetVideoDecoder(
-      url, message_loop_factory);
-  if (!video_decoder)
-    return false;
 
   filter_collection->AddVideoDecoder(video_decoder);
 
