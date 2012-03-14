@@ -143,13 +143,6 @@ html[os=chromeos] #add-language-overlay-language-list {
   -webkit-column-gap: 20px;
 }
 
-html[os=chromeos] #add-language-overlay-cancel-button {
-  /* Place the button in the center. */
-  display: block;
-  margin: auto;
-  margin-top: 15px;
-}
-
 html[os=chromeos] #add-language-overlay-page {
   padding: 20px;
   width: 800px;
