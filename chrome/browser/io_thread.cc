@@ -88,14 +88,14 @@ class SystemURLRequestContext : public URLRequestContextWithUserAgent {
  public:
   SystemURLRequestContext() {
 #if defined(USE_NSS)
-    net::SetURLRequestContextForOCSP(this);
+    net::SetURLRequestContextForNSSHttpIO(this);
 #endif  // defined(USE_NSS)
   }
 
  private:
   virtual ~SystemURLRequestContext() {
 #if defined(USE_NSS)
-    net::SetURLRequestContextForOCSP(NULL);
+    net::SetURLRequestContextForNSSHttpIO(NULL);
 #endif  // defined(USE_NSS)
   }
 };
@@ -371,7 +371,7 @@ void IOThread::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
 #if defined(USE_NSS)
-  net::SetMessageLoopForOCSP();
+  net::SetMessageLoopForNSSHttpIO();
 #endif  // defined(USE_NSS)
 
   DCHECK(!globals_);
@@ -470,7 +470,7 @@ void IOThread::CleanUp() {
   sdch_manager_ = NULL;
 
 #if defined(USE_NSS)
-  net::ShutdownOCSP();
+  net::ShutdownNSSHttpIO();
 #endif  // defined(USE_NSS)
 
   system_url_request_context_getter_ = NULL;

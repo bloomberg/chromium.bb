@@ -65,13 +65,13 @@ class URLFetcherTest : public testing::Test,
 
 #if defined(USE_NSS)
     crypto::EnsureNSSInit();
-    net::EnsureOCSPInit();
+    net::EnsureNSSHttpIOInit();
 #endif
   }
 
   virtual void TearDown() OVERRIDE {
 #if defined(USE_NSS)
-    net::ShutdownOCSP();
+    net::ShutdownNSSHttpIO();
 #endif
   }
 
