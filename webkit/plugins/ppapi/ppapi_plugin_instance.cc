@@ -1245,7 +1245,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
   if (view_data_.is_fullscreen != desired_fullscreen_state_)
     return false;
 
-  if (fullscreen && !HasUserGesture())
+  if (fullscreen && !IsProcessingUserGesture())
     return false;
 
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
@@ -1668,6 +1668,15 @@ bool PluginInstance::IsFullPagePlugin() const {
   return frame->view()->mainFrame()->document().isPluginDocument();
 }
 
+bool PluginInstance::IsProcessingUserGesture() {
+  PP_TimeTicks now =
+      ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
+  // Give a lot of slack so tests won't be flaky. Well behaved plugins will
+  // close the user gesture.
+  const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
+  return (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
+}
+
 void PluginInstance::OnLockMouseACK(bool succeeded) {
   if (!lock_mouse_callback_.func) {
     NOTREACHED();
@@ -1714,15 +1723,6 @@ void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
   // there may be multiple input events with the same timestamp.
   if (timestamp > pending_user_gesture_)
     pending_user_gesture_ = 0.0;
-}
-
-bool PluginInstance::HasUserGesture() {
-  PP_TimeTicks now =
-      ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-  // Give a lot of slack so tests won't be flaky. Well behaved plugins will
-  // close the user gesture.
-  const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
-  return (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
 }
 
 PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {

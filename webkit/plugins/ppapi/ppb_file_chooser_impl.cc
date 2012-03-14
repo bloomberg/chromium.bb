@@ -147,6 +147,11 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
 }
 
 int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+  if (!plugin_instance->IsProcessingUserGesture())
+    return PP_ERROR_NO_USER_GESTURE;
   return ShowWithoutUserGesture(false, NULL, callback);
 }
 

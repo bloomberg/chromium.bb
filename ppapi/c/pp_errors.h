@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_errors.idl modified Thu Jan  5 10:52:49 2012. */
+/* From pp_errors.idl modified Tue Mar 13 17:32:37 2012. */
 
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
@@ -110,6 +110,13 @@ enum {
    * expected input.
    */
   PP_ERROR_USERCANCEL = -40,
+  /**
+   * This value indicates failure due to lack of a user gesture such as a
+   * mouse click or key input event. Examples of actions requiring a user
+   * gesture are showing the file chooser dialog and going into fullscreen
+   * mode.
+   */
+  PP_ERROR_NO_USER_GESTURE = -41,
   /**
    * This value indicates that the graphics context was lost due to a
    * power management event.

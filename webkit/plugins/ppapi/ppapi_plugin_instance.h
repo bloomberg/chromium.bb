@@ -308,6 +308,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // or embedded in a page).
   bool IsFullPagePlugin() const;
 
+  // Returns true if the plugin is processing a user gesture.
+  bool IsProcessingUserGesture();
+
   // A mouse lock request was pending and this reports success or failure.
   void OnLockMouseACK(bool succeeded);
   // A mouse lock was in place, but has been lost.
@@ -475,9 +478,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void KeepSizeAttributesBeforeFullscreen();
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
-
-  // Helper function to determine if an action has a user gesture.
-  bool HasUserGesture();
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
