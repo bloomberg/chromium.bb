@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
@@ -18,6 +19,8 @@
 #include "ui/views/view.h"
 
 namespace {
+
+const int kUpdateNotificationPadding = 5;
 
 // A custom textbutton with some extra vertical padding, and custom border,
 // alignment and hover-effects.
@@ -64,12 +67,20 @@ class TrayButton : public views::TextButton {
   DISALLOW_COPY_AND_ASSIGN(TrayButton);
 };
 
+}  // namespace
+
+namespace ash {
+namespace internal {
+
+namespace tray {
+
 class UserView : public views::View,
                  public views::ButtonListener {
  public:
   explicit UserView(ash::user::LoginStatus status)
       : username_(NULL),
         email_(NULL),
+        update_(NULL),
         shutdown_(NULL),
         signout_(NULL),
         lock_(NULL) {
@@ -77,24 +88,8 @@ class UserView : public views::View,
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 3));
 
-    if (status != ash::user::LOGGED_IN_GUEST) {
-      views::View* user = new views::View;
-      user->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-            14, 5, 0));
-      ash::SystemTrayDelegate* tray =
-          ash::Shell::GetInstance()->tray_delegate();
-      username_ = new views::Label(ASCIIToUTF16(tray->GetUserDisplayName()));
-      username_->SetFont(username_->font().DeriveFont(2));
-      username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      user->AddChildView(username_);
-
-      email_ = new views::Label(ASCIIToUTF16(tray->GetUserEmail()));
-      email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      email_->SetEnabled(false);
-      user->AddChildView(email_);
-
-      AddChildView(user);
-    }
+    if (status != ash::user::LOGGED_IN_GUEST)
+      AddUserInfo();
 
     views::View* button_container = new views::View;
     views::BoxLayout *layout = new
@@ -128,7 +123,69 @@ class UserView : public views::View,
 
   virtual ~UserView() {}
 
+  // Shows update notification if available.
+  void RefreshForUpdate() {
+    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
+    if (tray->SystemShouldUpgrade()) {
+      if (update_)
+        return;
+      update_ = new views::View;
+      update_->SetLayoutManager(new
+          views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 3));
+
+      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+      views::Label *label = new views::Label(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_UPDATE));
+      label->SetFont(label->font().DeriveFont(-1));
+      update_->AddChildView(label);
+
+      views::ImageView* icon = new views::ImageView;
+      icon->SetImage(bundle.GetImageNamed(tray->GetSystemUpdateIconResource()).
+          ToSkBitmap());
+      update_->AddChildView(icon);
+
+      update_->set_border(views::Border::CreateEmptyBorder(
+          kUpdateNotificationPadding,
+          kUpdateNotificationPadding,
+          kUpdateNotificationPadding,
+          kUpdateNotificationPadding));
+
+      user_info_->AddChildView(update_);
+    } else if (update_) {
+      delete update_;
+      update_ = NULL;
+    }
+    user_info_->InvalidateLayout();
+    user_info_->SchedulePaint();
+  }
+
  private:
+  void AddUserInfo() {
+    user_info_ = new views::View;
+    user_info_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, 3));
+
+    views::View* user = new views::View;
+    user->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 14, 5, 0));
+    ash::SystemTrayDelegate* tray =
+        ash::Shell::GetInstance()->tray_delegate();
+    username_ = new views::Label(ASCIIToUTF16(tray->GetUserDisplayName()));
+    username_->SetFont(username_->font().DeriveFont(2));
+    username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    user->AddChildView(username_);
+
+    email_ = new views::Label(ASCIIToUTF16(tray->GetUserEmail()));
+    email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    email_->SetEnabled(false);
+    user->AddChildView(email_);
+
+    user_info_->AddChildView(user);
+    AddChildView(user_info_);
+
+    RefreshForUpdate();
+  }
+
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
@@ -141,8 +198,24 @@ class UserView : public views::View,
       tray->RequestLockScreen();
   }
 
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    views::View::Layout();
+    if (!update_)
+      return;
+
+    // Position |update_| appropriately.
+    gfx::Rect bounds;
+    bounds.set_x(user_info_->width() - update_->width());
+    bounds.set_y(0);
+    bounds.set_size(update_->GetPreferredSize());
+    update_->SetBoundsRect(bounds);
+  }
+
+  views::View* user_info_;
   views::Label* username_;
   views::Label* email_;
+  views::View* update_;
 
   TrayButton* shutdown_;
   TrayButton* signout_;
@@ -151,10 +224,7 @@ class UserView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };
 
-}  // namespace
-
-namespace ash {
-namespace internal {
+}  // namespace tray
 
 TrayUser::TrayUser() {
 }
@@ -173,7 +243,11 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
-  return status == user::LOGGED_IN_NONE ? NULL : new UserView(status);
+  if (status == user::LOGGED_IN_NONE)
+    return NULL;
+
+  user_.reset(new tray::UserView(status));
+  return user_.get();
 }
 
 views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
@@ -184,9 +258,15 @@ void TrayUser::DestroyTrayView() {
 }
 
 void TrayUser::DestroyDefaultView() {
+  user_.reset();
 }
 
 void TrayUser::DestroyDetailedView() {
+}
+
+void TrayUser::OnUpdateRecommended() {
+  if (user_.get())
+    user_->RefreshForUpdate();
 }
 
 }  // namespace internal

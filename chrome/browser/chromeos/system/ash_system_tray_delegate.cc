@@ -11,6 +11,7 @@
 #include "ash/system/power/power_status_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/user/update_controller.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -56,6 +58,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                   content::NotificationService::AllSources());
   }
 
   virtual ~SystemTrayDelegate() {
@@ -87,6 +92,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (manager->IsLoggedInAsGuest())
       return ash::user::LOGGED_IN_GUEST;
     return ash::user::LOGGED_IN_USER;
+  }
+
+  virtual bool SystemShouldUpgrade() const OVERRIDE {
+    return UpgradeDetector::GetInstance()->notify_upgrade();
+  }
+
+  virtual int GetSystemUpdateIconResource() const OVERRIDE {
+    return UpgradeDetector::GetInstance()->GetIconResourceID(
+        UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON);
   }
 
   virtual void ShowSettings() OVERRIDE {
@@ -230,6 +244,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
         tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+        break;
+      }
+      case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
+        ash::UpdateController* controller =
+            ash::Shell::GetInstance()->update_controller();
+        if (controller)
+          controller->OnUpdateRecommended();
         break;
       }
       default:

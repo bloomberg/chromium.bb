@@ -55,6 +55,7 @@
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -239,6 +240,14 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return user::LOGGED_IN_USER;
   }
 
+  virtual bool SystemShouldUpgrade() const OVERRIDE {
+    return true;
+  }
+
+  virtual int GetSystemUpdateIconResource() const OVERRIDE {
+    return IDR_AURA_UBER_TRAY_UPDATE;
+  }
+
   virtual void ShowSettings() OVERRIDE {
   }
 
@@ -314,6 +323,7 @@ Shell::Shell(ShellDelegate* delegate)
       brightness_controller_(NULL),
       network_controller_(NULL),
       power_status_controller_(NULL),
+      update_controller_(NULL),
       shelf_(NULL),
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
@@ -466,12 +476,14 @@ void Shell::Init() {
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
+    internal::TrayUser* tray_user = new internal::TrayUser;
     audio_controller_ = tray_volume;
     brightness_controller_ = tray_brightness;
     network_controller_ = tray_network;
     power_status_controller_ = tray_power_date;
+    update_controller_ = tray_user;
 
-    tray_->AddTrayItem(new internal::TrayUser());
+    tray_->AddTrayItem(tray_user);
     tray_->AddTrayItem(new internal::TrayEmpty());
     tray_->AddTrayItem(tray_power_date);
     tray_->AddTrayItem(tray_network);

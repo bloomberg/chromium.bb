@@ -52,6 +52,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTray;
+class UpdateController;
 class VideoDetector;
 class WindowCycleController;
 
@@ -202,6 +203,9 @@ class ASH_EXPORT Shell {
   PowerStatusController* power_status_controller() const {
     return power_status_controller_;
   }
+  UpdateController* update_controller() const {
+    return update_controller_;
+  }
 
   ShellDelegate* delegate() { return delegate_.get(); }
   SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
@@ -284,6 +288,7 @@ class ASH_EXPORT Shell {
   BrightnessController* brightness_controller_;
   NetworkController* network_controller_;
   PowerStatusController* power_status_controller_;
+  UpdateController* update_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
