@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"

@@ -14,7 +14,6 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/native_theme.h"
 
 namespace {

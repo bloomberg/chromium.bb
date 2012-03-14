@@ -21,7 +21,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 

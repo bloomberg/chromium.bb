@@ -53,7 +53,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #include "ui/views/widget/widget.h"

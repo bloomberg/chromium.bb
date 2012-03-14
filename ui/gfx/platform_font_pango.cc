@@ -4,10 +4,11 @@
 
 #include "ui/gfx/platform_font_pango.h"
 
-#include <algorithm>
 #include <fontconfig/fontconfig.h>
-#include <map>
 #include <pango/pango.h>
+
+#include <algorithm>
+#include <map>
 #include <string>
 
 #include "base/logging.h"
@@ -15,10 +16,10 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "grit/app_locale_settings.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"

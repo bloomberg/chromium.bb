@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/native_theme_delegate.h"
 

@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"

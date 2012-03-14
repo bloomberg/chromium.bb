@@ -34,7 +34,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/menu/menu_listener.h"

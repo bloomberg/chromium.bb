@@ -19,7 +19,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/animation/multi_animation.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/screen.h"
 

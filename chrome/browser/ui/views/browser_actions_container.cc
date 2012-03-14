@@ -43,7 +43,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"

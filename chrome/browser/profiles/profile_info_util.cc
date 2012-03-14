@@ -5,7 +5,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 
 #include "skia/ext/image_operations.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 
 namespace profiles {

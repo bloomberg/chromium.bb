@@ -13,10 +13,9 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
-#include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
 namespace {

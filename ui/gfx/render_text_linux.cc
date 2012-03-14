@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/text/utf16_indexing.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
 

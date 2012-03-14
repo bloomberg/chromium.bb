@@ -12,8 +12,8 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
-#import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -22,7 +22,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 
 namespace {

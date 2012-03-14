@@ -42,7 +42,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;

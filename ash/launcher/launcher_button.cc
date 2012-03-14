@@ -8,7 +8,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/image_view.h"

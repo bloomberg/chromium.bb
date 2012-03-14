@@ -20,7 +20,6 @@
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

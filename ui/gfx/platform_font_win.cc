@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 
 namespace {

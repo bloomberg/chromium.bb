@@ -8,7 +8,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
 
 // Assume that somewhere along the line, someone will do width * height * 4

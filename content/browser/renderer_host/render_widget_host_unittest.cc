@@ -20,7 +20,7 @@
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"

@@ -13,7 +13,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/skia_util.h"
