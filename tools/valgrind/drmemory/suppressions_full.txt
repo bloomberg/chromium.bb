@@ -712,7 +712,7 @@ name=http://crbug.com/109278 video device COM leaks
 LEAK
 name=http://crbug.com/109278 audio device COM leaks
 ...
-*!GetInputDeviceNamesWin
+*!media::GetInputDeviceNamesWin
 
 # Looks like an unhandled syscall.
 UNINITIALIZED READ
