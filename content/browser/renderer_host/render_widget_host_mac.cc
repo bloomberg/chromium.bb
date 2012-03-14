@@ -63,14 +63,14 @@ void RenderWidgetHostImpl::OnAcceleratedSurfaceSetTransportDIB(
 }
 
 void RenderWidgetHostImpl::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_id) {
+    gfx::PluginWindowHandle window, uint64 surface_handle) {
   if (view_) {
     // This code path could be updated to implement flow control for
     // updating of accelerated plugins as well. However, if we add support
     // for composited plugins then this is not necessary.
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.window = window;
-    params.surface_id = surface_id;
+    params.surface_handle = surface_handle;
     view_->AcceleratedSurfaceBuffersSwapped(params, 0);
   }
 }

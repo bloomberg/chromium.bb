@@ -440,7 +440,7 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_FreeTransportDIB,
 // the various plug-ins' contents.
 IPC_MESSAGE_ROUTED2(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
                     gfx::PluginWindowHandle /* window */,
-                    uint64 /* surface_id */)
+                    uint64 /* surface_handle */)
 
 //----------------------------------------------------------------------
 // New Core Animation plugin implementation rendering via compositor.

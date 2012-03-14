@@ -1862,7 +1862,7 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_AcceleratedSurfaceSetIOSurface,
 // contents.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                     gfx::PluginWindowHandle /* window */,
-                    uint64 /* surface_id */)
+                    uint64 /* surface_handle */)
 #endif
 
 // Opens a file asynchronously. The response returns a file descriptor

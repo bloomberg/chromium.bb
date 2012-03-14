@@ -1408,9 +1408,9 @@ void WebPluginDelegateProxy::OnAcceleratedSurfaceFreeTransportDIB(
 }
 
 void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window, uint64 surface_id) {
+    gfx::PluginWindowHandle window, uint64 surface_handle) {
   if (render_view_)
-    render_view_->AcceleratedSurfaceBuffersSwapped(window, surface_id);
+    render_view_->AcceleratedSurfaceBuffersSwapped(window, surface_handle);
 }
 
 void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
