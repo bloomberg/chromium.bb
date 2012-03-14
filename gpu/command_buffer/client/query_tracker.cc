@@ -74,6 +74,9 @@ bool QueryTracker::Query::CheckResultsAvailable(
         // passed that count yet.
         flushed_ = true;
         helper->Flush();
+      } else {
+        // Insert no-ops so that eventually the GPU process will see more work.
+        helper->Noop(1);
       }
     }
   }
