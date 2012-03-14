@@ -11,6 +11,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "net/base/io_buffer.h"
+#include "googleurl/src/gurl.h"
 
 namespace gdata {
 
@@ -22,12 +28,79 @@ struct ResumeUploadResponse {
                        const std::string& resource_id,
                        const std::string& md5_checksum);
 
+  ~ResumeUploadResponse();
+
   GDataErrorCode code;
   int64 start_range_received;
   int64 end_range_received;
   std::string resource_id;
   std::string md5_checksum;
 };
+
+// Struct for passing params needed for DocumentsService::ResumeUpload() calls.
+struct ResumeUploadParams {
+  ResumeUploadParams(const std::string& title,
+                     int64 start_range,
+                     int64 end_range,
+                     int64 content_length,
+                     const std::string& content_type,
+                     scoped_refptr<net::IOBuffer> buf,
+                     const GURL& upload_location);
+  ~ResumeUploadParams();
+
+  std::string title;  // Title to be used for file to be uploaded.
+  int64 start_range;  // Start of range of contents currently stored in |buf|.
+  int64 end_range;  // End of range of contents currently stored in |buf|.
+  int64 content_length;  // File content-Length.
+  std::string content_type;   // Content-Type of file.
+  scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
+  GURL upload_location;   // Url of where to upload the file to.
+};
+
+// Struct for passing params needed for DocumentsService::InitiateUpload()
+// calls.
+struct InitiateUploadParams {
+  InitiateUploadParams(const std::string& title,
+                       const std::string& content_type,
+                       int64 content_length,
+                       const GURL& resumable_create_media_link);
+  ~InitiateUploadParams();
+
+  std::string title;
+  std::string content_type;
+  int64 content_length;
+  GURL resumable_create_media_link;
+};
+
+// Different callback types for various functionalities in DocumentsService.
+
+// Callback type for authentication related DocumentService calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const std::string& token)> AuthStatusCallback;
+
+// Callback type for DocumentServiceInterface::GetDocuments.
+// Note: feed_data argument should be passed using base::Passed(&feed_data), not
+// feed_data.Pass().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<base::Value> feed_data)> GetDataCallback;
+
+// Callback type for Delete/Move DocumentServiceInterface calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& document_url)> EntryActionCallback;
+
+// Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
+// calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& content_url,
+                            const FilePath& temp_file)> DownloadActionCallback;
+
+// Callback type for DocumentServiceInterface::InitiateUpload.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& upload_url)> InitiateUploadCallback;
+
+// Callback type for DocumentServiceInterface::ResumeUpload.
+typedef base::Callback<void(
+    const ResumeUploadResponse& response)> ResumeUploadCallback;
 
 }  // namespace gdata
 

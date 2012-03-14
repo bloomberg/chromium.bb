@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

@@ -15,9 +15,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
@@ -28,8 +28,7 @@
 
 namespace gdata {
 
-class DocumentsService;
-
+class DocumentsServiceInterface;
 class GDataDownloadObserver;
 
 // Delegate class used to deal with results of virtual directory request
