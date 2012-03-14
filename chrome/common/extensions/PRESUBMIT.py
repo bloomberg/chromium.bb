@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -185,10 +185,9 @@ def _ChangesMatch(generated_file, static_file):
   static_changes = static_file.ChangedContents()
   # ChangedContents() is a list of (line number, text) for all new lines.
   # Ignore the line number, but check that the text for each new line matches.
-  if len(generated_changes) < len(static_changes):
-    return False
 
   next_generated = 0
+  start_pos = 0
   for next_static in range(len(static_changes)):
     _, static_text = static_changes[next_static]
 
@@ -198,10 +197,15 @@ def _ChangesMatch(generated_file, static_file):
       _, generated_text = generated_changes[next_generated]
       # Text need not be identical but the entire static line should be
       # in the generated one (e.g. generated text might have extra formatting).
-      if static_text in generated_text:
-        found = True
+      found_at = generated_text[start_pos:].find(static_text)
+      if found_at != -1:
+        # Next search starts on the same line, after the substring matched.
+        start_pos = found_at + len(static_text)
+        found  = True
       else:
         next_generated += 1
+        start_pos = 0
+
     if not found:
       return False
 
