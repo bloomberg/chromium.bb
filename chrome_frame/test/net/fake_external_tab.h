@@ -85,6 +85,7 @@ class CFUrlRequestUnittestRunner
 
   // TestAutomationProviderDelegate.
   virtual void OnInitialTabLoaded();
+  virtual void OnProviderDestroyed();
 
   void StartTests();
 
@@ -143,6 +144,7 @@ class CFUrlRequestUnittestRunner
 
   bool launch_browser_;
   bool prompt_after_setup_;
+  bool tests_ran_;
 
   DISALLOW_COPY_AND_ASSIGN(CFUrlRequestUnittestRunner);
 };

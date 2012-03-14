@@ -310,6 +310,12 @@ void FilterDisabledTests() {
   ::testing::FLAGS_gtest_filter = filter;
 }
 
+void OnIEShutdownFailure() {
+  DLOG(ERROR) << "Failed to shutdown IE and npchrome_frame cleanly after test "
+                 "execution.";
+  ::ExitProcess(1);
+}
+
 }  // namespace
 
 // Same as BrowserProcessImpl, but uses custom profile manager.
@@ -415,6 +421,15 @@ BOOL SupplyProxyCredentials::EnumChildren(HWND hwnd, LPARAM param) {
 
 FakeExternalTab::FakeExternalTab() {
   user_data_dir_ = chrome_frame_test::GetProfilePathForIE();
+
+  if (file_util::PathExists(user_data_dir_)) {
+    VLOG(1) << __FUNCTION__ << " deleting IE Profile user data directory "
+            << user_data_dir_.value();
+    bool deleted = file_util::Delete(user_data_dir_, true);
+    LOG_IF(ERROR, !deleted) << "Failed to delete user data directory directory "
+                            << user_data_dir_.value();
+  }
+
   PathService::Get(chrome::DIR_USER_DATA, &overridden_user_dir_);
   PathService::Override(chrome::DIR_USER_DATA, user_data_dir_);
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
@@ -483,7 +498,8 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
       launch_browser_(
           !CommandLine::ForCurrentProcess()->HasSwitch(kManualBrowserLaunch)),
       prompt_after_setup_(
-          CommandLine::ForCurrentProcess()->HasSwitch(kPromptAfterSetup)) {
+          CommandLine::ForCurrentProcess()->HasSwitch(kPromptAfterSetup)),
+      tests_ran_(false) {
 }
 
 CFUrlRequestUnittestRunner::~CFUrlRequestUnittestRunner() {
@@ -564,6 +580,17 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
   StartTests();
 }
 
+void CFUrlRequestUnittestRunner::OnProviderDestroyed() {
+  if (tests_ran_) {
+    if (crash_service_)
+      base::KillProcess(crash_service_, 0, false);
+    ::ExitProcess(test_result());
+  } else {
+    DLOG(ERROR) << "Automation Provider shutting down before test execution "
+                   "has completed.";
+  }
+}
+
 void CFUrlRequestUnittestRunner::StartTests() {
   if (prompt_after_setup_)
     MessageBoxA(NULL, "click ok to run", "", MB_OK);
@@ -580,6 +607,7 @@ DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
   CFUrlRequestUnittestRunner* me =
       reinterpret_cast<CFUrlRequestUnittestRunner*>(param);
   me->test_result_ = me->Run();
+  me->tests_ran_ = true;
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -592,11 +620,19 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser() {
   if (prompt_after_setup_)
     MessageBoxA(NULL, "click ok to exit", "", MB_OK);
 
+  // AddRef to ensure that IE going away does not trigger the Chrome shutdown
+  // process.
+  // IE shutting down will, however, trigger the automation channel to shut
+  // down, at which time we will exit the process (see OnProviderDestroyed).
+  g_browser_process->AddRefModule();
   ShutDownHostBrowser();
+
+  // In case IE is somehow hung, make sure we don't sit around until a try-bot
+  // kills us. OnIEShutdownFailure will log and exit with an error.
   BrowserThread::PostDelayedTask(BrowserThread::UI,
                                  FROM_HERE,
-                                 MessageLoop::QuitClosure(),
-                                 TestTimeouts::tiny_timeout_ms());
+                                 base::Bind(&OnIEShutdownFailure),
+                                 TestTimeouts::action_max_timeout_ms());
 }
 
 void CFUrlRequestUnittestRunner::InitializeLogging() {
@@ -700,7 +736,7 @@ void CFUrlRequestUnittestRunner::PostDestroyThreads() {
   // Avoid CRT cleanup in debug test runs to ensure that webkit ASSERTs which
   // check if globals are created and destroyed on the same thread don't fire.
   // Webkit global objects are created on the inproc renderer thread.
-  ExitProcess(test_result());
+  ::ExitProcess(test_result());
 #endif
 }
 
