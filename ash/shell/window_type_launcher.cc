@@ -310,6 +310,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   if (sender == create_button_) {
     ToplevelWindow::CreateParams params;
     params.can_resize = true;
+    params.can_maximize = true;
     ToplevelWindow::CreateToplevelWindow(params);
   } else if (sender == panel_button_) {
     PanelWindow::CreatePanelWindow(gfx::Rect());

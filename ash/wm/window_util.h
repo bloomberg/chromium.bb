@@ -36,6 +36,9 @@ ASH_EXPORT bool IsWindowNormal(aura::Window* window);
 // Returns true if |window| is in the maximized state.
 ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 
+// Returns true if |window| is minimized.
+ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
+
 // Returns true if |window| is in the fullscreen state.
 ASH_EXPORT bool IsWindowFullscreen(aura::Window* window);
 

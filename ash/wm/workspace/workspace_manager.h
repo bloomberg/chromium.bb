@@ -38,6 +38,9 @@ class ASH_EXPORT WorkspaceManager {
   // Returns true if |window| should be managed by the WorkspaceManager.
   bool IsManagedWindow(aura::Window* window) const;
 
+  // Returns true if the |window| is managed by the WorkspaceManager.
+  bool IsManagingWindow(aura::Window* window) const;
+
   // Adds/removes a window creating/destroying workspace as necessary.
   void AddWindow(aura::Window* window);
   void RemoveWindow(aura::Window* window);

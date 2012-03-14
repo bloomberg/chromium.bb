@@ -15,12 +15,23 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_aura.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(ui::WindowShowState)
+
 namespace ash {
 namespace internal {
+
+namespace {
+
+// Used to remember the show state before the window was minimized.
+DEFINE_WINDOW_PROPERTY_KEY(
+    ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, public:
@@ -64,10 +75,17 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
     bool visible) {
   if (!workspace_manager_->IsManagedWindow(child))
     return;
-  if (visible)
+  if (visible) {
+    if (wm::IsWindowMinimized(child)) {
+      // Attempting to show a minimized window. Unminimize it.
+      child->SetProperty(aura::client::kShowStateKey,
+                         child->GetProperty(kRestoreShowStateKey));
+      child->ClearProperty(kRestoreShowStateKey);
+    }
     workspace_manager_->AddWindow(child);
-  else
+  } else {
     workspace_manager_->RemoveWindow(child);
+  }
 }
 
 void WorkspaceLayoutManager::SetChildBounds(
@@ -91,7 +109,30 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
   BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
-  if (key == aura::client::kShowStateKey) {
+  if (key == aura::client::kShowStateKey &&
+      workspace_manager_->IsManagedWindow(window)) {
+    if (wm::IsWindowMinimized(window)) {
+      // Save the previous show state so that we can correctly restore it.
+      window->SetProperty(kRestoreShowStateKey,
+                          static_cast<ui::WindowShowState>(old));
+      workspace_manager_->RemoveWindow(window);
+      // Effectively hide the window.
+      window->layer()->SetVisible(false);
+      // Activate another window.
+      if (wm::IsActiveWindow(window))
+        wm::DeactivateWindow(window);
+      return;
+    }
+    if (window->TargetVisibility() &&
+        !workspace_manager_->IsManagingWindow(window)) {
+      workspace_manager_->AddWindow(window);
+      if (!window->layer()->visible()) {
+        // The layer may be hidden if the window was previously minimized. Make
+        // sure it's visible.
+        window->Show();
+      }
+      return;
+    }
     workspace_manager_->ShowStateChanged(window);
   } else if (key == ash::kWindowTrackedByWorkspaceSplitPropKey &&
              ash::GetTrackedByWorkspace(window)) {

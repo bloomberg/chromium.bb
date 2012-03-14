@@ -416,5 +416,72 @@ TEST_F(WorkspaceManagerTest, DontShowTransientsOnSwitch) {
   EXPECT_FALSE(w3->layer()->IsDrawn());
 }
 
+// Assertions around minimizing a single window.
+TEST_F(WorkspaceManagerTest, MinimizeSingleWindow) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+
+  w1->Show();
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  ASSERT_TRUE(workspaces().empty());
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+
+  // Show the window.
+  w1->Show();
+  EXPECT_TRUE(wm::IsWindowNormal(w1.get()));
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+}
+
+// Assertions around minimizing a maximized window.
+TEST_F(WorkspaceManagerTest, MinimizeMaximizedWindow) {
+  // Two windows, w1 normal, w2 maximized.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w1->Show();
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w2->Show();
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+
+  // Minimize w2.
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_FALSE(w2->layer()->IsDrawn());
+
+  // Show the window, which should trigger unminimizing.
+  w2->Show();
+  EXPECT_TRUE(wm::IsWindowMaximized(w2.get()));
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+
+  // Make it active and minimize the window, which should hide the window and
+  // activate another.
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+  EXPECT_FALSE(w2->layer()->IsDrawn());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Make the window normal.
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
+  ASSERT_EQ(2u, workspaces()[0]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  EXPECT_EQ(w2.get(), workspaces()[0]->windows()[1]);
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+}
+
 }  // namespace internal
 }  // namespace ash

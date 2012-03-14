@@ -56,6 +56,11 @@ bool IsWindowMaximized(aura::Window* window) {
       ui::SHOW_STATE_MAXIMIZED;
 }
 
+bool IsWindowMinimized(aura::Window* window) {
+  return window->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_MINIMIZED;
+}
+
 bool IsWindowFullscreen(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_FULLSCREEN;

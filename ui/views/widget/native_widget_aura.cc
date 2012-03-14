@@ -518,8 +518,6 @@ void NativeWidgetAura::Maximize() {
 }
 
 void NativeWidgetAura::Minimize() {
-  // Note: This currently does not do anything except set the property,
-  // see crbug.com/104571.
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
 

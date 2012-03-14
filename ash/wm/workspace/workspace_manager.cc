@@ -86,6 +86,10 @@ bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
          !window->transient_parent() && ash::GetTrackedByWorkspace(window);
 }
 
+bool WorkspaceManager::IsManagingWindow(aura::Window* window) const {
+  return FindBy(window) != NULL;
+}
+
 void WorkspaceManager::AddWindow(aura::Window* window) {
   DCHECK(IsManagedWindow(window));
 
@@ -97,11 +101,9 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
         window->layer()->GetAnimator()->StopAnimating();
       current_workspace->Activate();
     }
+    window->Show();
     return;
   }
-
-  if (!window->GetProperty(aura::client::kShowStateKey))
-    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 
   if (wm::IsWindowNormal(window) && grid_size_ > 1)
     SetWindowBounds(window, AlignBoundsToGrid(window->GetTargetBounds()));
