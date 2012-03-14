@@ -19,6 +19,7 @@ _EXCLUDED_PATHS = (
     r"^skia[\\\/].*",
     r"^v8[\\\/].*",
     r".*MakeFile$",
+    r".+_autogen\.h$",
 )
 
 
