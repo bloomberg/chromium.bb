@@ -168,11 +168,14 @@ input[type='radio']:disabled {
 /* Focus **********************************************************************/
 
 button:not(.custom-appearance):not(.link-button):focus,
+input[type='button']:not(.custom-appearance):focus,
+input[type='checkbox']:focus,
+input[type='password']:focus,
+input[type='radio']:focus,
+input[type='search']:focus,
 input[type='submit']:not(.custom-appearance):focus,
 input[type='text']:focus,
-input[type='search']:focus,
-input[type='checkbox']:focus,
-input[type='radio']:focus,
+input[type='url']:focus,
 select:focus {
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
