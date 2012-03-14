@@ -16,7 +16,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
-#include "google/cacheinvalidation/v2/types.h"
+#include "google/cacheinvalidation/include/types.h"
 
 namespace sync_notifier {
 

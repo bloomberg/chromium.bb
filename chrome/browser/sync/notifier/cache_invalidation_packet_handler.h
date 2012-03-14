@@ -16,7 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "google/cacheinvalidation/v2/system-resources.h"
+#include "google/cacheinvalidation/include/system-resources.h"
 #include "jingle/notifier/listener/push_notifications_listen_task.h"
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 

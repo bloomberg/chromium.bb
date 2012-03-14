@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_CACHEINVALIDATION_V2_GMOCK_H_
-#define GOOGLE_CACHEINVALIDATION_V2_GMOCK_H_
+#ifndef GOOGLE_CACHEINVALIDATION_DEPS_GMOCK_H_
+#define GOOGLE_CACHEINVALIDATION_DEPS_GMOCK_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -88,4 +88,4 @@ MATCHER_P(EqualsProto, message, "") {
 
 }  // namespace testing
 
-#endif  // GOOGLE_CACHEINVALIDATION_V2_GMOCK_H_
+#endif  // GOOGLE_CACHEINVALIDATION_DEPS_GMOCK_H_

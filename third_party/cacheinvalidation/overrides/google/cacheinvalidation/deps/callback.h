@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_CACHEINVALIDATION_V2_CALLBACK_H_
-#define GOOGLE_CACHEINVALIDATION_V2_CALLBACK_H_
+#ifndef GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
+#define GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -123,4 +123,4 @@ Closure* NewPermanentCallback(
 
 }  // namespace invalidation
 
-#endif  // GOOGLE_CACHEINVALIDATION_V2_CALLBACK_H_
+#endif  // GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
