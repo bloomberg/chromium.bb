@@ -11,9 +11,10 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "chrome/browser/browser_process.h"
 
 using content::BrowserThread;
 
@@ -112,7 +113,10 @@ void LowMemoryObserverImpl::StartObservingOnFileThread() {
   DCHECK(MessageLoopForIO::current());
 
   file_descriptor_ = ::open(kLowMemFile, O_RDONLY);
-  if (file_descriptor_ < 0) {
+  // Don't report this error unless we're really running on ChromeOS
+  // to avoid testing spam.
+  if (file_descriptor_ < 0 &&
+      chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
     PLOG(ERROR) << "Unable to open " << kLowMemFile;
     return;
   }
