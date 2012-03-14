@@ -280,9 +280,6 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
 }  // namespace internal
 
-NetworkIconInfo::NetworkIconInfo() {
-}
-
 SystemTray::SystemTray()
     : items_(),
       bubble_(NULL),

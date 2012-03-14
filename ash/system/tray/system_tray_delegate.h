@@ -19,7 +19,6 @@ class SkBitmap;
 namespace ash {
 
 struct NetworkIconInfo {
-  NetworkIconInfo();
   SkBitmap image;
   string16 name;
   string16 description;
