@@ -32,6 +32,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class ManifestFetchesBuilder;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
@@ -433,6 +434,7 @@ class MetricsServiceHelper {
  private:
   friend class InstantFieldTrial;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
+  friend class ManifestFetchesBuilder;
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();

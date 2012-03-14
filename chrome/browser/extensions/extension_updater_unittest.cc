@@ -433,7 +433,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            kNeverPingedData, "");
+                            kNeverPingedData, "", "");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc",
               fetch_data.full_url().spec());
@@ -447,7 +447,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            kNeverPingedData, "bar");
+                            kNeverPingedData, "bar", "");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc%26ap%3Dbar",
               fetch_data.full_url().spec());
@@ -461,7 +461,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // option to appear in the x= parameter.
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     fetch_data.AddExtension(id, version,
-                            kNeverPingedData, "a=1&b=2&c");
+                            kNeverPingedData, "a=1&b=2&c", "");
     EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
               "%26v%3D1.0%26uc%26ap%3Da%253D1%2526b%253D2%2526c",
               fetch_data.full_url().spec());
@@ -487,6 +487,20 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_NE(std::string::npos, x);
     std::string::size_type ap = update_url.find("ap%3D", x);
     EXPECT_EQ(std::string::npos, ap);
+  }
+
+  static void TestInstallSource() {
+    const std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const std::string version = "1.0";
+    const std::string install_source = "instally";
+
+    // Make sure that an installsource= appears in the x= parameter.
+    ManifestFetchData fetch_data(GURL("http://localhost/foo"));
+    fetch_data.AddExtension(id, version, kNeverPingedData,
+                            kEmptyUpdateUrlData, install_source);
+    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              "%26v%3D1.0%26installsource%3Dinstally%26uc",
+              fetch_data.full_url().spec());
   }
 
   static void TestDetermineUpdates() {
@@ -519,12 +533,14 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(tmp[0]->version()->Equals(*one));
     fetch_data.AddExtension(tmp[0]->id(), tmp[0]->VersionString(),
                             kNeverPingedData,
-                            kEmptyUpdateUrlData);
+                            kEmptyUpdateUrlData,
+                            "");
     AddParseResult(tmp[0]->id(),
         "1.1", "http://localhost/e1_1.1.crx", &updates);
     fetch_data.AddExtension(tmp[1]->id(), tmp[1]->VersionString(),
                             kNeverPingedData,
-                            kEmptyUpdateUrlData);
+                            kEmptyUpdateUrlData,
+                            "");
     AddParseResult(tmp[1]->id(),
         tmp[1]->VersionString(), "http://localhost/e2_2.0.crx", &updates);
     updateable = updater.DetermineUpdates(fetch_data, updates);
@@ -559,7 +575,8 @@ class ExtensionUpdaterTest : public testing::Test {
       fetch_data.AddExtension(*it,
                               "1.0.0.0",
                               kNeverPingedData,
-                              kEmptyUpdateUrlData);
+                              kEmptyUpdateUrlData,
+                              "");
       AddParseResult(*it, "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
     std::vector<int> updateable =
@@ -597,9 +614,9 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData* fetch1 = new ManifestFetchData(url1);
     ManifestFetchData* fetch2 = new ManifestFetchData(url2);
     ManifestFetchData::PingData zeroDays(0, 0);
-    fetch1->AddExtension("1111", "1.0", zeroDays, kEmptyUpdateUrlData);
+    fetch1->AddExtension("1111", "1.0", zeroDays, kEmptyUpdateUrlData, "");
     fetch2->AddExtension("12345", "2.0", kNeverPingedData,
-                         kEmptyUpdateUrlData);
+                         kEmptyUpdateUrlData, "");
     updater.StartUpdateCheck(fetch1);
     updater.StartUpdateCheck(fetch2);
 
@@ -1080,7 +1097,8 @@ class ExtensionUpdaterTest : public testing::Test {
     const Extension* extension = tmp[0];
     fetch_data.AddExtension(extension->id(), extension->VersionString(),
                             kNeverPingedData,
-                            kEmptyUpdateUrlData);
+                            kEmptyUpdateUrlData,
+                            "");
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
 
@@ -1120,6 +1138,10 @@ TEST_F(ExtensionUpdaterTest, TestUpdateUrlData) {
       extension_urls::GetWebstoreUpdateUrl(false).spec());
   ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
       extension_urls::GetWebstoreUpdateUrl(true).spec());
+}
+
+TEST_F(ExtensionUpdaterTest, TestInstallSource) {
+  ExtensionUpdaterTest::TestInstallSource();
 }
 
 TEST_F(ExtensionUpdaterTest, TestDetermineUpdates) {

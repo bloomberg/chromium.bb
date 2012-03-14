@@ -75,7 +75,8 @@ class ManifestFetchData {
   // this ManifestFetchData object remains unchanged.
   bool AddExtension(std::string id, std::string version,
                     const PingData& ping_data,
-                    const std::string& update_url_data);
+                    const std::string& update_url_data,
+                    const std::string& install_source);
 
   const GURL& base_url() const { return base_url_; }
   const GURL& full_url() const { return full_url_; }
@@ -247,7 +248,7 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   static const int kManifestFetcherId = 1;
   static const int kExtensionFetcherId = 2;
 
-  static const char* kBlacklistAppID;
+  static const char kBlacklistAppID[];
 
   // Does common work from constructors.
   void Init();

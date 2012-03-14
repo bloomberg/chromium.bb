@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -65,7 +66,10 @@ using prefs::kLastExtensionsUpdateCheck;
 using prefs::kNextExtensionsUpdateCheck;
 
 // Update AppID for extension blacklist.
-const char* ExtensionUpdater::kBlacklistAppID = "com.google.crx.blacklist";
+const char ExtensionUpdater::kBlacklistAppID[] = "com.google.crx.blacklist";
+
+const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
+const char kDefaultInstallSource[] = "";
 
 namespace {
 
@@ -174,7 +178,8 @@ ManifestFetchData::~ManifestFetchData() {}
 // (Note that '=' is %3D and '&' is %26 when urlencoded.)
 bool ManifestFetchData::AddExtension(std::string id, std::string version,
                                      const PingData& ping_data,
-                                     const std::string& update_url_data) {
+                                     const std::string& update_url_data,
+                                     const std::string& install_source) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
     return false;
@@ -184,6 +189,8 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
   std::vector<std::string> parts;
   parts.push_back("id=" + id);
   parts.push_back("v=" + version);
+  if (!install_source.empty())
+    parts.push_back("installsource=" + install_source);
   parts.push_back("uc");
 
   if (!update_url_data.empty()) {
@@ -418,33 +425,48 @@ void ManifestFetchesBuilder::AddExtensionData(
       break;
   }
 
-  DCHECK(!update_url.is_empty());
-  DCHECK(update_url.is_valid());
-
-  ManifestFetchData* fetch = NULL;
-  std::multimap<GURL, ManifestFetchData*>::iterator existing_iter =
-      fetches_.find(update_url);
-
-  // Find or create a ManifestFetchData to add this extension to.
-  ManifestFetchData::PingData ping_data;
-  ping_data.rollcall_days = CalculatePingDays(prefs_->LastPingDay(id));
-  ping_data.active_days =
-      CalculateActivePingDays(prefs_->LastActivePingDay(id),
-                              prefs_->GetActiveBit(id));
-  while (existing_iter != fetches_.end()) {
-    if (existing_iter->second->AddExtension(id, version.GetString(),
-                                            ping_data, update_url_data)) {
-      fetch = existing_iter->second;
-      break;
-    }
-    existing_iter++;
+  std::vector<GURL> update_urls;
+  update_urls.push_back(update_url);
+  // If UMA is enabled, also add to ManifestFetchData for the
+  // webstore update URL.
+  if (!extension_urls::IsWebstoreUpdateUrl(update_url) &&
+      MetricsServiceHelper::IsMetricsReportingEnabled()) {
+    update_urls.push_back(extension_urls::GetWebstoreUpdateUrl(false));
   }
-  if (!fetch) {
-    fetch = new ManifestFetchData(update_url);
-    fetches_.insert(std::pair<GURL, ManifestFetchData*>(update_url, fetch));
-    bool added = fetch->AddExtension(id, version.GetString(), ping_data,
-                                     update_url_data);
-    DCHECK(added);
+
+  for (size_t i = 0; i < update_urls.size(); ++i) {
+    DCHECK(!update_urls[i].is_empty());
+    DCHECK(update_urls[i].is_valid());
+
+    std::string install_source = i == 0 ?
+        kDefaultInstallSource : kNotFromWebstoreInstallSource;
+
+    ManifestFetchData* fetch = NULL;
+    std::multimap<GURL, ManifestFetchData*>::iterator existing_iter =
+        fetches_.find(update_urls[i]);
+
+    // Find or create a ManifestFetchData to add this extension to.
+    ManifestFetchData::PingData ping_data;
+    ping_data.rollcall_days = CalculatePingDays(prefs_->LastPingDay(id));
+    ping_data.active_days =
+        CalculateActivePingDays(prefs_->LastActivePingDay(id),
+                                prefs_->GetActiveBit(id));
+    while (existing_iter != fetches_.end()) {
+      if (existing_iter->second->AddExtension(
+              id, version.GetString(), ping_data, update_url_data,
+              install_source)) {
+        fetch = existing_iter->second;
+        break;
+      }
+      existing_iter++;
+    }
+    if (!fetch) {
+      fetch = new ManifestFetchData(update_urls[i]);
+      fetches_.insert(std::make_pair(update_urls[i], fetch));
+      bool added = fetch->AddExtension(
+          id, version.GetString(), ping_data, update_url_data, install_source);
+      DCHECK(added);
+    }
   }
 }
 
@@ -1078,7 +1100,8 @@ void ExtensionUpdater::CheckNow() {
     ManifestFetchData::PingData ping_data;
     ping_data.rollcall_days =
         CalculatePingDays(extension_prefs_->BlacklistLastPingDay());
-    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_data, "");
+    blacklist_fetch->AddExtension(
+        kBlacklistAppID, version, ping_data, "", kDefaultInstallSource);
     StartUpdateCheck(blacklist_fetch);
   }
 
