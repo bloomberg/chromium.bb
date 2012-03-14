@@ -207,6 +207,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
 void ChromeLauncherDelegate::SetItemStatus(ash::LauncherID id,
                                            ash::LauncherItemStatus status) {
   int index = model_->ItemIndexByID(id);
+  DCHECK_GE(index, 0);
   ash::LauncherItem item = model_->items()[index];
   item.status = status;
   model_->Set(index, item);
@@ -244,7 +245,6 @@ void ChromeLauncherDelegate::LauncherItemClosed(ash::LauncherID id) {
   if (id_to_item_map_[id].pinned) {
     // The item is pinned, leave it in the launcher.
     id_to_item_map_[id].updater = NULL;
-    printf("ChromeLauncherDelegate::LauncherItemClosed\n");
     SetItemStatus(id, ash::STATUS_CLOSED);
   } else {
     id_to_item_map_.erase(id);
