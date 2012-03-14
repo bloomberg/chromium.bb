@@ -187,6 +187,19 @@ void ExtensionDialog::Close() {
   window_ = NULL;
 }
 
+void ExtensionDialog::MaybeFocusRenderView() {
+  views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
+  // Already there's a focused view, so no need to switch the focus.
+  if (focus_manager && focus_manager->GetFocusedView())
+    return;
+
+  content::RenderWidgetHostView* view = host()->render_view_host()->GetView();
+  if (!view)
+    return;
+
+  view->Focus();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides.
 
@@ -239,6 +252,10 @@ void ExtensionDialog::Observe(int type,
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
       extension_host_->view()->set_background(NULL);
+      // The render view is created during the LoadURL(), so we should
+      // set the focus to the view if nobody else takes the focus.
+      if (content::Details<ExtensionHost>(host()) == details)
+        MaybeFocusRenderView();
       break;
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
       // If we aren't the host of the popup, then disregard the notification.

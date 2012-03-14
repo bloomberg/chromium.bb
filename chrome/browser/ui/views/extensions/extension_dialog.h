@@ -68,6 +68,9 @@ class ExtensionDialog : public views::WidgetDelegate,
   // Closes the ExtensionDialog.
   void Close();
 
+  // Focus to the render view if possible.
+  void MaybeFocusRenderView();
+
   // Sets the window title.
   void set_title(const string16& title) { window_title_ = title; }
 
