@@ -6,6 +6,7 @@ import copy
 import gyp
 import gyp.common
 import gyp.msvs_emulation
+import gyp.MSVSVersion
 import gyp.system_test
 import gyp.xcode_emulation
 import os.path
@@ -213,11 +214,6 @@ class NinjaWriter:
       # so insert product_dir in front if it is provided.
       path = path.replace(INTERMEDIATE_DIR,
                           os.path.join(product_dir or '', int_dir))
-
-    if self.flavor == 'win':
-      # Don't use os.path.normpath here. Callers pass in './foo' and expect
-      # the result to be runnable, but normpath removes the prefix.
-      return path.replace('/', '\\')
     return path
 
   def ExpandRuleVariables(self, path, root, dirname, source, ext, name):
@@ -237,7 +233,10 @@ class NinjaWriter:
     if env:
       path = gyp.xcode_emulation.ExpandEnvVars(path, env)
     if path.startswith('$!'):
-      return self.ExpandSpecial(path)
+      expanded = self.ExpandSpecial(path)
+      if self.flavor == 'win':
+        expanded = os.path.normpath(expanded)
+      return expanded
     assert '$' not in path, path
     return os.path.normpath(os.path.join(self.build_to_base, path))
 
@@ -303,10 +302,11 @@ class NinjaWriter:
     self.target = Target(spec['type'])
 
     self.is_mac_bundle = gyp.xcode_emulation.IsMacBundle(self.flavor, spec)
+    self.xcode_settings = self.msvs_settings = None
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
-    else:
-      self.xcode_settings = None
+    if self.flavor == 'win':
+      self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec)
 
     # Compute predepends for all rules.
     # actions_depends is the dependencies this target depends on before running
@@ -583,6 +583,8 @@ class NinjaWriter:
       self.ninja.variable('cxx', '$cxx_target')
       self.ninja.variable('ld', '$ld_target')
 
+    extra_defines = []
+    extra_includes = []
     if self.flavor == 'mac':
       cflags = self.xcode_settings.GetCflags(config_name)
       cflags_c = self.xcode_settings.GetCflagsC(config_name)
@@ -591,17 +593,25 @@ class NinjaWriter:
                     self.xcode_settings.GetCflagsObjC(config_name)
       cflags_objcc = ['$cflags_cc'] + \
                      self.xcode_settings.GetCflagsObjCC(config_name)
+    elif self.flavor == 'win':
+      cflags = self.msvs_settings.GetCflags(config_name)
+      cflags_c = self.msvs_settings.GetCflagsC(config_name)
+      cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
+      extra_defines = self.msvs_settings.GetComputedDefines(config_name)
+      extra_includes = self.msvs_settings.GetSystemIncludes(config_name)
     else:
       cflags = config.get('cflags', [])
       cflags_c = config.get('cflags_c', [])
       cflags_cc = config.get('cflags_cc', [])
 
+    defines = config.get('defines', []) + extra_defines
     self.WriteVariableList('defines',
         [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
-         for d in config.get('defines', [])])
+         for d in defines])
+    include_dirs = config.get('include_dirs', []) + extra_includes
     self.WriteVariableList('includes',
-                           ['-I' + self.GypPathToNinja(i)
-                            for i in config.get('include_dirs', [])])
+        [QuoteShellArgument('-I' + self.GypPathToNinja(i), self.flavor)
+         for i in include_dirs])
 
     pch_commands = precompiled_header.GetGchBuildCommands()
     if self.flavor == 'mac':
@@ -709,6 +719,10 @@ class NinjaWriter:
 
     if self.flavor == 'mac':
       ldflags = self.xcode_settings.GetLdflags(config_name,
+          self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
+          self.GypPathToNinja)
+    elif self.flavor == 'win':
+      ldflags = self.msvs_settings.GetLdflags(config_name,
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
     else:
@@ -1011,6 +1025,24 @@ def CalculateVariables(default_variables, params):
     default_variables['STATIC_LIB_SUFFIX'] = '.lib'
     default_variables['SHARED_LIB_PREFIX'] = ''
     default_variables['SHARED_LIB_SUFFIX'] = '.dll'
+    generator_flags = params.get('generator_flags', {})
+    msvs_version = gyp.MSVSVersion.SelectVisualStudioVersion(
+        generator_flags.get('msvs_version', 'auto'))
+    # Stash msvs_version for later (so we don't have to probe the system twice).
+    params['msvs_version'] = msvs_version
+
+    # Set a variable so conditions can be based on msvs_version.
+    default_variables['MSVS_VERSION'] = msvs_version.ShortName()
+
+    # To determine processor word size on Windows, in addition to checking
+    # PROCESSOR_ARCHITECTURE (which reflects the word size of the current
+    # process), it is also necessary to check PROCESSOR_ARCHITEW6432 (which
+    # contains the actual word size of the system when running thru WOW64).
+    if ('64' in os.environ.get('PROCESSOR_ARCHITECTURE', '') or
+        '64' in os.environ.get('PROCESSOR_ARCHITEW6432', '')):
+      default_variables['MSVS_OS_BITS'] = 64
+    else:
+      default_variables['MSVS_OS_BITS'] = 32
   else:
     operating_system = flavor
     if flavor == 'android':
@@ -1106,7 +1138,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('cmd /c $cc /nologo /showIncludes '
                '$defines $includes $cflags $cflags_c '
                '$cflags_pch_c /c $in /Fo$out '
-               '| ninja-deplist-helper -f cl -o $out.dl'),
+               '| ninja-deplist-helper -q -f cl -o $out.dl'),
       deplist='$out.dl')
     master_ninja.rule(
       'cxx',
@@ -1114,7 +1146,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('cmd /c $cxx /nologo /showIncludes '
                '$defines $includes $cflags $cflags_cc '
                '$cflags_pch_cc /c $in /Fo$out '
-               '| ninja-deplist-helper -f cl -o $out.dl'),
+               '| ninja-deplist-helper -q -f cl -o $out.dl'),
       deplist='$out.dl')
 
   if flavor != 'mac' and flavor != 'win':
@@ -1145,15 +1177,17 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'solink',
       description='LINK(DLL) $dll',
-      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll $in $libs'))
+      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
+               '/PDB:$dll.pdb $in $libs'))
     master_ninja.rule(
       'solink_module',
       description='LINK(DLL) $dll',
-      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll $in $libs'))
+      command=('$ld /nologo /IMPLIB:$implib /DLL $ldflags /OUT:$dll '
+               '/PDB:$dll.pdb $in $libs'))
     master_ninja.rule(
       'link',
       description='LINK $out',
-      command=('$ld /nologo $ldflags /OUT:$out $in $libs'))
+      command=('$ld /nologo $ldflags /OUT:$out /PDB:$out.pdb $in $libs'))
   else:
     master_ninja.rule(
       'objc',
