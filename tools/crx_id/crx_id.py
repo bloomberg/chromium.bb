@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,13 +10,18 @@ and 'http://stackoverflow.com/questions/'
 for docs on the format.
 """
 
+import base64
+import os
 import sys
 import hashlib
 
+try:
+  import json
+except Exception:
+  import simplejson as json
 
 EXPECTED_CRX_MAGIC_NUM = 'Cr24'
 EXPECTED_CRX_VERSION = 2
-
 
 def usage(argv):
   print "%s: crx_file" % argv[0]
@@ -54,35 +59,69 @@ def HexTo256(hex_chars):
     result.append('0x' + hex(dig1)[2:] + hex(dig2)[2:])
   return '{%s}' % ', '.join(result)
 
-def GetPublicKey(f):
+def GetPublicKeyPacked(f):
   magic_num = f.read(4)
   if magic_num != EXPECTED_CRX_MAGIC_NUM:
-    raise 'Invalid magic number: %s (expecting %s)' % (magic_num,
-                                                       EXPECTED_CRX_MAGIC_NUM)
+    raise Exception('Invalid magic number: %s (expecting %s)' %
+                    (magic_num,
+                     EXPECTED_CRX_MAGIC_NUM))
   version = f.read(4)
   if not version[0] != EXPECTED_CRX_VERSION:
-    raise 'Invalid version number: %s (expecting %s)' % (version,
-                                                         EXPECTED_CRX_VERSION)
+    raise Exception('Invalid version number: %s (expecting %s)' %
+                    (version,
+                     EXPECTED_CRX_VERSION))
   pub_key_len_bytes = HexToInt(f.read(4))
   sig_len_bytes = HexToInt(f.read(4))
   pub_key = f.read(pub_key_len_bytes)
   return pub_key
 
-def GetCRXHash(filename):
-  f = open(filename, 'rb')
-  pub_key = GetPublicKey(f)
-  f.close()
+def GetPublicKeyFromPath(filepath):
+  # Normalize the path for windows to have capital drive letters.
+  # We intentionally don't check if sys.platform == 'win32' and just
+  # check if this looks like drive letter so that we can test this
+  # even on posix systems.
+  if (len(filepath) >= 2 and
+      filepath[0].islower() and
+      filepath[1] == ':'):
+      return filepath[0].upper() + filepath[1:]
+  return filepath
+
+def GetPublicKeyUnpacked(f, filepath):
+  manifest = json.load(f)
+  if 'key' not in manifest:
+    # Use the path as the public key.
+    # See Extension::GenerateIdForPath in extension.cc
+    return GetPublicKeyFromPath(filepath)
+  else:
+    return base64.standard_b64decode(manifest['key'])
+
+def GetPublicKey(filename, from_test_path):
+  if from_test_path:
+    return GetPublicKeyFromPath(filename)
+
+  pub_key = ''
+  if os.path.isdir(filename):
+    # Assume it's an unpacked extension
+    f = open(os.path.join(filename, 'manifest.json'), 'rb')
+    pub_key = GetPublicKeyUnpacked(f, filename)
+    f.close()
+  else:
+    # Assume it's a packed extension.
+    f = open(filename, 'rb')
+    pub_key = GetPublicKeyPacked(f)
+    f.close()
+  return pub_key
+
+def GetCRXHash(filename, from_test_path=False):
+  pub_key = GetPublicKey(filename, from_test_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   return HexTo256(pub_key_hash)
 
-def GetCRXAppID(filename):
-  f = open(filename, 'rb')
-  pub_key = GetPublicKey(f)
-  f.close()
+def GetCRXAppID(filename, from_test_path=False):
+  pub_key = GetPublicKey(filename, from_test_path)
   pub_key_hash = hashlib.sha256(pub_key).digest()
   # AppID is the MPDecimal of only the first 128 bits of the hash.
   return HexToMPDecimal(pub_key_hash[:128/8])
-
 
 def main(argv):
   if len(argv) != 2:
