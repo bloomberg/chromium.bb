@@ -3094,10 +3094,8 @@ FileManager.prototype = {
       checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
     }
 
-    if (checkbox.checked) {
-      chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], callback);
-      console.log('Pinning file ', entry.toURL());
-    }
+    chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()],
+                                           !checkbox.checked, callback);
     event.preventDefault();
   };
 
