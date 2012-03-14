@@ -66,12 +66,16 @@ class RemoteTryJob(object):
     current_time = datetime.datetime.utcnow()
     file_name = '%s.%s' % (self.user,
                            current_time.strftime("%Y.%m.%d_%H.%M.%S"))
-    fullpath = os.path.join(self.tryjob_repo, file_name)
+    user_dir = os.path.join(self.tryjob_repo, self.user)
+    if not os.path.isdir(user_dir):
+      os.mkdir(user_dir)
+
+    fullpath = os.path.join(user_dir, file_name)
     # Both commit description and contents of file contain tryjob specs.
     with open(fullpath, 'w+') as job_desc_file:
       json.dump(self.values, job_desc_file)
 
-    cros_lib.RunCommand(['git', 'add', file_name], cwd=self.tryjob_repo)
+    cros_lib.RunCommand(['git', 'add', fullpath], cwd=self.tryjob_repo)
     cros_lib.RunCommand(['git', 'commit', '-m', self.description],
                         cwd=self.tryjob_repo)
 
