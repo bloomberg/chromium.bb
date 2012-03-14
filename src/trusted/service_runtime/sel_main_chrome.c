@@ -78,7 +78,6 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
 }
 
-/* TODO(ncbray) consolidate Chrome's sel_ldr setup to a single function. */
 void NaClSetValidationCache(struct NaClValidationCache *cache) {
   g_validation_cache = cache;
 }
@@ -309,4 +308,24 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClAllModulesFini();
 
   NaClExit(ret_code);
+}
+
+struct NaClChromeMainArgs *NaClChromeMainArgsInit(void) {
+  struct NaClChromeMainArgs *args = malloc(sizeof(*args));
+  if (args == NULL)
+    return NULL;
+  args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
+  args->irt_fd = -1;
+  args->enable_debug_stub = 0;
+  args->create_memory_object_func = NULL;
+  args->validation_cache = NULL;
+  return args;
+}
+
+void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
+  NaClSetIrtFileDesc(args->irt_fd);
+  if (args->create_memory_object_func != NULL)
+    NaClSetCreateMemoryObjectFunc(args->create_memory_object_func);
+  NaClSetValidationCache(args->validation_cache);
+  NaClMainForChromium(1, &args->imc_bootstrap_handle, args->enable_debug_stub);
 }

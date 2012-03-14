@@ -215,6 +215,19 @@ int NaClReceiveDatagram(NaClHandle socket, NaClMessageHeader* message,
                         int flags);
 
 /*
+ * Type of function supplied to NaClSetCreateMemoryObjectFunc().  See
+ * nacl::CreateMemoryObjectFunc.
+ */
+typedef NaClHandle (*NaClCreateMemoryObjectFunc)(size_t length, int executable);
+
+/*
+ * This allows an alternative implementation of NaClCreateMemoryObject()
+ * to be provided that works in an outer sandbox. See
+ * nacl::SetCreateMemoryObjectFunc().
+ */
+void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func);
+
+/*
  * Creates a memory object of length bytes.
  *
  * NaClCreateMemoryObject() returns a handle of the newly created

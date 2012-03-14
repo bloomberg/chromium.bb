@@ -14,6 +14,47 @@ EXTERN_C_BEGIN
 
 struct NaClValidationCache;
 
+
+struct NaClChromeMainArgs {
+  /*
+   * Handle for bootstrapping a NaCl IMC connection to the trusted
+   * PPAPI plugin.  Required.
+   */
+  NaClHandle imc_bootstrap_handle;
+
+  /*
+   * File descriptor for the NaCl integrated runtime (IRT) library.
+   * Note that this is a file descriptor even on Windows (where file
+   * descriptors are emulated by the C runtime library).  Required.
+   */
+  int irt_fd;
+
+  /* Whether to enable NaCl's built-in GDB RSP debug stub.  Boolean. */
+  int enable_debug_stub;
+
+  /*
+   * Callback to use for creating shared memory objects.  Optional;
+   * may be NULL.
+   */
+  NaClCreateMemoryObjectFunc create_memory_object_func;
+
+  /* Cache for NaCl validation judgements.  Optional; may be NULL. */
+  struct NaClValidationCache *validation_cache;
+};
+
+/* Create a new args struct containing default values. */
+struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
+
+/* Launch NaCl. */
+void NaClChromeMainStart(struct NaClChromeMainArgs *args);
+
+
+/*
+ * TODO(mseaborn): The functions below are the old interface used by
+ * Chromium.  Once Chromium is switched to the new interface (above),
+ * remove the old interface.
+ */
+
 /*
  * Register the integrated runtime (IRT) library file for use by
  * NaClMainForChromium().  This takes a file descriptor, even on
@@ -26,6 +67,7 @@ void NaClSetValidationCache(struct NaClValidationCache *cache);
 
 void NaClMainForChromium(int handle_count, const NaClHandle *handles,
                          int debug);
+
 
 EXTERN_C_END
 

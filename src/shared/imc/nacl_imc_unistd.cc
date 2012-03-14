@@ -116,9 +116,16 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
 }
 
 static CreateMemoryObjectFunc g_create_memory_object_func = NULL;
+// This is the usable-from-C variant that takes an int rather than a bool.
+// TODO(mseaborn): Switch to having only the int variant.
+static NaClCreateMemoryObjectFunc g_create_memory_object_func_c = NULL;
 
 void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func) {
   g_create_memory_object_func = func;
+}
+
+void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
+  g_create_memory_object_func_c = func;
 }
 
 Handle CreateMemoryObject(size_t length, bool executable) {
@@ -129,6 +136,12 @@ Handle CreateMemoryObject(size_t length, bool executable) {
 
   if (g_create_memory_object_func != NULL) {
     fd = g_create_memory_object_func(length, executable);
+    if (fd >= 0)
+      return fd;
+  }
+
+  if (g_create_memory_object_func_c != NULL) {
+    fd = g_create_memory_object_func_c(length, executable);
     if (fd >= 0)
       return fd;
   }
