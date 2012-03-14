@@ -67,7 +67,7 @@ void BrowserActionDragData::WriteToPickle(
     Profile* profile, Pickle* pickle) const {
   pickle->WriteBytes(&profile, sizeof(profile));
   pickle->WriteString(id_);
-  pickle->WriteSize(index_);
+  pickle->WriteUInt64(index_);
 }
 
 bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
@@ -81,8 +81,10 @@ bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
   if (!pickle->ReadString(&data_iterator, &id_))
     return false;
 
-  if (!pickle->ReadSize(&data_iterator, &index_))
+  uint64 index;
+  if (!pickle->ReadUInt64(&data_iterator, &index))
     return false;
+  index_ = static_cast<size_t>(index);
 
   return true;
 }
