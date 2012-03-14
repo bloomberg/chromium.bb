@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class ASH_EXPORT ViewModel {
 
   // Returns the index of the specified view, or -1 if the view isn't in the
   // model.
-  int GetIndexOfView(views::View* view) const;
+  int GetIndexOfView(const views::View* view) const;
 
  private:
   struct Entry {

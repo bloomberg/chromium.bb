@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ void ViewModel::Clear() {
     delete entries[i].view;
 }
 
-int ViewModel::GetIndexOfView(views::View* view) const {
+int ViewModel::GetIndexOfView(const views::View* view) const {
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i].view == view)
       return static_cast<int>(i);

@@ -656,7 +656,7 @@ void LauncherView::MouseExitedButton(views::View* view) {
   MaybeResetWindowCycler(view);
 }
 
-string16 LauncherView::GetAccessibleName(views::View* view) {
+string16 LauncherView::GetAccessibleName(const views::View* view) {
   if (!delegate_)
     return string16();
   int view_index = view_model_->GetIndexOfView(view);

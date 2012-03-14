@@ -187,6 +187,13 @@ void LauncherButton::Layout() {
   bar_->SetBounds(0, height() - kBarHeight, width(), kBarHeight);
 }
 
+bool LauncherButton::GetTooltipText(
+    const gfx::Point& p, string16* tooltip) const {
+  DCHECK(tooltip);
+  tooltip->assign(host_->GetAccessibleName(this));
+  return true;
+}
+
 void LauncherButton::Init() {
   icon_view_ = CreateIconView();
   // TODO: refactor the layers so each button doesn't require 2.
