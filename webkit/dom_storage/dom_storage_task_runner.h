@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 
@@ -20,7 +20,7 @@ namespace dom_storage {
 // Tasks must run serially with respect to one another, but may
 // execute on different OS threads. The base class is implemented
 // in terms of a MessageLoopProxy.
-class DomStorageTaskRunner : public base::TaskRunner {
+class DomStorageTaskRunner : public base::SequencedTaskRunner {
  public:
   explicit DomStorageTaskRunner(base::MessageLoopProxy* message_loop);
   virtual ~DomStorageTaskRunner();
@@ -44,6 +44,17 @@ class DomStorageTaskRunner : public base::TaskRunner {
   // Only here because base::TaskRunner requires it, the return
   // value is hard coded to true.
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
+
+  // SequencedTaskRunner overrides, these are implemented in
+  // terms of PostDelayedTask and the latter is similarly deprecated.
+  virtual bool PostNonNestableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay) OVERRIDE;
+  virtual bool PostNonNestableDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      int64 delay_ms) OVERRIDE;
 
  protected:
   const scoped_refptr<base::MessageLoopProxy> message_loop_;

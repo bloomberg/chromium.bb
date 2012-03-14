@@ -40,6 +40,21 @@ bool DomStorageTaskRunner::RunsTasksOnCurrentThread() const {
   return true;
 }
 
+bool DomStorageTaskRunner::PostNonNestableDelayedTask(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    base::TimeDelta delay) {
+  return PostDelayedTask(from_here, task, delay);
+}
+
+bool DomStorageTaskRunner::PostNonNestableDelayedTask(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    int64 delay_ms) {
+  return PostDelayedTask(
+      from_here, task, base::TimeDelta::FromMilliseconds(delay_ms));
+}
+
 // DomStorageWorkerPoolTaskRunner
 
 DomStorageWorkerPoolTaskRunner::DomStorageWorkerPoolTaskRunner(
