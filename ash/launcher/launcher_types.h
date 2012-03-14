@@ -47,13 +47,15 @@ enum ASH_EXPORT LauncherItemStatus {
 
 struct ASH_EXPORT LauncherItem {
   LauncherItem();
-  explicit LauncherItem(LauncherItemType type);
   ~LauncherItem();
 
   LauncherItemType type;
 
   // Number of tabs. Only used if this is TYPE_TABBED.
   int num_tabs;
+
+  // Whether it is incognito. Only used if this is TYPE_TABBED.
+  bool is_incognito;
 
   // Image to display in the launcher. If this item is TYPE_TABBED the image is
   // a favicon image.

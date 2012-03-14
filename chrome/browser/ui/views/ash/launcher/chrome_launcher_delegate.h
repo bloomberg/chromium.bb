@@ -43,6 +43,12 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     APP_TYPE_TAB
   };
 
+  // Indicates if a launcher item is incognito or not.
+  enum IncognitoState {
+    STATE_INCOGNITO,
+    STATE_NOT_INCOGNITO,
+  };
+
   // Interface used to load app icons. This is in it's own class so that it can
   // be mocked.
   class AppIconLoader {
@@ -75,7 +81,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   static void RegisterUserPrefs(PrefService* user_prefs);
 
   // Creates a new tabbed item on the launcher for |updater|.
-  ash::LauncherID CreateTabbedLauncherItem(LauncherUpdater* updater);
+  ash::LauncherID CreateTabbedLauncherItem(LauncherUpdater* updater,
+                                           IncognitoState is_incognito);
 
   // Creates a new app item on the launcher for |updater|. If there is an
   // existing pinned app that isn't running on the launcher, its id is returned.

@@ -76,7 +76,8 @@ class WindowWatcher : public aura::WindowObserver {
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
     static int image_count = 0;
     ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
-    ash::LauncherItem item(ash::TYPE_TABBED);
+    ash::LauncherItem item;
+    item.type = ash::TYPE_TABBED;
     id_to_window_[model->next_id()] = new_window;
     item.num_tabs = image_count + 1;
     item.image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);

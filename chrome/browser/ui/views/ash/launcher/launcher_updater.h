@@ -144,6 +144,9 @@ class LauncherUpdater : public TabStripModelObserver,
 
   const std::string app_id_;
 
+  // Whether this is associated with an incognito profile.
+  const bool is_incognito_;
+
   // This is one of three possible values:
   // . If type_ == TYPE_APP, this is the ID of the app item.
   // . If type_ == TYPE_TABBED and all the tabs are app tabs this is -1.
