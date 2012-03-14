@@ -123,21 +123,7 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED));
 }
 
-void BluetoothOptionsHandler::Initialize() {
-  // Bluetooth support is a work in progress.  Supress the feature unless
-  // explicitly enabled via a command line flag.
-  if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    return;
-  }
-
-  adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
-  adapter_->AddObserver(this);
-
-  // Show or hide the bluetooth settings and update the checkbox based
-  // on the current present/powered state.
-  AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
-}
+// TODO(kevers): Reorder methods to match ordering in the header file.
 
 void BluetoothOptionsHandler::AdapterPresentChanged(BluetoothAdapter* adapter,
                                                     bool present) {
@@ -164,6 +150,9 @@ void BluetoothOptionsHandler::AdapterPoweredChanged(BluetoothAdapter* adapter,
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("initializeBluetoothStatus",
+      base::Bind(&BluetoothOptionsHandler::InitializeBluetoothStatusCallback,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("bluetoothEnableChange",
       base::Bind(&BluetoothOptionsHandler::EnableChangeCallback,
                  base::Unretained(this)));
@@ -179,7 +168,21 @@ void BluetoothOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPairedBluetoothDevices",
       base::Bind(&BluetoothOptionsHandler::GetPairedDevicesCallback,
                  base::Unretained(this)));
+}
 
+void BluetoothOptionsHandler::InitializeBluetoothStatusCallback(
+    const ListValue* args) {
+  // Bluetooth support is a work in progress.  Supress the feature unless
+  // explicitly enabled via a command line flag.
+  if (!CommandLine::ForCurrentProcess()
+      ->HasSwitch(switches::kEnableBluetooth)) {
+    return;
+  }
+  adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
+  adapter_->AddObserver(this);
+  // Show or hide the bluetooth settings and update the checkbox based
+  // on the current present/powered state.
+  AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
 }
 
 void BluetoothOptionsHandler::EnableChangeCallback(

@@ -41,35 +41,7 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
-
-  // Called when the 'Enable bluetooth' checkbox value is changed.
-  // |args| will contain the checkbox checked state as a string
-  // ("true" or "false").
-  void EnableChangeCallback(const base::ListValue* args);
-
-  // Called when the 'Find Devices' button is pressed from the Bluetooth
-  // ssettings.
-  // |args| will be an empty list.
-  void FindDevicesCallback(const base::ListValue* args);
-
-  // Called when the user requests to connect to or disconnect from a Bluetooth
-  // device.
-  // |args| will be a list containing two or three arguments, the first argument
-  // is the device ID and the second is the requested action.  If a third
-  // argument is present, it is the passkey for pairing confirmation.
-  void UpdateDeviceCallback(const base::ListValue* args);
-
-  // Called when the "Add a device" dialog closes to stop the discovery
-  // process.
-  // |args| will be an empty list.
-  void StopDiscoveryCallback(const base::ListValue* args);
-
-  // Called when the list of paired devices is initialized in order to
-  // populate the list.
-  // |args| will be an empty list.
-  void GetPairedDevicesCallback(const base::ListValue* args);
 
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
@@ -138,6 +110,38 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   // Called by BluetoothAdapter in response to our method calls in case of
   // error.
   void ErrorCallback();
+
+  // Called on completion of initialization of the settings page to update
+  // the Bluetooth controls.
+  // |args| will be and empty list.
+  void InitializeBluetoothStatusCallback(const base::ListValue* args);
+
+  // Called when the 'Enable bluetooth' checkbox value is changed.
+  // |args| will contain the checkbox checked state as a string
+  // ("true" or "false").
+  void EnableChangeCallback(const base::ListValue* args);
+
+  // Called when the 'Find Devices' button is pressed from the Bluetooth
+  // ssettings.
+  // |args| will be an empty list.
+  void FindDevicesCallback(const base::ListValue* args);
+
+  // Called when the user requests to connect to or disconnect from a Bluetooth
+  // device.
+  // |args| will be a list containing two or three arguments, the first argument
+  // is the device ID and the second is the requested action.  If a third
+  // argument is present, it is the passkey for pairing confirmation.
+  void UpdateDeviceCallback(const base::ListValue* args);
+
+  // Called when the "Add a device" dialog closes to stop the discovery
+  // process.
+  // |args| will be an empty list.
+  void StopDiscoveryCallback(const base::ListValue* args);
+
+  // Called when the list of paired devices is initialized in order to
+  // populate the list.
+  // |args| will be an empty list.
+  void GetPairedDevicesCallback(const base::ListValue* args);
 
   // Default bluetooth adapter, used for all operations. Owned by this object.
   scoped_ptr<BluetoothAdapter> adapter_;

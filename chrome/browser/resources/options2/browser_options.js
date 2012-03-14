@@ -414,6 +414,12 @@ cr.define('options', function() {
               [String($('backgroundModeCheckbox').checked)]);
         };
       }
+
+      // Update Bluetooth controls.  If no Bluetooth adapter is available then
+      // the Bluetooth section is hidden.  If the adapter is found and powered
+      // then the list of known and connected devices is populated.
+      if (cr.isChromeOS)
+        chrome.send('initializeBluetoothStatus');
     },
 
     /**
@@ -494,6 +500,11 @@ cr.define('options', function() {
         advancedSettings.style.height = 'auto';
 
         expander.textContent = localStrings.getString('hideAdvancedSettings');
+
+        // Items added to the Bluetooth list while hidden are often not properly
+        // rendered once the list becomes visible.  Force the list to refresh.
+        if (cr.isChromeOS)
+          $('bluetooth-paired-devices-list').refresh();
       }
     },
 
