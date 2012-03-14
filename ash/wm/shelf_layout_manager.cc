@@ -42,6 +42,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
   gfx::Rect launcher_bounds = launcher->GetWindowScreenBounds();
   gfx::Rect status_bounds = status->GetWindowScreenBounds();
   max_height_ = std::max(launcher_bounds.height(), status_bounds.height());
+  root_window_ = launcher->GetNativeView()->GetRootWindow();
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -133,7 +134,7 @@ void ShelfLayoutManager::StopAnimating() {
 
 void ShelfLayoutManager::CalculateTargetBounds(bool visible,
                                                TargetBounds* target_bounds) {
-  const gfx::Rect& available_bounds(Shell::GetRootWindow()->bounds());
+  const gfx::Rect& available_bounds(root_window_->bounds());
   int y = available_bounds.bottom() - (visible ? max_height_ : 0);
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   // The status widget should extend to the bottom and right edges.

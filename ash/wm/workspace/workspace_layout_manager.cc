@@ -26,8 +26,10 @@ namespace internal {
 // WorkspaceLayoutManager, public:
 
 WorkspaceLayoutManager::WorkspaceLayoutManager(
+    aura::RootWindow* root_window,
     WorkspaceManager* workspace_manager)
-    : workspace_manager_(workspace_manager) {
+    : BaseLayoutManager(root_window),
+      workspace_manager_(workspace_manager) {
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {

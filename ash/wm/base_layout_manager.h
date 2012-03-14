@@ -17,6 +17,7 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
@@ -35,7 +36,7 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
  public:
   typedef std::set<aura::Window*> WindowSet;
 
-  BaseLayoutManager();
+  explicit BaseLayoutManager(aura::RootWindow* root_window);
   virtual ~BaseLayoutManager();
 
   const WindowSet& windows() const { return windows_; }
@@ -70,6 +71,8 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
   // Set of windows we're listening to.
   WindowSet windows_;
+
+  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManager);
 };

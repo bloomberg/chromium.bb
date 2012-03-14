@@ -74,7 +74,7 @@ void AppList::SetWidget(views::Widget* widget) {
     widget_ = widget;
     widget_->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
-    Shell::GetRootWindow()->AddRootWindowObserver(this);
+    widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
 
     widget_->SetOpacity(0);
     ScheduleAnimation();
@@ -93,7 +93,7 @@ void AppList::ResetWidget() {
   widget_->RemoveObserver(this);
   GetLayer(widget_)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
-  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
+  widget_->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget_ = NULL;
 }
 

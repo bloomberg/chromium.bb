@@ -14,6 +14,7 @@
 
 namespace aura {
 class MouseEvent;
+class RootWindow;
 class Window;
 }
 
@@ -29,7 +30,8 @@ class WorkspaceManager;
 // LayoutManager for top level windows when WorkspaceManager is enabled.
 class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
  public:
-  explicit WorkspaceLayoutManager(WorkspaceManager* workspace_manager);
+  WorkspaceLayoutManager(aura::RootWindow* root_window,
+                         WorkspaceManager* workspace_manager);
   virtual ~WorkspaceLayoutManager();
 
   // Returns the workspace manager for this container.

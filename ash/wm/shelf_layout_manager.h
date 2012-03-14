@@ -14,6 +14,10 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace views {
 class Widget;
 }
@@ -96,6 +100,8 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 
   views::Widget* launcher_;
   views::Widget* status_;
+
+  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

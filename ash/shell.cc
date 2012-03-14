@@ -42,7 +42,6 @@
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm/toplevel_layout_manager.h"
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/visibility_controller.h"
@@ -97,7 +96,7 @@ aura::Window* CreateContainer(int window_id,
 
 // Creates each of the special window containers that holds windows of various
 // types in the shell UI.
-void CreateSpecialContainers(aura::Window* root_window) {
+void CreateSpecialContainers(aura::RootWindow* root_window) {
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
   // on those containers.  These are direct children of the root window; all of
@@ -172,7 +171,8 @@ void CreateSpecialContainers(aura::Window* root_window) {
       internal::kShellWindowId_LockScreenContainer,
       "LockScreenContainer",
       lock_screen_containers);
-  lock_container->SetLayoutManager(new internal::BaseLayoutManager);
+  lock_container->SetLayoutManager(
+      new internal::BaseLayoutManager(root_window));
   lock_container->set_stops_event_propagation(true);
 
   aura::Window* lock_modal_container = CreateContainer(
@@ -412,7 +412,8 @@ aura::RootWindow* Shell::GetRootWindow() {
 }
 
 void Shell::Init() {
-  root_filter_ = new internal::RootWindowEventFilter;
+  aura::RootWindow* root_window = GetRootWindow();
+  root_filter_ = new internal::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
@@ -438,7 +439,6 @@ void Shell::Init() {
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);
   if (initially_hide_cursor_)
     root_window->ShowCursor(false);

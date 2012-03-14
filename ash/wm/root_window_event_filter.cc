@@ -4,7 +4,6 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
-#include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_util.h"
@@ -30,8 +29,9 @@ aura::Window* FindFocusableWindowFor(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowEventFilter, public:
 
-RootWindowEventFilter::RootWindowEventFilter()
-    : cursor_lock_count_(0),
+RootWindowEventFilter::RootWindowEventFilter(aura::RootWindow* root_window)
+    : root_window_(root_window),
+      cursor_lock_count_(0),
       did_cursor_change_(false),
       cursor_to_set_on_unlock_(0),
       update_cursor_visibility_(true) {
@@ -78,7 +78,7 @@ void RootWindowEventFilter::UnlockCursor() {
   if (cursor_lock_count_ == 0) {
     if (did_cursor_change_) {
       did_cursor_change_ = false;
-      Shell::GetRootWindow()->SetCursor(cursor_to_set_on_unlock_);
+      root_window_->SetCursor(cursor_to_set_on_unlock_);
     }
     did_cursor_change_ = false;
     cursor_to_set_on_unlock_ = 0;
@@ -165,7 +165,7 @@ void RootWindowEventFilter::UpdateCursor(aura::Window* target,
     cursor = CursorForWindowComponent(window_component);
   }
   if (cursor_lock_count_ == 0) {
-    Shell::GetRootWindow()->SetCursor(cursor);
+    root_window_->SetCursor(cursor);
   } else {
     cursor_to_set_on_unlock_ = cursor;
     did_cursor_change_ = true;
@@ -176,7 +176,7 @@ void RootWindowEventFilter::SetCursorVisible(aura::Window* target,
                                              aura::LocatedEvent* event,
                                              bool show) {
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
-    Shell::GetRootWindow()->ShowCursor(show);
+    root_window_->ShowCursor(show);
 }
 
 bool RootWindowEventFilter::FilterKeyEvent(aura::Window* target,

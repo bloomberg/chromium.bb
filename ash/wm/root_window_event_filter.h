@@ -12,6 +12,10 @@
 #include "ui/aura/event_filter.h"
 #include "ash/ash_export.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ash {
 namespace internal {
 
@@ -25,7 +29,7 @@ namespace internal {
 // event.
 class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
  public:
-  RootWindowEventFilter();
+  RootWindowEventFilter(aura::RootWindow* root_window);
   virtual ~RootWindowEventFilter();
 
   // Returns the cursor for the specified component.
@@ -74,6 +78,8 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   bool FilterMouseEvent(aura::Window* target, aura::MouseEvent* event);
   ui::TouchStatus FilterTouchEvent(aura::Window* target,
                                    aura::TouchEvent* event);
+
+  aura::RootWindow* root_window_;
 
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;

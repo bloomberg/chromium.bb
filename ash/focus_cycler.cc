@@ -66,7 +66,7 @@ void FocusCycler::RotateFocus(Direction direction) {
           Shell::GetInstance()->delegate()->GetCycleWindowList(
               ShellDelegate::SOURCE_LAUNCHER);
       if (!windows.empty()) {
-        aura::client::GetActivationClient(Shell::GetRootWindow())->
+        aura::client::GetActivationClient(windows[0]->GetRootWindow())->
             ActivateWindow(windows[0]);
         break;
       }

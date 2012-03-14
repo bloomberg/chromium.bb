@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace_controller.h"
 
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -32,17 +31,19 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       workspace_manager_(new WorkspaceManager(viewport)),
       layout_manager_(NULL),
       event_filter_(NULL) {
+  aura::RootWindow* root_window = viewport->GetRootWindow();
   event_filter_ = new WorkspaceEventFilter(viewport);
   viewport->SetEventFilter(event_filter_);
-  layout_manager_ = new WorkspaceLayoutManager(workspace_manager_.get());
+  layout_manager_ = new WorkspaceLayoutManager(
+      root_window, workspace_manager_.get());
   viewport->SetLayoutManager(layout_manager_);
-  Shell::GetRootWindow()->AddObserver(this);
+  root_window->AddObserver(this);
   workspace_manager_->set_grid_size(kGridSize);
   event_filter_->set_grid_size(kGridSize);
 }
 
 WorkspaceController::~WorkspaceController() {
-  Shell::GetRootWindow()->RemoveObserver(this);
+  viewport_->GetRootWindow()->RemoveObserver(this);
   // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
   if (viewport_->layout_manager() == layout_manager_)
     viewport_->SetLayoutManager(NULL);

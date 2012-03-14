@@ -19,15 +19,16 @@ namespace internal {
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, public:
 
-BaseLayoutManager::BaseLayoutManager() {
+BaseLayoutManager::BaseLayoutManager(aura::RootWindow* root_window)
+    : root_window_(root_window) {
   Shell::GetInstance()->AddShellObserver(this);
-  Shell::GetRootWindow()->AddRootWindowObserver(this);
+  root_window_->AddRootWindowObserver(this);
 }
 
 BaseLayoutManager::~BaseLayoutManager() {
   for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
     (*i)->RemoveObserver(this);
-  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
+  root_window_->RemoveRootWindowObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
