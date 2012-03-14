@@ -42,6 +42,7 @@ namespace ash {
 class AcceleratorController;
 class AudioController;
 class BrightnessController;
+class DateFormatObserver;
 class Launcher;
 class NestedDispatcherController;
 class NetworkController;
@@ -197,6 +198,9 @@ class ASH_EXPORT Shell {
   BrightnessController* brightness_controller() const {
     return brightness_controller_;
   }
+  DateFormatObserver* date_format_observer() const {
+    return date_format_observer_;
+  }
   NetworkController* network_controller() const {
     return network_controller_;
   }
@@ -286,6 +290,7 @@ class ASH_EXPORT Shell {
   // These controllers are not owned by the shell.
   AudioController* audio_controller_;
   BrightnessController* brightness_controller_;
+  DateFormatObserver* date_format_observer_;
   NetworkController* network_controller_;
   PowerStatusController* power_status_controller_;
   UpdateController* update_controller_;

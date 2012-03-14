@@ -248,6 +248,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return IDR_AURA_UBER_TRAY_UPDATE;
   }
 
+  virtual base::HourClockType GetHourClockType() const OVERRIDE {
+    return base::k24HourClock;
+  }
+
   virtual void ShowSettings() OVERRIDE {
   }
 
@@ -321,6 +325,7 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       audio_controller_(NULL),
       brightness_controller_(NULL),
+      date_format_observer_(NULL),
       network_controller_(NULL),
       power_status_controller_(NULL),
       update_controller_(NULL),
@@ -479,6 +484,7 @@ void Shell::Init() {
     internal::TrayUser* tray_user = new internal::TrayUser;
     audio_controller_ = tray_volume;
     brightness_controller_ = tray_brightness;
+    date_format_observer_ = tray_power_date;
     network_controller_ = tray_network;
     power_status_controller_ = tray_power_date;
     update_controller_ = tray_user;

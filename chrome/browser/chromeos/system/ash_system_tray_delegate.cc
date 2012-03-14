@@ -8,6 +8,7 @@
 #include "ash/system/audio/audio_controller.h"
 #include "ash/system/brightness/brightness_controller.h"
 #include "ash/system/network/network_controller.h"
+#include "ash/system/power/date_format_observer.h"
 #include "ash/system/power/power_status_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -21,9 +22,12 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -61,6 +65,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    content::NotificationService::AllSources());
+
+    InitializePrefChangeRegistrar();
   }
 
   virtual ~SystemTrayDelegate() {
@@ -101,6 +107,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual int GetSystemUpdateIconResource() const OVERRIDE {
     return UpgradeDetector::GetInstance()->GetIconResourceID(
         UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON);
+  }
+
+  virtual base::HourClockType GetHourClockType() const OVERRIDE {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    return !profile || profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock) ?
+        base::k24HourClock : base::k12HourClock;
   }
 
   virtual void ShowSettings() OVERRIDE {
@@ -151,6 +163,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
  private:
+  void InitializePrefChangeRegistrar() {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    pref_registrar_.reset(new PrefChangeRegistrar);
+    pref_registrar_->Init(profile->GetPrefs());
+    pref_registrar_->Add(prefs::kUse24HourClock, this);
+  }
+
   void NotifyRefreshNetwork() {
     ash::NetworkController* controller =
         ash::Shell::GetInstance()->network_controller();
@@ -243,6 +262,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
+        // Profile may have changed after login. So re-initialize the
+        // pref-change registrar.
+        InitializePrefChangeRegistrar();
         tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
         break;
       }
@@ -253,6 +275,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
           controller->OnUpdateRecommended();
         break;
       }
+      case chrome::NOTIFICATION_PREF_CHANGED: {
+        DCHECK_EQ(*content::Details<std::string>(details).ptr(),
+                  prefs::kUse24HourClock);
+        ash::DateFormatObserver* observer =
+            ash::Shell::GetInstance()->date_format_observer();
+        if (observer)
+          observer->OnDateFormatChanged();
+        break;
+      }
       default:
         NOTREACHED();
     }
@@ -261,6 +292,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   ash::SystemTray* tray_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
   content::NotificationRegistrar registrar_;
+  scoped_ptr<PrefChangeRegistrar> pref_registrar_;
   std::string cellular_device_path_;
   std::string active_network_path_;
 

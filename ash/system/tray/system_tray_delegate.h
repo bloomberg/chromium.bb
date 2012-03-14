@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/system/user/login_status.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -35,6 +36,9 @@ class SystemTrayDelegate {
 
   // Returns the resource id for the icon to show for the update notification.
   virtual int GetSystemUpdateIconResource() const = 0;
+
+  // Returns the desired hour clock type.
+  virtual base::HourClockType GetHourClockType() const = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;

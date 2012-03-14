@@ -119,6 +119,7 @@
         'system/network/network_controller.h',
         'system/network/tray_network.cc',
         'system/network/tray_network.h',
+        'system/power/date_format_observer.h',
         'system/power/power_status_controller.h',
         'system/power/power_supply_status.cc',
         'system/power/power_supply_status.h',

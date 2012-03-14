@@ -79,8 +79,9 @@ class DateView : public views::View {
     DATE
   };
 
-  DateView(base::HourClockType hour_type, TimeType type)
-      : hour_type_(hour_type),
+  explicit DateView(TimeType type)
+      : hour_type_(ash::Shell::GetInstance()->tray_delegate()->
+            GetHourClockType()),
         type_(type),
         actionable_(false) {
     SetLayoutManager(new views::FillLayout());
@@ -93,6 +94,11 @@ class DateView : public views::View {
     timer_.Stop();
   }
 
+  void UpdateTimeFormat() {
+    hour_type_ = ash::Shell::GetInstance()->tray_delegate()->GetHourClockType();
+    UpdateText();
+  }
+
   views::Label* label() const { return label_; }
 
   void set_actionable(bool actionable) { actionable_ = actionable; }
@@ -100,11 +106,11 @@ class DateView : public views::View {
  private:
   void UpdateText() {
     base::Time now = base::Time::Now();
-    if (type_ == TIME) {
+    if (type_ == DATE) {
+      label_->SetText(FormatNicely(now));
+    } else {
       label_->SetText(base::TimeFormatTimeOfDayWithHourClockType(
           now, hour_type_, base::kDropAmPm));
-    } else {
-      label_->SetText(FormatNicely(now));
     }
 
     label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
@@ -126,6 +132,7 @@ class DateView : public views::View {
     // called just a teeny bit early, then it will skip the next minute.
     seconds_left += kTimerSlopSeconds;
 
+    timer_.Stop();
     timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
         &DateView::UpdateText);
   }
@@ -272,8 +279,7 @@ TrayPowerDate::~TrayPowerDate() {
 }
 
 views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
-  date_tray_.reset(new tray::DateView(base::k24HourClock,
-                                      tray::DateView::TIME));
+  date_tray_.reset(new tray::DateView(tray::DateView::TIME));
   date_tray_->label()->SetFont(
       date_tray_->label()->font().DeriveFont(-1, gfx::Font::BOLD));
   date_tray_->label()->SetAutoColorReadabilityEnabled(false);
@@ -291,8 +297,7 @@ views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
-  date_.reset(new tray::DateView(base::k24HourClock,
-                                 tray::DateView::DATE));
+  date_.reset(new tray::DateView(tray::DateView::DATE));
   if (status != user::LOGGED_IN_NONE)
     date_->set_actionable(true);
 
@@ -331,6 +336,10 @@ void TrayPowerDate::OnPowerStatusChanged(const PowerSupplyStatus& status) {
   power_tray_->UpdatePowerStatus(status);
   if (power_.get())
     power_->UpdatePowerStatus(status);
+}
+
+void TrayPowerDate::OnDateFormatChanged() {
+  date_tray_->UpdateTimeFormat();
 }
 
 }  // namespace internal
