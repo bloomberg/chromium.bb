@@ -127,6 +127,32 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
     }
   }
 
+  // Initialize all intents.
+  DictionaryValue* intents = NULL;
+  if (manifest->GetDictionary(keys::kIntents, &intents)) {
+    DictionaryValue::key_iterator it = intents->begin_keys();
+    for ( ; it != intents->end_keys(); ++it) {
+      ListValue* actions = NULL;
+      DictionaryValue* action = NULL;
+
+      // Actions have either a dict or a list of dicts - handle both cases.
+      if (intents->GetListWithoutPathExpansion(*it, &actions)) {
+        for (size_t i = 0; i < actions->GetSize(); ++i) {
+          action = NULL;
+          if (actions->GetDictionary(i, &action)) {
+            if (!LocalizeManifestValue(keys::kIntentTitle, messages,
+                                       action, error))
+              return false;
+          }
+        }
+      } else if (intents->GetDictionaryWithoutPathExpansion(*it, &action)) {
+        if (!LocalizeManifestValue(keys::kIntentTitle, messages,
+                                   action, error))
+          return false;
+      }
+    }
+  }
+
   // Initialize app.launch.local_path.
   if (!LocalizeManifestValue(keys::kLaunchLocalPath, messages, manifest, error))
     return false;
