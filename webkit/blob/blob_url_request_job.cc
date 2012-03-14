@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -20,7 +23,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/blob/local_file_reader.h"
 
 namespace webkit_blob {
 
@@ -69,7 +71,9 @@ BlobURLRequestJob::BlobURLRequestJob(
 }
 
 BlobURLRequestJob::~BlobURLRequestJob() {
-  STLDeleteValues(&index_to_reader_);
+  // FileStream's destructor won't close it for us because we passed in our own
+  // file handle.
+  CloseFileStream();
 }
 
 void BlobURLRequestJob::Start() {
@@ -80,7 +84,7 @@ void BlobURLRequestJob::Start() {
 }
 
 void BlobURLRequestJob::Kill() {
-  DeleteCurrentFileReader();
+  CloseFileStream();
 
   net::URLRequestJob::Kill();
   weak_factory_.InvalidateWeakPtrs();
@@ -181,8 +185,9 @@ void BlobURLRequestJob::CountSize() {
     const BlobData::Item& item = blob_data_->items().at(i);
     if (item.type == BlobData::TYPE_FILE) {
       ++pending_get_file_info_count_;
-      GetFileReader(i)->GetLength(
-          base::Bind(&BlobURLRequestJob::DidGetFileItemLength,
+      base::FileUtilProxy::GetFileInfo(
+          file_thread_proxy_, item.file_path,
+          base::Bind(&BlobURLRequestJob::DidGetFileItemInfo,
                      weak_factory_.GetWeakPtr(), i));
       continue;
     }
@@ -222,28 +227,41 @@ void BlobURLRequestJob::DidCountSize(int error) {
   NotifySuccess();
 }
 
-void BlobURLRequestJob::DidGetFileItemLength(size_t index, int result) {
+void BlobURLRequestJob::DidGetFileItemInfo(
+    size_t index,
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info) {
   // Do nothing if we have encountered an error.
   if (error_)
     return;
 
-  if (result == net::ERR_UPLOAD_FILE_CHANGED) {
+  if (rv == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
     return;
-  } else if (result < 0) {
-    NotifyFailure(result);
+  } else if (rv != base::PLATFORM_FILE_OK) {
+    NotifyFailure(net::ERR_FAILED);
     return;
   }
 
+  // Validate the expected modification time.
+  // Note that the expected modification time from WebKit is based on
+  // time_t precision. So we have to convert both to time_t to compare.
   DCHECK_LT(index, blob_data_->items().size());
   const BlobData::Item& item = blob_data_->items().at(index);
   DCHECK(item.type == BlobData::TYPE_FILE);
+
+  if (!item.expected_modification_time.is_null() &&
+      item.expected_modification_time.ToTimeT() !=
+          file_info.last_modified.ToTimeT()) {
+    NotifyFailure(net::ERR_FILE_NOT_FOUND);
+    return;
+  }
 
   // If item length is -1, we need to use the file size being resolved
   // in the real time.
   int64 item_length = static_cast<int64>(item.length);
   if (item_length == -1)
-    item_length = result;
+    item_length = file_info.size;
 
   // Cache the size and add it to the total size.
   DCHECK_LT(index, item_length_list_.size());
@@ -265,20 +283,6 @@ void BlobURLRequestJob::Seek(int64 offset) {
 
   // Set the offset that need to jump to for the first item in the range.
   current_item_offset_ = offset;
-
-  if (offset == 0)
-    return;
-
-  // Adjust the offset of the first stream if it is of file type.
-  const BlobData::Item& item = blob_data_->items().at(current_item_index_);
-  if (item.type == BlobData::TYPE_FILE) {
-    DeleteCurrentFileReader();
-    index_to_reader_[current_item_index_] = new LocalFileReader(
-        file_thread_proxy_,
-        item.file_path,
-        item.offset + offset,
-        item.expected_modification_time);
-  }
 }
 
 bool BlobURLRequestJob::ReadItem() {
@@ -308,7 +312,7 @@ bool BlobURLRequestJob::ReadItem() {
     case BlobData::TYPE_DATA:
       return ReadBytesItem(item, bytes_to_read);
     case BlobData::TYPE_FILE:
-      return ReadFileItem(GetFileReader(current_item_index_), bytes_to_read);
+      return ReadFileItem(item, bytes_to_read);
     default:
       DCHECK(false);
       return false;
@@ -316,8 +320,8 @@ bool BlobURLRequestJob::ReadItem() {
 }
 
 void BlobURLRequestJob::AdvanceItem() {
-  // Close the file if the current item is a file.
-  DeleteCurrentFileReader();
+  // Close the stream if the current item is a file.
+  CloseFileStream();
 
   // Advance to the next item.
   current_item_index_++;
@@ -353,24 +357,79 @@ bool BlobURLRequestJob::ReadBytesItem(const BlobData::Item& item,
   return true;
 }
 
-bool BlobURLRequestJob::ReadFileItem(LocalFileReader* reader,
+bool BlobURLRequestJob::ReadFileItem(const BlobData::Item& item,
                                      int bytes_to_read) {
-  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
-  DCHECK(reader);
-  const int result = reader->Read(
-      read_buf_, bytes_to_read,
-      base::Bind(&BlobURLRequestJob::DidReadFile,
-                 base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING) {
-    DCHECK(result != net::OK);
-    NotifyFailure(result);
-    return false;
-  }
+  // If the stream already exists, keep reading from it.
+  if (stream_ != NULL)
+    return ReadFileStream(bytes_to_read);
+
+  base::FileUtilProxy::CreateOrOpen(
+      file_thread_proxy_, item.file_path, kFileOpenFlags,
+      base::Bind(&BlobURLRequestJob::DidOpenFile,
+                 weak_factory_.GetWeakPtr(), bytes_to_read));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }
 
-void BlobURLRequestJob::DidReadFile(int result) {
+void BlobURLRequestJob::DidOpenFile(int bytes_to_read,
+                                    base::PlatformFileError rv,
+                                    base::PassPlatformFile file,
+                                    bool created) {
+  if (rv != base::PLATFORM_FILE_OK) {
+    NotifyFailure(net::ERR_FAILED);
+    return;
+  }
+
+  DCHECK(!stream_.get());
+  stream_.reset(new net::FileStream(file.ReleaseValue(), kFileOpenFlags, NULL));
+
+  const BlobData::Item& item = blob_data_->items().at(current_item_index_);
+  {
+    // stream_.Seek() blocks the IO thread, see http://crbug.com/75548.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    int64 offset = current_item_offset_ + static_cast<int64>(item.offset);
+    if (offset > 0 && offset != stream_->Seek(net::FROM_BEGIN, offset)) {
+      NotifyFailure(net::ERR_FAILED);
+      return;
+    }
+  }
+
+  ReadFileStream(bytes_to_read);
+}
+
+bool BlobURLRequestJob::ReadFileStream(int bytes_to_read) {
+  DCHECK(stream_.get());
+  DCHECK(stream_->IsOpen());
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
+
+  // Start the asynchronous reading.
+  int rv = stream_->Read(read_buf_,
+                         bytes_to_read,
+                         base::Bind(&BlobURLRequestJob::DidReadFileStream,
+                                    base::Unretained(this)));
+
+  // If I/O pending error is returned, we just need to wait.
+  if (rv == net::ERR_IO_PENDING) {
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+    return false;
+  }
+
+  // For all other errors (and for unexpected EOF case), bail out.
+  if (rv <= 0) {
+    NotifyFailure(net::ERR_FAILED);
+    return false;
+  }
+
+  // Otherwise, data is immediately available.
+  if (GetStatus().is_io_pending())
+    DidReadFileStream(rv);
+  else
+    AdvanceBytesRead(rv);
+
+  return true;
+}
+
+void BlobURLRequestJob::DidReadFileStream(int result) {
   if (result <= 0) {
     NotifyFailure(net::ERR_FAILED);
     return;
@@ -392,11 +451,12 @@ void BlobURLRequestJob::DidReadFile(int result) {
     NotifyReadComplete(bytes_read);
 }
 
-void BlobURLRequestJob::DeleteCurrentFileReader() {
-  IndexToReaderMap::iterator found = index_to_reader_.find(current_item_index_);
-  if (found != index_to_reader_.end() && found->second) {
-    delete found->second;
-    index_to_reader_.erase(found);
+void BlobURLRequestJob::CloseFileStream() {
+  if (stream_ != NULL) {
+    // stream_.Close() blocks the IO thread, see http://crbug.com/75548.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    stream_->CloseSync();
+    stream_.reset(NULL);
   }
 }
 
@@ -516,22 +576,6 @@ void BlobURLRequestJob::HeadersCompleted(int status_code,
   headers_set_ = true;
 
   NotifyHeadersComplete();
-}
-
-LocalFileReader* BlobURLRequestJob::GetFileReader(size_t index) {
-  DCHECK_LT(index, blob_data_->items().size());
-  const BlobData::Item& item = blob_data_->items().at(index);
-  if (item.type != BlobData::TYPE_FILE)
-    return NULL;
-  if (index_to_reader_.find(index) == index_to_reader_.end()) {
-    index_to_reader_[index] = new LocalFileReader(
-        file_thread_proxy_,
-        item.file_path,
-        item.offset,
-        item.expected_modification_time);
-  }
-  DCHECK(index_to_reader_[index]);
-  return index_to_reader_[index];
 }
 
 }  // namespace webkit_blob
