@@ -1797,13 +1797,13 @@
    fun:ui::ResourceBundle::GetImageNamed
    fun:ui::ResourceBundle::GetBitmapNamed
    ...
-   fun:chromeos::*_Test::TestBody
+   fun:chromeos::UserManagerImplWrapper::*
 }
 {
    bug_116996_c
    Heapcheck:Leak
-   fun:std::string::_Rep::_S_create
-   fun:std::string::copy
+   fun:std::*string::_Rep::_S_create
+   fun:std::*string::copy
    fun:std::basic_string::basic_string
    fun:chromeos::*_Test::TestBody
 }
@@ -1873,14 +1873,6 @@
    fun:net::HostResolverImpl::CacheResult
    fun:net::HostResolverImpl::Job::CompleteRequests
    fun:net::HostResolverImpl::Job::OnProcTaskComplete
-}
-{
-   bug_117995
-   Heapcheck:Leak
-   fun:std::string::_Rep::_S_create
-   fun:std::string::copy
-   fun:std::basic_string::basic_string
-   fun:chromeos::UserManagerTest_*_Test::TestBody
 }
 {
    bug_118203
