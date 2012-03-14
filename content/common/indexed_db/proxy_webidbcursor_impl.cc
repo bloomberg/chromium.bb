@@ -67,7 +67,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
 
-  if (key.type() == WebIDBKey::NullType) {
+  if (key.type() == WebIDBKey::InvalidType) {
     // No key, so this would qualify for a prefetch.
     ++continue_count_;
 
