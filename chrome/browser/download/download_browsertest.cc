@@ -1551,8 +1551,15 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
   EXPECT_TRUE(file_util::PathExists(downloaded_file));
 }
 
+// crbug.com/118159
+#if defined(OS_LINUX)
+#define MAYBE_AutoOpen DISABLED_AutoOpen
+#else
+#define MAYBE_AutoOpen AutoOpen
+#endif
+
 // Test to make sure auto-open works.
-IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
   ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
