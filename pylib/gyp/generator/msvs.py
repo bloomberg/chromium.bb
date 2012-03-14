@@ -2499,7 +2499,8 @@ def _ConvertMSVSCharacterSet(char_set):
   if char_set.isdigit():
     char_set = {
         '0': 'MultiByte',
-        '1': 'Unicode'
+        '1': 'Unicode',
+        '2': 'MultiByte',
     }[char_set]
   return char_set
 
