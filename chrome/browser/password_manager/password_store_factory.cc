@@ -20,7 +20,7 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/mock_keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
 #elif defined(OS_POSIX)
 #include "base/nix/xdg_util.h"
@@ -31,7 +31,8 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    defined(OS_POSIX)
 namespace {
 
 const LocalProfileId kInvalidLocalProfileId =
@@ -69,7 +70,8 @@ PasswordStoreFactory::PasswordStoreFactory()
 
 PasswordStoreFactory::~PasswordStoreFactory() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    defined(OS_POSIX)
 LocalProfileId PasswordStoreFactory::GetLocalProfileId(
     PrefService* prefs) const {
   LocalProfileId id = prefs->GetInteger(prefs::kLocalProfileId);
@@ -89,7 +91,7 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
   }
   return id;
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+#endif
 
 RefcountedProfileKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     Profile* profile) const {
@@ -112,12 +114,11 @@ RefcountedProfileKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   } else {
     ps = new PasswordStoreMac(new MacKeychain(), login_db);
   }
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
   ps = new PasswordStoreDefault(
-      login_db, profile,
-      profile->GetWebDataService(Profile::IMPLICIT_ACCESS));
+      login_db, profile, profile->GetWebDataService(Profile::IMPLICIT_ACCESS));
 #elif defined(OS_POSIX)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -189,7 +190,8 @@ RefcountedProfileKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 }
 
 void PasswordStoreFactory::RegisterUserPrefs(PrefService* prefs) {
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID) \
+  && defined(OS_POSIX)
   prefs->RegisterIntegerPref(prefs::kLocalProfileId,
                              kInvalidLocalProfileId,
                              PrefService::UNSYNCABLE_PREF);
