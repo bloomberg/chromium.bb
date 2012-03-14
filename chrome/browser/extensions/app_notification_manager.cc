@@ -336,28 +336,44 @@ SyncError AppNotificationManager::ProcessSyncChanges(
       continue;
     }
 
-    if (change_type == SyncChange::ACTION_ADD && !existing_notif) {
-      Add(new_notif.release());
-    } else if (change_type == SyncChange::ACTION_DELETE && existing_notif) {
-      Remove(new_notif->extension_id(), new_notif->guid());
-    } else if (change_type == SyncChange::ACTION_DELETE && !existing_notif) {
-      // This should never happen. But we are seeting this sometimes, and it
-      // stops all of sync. See bug http://crbug.com/108088
-      // So until we figure out the root cause, just log an error and ignore.
-      NOTREACHED() << "ERROR: Got delete change for non-existing item.";
-      LOG(ERROR) << "ERROR: Got delete change for non-existing item.";
-      continue;
-    } else {
-      // Something really unexpected happened. Either we received an
-      // ACTION_INVALID, or Sync is in a crazy state:
-      // - Trying to UPDATE: notifications are immutable.
-      // . Trying to DELETE a non-existent item.
-      // - Trying to ADD an item that already exists.
-      NOTREACHED() << "Unexpected sync change state.";
-      error = SyncError(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
-          SyncChange::ChangeTypeToString(change_type),
-          syncable::APP_NOTIFICATIONS);
-      continue;
+    switch (change_type) {
+      case SyncChange::ACTION_ADD:
+        if (!existing_notif) {
+          Add(new_notif.release());
+        } else {
+          DLOG(ERROR) << "Got ADD change for an existing item.\n"
+                      << "Existing item: " << existing_notif->ToString()
+                      << "\nItem in ADD change: " << new_notif->ToString();
+        }
+        break;
+      case SyncChange::ACTION_DELETE:
+        if (existing_notif) {
+          Remove(new_notif->extension_id(), new_notif->guid());
+        } else {
+          // This should never happen. But we are seeting this sometimes, and
+          // it stops all of sync. See bug http://crbug.com/108088
+          // So until we figure out the root cause, log an error and ignore.
+          DLOG(ERROR) << "Got DELETE change for non-existing item.\n"
+                      << "Item in DELETE change: " << new_notif->ToString();
+        }
+        break;
+      case SyncChange::ACTION_UPDATE:
+        // Although app notifications are immutable from the model perspective,
+        // sync can send UPDATE changes due to encryption / meta-data changes.
+        // So ignore UPDATE changes when the exitsing and new notification
+        // objects are the same. Log an error otherwise.
+        if (!existing_notif) {
+          DLOG(ERROR) << "Got UPDATE change for non-existing item."
+                      << "Item in UPDATE change: " << new_notif->ToString();
+        } else if (!existing_notif->Equals(*new_notif)) {
+          DLOG(ERROR) << "Got invalid UPDATE change:"
+                      << "New and existing notifications should be the same.\n"
+                      << "Existing item: " << existing_notif->ToString() << "\n"
+                      << "Item in UPDATE change: " << new_notif->ToString();
+        }
+        break;
+      default:
+        break;
     }
   }
 

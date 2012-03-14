@@ -505,7 +505,80 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
   EXPECT_EQ(2, processor()->change_list_size());
 }
 
-// Process over 15 changes changes when model is not empty.
+// Process sync changes should ignore a bad ADD.
+TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadAdd) {
+  AppNotification* n1 = CreateNotification(1);
+  model()->Add(n1);
+  AppNotification* n2 = CreateNotification(2);
+  model()->Add(n2);
+  model()->MergeDataAndStartSyncing(
+      syncable::APP_NOTIFICATIONS,
+      SyncDataList(),
+      processor());
+
+  // Some adds and some deletes.
+  SyncChangeList changes;
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_ADD, CreateNotification(1)));
+
+  SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_FALSE(error.IsSet());
+
+  EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+  EXPECT_EQ(2, processor()->change_list_size());
+}
+
+// Process sync changes should ignore a bad DELETE.
+TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadDelete) {
+  AppNotification* n1 = CreateNotification(1);
+  model()->Add(n1);
+  AppNotification* n2 = CreateNotification(2);
+  model()->Add(n2);
+  model()->MergeDataAndStartSyncing(
+      syncable::APP_NOTIFICATIONS,
+      SyncDataList(),
+      processor());
+
+  // Some adds and some deletes.
+  SyncChangeList changes;
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_DELETE, CreateNotification(3)));
+
+  SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_FALSE(error.IsSet());
+
+  EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+  EXPECT_EQ(2, processor()->change_list_size());
+}
+
+// Process sync changes should ignore bad UPDATEs.
+TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadUpdates) {
+  AppNotification* n1 = CreateNotification(1);
+  model()->Add(n1);
+  AppNotification* n2 = CreateNotification(2);
+  model()->Add(n2);
+  model()->MergeDataAndStartSyncing(
+      syncable::APP_NOTIFICATIONS,
+      SyncDataList(),
+      processor());
+
+  // Some adds and some deletes.
+  SyncChangeList changes;
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_UPDATE, CreateNotification(3)));
+  AppNotification* n2_changed = n2->Copy();
+  n2_changed->set_link_text(n2_changed->link_text() + "-changed");
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_UPDATE, n2_changed));
+
+  SyncError error = model()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_FALSE(error.IsSet());
+
+  EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+  EXPECT_EQ(2, processor()->change_list_size());
+}
+
+// Process over 15 changes when model is not empty.
 TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesEmptyModelWithMax) {
   const std::string& ext_id = "e1";
   model()->MergeDataAndStartSyncing(

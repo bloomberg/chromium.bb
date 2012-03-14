@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/app_notification.h"
 
+#include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/guid.h"
@@ -47,7 +48,7 @@ AppNotification* AppNotification::Copy() {
   return copy;
 }
 
-void AppNotification::ToDictionaryValue(DictionaryValue* result) {
+void AppNotification::ToDictionaryValue(DictionaryValue* result) const {
   CHECK(result);
   result->SetBoolean(kIsLocalKey, is_local_);
   if (!creation_time_.is_null())
@@ -130,6 +131,14 @@ bool AppNotification::Equals(const AppNotification& other) const {
           body_ == other.body_ &&
           link_url_ == other.link_url_ &&
           link_text_ == other.link_text_);
+}
+
+std::string AppNotification::ToString() const {
+  DictionaryValue value;
+  ToDictionaryValue(&value);
+  std::string result;
+  base::JSONWriter::Write(&value, true, &result);
+  return result;
 }
 
 AppNotificationList* CopyAppNotificationList(

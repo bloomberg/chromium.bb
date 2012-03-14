@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,11 +51,12 @@ class AppNotification {
   const std::string& link_text() const { return link_text_; }
 
   // Useful methods for serialization.
-  void ToDictionaryValue(DictionaryValue* result);
+  void ToDictionaryValue(DictionaryValue* result) const;
   static AppNotification* FromDictionaryValue(const DictionaryValue& value);
 
   // Return whether |other| is equal to this object. Useful for tests.
   bool Equals(const AppNotification& other) const;
+  std::string ToString() const;
 
  private:
   // If you add to the list of data members, make sure to add appropriate checks
