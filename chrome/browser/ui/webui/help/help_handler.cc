@@ -112,7 +112,7 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   static L10nResources resources[] = {
     { "helpTitle", IDS_HELP_TITLE },
-    { "aboutTitle", IDS_ABOUT_CHROME_TITLE },
+    { "aboutTitle", IDS_ABOUT_TAB_TITLE },
     { "aboutProductTitle", IDS_PRODUCT_NAME },
     { "aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION },
     { "relaunch", IDS_RELAUNCH_BUTTON },
