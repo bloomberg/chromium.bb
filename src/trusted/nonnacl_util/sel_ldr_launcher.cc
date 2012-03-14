@@ -69,7 +69,7 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
   header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  if (0 != desc->LowLevelRecvMsg(&header, 0, NULL)) {
+  if (0 != desc->RecvMsg(&header, 0, NULL)) {
     return NULL;
   }
   // Check that there was exactly one descriptor passed.

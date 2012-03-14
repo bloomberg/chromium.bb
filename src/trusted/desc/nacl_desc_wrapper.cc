@@ -576,7 +576,7 @@ int DescWrapper::Broadcast() {
       Broadcast(desc_);
 }
 
-ssize_t DescWrapper::LowLevelSendMsg(const MsgHeader* dgram, int flags) {
+ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
   ssize_t ret = -NACL_ABI_ENOMEM;
   nacl_abi_size_t diov_length = dgram->iov_length;
@@ -624,9 +624,8 @@ ssize_t DescWrapper::LowLevelSendMsg(const MsgHeader* dgram, int flags) {
   return ret;
 }
 
-ssize_t DescWrapper::LowLevelRecvMsg(
-    MsgHeader* dgram, int flags,
-    struct NaClDescQuotaInterface *quota_interface) {
+ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
+                             struct NaClDescQuotaInterface *quota_interface) {
   struct NaClImcTypedMsgHdr header;
   ssize_t ret = -NACL_ABI_ENOMEM;
   nacl_abi_size_t diov_length = dgram->iov_length;
