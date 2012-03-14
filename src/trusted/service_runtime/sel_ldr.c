@@ -841,7 +841,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   hdr.ndescv = &nap->service_address;
   hdr.ndesc_length = 1;
 
-  rv = NaClImcSendTypedMessage(channel, &hdr, 0);
+  rv = NACL_VTBL(NaClDesc, channel)->SendMsg(channel, &hdr, 0);
 
   NaClDescUnref(channel);
   channel = NULL;

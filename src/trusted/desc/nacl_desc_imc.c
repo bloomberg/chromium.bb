@@ -16,6 +16,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nrd_xfer.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -352,6 +353,8 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClDescSendMsgNotImplemented,
+  NaClDescRecvMsgNotImplemented,
   NaClDescLowLevelSendMsgNotImplemented,
   NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnectAddrNotImplemented,
@@ -385,6 +388,8 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClImcSendTypedMessage,  /* diff */
+  NaClImcRecvTypedMessage,  /* diff */
   NaClDescImcDescLowLevelSendMsg,  /* diff */
   NaClDescImcDescLowLevelRecvMsg,  /* diff */
   NaClDescConnectAddrNotImplemented,
@@ -418,6 +423,8 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClImcSendTypedMessage,  /* diff */
+  NaClImcRecvTypedMessage,  /* diff */
   NaClDescXferableDataDescLowLevelSendMsg,  /* diff */
   NaClDescXferableDataDescLowLevelRecvMsg,  /* diff */
   NaClDescConnectAddrNotImplemented,

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #if NACL_WINDOWS
@@ -211,7 +211,7 @@ static PyObject *PyDescImcSendmsg(PyObject *self, PyObject *args) {
        pydesc_array is a tuple, and therefore immutable, and each of
        its PyDesc members is also immutable, this is safe.  This saves
        us having to increment and decrement the refcounts across the
-       NaClImcSendTypedMessage() call below. */
+       SendMsg() call below. */
     struct NaClDesc *nacldesc = PyToNaClDesc(obj);
     if (nacldesc == NULL)
       return NULL;
@@ -225,7 +225,7 @@ static PyObject *PyDescImcSendmsg(PyObject *self, PyObject *args) {
   message.ndesc_length = (nacl_abi_size_t) desc_array_len;
   message.flags = 0;
   Py_BEGIN_ALLOW_THREADS;
-  sent = NaClImcSendTypedMessage(self_desc, &message, 0);
+  sent = NACL_VTBL(NaClDesc, self_desc)->SendMsg(self_desc, &message, 0);
   Py_END_ALLOW_THREADS;
   if (sent >= 0) {
     return Py_BuildValue("i", sent);
@@ -265,7 +265,8 @@ static PyObject *PyDescImcRecvmsg(PyObject *self, PyObject *args) {
   message.flags = 0;
   Py_BEGIN_ALLOW_THREADS;
   /* No quota management from these bindings. */
-  received = NaClImcRecvTypedMessage(self_desc, &message, 0, NULL);
+  received = NACL_VTBL(NaClDesc, self_desc)->RecvMsg(self_desc, &message, 0,
+                                                     NULL);
   Py_END_ALLOW_THREADS;
 
   if (received < 0) {

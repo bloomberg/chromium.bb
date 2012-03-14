@@ -132,6 +132,8 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClDescSendMsgNotImplemented,
+  NaClDescRecvMsgNotImplemented,
   NaClDescLowLevelSendMsgNotImplemented,
   NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnectAddrNotImplemented,

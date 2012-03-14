@@ -337,6 +337,24 @@ int NaClDescQuotaBroadcast(struct NaClDesc *vself) {
   return (*NACL_VTBL(NaClDesc, self->desc)->Broadcast)(self->desc);
 }
 
+ssize_t NaClDescQuotaSendMsg(struct NaClDesc                 *vself,
+                             const struct NaClImcTypedMsgHdr *nitmhp,
+                             int                             flags) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->SendMsg)(self->desc, nitmhp, flags);
+}
+
+ssize_t NaClDescQuotaRecvMsg(struct NaClDesc               *vself,
+                             struct NaClImcTypedMsgHdr     *nitmhp,
+                             int                           flags,
+                             struct NaClDescQuotaInterface *quota_interface) {
+  struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
+
+  return (*NACL_VTBL(NaClDesc, self->desc)->RecvMsg)(self->desc, nitmhp, flags,
+                                                     quota_interface);
+}
+
 ssize_t NaClDescQuotaLowLevelSendMsg(struct NaClDesc                *vself,
                                      struct NaClMessageHeader const *dgram,
                                      int                            flags) {
@@ -411,6 +429,8 @@ static struct NaClDescVtbl const kNaClDescQuotaVtbl = {
   NaClDescQuotaTimedWaitAbs,
   NaClDescQuotaSignal,
   NaClDescQuotaBroadcast,
+  NaClDescQuotaSendMsg,
+  NaClDescQuotaRecvMsg,
   NaClDescQuotaLowLevelSendMsg,
   NaClDescQuotaLowLevelRecvMsg,
   NaClDescQuotaConnectAddr,

@@ -255,6 +255,8 @@ static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClDescSendMsgNotImplemented,
+  NaClDescRecvMsgNotImplemented,
   NaClDescLowLevelSendMsgNotImplemented,
   NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnCapFdConnectAddr,

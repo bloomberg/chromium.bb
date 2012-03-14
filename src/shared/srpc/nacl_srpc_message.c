@@ -95,15 +95,15 @@ static const NaClSrpcMessageDesc   kInvalidDesc = NULL;
 static ssize_t ImcSendmsg(NaClSrpcMessageDesc desc,
                           const NaClSrpcMessageHeader* header,
                           int flags) {
-  return NaClImcSendTypedMessage(desc, header, flags);
+  return NACL_VTBL(NaClDesc, desc)->SendMsg(desc, header, flags);
 }
 
 static ssize_t ImcRecvmsg(NaClSrpcMessageDesc desc,
                           NaClSrpcMessageHeader* header,
                           int flags) {
   /* Quota management is not supported in trusted SRPC. */
-  return NaClImcRecvTypedMessage(desc, header, flags,
-                                 (struct NaClDescQuotaInterface *) NULL);
+  return NACL_VTBL(NaClDesc, desc)->RecvMsg(
+      desc, header, flags, (struct NaClDescQuotaInterface *) NULL);
 }
 
 #endif  /* __native_client__ */

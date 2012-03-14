@@ -34,6 +34,7 @@ struct nacl_abi_stat;
 struct nacl_abi_timespec;
 struct NaClDescEffector;
 struct NaClDescQuotaInterface;
+struct NaClImcTypedMsgHdr;
 struct NaClMessageHeader;
 
 /*
@@ -293,6 +294,14 @@ struct NaClDescVtbl {
 
   int (*Broadcast)(struct NaClDesc  *vself) NACL_WUR;
 
+  ssize_t (*SendMsg)(struct NaClDesc                 *vself,
+                     const struct NaClImcTypedMsgHdr *nitmhp,
+                     int                             flags) NACL_WUR;
+
+  ssize_t (*RecvMsg)(struct NaClDesc               *vself,
+                     struct NaClImcTypedMsgHdr     *nitmhp,
+                     int                           flags,
+                     struct NaClDescQuotaInterface *quota_interface) NACL_WUR;
 
   ssize_t (*LowLevelSendMsg)(struct NaClDesc                *vself,
                              struct NaClMessageHeader const *dgram,
@@ -452,6 +461,17 @@ int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
 int NaClDescSignalNotImplemented(struct NaClDesc  *vself);
 
 int NaClDescBroadcastNotImplemented(struct NaClDesc *vself);
+
+ssize_t NaClDescSendMsgNotImplemented(
+    struct NaClDesc                 *vself,
+    const struct NaClImcTypedMsgHdr *nitmhp,
+    int                             flags);
+
+ssize_t NaClDescRecvMsgNotImplemented(
+    struct NaClDesc               *vself,
+    struct NaClImcTypedMsgHdr     *nitmhp,
+    int                           flags,
+    struct NaClDescQuotaInterface *quota_interface);
 
 ssize_t NaClDescLowLevelSendMsgNotImplemented(
     struct NaClDesc                *vself,

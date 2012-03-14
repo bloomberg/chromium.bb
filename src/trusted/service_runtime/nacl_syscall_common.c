@@ -1792,8 +1792,7 @@ int32_t NaClCommonSysImc_Connect(struct NaClAppThread *natp,
 /*
  * This function converts addresses from user addresses to system
  * addresses, copying into kernel space as needed to avoid TOCvTOU
- * races, then invoke NaClImcSendTypedMessage from the nrd_xfer
- * library.
+ * races, then invokes the descriptor's SendMsg() method.
  */
 int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
                                  int                          d,
@@ -1930,7 +1929,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   }
   kern_msg_hdr.flags = kern_nanimh.flags;
 
-  ssize_retval = NaClImcSendTypedMessage(ndp, &kern_msg_hdr, flags);
+  ssize_retval = NACL_VTBL(NaClDesc, ndp)->SendMsg(ndp, &kern_msg_hdr, flags);
 
   if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /*
@@ -2095,14 +2094,13 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
-  ssize_retval = NaClImcRecvTypedMessage(ndp, &recv_hdr, flags,
+  ssize_retval = NACL_VTBL(NaClDesc, ndp)->RecvMsg(ndp, &recv_hdr, flags,
       (struct NaClDescQuotaInterface *) natp->nap->reverse_quota_interface);
   /*
    * retval is number of user payload bytes received and excludes the
    * header bytes.
    */
-  NaClLog(3, "NaClCommonSysImc_RecvMsg: "
-          "NaClImcRecvTypedMessage returned %"NACL_PRIdS"\n",
+  NaClLog(3, "NaClCommonSysImc_RecvMsg: RecvMsg() returned %"NACL_PRIdS"\n",
           ssize_retval);
   if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /* negative error numbers all have valid 32-bit representations,

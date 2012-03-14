@@ -616,7 +616,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     header.ndescv[i] = dgram->ndescv[i]->desc_;
   }
   // Send the message.
-  ret = NaClImcSendTypedMessage(desc_, &header, flags);
+  ret = NACL_VTBL(NaClDesc, desc_)->SendMsg(desc_, &header, flags);
 
  cleanup:
   free(header.ndescv);
@@ -666,7 +666,8 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
   }
   header.ndesc_length = ddescv_length;
   // Receive the message.
-  ret = NaClImcRecvTypedMessage(desc_, &header, flags, quota_interface);
+  ret = NACL_VTBL(NaClDesc, desc_)->RecvMsg(desc_, &header, flags,
+                                            quota_interface);
   if (ret < 0) {
     goto cleanup;
   }

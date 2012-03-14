@@ -384,6 +384,36 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc *vself) {
   return -NACL_ABI_EINVAL;
 }
 
+ssize_t NaClDescSendMsgNotImplemented(
+    struct NaClDesc                 *vself,
+    const struct NaClImcTypedMsgHdr *nitmhp,
+    int                             flags) {
+  UNREFERENCED_PARAMETER(nitmhp);
+  UNREFERENCED_PARAMETER(flags);
+
+  NaClLog(LOG_ERROR,
+          "SendMsg method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
+ssize_t NaClDescRecvMsgNotImplemented(
+    struct NaClDesc                 *vself,
+    struct NaClImcTypedMsgHdr       *nitmhp,
+    int                             flags,
+    struct NaClDescQuotaInterface   *quota_interface) {
+  UNREFERENCED_PARAMETER(nitmhp);
+  UNREFERENCED_PARAMETER(flags);
+  UNREFERENCED_PARAMETER(quota_interface);
+
+  NaClLog(LOG_ERROR,
+          "RecvMsg method is not implemented for object of type %s\n",
+          NaClDescTypeString(((struct NaClDescVtbl const *)
+                              vself->base.vtbl)->typeTag));
+  return -NACL_ABI_EINVAL;
+}
+
 ssize_t NaClDescLowLevelSendMsgNotImplemented(
     struct NaClDesc                *vself,
     struct NaClMessageHeader const *dgram,
@@ -611,6 +641,8 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescTimedWaitAbsNotImplemented,
   NaClDescSignalNotImplemented,
   NaClDescBroadcastNotImplemented,
+  NaClDescSendMsgNotImplemented,
+  NaClDescRecvMsgNotImplemented,
   NaClDescLowLevelSendMsgNotImplemented,
   NaClDescLowLevelRecvMsgNotImplemented,
   NaClDescConnectAddrNotImplemented,
