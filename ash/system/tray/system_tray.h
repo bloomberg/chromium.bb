@@ -34,6 +34,9 @@ class ASH_EXPORT SystemTray : public views::View,
   // Removes an existing tray item.
   void RemoveTrayItem(SystemTrayItem* item);
 
+  // Shows the default view of all items.
+  void ShowDefaultView();
+
   // Shows details of a particular item. If |close_delay_in_seconds| is
   // non-zero, then the view is automatically closed after the specified time.
   void ShowDetailedView(SystemTrayItem* item,

@@ -280,6 +280,12 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
 }  // namespace internal
 
+NetworkIconInfo::NetworkIconInfo() {
+}
+
+NetworkIconInfo::~NetworkIconInfo() {
+}
+
 SystemTray::SystemTray()
     : items_(),
       bubble_(NULL),
@@ -319,6 +325,17 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
 
 void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
+}
+
+void SystemTray::ShowDefaultView() {
+  if (popup_) {
+    popup_->RemoveObserver(this);
+    popup_->Close();
+  }
+  popup_ = NULL;
+  bubble_ = NULL;
+
+  ShowItems(items_, false, true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,

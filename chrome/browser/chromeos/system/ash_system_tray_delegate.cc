@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/audio/audio_controller.h"
 #include "ash/system/brightness/brightness_controller.h"
 #include "ash/system/network/network_controller.h"
@@ -14,13 +15,17 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/user/update_controller.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -31,15 +36,27 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
 namespace {
 
+ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
+                                           NetworkMenuIcon* network_icon) {
+  ash::NetworkIconInfo info;
+  info.name = UTF8ToUTF16(network->name());
+  info.image = network_icon->GetBitmap(network, NetworkMenuIcon::SIZE_SMALL);
+  info.unique_id = network->unique_id();
+  return info;
+}
+
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
                            public NetworkMenuIcon::Delegate,
+                           public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
@@ -48,7 +65,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   explicit SystemTrayDelegate(ash::SystemTray* tray)
       : tray_(tray),
         network_icon_(ALLOW_THIS_IN_INITIALIZER_LIST(
-                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))) {
+                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
+        network_icon_large_(ALLOW_THIS_IN_INITIALIZER_LIST(
+                      new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
+        network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
@@ -67,6 +87,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                    content::NotificationService::AllSources());
 
     InitializePrefChangeRegistrar();
+
+    network_icon_large_->SetResourceSize(NetworkMenuIcon::SIZE_LARGE);
   }
 
   virtual ~SystemTrayDelegate() {
@@ -116,15 +138,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowSettings() OVERRIDE {
-    BrowserList::GetLastActive()->OpenOptionsDialog();
+    GetAppropriateBrowser()->OpenOptionsDialog();
   }
 
   virtual void ShowDateSettings() OVERRIDE {
-    BrowserList::GetLastActive()->OpenAdvancedOptionsDialog();
+    GetAppropriateBrowser()->OpenAdvancedOptionsDialog();
+  }
+
+  virtual void ShowNetworkSettings() OVERRIDE {
+    GetAppropriateBrowser()->OpenInternetOptionsDialog();
   }
 
   virtual void ShowHelp() OVERRIDE {
-    BrowserList::GetLastActive()->ShowHelpTab();
+    GetAppropriateBrowser()->ShowHelpTab();
   }
 
   virtual bool IsAudioMuted() const OVERRIDE {
@@ -156,13 +182,89 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         NotifyScreenLockRequested();
   }
 
-  virtual ash::NetworkIconInfo GetMostRelevantNetworkIcon() OVERRIDE {
+  virtual ash::NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
     ash::NetworkIconInfo info;
-    info.image = network_icon_->GetIconAndText(&info.description);
+    info.image = !large ? network_icon_->GetIconAndText(&info.description) :
+        network_icon_large_->GetIconAndText(&info.description);
     return info;
   }
 
+  virtual void GetAvailableNetworks(
+      std::vector<ash::NetworkIconInfo>* list) OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+
+    // Ethernet.
+    if (crosnet->ethernet_available() && crosnet->ethernet_enabled()) {
+      const EthernetNetwork* ethernet_network = crosnet->ethernet_network();
+      if (ethernet_network) {
+        ash::NetworkIconInfo info;
+        info.image = network_icon_->GetBitmap(ethernet_network,
+                                              NetworkMenuIcon::SIZE_SMALL);
+        if (!ethernet_network->name().empty())
+          info.name = UTF8ToUTF16(ethernet_network->name());
+        else
+          info.name =
+              l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+        info.unique_id = ethernet_network->unique_id();
+        list->push_back(info);
+      }
+    }
+
+    // Wifi.
+    if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
+      const WifiNetworkVector& wifi = crosnet->wifi_networks();
+      for (size_t i = 0; i < wifi.size(); ++i)
+        list->push_back(CreateNetworkIconInfo(wifi[i], network_icon_.get()));
+    }
+
+    // Cellular.
+    if (crosnet->cellular_available() && crosnet->cellular_enabled()) {
+      // TODO(sad): There are different cases for cellular networks, e.g.
+      // de-activated networks, active networks that support data plan info,
+      // networks with top-up URLs etc. All of these need to be handled
+      // properly.
+      const CellularNetworkVector& cell = crosnet->cellular_networks();
+      for (size_t i = 0; i < cell.size(); ++i)
+        list->push_back(CreateNetworkIconInfo(cell[i], network_icon_.get()));
+    }
+
+    // VPN (only if logged in).
+    if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE)
+      return;
+    if (crosnet->connected_network() || crosnet->virtual_network_connected()) {
+      const VirtualNetworkVector& vpns = crosnet->virtual_networks();
+      for (size_t i = 0; i < vpns.size(); ++i)
+        list->push_back(CreateNetworkIconInfo(vpns[i], network_icon_.get()));
+    }
+  }
+
+  virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    Network* network = crosnet->FindNetworkByUniqueId(network_id);
+    if (network)
+      network_menu_->ConnectToNetwork(network);
+  }
+
+  virtual void ToggleAirplaneMode() OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    crosnet->EnableOfflineMode(!crosnet->offline_mode());
+  }
+
+  virtual void ChangeProxySettings() OVERRIDE {
+    CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
+    BaseLoginDisplayHost::default_host()->OpenProxySettings();
+  }
+
  private:
+  // Returns the last active browser. If there is no such browser, creates a new
+  // browser window with an empty tab and returns it.
+  Browser* GetAppropriateBrowser() {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      browser = Browser::NewEmptyWindow(ProfileManager::GetDefaultProfile());
+    return browser;
+  }
+
   void InitializePrefChangeRegistrar() {
     Profile* profile = ProfileManager::GetDefaultProfile();
     pref_registrar_.reset(new PrefChangeRegistrar);
@@ -230,9 +332,28 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
   // PowerButtonStateChanged etc.).
 
-  // Overridden from StatusMenuIcon::Delegate.
+  // Overridden from NetworkMenuIcon::Delegate.
   virtual void NetworkMenuIconChanged() OVERRIDE {
     NotifyRefreshNetwork();
+  }
+
+  // Overridden from NetworkMenu::Delegate.
+  virtual views::MenuButton* GetMenuButton() OVERRIDE {
+    return NULL;
+  }
+
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
+    return ash::Shell::GetInstance()->GetContainer(
+        GetUserLoginStatus() == ash::user::LOGGED_IN_NONE ?
+            ash::internal::kShellWindowId_LockSystemModalContainer :
+            ash::internal::kShellWindowId_SystemModalContainer);
+  }
+
+  virtual void OpenButtonOptions() OVERRIDE {
+  }
+
+  virtual bool ShouldOpenButtonOptions() const OVERRIDE {
+    return false;
   }
 
   // Overridden from NetworkLibrary::NetworkManagerObserver.
@@ -291,10 +412,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   ash::SystemTray* tray_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
+  scoped_ptr<NetworkMenuIcon> network_icon_large_;
+  scoped_ptr<NetworkMenu> network_menu_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
   std::string cellular_device_path_;
   std::string active_network_path_;
+  scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };
