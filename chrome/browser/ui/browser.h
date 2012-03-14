@@ -258,11 +258,11 @@ class Browser : public TabHandlerDelegate,
   // Browser Creation Helpers /////////////////////////////////////////////////
 
   // Opens a new window with the default blank tab.
-  static void NewEmptyWindow(Profile* profile);
+  static Browser* NewEmptyWindow(Profile* profile);
 
   // Opens a new window with the default blank tab. This bypasses metrics and
   // various internal bookkeeping; NewEmptyWindow (above) is preferred.
-  static void OpenEmptyWindow(Profile* profile);
+  static Browser* OpenEmptyWindow(Profile* profile);
 
   // Opens a new window with the tabs from |profile|'s TabRestoreService.
   static void OpenWindowWithRestoredTabs(Profile* profile);

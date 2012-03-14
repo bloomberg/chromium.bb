@@ -6,6 +6,9 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "ash/system/user/login_status.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
@@ -19,6 +22,7 @@ struct NetworkIconInfo {
   SkBitmap image;
   string16 name;
   string16 description;
+  std::string unique_id;
 };
 
 class SystemTrayDelegate {
@@ -45,6 +49,9 @@ class SystemTrayDelegate {
 
   // Shows the settings related to date, timezone etc.
   virtual void ShowDateSettings() = 0;
+
+  // Show the settings related to network.
+  virtual void ShowNetworkSettings() = 0;
 
   // Shows help.
   virtual void ShowHelp() = 0;
@@ -73,7 +80,19 @@ class SystemTrayDelegate {
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more
   // relevant over a connected network etc.)
-  virtual NetworkIconInfo GetMostRelevantNetworkIcon() = 0;
+  virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) = 0;
+
+  // Returns information about the available networks.
+  virtual void GetAvailableNetworks(std::vector<NetworkIconInfo>* list) = 0;
+
+  // Connects to the network specified by the unique id.
+  virtual void ConnectToNetwork(const std::string& network_id) = 0;
+
+  // Toggles airplane mode.
+  virtual void ToggleAirplaneMode() = 0;
+
+  // Shows UI for changing proxy settings.
+  virtual void ChangeProxySettings() = 0;
 };
 
 }  // namespace ash

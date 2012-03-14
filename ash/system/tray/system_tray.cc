@@ -321,6 +321,17 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
+void SystemTray::ShowDefaultView() {
+  if (popup_) {
+    popup_->RemoveObserver(this);
+    popup_->Close();
+  }
+  popup_ = NULL;
+  bubble_ = NULL;
+
+  ShowItems(items_, false, true);
+}
+
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   int close_delay,
                                   bool activate) {
