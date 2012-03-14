@@ -187,6 +187,10 @@ class PolicyPrefsTestCases(object):
     'DeviceDataRoamingEnabled': (True, [], []),
     'DeviceMetricsReportingEnabled': (True, [], []),
     'DeviceEphemeralUsersEnabled': (True, [], []),
+    'DeviceIdleLogoutTimeout': (60000, [], []),
+    'DeviceIdleLogoutWarningDuration': (15000, [], []),
+    'DeviceLoginScreenSaverId': ('lcncmkcnkcdbbanbjakcencbaoegdjlp', [], []),
+    'DeviceLoginScreenSaverTimeout': (30000, [], []),
 
     # Chrome Frame policies:
     'ChromeFrameRendererSettings': (0, [], []),

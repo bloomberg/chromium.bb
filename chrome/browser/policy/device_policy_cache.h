@@ -68,6 +68,23 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
       const enterprise_management::PolicyFetchResponse& policy,
       std::string* device_token);
 
+  // Decode the various groups of policies.
+  static void DecodeLoginPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
+  static void DecodeKioskPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
+  static void DecodeNetworkPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
+  static void DecodeReportingPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
+  static void DecodeGenericPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PolicyMap* policies);
+
   static void DecodeDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PolicyMap* policies);

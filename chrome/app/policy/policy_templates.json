@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 129
+#   For your editing convenience: highest ID currently used: 133
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2288,6 +2288,18 @@
       If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC ciphersuites.''',
     },
     {
+      'name': 'EnableOnlineRevocationChecks',
+      'type': 'main',
+      'supported_on': ['chrome.*:19-', 'chrome_os:0.19-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': False,
+      'id': 129,
+      'caption': '''Whether online OCSP/CRL checks are performed''',
+      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
+
+      If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.''',
+    },
+    {
       'name': 'ReportDeviceVersionInfo',
       'type': 'main',
       'supported_on': ['chrome_os:0.18-'],
@@ -2410,16 +2422,62 @@
       'desc': '''Determines whether Chrome OS keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
     },
     {
-      'name': 'EnableOnlineRevocationChecks',
-      'type': 'main',
-      'supported_on': ['chrome.*:19-', 'chrome_os:0.19-'],
+      'name': 'DeviceIdleLogoutTimeout',
+      'type': 'int',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
       'features': {'dynamic_refresh': True},
-      'example_value': False,
-      'id': 129,
-      'caption': '''Whether online OCSP/CRL checks are performed''',
-      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
+      'example_value': 60000,
+      'id': 130,
+      'caption': '''Timeout until idle user log-out is executed''',
+      'desc': '''This policy is active in retail mode only.
 
-      If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.''',
+      When the value of this policy is set and is not 0 the currently logged in demo user will be logged out automatically after the specified time.
+
+      The policy value should be specified in milliseconds.''',
+    },
+    {
+      'name': 'DeviceIdleLogoutWarningDuration',
+      'type': 'int',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': 15000,
+      'id': 131,
+      'caption': '''Duration of the idle log-out warning message''',
+      'desc': '''This policy is active in retail mode only.
+
+      When DeviceIdleLogoutTimeout is specified this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
+
+      The policy value should be specified in milliseconds.''',
+    },
+    {
+      'name': 'DeviceLoginScreenSaverId',
+      'type': 'string',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': 'fhblcfnmnbehmifidkddcenilbpddlfk',
+      'id': 132,
+      'caption': '''Screen saver to be used on the sign-in screen in retail mode''',
+      'desc': '''This policy is active in retail mode only.
+
+      Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the AppPacks policy.''',
+    },
+    {
+      'name': 'DeviceLoginScreenSaverTimeout',
+      'type': 'int',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': 120000,
+      'id': 133,
+      'caption': '''Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode''',
+      'desc': '''This policy is active in retail mode only.
+
+      Determines the duration before the screen saver is shown on the sign-in screen for devices in retail mode.
+
+      The policy value should be specified in milliseconds.''',
     },
   ],
   'messages': {
