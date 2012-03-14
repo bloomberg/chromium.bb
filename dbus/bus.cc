@@ -250,6 +250,35 @@ ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
   return exported_object.get();
 }
 
+void Bus::UnregisterExportedObject(const ObjectPath& object_path) {
+  AssertOnOriginThread();
+
+  // Remove the registered object from the table first, to allow a new
+  // GetExportedObject() call to return a new object, rather than this one.
+  ExportedObjectTable::iterator iter = exported_object_table_.find(object_path);
+  if (iter == exported_object_table_.end())
+    return;
+
+  scoped_refptr<ExportedObject> exported_object = iter->second;
+  exported_object_table_.erase(iter);
+
+  // Post the task to perform the final unregistration to the D-Bus thread.
+  // Since the registration also happens on the D-Bus thread in
+  // TryRegisterObjectPath(), and the message loop proxy we post to is a
+  // MessageLoopProxy which inherits from SequencedTaskRunner, there is a
+  // guarantee that this will happen before any future registration call.
+  PostTaskToDBusThread(FROM_HERE, base::Bind(
+      &Bus::UnregisterExportedObjectInternal,
+      this, exported_object));
+}
+
+void Bus::UnregisterExportedObjectInternal(
+    scoped_refptr<dbus::ExportedObject> exported_object) {
+  AssertOnDBusThread();
+
+  exported_object->Unregister();
+}
+
 bool Bus::Connect() {
   // dbus_bus_get_private() and dbus_bus_get() are blocking calls.
   AssertOnDBusThread();

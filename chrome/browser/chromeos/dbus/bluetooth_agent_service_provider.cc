@@ -37,11 +37,12 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
       : weak_ptr_factory_(this),
         origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
-        delegate_(delegate) {
+        delegate_(delegate),
+        object_path_(object_path) {
     DVLOG(1) << "Creating BluetoothAdapterClientImpl for "
              << object_path.value();
 
-    exported_object_ = bus_->GetExportedObject(object_path);
+    exported_object_ = bus_->GetExportedObject(object_path_);
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
@@ -119,6 +120,8 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   }
 
   virtual ~BluetoothAgentServiceProviderImpl() {
+    // Unregister the object path so we can reuse with a new agent.
+    bus_->UnregisterExportedObject(object_path_);
   }
 
  private:
@@ -521,6 +524,10 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   // passed to generate the reply. |delegate_| is generally the object that
   // owns this one, and must outlive it.
   Delegate* delegate_;
+
+  // D-Bus object path of object we are exporting, kept so we can unregister
+  // again in our destructor.
+  dbus::ObjectPath object_path_;
 
   // D-Bus object we are exporting, owned by this object.
   scoped_refptr<dbus::ExportedObject> exported_object_;

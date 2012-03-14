@@ -226,6 +226,15 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Must be called in the origin thread.
   virtual ExportedObject* GetExportedObject(const ObjectPath& object_path);
 
+  // Unregisters the exported object for the given object path |object_path|.
+  //
+  // Getting an exported object for the same object path after this call
+  // will return a new object, method calls on any remaining copies of the
+  // previous object will not be called.
+  //
+  // Must be called in the origin thread.
+  virtual void UnregisterExportedObject(const ObjectPath& object_path);
+
   // Shuts down the bus and blocks until it's done. More specifically, this
   // function does the following:
   //
@@ -419,6 +428,10 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
 
  private:
   friend class base::RefCountedThreadSafe<Bus>;
+
+  // Helper function used for UnregisterExportedObject().
+  void UnregisterExportedObjectInternal(
+      scoped_refptr<dbus::ExportedObject> exported_object);
 
   // Helper function used for ShutdownOnDBusThreadAndBlock().
   void ShutdownOnDBusThreadAndBlockInternal();
