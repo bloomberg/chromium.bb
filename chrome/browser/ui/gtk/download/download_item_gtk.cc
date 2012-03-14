@@ -85,6 +85,10 @@ const double kTextSize = 13.4;  // 13.4px == 10pt @ 96dpi
 // light-on-dark themes.
 static const double kDownloadItemLuminanceMod = 0.8;
 
+// How long we keep the item disabled after the user clicked it to open the
+// downloaded item.
+static const int kDisabledOnOpenDurationMs = 3000;
+
 }  // namespace
 
 NineBox* DownloadItemGtk::body_nine_box_normal_ = NULL;
@@ -114,7 +118,9 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       icon_small_(NULL),
       icon_large_(NULL),
       creation_time_(base::Time::Now()),
-      download_complete_(false) {
+      download_complete_(false),
+      disabled_while_opening_(false),
+      weak_ptr_factory_(this) {
   LoadIcon();
 
   body_.Own(gtk_button_new());
@@ -482,9 +488,24 @@ void DownloadItemGtk::UpdateNameLabel() {
   // use gfx::Font() to draw the text. This is why we need to add so
   // much padding when we set the size request. We need to either use gfx::Font
   // or somehow extend TextElider.
-  string16 elided_filename = ui::ElideFilename(
-      get_download()->GetFileNameToReportUser(),
-      gfx::Font(), kTextWidth);
+  gfx::Font font = gfx::Font();
+  string16 filename;
+  if (!disabled_while_opening_) {
+    filename = ui::ElideFilename(
+        get_download()->GetFileNameToReportUser(), font, kTextWidth);
+  } else {
+    // First, Calculate the download status opening string width.
+    string16 status_string =
+        l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, string16());
+    int status_string_width = font.GetStringWidth(status_string);
+    // Then, elide the file name.
+    string16 filename_string =
+        ui::ElideFilename(get_download()->GetFileNameToReportUser(), font,
+                          kTextWidth - status_string_width);
+    // Last, concat the whole string.
+    filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
+                                                 filename_string);
+  }
 
   GdkColor color = theme_service_->GetGdkColor(
       ThemeService::COLOR_BOOKMARK_TEXT);
@@ -492,7 +513,7 @@ void DownloadItemGtk::UpdateNameLabel() {
       name_label_,
       theme_service_->UsingNativeTheme() ? NULL : &color);
   gtk_label_set_text(GTK_LABEL(name_label_),
-                     UTF16ToUTF8(elided_filename).c_str());
+                     UTF16ToUTF8(filename).c_str());
 }
 
 void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
@@ -785,11 +806,28 @@ gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
   return TRUE;
 }
 
+void DownloadItemGtk::ReenableHbox() {
+  gtk_widget_set_sensitive(hbox_.get(), true);
+  disabled_while_opening_ = false;
+  UpdateNameLabel();
+}
+
+void DownloadItemGtk::OnDownloadOpened(DownloadItem* download) {
+  disabled_while_opening_ = true;
+  gtk_widget_set_sensitive(hbox_.get(), false);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DownloadItemGtk::ReenableHbox,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kDisabledOnOpenDurationMs));
+  UpdateNameLabel();
+  parent_shelf_->ItemOpened();
+}
+
 void DownloadItemGtk::OnClick(GtkWidget* widget) {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
   get_download()->OpenDownload();
-  parent_shelf_->ItemOpened();
 }
 
 gboolean DownloadItemGtk::OnButtonPress(GtkWidget* button,
