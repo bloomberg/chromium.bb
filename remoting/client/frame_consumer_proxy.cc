@@ -11,12 +11,12 @@
 namespace remoting {
 
 FrameConsumerProxy::FrameConsumerProxy(
-    base::MessageLoopProxy* frame_consumer_message_loop)
-    : frame_consumer_(NULL),
-      frame_consumer_message_loop_(frame_consumer_message_loop) {
+    scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop)
+    : frame_consumer_message_loop_(frame_consumer_message_loop) {
 }
 
 FrameConsumerProxy::~FrameConsumerProxy() {
+  DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
 }
 
 void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
@@ -56,15 +56,11 @@ void FrameConsumerProxy::SetSourceSize(const SkISize& source_size) {
     frame_consumer_->SetSourceSize(source_size);
 }
 
-void FrameConsumerProxy::Attach(FrameConsumer* frame_consumer) {
+void FrameConsumerProxy::Attach(
+    const base::WeakPtr<FrameConsumer>& frame_consumer) {
   DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
   DCHECK(frame_consumer_ == NULL);
   frame_consumer_ = frame_consumer;
-}
-
-void FrameConsumerProxy::Detach() {
-  DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
-  frame_consumer_ = NULL;
 }
 
 }  // namespace remoting

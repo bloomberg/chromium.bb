@@ -24,7 +24,9 @@ class ClientContext;
 class FrameProducer;
 
 class PepperView : public ChromotingView,
-                   public FrameConsumer {
+                   public FrameConsumer,
+                   public base::SupportsWeakPtr<PepperView>
+{
  public:
   // Constructs a PepperView for the |instance|. The |instance|, |context|
   // and |producer| must outlive this class.
@@ -113,8 +115,6 @@ class PepperView : public ChromotingView,
 
   // True after Initialize() has been called, until TearDown().
   bool is_initialized_;
-
-  base::WeakPtrFactory<PepperView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };

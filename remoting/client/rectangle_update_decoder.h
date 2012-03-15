@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/decoder.h"
+#include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/frame_producer.h"
 
 namespace base {
@@ -23,7 +24,6 @@ class ImageData;
 
 namespace remoting {
 
-class FrameConsumer;
 class VideoPacket;
 
 namespace protocol {
@@ -37,8 +37,10 @@ class RectangleUpdateDecoder :
     public base::RefCountedThreadSafe<RectangleUpdateDecoder>,
     public FrameProducer {
  public:
-  RectangleUpdateDecoder(base::MessageLoopProxy* message_loop,
-                         FrameConsumer* consumer);
+  // Creates an update decoder on |message_loop_|, outputting to |consumer|.
+  // TODO(wez): Replace the ref-counted proxy with an owned FrameConsumer.
+  RectangleUpdateDecoder(scoped_refptr<base::MessageLoopProxy> message_loop,
+                         scoped_refptr<FrameConsumerProxy> consumer);
 
   // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
@@ -67,8 +69,7 @@ class RectangleUpdateDecoder :
   void DoPaint();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  FrameConsumer* consumer_;
-
+  scoped_refptr<FrameConsumerProxy> consumer_;
   scoped_ptr<Decoder> decoder_;
 
   // Remote screen size in pixels.

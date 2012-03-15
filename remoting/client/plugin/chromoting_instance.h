@@ -177,7 +177,6 @@ class ChromotingInstance :
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;
 
-  scoped_refptr<FrameConsumerProxy> consumer_proxy_;
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<MouseInputFilter> mouse_input_filter_;
   scoped_ptr<protocol::KeyEventTracker> key_event_tracker_;

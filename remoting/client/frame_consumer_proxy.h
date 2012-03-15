@@ -11,6 +11,7 @@
 #define REMOTING_CLIENT_FRAME_CONSUMER_PROXY_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/client/frame_consumer.h"
 
 namespace base {
@@ -25,7 +26,8 @@ class FrameConsumerProxy
  public:
   // Constructs a proxy for |frame_consumer| which will trampoline invocations
   // to |frame_consumer_message_loop|.
-  FrameConsumerProxy(base::MessageLoopProxy* frame_consumer_message_loop);
+  FrameConsumerProxy(
+      scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop);
   virtual ~FrameConsumerProxy();
 
   // FrameConsumer implementation.
@@ -38,15 +40,10 @@ class FrameConsumerProxy
 
   // Attaches to |frame_consumer_|.
   // This must only be called from |frame_consumer_message_loop_|.
-  void Attach(FrameConsumer* frame_consumer);
-
-  // Detaches from |frame_consumer_|, ensuring no further calls reach it.
-  // This must only be called from |frame_consumer_message_loop_|.
-  void Detach();
+  void Attach(const base::WeakPtr<FrameConsumer>& frame_consumer);
 
  private:
-  FrameConsumer* frame_consumer_;
-
+  base::WeakPtr<FrameConsumer> frame_consumer_;
   scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConsumerProxy);

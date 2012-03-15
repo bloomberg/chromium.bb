@@ -13,7 +13,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/synchronization/lock.h"
@@ -163,12 +162,6 @@ ChromotingInstance::~ChromotingInstance() {
   // Stopping the context shuts down all chromoting threads.
   context_.Stop();
 
-  // Detach the |consumer_proxy_|, so that any queued tasks don't touch |view_|
-  // after we've deleted it.
-  if (consumer_proxy_.get()) {
-    consumer_proxy_->Detach();
-  }
-
   // Delete |thread_proxy_| before we detach |plugin_message_loop_|,
   // otherwise ScopedThreadProxy may DCHECK when being destroyed.
   thread_proxy_.reset();
@@ -195,13 +188,14 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects that don't depend on the network connection.
-  // Because we decode on a separate thread we need a FrameConsumerProxy to
-  // bounce calls from the RectangleUpdateDecoder back to the plugin thread.
-  consumer_proxy_ = new FrameConsumerProxy(plugin_message_loop_);
+  // RectangleUpdateDecoder runs on a separate thread so for now we wrap
+  // PepperView with a ref-counted proxy object.
+  scoped_refptr<FrameConsumerProxy> consumer_proxy =
+      new FrameConsumerProxy(plugin_message_loop_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
-      context_.decode_message_loop(), consumer_proxy_.get());
+      context_.decode_message_loop(), consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
-  consumer_proxy_->Attach(view_.get());
+  consumer_proxy->Attach(view_->AsWeakPtr());
 
   return true;
 }

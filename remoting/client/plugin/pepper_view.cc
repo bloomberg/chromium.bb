@@ -75,8 +75,7 @@ PepperView::PepperView(ChromotingInstance* instance,
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
     flush_pending_(false),
-    is_initialized_(false),
-    ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+    is_initialized_(false) {
 }
 
 PepperView::~PepperView() {
@@ -110,8 +109,6 @@ void PepperView::TearDown() {
   while (!buffers_.empty()) {
     FreeBuffer(buffers_.front());
   }
-
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
@@ -315,8 +312,8 @@ void PepperView::FlushBuffer(const SkIRect& clip_area,
   // Flush the updated areas to the screen.
   scoped_ptr<base::Closure> task(
       new base::Closure(
-          base::Bind(&PepperView::OnFlushDone, weak_factory_.GetWeakPtr(),
-                     start_time, buffer)));
+          base::Bind(&PepperView::OnFlushDone, AsWeakPtr(), start_time,
+                     buffer)));
 
   // Flag needs to be set here in order to get a proper error code for Flush().
   // Otherwise Flush() will always return PP_OK_COMPLETIONPENDING and the error

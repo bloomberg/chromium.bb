@@ -25,7 +25,8 @@ using remoting::protocol::SessionConfig;
 namespace remoting {
 
 RectangleUpdateDecoder::RectangleUpdateDecoder(
-    base::MessageLoopProxy* message_loop, FrameConsumer* consumer)
+    scoped_refptr<base::MessageLoopProxy> message_loop,
+    scoped_refptr<FrameConsumerProxy> consumer)
     : message_loop_(message_loop),
       consumer_(consumer),
       source_size_(SkISize::Make(0, 0)),
