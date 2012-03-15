@@ -4,9 +4,12 @@
 
 #include "ppapi/tests/test_flash_clipboard.h"
 
+#include <vector>
+
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/private/flash_clipboard.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(FlashClipboard);
@@ -18,14 +21,7 @@ const int kIntervalMs = 250;
 const int kMaxIntervals = kActionTimeoutMs / kIntervalMs;
 
 TestFlashClipboard::TestFlashClipboard(TestingInstance* instance)
-    : TestCase(instance),
-      clipboard_interface_(NULL) {
-}
-
-bool TestFlashClipboard::Init() {
-  clipboard_interface_ = static_cast<const PPB_Flash_Clipboard*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FLASH_CLIPBOARD_INTERFACE));
-  return !!clipboard_interface_;
+    : TestCase(instance) {
 }
 
 void TestFlashClipboard::RunTests(const std::string& filter) {
@@ -35,67 +31,66 @@ void TestFlashClipboard::RunTests(const std::string& filter) {
   RUN_TEST(Clear, filter);
 }
 
-PP_Bool TestFlashClipboard::IsFormatAvailable(
-    PP_Flash_Clipboard_Format format) {
-  PP_Bool is_available = PP_FALSE;
-  for (int i = 0; i < kMaxIntervals; ++i) {
-    is_available = clipboard_interface_->IsFormatAvailable(
-        instance_->pp_instance(),
-        PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-        format);
-    if (is_available)
-      break;
-
-    PlatformSleep(kIntervalMs);
-  }
-  return is_available;
-}
-
 std::string TestFlashClipboard::ReadStringVar(
     PP_Flash_Clipboard_Format format) {
-  std::string result_str;
-  pp::Var result_var(
-      pp::PASS_REF,
-      clipboard_interface_->ReadData(instance_->pp_instance(),
-                                     PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-                                     format));
-  if (result_var.is_string())
-    result_str = result_var.AsString();
-  return result_str;
+  pp::Var text;
+  bool success = pp::flash::Clipboard::ReadData(
+      instance_,
+      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+      format,
+      &text);
+  if (success && text.is_string())
+    return text.AsString();
+  return std::string();
 }
 
-int32_t TestFlashClipboard::WriteStringVar(PP_Flash_Clipboard_Format format,
-                                           const std::string& input) {
-  pp::Var input_var(input);
-  PP_Var data_item = input_var.pp_var();
-  int32_t success = clipboard_interface_->WriteData(
-      instance_->pp_instance(),
+bool TestFlashClipboard::WriteStringVar(PP_Flash_Clipboard_Format format,
+                                        const std::string& text) {
+  std::vector<PP_Flash_Clipboard_Format> formats_vector(1, format);
+  std::vector<pp::Var> data_vector(1, pp::Var(text));
+  bool success = pp::flash::Clipboard::WriteData(
+      instance_,
       PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-      1,
-      &format,
-      &data_item);
+      formats_vector,
+      data_vector);
   return success;
 }
 
-bool TestFlashClipboard::ReadAndMatchPlainText(const std::string& input) {
+bool TestFlashClipboard::IsFormatAvailableMatches(
+    PP_Flash_Clipboard_Format format,
+    bool expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
-    if (ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT) == input) {
+    bool is_available = pp::flash::Clipboard::IsFormatAvailable(
+        instance_,
+        PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+        format);
+    if (is_available == expected)
       return true;
-    }
+
     PlatformSleep(kIntervalMs);
   }
   return false;
 }
 
-bool TestFlashClipboard::ReadAndMatchHTML(const std::string& input) {
+bool TestFlashClipboard::ReadPlainTextMatches(const std::string& expected) {
+  for (int i = 0; i < kMaxIntervals; ++i) {
+    if (ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT) == expected)
+      return true;
+
+    PlatformSleep(kIntervalMs);
+  }
+  return false;
+}
+
+bool TestFlashClipboard::ReadHTMLMatches(const std::string& expected) {
   for (int i = 0; i < kMaxIntervals; ++i) {
     std::string result = ReadStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML);
     // Markup is inserted around the copied html, so just check that
     // the pasted string contains the copied string.
-    bool match = result.find(input) != std::string::npos;
-    if (match) {
+    bool match = result.find(expected) != std::string::npos;
+    if (match)
       return true;
-    }
+
     PlatformSleep(kIntervalMs);
   }
   return false;
@@ -103,58 +98,58 @@ bool TestFlashClipboard::ReadAndMatchHTML(const std::string& input) {
 
 std::string TestFlashClipboard::TestReadWritePlainText() {
   std::string input = "Hello world plain text!";
-  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
-                             input) == PP_OK);
-  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
-  ASSERT_TRUE(ReadAndMatchPlainText(input));
+  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT, input));
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+                                       true));
+  ASSERT_TRUE(ReadPlainTextMatches(input));
 
   PASS();
 }
 
 std::string TestFlashClipboard::TestReadWriteHTML() {
   std::string input = "Hello world html!";
-  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML,
-                             input) == PP_OK);
-  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_HTML));
-  ASSERT_TRUE(ReadAndMatchHTML(input));
+  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_HTML, input));
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_HTML, true));
+  ASSERT_TRUE(ReadHTMLMatches(input));
 
   PASS();
 }
 
 std::string TestFlashClipboard::TestReadWriteMultipleFormats() {
-  pp::Var plain_text_var("plain text");
-  pp::Var html_var("html");
-  PP_Flash_Clipboard_Format formats[] =
-      { PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT, PP_FLASH_CLIPBOARD_FORMAT_HTML };
-  PP_Var data_items[] = { plain_text_var.pp_var(), html_var.pp_var() };
-  int32_t success = clipboard_interface_->WriteData(
-      instance_->pp_instance(),
+  std::vector<PP_Flash_Clipboard_Format> formats;
+  std::vector<pp::Var> data;
+  formats.push_back(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
+  data.push_back(pp::Var("plain text"));
+  formats.push_back(PP_FLASH_CLIPBOARD_FORMAT_HTML);
+  data.push_back(pp::Var("html"));
+  bool success = pp::flash::Clipboard::WriteData(
+      instance_,
       PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-      sizeof(data_items) / sizeof(*data_items),
       formats,
-      data_items);
-  ASSERT_TRUE(success == PP_OK);
-
-  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
-  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_HTML));
-
-  ASSERT_TRUE(ReadAndMatchPlainText(plain_text_var.AsString()));
-  ASSERT_TRUE(ReadAndMatchHTML(html_var.AsString()));
+      data);
+  ASSERT_TRUE(success);
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+                                       true));
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_HTML, true));
+  ASSERT_TRUE(ReadPlainTextMatches(data[0].AsString()));
+  ASSERT_TRUE(ReadHTMLMatches(data[1].AsString()));
 
   PASS();
 }
 
 std::string TestFlashClipboard::TestClear() {
   std::string input = "Hello world plain text!";
-  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
-                             input) == PP_OK);
-  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
-  clipboard_interface_->WriteData(
-      instance_->pp_instance(),
+  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT, input));
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+                                       true));
+  bool success = pp::flash::Clipboard::WriteData(
+      instance_,
       PP_FLASH_CLIPBOARD_TYPE_STANDARD,
-      0,
-      NULL,
-      NULL);
-  ASSERT_FALSE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
+      std::vector<PP_Flash_Clipboard_Format>(),
+      std::vector<pp::Var>());
+  ASSERT_TRUE(success);
+  ASSERT_TRUE(IsFormatAvailableMatches(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+                                       false));
+
   PASS();
 }

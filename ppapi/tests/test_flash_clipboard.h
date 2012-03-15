@@ -16,25 +16,23 @@ class TestFlashClipboard : public TestCase {
   explicit TestFlashClipboard(TestingInstance* instance);
 
   // TestCase implementation.
-  virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
  private:
   // Helpers.
-  PP_Bool IsFormatAvailable(PP_Flash_Clipboard_Format format);
   std::string ReadStringVar(PP_Flash_Clipboard_Format format);
-  int32_t WriteStringVar(PP_Flash_Clipboard_Format format,
-                         const std::string& input);
-  bool ReadAndMatchPlainText(const std::string& input);
-  bool ReadAndMatchHTML(const std::string& input);
+  bool WriteStringVar(PP_Flash_Clipboard_Format format,
+                      const std::string& text);
+  bool IsFormatAvailableMatches(PP_Flash_Clipboard_Format format,
+                                bool expected);
+  bool ReadPlainTextMatches(const std::string& expected);
+  bool ReadHTMLMatches(const std::string& expected);
 
   // Tests.
   std::string TestReadWritePlainText();
   std::string TestReadWriteHTML();
   std::string TestReadWriteMultipleFormats();
   std::string TestClear();
-
-  const PPB_Flash_Clipboard* clipboard_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_FLASH_FULLSCREEN_H_
