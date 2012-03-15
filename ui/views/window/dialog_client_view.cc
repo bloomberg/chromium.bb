@@ -39,6 +39,23 @@
 namespace views {
 namespace {
 
+const int kDialogMinButtonWidth = 75;
+const int kDialogButtonLabelSpacing = 16;
+const int kDialogButtonContentSpacing = 5;
+
+// The group used by the buttons.  This name is chosen voluntarily big not to
+// conflict with other groups that could be in the dialog content.
+const int kButtonGroup = 6666;
+
+const gfx::Font& GetDialogButtonFont() {
+  static gfx::Font* font = NULL;
+  if (!font) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    font = new gfx::Font(rb.GetFont(ui::ResourceBundle::BaseFont));
+  }
+  return *font;
+}
+
 // Updates any of the standard buttons according to the delegate.
 void UpdateButtonHelper(NativeTextButton* button_view,
                         DialogDelegate* delegate,
@@ -86,16 +103,6 @@ class DialogButton : public NativeTextButton {
 
 }  // namespace
 
-// static
-gfx::Font* DialogClientView::dialog_button_font_ = NULL;
-static const int kDialogMinButtonWidth = 75;
-static const int kDialogButtonLabelSpacing = 16;
-static const int kDialogButtonContentSpacing = 5;
-
-// The group used by the buttons.  This name is chosen voluntarily big not to
-// conflict with other groups that could be in the dialog content.
-static const int kButtonGroup = 6666;
-
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, public:
 
@@ -110,7 +117,6 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       listening_to_focus_(false),
       saved_focus_manager_(NULL),
       bottom_view_(NULL) {
-  InitClass();
 }
 
 DialogClientView::~DialogClientView() {
@@ -461,7 +467,7 @@ int DialogClientView::GetButtonWidth(int button) const {
   DialogDelegate* dd = GetDialogDelegate();
   string16 button_label = dd->GetDialogButtonLabel(
       static_cast<ui::DialogButton>(button));
-  int string_width = dialog_button_font_->GetStringWidth(button_label);
+  int string_width = GetDialogButtonFont().GetStringWidth(button_label);
   return std::max(string_width + kDialogButtonLabelSpacing,
                   kDialogMinButtonWidth);
 }
@@ -568,16 +574,6 @@ void DialogClientView::UpdateFocusListener() {
   if (focus_manager) {
     focus_manager->AddFocusChangeListener(this);
     listening_to_focus_ = true;
-  }
-}
-
-// static
-void DialogClientView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    dialog_button_font_ = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
-    initialized = true;
   }
 }
 

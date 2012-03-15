@@ -9,8 +9,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
-class SkBitmap;
-
 namespace gfx {
 class Font;
 }
@@ -58,8 +56,6 @@ class DialogFrameView : public views::NonClientFrameView,
   gfx::Rect title_display_rect_;
 
   views::ImageButton* close_button_;
-
-  static gfx::Font* title_font_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogFrameView);
 };

@@ -19,12 +19,21 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace {
+
+const gfx::Font& GetTitleFont() {
+  static gfx::Font* title_font = NULL;
+  if (!title_font)
+    title_font = new gfx::Font(views::NativeWidgetAura::GetWindowTitleFont());
+  return *title_font;
+}
+
+}  // namespace
+
 namespace ash {
 
 // static
 const char CustomFrameViewAsh::kViewClassName[] = "ash/wm/CustomFrameViewAsh";
-// static
-gfx::Font* CustomFrameViewAsh::title_font_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, public:
@@ -40,8 +49,6 @@ CustomFrameViewAsh::~CustomFrameViewAsh() {
 }
 
 void CustomFrameViewAsh::Init(views::Widget* frame) {
-  InitClass();
-
   frame_ = frame;
 
   maximize_button_ = new FrameMaximizeButton(this);
@@ -117,7 +124,7 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_ACTIVE).ToSkBitmap() :
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE).ToSkBitmap();
   frame_painter_->PaintHeader(this, canvas, theme_bitmap, NULL);
-  frame_painter_->PaintTitleBar(this, canvas, *title_font_);
+  frame_painter_->PaintTitleBar(this, canvas, GetTitleFont());
   frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }
 
@@ -154,15 +161,6 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
   // reserving space for the separator line.
   return close_button_->bounds().bottom() +
       frame_painter_->HeaderContentSeparatorSize();
-}
-
-// static
-void CustomFrameViewAsh::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    title_font_ = new gfx::Font(views::NativeWidgetAura::GetWindowTitleFont());
-    initialized = true;
-  }
 }
 
 }  // namespace ash

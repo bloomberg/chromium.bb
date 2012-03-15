@@ -64,9 +64,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
 
-  static void InitClass();
-  static gfx::Font* title_font_;
-
   // Not owned.
   views::Widget* frame_;
 

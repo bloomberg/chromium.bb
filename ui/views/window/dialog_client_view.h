@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,8 +125,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Updates focus listener.
   void UpdateFocusListener();
 
-  static void InitClass();
-
   // The dialog buttons.
   NativeTextButton* ok_button_;
   NativeTextButton* cancel_button_;
@@ -158,9 +156,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // View positioned along the bottom, beneath the buttons.
   View* bottom_view_;
-
-  // Static resource initialization
-  static gfx::Font* dialog_button_font_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };
