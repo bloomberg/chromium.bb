@@ -9,6 +9,7 @@
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
@@ -65,39 +66,12 @@ void ClearWidthBeforeObscured(aura::Window* window) {
 
 }  // namespace
 
-WorkspaceWindowResizer::PhantomPlacement::PhantomPlacement() : type(TYPE_NONE) {
-}
-
-WorkspaceWindowResizer::PhantomPlacement::~PhantomPlacement() {
-}
-
 // static
 const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (root_filter_)
     root_filter_->UnlockCursor();
-}
-
-// static
-gfx::Rect WorkspaceWindowResizer::GetBoundsForWindowAlongEdge(
-    aura::Window* window,
-    WorkspaceWindowResizer::EdgeType edge,
-    int grid_size) {
-  gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window));
-  int y = WindowResizer::AlignToGridRoundUp(work_area.y(), grid_size);
-  int max_y =
-      WindowResizer::AlignToGridRoundDown(work_area.bottom(), grid_size);
-  if (edge == LEFT_EDGE) {
-    int x = WindowResizer::AlignToGridRoundUp(work_area.x(), grid_size);
-    int mid_x = WindowResizer::AlignToGridRoundUp(
-        work_area.x() + work_area.width() / 2, grid_size);
-    return gfx::Rect(x, y, mid_x - x, max_y - y);
-  }
-  int x = WindowResizer::AlignToGridRoundUp(
-      work_area.x() + work_area.width() / 2, grid_size);
-  int max_x = WindowResizer::AlignToGridRoundDown(work_area.right(), grid_size);
-  return gfx::Rect(x , y, max_x - x, max_y - y);
 }
 
 // static
@@ -132,18 +106,17 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
 
 void WorkspaceWindowResizer::CompleteDrag() {
   if (phantom_window_controller_.get()) {
-    if (phantom_placement_.type == TYPE_DESTINATION)
+    if (snap_type_ == SNAP_DESTINATION)
       phantom_window_controller_->DelayedClose(kSnapDurationMS);
     phantom_window_controller_.reset();
   }
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  if (phantom_placement_.type == TYPE_LEFT_EDGE ||
-      phantom_placement_.type == TYPE_RIGHT_EDGE) {
+  if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE) {
     if (!GetRestoreBounds(details_.window))
       SetRestoreBounds(details_.window, details_.initial_bounds);
-    details_.window->SetBounds(phantom_placement_.bounds);
+    details_.window->SetBounds(snap_sizer_->target_bounds());
     return;
   }
 
@@ -206,6 +179,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       root_filter_(NULL),
       total_min_(0),
       total_initial_size_(0),
+      snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0) {
   DCHECK(details_.is_resizable);
   root_filter_ = Shell::GetInstance()->root_filter();
@@ -463,79 +437,57 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  PhantomPlacement last_placement = phantom_placement_;
-  phantom_placement_ = GetPhantomPlacement(location);
-  if (phantom_placement_.type == TYPE_NONE) {
+  snap_type_ = GetSnapType(location);
+  if (snap_type_ == SNAP_NONE) {
     phantom_window_controller_.reset();
+    snap_sizer_.reset();
     return;
   }
   PhantomWindowController::Type phantom_type;
-  if (phantom_placement_.type == TYPE_LEFT_EDGE ||
-      phantom_placement_.type == TYPE_RIGHT_EDGE) {
+  if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE)
     phantom_type = PhantomWindowController::TYPE_EDGE;
-    UpdatePhantomWindowBoundsAlongEdge(last_placement);
-  } else {
+  else
     phantom_type = PhantomWindowController::TYPE_DESTINATION;
-  }
   if (phantom_window_controller_.get() &&
       phantom_window_controller_->type() != phantom_type) {
     phantom_window_controller_.reset();
+    snap_sizer_.reset();
+  }
+  if (phantom_type == PhantomWindowController::TYPE_EDGE) {
+    if (!snap_sizer_.get()) {
+      SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
+          SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
+      snap_sizer_.reset(
+          new SnapSizer(details_.window, location, edge, details_.grid_size));
+    } else {
+      snap_sizer_->Update(location);
+    }
   }
   if (!phantom_window_controller_.get()) {
     phantom_window_controller_.reset(
         new PhantomWindowController(details_.window, phantom_type,
                                     kPhantomDelayMS));
   }
-  phantom_window_controller_->Show(phantom_placement_.bounds);
+  gfx::Rect bounds;
+  if (snap_sizer_.get())
+    bounds = snap_sizer_->target_bounds();
+  else
+    bounds = GetFinalBounds();
+  phantom_window_controller_->Show(bounds);
 }
 
-void WorkspaceWindowResizer::UpdatePhantomWindowBoundsAlongEdge(
-    const PhantomPlacement& last_placement) {
-  if (last_placement.type == phantom_placement_.type) {
-    int grid_size = std::max(1, details_.grid_size);
-    if (++num_mouse_moves_since_bounds_change_ >= grid_size / 2) {
-      gfx::Rect area(gfx::Screen::GetMonitorAreaNearestWindow(details_.window));
-      gfx::Rect bounds(last_placement.bounds);
-      if (last_placement.type == TYPE_LEFT_EDGE) {
-        bounds.set_width(std::min(WindowResizer::AlignToGridRoundDown(
-                                      area.width() - bounds.x(), grid_size),
-                                  bounds.width() + grid_size));
-      } else {
-        int x = std::max(
-            WindowResizer::AlignToGridRoundUp(area.x(), grid_size),
-            bounds.x() - grid_size);
-        bounds.set_width(phantom_placement_.bounds.width() - x);
-        bounds.set_x(x);
-      }
-      phantom_placement_.bounds = bounds;
-      num_mouse_moves_since_bounds_change_ = 0;
-    } else {
-      phantom_placement_.bounds = last_placement.bounds;
-    }
-  } else {
-    num_mouse_moves_since_bounds_change_ = 0;
-  }
-}
-
-WorkspaceWindowResizer::PhantomPlacement
-WorkspaceWindowResizer::GetPhantomPlacement(const gfx::Point& location) {
+WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
+    const gfx::Point& location) const {
   // TODO: this likely only wants total monitor area, not the area of a single
   // monitor.
-  PhantomPlacement placement;
   gfx::Rect area(gfx::Screen::GetMonitorAreaNearestWindow(details_.window));
-  if (location.x() <= area.x()) {
-    placement.type = TYPE_LEFT_EDGE;
-    placement.bounds = GetBoundsForWindowAlongEdge(
-        details_.window, LEFT_EDGE, details_.grid_size);
-  } else if (location.x() >= area.right() - 1) {
-    placement.type = TYPE_RIGHT_EDGE;
-    placement.bounds = GetBoundsForWindowAlongEdge(
-        details_.window, RIGHT_EDGE, details_.grid_size);
-  } else if (details_.grid_size > 1 && wm::IsWindowNormal(details_.window)) {
-    placement.bounds = GetFinalBounds();
-    placement.type = TYPE_DESTINATION;
-  }
-  return placement;
+  if (location.x() <= area.x())
+    return SNAP_LEFT_EDGE;
+  if (location.x() >= area.right() - 1)
+    return SNAP_RIGHT_EDGE;
+  if (details_.grid_size > 1 && wm::IsWindowNormal(details_.window))
+    return SNAP_DESTINATION;
+  return SNAP_NONE;
 }
 
 }  // namespace internal

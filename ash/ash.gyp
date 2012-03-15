@@ -232,6 +232,8 @@
         'wm/workspace/multi_window_resize_controller.h',
         'wm/workspace/phantom_window_controller.cc',
         'wm/workspace/phantom_window_controller.h',
+        'wm/workspace/snap_sizer.cc',
+        'wm/workspace/snap_sizer.h',
         'wm/workspace/workspace.cc',
         'wm/workspace/workspace.h',
         'wm/workspace/workspace_event_filter.cc',

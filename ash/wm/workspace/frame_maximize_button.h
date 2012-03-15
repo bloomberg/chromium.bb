@@ -13,6 +13,7 @@ namespace ash {
 
 namespace internal {
 class PhantomWindowController;
+class SnapSizer;
 }
 
 // Button used for the maximize control on the frame. Handles snapping logic.
@@ -52,16 +53,18 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   void InstallEventFilter();
   void UninstallEventFilter();
 
-  // Updates |snap_type_| based on a mouse drag. The parameters are relative to
-  // the mouse pressed location.
-  void UpdateSnap(int delta_x, int delta_y);
+  // Updates |snap_type_| based on a mouse drag.
+  void UpdateSnap(const gfx::Point& location);
 
-  // Returns the type of snap based on the specified coordaintes (relative to
-  // the press location).
-  SnapType SnapTypeForDelta(int delta_x, int delta_y) const;
+  // Returns the type of snap based on the specified location.
+  SnapType SnapTypeForLocation(const gfx::Point& location) const;
 
   // Returns the bounds of the resulting window for the specified type.
   gfx::Rect BoundsForType(SnapType type) const;
+
+  // Converts location to screen coordinates and returns it. These are the
+  // coordinates used by the SnapSizer.
+  gfx::Point LocationForSnapSizer(const gfx::Point& location) const;
 
   // Snaps the window to the current snap position.
   void Snap();
@@ -81,6 +84,8 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
 
   // Current snap type.
   SnapType snap_type_;
+
+  scoped_ptr<internal::SnapSizer> snap_sizer_;
 
   scoped_ptr<EscapeEventFilter> escape_event_filter_;
 

@@ -8,7 +8,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/launcher/launcher.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/workspace_window_resizer.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -16,6 +16,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+
+using ash::internal::SnapSizer;
 
 namespace ash {
 
@@ -100,6 +102,7 @@ FrameMaximizeButton::~FrameMaximizeButton() {
 bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
   is_snap_enabled_ = event.IsLeftMouseButton();
   if (is_snap_enabled_) {
+    snap_sizer_.reset(NULL);
     InstallEventFilter();
     snap_type_ = SNAP_NONE;
     press_location_ = event.location();
@@ -126,7 +129,7 @@ bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
           views::View::ExceededDragThreshold(delta_x, delta_y);
     }
     if (exceeded_drag_threshold_)
-      UpdateSnap(delta_x, delta_y);
+      UpdateSnap(event.location());
   }
   return ImageButton::OnMouseDragged(event);
 }
@@ -198,6 +201,7 @@ void FrameMaximizeButton::Cancel() {
   UninstallEventFilter();
   is_snap_enabled_ = false;
   phantom_window_.reset();
+  snap_sizer_.reset();
   SchedulePaint();
 }
 
@@ -212,20 +216,33 @@ void FrameMaximizeButton::UninstallEventFilter() {
   escape_event_filter_.reset(NULL);
 }
 
-void FrameMaximizeButton::UpdateSnap(int delta_x, int delta_y) {
-  SnapType type = SnapTypeForDelta(delta_x, delta_y);
-  if (type == snap_type_)
-    return;
-
-  SchedulePaint();
-
-  if (type == SNAP_NONE) {
-    phantom_window_.reset();
-    snap_type_ = SNAP_NONE;
+void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
+  SnapType type = SnapTypeForLocation(location);
+  if (type == snap_type_) {
+    if (snap_sizer_.get()) {
+      snap_sizer_->Update(LocationForSnapSizer(location));
+      phantom_window_->Show(snap_sizer_->target_bounds());
+    }
     return;
   }
 
   snap_type_ = type;
+  snap_sizer_.reset();
+  SchedulePaint();
+
+  if (snap_type_ == SNAP_NONE) {
+    phantom_window_.reset();
+    return;
+  }
+
+  if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
+    SnapSizer::Edge snap_edge = snap_type_ == SNAP_LEFT ?
+        SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
+    int grid_size = Shell::GetInstance()->GetGridSize();
+    snap_sizer_.reset(new SnapSizer(GetWidget()->GetNativeWindow(),
+                                    LocationForSnapSizer(location),
+                                    snap_edge, grid_size));
+  }
   if (!phantom_window_.get()) {
     phantom_window_.reset(new internal::PhantomWindowController(
                               GetWidget()->GetNativeWindow(),
@@ -234,9 +251,10 @@ void FrameMaximizeButton::UpdateSnap(int delta_x, int delta_y) {
   phantom_window_->Show(BoundsForType(snap_type_));
 }
 
-FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForDelta(
-    int delta_x,
-    int delta_y) const {
+FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
+    const gfx::Point& location) const {
+  int delta_x = location.x() - press_location_.x();
+  int delta_y = location.y() - press_location_.y();
   if (!views::View::ExceededDragThreshold(delta_x, delta_y))
     return GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
   else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
@@ -250,14 +268,10 @@ FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForDelta(
 
 gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
   aura::Window* window = GetWidget()->GetNativeWindow();
-  int grid_size = Shell::GetInstance()->GetGridSize();
   switch (type) {
     case SNAP_LEFT:
-      return internal::WorkspaceWindowResizer::GetBoundsForWindowAlongEdge(
-          window, internal::WorkspaceWindowResizer::LEFT_EDGE, grid_size);
     case SNAP_RIGHT:
-      return internal::WorkspaceWindowResizer::GetBoundsForWindowAlongEdge(
-          window, internal::WorkspaceWindowResizer::RIGHT_EDGE, grid_size);
+      return snap_sizer_->target_bounds();
     case SNAP_MAXIMIZE:
       return gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
     case SNAP_MINIMIZE: {
@@ -275,6 +289,13 @@ gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
       NOTREACHED();
   }
   return gfx::Rect();
+}
+
+gfx::Point FrameMaximizeButton::LocationForSnapSizer(
+    const gfx::Point& location) const {
+  gfx::Point result(location);
+  views::View::ConvertPointToScreen(this, &result);
+  return result;
 }
 
 void FrameMaximizeButton::Snap() {
