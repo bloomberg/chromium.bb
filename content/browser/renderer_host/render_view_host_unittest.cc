@@ -9,6 +9,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
@@ -61,6 +62,16 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   contents()->Stop();
   controller().Reload(false);
   EXPECT_FALSE(test_rvh()->is_waiting_for_unload_ack_for_testing());
+}
+
+// Ensure we do not grant bindings to a process shared with unprivileged views.
+TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
+  // Create another view in the same process.
+  scoped_ptr<TestTabContents> new_tab(
+      new TestTabContents(browser_context(), rvh()->GetSiteInstance()));
+
+  rvh()->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
+  EXPECT_FALSE(rvh()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
 }
 
 class MockDraggingRenderViewHostDelegateView
