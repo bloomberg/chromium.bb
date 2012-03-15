@@ -33,7 +33,6 @@ void Usage() {
   printf("  -output_cues <int>          >0 outputs cues element\n");
   printf("  -cues_on_video_track <int>  >0 outputs cues on video track\n");
   printf("  -cues_on_audio_track <int>  >0 outputs cues on audio track\n");
-  printf("                              0 outputs cues on audio track\n");
   printf("  -max_cluster_duration <double> in seconds\n");
   printf("  -max_cluster_size <int>     in bytes\n");
   printf("  -switch_tracks <int>        >0 switches tracks in output\n");
@@ -64,7 +63,7 @@ int main(int argc, char* argv[]) {
   bool live_mode = false;
   bool output_cues = true;
   bool cues_on_video_track = true;
-  bool cues_on_audio_track = true;
+  bool cues_on_audio_track = false;
   uint64 max_cluster_duration = 0;
   uint64 max_cluster_size = 0;
   bool switch_tracks = false;
@@ -79,50 +78,56 @@ int main(int argc, char* argv[]) {
   uint64 display_height = 0;
   uint64 stereo_mode = 0;
 
+  const int argc_check = argc - 1;
   for (int i = 1; i < argc; ++i) {
     char* end;
 
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i])) {
       Usage();
       return EXIT_SUCCESS;
-    } else if (!strcmp("-i", argv[i])) {
+    } else if (!strcmp("-i", argv[i]) && i < argc_check) {
       input = argv[++i];
-    } else if (!strcmp("-o", argv[i])) {
+    } else if (!strcmp("-o", argv[i]) && i < argc_check) {
       output = argv[++i];
-    } else if (!strcmp("-video", argv[i])) {
+    } else if (!strcmp("-video", argv[i]) && i < argc_check) {
       output_video = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-audio", argv[i])) {
+    } else if (!strcmp("-audio", argv[i]) && i < argc_check) {
       output_audio = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-live", argv[i])) {
+    } else if (!strcmp("-live", argv[i]) && i < argc_check) {
       live_mode = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-output_cues", argv[i])) {
+    } else if (!strcmp("-output_cues", argv[i]) && i < argc_check) {
       output_cues = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-cues_on_video_track", argv[i])) {
+    } else if (!strcmp("-cues_on_video_track", argv[i]) && i < argc_check) {
       cues_on_video_track = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-cues_on_audio_track", argv[i])) {
+      if (cues_on_video_track)
+        cues_on_audio_track = false;
+    } else if (!strcmp("-cues_on_audio_track", argv[i]) && i < argc_check) {
       cues_on_audio_track = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-max_cluster_duration", argv[i])) {
+      if (cues_on_audio_track)
+        cues_on_video_track = false;
+    } else if (!strcmp("-max_cluster_duration", argv[i]) && i < argc_check) {
       const double seconds = strtod(argv[++i], &end);
       max_cluster_duration =
           static_cast<uint64>(seconds * 1000000000.0);
-    } else if (!strcmp("-max_cluster_size", argv[i])) {
+    } else if (!strcmp("-max_cluster_size", argv[i]) && i < argc_check) {
       max_cluster_size = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-switch_tracks", argv[i])) {
+    } else if (!strcmp("-switch_tracks", argv[i]) && i < argc_check) {
       switch_tracks = strtol(argv[++i], &end, 10) == 0 ? false : true;
-    } else if (!strcmp("-audio_track_number", argv[i])) {
+    } else if (!strcmp("-audio_track_number", argv[i]) && i < argc_check) {
       audio_track_number = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-video_track_number", argv[i])) {
+    } else if (!strcmp("-video_track_number", argv[i]) && i < argc_check) {
       video_track_number = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-chunking", argv[i])) {
+    } else if (!strcmp("-chunking", argv[i]) && i < argc_check) {
       chunking = true;
       chunk_name = argv[++i];
-    } else if (!strcmp("-display_width", argv[i])) {
+    } else if (!strcmp("-display_width", argv[i]) && i < argc_check) {
       display_width = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-display_height", argv[i])) {
+    } else if (!strcmp("-display_height", argv[i]) && i < argc_check) {
       display_height = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-stereo_mode", argv[i])) {
+    } else if (!strcmp("-stereo_mode", argv[i]) && i < argc_check) {
       stereo_mode = strtol(argv[++i], &end, 10);
-    } else if (!strcmp("-output_cues_block_number", argv[i])) {
+    } else if (!strcmp("-output_cues_block_number", argv[i]) &&
+               i < argc_check) {
       output_cues_block_number =
           strtol(argv[++i], &end, 10) == 0 ? false : true;
     }
