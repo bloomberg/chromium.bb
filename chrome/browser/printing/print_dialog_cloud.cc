@@ -38,6 +38,11 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/foreground_helper.h"
+#endif
+
 #include "webkit/glue/webpreferences.h"
 
 #include "grit/generated_resources.h"
@@ -45,6 +50,7 @@
 #if defined(USE_AURA)
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
+#include "ui/aura/root_window.h"
 #include "ui/views/widget/widget.h"
 #endif
 
@@ -684,15 +690,35 @@ void CreateDialogImpl(const FilePath& path_to_file,
           callback);
   if (modal) {
     DCHECK(browser);
+
 #if defined(USE_AURA)
     HtmlDialogView* html_view =
         new HtmlDialogView(profile, browser, dialog_delegate);
     views::Widget::CreateWindowWithParent(html_view,
         browser->window()->GetNativeHandle());
     html_view->InitDialog();
-    html_view->GetWidget()->Show();
+    views::Widget* widget = html_view->GetWidget();
+    DCHECK(widget);
+    widget->Show();
+#if defined(OS_WIN)
+    gfx::NativeWindow window = widget->GetNativeWindow();
+#endif
 #else
-    browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
+#if defined(OS_WIN)
+    gfx::NativeWindow window =
+#endif
+        browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
+#endif
+#if defined(OS_WIN)
+    HWND dialog_handle;
+#if defined(USE_AURA)
+    dialog_handle = window->GetRootWindow()->GetAcceleratedWidget();
+#else
+    dialog_handle = window;
+#endif
+    if (::GetForegroundWindow() != dialog_handle) {
+      ui::ForegroundHelper::SetForeground(dialog_handle);
+    }
 #endif
   } else {
     browser::ShowHtmlDialog(NULL,
