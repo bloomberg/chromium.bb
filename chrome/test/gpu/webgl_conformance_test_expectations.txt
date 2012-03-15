@@ -19,19 +19,7 @@
 //  91533 WIN : gl_min_uniforms = FAIL
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
-// -----------------------------------------------------------------------------
-// TIMEOUT TESTS
-// -----------------------------------------------------------------------------
-
-// The following two tests TIMEOUT on GPU Linux Tests (dbg)(1), with ATI card.
-WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
-WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
-
 115122 LINUX WIN7 NVIDIA DEBUG : conformance_textures_tex_image_and_sub_image_2d_with_video = TIMEOUT
-
-// -----------------------------------------------------------------------------
-// FAILING TESTS
-// -----------------------------------------------------------------------------
 
 103759 MAC WIN LINUX : conformance_more_functions_readPixelsBadArgs = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
@@ -110,6 +98,10 @@ UNFILED MAC AMD : conformance_glsl_functions_glsl_function_distance = FAIL
 UNFILED MAC AMD : conformance_glsl_functions_glsl_function_dot = FAIL
 UNFILED MAC AMD : conformance_glsl_functions_glsl_function_length = FAIL
 UNFILED MAC AMD : conformance_glsl_variables_gl_pointcoord = FAIL
+UNFILED MAC AMD : conformance_reading_read_pixels_test = TIMEOUT
+
+WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
+WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
@@ -122,9 +114,4 @@ UNFILED LINUX INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_size = FAIL
-
-// -----------------------------------------------------------------------------
-// FLAKY TESTS
-// -----------------------------------------------------------------------------
-
 
