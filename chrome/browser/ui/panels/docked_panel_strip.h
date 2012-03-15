@@ -107,6 +107,8 @@ class DockedPanelStrip : public PanelStrip,
   int num_temporary_layout_panels() const {
     return panels_in_temporary_layout_.size();
   }
+
+  int minimized_panel_count() const {return minimized_panel_count_; }
 #endif
 
  private:
@@ -135,8 +137,7 @@ class DockedPanelStrip : public PanelStrip,
   void InsertExistingPanelAtDefaultPosition(Panel* panel, bool refresh_bounds);
 
   // Keep track of the minimized panels to control mouse watching.
-  void IncrementMinimizedPanels();
-  void DecrementMinimizedPanels();
+  void UpdateMinimizedPanelCount();
 
   // Help functions to drag the given panel.
   void DragLeft(Panel* dragging_panel);

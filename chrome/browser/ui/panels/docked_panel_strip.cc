@@ -180,6 +180,7 @@ void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
     if (x > (*iter)->GetBounds().x())
       break;
   panels_.insert(iter, panel);
+  UpdateMinimizedPanelCount();
 
   // This will automatically update all affected panels due to the insertion.
   if (iter != panels_.end())
@@ -195,7 +196,6 @@ void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(
   int width = restored_size.width();
 
   int x = FitPanelWithWidth(width);
-
   if (update_bounds) {
     Panel::ExpansionState expansion_state_to_restore;
     if (panel->expansion_state() == Panel::EXPANDED) {
@@ -208,7 +208,6 @@ void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(
         expansion_state_to_restore = Panel::MINIMIZED;
         height = Panel::kMinimizedPanelHeight;
       }
-      IncrementMinimizedPanels();
     }
     int y =
         GetBottomPositionForExpansionState(expansion_state_to_restore) - height;
@@ -221,6 +220,7 @@ void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(
   }
 
   panels_.push_back(panel);
+  UpdateMinimizedPanelCount();
 }
 
 int DockedPanelStrip::GetMaxPanelWidth() const {
@@ -243,9 +243,6 @@ int DockedPanelStrip::GetRightMostAvailablePosition() const {
 void DockedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   panel->SetPanelStrip(NULL);
-
-  if (panel->expansion_state() != Panel::EXPANDED)
-    DecrementMinimizedPanels();
 
   if (panel->has_temporary_layout()) {
     panels_in_temporary_layout_.erase(panel);
@@ -287,6 +284,9 @@ void DockedPanelStrip::RemovePanel(Panel* panel) {
 
     RefreshLayout();
   }
+
+  if (panel->expansion_state() != Panel::EXPANDED)
+    UpdateMinimizedPanelCount();
 }
 
 bool DockedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
@@ -447,26 +447,23 @@ void DockedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel, bool aborted) {
 void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Size size = panel->restored_size();
   Panel::ExpansionState expansion_state = panel->expansion_state();
-  Panel::ExpansionState old_state = panel->old_expansion_state();
   switch (expansion_state) {
     case Panel::EXPANDED:
-      if (old_state == Panel::TITLE_ONLY || old_state == Panel::MINIMIZED)
-        DecrementMinimizedPanels();
+
       break;
     case Panel::TITLE_ONLY:
       size.set_height(panel->TitleOnlyHeight());
-      if (old_state == Panel::EXPANDED)
-        IncrementMinimizedPanels();
+
       break;
     case Panel::MINIMIZED:
       size.set_height(Panel::kMinimizedPanelHeight);
-      if (old_state == Panel::EXPANDED)
-        IncrementMinimizedPanels();
+
       break;
     default:
       NOTREACHED();
       break;
   }
+  UpdateMinimizedPanelCount();
 
   int bottom = GetBottomPositionForExpansionState(expansion_state);
   gfx::Rect bounds = panel->GetBounds();
@@ -517,18 +514,21 @@ bool DockedPanelStrip::IsPanelMinimized(const Panel* panel) const {
   return panel->expansion_state() != Panel::EXPANDED;
 }
 
-void DockedPanelStrip::IncrementMinimizedPanels() {
-  minimized_panel_count_++;
-  if (minimized_panel_count_ == 1)
-    panel_manager_->mouse_watcher()->AddObserver(this);
-  DCHECK_LE(minimized_panel_count_, num_panels());
-}
+void DockedPanelStrip::UpdateMinimizedPanelCount() {
+  int prev_minimized_panel_count = minimized_panel_count_;
+  minimized_panel_count_ = 0;
+  for (Panels::const_iterator panel_iter = panels_.begin();
+        panel_iter != panels_.end(); ++panel_iter) {
+    if ((*panel_iter)->expansion_state() != Panel::EXPANDED)
+      minimized_panel_count_++;
+    }
 
-void DockedPanelStrip::DecrementMinimizedPanels() {
-  minimized_panel_count_--;
-  DCHECK_GE(minimized_panel_count_, 0);
-  if (minimized_panel_count_ == 0)
+  if (prev_minimized_panel_count == 0 && minimized_panel_count_ > 0)
+    panel_manager_->mouse_watcher()->AddObserver(this);
+  else if (prev_minimized_panel_count > 0 &&  minimized_panel_count_ == 0)
     panel_manager_->mouse_watcher()->RemoveObserver(this);
+
+  DCHECK_LE(minimized_panel_count_, num_panels());
 }
 
 void DockedPanelStrip::ResizePanelWindow(

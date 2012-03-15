@@ -169,17 +169,33 @@ void PanelManager::EndDragging(bool cancelled) {
 }
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
-  docked_strip_->OnPanelExpansionStateChanged(panel);
+  // For panels outside of the docked strip changing state is a no-op.
+  // But since this method may be called for panels in other strips
+  // we need to check this condition.
+  if (panel->panel_strip() == docked_strip_.get())
+    docked_strip_->OnPanelExpansionStateChanged(panel);
+
 }
 
 void PanelManager::OnWindowAutoResized(Panel* panel,
                                        const gfx::Size& preferred_window_size) {
   DCHECK(auto_sizing_enabled_);
-  docked_strip_->ResizePanelWindow(panel, preferred_window_size);
+  // Even though overflow panels are always minimized, we need
+  // to keep track of their size to put them back into the
+  // docked strip when they fit. So the docked panel strip manages
+  // the size of panels for the overflow strip as well.
+  if (panel->panel_strip() == overflow_strip_.get())
+    docked_strip_->ResizePanelWindow(panel, preferred_window_size);
+  else
+    panel->panel_strip()->ResizePanelWindow(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
-  docked_strip_->ResizePanelWindow(panel, new_size);
+  // See the comment in OnWindowAutoResized()
+  if (panel->panel_strip() == overflow_strip_.get())
+    docked_strip_->ResizePanelWindow(panel, new_size);
+  else
+    panel->panel_strip()->ResizePanelWindow(panel, new_size);
   panel->SetAutoResizable(false);
 }
 

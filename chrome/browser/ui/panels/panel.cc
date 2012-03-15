@@ -52,8 +52,7 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       auto_resizable_(false),
       always_on_top_(false),
       in_preview_mode_(false),
-      expansion_state_(EXPANDED),
-      old_expansion_state_(EXPANDED) {
+      expansion_state_(EXPANDED) {
 }
 
 Panel::~Panel() {
@@ -178,7 +177,6 @@ void  Panel::SetPanelStrip(PanelStrip* new_strip) {
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
-  old_expansion_state_ = expansion_state_;
   expansion_state_ = new_state;
 
   manager()->OnPanelExpansionStateChanged(this);

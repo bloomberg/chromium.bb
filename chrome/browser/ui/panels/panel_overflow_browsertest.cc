@@ -354,6 +354,46 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, AddMinimizedTillOverflow) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+  OverflowPanelStrip* overflow_strip = panel_manager->overflow_strip();
+
+  EXPECT_EQ(0, panel_manager->num_panels());
+  EXPECT_EQ(0, docked_strip->num_panels());
+  EXPECT_EQ(0, overflow_strip->num_panels());
+
+  CreatePanelParams params("Test", gfx::Rect(0, 0, 100, 100), SHOW_AS_INACTIVE);
+
+  // We want our panels to be uninitialized at the beginning so that
+  // we test minimizing panels in temp layout and its effect on
+  // the minimized panel count.
+  params.wait_for_fully_created = false;
+
+  unsigned int num_panels_to_add = 10;
+  unsigned int num_panels = 0;
+  for (; num_panels < num_panels_to_add; ++num_panels) {
+    Panel* panel = CreatePanelWithParams(params);
+    panel->SetExpansionState(Panel::MINIMIZED);
+
+    panel->panel_strip()->RemovePanel(panel);
+    EXPECT_EQ(NULL, panel->panel_strip());
+    panel->set_has_temporary_layout(false);
+
+    docked_strip->AddPanel(panel, PanelStrip::DEFAULT_POSITION);
+    EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+    EXPECT_EQ(false, panel->has_temporary_layout());
+  }
+
+  EXPECT_EQ(num_panels_to_add, num_panels);
+  EXPECT_EQ(0, docked_strip->num_temporary_layout_panels());
+  EXPECT_EQ(num_panels, static_cast<unsigned int>
+                (docked_strip->minimized_panel_count() +
+                 overflow_strip->num_panels()));
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
                        CreatePanelOnDelayedOverflow) {
   // Create 2 big panels.
