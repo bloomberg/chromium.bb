@@ -204,6 +204,19 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // Cancels a pairing or connection attempt to a rmeote device.
   void CancelPairing();
 
+  // Disconnects the device, terminating the low-level ACL connection
+  // and any application connections using it. Link keys and other pairing
+  // information are not discarded, and the device object is not deleted.
+  // If the request fails, |error_callback| will be called.
+  void Disconnect(ErrorCallback error_callback);
+
+  // Disconnects the device, terminating the low-level ACL connection
+  // and any application connections using it, and then discards link keys
+  // and other pairing information. The device object remainds valid until
+  // returing from the calling function, after which it should be assumed to
+  // have been deleted. If the request fails, |error_callback| will be called.
+  void Forget(ErrorCallback error_callback);
+
  private:
   friend class BluetoothAdapter;
 
@@ -226,6 +239,20 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // our own Connect() and PairAndConnect() calls.
   void ConnectCallback(ErrorCallback error_callback,
                        const dbus::ObjectPath& device_path, bool success);
+
+  // Called by BluetoothDeviceClient when a call to Disconnect() completes,
+  // |success| indicates whether or not the request succeeded, |error_callback|
+  // is the callback provided to Disconnect() and |device_path| is the device
+  // disconnected.
+  void DisconnectCallback(ErrorCallback error_callback,
+                          const dbus::ObjectPath& device_path, bool success);
+
+  // Called by BluetoothAdapterClient when a call to RemoveDevice() completes,
+  // |success| indicates whether or not the request succeeded, |error_callback|
+  // is the callback provided to Forget() and |adapter_path| is the d-bus
+  // object path of the adapter that performed the removal.
+  void ForgetCallback(ErrorCallback error_callback,
+                      const dbus::ObjectPath& adapter_path, bool success);
 
   // BluetoothDeviceClient::Observer override.
   //

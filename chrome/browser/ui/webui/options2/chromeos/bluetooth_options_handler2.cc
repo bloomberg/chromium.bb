@@ -255,11 +255,15 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
     DVLOG(1) << "Reject pairing: " << address;
     device->RejectPairing();
   } else if (command == kDisconnectCommand) {
-    // TODO(keybuk): implement
+    // Disconnect from device.
     DVLOG(1) << "Disconnect device: " << address;
+    device->Disconnect(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                                  weak_ptr_factory_.GetWeakPtr()));
   } else if (command == kForgetCommand) {
-    // TODO(keybuk): implement
+    // Disconnect from device and delete pairing information.
     DVLOG(1) << "Forget device: " << address;
+    device->Forget(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                              weak_ptr_factory_.GetWeakPtr()));
   } else {
     LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }

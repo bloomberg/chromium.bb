@@ -279,6 +279,50 @@ void BluetoothDevice::CancelPairing() {
   }
 }
 
+void BluetoothDevice::Disconnect(ErrorCallback error_callback) {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      Disconnect(object_path_,
+                 base::Bind(&BluetoothDevice::DisconnectCallback,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            error_callback));
+
+}
+
+void BluetoothDevice::DisconnectCallback(ErrorCallback error_callback,
+                                         const dbus::ObjectPath& device_path,
+                                         bool success) {
+  DCHECK(device_path == object_path_);
+  if (success) {
+    DVLOG(1) << "Disconnection successful: " << address_;
+  } else {
+    LOG(WARNING) << "Disconnection failed: " << address_;
+    error_callback.Run();
+  }
+}
+
+void BluetoothDevice::Forget(ErrorCallback error_callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      RemoveDevice(adapter_->object_path_,
+                   object_path_,
+                   base::Bind(&BluetoothDevice::ForgetCallback,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              error_callback));
+}
+
+void BluetoothDevice::ForgetCallback(ErrorCallback error_callback,
+                                     const dbus::ObjectPath& adapter_path,
+                                     bool success) {
+  // It's quite normal that this path never gets called on success; we use a
+  // weak pointer, and bluetoothd might send the DeviceRemoved signal before
+  // the method reply, in which case this object is deleted and the
+  // callback never takes place. Therefore don't do anything here for the
+  // success case.
+  if (!success) {
+    LOG(WARNING) << "Forget failed: " << address_;
+    error_callback.Run();
+  }
+}
+
 void BluetoothDevice::DisconnectRequested(const dbus::ObjectPath& object_path) {
   DCHECK(object_path == object_path_);
 }
