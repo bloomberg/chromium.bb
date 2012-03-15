@@ -20,6 +20,12 @@ using protocol::KeyEvent;
 
 namespace {
 
+// USB to XKB keycode map table.
+#define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
+#define INVALID_KEYCODE 0x0000
+#include "remoting/host/usb_keycode_map.h"
+#undef USB_KEYMAP
+
 // A class to generate events on Windows.
 class EventExecutorWin : public EventExecutor {
  public:
@@ -69,13 +75,34 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
+uint16_t UsbKeycodeToWinScancode(uint32_t usb_keycode) {
+  for (int i = 0; i < arraysize(usb_keycode_map); i++) {
+    if (usb_keycode_map[i].usb_keycode == usb_keycode)
+      return usb_keycode_map[i].native_keycode;
+  }
+
+  return INVALID_KEYCODE;
+}
+
 void EventExecutorWin::HandleKey(const KeyEvent& event) {
   int key = event.keycode();
   bool down = event.pressed();
 
-  // Calculate scan code from virtual key.
-  HKL hkl = GetKeyboardLayout(0);
-  int scan_code = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, hkl);
+  // Calculate scan code from key event.
+  int scancode = INVALID_KEYCODE;
+  if (event.has_usb_keycode() && event.usb_keycode() != 0) {
+    int scancode = UsbKeycodeToWinScancode(event.usb_keycode());
+    LOG(INFO) << std::hex << "Host received keycode: " << event.keycode()
+            << " usb_keycode: " << event.usb_keycode()
+            << " to scancode: " << scancode
+            << std::dec;
+  } else {
+    HKL hkl = GetKeyboardLayout(0);
+    scancode = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, hkl);
+  }
+
+  if (scancode == INVALID_KEYCODE)
+    return;
 
   INPUT input;
   memset(&input, 0, sizeof(input));
@@ -83,11 +110,11 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   input.type = INPUT_KEYBOARD;
   input.ki.time = 0;
   input.ki.wVk = key;
-  input.ki.wScan = scan_code;
+  input.ki.wScan = scancode;
 
   // Flag to mark extended 'e0' key scancodes. Without this, the left and
   // right windows keys will not be handled properly (on US keyboard).
-  if ((scan_code & 0xFF00) == 0xE000) {
+  if ((scancode & 0xFF00) == 0xE000) {
     input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
   }
 
