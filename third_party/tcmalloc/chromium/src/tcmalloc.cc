@@ -1487,6 +1487,12 @@ void* cpp_memalign(size_t align, size_t size) {
 
 // As promised, the definition of this function, declared above.
 size_t TCMallocImplementation::GetAllocatedSize(const void* ptr) {
+  // Chromium workaround for third-party code calling tc_malloc_size(NULL), see
+  // http://code.google.com/p/chromium/issues/detail?id=118087
+  // Note: this is consistent with GLIBC's implementation of
+  // malloc_usable_size(NULL).
+  if (ptr == NULL)
+    return 0;
   ASSERT(TCMallocImplementation::GetOwnership(ptr)
          != TCMallocImplementation::kNotOwned);
   return ExcludeSpaceForMark(
