@@ -13,6 +13,54 @@ class JSChecker(object):
     self.output_api = output_api
     self.file_filter = file_filter
 
+  def RegexCheck(self, line_number, line, regex, message):
+    """Searches for |regex| in |line| to check for a particular style
+       violation, returning a message like the one below if the regex matches.
+       The |regex| must have exactly one capturing group so that the relevant
+       part of |line| can be highlighted. If more groups are needed, use
+       "(?:...)" to make a non-capturing group. Sample message:
+
+       line 6: Use var instead of const.
+           const foo = bar();
+           ^^^^^
+    """
+    match = self.input_api.re.search(regex, line)
+    if match:
+      assert len(match.groups()) == 1
+      start = match.start(1)
+      length = match.end(1) - start
+      return '  line %d: %s\n%s\n%s' % (
+          line_number,
+          message,
+          line,
+          self.error_highlight(start, length))
+    return ''
+
+  def ConstCheck(self, i, line):
+    """Check for use of the 'const' keyword."""
+    if self.input_api.re.search(r'\*\s+@const\s*', line):
+      # Probably a JsDoc line
+      return ''
+
+    return self.RegexCheck(i, line, r'(?:^|\s)(const)\s',
+        'Use var instead of const.')
+
+  def GetElementByIdCheck(self, i, line):
+    """Checks for use of 'getElementById' instead of '$'."""
+    return self.RegexCheck(i, line, r"(document\.getElementById\(')",
+        "Use $('id') instead of document.getElementById('id')")
+
+  def ChromeSendCheck(self, i, line):
+    """Checks for a particular misuse of 'chrome.send'."""
+    return self.RegexCheck(i, line, r"chrome\.send\('[^']+', (\[\])\)",
+        'Passing an empty array to chrome.send is unnecessary.')
+
+  def error_highlight(self, start, length):
+    """Takes a start position and a length, and produces a row of '^'s to
+       highlight the corresponding part of a string.
+    """
+    return start * ' ' + length * '^'
+
   def RunChecks(self):
     """Check for violations of the Chromium JavaScript style guide. See
        http://chromium.org/developers/web-development-style-guide#TOC-JavaScript
@@ -95,21 +143,11 @@ class JSChecker(object):
       # * the |const| keyword
       # * Passing an empty array to |chrome.send()|
       for i, line in enumerate(f.NewContents(), start=1):
-        if 'getElementById' in line:
-          error_lines.append('  line %d: %s\n%s' % (
-              i,
-              "Use $('id') instead of document.getElementById('id')",
-              line))
-        if self.input_api.re.search(r'[^@]\bconst\b', line):
-          error_lines.append('  line %d: %s\n%s' % (
-              i,
-              "Use var instead of const.",
-              line))
-        if self.input_api.re.search(r"chrome\.send\('[^']+', \[\]\)", line):
-          error_lines.append('  line %d: %s\n%s' % (
-              i,
-              'Passing an empty array to chrome.send is unnecessary.',
-              line))
+        error_lines += filter(None, [
+            self.GetElementByIdCheck(i, line),
+            self.ConstCheck(i, line),
+            self.ChromeSendCheck(i, line),
+        ])
 
       # Use closure_linter to check for several different errors
       error_handler = ErrorHandlerImpl(self.input_api.re)
@@ -119,11 +157,14 @@ class JSChecker(object):
           f.LocalPath()))
 
       for error in error_handler.GetErrors():
-        error_msg = '  line %d: E%04d: %s\n%s' % (
+        highlight = self.error_highlight(
+            error.token.start_index, error.token.length)
+        error_msg = '  line %d: E%04d: %s\n%s\n%s' % (
             error.token.line_number,
             error.code,
             error.message,
-            error.token.line)
+            error.token.line.rstrip(),
+            highlight)
         error_lines.append(error_msg)
 
       if error_lines:
