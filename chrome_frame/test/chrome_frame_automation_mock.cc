@@ -8,10 +8,7 @@
 
 const int kLongWaitTimeout = 25 * 1000;
 
-// Note that this test fails occasionally. Disabling it altogether (rather than
-// marking as flaky to see if the failure cascades down to the next test.
-// http://crbug.com/81479
-TEST(ChromeFrame, DISABLED_Launch) {
+TEST(ChromeFrame, Launch) {
   MessageLoopForUI loop;
   AutomationMockLaunch mock_launch(&loop, kLongWaitTimeout);
 
