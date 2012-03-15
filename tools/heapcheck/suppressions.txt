@@ -1796,8 +1796,6 @@
    fun:ui::ResourceBundle::LoadBitmap
    fun:ui::ResourceBundle::GetImageNamed
    fun:ui::ResourceBundle::GetBitmapNamed
-   ...
-   fun:chromeos::UserManagerImplWrapper::*
 }
 {
    bug_116996_c
