@@ -1152,8 +1152,8 @@ FileManager.prototype = {
         var entry =
             this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
 
-        return DirectoryModel.getRootType(entry.fullPath) ==
-               DirectoryModel.RootType.REMOVABLE;
+        return entry && DirectoryModel.getRootType(entry.fullPath) ==
+                        DirectoryModel.RootType.REMOVABLE;
     }
   };
 
