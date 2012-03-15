@@ -218,11 +218,11 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Keeps whether screen should be shown for OOBE.
   bool oobe_ui_;
 
-  // Whether webui has been loaded for the first time.
-  bool is_first_webui_ready_;
+  // Is focus still stolen from Gaia page?
+  bool focus_stolen_;
 
-  // Whether it is the first attempt to load the gaia extension.
-  bool is_first_attempt_;
+  // Has Gaia page silent load been started for the current sign-in attempt?
+  bool gaia_silent_load_;
 
   // True if dns cache cleanup is done.
   bool dns_cleared_;

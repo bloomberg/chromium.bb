@@ -256,8 +256,8 @@ SigninScreenHandler::SigninScreenHandler()
     : delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
-      is_first_webui_ready_(false),
-      is_first_attempt_(true),
+      focus_stolen_(false),
+      gaia_silent_load_(false),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
@@ -552,12 +552,14 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
 
-  LoadAuthExtension(!is_first_attempt_, false, false);
+  LoadAuthExtension(!gaia_silent_load_, false, false);
   ShowScreen(kGaiaSigninScreen, NULL);
 
-  if (is_first_attempt_) {
-    is_first_attempt_ = false;
-    if (is_first_webui_ready_)
+  if (gaia_silent_load_) {
+    // The variable is assigned to false because silently loaded Gaia page was
+    // used.
+    gaia_silent_load_ = false;
+    if (focus_stolen_)
       HandleLoginWebuiReady(NULL);
   }
 }
@@ -724,10 +726,10 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email_);
-  LOG(ERROR) << "HandleShowAddUser: email=" << email_ << ", first_attempt="
-             << is_first_attempt_;
+  LOG(ERROR) << "HandleShowAddUser: email=" << email_ << ", gaia_sielnt_load="
+             << gaia_silent_load_;
 
-  if (is_first_attempt_ && email_.empty()) {
+  if (gaia_silent_load_ && email_.empty()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
     ShowSigninScreenIfReady();
@@ -827,10 +829,12 @@ void SigninScreenHandler::HandleAccountPickerReady(
   // loaded because it can affect the loading speed.
   // Do not load the extension for the screen locker, see crosbug.com/25018.
   if (!ScreenLocker::default_screen_locker() &&
-      is_first_attempt_ &&
+      !gaia_silent_load_ &&
       !cookie_remover_ &&
-      !dns_clear_task_running_)
+      !dns_clear_task_running_) {
+    gaia_silent_load_ = true;
     LoadAuthExtension(true, true, false);
+  }
 
   if (ScreenLocker::default_screen_locker()) {
     content::NotificationService::current()->Notify(
@@ -842,29 +846,28 @@ void SigninScreenHandler::HandleAccountPickerReady(
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
   // crosbug.com/26646.
-  LOG(ERROR) << "HandleLoginWebuiReady: first_webui_ready="
-             << is_first_webui_ready_
-             << ", first_attempt=" << is_first_attempt_;
+  LOG(ERROR) << "HandleLoginWebuiReady: focus_stolen=" << focus_stolen_
+             << ", gaia_silent_load=" << gaia_silent_load_;
 
-  if (is_first_webui_ready_) {
+  if (focus_stolen_) {
     // Set focus to the Gaia page.
     // TODO(altimofeev): temporary solution, until focus parameters are
     // implemented on the Gaia side.
     // Do this only once. Any subsequent call would relod GAIA frame.
-    is_first_webui_ready_ = false;
+    focus_stolen_ = false;
     const char code[] = "gWindowOnLoad();";
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(
         ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
         ASCIIToUTF16(code));
   }
-  if (!is_first_attempt_) {
+  if (!gaia_silent_load_) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_WEBUI_READY,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
   } else {
-    is_first_webui_ready_ = true;
+    focus_stolen_ = true;
     // Prevent focus stealing by the Gaia page.
     // TODO(altimofeev): temporary solution, until focus parameters are
     // implemented on the Gaia side.
