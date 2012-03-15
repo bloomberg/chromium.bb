@@ -122,7 +122,7 @@ cr.define('options', function() {
         return;
 
       var target = e.target;
-      if (target.classList.contains('close-button')) {
+      if (target.classList.contains('row-delete-button')) {
         var listItem = this.getListItemAncestor(target);
         var selected = this.selectionModel.selectedIndexes;
 
