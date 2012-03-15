@@ -554,7 +554,7 @@ cr.define('options', function() {
       startStopButton.disabled = syncData.managed ||
           syncData.setupInProgress;
       startStopButton.hidden =
-          syncData.setupCompleted && cr.isChromeOs;
+          syncData.setupCompleted && cr.isChromeOS;
       startStopButton.textContent =
           syncData.setupCompleted ?
               localStrings.getString('syncButtonTextStop') :
