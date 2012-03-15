@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/i18n/case_conversion.h"
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/escape.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -96,12 +99,24 @@ URLPatternSet GetAllMatchingPatterns(const FileBrowserHandler* handler,
 
 typedef std::set<const FileBrowserHandler*> ActionSet;
 
+std::string EscapedUtf8ToLower(const std::string& str) {
+  string16 utf16 = UTF8ToUTF16(
+      net::UnescapeURLComponent(str, net::UnescapeRule::NORMAL));
+  return net::EscapeUrlEncodedData(
+      UTF16ToUTF8(base::i18n::ToLower(utf16)),
+      false /* do not replace space with plus */);
+}
+
 bool GetFileBrowserHandlers(Profile* profile,
                             const GURL& selected_file_url,
                             ActionSet* results) {
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return false;  // In unit-tests, we may not have an ExtensionService.
+
+  // We need case-insensitive matching, and pattern in the handler is already
+  // in lower case.
+  const GURL lowercase_url(EscapedUtf8ToLower(selected_file_url.spec()));
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -118,7 +133,7 @@ bool GetFileBrowserHandlers(Profile* profile,
          action_iter != extension->file_browser_handlers()->end();
          ++action_iter) {
       const FileBrowserHandler* action = action_iter->get();
-      if (!action->MatchesURL(selected_file_url))
+      if (!action->MatchesURL(lowercase_url))
         continue;
 
       results->insert(action_iter->get());

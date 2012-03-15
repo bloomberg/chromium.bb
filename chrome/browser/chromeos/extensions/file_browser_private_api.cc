@@ -548,10 +548,6 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     std::string file_url;
     if (!files_list->GetString(i, &file_url))
       return false;
-
-    // We need case-insensitive matching, and pattern in handler is already
-    // in lower case.
-    StringToLowerASCII(&file_url);
     file_urls.push_back(GURL(file_url));
   }
 
