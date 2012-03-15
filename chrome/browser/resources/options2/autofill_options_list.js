@@ -10,9 +10,8 @@ cr.define('options.autofillOptions', function() {
 
   function AutofillEditProfileButton(guid, edit) {
     var editButtonEl = document.createElement('button');
-    editButtonEl.className = 'raw-button custom-appearance';
-    editButtonEl.textContent =
-        templateData.autofillEditProfileButton;
+    editButtonEl.className = 'list-inline-button custom-appearance';
+    editButtonEl.textContent = templateData.autofillEditProfileButton;
     editButtonEl.onclick = function(e) { edit(guid); };
 
     // Don't select the row when clicking the button.

@@ -20,7 +20,7 @@
 
 .autofill-list-item + img {
   -webkit-padding-end: 20px;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 #autofill-options > div:last-child {
@@ -37,15 +37,11 @@
   margin: 5px 5px;
 }
 
-.autofill-list-item + button,
-.autofill-list-item + img + button {
-  /* Gets overwritten by raw-button:hover */
-  background: rgb(138, 170, 237) !important;
-  color: #fff;
+#autofill-options .list-inline-button {
   margin-top: 0;
+  vertical-align: top;
 }
 
-#address-list > div:not(:hover) * button,
-#creditcard-list > div:not(:hover) * button {
+#autofill-options div[role='listitem']:not(:hover) .list-inline-button {
   display: none;
 }

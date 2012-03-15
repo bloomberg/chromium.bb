@@ -63,7 +63,7 @@ cr.define('options.passwordManager', function() {
       if (showPasswords) {
         var button = this.ownerDocument.createElement('button');
         button.hidden = true;
-        button.className = 'password-button custom-appearance';
+        button.className = 'list-inline-button custom-appearance';
         button.textContent = localStrings.getString('passwordShowButton');
         button.addEventListener('click', this.onClick_, true);
         passwordInputDiv.appendChild(button);

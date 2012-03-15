@@ -63,14 +63,13 @@
   -webkit-box-flex: 1;
 }
 
-.search-engine-list .url-column button {
-  -webkit-margin-start: 3px;
-  background: rgb(138, 170, 237);
-  color: #fff;
+.search-engine-list .url-column .list-inline-button {
   margin-top: 0;
+  padding: 1px 6px;
 }
 
-.search-engine-list > :not(:hover):not([editing]) .url-column button {
+.search-engine-list > :not(:hover):not([editing]) .url-column
+    .list-inline-button {
   display: none;
 }
 

@@ -362,6 +362,21 @@ list > [editing] input:invalid {
   background-color: pink;
 }
 
+.list-inline-button {
+  -webkit-appearance: none;
+  -webkit-transition: opacity 150ms;
+  background: rgb(138, 170, 237);
+  border: none;
+  border-radius: 2px;
+  color: white;
+  font-weight: bold;
+  opacity: 0.7;
+}
+
+.list-inline-button:hover {
+  opacity: 1;
+}
+
 .option-name {
   padding-right: 5px;
 }
