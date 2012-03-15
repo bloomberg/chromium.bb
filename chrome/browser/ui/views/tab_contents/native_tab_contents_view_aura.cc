@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "webkit/glue/webdropdata.h"
@@ -163,6 +164,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.parent = NULL;
   params.can_activate = true;
   GetWidget()->Init(params);
+  GetNativeView()->layer()->SetMasksToBounds(true);
   GetNativeWindow()->SetName("NativeTabContentsViewAura");
 #if defined(USE_ASH)
   ash::SetChildWindowVisibilityChangesAnimated(GetWidget()->GetNativeView());

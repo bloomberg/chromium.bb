@@ -171,6 +171,14 @@ gfx::Rect Layer::GetTargetBounds() const {
   return bounds_;
 }
 
+void Layer::SetMasksToBounds(bool masks_to_bounds) {
+  web_layer_.setMasksToBounds(masks_to_bounds);
+}
+
+bool Layer::GetMasksToBounds() const {
+  return web_layer_.masksToBounds();
+}
+
 void Layer::SetOpacity(float opacity) {
   GetAnimator()->SetOpacity(opacity);
 }

@@ -128,6 +128,11 @@ class COMPOSITOR_EXPORT Layer :
   // otherwise.
   gfx::Rect GetTargetBounds() const;
 
+  // Sets/gets whether or not drawing of child layers should be clipped to the
+  // bounds of this layer.
+  void SetMasksToBounds(bool masks_to_bounds);
+  bool GetMasksToBounds() const;
+
   // The opacity of the layer. The opacity is applied to each pixel of the
   // texture (resulting alpha = opacity * alpha).
   float opacity() const { return opacity_; }
