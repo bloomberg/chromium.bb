@@ -56,13 +56,13 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
 
 void ExtensionInputMethodEventRouter::ActiveInputMethodsChanged(
     input_method::InputMethodManager *manager,
-    const input_method::InputMethodDescriptor & current_input_method,
+    const input_method::InputMethodDescriptor &current_input_method,
     size_t num_active_input_methods) {
 }
 
 void ExtensionInputMethodEventRouter::PropertyListChanged(
     input_method::InputMethodManager *manager,
-    const input_method::ImePropertyList & current_ime_properties) {
+    const input_method::InputMethodPropertyList &current_ime_properties) {
 }
 
 std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(

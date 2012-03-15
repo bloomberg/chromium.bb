@@ -137,7 +137,7 @@ std::string InputMethodDescriptor::ToString() const {
   return stream.str();
 }
 
-ImeProperty::ImeProperty(const std::string& in_key,
+InputMethodProperty::InputMethodProperty(const std::string& in_key,
                          const std::string& in_label,
                          bool in_is_selection_item,
                          bool in_is_selection_item_checked,
@@ -150,16 +150,16 @@ ImeProperty::ImeProperty(const std::string& in_key,
   DCHECK(!key.empty());
 }
 
-ImeProperty::ImeProperty()
+InputMethodProperty::InputMethodProperty()
     : is_selection_item(false),
       is_selection_item_checked(false),
       selection_item_id(kInvalidSelectionItemId) {
 }
 
-ImeProperty::~ImeProperty() {
+InputMethodProperty::~InputMethodProperty() {
 }
 
-std::string ImeProperty::ToString() const {
+std::string InputMethodProperty::ToString() const {
   std::stringstream stream;
   stream << "key=" << key
          << ", label=" << label
@@ -262,7 +262,7 @@ bool PropertyHasChildren(IBusProperty* prop) {
 // returns false if sanity checks for |ibus_prop| fail.
 bool ConvertProperty(IBusProperty* ibus_prop,
                      int selection_item_id,
-                     ImePropertyList* out_prop_list) {
+                     InputMethodPropertyList* out_prop_list) {
   DCHECK(ibus_prop);
   DCHECK(ibus_prop->key);
   DCHECK(out_prop_list);
@@ -287,7 +287,7 @@ bool ConvertProperty(IBusProperty* ibus_prop,
 
   const bool is_selection_item = (ibus_prop->type == PROP_TYPE_RADIO);
   selection_item_id = is_selection_item ?
-      selection_item_id : ImeProperty::kInvalidSelectionItemId;
+      selection_item_id : InputMethodProperty::kInvalidSelectionItemId;
 
   bool is_selection_item_checked = false;
   if (ibus_prop->state == PROP_STATE_INCONSISTENT) {
@@ -328,7 +328,7 @@ bool ConvertProperty(IBusProperty* ibus_prop,
     label = Or(ibus_prop->key, "");
   }
 
-  out_prop_list->push_back(ImeProperty(ibus_prop->key,
+  out_prop_list->push_back(InputMethodProperty(ibus_prop->key,
                                        label,
                                        is_selection_item,
                                        is_selection_item_checked,
@@ -340,7 +340,8 @@ bool ConvertProperty(IBusProperty* ibus_prop,
 // may or may not have children. See the comment for FlattenPropertyList
 // for details. Returns true if no error is found.
 // TODO(yusukes): Write unittest.
-bool FlattenProperty(IBusProperty* ibus_prop, ImePropertyList* out_prop_list) {
+bool FlattenProperty(IBusProperty* ibus_prop,
+                     InputMethodPropertyList* out_prop_list) {
   DCHECK(ibus_prop);
   DCHECK(out_prop_list);
 
@@ -358,7 +359,7 @@ bool FlattenProperty(IBusProperty* ibus_prop, ImePropertyList* out_prop_list) {
       continue;
     }
 
-    // Convert |prop| to ImeProperty and push it to |out_prop_list|.
+    // Convert |prop| to InputMethodProperty and push it to |out_prop_list|.
     if (!ConvertProperty(prop, current_selection_item_id, out_prop_list)) {
       return false;
     }
@@ -407,7 +408,7 @@ bool FlattenProperty(IBusProperty* ibus_prop, ImePropertyList* out_prop_list) {
 // ======================================================================
 // TODO(yusukes): Write unittest.
 bool FlattenPropertyList(
-    IBusPropList* ibus_prop_list, ImePropertyList* out_prop_list) {
+    IBusPropList* ibus_prop_list, InputMethodPropertyList* out_prop_list) {
   DCHECK(ibus_prop_list);
   DCHECK(out_prop_list);
 
@@ -986,7 +987,7 @@ class IBusControllerImpl : public IBusController {
   void DoRegisterProperties(IBusPropList* ibus_prop_list) {
     VLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
 
-    ImePropertyList prop_list;  // our representation.
+    InputMethodPropertyList prop_list;  // our representation.
     if (ibus_prop_list) {
       // You can call
       //   LOG(INFO) << "\n" << PrintPropList(ibus_prop_list, 0);
@@ -1197,7 +1198,7 @@ class IBusControllerImpl : public IBusController {
     //   LOG(INFO) << "\n" << PrintProp(ibus_prop, 0);
     // here to dump |ibus_prop|.
 
-    ImePropertyList prop_list;  // our representation.
+    InputMethodPropertyList prop_list;  // our representation.
     if (!FlattenProperty(ibus_prop, &prop_list)) {
       // Don't update the UI on errors.
       LOG(ERROR) << "Malformed properties are detected";

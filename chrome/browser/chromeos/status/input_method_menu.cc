@@ -210,12 +210,12 @@ bool InputMethodMenu::IsItemCheckedAt(int index) const {
     const input_method::InputMethodDescriptor& input_method
         = input_method_descriptors_->at(index);
     return input_method == InputMethodManager::GetInstance()->
-          current_input_method();
+          GetCurrentInputMethod();
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const input_method::ImePropertyList& property_list
-        = InputMethodManager::GetInstance()->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list
+        = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
     return property_list.at(index).is_selection_item_checked;
   }
 
@@ -232,8 +232,8 @@ int InputMethodMenu::GetGroupIdAt(int index) const {
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const input_method::ImePropertyList& property_list
-        = InputMethodManager::GetInstance()->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list
+        = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
     return property_list.at(index).selection_item_id;
   }
 
@@ -299,8 +299,8 @@ ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
   }
 
   if (GetPropertyIndex(index, &index)) {
-    const input_method::ImePropertyList& property_list
-        = InputMethodManager::GetInstance()->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list
+        = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
     if (property_list.at(index).is_selection_item) {
       return ui::MenuModel::TYPE_RADIO;
     }
@@ -325,8 +325,8 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
     name = GetTextForMenu(input_method_descriptors_->at(index));
   } else if (GetPropertyIndex(index, &index)) {
     InputMethodManager* manager = InputMethodManager::GetInstance();
-    const input_method::ImePropertyList& property_list =
-        manager->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list =
+        manager->GetCurrentInputMethodProperties();
     return manager->GetInputMethodUtil()->TranslateString(
         property_list.at(index).label);
   }
@@ -356,8 +356,8 @@ void InputMethodMenu::ActivatedAt(int index) {
 
   if (GetPropertyIndex(index, &index)) {
     // Intra-IME switching (e.g. Japanese-Hiragana to Japanese-Katakana).
-    const input_method::ImePropertyList& property_list
-        = InputMethodManager::GetInstance()->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list
+        = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
     const std::string key = property_list.at(index).key;
     if (property_list.at(index).is_selection_item) {
       // Radio button is clicked.
@@ -437,7 +437,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
 
 void InputMethodMenu::PropertyListChanged(
     InputMethodManager* manager,
-    const input_method::ImePropertyList& current_ime_properties) {
+    const input_method::InputMethodPropertyList& current_ime_properties) {
   // Usual order of notifications of input method change is:
   // 1. RegisterProperties(empty)
   // 2. RegisterProperties(list-of-new-properties)
@@ -452,7 +452,7 @@ void InputMethodMenu::PropertyListChanged(
   // awkward clear-then-register behavior.
   if (!current_ime_properties.empty()) {
     const input_method::InputMethodDescriptor& input_method =
-        manager->current_input_method();
+        manager->GetCurrentInputMethod();
     size_t num_active_input_methods = manager->GetNumActiveInputMethods();
     UpdateUIFromInputMethod(input_method, num_active_input_methods);
   }
@@ -526,8 +526,8 @@ void InputMethodMenu::RebuildModel() {
     need_separator = true;
   }
 
-  const input_method::ImePropertyList& property_list
-      = InputMethodManager::GetInstance()->current_ime_properties();
+  const input_method::InputMethodPropertyList& property_list
+      = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
   if (!property_list.empty()) {
     if (need_separator) {
       model_->AddSeparator();
@@ -576,8 +576,8 @@ bool InputMethodMenu::GetPropertyIndex(int index, int* property_index) const {
   if ((model_->GetTypeAt(index) == ui::MenuModel::TYPE_RADIO) &&
       (model_->GetCommandIdAt(index) == COMMAND_ID_IME_PROPERTIES)) {
     const int tmp_property_index = model_->GetGroupIdAt(index);
-    const input_method::ImePropertyList& property_list
-        = InputMethodManager::GetInstance()->current_ime_properties();
+    const input_method::InputMethodPropertyList& property_list
+        = InputMethodManager::GetInstance()->GetCurrentInputMethodProperties();
     if (tmp_property_index < static_cast<int>(property_list.size())) {
       *property_index = tmp_property_index;
       return true;
@@ -699,7 +699,7 @@ void InputMethodMenu::Observe(int type,
     InitializePrefMembers();
     AddObservers();
     InputMethodManager* manager = InputMethodManager::GetInstance();
-    UpdateUIFromInputMethod(manager->current_input_method(),
+    UpdateUIFromInputMethod(manager->GetCurrentInputMethod(),
                             manager->GetNumActiveInputMethods());
   }
 #endif

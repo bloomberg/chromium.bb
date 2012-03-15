@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
       input_method::InputMethodManager::GetInstance();
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
-  std::string current_input_method_id = manager->current_input_method().id();
+  std::string current_input_method_id = manager->GetCurrentInputMethod().id();
   for (size_t i = 0; i < input_methods->size(); ++i) {
     DictionaryValue* input_method = new DictionaryValue;
     input_method->SetString("value", input_methods->at(i).id());

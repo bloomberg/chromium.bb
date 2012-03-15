@@ -1108,7 +1108,7 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
       input_method::InputMethodManager::GetInstance();
   std::vector<std::string> input_method_ids;
   manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
-      locale, manager->current_input_method(), &input_method_ids);
+      locale, manager->GetCurrentInputMethod(), &input_method_ids);
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
   language_preload_engines.Init(prefs::kLanguagePreloadEngines,

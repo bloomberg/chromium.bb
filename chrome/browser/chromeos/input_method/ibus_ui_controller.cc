@@ -325,7 +325,7 @@ class IBusUiControllerImpl : public IBusUiController {
    private:
     std::string GetCurrentInputMethodId() {
       InputMethodManager* manager = InputMethodManager::GetInstance();
-      return manager->current_input_method().id();
+      return manager->GetCurrentInputMethod().id();
     }
 
     IBusUiControllerImpl* ui_;

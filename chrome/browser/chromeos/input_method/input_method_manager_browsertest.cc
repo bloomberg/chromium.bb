@@ -42,99 +42,99 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestEnableInputMethods) {
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestNextInputMethod) {
   manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:dvorak:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:dvorak:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:colemak:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:colemak:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 }
 
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestPreviousInputMethod) {
   manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us:intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
-  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us:intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
 }
 
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestSwitchInputMethod) {
   manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   // Henkan, Muhenkan, ZenkakuHankaku should be ignored when no Japanese IMEs
   // and keyboards are enabled.
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_CONVERT, false, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   // Do the same tests for Korean.
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   // Enable "xkb:jp::jpn" and press Muhenkan/ZenkakuHankaku.
   manager_->EnableInputMethods("ja", kKeyboardLayoutsOnly, "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
-  EXPECT_EQ("xkb:jp::jpn", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
-  EXPECT_EQ("xkb:jp::jpn", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
-  EXPECT_EQ("xkb:jp::jpn", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
 
   // Do the same tests for Korean.
   manager_->EnableInputMethods("ko", kKeyboardLayoutsOnly, "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
-  EXPECT_EQ("xkb:kr:kr104:kor", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
-  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
-  EXPECT_EQ("xkb:kr:kr104:kor", manager_->current_input_method().id());
+  EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
 }  // namespace input_method

@@ -85,7 +85,7 @@ class InputMethodObserver : public input_method::InputMethodManager::Observer {
   }
   virtual void PropertyListChanged(
       input_method::InputMethodManager* manager,
-      const input_method::ImePropertyList& current_ime_properties) OVERRIDE {
+      const input_method::InputMethodPropertyList& properties) OVERRIDE {
   }
 
   std::string current_input_method_id_;

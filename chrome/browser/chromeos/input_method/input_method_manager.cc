@@ -113,10 +113,10 @@ const size_t kInputMethodSpecificHotkeySettingsLen =
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
 bool FindAndUpdateProperty(
-    const chromeos::input_method::ImeProperty& new_prop,
-    chromeos::input_method::ImePropertyList* prop_list) {
+    const chromeos::input_method::InputMethodProperty& new_prop,
+    chromeos::input_method::InputMethodPropertyList* prop_list) {
   for (size_t i = 0; i < prop_list->size(); ++i) {
-    chromeos::input_method::ImeProperty& prop = prop_list->at(i);
+    chromeos::input_method::InputMethodProperty& prop = prop_list->at(i);
     if (prop.key == new_prop.key) {
       const int saved_id = prop.selection_item_id;
       // Update the list except the radio id. As written in
@@ -315,7 +315,7 @@ class InputMethodManagerImpl
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);
-      OnRegisterImeProperties(ImePropertyList());  // notify the button.
+      OnRegisterImeProperties(InputMethodPropertyList());  // notify the button.
     } else {
       // Otherwise, start the input method daemon, and change the input
       // method via the daemon.
@@ -477,24 +477,24 @@ class InputMethodManagerImpl
     }
   }
 
-  virtual InputMethodDescriptor previous_input_method() const {
+  virtual InputMethodDescriptor GetPreviousInputMethod() const {
     if (previous_input_method_.id().empty()) {
       return InputMethodDescriptor::GetFallbackInputMethodDescriptor();
     }
     return previous_input_method_;
   }
 
-  virtual InputMethodDescriptor current_input_method() const {
+  virtual InputMethodDescriptor GetCurrentInputMethod() const {
     if (current_input_method_.id().empty()) {
       return InputMethodDescriptor::GetFallbackInputMethodDescriptor();
     }
     return current_input_method_;
   }
 
-  virtual ImePropertyList current_ime_properties() const {
+  virtual InputMethodPropertyList GetCurrentInputMethodProperties() const {
     if (should_hide_properties_ ||
-        InputMethodUtil::IsKeyboardLayout(current_input_method().id())) {
-      return ImePropertyList();
+        InputMethodUtil::IsKeyboardLayout(GetCurrentInputMethod().id())) {
+      return InputMethodPropertyList();
     }
     return current_ime_properties_;
   }
@@ -876,7 +876,7 @@ class InputMethodManagerImpl
       const size_t num_active_input_methods = GetNumActiveInputMethods();
       FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                         ActiveInputMethodsChanged(this,
-                                                  current_input_method(),
+                                                  GetCurrentInputMethod(),
                                                   num_active_input_methods));
     }
   }
@@ -1022,7 +1022,7 @@ class InputMethodManagerImpl
 
   // IBusController override.
   virtual void OnRegisterImeProperties(
-      const ImePropertyList& prop_list) {
+      const InputMethodPropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       LOG(ERROR) << "Not on UI thread";
@@ -1034,7 +1034,7 @@ class InputMethodManagerImpl
 
   // IBusController override.
   virtual void OnUpdateImeProperty(
-      const ImePropertyList& prop_list) {
+      const InputMethodPropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       LOG(ERROR) << "Not on UI thread";
@@ -1199,7 +1199,7 @@ class InputMethodManagerImpl
   }
 
   // Registers the properties used by the current input method.
-  void RegisterProperties(const ImePropertyList& prop_list) {
+  void RegisterProperties(const InputMethodPropertyList& prop_list) {
     // |prop_list| might be empty. This means "hide properties."
     if (prop_list.empty()) {
       should_hide_properties_ = true;
@@ -1209,7 +1209,8 @@ class InputMethodManagerImpl
     }
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this, current_ime_properties()));
+                      PropertyListChanged(this,
+                                          GetCurrentInputMethodProperties()));
   }
 
   // Starts the input method daemon. Unlike MaybeStopInputMethodDaemon(),
@@ -1221,14 +1222,15 @@ class InputMethodManagerImpl
   }
 
   // Updates the properties used by the current input method.
-  void UpdateProperty(const ImePropertyList& prop_list) {
+  void UpdateProperty(const InputMethodPropertyList& prop_list) {
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
     }
 
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this, current_ime_properties()));
+                      PropertyListChanged(this,
+                                          GetCurrentInputMethodProperties()));
   }
 
   // Launches an input method procsess specified by the given command
@@ -1461,7 +1463,7 @@ class InputMethodManagerImpl
 
   // The input method properties which the current input method uses. The list
   // might be empty when no input method is used.
-  ImePropertyList current_ime_properties_;
+  InputMethodPropertyList current_ime_properties_;
   bool should_hide_properties_;
 
   typedef std::pair<std::string, std::string> ConfigKeyType;

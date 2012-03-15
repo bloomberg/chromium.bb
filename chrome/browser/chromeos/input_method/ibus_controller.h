@@ -75,27 +75,22 @@ class InputMethodDescriptor {
   std::string language_code_;
 };
 
-// A structure which represents a property for an input method engine. For
-// details, please check a comment for the LanguageRegisterImePropertiesFunction
-// typedef below.
-// TODO(yusukes): Rename this struct. "InputMethodProperty" might be better?
-struct ImeProperty {
-  ImeProperty(const std::string& in_key,
+// A structure which represents a property for an input method engine.
+struct InputMethodProperty {
+  InputMethodProperty(const std::string& in_key,
               const std::string& in_label,
               bool in_is_selection_item,
               bool in_is_selection_item_checked,
               int in_selection_item_id);
 
-  ImeProperty();
-  ~ImeProperty();
+  InputMethodProperty();
+  ~InputMethodProperty();
 
   // Debug print function.
   std::string ToString() const;
 
   std::string key;  // A key which identifies the property. Non-empty string.
                     // (e.g. "InputMode.HalfWidthKatakana")
-  // DEPRECATED: TODO(yusukes): Remove this when it's ready.
-  std::string deprecated_icon_path;
   std::string label;  // A description of the property. Non-empty string.
                       // (e.g. "Switch to full punctuation mode", "Hiragana")
   bool is_selection_item;  // true if the property is a selection item.
@@ -106,7 +101,7 @@ struct ImeProperty {
                           // false.
   static const int kInvalidSelectionItemId = -1;
 };
-typedef std::vector<ImeProperty> ImePropertyList;
+typedef std::vector<InputMethodProperty> InputMethodPropertyList;
 
 // A structure which represents a value of an input method configuration item.
 // This struct is used by SetInputMethodConfig().
@@ -167,7 +162,8 @@ class IBusController {
     // ----------------------------------
     //   ...
     // ----------------------------------
-    virtual void OnRegisterImeProperties(const ImePropertyList& prop_list) = 0;
+    virtual void OnRegisterImeProperties(
+        const InputMethodPropertyList& prop_list) = 0;
 
     // Called when "UpdateProperty" signal is sent from ibus-daemon. The
     // signal contains one or more properties which is updated
@@ -191,7 +187,8 @@ class IBusController {
     //
     // Note: Please do not use selection_item_ids in |prop_list|. Dummy
     //       values are filled in the field.
-    virtual void OnUpdateImeProperty(const ImePropertyList& prop_list) = 0;
+    virtual void OnUpdateImeProperty(
+        const InputMethodPropertyList& prop_list) = 0;
 
     // Called when ibus connects or disconnects.
     virtual void OnConnectionChange(bool connected) = 0;

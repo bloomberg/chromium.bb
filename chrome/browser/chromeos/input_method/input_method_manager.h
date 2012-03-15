@@ -55,7 +55,7 @@ class InputMethodManager {
     // Called when the list of properties is changed.
     virtual void PropertyListChanged(
         InputMethodManager* manager,
-        const ImePropertyList& current_ime_properties) = 0;
+        const InputMethodPropertyList& current_ime_properties) = 0;
   };
 
   // CandidateWindowObserver is notified of events related to the candidate
@@ -269,10 +269,10 @@ class InputMethodManager {
   // the |accelerator|.
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
 
-  virtual InputMethodDescriptor previous_input_method() const = 0;
-  virtual InputMethodDescriptor current_input_method() const = 0;
+  virtual InputMethodDescriptor GetPreviousInputMethod() const = 0;
+  virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;
 
-  virtual ImePropertyList current_ime_properties() const = 0;
+  virtual InputMethodPropertyList GetCurrentInputMethodProperties() const = 0;
 };
 
 }  // namespace input_method

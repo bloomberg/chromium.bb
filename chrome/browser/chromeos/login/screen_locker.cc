@@ -128,8 +128,8 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
       chromeos::input_method::InputMethodManager* manager =
           chromeos::input_method::InputMethodManager::GetInstance();
 
-      saved_previous_input_method_id_ = manager->previous_input_method().id();
-      saved_current_input_method_id_ = manager->current_input_method().id();
+      saved_previous_input_method_id_ = manager->GetPreviousInputMethod().id();
+      saved_current_input_method_id_ = manager->GetCurrentInputMethod().id();
       scoped_ptr<chromeos::input_method::InputMethodDescriptors>
           active_input_method_list(manager->GetActiveInputMethods());
 

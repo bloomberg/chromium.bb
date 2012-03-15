@@ -84,7 +84,7 @@ class InputMethodMenu
       size_t num_active_input_methods) OVERRIDE;
   virtual void PropertyListChanged(
       input_method::InputMethodManager* manager,
-      const input_method::ImePropertyList& current_ime_properties) OVERRIDE;
+      const input_method::InputMethodPropertyList& properties) OVERRIDE;
 
   // InputMethodManager::PreferenceObserver implementation.
   virtual void PreferenceUpdateNeeded(
