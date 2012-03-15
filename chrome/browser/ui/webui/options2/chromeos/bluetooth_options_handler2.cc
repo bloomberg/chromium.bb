@@ -59,7 +59,8 @@ BluetoothOptionsHandler::~BluetoothOptionsHandler() {
     return;
   }
 
-  adapter_->RemoveObserver(this);
+  if (adapter_.get())
+    adapter_->RemoveObserver(this);
 }
 
 void BluetoothOptionsHandler::GetLocalizedValues(
