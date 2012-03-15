@@ -1113,7 +1113,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.variable('ar_target', os.environ.get('AR_target', '$ar'))
   master_ninja.variable('cc_target', os.environ.get('CC_target', '$cc'))
   master_ninja.variable('cxx_target', os.environ.get('CXX_target', '$cxx'))
-  master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
+  if flavor == 'win':
+    master_ninja.variable('ld_target', os.environ.get('LD_target', '$ld'))
+  else:
+    master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
 
   if flavor == 'mac':
     master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))

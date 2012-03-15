@@ -257,6 +257,7 @@ def SelectVisualStudioVersion(version='auto'):
   version_map = {
     # For now, prefer versions before VS2010
     'auto': ('9.0', '8.0', '10.0'),
+    '2005': ('8.0',),
     '2008': ('9.0',),
     '2010': ('10.0',),
   }
