@@ -438,6 +438,8 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap',
+          '<(PRODUCT_DIR)/PepperFlash/libpepflashplayer.so',
+          '<(PRODUCT_DIR)/PepperFlash/manifest.json',
           '<@(default_apps_list_linux_dest)',
         ],
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
@@ -451,10 +453,7 @@
           ['target_arch=="ia32"', {
             'deb_arch': 'i386',
             'rpm_arch': 'i386',
-            # Flash Player for Linux is currently only available for ia32.
             'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/libgcflashplayer.so',
-              '<(PRODUCT_DIR)/plugin.vch',
               '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
             ],
           }],
@@ -462,8 +461,6 @@
             'deb_arch': 'amd64',
             'rpm_arch': 'x86_64',
             'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/PepperFlash/libpepflashplayer.so',
-              '<(PRODUCT_DIR)/PepperFlash/manifest.json',
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
             ],
           }],

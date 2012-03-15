@@ -39,12 +39,6 @@
             'destination': '<(PRODUCT_DIR)',
             'files': [],
             'conditions': [
-              [ 'OS == "linux" and target_arch == "ia32"', {
-                'files': [
-                  'binaries/linux/libgcflashplayer.so',
-                  'binaries/linux/plugin.vch',
-                ]
-              }],
               [ 'OS == "mac"', {
                 'files': [
                   'binaries/mac/Flash Player Plugin for Chrome.plugin',
