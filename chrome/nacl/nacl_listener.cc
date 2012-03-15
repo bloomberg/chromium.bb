@@ -13,7 +13,6 @@
 #include "chrome/common/nacl_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
 
 #if defined(OS_LINUX)
@@ -25,8 +24,8 @@
 #include <io.h>
 #endif
 
-#if defined(OS_MACOSX)
 namespace {
+#if defined(OS_MACOSX)
 
 // On Mac OS X, shm_open() works in the sandbox but does not give us
 // an FD that we can map as PROT_EXEC.  Rather than doing an IPC to
@@ -36,7 +35,7 @@ namespace {
 
 base::subtle::Atomic32 g_shm_fd = -1;
 
-int CreateMemoryObject(size_t size, bool executable) {
+int CreateMemoryObject(size_t size, int executable) {
   if (executable && size > 0) {
     int result_fd = base::subtle::NoBarrier_AtomicExchange(&g_shm_fd, -1);
     if (result_fd != -1) {
@@ -58,8 +57,14 @@ int CreateMemoryObject(size_t size, bool executable) {
   return -1;
 }
 
+#elif defined(OS_LINUX)
+
+int CreateMemoryObject(size_t size, int executable) {
+  return content::MakeSharedMemorySegmentViaIPC(size, executable);
+}
+
+#endif
 }  // namespace
-#endif  // defined(OS_MACOSX)
 
 NaClListener::NaClListener() : debug_enabled_(false) {}
 
@@ -84,13 +89,19 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
-#if defined(OS_LINUX)
-  nacl::SetCreateMemoryObjectFunc(content::MakeSharedMemorySegmentViaIPC);
-#elif defined(OS_MACOSX)
-  nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
+  struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
+  if (args == NULL) {
+    LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
+    return;
+  }
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  args->create_memory_object_func = CreateMemoryObject;
+# if defined(OS_MACOSX)
   CHECK(handles.size() >= 1);
   g_shm_fd = nacl::ToNativeHandle(handles[handles.size() - 1]);
   handles.pop_back();
+# endif
 #endif
 
   CHECK(handles.size() >= 1);
@@ -98,23 +109,19 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
   handles.pop_back();
 
 #if defined(OS_WIN)
-  int irt_desc = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
+  args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
                                  _O_RDONLY | _O_BINARY);
-  if (irt_desc < 0) {
+  if (args->irt_fd < 0) {
     LOG(ERROR) << "_open_osfhandle() failed";
     return;
   }
 #else
-  int irt_desc = irt_handle;
+  args->irt_fd = irt_handle;
 #endif
 
-  NaClSetIrtFileDesc(irt_desc);
-
-  scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
-  for (size_t i = 0; i < handles.size(); i++) {
-    array[i] = nacl::ToNativeHandle(handles[i]);
-  }
-  NaClMainForChromium(static_cast<int>(handles.size()), array.get(),
-                      debug_enabled_);
+  CHECK(handles.size() == 1);
+  args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
+  args->enable_debug_stub = debug_enabled_;
+  NaClChromeMainStart(args);
   NOTREACHED();
 }
