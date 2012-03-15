@@ -862,11 +862,6 @@
           ],
         }],
         ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           'sources!': [
             # ProcessSingletonMac doesn't do anything.
             'browser/process_singleton_uitest.cc',
@@ -2313,28 +2308,6 @@
           # but when we tried to pull it up to the common.gypi level, it broke
           # other things like the ui, startup, and page_cycler tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-
-          # libwebcore.a is so large that ld may not have a sufficiently large
-          # "hole" in its address space into which it can be mmaped by the
-          # time it reaches this library. As of May 10, 2010, libwebcore.a is
-          # about 1GB in some builds. In the Mac OS X 10.5 toolchain, using
-          # Xcode 3.1, ld is only a 32-bit executable, and address space
-          # exhaustion is the result, with ld failing and producing
-          # the message:
-          # ld: in .../libwebcore.a, can't map file, errno=12
-          #
-          # As a workaround, ensure that libwebcore.a appears to ld first when
-          # linking unit_tests. This allows the library to be mmapped when
-          # ld's address space is "wide open." Other libraries are small
-          # enough that they'll be able to "squeeze" into the remaining holes.
-          # The Mac linker isn't so sensitive that moving this library to the
-          # front of the list will cause problems.
-          #
-          # Enough pluses to make get this target prepended to the target's
-          # list of dependencies.
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
         }, { # OS != "mac"
           'dependencies': [
             'chrome_resources.gyp:packed_extra_resources',
@@ -3147,11 +3120,6 @@
               '-Wl,-ObjC',
             ],
           },
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           'sources': [
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
             '../content/renderer/external_popup_menu_browsertest.cc',
@@ -3379,11 +3347,6 @@
               '-Wl,-ObjC',
             ],
           },
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
         }, { # else: OS != "mac"
           'sources!': [
             'browser/extensions/browser_action_test_util_mac.mm',
@@ -3468,10 +3431,6 @@
           },
         }],
         ['OS=="mac"', {
-          # See crbug.com/43791 - libwebcore.a is too large to mmap on Mac.
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           # These flags are needed to run the test on Mac.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -3595,11 +3554,6 @@
           },
         }],
         ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           'sources': [
             'test/perf/mach_ports_test.cc',
           ],
@@ -3795,11 +3749,6 @@
           ],
         }],
         ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           # The sync_integration_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -3924,11 +3873,6 @@
           ],
         }],
         ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           # The sync_integration_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -4075,11 +4019,6 @@
           },
         }],
         ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
           # See comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
@@ -4390,12 +4329,6 @@
               },
             }],
             ['OS=="mac"', {
-              # See the comment in this section of the unit_tests target for an
-              # explanation (crbug.com/43791 - libwebcore.a is too large to
-              # mmap).
-              'dependencies+++': [
-                '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-              ],
               'include_dirs': [
                 '..',
                 '/usr/include/python2.6',
