@@ -869,6 +869,7 @@ PageState.getHashString = function(term, page) {
  * Window onload handler, sets up the page.
  */
 function load() {
+  cr.enablePlatformSpecificCSSRules();
   uber.onContentFrameLoaded();
 
   var searchField = $('search-field');

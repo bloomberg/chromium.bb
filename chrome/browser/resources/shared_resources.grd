@@ -41,7 +41,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_CSS_TREE_JS"
                file="shared/css/tree.css.js" type="BINDATA" />
       <include name="IDR_SHARED_CSS_WIDGETS"
-               file="shared/css/widgets.css" type="BINDATA" />
+               file="shared/css/widgets.css" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_IMAGES_CHECK"
                file="shared/images/check.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_CHECKBOX_BLACK"

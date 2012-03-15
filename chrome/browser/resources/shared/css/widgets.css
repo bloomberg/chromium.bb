@@ -35,6 +35,16 @@ input[type='submit']:not(.custom-appearance):not(.link-button),
 select {
   height: 2em;
   min-width: 4em;
+<if expr="pp_ifdef('chromeos')">
+  /* Without this rule, chromeos button text is too high on the button. */
+  padding-top: 3px;
+</if>
+<if expr="is_macosx or is_win">
+  /* The following platform-specific rule is necessary to get adjacent
+   * buttons, text inputs, and so forth to align on their borders while also
+   * aligning on the text's baselines. */
+  padding-bottom: 1px;
+</if>
 }
 
 button:not(.custom-appearance):not(.link-button),
@@ -270,6 +280,10 @@ input:not([type]):not(.custom-appearance) {
   height: 2em;
   margin: 0;
   padding: 3px;
+<if expr="pp_ifdef('chromeos')">
+  /* For better alignment between adjacent buttons and inputs. */
+  padding-bottom: 2px;
+</if>
 }
 
 input[type='search'] {

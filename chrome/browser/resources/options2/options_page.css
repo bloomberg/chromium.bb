@@ -47,21 +47,6 @@ div.disabled {
   margin-top: 0.45em;
 }
 
-/* TEXT */
-input[type='password'],
-input[type='text'],
-input[type='url'],
-input:not([type]) {
-  -webkit-border-radius: 2px;
-  border: 1px solid #aaa;
-  font-size: inherit;
-  padding: 3px;
-}
-
-input[type='text']:disabled {
-  color: #888;
-}
-
 .hbox {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
