@@ -147,7 +147,7 @@ void BrowserOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void BrowserOptionsHandler::Initialize() {
+void BrowserOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Create our favicon data source.

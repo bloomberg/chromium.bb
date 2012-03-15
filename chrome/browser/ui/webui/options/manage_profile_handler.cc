@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ void ManageProfileHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }
 
-void ManageProfileHandler::Initialize() {
+void ManageProfileHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
   SendProfileNames();

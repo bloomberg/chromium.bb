@@ -548,7 +548,7 @@ void InternetOptionsHandler::GetLocalizedValues(
   FillNetworkInfo(localized_strings);
 }
 
-void InternetOptionsHandler::Initialize() {
+void InternetOptionsHandler::InitializeHandler() {
   cros_->RequestNetworkScan();
 }
 

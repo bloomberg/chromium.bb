@@ -21,11 +21,9 @@ class HomePageOverlayHandler
   virtual ~HomePageOverlayHandler();
 
   // OptionsPageUIHandler implementation
-  virtual void RegisterMessages() OVERRIDE;
-
   virtual void GetLocalizedValues(base::DictionaryValue*) OVERRIDE;
-
-  virtual void Initialize() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // AutocompleteControllerDelegate implementation.
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;

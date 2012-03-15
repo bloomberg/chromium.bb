@@ -299,7 +299,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
   SetCreditCardOverlayStrings(localized_strings);
 }
 
-void AutofillOptionsHandler::Initialize() {
+void AutofillOptionsHandler::InitializeHandler() {
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
   // personal_data_ is NULL in guest mode on Chrome OS.

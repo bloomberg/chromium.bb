@@ -37,7 +37,7 @@ CoreOptionsHandler::CoreOptionsHandler()
 
 CoreOptionsHandler::~CoreOptionsHandler() {}
 
-void CoreOptionsHandler::Initialize() {
+void CoreOptionsHandler::InitializeHandler() {
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
                                       Profile::FromWebUI(web_ui()),
                                       this);

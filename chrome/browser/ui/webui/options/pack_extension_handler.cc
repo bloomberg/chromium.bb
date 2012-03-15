@@ -19,9 +19,6 @@ PackExtensionHandler::~PackExtensionHandler() {
     pack_job_->ClearClient();
 }
 
-void PackExtensionHandler::Initialize() {
-}
-
 void PackExtensionHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);

@@ -283,7 +283,7 @@ void ContentSettingsHandler::GetLocalizedValues(
                                 web_intents::IsWebIntentsEnabled());
 }
 
-void ContentSettingsHandler::Initialize() {
+void ContentSettingsHandler::InitializeHandler() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
       content::NotificationService::AllSources());

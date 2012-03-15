@@ -27,6 +27,7 @@ ul {
 li {
   -webkit-border-start: 6px solid transparent;
   -webkit-padding-start: 18px;
+  -webkit-user-select: none;
   color: #999;
   cursor: pointer;
   line-height: 17px;
@@ -40,6 +41,8 @@ li:hover {
 li.selected {
   -webkit-border-start-color: rgb(78, 87, 100);
   color: rgb(70, 78, 90);
+  cursor: default;
+  pointer-events: none;
 }
 
 #helpNavItem {

@@ -31,7 +31,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
 
-  virtual void Initialize() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;

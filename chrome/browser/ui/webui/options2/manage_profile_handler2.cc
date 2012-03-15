@@ -51,9 +51,12 @@ void ManageProfileHandler::GetLocalizedValues(
                 IDS_PROFILES_MANAGE_TITLE);
 }
 
-void ManageProfileHandler::Initialize() {
+void ManageProfileHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
+}
+
+void ManageProfileHandler::InitializePage() {
   SendProfileNames();
 }
 

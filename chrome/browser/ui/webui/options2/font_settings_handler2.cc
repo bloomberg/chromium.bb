@@ -68,7 +68,7 @@ void FontSettingsHandler::GetLocalizedValues(
           IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER));
 }
 
-void FontSettingsHandler::Initialize() {
+void FontSettingsHandler::InitializePage() {
   DCHECK(web_ui());
   SetUpStandardFontSample();
   SetUpSerifFontSample();

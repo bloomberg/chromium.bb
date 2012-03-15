@@ -134,7 +134,7 @@ void SystemOptionsHandler::GetLocalizedValues(
               chromeos::kSystemTimezone))->GetTimezoneList());
 }
 
-void SystemOptionsHandler::Initialize() {
+void SystemOptionsHandler::InitializeHandler() {
   PrefService* pref_service = g_browser_process->local_state();
   base::FundamentalValue spoken_feedback_enabled(
       pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled));

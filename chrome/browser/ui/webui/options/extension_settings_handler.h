@@ -138,7 +138,6 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

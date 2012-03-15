@@ -56,9 +56,12 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }
 
-void PointerHandler::Initialize() {
+void PointerHandler::InitializeHandler() {
   chromeos::XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
+}
+
+void PointerHandler::InitializePage() {
   DeviceHierarchyChanged();
 }
 

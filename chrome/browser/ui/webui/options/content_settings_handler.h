@@ -25,7 +25,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
 
-  virtual void Initialize() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
 
   virtual void RegisterMessages() OVERRIDE;
 

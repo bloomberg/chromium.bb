@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
   virtual ~CoreChromeOSOptionsHandler();
 
   // ::CoreOptionsHandler overrides
-  virtual void Initialize() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
   virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
   virtual void ObservePref(const std::string& pref_name) OVERRIDE;
   virtual void SetPref(const std::string& pref_name,

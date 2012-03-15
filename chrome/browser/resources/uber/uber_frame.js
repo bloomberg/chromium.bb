@@ -34,6 +34,11 @@ cr.define('uber_frame', function() {
    * @param {Event} e The click event.
    */
   function onNavItemClicked(e) {
+    // Though pointer-event: none; is applied to the .selected nav item, users
+    // can still tab to them and press enter/space which simulates a click.
+    if (e.target.classList.contains('selected'))
+      return;
+
     uber.invokeMethodOnParent('showPage',
        {pageId: e.currentTarget.getAttribute('controls')});
 

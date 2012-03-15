@@ -311,12 +311,16 @@ void OptionsUI::InitializeHandlers() {
   // delivered after a new web page DOM has been brought up in an existing
   // renderer (due to IPC delays), causing this method to be called twice. If
   // that happens, ignore the second call.
-  if (initialized_handlers_)
-    return;
-  initialized_handlers_ = true;
+  if (!initialized_handlers_) {
+    for (size_t i = 0; i < handlers_.size(); ++i)
+      handlers_[i]->InitializeHandler();
+    initialized_handlers_ = true;
+  }
 
+  // Always initialize the page as when handlers are left over we still need to
+  // do various things like show/hide sections and send data to the Javascript.
   for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->Initialize();
+    handlers_[i]->InitializePage();
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,

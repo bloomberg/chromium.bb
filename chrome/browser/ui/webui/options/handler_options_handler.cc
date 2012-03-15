@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ void HandlerOptionsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }
 
-void HandlerOptionsHandler::Initialize() {
+void HandlerOptionsHandler::InitializeHandler() {
   UpdateHandlerList();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,

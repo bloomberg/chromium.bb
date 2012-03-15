@@ -336,7 +336,7 @@ void OptionsUI::InitializeHandlers() {
   initialized_handlers_ = true;
 
   for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->Initialize();
+    handlers_[i]->InitializeHandler();
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,

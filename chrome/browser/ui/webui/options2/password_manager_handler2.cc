@@ -77,7 +77,7 @@ void PasswordManagerHandler::GetLocalizedValues(
                                chrome::kPasswordManagerLearnMoreURL);
 }
 
-void PasswordManagerHandler::Initialize() {
+void PasswordManagerHandler::InitializeHandler() {
   // Due to the way that handlers are (re)initialized under certain types of
   // navigation, we may already be initialized. (See bugs 88986 and 86448.)
   // If this is the case, return immediately. This is a hack.
@@ -195,7 +195,7 @@ void PasswordManagerHandler::SetPasswordList() {
   // If this is the case, initialize on demand. This is a hack.
   // TODO(mdm): remove this hack once it is no longer necessary.
   if (show_passwords_.GetPrefName().empty())
-    Initialize();
+    InitializeHandler();
 
   ListValue entries;
   bool show_passwords = *show_passwords_;

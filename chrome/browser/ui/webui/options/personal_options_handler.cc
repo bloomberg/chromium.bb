@@ -357,7 +357,7 @@ void PersonalOptionsHandler::ObserveThemeChanged() {
       "options.PersonalOptions.setThemesResetButtonEnabled", enabled);
 }
 
-void PersonalOptionsHandler::Initialize() {
+void PersonalOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Listen for theme installation.

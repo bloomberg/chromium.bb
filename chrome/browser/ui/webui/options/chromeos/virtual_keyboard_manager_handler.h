@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_H_
-#define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_HANDLER_H_
 #pragma once
 
 #include <map>
@@ -33,7 +33,6 @@ class VirtualKeyboardManagerHandler : public OptionsPageUIHandler {
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
  protected:
@@ -75,4 +74,4 @@ class VirtualKeyboardManagerHandler : public OptionsPageUIHandler {
 
 }  // namespace chromeos
 
-#endif  //  CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_VIRTUAL_KEYBOARD_MANAGER_HANDLER_H_

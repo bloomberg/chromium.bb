@@ -219,7 +219,7 @@ void AdvancedOptionsHandler::RegisterCloudPrintStrings(
 #endif
 }
 
-void AdvancedOptionsHandler::Initialize() {
+void AdvancedOptionsHandler::InitializeHandler() {
   DCHECK(web_ui());
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ SearchEngineManagerHandler::~SearchEngineManagerHandler() {
     list_controller_->table_model()->SetObserver(NULL);
 }
 
-void SearchEngineManagerHandler::Initialize() {
+void SearchEngineManagerHandler::InitializeHandler() {
   list_controller_.reset(
       new KeywordEditorController(Profile::FromWebUI(web_ui())));
   if (list_controller_.get()) {

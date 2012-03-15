@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,11 +21,11 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   SearchEngineManagerHandler();
   virtual ~SearchEngineManagerHandler();
 
-  virtual void Initialize() OVERRIDE;
-
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
 
   // ui::TableModelObserver implementation.
   virtual void OnModelChanged() OVERRIDE;

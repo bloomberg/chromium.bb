@@ -117,7 +117,7 @@ void BluetoothOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED));
 }
 
-void BluetoothOptionsHandler::Initialize() {
+void BluetoothOptionsHandler::InitializeHandler() {
   // Bluetooth support is a work in progress.  Supress the feature unless
   // explicitly enabled via a command line flag.
   if (!CommandLine::ForCurrentProcess()

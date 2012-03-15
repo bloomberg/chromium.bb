@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,10 @@ ProxySettingsUI::~ProxySettingsUI() {
 }
 
 void ProxySettingsUI::InitializeHandlers() {
-  core_handler_->Initialize();
-  proxy_handler_->Initialize();
+  core_handler_->InitializeHandler();
+  proxy_handler_->InitializeHandler();
+  core_handler_->InitializePage();
+  proxy_handler_->InitializePage();
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefProxyConfigTracker* proxy_tracker = profile->GetProxyConfigTracker();
   proxy_tracker->UIMakeActiveNetworkCurrent();

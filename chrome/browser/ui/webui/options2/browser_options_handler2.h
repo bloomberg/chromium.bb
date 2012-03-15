@@ -41,10 +41,10 @@ class BrowserOptionsHandler
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
 
-  virtual void Initialize() OVERRIDE;
-
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // ProfileSyncServiceObserver implementation.
@@ -112,7 +112,7 @@ class BrowserOptionsHandler
   void SetDefaultBrowserUIString(int status_string_id);
 
   // Loads the possible default search engine list and reports it to the WebUI.
-  void UpdateSearchEngines();
+  void AddTemplateUrlServiceObserver();
 
   // Sends an array of Profile objects to javascript.
   // Each object is of the form:

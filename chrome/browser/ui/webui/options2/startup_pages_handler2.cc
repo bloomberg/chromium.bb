@@ -81,18 +81,21 @@ void StartupPagesHandler::UpdateStartupPages() {
   startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
 }
 
-void StartupPagesHandler::Initialize() {
+void StartupPagesHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   startup_custom_pages_table_model_.reset(
       new CustomHomePagesTableModel(profile));
   startup_custom_pages_table_model_->SetObserver(this);
-  UpdateStartupPages();
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
 
   autocomplete_controller_.reset(new AutocompleteController(profile, this));
+}
+
+void StartupPagesHandler::InitializePage() {
+  UpdateStartupPages();
 }
 
 void StartupPagesHandler::OnModelChanged() {

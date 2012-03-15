@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,15 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler,
   // Collects localized strings for options page.
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings) = 0;
 
-  // Initialize the page.  Called once the DOM is available for manipulation.
-  // This will be called only once.
-  virtual void Initialize() {}
+  // Will be called only once in the life time of the handler. Generally used to
+  // add observers, initializes preferences, or start asynchronous calls from
+  // various services.
+  virtual void InitializeHandler() {}
+
+  // Initialize the page. Called once the DOM is available for manipulation.
+  // This will be called when a RenderView is re-used (when navigated to with
+  // back/forward or session restored in some cases) or when created.
+  virtual void InitializePage() {}
 
   // Uninitializes the page.  Called just before the object is destructed.
   virtual void Uninitialize() {}

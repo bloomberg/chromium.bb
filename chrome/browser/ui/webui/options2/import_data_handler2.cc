@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
                 IDS_IMPORT_SETTINGS_TITLE);
 }
 
-void ImportDataHandler::Initialize() {
+void ImportDataHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   importer_list_ = new ImporterList(profile->GetRequestContext());
   importer_list_->DetectSourceProfiles(this);
@@ -128,6 +128,13 @@ void ImportDataHandler::ImportData(const ListValue* args) {
 }
 
 void ImportDataHandler::OnSourceProfilesLoaded() {
+  InitializePage();
+}
+
+void ImportDataHandler::InitializePage() {
+  if (!importer_list_->source_profiles_loaded())
+    return;
+
   ListValue browser_profiles;
   for (size_t i = 0; i < importer_list_->count(); ++i) {
     const importer::SourceProfile& source_profile =

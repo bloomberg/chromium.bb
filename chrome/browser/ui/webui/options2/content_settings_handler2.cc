@@ -293,7 +293,7 @@ void ContentSettingsHandler::GetLocalizedValues(
           switches::kDisableRestoreSessionState));
 }
 
-void ContentSettingsHandler::Initialize() {
+void ContentSettingsHandler::InitializeHandler() {
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
       content::NotificationService::AllSources());
@@ -301,8 +301,6 @@ void ContentSettingsHandler::Initialize() {
       this, chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::NotificationService::AllSources());
 
-  UpdateHandlersEnabledRadios();
-  UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_CONTENT_SETTINGS_CHANGED,
       content::NotificationService::AllSources());
@@ -317,6 +315,11 @@ void ContentSettingsHandler::Initialize() {
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
+}
+
+void ContentSettingsHandler::InitializePage() {
+  UpdateHandlersEnabledRadios();
+  UpdateAllExceptionsViewsFromModel();
 }
 
 void ContentSettingsHandler::Observe(

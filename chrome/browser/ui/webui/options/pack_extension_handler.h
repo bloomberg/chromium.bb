@@ -21,7 +21,6 @@ class PackExtensionHandler : public OptionsPageUIHandler,
   virtual ~PackExtensionHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void Initialize() OVERRIDE;
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
 
   // WebUIMessageHandler implementation.

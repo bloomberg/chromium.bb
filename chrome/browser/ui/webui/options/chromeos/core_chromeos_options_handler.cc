@@ -112,7 +112,7 @@ CoreChromeOSOptionsHandler::~CoreChromeOSOptionsHandler() {
                  pointer_factory_.GetWeakPtr()));
 }
 
-void CoreChromeOSOptionsHandler::Initialize() {
+void CoreChromeOSOptionsHandler::InitializeHandler() {
   proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
     Profile::FromWebUI(web_ui())->GetPrefs(), this));
   // Observe the chromeos::ProxyConfigServiceImpl for changes from the UI.

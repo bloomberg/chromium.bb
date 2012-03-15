@@ -535,7 +535,7 @@ void BrowserOptionsHandler::OnStateChanged() {
   SendProfilesInfo();
 }
 
-void BrowserOptionsHandler::Initialize() {
+void BrowserOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
@@ -564,8 +564,7 @@ void BrowserOptionsHandler::Initialize() {
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
 
-  UpdateSearchEngines();
-  ObserveThemeChanged();
+  AddTemplateUrlServiceObserver();
 
 #if defined(OS_WIN)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -603,6 +602,14 @@ void BrowserOptionsHandler::Initialize() {
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
 #endif  // !defined(OS_CHROMEOS)
+}
+
+void BrowserOptionsHandler::InitializePage() {
+  OnTemplateURLServiceChanged();
+  ObserveThemeChanged();
+
+  if (multiprofile_)
+    SendProfilesInfo();
 
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
@@ -802,13 +809,12 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_SearchEngineChanged"));
 }
 
-void BrowserOptionsHandler::UpdateSearchEngines() {
+void BrowserOptionsHandler::AddTemplateUrlServiceObserver() {
   template_url_service_ =
       TemplateURLServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (template_url_service_) {
     template_url_service_->Load();
     template_url_service_->AddObserver(this);
-    OnTemplateURLServiceChanged();
   }
 }
 

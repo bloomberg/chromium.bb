@@ -591,9 +591,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
     l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
 }
 
-void ExtensionSettingsHandler::Initialize() {
-}
-
 void ExtensionSettingsHandler::Observe(
     int type,
     const content::NotificationSource& source,

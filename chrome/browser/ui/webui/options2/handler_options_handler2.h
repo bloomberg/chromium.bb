@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,13 @@
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/notification_registrar.h"
+
+////////////////////////////////////////////////////////////////////////////////
+// HandlerOptionsHandler
+
+// Listen for changes to protocol handlers (i.e. registerProtocolHandler()).
+// This get triggered whenever a user allows a specific website or application
+// to handle clicks on a link with a specified protocol (i.e. mailto: -> Gmail).
 
 namespace base {
 class DictionaryValue;
@@ -26,7 +33,8 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // content::NotificationObserver implementation.

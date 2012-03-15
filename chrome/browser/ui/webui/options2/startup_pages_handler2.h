@@ -29,10 +29,10 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   StartupPagesHandler();
   virtual ~StartupPagesHandler();
 
-  virtual void Initialize() OVERRIDE;
-
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
   // AutocompleteControllerDelegate implementation.
