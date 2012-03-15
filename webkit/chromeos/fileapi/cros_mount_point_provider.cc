@@ -26,27 +26,30 @@ namespace {
 
 const char kChromeUIScheme[] = "chrome";
 
-// Top level file system elements exposed in FileAPI in ChromeOS:
-// TODO(zelidrag): Move fixed mount path initialization out of webkit layer.
-struct LocalMountPointInfo {
-  const char* const web_root_path;
-  const char* const local_root_path;
-  chromeos::CrosMountPointProvider::FileSystemLocation location;
-};
-
-const LocalMountPointInfo kFixedExposedPaths[] = {
-    {"Downloads",
-     "/home/chronos/user/",
-     chromeos::CrosMountPointProvider::LOCAL},
-    {"archive",
-     "/media",
-     chromeos::CrosMountPointProvider::LOCAL},
-    {"removable",
-      "/media",
-      chromeos::CrosMountPointProvider::LOCAL},
-};
-
+// Copied from chrome/browser/chromeos/system/runtime_environment.h
+// TODO(satorux): oshima is now moving the function to 'base/chromeos'.
+// Use the one in 'base/chromeos' once it's done.
+bool IsRunningOnChromeOS() {
+  // Check if the user name is chronos. Note that we don't go with
+  // getuid() + getpwuid_r() as it may end up reading /etc/passwd, which
+  // can be expensive.
+  const char* user = getenv("USER");
+  return user && strcmp(user, "chronos") == 0;
 }
+
+// Returns the home directory path, or an empty string if the home directory
+// is not found.
+std::string GetHomeDirectory() {
+  if (IsRunningOnChromeOS())
+    return "/home/chronos/user";
+
+  const char* home = getenv("HOME");
+  if (home)
+    return home;
+  return "";
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -68,15 +71,13 @@ CrosMountPointProvider::CrosMountPointProvider(
       file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(
           new fileapi::LocalFileUtil(new fileapi::NativeFileUtil())) {
-  for (size_t i = 0; i < arraysize(kFixedExposedPaths); i++) {
-    mount_point_map_.insert(std::make_pair(
-        std::string(kFixedExposedPaths[i].web_root_path),
-        MountPoint(
-            FilePath(std::string(kFixedExposedPaths[i].web_root_path)),
-            FilePath(std::string(kFixedExposedPaths[i].local_root_path)),
-            kFixedExposedPaths[i].location,
-            NULL)));
+  const std::string home = GetHomeDirectory();
+  if (!home.empty()) {
+    AddLocalMountPoint(
+        FilePath::FromUTF8Unsafe(home).AppendASCII("Downloads"));
   }
+  AddLocalMountPoint(FilePath(FILE_PATH_LITERAL("/media/archive")));
+  AddLocalMountPoint(FilePath(FILE_PATH_LITERAL("/media/removable")));
 }
 
 CrosMountPointProvider::~CrosMountPointProvider() {
