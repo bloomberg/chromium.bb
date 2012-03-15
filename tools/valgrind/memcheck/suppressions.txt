@@ -5822,6 +5822,28 @@
    fun:_ZN7WebCore19CCLayerTreeHostImpl10drawLayersEv
    fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
 }
+{
+   bug_118387a
+   Memcheck:Unaddressable
+   fun:_ZN3WTF11currentTimeEv
+   fun:_ZN7WebCore5EventC2ERKN3WTF12AtomicStringEbb
+   fun:_ZN7WebCore19PageTransitionEventC1ERKN3WTF12AtomicStringEb
+   fun:_ZN7WebCore19PageTransitionEvent6createERKN3WTF12AtomicStringEb
+   fun:_ZN7WebCore11FrameLoader11stopLoadingENS_17UnloadEventPolicyE
+   fun:_ZN7WebCore11FrameLoader8closeURLEv
+   fun:_ZN7WebCore11FrameLoader16detachFromParentEv
+   fun:_ZN7WebCore11FrameLoader13frameDetachedEv
+   fun:_ZN7WebCore8SVGImageD0Ev
+}
+{
+   bug_118387b
+   Memcheck:Unaddressable
+   fun:_ZN7WebCore15PlatformSupport20histogramEnumerationEPKcii
+   fun:_ZN7WebCore16HistogramSupport20histogramEnumerationEPKcii
+   fun:_ZN7WebCoreL27histogramMutationEventUsageERKt
+   fun:_ZN7WebCore8DocumentD2Ev
+   fun:_ZN7WebCore11SVGDocumentD0Ev
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
