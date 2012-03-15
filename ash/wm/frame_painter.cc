@@ -23,8 +23,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
-// Size of border along top edge, used for resize handle computations.
-const int kTopThickness = 1;
 // TODO(jamescook): Border is specified to be a single pixel overlapping
 // the web content and may need to be built into the shadow layers instead.
 const int kBorderThickness = 0;
@@ -175,15 +173,18 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
 
   // Check the frame first, as we allow a small area overlapping the contents
   // to be used for resize handles.
-  bool can_resize = frame_->widget_delegate() ?
+  bool can_ever_resize = frame_->widget_delegate() ?
       frame_->widget_delegate()->CanResize() :
       false;
+  // Don't allow overlapping resize handles when the window is maximized, as it
+  // can't be resized in that state.
+  int resize_border = frame_->IsMaximized() ? 0 : kResizeInsideBoundsSize;
   int frame_component = view->GetHTComponentForFrame(point,
-                                                     kResizeInsideBoundsSize,
-                                                     kResizeInsideBoundsSize,
+                                                     resize_border,
+                                                     resize_border,
                                                      kResizeAreaCornerSize,
                                                      kResizeAreaCornerSize,
-                                                     can_resize);
+                                                     can_ever_resize);
   if (frame_component != HTNOWHERE)
     return frame_component;
 

@@ -32,7 +32,9 @@ const int kTabstripRightSpacing = 10;
 // Space between top of window and top of tabstrip for restored windows.
 const int kTabstripTopSpacingRestored = 10;
 // Space between top of window and top of tabstrip for maximized windows.
-const int kTabstripTopSpacingMaximized = 1;
+// Place them flush to the top to make them clickable when the cursor is at
+// the screen edge.
+const int kTabstripTopSpacingMaximized = 0;
 
 }  // namespace
 
@@ -81,9 +83,8 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
-  bool restored = !frame()->IsMaximized();
   return gfx::Rect(kTabstripLeftSpacing,
-                   GetHorizontalTabStripVerticalOffset(restored),
+                   GetHorizontalTabStripVerticalOffset(false),
                    std::max(0, maximize_button_->x() - kTabstripRightSpacing),
                    tabstrip->GetPreferredSize().height());
 }
