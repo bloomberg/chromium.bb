@@ -131,11 +131,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
         new UIDataTypeController(syncable::PREFERENCES, this, profile_, pss));
   }
 
+#if defined(ENABLE_THEMES)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!command_line_->HasSwitch(switches::kDisableSyncThemes)) {
     pss->RegisterDataTypeController(
         new ThemeDataTypeController(this, profile_, pss));
   }
+#endif
 
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
@@ -294,6 +296,7 @@ ProfileSyncComponentsFactory::SyncComponents
   return SyncComponents(model_associator, change_processor);
 }
 
+#if defined(ENABLE_THEMES)
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateThemeSyncComponents(
         ProfileSyncService* profile_sync_service,
@@ -304,6 +307,7 @@ ProfileSyncComponentsFactory::SyncComponents
       new ThemeChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
 }
+#endif
 
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(

@@ -364,7 +364,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
 
   registrar_.Add(this, chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
                  content::NotificationService::AllSources());
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
@@ -585,7 +585,7 @@ void PrefsTabHelper::Observe(int type,
     case chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED:
       UpdateWebPreferences();
       break;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       UpdateRendererPreferences();
       break;

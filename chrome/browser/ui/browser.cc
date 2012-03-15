@@ -379,10 +379,12 @@ Browser::Browser(Type type, Profile* profile)
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
+#if defined(ENABLE_THEMES)
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
+#endif
   registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
 
@@ -4416,9 +4418,11 @@ void Browser::Observe(int type,
         window()->GetLocationBar()->UpdatePageActions();
       break;
 
+#if defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
       break;
+#endif
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name =

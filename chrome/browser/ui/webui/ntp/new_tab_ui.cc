@@ -159,10 +159,13 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+
+#if defined(ENABLE_THEMES)
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
+#endif
 }
 
 NewTabUI::~NewTabUI() {
@@ -230,6 +233,7 @@ void NewTabUI::Observe(int type,
       web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
       break;
     }
+#if defined(ENABLE_THEMES)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
       InitializeCSSCaches();
       StringValue attribution(
@@ -238,6 +242,7 @@ void NewTabUI::Observe(int type,
       web_ui()->CallJavascriptFunction("ntp.themeChanged", attribution);
       break;
     }
+#endif
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
       last_paint_ = base::TimeTicks::Now();
       break;
@@ -248,9 +253,11 @@ void NewTabUI::Observe(int type,
 }
 
 void NewTabUI::InitializeCSSCaches() {
+#if defined(ENABLE_THEMES)
   Profile* profile = GetProfile();
   ThemeSource* theme = new ThemeSource(profile);
   profile->GetChromeURLDataManager()->AddDataSource(theme);
+#endif
 }
 
 // static

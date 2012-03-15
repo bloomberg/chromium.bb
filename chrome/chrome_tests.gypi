@@ -2419,6 +2419,16 @@
             ['exclude', '^browser/ui/webui/print_preview/'],
           ],
         }],
+        ['enable_themes==0', {
+          'sources!': [
+            'browser/sync/glue/theme_data_type_controller_unittest.cc',
+            'browser/sync/glue/theme_util_unittest.cc',
+            'browser/ui/webui/theme_source_unittest.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/themes/'],
+          ],
+        }],
         ['enable_plugin_installation==0', {
           'sources!': [
             'browser/plugin_finder_unittest.cc',

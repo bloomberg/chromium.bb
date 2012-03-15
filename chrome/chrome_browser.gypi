@@ -4451,6 +4451,16 @@
             ['exclude', '^browser/ui/intents'],
           ],
         }],
+        ['enable_themes==0', {
+          'sources!': [
+            'browser/sync/glue/theme_change_processor.cc',
+            'browser/sync/glue/theme_data_type_controller.cc',
+            'browser/ui/webui/theme_source.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/themes/'],
+          ],
+        }],
         ['OS=="android"', {
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
@@ -4466,15 +4476,14 @@
             'browser/ui/sync/one_click_signin_sync_starter.cc',
             'browser/ui/sync/one_click_signin_sync_starter.h',
             'browser/ui/webui/certificate_viewer_webui.cc',
-            'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
+            'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
           ],
           'sources/': [
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/printing/'],
-            ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],

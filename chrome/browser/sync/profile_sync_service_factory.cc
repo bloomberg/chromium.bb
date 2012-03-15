@@ -46,7 +46,9 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   // destruction order.
   DependsOn(TemplateURLServiceFactory::GetInstance());
   DependsOn(PersonalDataManagerFactory::GetInstance());
+#if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
+#endif
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());

@@ -51,9 +51,11 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   MOCK_METHOD2(CreateSessionSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
+#if defined(ENABLE_THEMES)
   MOCK_METHOD2(CreateThemeSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
+#endif
   MOCK_METHOD3(CreateTypedUrlSyncComponents,
                SyncComponents(
                    ProfileSyncService* profile_sync_service,

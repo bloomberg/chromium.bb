@@ -190,7 +190,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   SpellCheckFactory::GetInstance();
   TabRestoreServiceFactory::GetInstance();
+#if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance();
+#endif
   TemplateURLServiceFactory::GetInstance();
   TokenServiceFactory::GetInstance();
 #if defined(ENABLE_WEB_INTENTS)

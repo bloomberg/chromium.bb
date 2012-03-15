@@ -23,7 +23,9 @@ NTPResourceCacheFactory* NTPResourceCacheFactory::GetInstance() {
 NTPResourceCacheFactory::NTPResourceCacheFactory()
     : ProfileKeyedServiceFactory("NTPResourceCache",
                                  ProfileDependencyManager::GetInstance()) {
+#if defined(ENABLE_THEMES)
   DependsOn(ThemeServiceFactory::GetInstance());
+#endif
 }
 
 NTPResourceCacheFactory::~NTPResourceCacheFactory() {}
