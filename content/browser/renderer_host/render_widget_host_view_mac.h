@@ -248,7 +248,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
       gfx::PluginWindowHandle window) OVERRIDE;
 
   // Exposed for testing.
-  AcceleratedPluginView* ViewForPluginWindowHandle(
+  CONTENT_EXPORT AcceleratedPluginView* ViewForPluginWindowHandle(
       gfx::PluginWindowHandle window);
 
   // Helper to do the actual cleanup after a plugin handle has been destroyed.

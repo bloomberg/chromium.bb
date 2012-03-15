@@ -32,11 +32,11 @@
 //
 // Since this data arrives over a separate channel, it is not available
 // immediately after a child process has been started.
-class MachBroker : public base::ProcessMetrics::PortProvider,
+class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
                    public content::NotificationObserver {
  public:
   // Returns the global MachBroker.
-  CONTENT_EXPORT static MachBroker* GetInstance();
+  static MachBroker* GetInstance();
 
   // Performs any necessary setup that cannot happen in the constructor.
   // Callers MUST acquire the lock given by GetLock() before calling this

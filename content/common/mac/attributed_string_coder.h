@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "content/common/mac/font_descriptor.h"
 #include "ipc/ipc_message_utils.h"
 #include "ui/base/range/range.h"
@@ -30,7 +31,7 @@ namespace mac {
 // friends to send objects from the renderer to the browser could lead to
 // deserialization of arbitrary objects. This class restricts serialization to
 // a specific object class and specific attributes of that object.
-class AttributedStringCoder {
+class CONTENT_EXPORT AttributedStringCoder {
  public:
   // A C++ IPC-friendly representation of the NSFontAttributeName attribute
   // set.

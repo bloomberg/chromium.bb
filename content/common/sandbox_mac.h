@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "content/common/content_export.h"
 #include "content/public/common/sandbox_type_mac.h"
 
 class FilePath;
@@ -52,7 +53,7 @@ class SandboxSubstring {
   SandboxSubstringType type_;
 };
 
-class Sandbox {
+class CONTENT_EXPORT Sandbox {
  public:
   // A map of variable name -> string to substitute in its place.
   typedef base::hash_map<std::string, SandboxSubstring>

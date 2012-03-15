@@ -870,7 +870,8 @@ class RenderViewImpl : public RenderWidget,
   void OnSetNavigationStartTime(
       const base::TimeTicks& browser_navigation_start);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
-  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
+  CONTENT_EXPORT void OnSetEditCommandsForNextKeyEvent(
+      const EditCommands& edit_commands);
   CONTENT_EXPORT void OnSetHistoryLengthAndPrune(int history_length,
                                                  int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);
@@ -893,12 +894,12 @@ class RenderViewImpl : public RenderWidget,
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();
-  void OnUpdateWebPreferences(const WebPreferences& prefs);
+  CONTENT_EXPORT void OnUpdateWebPreferences(const WebPreferences& prefs);
 
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);
-  void OnSelectPopupMenuItem(int selected_index);
+  CONTENT_EXPORT void OnSelectPopupMenuItem(int selected_index);
 #endif
   void OnZoom(content::PageZoom zoom);
   void OnZoomFactor(content::PageZoom zoom, int zoom_center_x,

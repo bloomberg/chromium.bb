@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "base/shared_memory.h"
+#include "content/common/content_export.h"
 
 #ifdef __OBJC__
 @class NSFont;
@@ -33,6 +34,7 @@ class FontLoader {
   // file.
   //  |font_data_size| - size of data contained in |font_data|.
   //  |font_id| - unique identifier for the on-disk file we load for the font.
+  CONTENT_EXPORT
   static bool LoadFontIntoBuffer(NSFont* font_to_encode,
                                  base::SharedMemory* font_data,
                                  uint32* font_data_size,
@@ -49,6 +51,7 @@ class FontLoader {
   //  |out| - A CGFontRef corresponding to the designated font.
   //  The caller is responsible for releasing this value via CGFontRelease()
   //  when done.
+  CONTENT_EXPORT
   static bool CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
                                   uint32 font_data_size,
                                   CGFontRef* out);

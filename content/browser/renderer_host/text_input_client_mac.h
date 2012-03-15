@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/point.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -32,7 +33,7 @@ class RenderWidgetHost;
 // requires getting information from the renderer synchronously. Rather than
 // using an actual sync IPC message, a normal async ViewMsg is used with a lock
 // and condition (managed by this service).
-class TextInputClientMac {
+class CONTENT_EXPORT TextInputClientMac {
  public:
   // Returns the singleton instance.
   static TextInputClientMac* GetInstance();
