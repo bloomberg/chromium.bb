@@ -149,6 +149,20 @@ class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
   bool cancelled_;
 };
 
+// Version of URLFetcherTest that tests upload progress reports.
+class URLFetcherUploadProgressTest : public URLFetcherTest {
+ public:
+  virtual void CreateFetcher(const GURL& url);
+
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchUploadProgress(const content::URLFetcher* source,
+                                        int64 current, int64 total);
+ protected:
+  int64 previous_progress_;
+  std::string chunk_;
+  int64 number_of_chunks_added_;
+};
+
 // Version of URLFetcherTest that tests headers.
 class URLFetcherHeadersTest : public URLFetcherTest {
  public:
@@ -343,6 +357,36 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
   ADD_FAILURE();
   delete fetcher_;
   io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
+void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
+  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
+  previous_progress_ = 0;
+  // Large enough data to require more than one read from UploadDataStream.
+  chunk_.assign(1<<16, 'a');
+  // Use chunked upload to wait for a timer event of progress notification.
+  fetcher_->SetChunkedUpload("application/x-www-form-urlencoded");
+  fetcher_->Start();
+  number_of_chunks_added_ = 1;
+  fetcher_->AppendChunkToUpload(chunk_, false);
+}
+
+void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
+    const content::URLFetcher* source, int64 current, int64 total) {
+  // Increasing between 0 and total.
+  EXPECT_LE(0, current);
+  EXPECT_GE(static_cast<int64>(chunk_.size()) * number_of_chunks_added_,
+            current);
+  EXPECT_LE(previous_progress_, current);
+  previous_progress_ = current;
+  EXPECT_EQ(-1, total);
+
+  if (number_of_chunks_added_ < 2) {
+    number_of_chunks_added_ += 1;
+    fetcher_->AppendChunkToUpload(chunk_, true);
+  }
 }
 
 void URLFetcherHeadersTest::OnURLFetchComplete(
@@ -628,6 +672,21 @@ TEST_F(URLFetcherTest, CancelAll) {
 TEST_F(URLFetcherPostTest, DISABLED_Basic) {
 #else
 TEST_F(URLFetcherPostTest, Basic) {
+#endif
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("echo"));
+  MessageLoop::current()->Run();
+}
+
+#if defined(OS_MACOSX)
+// SIGSEGV on Mac: http://crbug.com/60426
+TEST_F(URLFetcherUploadProgressTest, DISABLED_Basic) {
+#else
+TEST_F(URLFetcherUploadProgressTest, Basic) {
 #endif
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
