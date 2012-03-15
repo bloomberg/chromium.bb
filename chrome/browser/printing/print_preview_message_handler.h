@@ -39,9 +39,8 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
   // Helper function to return the TabContentsWrapper for web_contents().
   TabContentsWrapper* tab_contents_wrapper();
 
-  // Common code between failure handlers. Returns a PrintPreviewUI* if there
-  // exists a PrintPreviewUI to send messages to.
-  PrintPreviewUI* OnFailure(int document_cookie);
+  // Gets the PrintPreviewUI associated with the WebContents being observed.
+  PrintPreviewUI* GetPrintPreviewUI();
 
   // Message handlers.
   void OnRequestPrintPreview(bool source_is_modifiable, bool webnode_only);

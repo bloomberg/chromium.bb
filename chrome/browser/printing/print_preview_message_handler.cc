@@ -87,18 +87,12 @@ TabContentsWrapper* PrintPreviewMessageHandler::tab_contents_wrapper() {
   return TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
 }
 
-PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
-  // Always need to stop the worker.
-  StopWorker(document_cookie);
-
-  // Inform the print preview tab of the failure.
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  // User might have closed it already.
-  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
+PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
+  TabContentsWrapper* tab = GetPrintPreviewTab();
+  if (!tab || !tab->web_contents()->GetWebUI())
     return NULL;
-
   return static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI()->GetController());
+      tab->web_contents()->GetWebUI()->GetController());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -118,12 +112,9 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
     return;
   }
 
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
     return;
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI()->GetController());
 
   if (!params.is_modifiable || params.clear_preview_data)
     print_preview_ui->ClearAllPreviewData();
@@ -133,21 +124,20 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
+  int page_number = params.page_number;
+  if (page_number < FIRST_PAGE_INDEX || !params.data_size)
     return;
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI()->GetController());
-  int page_number = params.page_number;
-  if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
-    RefCountedBytes* data_bytes =
-        GetDataFromHandle(params.metafile_data_handle, params.data_size);
-    DCHECK(data_bytes);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
+    return;
 
-    print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
-    print_preview_ui->OnDidPreviewPage(page_number, params.preview_request_id);
-  }
+  RefCountedBytes* data_bytes =
+      GetDataFromHandle(params.metafile_data_handle, params.data_size);
+  DCHECK(data_bytes);
+
+  print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
+  print_preview_ui->OnDidPreviewPage(page_number, params.preview_request_id);
 }
 
 void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
@@ -160,14 +150,9 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     return;
   }
 
-  // Get the print preview tab.
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  // User might have closed it already.
-  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
     return;
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI()->GetController());
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
@@ -196,7 +181,9 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
-  PrintPreviewUI* print_preview_ui = OnFailure(document_cookie);
+  StopWorker(document_cookie);
+
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
   if (!print_preview_ui)
     return;
   print_preview_ui->OnPrintPreviewFailed();
@@ -205,12 +192,9 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
     const PageSizeMargins& page_layout_in_points,
     bool has_custom_page_size_style) {
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_contents()->GetWebUI())
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
     return;
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      print_preview_tab->web_contents()->GetWebUI()->GetController());
   print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points,
                                               has_custom_page_size_style);
 }
@@ -221,7 +205,8 @@ void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
 }
 
 void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {
-  PrintPreviewUI* print_preview_ui = OnFailure(document_cookie);
+  StopWorker(document_cookie);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
   if (!print_preview_ui)
     return;
   print_preview_ui->OnInvalidPrinterSettings();
