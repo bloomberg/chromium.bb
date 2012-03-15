@@ -101,7 +101,7 @@ def RunCommand(cmd, always_dump_stdout_stderr):
   retcode = p.wait()
 
   if retcode != 0:
-    Print('Error: command failed %d %s' % (retcode, str(cmd)))
+    Print('Error: command failed %d %s' % (retcode, ' '.join(cmd)))
     always_dump_stdout_stderr = True
 
   if always_dump_stdout_stderr:
@@ -228,7 +228,7 @@ def RunTest(args):
     Print('Retrying ' + os.path.basename(test))
     result = MakeExecutableCustom(config, test, extra_flags)
   if result:
-    Print('Failure %s: %s' % (result, test))
+    Print('[  FAILED  ] %s: %s' % (result, test))
     ERRORS.put((result, test))
 
 def RunSuite(config, files, extra_flags, errors):
@@ -292,7 +292,7 @@ def main(argv):
   for k in errors:
     lst = errors[k]
     if not lst: continue
-    Banner('%d failures in phase %s' % (len(lst), k))
+    Banner('%d failures in config %s phase %s' % (len(lst), CFG, k))
     for e in lst:
       if os.path.basename(e) in EXCLUDE:
         USED_EXCLUDES[os.path.basename(e)] = None
