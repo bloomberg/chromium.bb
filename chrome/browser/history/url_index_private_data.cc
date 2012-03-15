@@ -14,14 +14,11 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "base/time.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/history/history_database.h"
-#include "chrome/browser/history/in_memory_url_index.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -126,6 +123,7 @@ URLIndexPrivateData::URLIndexPrivateData()
       pre_filter_item_count_(0),
       post_filter_item_count_(0),
       post_scoring_item_count_(0) {
+  URLIndexPrivateData::InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
 URLIndexPrivateData::~URLIndexPrivateData() {}
@@ -141,42 +139,18 @@ void URLIndexPrivateData::Clear() {
   word_starts_map_.clear();
 }
 
-bool URLIndexPrivateData::Empty() const {
-  return history_info_map_.empty();
-}
-
-scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {
-  scoped_refptr<URLIndexPrivateData> data_copy = new URLIndexPrivateData;
-  data_copy->word_list_ = word_list_;
-  data_copy->available_words_ = available_words_;
-  data_copy->word_map_ = word_map_;
-  data_copy->char_word_map_ = char_word_map_;
-  data_copy->word_id_history_map_ = word_id_history_map_;
-  data_copy->history_id_word_map_ = history_id_word_map_;
-  data_copy->history_info_map_ = history_info_map_;
-  return data_copy;
-  // Not copied:
-  //    search_term_cache_
-  //    pre_filter_item_count_
-  //    post_filter_item_count_
-  //    post_scoring_item_count_
-};
-
 // Cache Updating --------------------------------------------------------------
 
-bool URLIndexPrivateData::IndexRow(
-    const URLRow& row,
-    const std::string& languages,
-    const std::set<std::string>& scheme_whitelist) {
+bool URLIndexPrivateData::IndexRow(const URLRow& row) {
   const GURL& gurl(row.url());
 
   // Index only URLs with a whitelisted scheme.
-  if (!URLSchemeIsWhitelisted(gurl, scheme_whitelist))
+  if (!URLIndexPrivateData::URLSchemeIsWhitelisted(gurl))
     return false;
 
   URLID row_id = row.id();
   // Strip out username and password before saving and indexing.
-  string16 url(net::FormatUrl(gurl, languages,
+  string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
@@ -194,18 +168,17 @@ bool URLIndexPrivateData::IndexRow(
 
   // Index the words contained in the URL and title of the row.
   RowWordStarts word_starts;
-  AddRowWordsToIndex(new_row, &word_starts, languages);
+  AddRowWordsToIndex(new_row, &word_starts);
   word_starts_map_[history_id] = word_starts;
   return true;
 }
 
 void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
-                                             RowWordStarts* word_starts,
-                                             const std::string& languages) {
+                                             RowWordStarts* word_starts) {
   HistoryID history_id = static_cast<HistoryID>(row.id());
   // Split URL into individual, unique words then add in the title words.
   const GURL& gurl(row.url());
-  string16 url(net::FormatUrl(gurl, languages,
+  string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,
       net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
       NULL, NULL, NULL));
@@ -334,10 +307,7 @@ void URLIndexPrivateData::AddToHistoryIDWordMap(HistoryID history_id,
   }
 }
 
-bool URLIndexPrivateData::UpdateURL(
-    const URLRow& row,
-    const std::string& languages,
-    const std::set<std::string>& scheme_whitelist) {
+bool URLIndexPrivateData::UpdateURL(const URLRow& row) {
   // The row may or may not already be in our index. If it is not already
   // indexed and it qualifies then it gets indexed. If it is already
   // indexed and still qualifies then it gets updated, otherwise it
@@ -349,8 +319,8 @@ bool URLIndexPrivateData::UpdateURL(
     // This new row should be indexed if it qualifies.
     URLRow new_row(row);
     new_row.set_id(row_id);
-    row_was_updated = RowQualifiesAsSignificant(new_row, base::Time()) &&
-                      IndexRow(new_row, languages, scheme_whitelist);
+    row_was_updated =
+        RowQualifiesAsSignificant(new_row, base::Time()) && IndexRow(new_row);
   } else if (RowQualifiesAsSignificant(row, base::Time())) {
     // This indexed row still qualifies and will be re-indexed.
     // The url won't have changed but the title, visit count, etc.
@@ -371,7 +341,7 @@ bool URLIndexPrivateData::UpdateURL(
         RemoveRowWordsFromIndex(row_to_update);
         row_to_update.set_title(row.title());
         RowWordStarts word_starts;
-        AddRowWordsToIndex(row_to_update, &word_starts, languages);
+        AddRowWordsToIndex(row_to_update, &word_starts);
         word_starts_map_[row_id] = word_starts;
       }
       row_was_updated = true;
@@ -411,6 +381,10 @@ bool URLIndexPrivateData::DeleteURL(const GURL& url) {
   RemoveRowFromIndex(pos->second);
   search_term_cache_.clear();  // This invalidates the cache.
   return true;
+}
+
+bool URLIndexPrivateData::URLSchemeIsWhitelisted(const GURL& gurl) const {
+  return scheme_whitelist_.find(gurl.scheme()) != scheme_whitelist_.end();
 }
 
 // URLIndexPrivateData::HistoryItemFactorGreater -------------------------------
@@ -931,19 +905,24 @@ WordIDSet URLIndexPrivateData::WordIDSetForTermChars(
   return word_id_set;
 }
 
-// Cache Saving ----------------------------------------------------------------
-
 // static
-void URLIndexPrivateData::WritePrivateDataToCacheFileTask(
-    scoped_refptr<URLIndexPrivateData> private_data,
-    const FilePath& file_path,
-    scoped_refptr<RefCountedBool> succeeded) {
-  DCHECK(private_data.get());
-  DCHECK(!file_path.empty());
-  succeeded->set_value(private_data->SaveToFile(file_path));
+void URLIndexPrivateData::InitializeSchemeWhitelist(
+    std::set<std::string>* whitelist) {
+  DCHECK(whitelist);
+  whitelist->insert(std::string(chrome::kAboutScheme));
+  whitelist->insert(std::string(chrome::kChromeUIScheme));
+  whitelist->insert(std::string(chrome::kFileScheme));
+  whitelist->insert(std::string(chrome::kFtpScheme));
+  whitelist->insert(std::string(chrome::kHttpScheme));
+  whitelist->insert(std::string(chrome::kHttpsScheme));
+  whitelist->insert(std::string(chrome::kMailToScheme));
 }
 
+// Cache Saving ----------------------------------------------------------------
+
 bool URLIndexPrivateData::SaveToFile(const FilePath& file_path) {
+  // TODO(mrossetti): Move File IO to another thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
   SavePrivateData(&index_cache);
@@ -1051,7 +1030,8 @@ void URLIndexPrivateData::SaveHistoryInfoMap(
     map_entry->set_history_id(iter->first);
     const URLRow& url_row(iter->second);
     // Note: We only save information that contributes to the index so there
-    // is no need to save search_term_cache_ (not persistent).
+    // is no need to save search_term_cache_ (not persistent),
+    // languages_, etc.
     map_entry->set_visit_count(url_row.visit_count());
     map_entry->set_typed_count(url_row.typed_count());
     map_entry->set_last_visit(url_row.last_visit().ToInternalValue());
@@ -1090,68 +1070,60 @@ void URLIndexPrivateData::SaveWordStartsMap(
 
 // Cache Restoring -------------------------------------------------------------
 
-// static
-void URLIndexPrivateData::RestoreFromFileTask(
-    const FilePath& file_path,
-    scoped_refptr<URLIndexPrivateData> private_data,
-    std::string languages) {
-  private_data = URLIndexPrivateData::RestoreFromFile(file_path, languages);
-}
+bool URLIndexPrivateData::RestoreFromFile(const FilePath& file_path) {
+  // TODO(mrossetti): Figure out how to determine if the cache is up-to-date.
+  // That is: ensure that the database has not been modified since the cache
+  // was last saved. DB file modification date is inadequate. There are no
+  // SQLite table checksums automatically stored.
+  Clear();  // Start with a clean slate.
 
-// static
-scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
-    const FilePath& file_path,
-    const std::string& languages) {
+  // FIXME(mrossetti): Move File IO to another thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (!file_util::PathExists(file_path))
-    return NULL;
+    return false;
   std::string data;
   // If there is no cache file then simply give up. This will cause us to
   // attempt to rebuild from the history database.
   if (!file_util::ReadFileToString(file_path, &data))
-    return NULL;
+    return false;
 
-  scoped_refptr<URLIndexPrivateData> restored_data(new URLIndexPrivateData);
   InMemoryURLIndexCacheItem index_cache;
   if (!index_cache.ParseFromArray(data.c_str(), data.size())) {
-    LOG(WARNING) << "Failed to parse URLIndexPrivateData cache data read from "
+    LOG(WARNING) << "Failed to parse InMemoryURLIndex cache data read from "
                  << file_path.value();
-    return restored_data;
+    return false;
   }
 
-  if (!restored_data->RestorePrivateData(index_cache, languages))
-    return NULL;
+  if (!RestorePrivateData(index_cache)) {
+    Clear();  // Back to square one -- must build from scratch.
+    return false;
+  }
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
                       base::TimeTicks::Now() - beginning_time);
   UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
-                       restored_data->history_id_word_map_.size());
+                       history_id_word_map_.size());
   UMA_HISTOGRAM_COUNTS("History.InMemoryURLCacheSize", data.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
-                             restored_data->word_map_.size());
-  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
-                             restored_data->char_word_map_.size());
-  if (restored_data->Empty())
-    return NULL;  // 'No data' is the same as a failed reload.
-  return restored_data;
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords", word_map_.size());
+  UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars", char_word_map_.size());
+  return true;
 }
 
 // static
-scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
-    HistoryDatabase* history_db,
-    const std::string& languages,
-    const std::set<std::string>& scheme_whitelist) {
+URLIndexPrivateData* URLIndexPrivateData::RebuildFromHistory(
+    HistoryDatabase* history_db) {
   if (!history_db)
     return NULL;
 
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
-  scoped_refptr<URLIndexPrivateData> rebuilt_data(new URLIndexPrivateData);
+  scoped_ptr<URLIndexPrivateData> rebuilt_data(new URLIndexPrivateData);
   URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
     return NULL;
   for (URLRow row; history_enum.GetNextURL(&row); )
-    rebuilt_data->IndexRow(row, languages, scheme_whitelist);
+    rebuilt_data->IndexRow(row);
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
                       base::TimeTicks::Now() - beginning_time);
@@ -1161,17 +1133,16 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
                              rebuilt_data->word_map_.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
                              rebuilt_data->char_word_map_.size());
-  return rebuilt_data;
+  return rebuilt_data.release();
 }
 
 bool URLIndexPrivateData::RestorePrivateData(
-    const InMemoryURLIndexCacheItem& cache,
-    const std::string& languages) {
+    const InMemoryURLIndexCacheItem& cache) {
   if (cache.has_version())
     restored_cache_version_ = cache.version();
   return RestoreWordList(cache) && RestoreWordMap(cache) &&
       RestoreCharWordMap(cache) && RestoreWordIDHistoryMap(cache) &&
-      RestoreHistoryInfoMap(cache) && RestoreWordStartsMap(cache, languages);
+      RestoreHistoryInfoMap(cache) && RestoreWordStartsMap(cache);
 }
 
 bool URLIndexPrivateData::RestoreWordList(
@@ -1293,8 +1264,7 @@ bool URLIndexPrivateData::RestoreHistoryInfoMap(
 }
 
 bool URLIndexPrivateData::RestoreWordStartsMap(
-    const InMemoryURLIndexCacheItem& cache,
-    const std::string& languages) {
+    const InMemoryURLIndexCacheItem& cache) {
   // Note that this function must be called after RestoreHistoryInfoMap() has
   // been run as the word starts may have to be recalculated from the urls and
   // page titles.
@@ -1329,7 +1299,7 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
          iter != history_info_map_.end(); ++iter) {
       RowWordStarts word_starts;
       const URLRow& row(iter->second);
-      string16 url(net::FormatUrl(row.url(), languages,
+      string16 url(net::FormatUrl(row.url(), languages_,
           net::kFormatUrlOmitUsernamePassword,
           net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS,
           NULL, NULL, NULL));
@@ -1341,13 +1311,6 @@ bool URLIndexPrivateData::RestoreWordStartsMap(
     }
   }
   return true;
-}
-
-// static
-bool URLIndexPrivateData::URLSchemeIsWhitelisted(
-    const GURL& gurl,
-    const std::set<std::string>& whitelist) {
-  return whitelist.find(gurl.scheme()) != whitelist.end();
 }
 
 }  // namespace history
