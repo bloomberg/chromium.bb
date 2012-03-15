@@ -8,6 +8,6 @@ namespace policy {
 
 const char AppPackUpdater::kExtensionId[] = "extension-id";
 const char AppPackUpdater::kUpdateUrl[]   = "update-url";
-const char AppPackUpdater::kKeyChecksum[] = "key-checksum";
+const char AppPackUpdater::kOnlineOnly[] = "online-only";
 
 }  // namespace policy

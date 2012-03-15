@@ -106,7 +106,7 @@ message EphemeralUsersEnabledProto {
 message AppPackEntryProto {
   optional string extension_id = 1;
   optional string update_url = 2;
-  optional bytes key_checksum = 3;
+  optional bool online_only = 3;
 }
 
 message AppPackProto {

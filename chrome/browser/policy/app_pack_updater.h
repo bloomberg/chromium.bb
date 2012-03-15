@@ -14,7 +14,7 @@ class AppPackUpdater {
   // Keys for the entries in the KioskModeAppPack dictionary policy.
   static const char kExtensionId[];
   static const char kUpdateUrl[];
-  static const char kKeyChecksum[];
+  static const char kOnlineOnly[];
 };
 
 }  // namespace policy
