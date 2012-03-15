@@ -330,7 +330,14 @@ DirectoryModel.prototype = {
   /**
    * Cancels waiting and scheduled rescans and starts new scan.
    *
-   * @param {Function} callback Called when scan completed.
+   * If the scan completes successfully on the first attempt, the callback will
+   * be invoked and a 'scan-completed' event will be dispatched.  If the scan
+   * fails for any reason, we'll periodically retry until it succeeds (and then
+   * send a 'rescan-complete' event) or is cancelled or replaced by another
+   * scan.
+   *
+   * @param {Function} callback Called if scan completes on the first attempt.
+   *   Note that this will NOT be called if the scan fails but later succeeds.
    */
   scan_: function(callback) {
     if (this.rescanTimeout_) {
@@ -497,9 +504,9 @@ DirectoryModel.prototype = {
    * changed.
    *
    * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
-   * @param {function} action Action executed when the directory loaded.
-   *                              By default selects the first item
-   *                              (unless it's a save dialog).
+   * @param {function} action Action executed if the directory loads
+   *    successfully.  By default selects the first item (unless it's a save
+   *    dialog).
    * @param {boolean} initial True if it comes from setupPath and
    *                          false if caused by an user action.
    */
@@ -528,7 +535,9 @@ DirectoryModel.prototype = {
    *
    * @param {string} path The root path to use
    * @param {Function=} opt_loadedCallback Invoked when the entire directory
-   *     has been loaded and any default file selected.
+   *     has been loaded and any default file selected.  If there are any
+   *     errors loading the directory this will not get called (even if the
+   *     directory loads OK on retry later).
    * @param {Function=} opt_pathResolveCallback Invoked as soon as the path has
    *     been resolved, and called with the base and leaf portions of the path
    *     name, and a flag indicating if the entry exists.
@@ -597,7 +606,7 @@ DirectoryModel.prototype = {
       } else {
         // Well, we can't find the downloads dir. Let's just show something,
         // or we will get an infinite recursion.
-        this.changeDirectory('/', opt_loadedCallback, true);
+        this.changeDirectoryEntry_(this.root_, opt_loadedCallback, true);
       }
     }.bind(this);
 

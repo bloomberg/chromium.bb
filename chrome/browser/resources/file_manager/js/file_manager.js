@@ -1473,13 +1473,6 @@ FileManager.prototype = {
    * window has neither.
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
-    // Avoid a bunch of intermediate list redraws while the data model is
-    // cleared and updated.  Note that it may (or may not) be desirable to draw
-    // partial results as we get them, but today the DirectoryReader API
-    // generally returns all entries in one chunk so even without this batching
-    // we wouldn't have incremental updates.
-    this.table_.startBatchUpdates();
-    var onLoaded = this.table_.endBatchUpdates.bind(this.table_);
 
     if (location.hash) {
       // Location hash has the highest priority.
@@ -1513,7 +1506,6 @@ FileManager.prototype = {
         // until the selection is done.
         var self = this;
         function onLoadedActivateLeaf() {
-          onLoaded();
           if (foundLeaf) {
             self.dispatchDefaultTask_();
             setTimeout(removeShade, 1000);
@@ -1524,14 +1516,14 @@ FileManager.prototype = {
         return;
       }
 
-      this.directoryModel_.setupPath(path, onLoaded);
+      this.directoryModel_.setupPath(path);
       return;
     }
 
     if (this.params_.defaultPath) {
       var path = this.params_.defaultPath;
       if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-        this.directoryModel_.setupPath(path, onLoaded,
+        this.directoryModel_.setupPath(path, undefined,
             function(basePath, leafName) {
               this.filenameInput_.value = leafName;
               this.selectDefaultPathInFilenameInput_();
@@ -1539,11 +1531,11 @@ FileManager.prototype = {
         return;
       }
 
-      this.directoryModel_.setupPath(path, onLoaded);
+      this.directoryModel_.setupPath(path);
       return;
     }
 
-    this.directoryModel_.setupDefaultPath(onLoaded);
+    this.directoryModel_.setupDefaultPath();
   };
 
   /**
