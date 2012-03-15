@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/js/js_event_handler.h"
-#include "chrome/browser/sync/js/js_reply_handler.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "sync/js/js_event_handler.h"
+#include "sync/js/js_reply_handler.h"
 
 namespace browser_sync {
 class JsController;

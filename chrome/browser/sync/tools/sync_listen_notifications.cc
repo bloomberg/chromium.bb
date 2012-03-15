@@ -19,12 +19,12 @@
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_payload_map.h"
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.

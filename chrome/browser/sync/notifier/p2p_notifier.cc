@@ -6,14 +6,14 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
-#include "base/message_loop_proxy.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
-#include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "sync/protocol/service_constants.h"
+#include "sync/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
 

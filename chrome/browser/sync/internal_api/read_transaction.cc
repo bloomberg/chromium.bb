@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 
-#include "chrome/browser/sync/syncable/syncable.h"
+#include "sync/syncable/syncable.h"
 
 namespace sync_api {
 

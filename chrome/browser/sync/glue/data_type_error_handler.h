@@ -8,7 +8,7 @@
 
 #include <string>
 #include "base/location.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
+#include "sync/util/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 

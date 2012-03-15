@@ -10,8 +10,8 @@
 
 #include <string>
 
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/deps/callback.h"
+#include "sync/syncable/model_type.h"
 
 namespace invalidation {
 

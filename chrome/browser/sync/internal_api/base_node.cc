@@ -9,11 +9,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/engine/syncapi_internal.h"
+#include "chrome/browser/sync/internal_api/syncapi_internal.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
-#include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/time.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -23,6 +20,9 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/syncable/syncable.h"
+#include "sync/syncable/syncable_id.h"
+#include "sync/util/time.h"
 
 using syncable::SPECIFICS;
 using sync_pb::AutofillProfileSpecifics;

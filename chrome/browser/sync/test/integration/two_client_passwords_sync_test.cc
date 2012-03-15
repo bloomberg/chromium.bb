@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
+#include "sync/engine/model_safe_worker.h"
+#include "sync/sessions/session_state.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::AllProfilesContainSamePasswordForms;

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/util/encryptor.h"
+#include "sync/util/encryptor.h"
 
 namespace browser_sync {
 

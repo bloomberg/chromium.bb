@@ -1,0 +1,4 @@
+include_rules = [
+  # TODO(akalin): Figure out finer-grained dependencies.
+  "+sync",
+]

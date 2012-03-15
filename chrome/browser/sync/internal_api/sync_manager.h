@@ -13,15 +13,15 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "base/time.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
+#include "base/time.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
-#include "chrome/browser/sync/protocol/sync_protocol_error.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/weak_handle.h"
+#include "sync/protocol/sync_protocol_error.h"
+#include "sync/syncable/model_type.h"
+#include "sync/util/report_unrecoverable_error_function.h"
+#include "sync/util/unrecoverable_error_handler.h"
+#include "sync/util/weak_handle.h"
 
 namespace browser_sync {
 class Encryptor;

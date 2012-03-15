@@ -21,16 +21,12 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/sync_js_controller.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -38,6 +34,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
+#include "sync/engine/model_safe_worker.h"
+#include "sync/js/sync_js_controller.h"
+#include "sync/syncable/model_type.h"
+#include "sync/util/unrecoverable_error_handler.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;

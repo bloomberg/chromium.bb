@@ -10,11 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
-#include "chrome/browser/sync/js/js_backend.h"
-#include "chrome/browser/sync/sessions/debug_info_getter.h"
-#include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/util/weak_handle.h"
+#include "sync/js/js_backend.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/debug_info_getter.h"
+#include "sync/sessions/session_state.h"
+#include "sync/util/weak_handle.h"
 
 namespace sync_api {
 

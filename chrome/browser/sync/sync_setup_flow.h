@@ -13,8 +13,8 @@
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "sync/syncable/model_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
 

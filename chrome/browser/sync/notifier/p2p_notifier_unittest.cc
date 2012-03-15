@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_notifier {

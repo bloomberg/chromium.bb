@@ -13,10 +13,10 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/protocol/sync_protocol_error.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/test/base/testing_profile.h"
+#include "sync/protocol/sync_protocol_error.h"
+#include "sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ProfileSyncServiceMock : public ProfileSyncService {

@@ -5,9 +5,9 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
+#include "sync/sessions/session_state.h"
 
 using sessions_helper::CheckInitialState;
 using sessions_helper::DeleteForeignSession;

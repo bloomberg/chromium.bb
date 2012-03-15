@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/api/syncable_service_mock.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/shared_change_processor_mock.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
+#include "sync/engine/model_safe_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

@@ -7,11 +7,5 @@ include_rules = [
   "-chrome/browser/sync/api",
   "-chrome/browser/sync/glue",
 
-  # Some functionality depends on command-line swithces
-  "+chrome/common/chrome_switches.h",
-
-  # We store the Chrome version in the nigori node.
-  "+chrome/common/chrome_version_info.h",
-
-  "+chrome/common/net/gaia/google_service_auth_error.h",
+  "+sync",
 ]

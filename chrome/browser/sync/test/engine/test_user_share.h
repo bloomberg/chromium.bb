@@ -33,7 +33,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/internal_api/user_share.h"
-#include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
+#include "sync/test/engine/test_directory_setter_upper.h"
 
 namespace browser_sync {
 

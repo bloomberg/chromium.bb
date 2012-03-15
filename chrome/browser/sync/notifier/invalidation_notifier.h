@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -24,10 +24,10 @@
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/weak_handle.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
+#include "sync/syncable/model_type.h"
+#include "sync/util/weak_handle.h"
 
 namespace sync_notifier {
 

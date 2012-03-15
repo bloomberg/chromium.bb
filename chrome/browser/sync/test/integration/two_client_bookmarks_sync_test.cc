@@ -5,9 +5,9 @@
 #include "base/rand_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "sync/sessions/session_state.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;

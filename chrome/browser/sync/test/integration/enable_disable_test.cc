@@ -4,10 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "sync/syncable/model_type.h"
 
 // This file contains tests that exercise enabling and disabling data
 // types.

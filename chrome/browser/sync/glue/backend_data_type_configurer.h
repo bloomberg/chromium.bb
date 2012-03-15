@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 

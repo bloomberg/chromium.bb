@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/protocol/theme_specifics.pb.h"
+#include "sync/util/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 

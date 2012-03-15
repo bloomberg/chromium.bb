@@ -20,7 +20,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -34,6 +33,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "sync/protocol/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using l10n_util::GetStringFUTF16;

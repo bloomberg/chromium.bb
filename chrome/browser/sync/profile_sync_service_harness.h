@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/retry_verifier.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/syncable/model_type.h"
 
 class Profile;
 

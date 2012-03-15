@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop_helpers.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
-#include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/engine/model_safe_worker.h"
+#include "sync/syncable/model_type.h"
+#include "sync/util/unrecoverable_error_handler.h"
 
 class SyncError;
 

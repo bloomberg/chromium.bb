@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_HISTORY_MODEL_WORKER_H_
 #pragma once
 
-#include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "sync/engine/model_safe_worker.h"
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"

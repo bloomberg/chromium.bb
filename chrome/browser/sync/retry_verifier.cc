@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/browser/sync/engine/polling_constants.h"
-#include "chrome/browser/sync/sessions/session_state.h"
+#include "sync/engine/polling_constants.h"
+#include "sync/sessions/session_state.h"
 
 namespace browser_sync {
 

@@ -23,8 +23,8 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "sync/sessions/session_state.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;
 

@@ -10,9 +10,9 @@
 
 #include "base/rand_util.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
+#include "sync/syncable/model_type.h"
 
 namespace sync_notifier {
 

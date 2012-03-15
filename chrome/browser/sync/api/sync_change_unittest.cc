@@ -8,8 +8,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/preference_specifics.pb.h"
+#include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

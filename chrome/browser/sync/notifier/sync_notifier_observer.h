@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "sync/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
 

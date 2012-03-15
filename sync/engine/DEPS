@@ -1,0 +1,8 @@
+include_rules = [
+  "+googleurl",
+  "+sync/protocol",
+  "+sync/sessions",
+  "+sync/syncable",
+  "+sync/test",
+  "+sync/util",
+]

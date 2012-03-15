@@ -14,8 +14,8 @@
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/notification_observer.h"
+#include "sync/syncable/model_type.h"
 
 class PrefService;
 

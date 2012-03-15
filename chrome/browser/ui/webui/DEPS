@@ -2,6 +2,9 @@ include_rules = [
   # Generated files
   "+js2webui/chrome/test/data",
 
+  "+sync/js",
+  "+sync/util/weak_handle.h",
+
   # Other libraries.
   "+third_party/angle",  # For ANGLE version.
 ]

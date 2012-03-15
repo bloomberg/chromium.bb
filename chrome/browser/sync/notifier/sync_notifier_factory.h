@@ -9,8 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
-#include "chrome/browser/sync/util/weak_handle.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "sync/util/weak_handle.h"
 
 namespace sync_notifier {
 

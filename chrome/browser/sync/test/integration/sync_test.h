@@ -17,10 +17,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process_util.h"
-#include "chrome/browser/sync/protocol/sync_protocol_error.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
+#include "sync/protocol/sync_protocol_error.h"
+#include "sync/syncable/model_type.h"
 
 class CommandLine;
 class Profile;

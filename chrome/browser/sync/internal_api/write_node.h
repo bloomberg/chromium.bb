@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 class Cryptographer;
@@ -153,14 +153,6 @@ class WriteNode : public BaseNode {
   // Set the session specifics (windows, tabs, navigations etc.).
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
-
-  // Stores |new_specifics| into |entry|, encrypting if necessary.
-  // Returns false if an error encrypting occurred (does not modify |entry|).
-  // Note: gracefully handles new_specifics aliasing with entry->Get(SPECIFICS).
-  static bool UpdateEntryWithEncryption(
-      browser_sync::Cryptographer* cryptographer,
-      const sync_pb::EntitySpecifics& new_specifics,
-      syncable::MutableEntry* entry);
 
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const OVERRIDE;

@@ -19,8 +19,8 @@
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
-#include "chrome/browser/sync/util/weak_handle.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "sync/util/weak_handle.h"
 
 namespace base {
 class MessageLoopProxy;

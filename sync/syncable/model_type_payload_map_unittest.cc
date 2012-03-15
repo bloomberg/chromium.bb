@@ -1,0 +1,43 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "sync/syncable/model_type_payload_map.h"
+
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/test/values_test_util.h"
+#include "base/values.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace syncable {
+namespace {
+
+using base::ExpectDictStringValue;
+
+class ModelTypePayloadMapTest : public testing::Test {};
+
+TEST_F(ModelTypePayloadMapTest, TypePayloadMapToSet) {
+  ModelTypePayloadMap payloads;
+  payloads[BOOKMARKS] = "bookmarkpayload";
+  payloads[APPS] = "";
+
+  const ModelTypeSet types(BOOKMARKS, APPS);
+  EXPECT_TRUE(ModelTypePayloadMapToEnumSet(payloads).Equals(types));
+}
+
+TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
+  ModelTypePayloadMap payloads;
+  payloads[BOOKMARKS] = "bookmarkpayload";
+  payloads[APPS] = "";
+
+  scoped_ptr<DictionaryValue> value(ModelTypePayloadMapToValue(payloads));
+  EXPECT_EQ(2u, value->size());
+  ExpectDictStringValue("bookmarkpayload", *value, "Bookmarks");
+  ExpectDictStringValue("", *value, "Apps");
+  EXPECT_FALSE(value->HasKey("Preferences"));
+}
+
+}  // namespace
+}  // namespace syncable

@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/internal_api/includes/syncer_error.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/engine/model_safe_worker.h"
+#include "sync/util/syncer_error.h"
 
 namespace base {
 class WaitableEvent;

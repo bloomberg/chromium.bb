@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/syncable/model_type.h"
 
 class SyncError;
 

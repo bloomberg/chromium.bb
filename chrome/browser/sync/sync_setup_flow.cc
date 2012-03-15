@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/user_selectable_sync_type.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "sync/syncable/model_type.h"
 
 namespace {
 

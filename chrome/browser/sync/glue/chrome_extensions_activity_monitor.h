@@ -8,9 +8,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/util/extensions_activity_monitor.h"
 
 namespace browser_sync {
 

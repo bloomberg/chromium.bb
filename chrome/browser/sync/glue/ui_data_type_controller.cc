@@ -11,9 +11,9 @@
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/data_type_histogram.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/syncable/model_type.h"
+#include "sync/util/data_type_histogram.h"
 
 using content::BrowserThread;
 

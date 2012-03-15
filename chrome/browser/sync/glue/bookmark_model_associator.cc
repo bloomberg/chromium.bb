@@ -20,8 +20,8 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/util/cryptographer.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/util/cryptographer.h"
 
 using content::BrowserThread;
 

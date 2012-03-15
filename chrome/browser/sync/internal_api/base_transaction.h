@@ -8,7 +8,7 @@
 
 #include "chrome/browser/sync/internal_api/user_share.h"
 
-#include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/util/cryptographer.h"
 
 namespace syncable {
 class BaseTransaction;

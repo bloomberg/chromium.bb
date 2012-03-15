@@ -19,10 +19,10 @@
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/browser/sync/util/weak_handle.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_payload_map.h"
+#include "sync/util/weak_handle.h"
 
 // TODO(akalin): Move invalidation::InvalidationListener into its own
 // file and include that instead of invalidation-client.h (which

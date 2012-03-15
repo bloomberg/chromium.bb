@@ -13,8 +13,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
+#include "sync/engine/model_safe_worker.h"
 
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;

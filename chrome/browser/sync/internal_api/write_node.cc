@@ -4,15 +4,12 @@
 
 #include "chrome/browser/sync/internal_api/write_node.h"
 
-#include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/engine/nigori_util.h"
-#include "chrome/browser/sync/engine/syncapi_internal.h"
+#include "chrome/browser/sync/internal_api/syncapi_internal.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/engine/nigori_util.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -21,6 +18,8 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/syncable/syncable.h"
+#include "sync/util/cryptographer.h"
 
 using browser_sync::Cryptographer;
 using std::string;
@@ -31,95 +30,6 @@ using syncable::SPECIFICS;
 namespace sync_api {
 
 static const char kDefaultNameForNewNodes[] = " ";
-
-bool WriteNode::UpdateEntryWithEncryption(
-    browser_sync::Cryptographer* cryptographer,
-    const sync_pb::EntitySpecifics& new_specifics,
-    syncable::MutableEntry* entry) {
-  syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
-  DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
-  const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  const syncable::ModelTypeSet encrypted_types =
-      cryptographer->GetEncryptedTypes();
-  // It's possible the nigori lost the set of encrypted types. If the current
-  // specifics are already encrypted, we want to ensure we continue encrypting.
-  bool was_encrypted = old_specifics.has_encrypted();
-  sync_pb::EntitySpecifics generated_specifics;
-  if (new_specifics.has_encrypted()) {
-    NOTREACHED() << "New specifics already has an encrypted blob.";
-    return false;
-  }
-  if ((!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
-       !was_encrypted) ||
-      !cryptographer->is_initialized()) {
-    // No encryption required or we are unable to encrypt.
-    generated_specifics.CopyFrom(new_specifics);
-  } else {
-    // Encrypt new_specifics into generated_specifics.
-    if (VLOG_IS_ON(2)) {
-      scoped_ptr<DictionaryValue> value(entry->ToValue());
-      std::string info;
-      base::JSONWriter::Write(value.get(), true, &info);
-      DVLOG(2) << "Encrypting specifics of type "
-               << syncable::ModelTypeToString(type)
-               << " with content: "
-               << info;
-    }
-    // Only copy over the old specifics if it is of the right type and already
-    // encrypted. The first time we encrypt a node we start from scratch, hence
-    // removing all the unencrypted data, but from then on we only want to
-    // update the node if the data changes or the encryption key changes.
-    if (syncable::GetModelTypeFromSpecifics(old_specifics) == type &&
-        was_encrypted) {
-      generated_specifics.CopyFrom(old_specifics);
-    } else {
-      syncable::AddDefaultFieldValue(type, &generated_specifics);
-    }
-    // Does not change anything if underlying encrypted blob was already up
-    // to date and encrypted with the default key.
-    if (!cryptographer->Encrypt(new_specifics,
-                                generated_specifics.mutable_encrypted())) {
-      NOTREACHED() << "Could not encrypt data for node of type "
-                   << syncable::ModelTypeToString(type);
-      return false;
-    }
-  }
-
-  // It's possible this entry was encrypted but didn't properly overwrite the
-  // non_unique_name (see crbug.com/96314).
-  bool encrypted_without_overwriting_name = (was_encrypted &&
-      entry->Get(syncable::NON_UNIQUE_NAME) != kEncryptedString);
-
-  // If we're encrypted but the name wasn't overwritten properly we still want
-  // to rewrite the entry, irrespective of whether the specifics match.
-  if (!encrypted_without_overwriting_name &&
-      old_specifics.SerializeAsString() ==
-          generated_specifics.SerializeAsString()) {
-    DVLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
-             << " already match, dropping change.";
-    return true;
-  }
-
-  if (generated_specifics.has_encrypted()) {
-    // Overwrite the possibly sensitive non-specifics data.
-    entry->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
-    // For bookmarks we actually put bogus data into the unencrypted specifics,
-    // else the server will try to do it for us.
-    if (type == syncable::BOOKMARKS) {
-      sync_pb::BookmarkSpecifics* bookmark_specifics =
-          generated_specifics.mutable_bookmark();
-      if (!entry->Get(syncable::IS_DIR))
-        bookmark_specifics->set_url(kEncryptedString);
-      bookmark_specifics->set_title(kEncryptedString);
-    }
-  }
-  entry->Put(syncable::SPECIFICS, generated_specifics);
-  DVLOG(1) << "Overwriting specifics of type "
-           << syncable::ModelTypeToString(type)
-           << " and marking for syncing.";
-  syncable::MarkForSyncing(entry);
-  return true;
-}
 
 void WriteNode::SetIsFolder(bool folder) {
   if (entry_->Get(syncable::IS_DIR) == folder)

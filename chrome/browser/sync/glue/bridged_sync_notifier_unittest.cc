@@ -12,10 +12,10 @@
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
-#include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
+#include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

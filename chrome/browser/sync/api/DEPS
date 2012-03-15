@@ -3,8 +3,8 @@ include_rules = [
 
   "+chrome/browser/sync/api",
   "+chrome/browser/sync/internal_api/base_node.h",
-  "+chrome/browser/sync/protocol",
-  "+chrome/browser/sync/syncable/model_type.h",
-  "+chrome/browser/sync/util/immutable.h",
+  "+sync/protocol",
+  "+sync/syncable/model_type.h",
+  "+sync/util/immutable.h",
 ]
 

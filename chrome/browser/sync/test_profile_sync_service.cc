@@ -9,13 +9,13 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/user_share.h"
-#include "chrome/browser/sync/js/js_reply_handler.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
-#include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
+#include "sync/sessions/session_state.h"
+#include "sync/syncable/syncable.h"
 
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::sessions::ErrorCounters;

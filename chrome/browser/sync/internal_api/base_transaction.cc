@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base_transaction.h"
+#include "chrome/browser/sync/internal_api/base_transaction.h"
 
-#include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/syncable/syncable.h"
+#include "sync/util/cryptographer.h"
 
 using browser_sync::Cryptographer;
 

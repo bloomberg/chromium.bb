@@ -1,0 +1,7 @@
+include_rules = [
+  "+sync/engine",
+  "+sync/protocol",
+  "+sync/syncable",
+  "+sync/test",
+  "+sync/util",
+]

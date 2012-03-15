@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/sync/util/immutable.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/util/immutable.h"
 
 namespace base {
 class DictionaryValue;

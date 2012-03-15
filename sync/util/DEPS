@@ -1,0 +1,7 @@
+include_rules = [
+  "+crypto",
+  "+sync/protocol",
+  "+sync/syncable/model_type.h",
+  "+sync/syncable/model_type_test_util.h",
+  "+sync/test/fake_encryptor.h",
+]
