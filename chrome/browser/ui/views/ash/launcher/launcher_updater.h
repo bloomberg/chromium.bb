@@ -35,26 +35,6 @@ class Window;
 class LauncherUpdater : public TabStripModelObserver,
                         public LauncherFaviconLoader::Delegate {
  public:
-  // This API is to be used as part of testing only.
-  class TestApi {
-   public:
-    explicit TestApi(LauncherUpdater* launcher_updater)
-        : launcher_updater_(launcher_updater) {}
-    virtual ~TestApi() {}
-
-    // Returns the launcher id for |tab| if it's an app otherwise returns the
-    // id for the browser itself.
-    ash::LauncherID GetLauncherID(TabContentsWrapper* tab) {
-      return launcher_updater_->GetLauncherID(tab);
-    }
-
-    // Returns the launcher id for the browser window.
-    ash::LauncherID item_id() const { return launcher_updater_->item_id_; }
-
-   private:
-    LauncherUpdater* launcher_updater_;
-  };
-
   enum Type {
     TYPE_APP,
     TYPE_PANEL,
@@ -88,12 +68,6 @@ class LauncherUpdater : public TabStripModelObserver,
   }
 
   // TabStripModelObserver overrides:
-  void ActivationChanged(TabContentsWrapper* tab, bool active);
-  // Call to indicate that the window the tabcontents are in has changed its
-  // activation state.
-  void BrowserActivationStateChanged();
-
-  // TabStripModel overrides:
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
@@ -155,13 +129,6 @@ class LauncherUpdater : public TabStripModelObserver,
   // specified id. Returns true if it did. If the id corresponds to an app tab,
   // |tab| is set to the TabContentsWrapper for the app tab.
   bool ContainsID(ash::LauncherID id, TabContentsWrapper** tab);
-
-  // Returns the launcher id for |tab| if it's an app otherwise returns the
-  // id for the browser itself.
-  ash::LauncherID GetLauncherID(TabContentsWrapper* tab);
-
-  // Retrieves the running status of |tab|.
-  ash::LauncherItemStatus GetStatusForTab(TabContentsWrapper* tab);
 
   ash::LauncherModel* launcher_model();
 

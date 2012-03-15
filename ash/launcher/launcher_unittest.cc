@@ -22,7 +22,10 @@ namespace ash {
 // LauncherView.
 TEST_F(LauncherTest, SetStatusWidth) {
   Launcher* launcher = Shell::GetInstance()->launcher();
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
+  ASSERT_TRUE(launcher);
+  views::View* launcher_view = launcher->widget()->GetContentsView();
+  ASSERT_EQ(1, launcher_view->child_count());
+  launcher_view = launcher_view->child_at(0);
 
   int total_width = launcher->widget()->GetWindowScreenBounds().width();
   ASSERT_GT(total_width, 0);
@@ -30,12 +33,13 @@ TEST_F(LauncherTest, SetStatusWidth) {
   EXPECT_EQ(total_width - total_width / 2, launcher_view->width());
 }
 
-// Confirm that launching an app gets the appropriate state reflected in
-// its button.
 TEST_F(LauncherTest, LaunchApp) {
   Launcher* launcher = Shell::GetInstance()->launcher();
   ASSERT_TRUE(launcher);
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
+  views::View* contents_view = launcher->widget()->GetContentsView();
+  ASSERT_EQ(1, contents_view->child_count());
+  LauncherView* launcher_view =
+      static_cast<LauncherView*>(contents_view->child_at(0));
   LauncherView::TestAPI test(launcher_view);
   LauncherModel* model = launcher->model();
 
@@ -68,12 +72,13 @@ TEST_F(LauncherTest, LaunchApp) {
   ASSERT_EQ(--button_count, test.GetButtonCount());
 }
 
-// Confirm that launching a browser gets the appropriate state reflected in
-// its button.
 TEST_F(LauncherTest, OpenBrowser) {
   Launcher* launcher = Shell::GetInstance()->launcher();
   ASSERT_TRUE(launcher);
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
+  views::View* contents_view = launcher->widget()->GetContentsView();
+  ASSERT_EQ(1, contents_view->child_count());
+  LauncherView* launcher_view =
+      static_cast<LauncherView*>(contents_view->child_at(0));
   LauncherView::TestAPI test(launcher_view);
   LauncherModel* model = launcher->model();
 
@@ -93,46 +98,6 @@ TEST_F(LauncherTest, OpenBrowser) {
   // Remove it.
   model->RemoveItemAt(item_count);
   ASSERT_EQ(--button_count, test.GetButtonCount());
-}
-
-// Confirm that opening two different browsers and changing their activation
-// causes the appropriate state changes in the launcher buttons.
-TEST_F(LauncherTest, OpenTwoBrowsers) {
-  Launcher* launcher = Shell::GetInstance()->launcher();
-  ASSERT_TRUE(launcher);
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
-  LauncherView::TestAPI test(launcher_view);
-  LauncherModel* model = launcher->model();
-
-  // Initially we have the app list and chrome icon.
-  int button_count = test.GetButtonCount();
-  int item_count = model->item_count();
-  int button1 = button_count, button2 = button_count + 1;
-  int item1 = item_count;
-
-  // Add active tab.
-  {
-    LauncherItem item;
-    item.type = TYPE_TABBED;
-    item.status = STATUS_ACTIVE;
-    model->Add(item_count, item);
-  }
-  ASSERT_EQ(++button_count, test.GetButtonCount());
-  EXPECT_EQ(LauncherButton::STATE_ACTIVE, test.GetButton(button1)->state());
-
-  // Add new active tab and deactivate other.
-  {
-    LauncherItem item;
-    item.type = TYPE_TABBED;
-    model->Add(item_count, item);
-    LauncherItem last_item = model->items()[item1];
-    last_item.status = STATUS_RUNNING;
-    model->Set(item1, last_item);
-  }
-
-  ASSERT_EQ(++button_count, test.GetButtonCount());
-  EXPECT_EQ(LauncherButton::STATE_RUNNING, test.GetButton(button1)->state());
-  EXPECT_EQ(LauncherButton::STATE_ACTIVE, test.GetButton(button2)->state());
 }
 
 }  // namespace ash

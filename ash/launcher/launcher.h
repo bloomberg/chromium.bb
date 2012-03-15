@@ -47,8 +47,6 @@ class ASH_EXPORT Launcher {
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
-  // Only to be called for testing. Retrieves the LauncherView.
-  internal::LauncherView* GetLauncherViewForTest();
 
   LauncherDelegate* delegate() { return delegate_.get(); }
 
@@ -70,7 +68,6 @@ class ASH_EXPORT Launcher {
   // Contents view of the widget. Houses the LauncherView.
   DelegateView* delegate_view_;
 
-  // LauncherView used to display icons.
   internal::LauncherView* launcher_view_;
 
   scoped_ptr<LauncherDelegate> delegate_;

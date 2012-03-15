@@ -63,11 +63,8 @@ void LauncherUpdater::Init() {
     ChromeLauncherDelegate::AppType app_type =
         type_ == TYPE_PANEL ? ChromeLauncherDelegate::APP_TYPE_PANEL
         : ChromeLauncherDelegate::APP_TYPE_WINDOW;
-    ash::LauncherItemStatus app_status =
-        ash::wm::IsActiveWindow(window_) ?
-            ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
-        this, app_id_, app_type, app_status);
+        this, app_id_, app_type, ash::STATUS_RUNNING);
   } else {
     // Determine if we have any tabs that should get launcher items.
     std::vector<TabContentsWrapper*> app_tabs;
@@ -84,9 +81,7 @@ void LauncherUpdater::Init() {
     for (size_t i = 0; i < app_tabs.size(); ++i)
       AddAppItem(app_tabs[i]);
   }
-  // In testing scenarios we can get tab strips with no active contents.
-  if (tab_model_->GetActiveTabContents())
-    UpdateLauncher(tab_model_->GetActiveTabContents());
+  UpdateLauncher(tab_model_->GetActiveTabContents());
 }
 
 // static
@@ -117,25 +112,10 @@ TabContentsWrapper* LauncherUpdater::GetTab(ash::LauncherID id) {
   return NULL;
 }
 
-void LauncherUpdater::BrowserActivationStateChanged() {
-  launcher_delegate_->SetItemStatus(
-      GetLauncherID(tab_model_->GetActiveTabContents()),
-      ash::wm::IsActiveWindow(window_) ?
-          ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
-}
-
 void LauncherUpdater::ActiveTabChanged(TabContentsWrapper* old_contents,
                                        TabContentsWrapper* new_contents,
                                        int index,
                                        bool user_gesture) {
-  if (ash::wm::IsActiveWindow(window_)) {
-    ash::LauncherID old_id = GetLauncherID(old_contents);
-    ash::LauncherID new_id = GetLauncherID(new_contents);
-
-    // The new_contents state will be handled in UpdateLauncher().
-    if (old_id != new_id && old_id >= 0)
-      launcher_delegate_->SetItemStatus(old_id, ash::STATUS_RUNNING);
-  }
   // Update immediately on a tab change.
   UpdateLauncher(new_contents);
 }
@@ -225,13 +205,11 @@ void LauncherUpdater::FaviconUpdated() {
 }
 
 void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
-  if (!tab)
-    return;  // Assume the window is going to be closed if there are no tabs.
-
-  launcher_delegate_->SetItemStatus(GetLauncherID(tab), GetStatusForTab(tab));
-
   if (type_ == TYPE_APP)
     return;  // TYPE_APP is entirely maintained by ChromeLauncherDelegate.
+
+  if (!tab)
+    return;  // Assume the window is going to be closed if there are no tabs.
 
   int item_index = launcher_model()->ItemIndexByID(item_id_);
   if (item_index == -1)
@@ -340,7 +318,7 @@ void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
             launcher_delegate_->GetAppID(tab),
             ChromeLauncherDelegate::APP_TYPE_TAB);
         RegisterAppItem(item_id_, tab);
-        launcher_delegate_->SetItemStatus(item_id_, GetStatusForTab(tab));
+        launcher_delegate_->SetItemStatus(item_id_, ash::STATUS_RUNNING);
       }
       item_id_ = -1;
     } else {
@@ -350,12 +328,11 @@ void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
 }
 
 void LauncherUpdater::AddAppItem(TabContentsWrapper* tab) {
-  ash::LauncherItemStatus status = GetStatusForTab(tab);
   ash::LauncherID id = launcher_delegate_->CreateAppLauncherItem(
       this,
       launcher_delegate_->GetAppID(tab),
       ChromeLauncherDelegate::APP_TYPE_TAB,
-      status);
+      ash::STATUS_RUNNING);
   RegisterAppItem(id, tab);
 }
 
@@ -386,22 +363,6 @@ bool LauncherUpdater::ContainsID(ash::LauncherID id, TabContentsWrapper** tab) {
     }
   }
   return false;
-}
-
-ash::LauncherID LauncherUpdater::GetLauncherID(TabContentsWrapper* tab) {
-  if (type_ == TYPE_APP || type_ == TYPE_PANEL)
-    return item_id_;
-  AppTabMap::iterator i = app_map_.find(tab);
-  if (i == app_map_.end())
-    return item_id_;
-  return i->second.id;
-}
-
-ash::LauncherItemStatus LauncherUpdater::GetStatusForTab(
-    TabContentsWrapper* tab) {
-  return ash::wm::IsActiveWindow(window_) &&
-      tab == tab_model_->GetActiveTabContents() ?
-        ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
 }
 
 ash::LauncherModel* LauncherUpdater::launcher_model() {

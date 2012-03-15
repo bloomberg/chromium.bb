@@ -1639,11 +1639,6 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
 
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
-#if defined(USE_AURA)
-  if (icon_updater_.get())
-    icon_updater_->BrowserActivationStateChanged();
-#endif
-
   if (active) {
     BrowserList::SetLastActive(browser_.get());
     browser_->OnWindowActivated();

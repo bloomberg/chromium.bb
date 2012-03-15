@@ -31,13 +31,11 @@ class TestActivationClient : public client::ActivationClient,
   virtual void OnWindowDestroyed(Window* window) OVERRIDE;
 
  private:
-  void RemoveActiveWindow(Window* window);
-
   // This class explicitly does NOT store the active window in a window property
   // to make sure that storing the active window in a property is not treated as
   // part of the aura API. Assumptions to that end will cause tests that use
   // this client to fail.
-  std::vector<Window*> active_windows_;
+  Window* active_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestActivationClient);
 };
