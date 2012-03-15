@@ -22,6 +22,9 @@ namespace {
 // Google Documents List API requires uploading in chunks of 512kB.
 const int64 kUploadChunkSize = 512 * 1024;
 
+// Maximum number of times we try to open a file before giving up.
+const int kMaxFileOpenTries = 5;
+
 }  // namespace
 
 namespace gdata {
@@ -50,19 +53,11 @@ void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
                                        kUploadChunkSize);
   upload_file_info->buf = new net::IOBuffer(upload_file_info->buf_len);
 
-  // Open the file asynchronously.
-  const int rv = upload_file_info->file_stream->Open(
-      upload_file_info->file_path,
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
-      base::Bind(&GDataUploader::OpenCompletionCallback,
-                 uploader_factory_.GetWeakPtr(),
-                 upload_file_info->file_url));
-  DCHECK_EQ(net::ERR_IO_PENDING, rv);
+  OpenFile(upload_file_info);
 }
 
 void GDataUploader::UpdateUpload(const GURL& file_url,
+                                 const FilePath& file_path,
                                  int64 file_size,
                                  bool download_complete) {
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
@@ -83,6 +78,22 @@ void GDataUploader::UpdateUpload(const GURL& file_url,
     upload_file_info->upload_paused = false;
     UploadNextChunk(upload_file_info);
   }
+
+  // Retry opening this file if we failed before.
+  // File open can fail because the downloads system downloads to temporary
+  // locations then renames files.
+  if (upload_file_info->should_retry_file_open) {
+    // Reset number of file open tries if file_path has changed.
+    // This can happen when the file gets renamed from the intermediate
+    // 'foo.crdownload' to the final 'foo' path.
+    if (upload_file_info->file_path != file_path)
+      upload_file_info->num_file_open_tries = 0;
+    upload_file_info->file_path = file_path;
+    // Disallow further retries.
+    upload_file_info->should_retry_file_open = false;
+
+    OpenFile(upload_file_info);
+  }
 }
 
 UploadFileInfo* GDataUploader::GetUploadFileInfo(const GURL& file_url) {
@@ -99,6 +110,19 @@ void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
   delete upload_file_info;
 }
 
+void GDataUploader::OpenFile(UploadFileInfo* upload_file_info) {
+  // Open the file asynchronously.
+  const int rv = upload_file_info->file_stream->Open(
+      upload_file_info->file_path,
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_ASYNC,
+      base::Bind(&GDataUploader::OpenCompletionCallback,
+                 uploader_factory_.GetWeakPtr(),
+                 upload_file_info->file_url));
+  DCHECK_EQ(net::ERR_IO_PENDING, rv);
+}
+
 void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -106,14 +130,30 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
   if (!upload_file_info)
     return;
 
+  // The file may actually not exist yet, as the downloads system downloads
+  // to a temp location and then renames the file. If this is the case, we
+  // just retry opening the file later.
   if (result != net::OK) {
-    // If the file can't be opened, we'll do nothing.
-    // TODO(achuith): Handle errors properly.
-    NOTREACHED() << "Error opening \"" << upload_file_info->file_path.value()
-                 << "\" for reading: " << strerror(result);
+    DCHECK_EQ(result, net::ERR_FILE_NOT_FOUND);
+    // File open failed. Try again later.
+    upload_file_info->num_file_open_tries++;
+
+    DVLOG(1) << "Error opening \"" << upload_file_info->file_path.value()
+             << "\" for reading: " << net::ErrorToString(result)
+             << ", tries=" << upload_file_info->num_file_open_tries;
+
+    // Stop trying to open this file if we exceed kMaxFileOpenTries.
+    const bool exceeded_max_attempts =
+        upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
+    upload_file_info->should_retry_file_open = !exceeded_max_attempts;
+    if (exceeded_max_attempts)
+      RemovePendingUpload(upload_file_info);
+
     return;
   }
 
+  // Open succeeded, initiate the upload.
+  upload_file_info->should_retry_file_open = false;
   file_system_->InitiateUpload(
       upload_file_info->title,
       upload_file_info->content_type,

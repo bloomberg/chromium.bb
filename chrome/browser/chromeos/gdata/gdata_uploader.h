@@ -30,8 +30,9 @@ class GDataUploader {
   // Uploads a file specified by |upload_file_info|. Transfers ownership.
   void UploadFile(UploadFileInfo* upload_file_info);
 
-  // Updates size and download_completed of streaming upload.
+  // Updates file path, size and download_completed status of streaming upload.
   void UpdateUpload(const GURL& file_url,
+                    const FilePath& file_path,
                     int64 file_size,
                     bool download_complete);
 
@@ -41,6 +42,9 @@ class GDataUploader {
 
   // Destroys |upload_file_info|.
   void RemovePendingUpload(UploadFileInfo* upload_file_info);
+
+  // Open the file.
+  void OpenFile(UploadFileInfo* upload_file_info);
 
   // net::FileStream::Open completion callback. The result of the file
   // open operation is passed as |result|.

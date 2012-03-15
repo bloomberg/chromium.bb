@@ -16,7 +16,9 @@ UploadFileInfo::UploadFileInfo()
       start_range(0),
       end_range(-1),
       download_complete(false),
-      upload_paused(false) {
+      upload_paused(false),
+      should_retry_file_open(false),
+      num_file_open_tries(0) {
 }
 
 UploadFileInfo::~UploadFileInfo() {

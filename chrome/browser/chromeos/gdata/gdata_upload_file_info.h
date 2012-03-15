@@ -68,6 +68,9 @@ struct UploadFileInfo {
 
   bool download_complete;  // Whether this file has finished downloading.
   bool upload_paused;  // Whether this file's upload has been paused.
+
+  bool should_retry_file_open;  // Whether we should retry opening this file.
+  int num_file_open_tries;  // Number of times we've tried to open this file.
 };
 
 }  // namespace gdata

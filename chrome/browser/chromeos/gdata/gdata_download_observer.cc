@@ -188,6 +188,7 @@ void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
     return;
 
   gdata_uploader_->UpdateUpload(external_data->file_url(),
+                                download->GetFullPath(),
                                 download->GetReceivedBytes(),
                                 download->AllDataSaved());
 }
