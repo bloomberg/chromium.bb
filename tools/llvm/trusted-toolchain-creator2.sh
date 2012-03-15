@@ -56,7 +56,7 @@ readonly MAKE_OPTS="-j8"
 ######################################################################
 
 # this where we get the cross toolchain from for the manual install:
-readonly CROSS_ARM_TC_REPO=http://mirror.pnl.gov/ubuntu
+readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
 # this is where we get all the armel packages from
 readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
 #
