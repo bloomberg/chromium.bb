@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@
 #include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome_frame/utils.h"
 #include "grit/generated_resources.h"
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>

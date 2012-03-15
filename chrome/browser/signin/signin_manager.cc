@@ -22,7 +22,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 
 namespace {
 

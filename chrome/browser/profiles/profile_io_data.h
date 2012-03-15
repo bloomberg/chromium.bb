@@ -18,7 +18,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/resource_context.h"
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 
 class CookieSettings;
 class DesktopNotificationService;

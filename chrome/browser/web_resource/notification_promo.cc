@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cookie_store.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
 using content::UserMetricsAction;

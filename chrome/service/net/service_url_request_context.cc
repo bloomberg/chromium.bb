@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,9 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/service/service_process.h"
 #include "net/base/cert_verifier.h"
-#include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"

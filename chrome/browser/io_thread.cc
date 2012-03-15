@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -35,7 +35,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/cert_verifier.h"
-#include "net/base/cookie_monster.h"
 #include "net/base/default_origin_bound_cert_store.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
@@ -43,6 +42,7 @@
 #include "net/base/net_util.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/base/sdch_manager.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
