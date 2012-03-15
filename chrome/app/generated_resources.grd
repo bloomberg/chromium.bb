@@ -4810,12 +4810,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER_DESCRIPTION" desc=" Description of the 'Disable better ranking of previously selected shortcuts in omnibox' lab.">
         Remembers commonly selected autocomplete results based on the omnibox search term and offers those URLs the next time that same search term is typed.
       </message>
-      <message name="IDS_FLAGS_ENABLE_BLUETOOTH_NAME" desc="Name of the 'Bluetooth' lab.">
-        Bluetooth
-      </message>
-      <message name="IDS_FLAGS_ENABLE_BLUETOOTH_DESCRIPTION" desc="Description of the 'Bluetooth' lab.">
-        Enable Chrome OS Bluetooth support.
-      </message>
       <message name="IDS_FLAGS_MEMORY_WIDGET_NAME" desc="Name of the 'Show memory status' lab.">
         Show memory status
       </message>

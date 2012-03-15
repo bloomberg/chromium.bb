@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -54,11 +53,6 @@ BluetoothOptionsHandler::BluetoothOptionsHandler() : weak_ptr_factory_(this) {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
-  if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    return;
-  }
-
   adapter_->RemoveObserver(this);
 }
 
@@ -190,12 +184,6 @@ void BluetoothOptionsHandler::RegisterMessages() {
 
 void BluetoothOptionsHandler::InitializeBluetoothStatusCallback(
     const ListValue* args) {
-  // Bluetooth support is a work in progress.  Supress the feature unless
-  // explicitly enabled via a command line flag.
-  if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    return;
-  }
   adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
   adapter_->AddObserver(this);
   // Show or hide the bluetooth settings and update the checkbox based
