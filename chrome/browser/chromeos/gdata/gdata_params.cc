@@ -25,11 +25,13 @@ InitiateUploadParams::InitiateUploadParams(
     const std::string& title,
     const std::string& content_type,
     int64 content_length,
-    const GURL& resumable_create_media_link)
+    const GURL& resumable_create_media_link,
+    const FilePath& virtual_path)
     : title(title),
       content_type(content_type),
       content_length(content_length),
-      resumable_create_media_link(resumable_create_media_link) {
+      resumable_create_media_link(resumable_create_media_link),
+      virtual_path(virtual_path) {
 }
 
 InitiateUploadParams::~InitiateUploadParams() {
@@ -41,13 +43,15 @@ ResumeUploadParams::ResumeUploadParams(const std::string& title,
     int64 content_length,
     const std::string& content_type,
     scoped_refptr<net::IOBuffer> buf,
-    const GURL& upload_location) : title(title),
-                                   start_range(start_range),
-                                   end_range(end_range),
-                                   content_length(content_length),
-                                   content_type(content_type),
-                                   buf(buf),
-                                   upload_location(upload_location) {
+    const GURL& upload_location,
+    const FilePath& virtual_path) : title(title),
+                                    start_range(start_range),
+                                    end_range(end_range),
+                                    content_length(content_length),
+                                    content_type(content_type),
+                                    buf(buf),
+                                    upload_location(upload_location),
+                                    virtual_path(virtual_path) {
 }
 
 ResumeUploadParams::~ResumeUploadParams() {

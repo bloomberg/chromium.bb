@@ -48,7 +48,7 @@ MockDocumentsService::MockDocumentsService() {
       .WillByDefault(Invoke(this, &MockDocumentsService::GetDocumentsStub));
   ON_CALL(*this, DeleteDocument(_, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DeleteDocumentStub));
-  ON_CALL(*this, DownloadDocument(_, _, _))
+  ON_CALL(*this, DownloadDocument(_, _, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadDocumentStub));
   ON_CALL(*this, CopyDocument(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CopyDocumentStub));
@@ -62,7 +62,7 @@ MockDocumentsService::MockDocumentsService() {
           Invoke(this, &MockDocumentsService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, CreateDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CreateDirectoryStub));
-  ON_CALL(*this, DownloadFile(_, _))
+  ON_CALL(*this, DownloadFile(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
@@ -96,6 +96,7 @@ void MockDocumentsService::DeleteDocumentStub(
 }
 
 void MockDocumentsService::DownloadDocumentStub(
+    const FilePath& virtual_path,
     const GURL& content_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
@@ -152,6 +153,7 @@ void MockDocumentsService::CreateDirectoryStub(
 }
 
 void MockDocumentsService::DownloadFileStub(
+    const FilePath& virtual_path,
     const GURL& content_url,
     const DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

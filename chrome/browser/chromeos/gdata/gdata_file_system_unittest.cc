@@ -1215,7 +1215,7 @@ TEST_F(GDataFileSystemTest, GetFile) {
                  callback_helper_.get());
 
   EXPECT_CALL(*mock_doc_service_,
-              DownloadFile(GURL("https://file_content_url/"), _));
+              DownloadFile(_, GURL("https://file_content_url/"), _));
 
   FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
   file_system_->GetFile(file_in_root, callback);

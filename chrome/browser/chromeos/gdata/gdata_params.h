@@ -35,6 +35,7 @@ struct ResumeUploadResponse {
   int64 end_range_received;
   std::string resource_id;
   std::string md5_checksum;
+  FilePath virtual_path;
 };
 
 // Struct for passing params needed for DocumentsService::ResumeUpload() calls.
@@ -45,7 +46,8 @@ struct ResumeUploadParams {
                      int64 content_length,
                      const std::string& content_type,
                      scoped_refptr<net::IOBuffer> buf,
-                     const GURL& upload_location);
+                     const GURL& upload_location,
+                     const FilePath& virtual_path);
   ~ResumeUploadParams();
 
   std::string title;  // Title to be used for file to be uploaded.
@@ -55,6 +57,7 @@ struct ResumeUploadParams {
   std::string content_type;   // Content-Type of file.
   scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
   GURL upload_location;   // Url of where to upload the file to.
+  FilePath virtual_path;   // Virtual GData path of the file seen in the UI.
 };
 
 // Struct for passing params needed for DocumentsService::InitiateUpload()
@@ -63,13 +66,15 @@ struct InitiateUploadParams {
   InitiateUploadParams(const std::string& title,
                        const std::string& content_type,
                        int64 content_length,
-                       const GURL& resumable_create_media_link);
+                       const GURL& resumable_create_media_link,
+                       const FilePath& virtual_path);
   ~InitiateUploadParams();
 
   std::string title;
   std::string content_type;
   int64 content_length;
   GURL resumable_create_media_link;
+  const FilePath& virtual_path;
 };
 
 // Different callback types for various functionalities in DocumentsService.

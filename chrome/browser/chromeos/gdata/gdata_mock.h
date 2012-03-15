@@ -34,7 +34,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
                                   const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
                                     const EntryActionCallback& callback));
-  MOCK_METHOD3(DownloadDocument, void(const GURL& content_url,
+  MOCK_METHOD4(DownloadDocument, void(const FilePath& virtual_path,
+                                      const GURL& content_url,
                                       DocumentExportFormat format,
                                       const DownloadActionCallback& callback));
   MOCK_METHOD3(CopyDocument, void(const GURL& document_url,
@@ -56,7 +57,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
                void(const GURL& parent_content_url,
                     const FilePath::StringType& directory_name,
                     const GetDataCallback& callback));
-  MOCK_METHOD2(DownloadFile, void(const GURL& content_url,
+  MOCK_METHOD3(DownloadFile, void(const FilePath& virtual_path,
+                                  const GURL& content_url,
                                   const DownloadActionCallback& callback));
   MOCK_METHOD2(InitiateUpload,
                void(const InitiateUploadParams& upload_file_info,
@@ -82,7 +84,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
   // portion of the URL as the temporary file path.
-  void DownloadDocumentStub(const GURL& content_url,
+  void DownloadDocumentStub(const FilePath& virtual_path,
+                            const GURL& content_url,
                             DocumentExportFormat format,
                             const DownloadActionCallback& callback);
 
@@ -116,7 +119,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
   // portion of the URL as the temporary file path.
-  void DownloadFileStub(const GURL& content_url,
+  void DownloadFileStub(const FilePath& virtual_path,
+                        const GURL& content_url,
                         const DownloadActionCallback& callback);
 
   void set_feed_data(base::Value* document_data) {

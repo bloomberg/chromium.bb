@@ -174,7 +174,8 @@ class DocumentsServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void DownloadDocument(const GURL& content_url,
+  virtual void DownloadDocument(const FilePath& virtual_path,
+                                const GURL& content_url,
                                 DocumentExportFormat format,
                                 const DownloadActionCallback& callback) = 0;
 
@@ -234,7 +235,8 @@ class DocumentsServiceInterface {
   // |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void DownloadFile(const GURL& content_url,
+  virtual void DownloadFile(const FilePath& virtual_path,
+                            const GURL& content_url,
                             const DownloadActionCallback& callback) = 0;
 
   // Initiates uploading of a document/file.
@@ -268,6 +270,7 @@ class DocumentsService
   virtual void DeleteDocument(const GURL& document_url,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadDocument(
+      const FilePath& virtual_path,
       const GURL& content_url,
       DocumentExportFormat format,
       const DownloadActionCallback& callback) OVERRIDE;
@@ -289,7 +292,8 @@ class DocumentsService
   virtual void CreateDirectory(const GURL& parent_content_url,
                                const FilePath::StringType& directory_name,
                                const GetDataCallback& callback) OVERRIDE;
-  virtual void DownloadFile(const GURL& content_url,
+  virtual void DownloadFile(const FilePath& virtual_path,
+                            const GURL& content_url,
                             const DownloadActionCallback& callback) OVERRIDE;
   virtual void InitiateUpload(const InitiateUploadParams& params,
                               const InitiateUploadCallback& callback) OVERRIDE;

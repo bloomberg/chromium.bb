@@ -1404,17 +1404,20 @@ void DocumentsService::GetDocuments(const GURL& url,
 }
 
 void DocumentsService::DownloadDocument(
+    const FilePath& virtual_path,
     const GURL& document_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
   DownloadFile(
+      virtual_path,
       chrome_browser_net::AppendQueryParameter(document_url,
                                                "exportFormat",
                                                GetExportFormatParam(format)),
       callback);
 }
 
-void DocumentsService::DownloadFile(const GURL& document_url,
+void DocumentsService::DownloadFile(const FilePath& virtual_path,
+                                    const GURL& document_url,
                                     const DownloadActionCallback& callback) {
   StartOperationOnUIThread(
       new DownloadFileOperation(operation_registry_.get(), profile_, callback,

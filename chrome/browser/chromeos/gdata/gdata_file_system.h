@@ -270,6 +270,7 @@ class GDataFileSystem : public ProfileKeyedService {
                       const std::string& content_type,
                       int64 content_length,
                       const FilePath& destination_directory,
+                      const FilePath& virtual_path,
                       const InitiateUploadCallback& callback);
 
   // Resumes upload operation for chunk of file defined in |params..

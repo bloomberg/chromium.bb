@@ -939,6 +939,7 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
   // the caching layer is not implemented yet. For now, always download from
   // the cloud.
   documents_service_->DownloadFile(
+      file_info->GetFilePath(),
       file_info->content_url(),
       base::Bind(&GDataFileSystem::OnFileDownloaded,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -950,6 +951,7 @@ void GDataFileSystem::InitiateUpload(
     const std::string& content_type,
     int64 content_length,
     const FilePath& destination_directory,
+    const FilePath& virtual_path,
     const InitiateUploadCallback& callback) {
   GURL destination_directory_url =
       GetUploadUrlForDirectory(destination_directory);
@@ -968,7 +970,8 @@ void GDataFileSystem::InitiateUpload(
           InitiateUploadParams(file_name,
                                  content_type,
                                  content_length,
-                                 destination_directory_url),
+                                 destination_directory_url,
+                                 virtual_path),
           base::Bind(&GDataFileSystem::OnUploadLocationReceived,
                      weak_ptr_factory_.GetWeakPtr(),
                      callback,

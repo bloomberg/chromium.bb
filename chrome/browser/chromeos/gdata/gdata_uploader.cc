@@ -119,6 +119,7 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
       upload_file_info->content_type,
       upload_file_info->content_length,
       upload_file_info->gdata_path.DirName(),
+      upload_file_info->gdata_path,
       base::Bind(&GDataUploader::OnUploadLocationReceived,
                  uploader_factory_.GetWeakPtr(),
                  upload_file_info->file_url));
@@ -208,7 +209,8 @@ void GDataUploader::ReadCompletionCallback(
                          upload_file_info->content_length,
                          upload_file_info->content_type,
                          upload_file_info->buf,
-                         upload_file_info->upload_location),
+                         upload_file_info->upload_location,
+                         upload_file_info->gdata_path),
       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
                  uploader_factory_.GetWeakPtr(),
                  upload_file_info->file_url));
