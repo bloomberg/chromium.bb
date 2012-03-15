@@ -1719,47 +1719,49 @@ bool BrowserInit::ProcessCmdLineImpl(
     LOG(ERROR) << "RegisterComponentsForUpdate";
 #endif
     RegisterComponentsForUpdate(command_line);
-
-    // Look for the testing channel ID ONLY during process startup
-    if (command_line.HasSwitch(switches::kTestingChannelID)) {
-      std::string testing_channel_id = command_line.GetSwitchValueASCII(
-          switches::kTestingChannelID);
-      // TODO(sanjeevr) Check if we need to make this a singleton for
-      // compatibility with the old testing code
-      // If there are any extra parameters, we expect each one to generate a
-      // new tab; if there are none then we get one homepage tab.
-      int expected_tab_count = 1;
-      if (command_line.HasSwitch(switches::kNoStartupWindow)) {
-        expected_tab_count = 0;
-#if defined(OS_CHROMEOS)
-      // kLoginManager will cause Chrome to start up with the ChromeOS login
-      // screen instead of a browser window, so it won't load any tabs.
-      } else if (command_line.HasSwitch(switches::kLoginManager)) {
-        expected_tab_count = 0;
-#endif
-      } else if (command_line.HasSwitch(switches::kRestoreLastSession)) {
-        std::string restore_session_value(
-            command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
-        base::StringToInt(restore_session_value, &expected_tab_count);
-      } else {
-        std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
-            command_line, cur_dir, last_used_profile);
-        expected_tab_count =
-            std::max(1, static_cast<int>(urls_to_open.size()));
-      }
-#if defined(OS_CHROMEOS)
-      // crosbug.com/26446.
-      LOG(ERROR) << "CreatingAutomationProvider";
-#endif
-      if (!CreateAutomationProvider<TestingAutomationProvider>(
-          testing_channel_id,
-          last_used_profile,
-          static_cast<size_t>(expected_tab_count)))
-        return false;
-    }
   }
 
   bool silent_launch = false;
+
+#if defined(ENABLE_AUTOMATION)
+  // Look for the testing channel ID ONLY during process startup
+  if (process_startup &&
+      command_line.HasSwitch(switches::kTestingChannelID)) {
+    std::string testing_channel_id = command_line.GetSwitchValueASCII(
+        switches::kTestingChannelID);
+    // TODO(sanjeevr) Check if we need to make this a singleton for
+    // compatibility with the old testing code
+    // If there are any extra parameters, we expect each one to generate a
+    // new tab; if there are none then we get one homepage tab.
+    int expected_tab_count = 1;
+    if (command_line.HasSwitch(switches::kNoStartupWindow)) {
+      expected_tab_count = 0;
+#if defined(OS_CHROMEOS)
+    // kLoginManager will cause Chrome to start up with the ChromeOS login
+    // screen instead of a browser window, so it won't load any tabs.
+    } else if (command_line.HasSwitch(switches::kLoginManager)) {
+      expected_tab_count = 0;
+#endif
+    } else if (command_line.HasSwitch(switches::kRestoreLastSession)) {
+      std::string restore_session_value(
+          command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
+      base::StringToInt(restore_session_value, &expected_tab_count);
+    } else {
+      std::vector<GURL> urls_to_open = GetURLsFromCommandLine(
+          command_line, cur_dir, last_used_profile);
+      expected_tab_count =
+          std::max(1, static_cast<int>(urls_to_open.size()));
+    }
+#if defined(OS_CHROMEOS)
+    // crosbug.com/26446.
+    LOG(ERROR) << "CreatingAutomationProvider";
+#endif
+    if (!CreateAutomationProvider<TestingAutomationProvider>(
+        testing_channel_id,
+        last_used_profile,
+        static_cast<size_t>(expected_tab_count)))
+      return false;
+  }
 
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {
     std::string automation_channel_id = command_line.GetSwitchValueASCII(
@@ -1785,6 +1787,7 @@ bool BrowserInit::ProcessCmdLineImpl(
         return false;
     }
   }
+#endif  // defined(ENABLE_AUTOMATION)
 
   // If we have been invoked to display a desktop notification on behalf of
   // the service process, we do not want to open any browser windows.
@@ -1905,6 +1908,7 @@ template <class AutomationProviderClass>
 bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
                                            Profile* profile,
                                            size_t expected_tabs) {
+#if defined(ENABLE_AUTOMATION)
   scoped_refptr<AutomationProviderClass> automation =
       new AutomationProviderClass(profile);
 #if defined(OS_CHROMEOS)
@@ -1918,6 +1922,7 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
   AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
   DCHECK(list);
   list->AddProvider(automation);
+#endif  // defined(ENABLE_AUTOMATION)
 
   return true;
 }

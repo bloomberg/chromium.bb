@@ -111,6 +111,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
+#if defined(ENABLE_AUTOMATION)
   if ((message.type() == ChromeViewHostMsg_GetCookies::ID ||
        message.type() == ChromeViewHostMsg_SetCookie::ID) &&
     AutomationResourceMessageFilter::ShouldFilterCookieMessages(
@@ -124,6 +125,7 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_END_MESSAGE_MAP()
     handled = true;
   }
+#endif
 
   return handled;
 }
@@ -494,15 +496,19 @@ void ChromeRenderMessageFilter::OnGetCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
+#if defined(ENABLE_AUTOMATION)
   AutomationResourceMessageFilter::GetCookiesForUrl(
       this, request_context_->GetURLRequestContext(), render_process_id_,
       reply_msg, url);
+#endif
 }
 
 void ChromeRenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                             const GURL& url,
                                             const GURL& first_party_for_cookies,
                                             const std::string& cookie) {
+#if defined(ENABLE_AUTOMATION)
   AutomationResourceMessageFilter::SetCookiesForUrl(
       render_process_id_, message.routing_id(), url, cookie);
+#endif
 }

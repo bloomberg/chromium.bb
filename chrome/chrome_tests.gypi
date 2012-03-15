@@ -2190,6 +2190,11 @@
             ['exclude', '^renderer/safe_browsing/'],
           ],
         }],
+        ['enable_automation!=1', {
+          'sources/': [
+            ['exclude', '^browser/automation/'],
+          ],
+        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
@@ -4272,7 +4277,7 @@
     ],  # OS=="win"
     # If you change this condition, make sure you also change it in all.gyp
     # for the chromium_builder_qa target.
-    ['OS == "mac" or OS == "win" or (os_posix == 1 and OS != "android" and target_arch == python_arch)', {
+    ['enable_automation==1 and (OS=="mac" or OS=="win" or (os_posix==1 and target_arch==python_arch))', {
       'targets': [
         {
           # Documentation: http://dev.chromium.org/developers/testing/pyauto

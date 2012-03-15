@@ -4463,6 +4463,11 @@
             ['exclude', '^browser/themes/'],
           ],
         }],
+        ['enable_automation!=1', {
+          'sources/': [
+            ['exclude', '^browser/automation/'],
+          ],
+        }],
         ['OS=="android"', {
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',

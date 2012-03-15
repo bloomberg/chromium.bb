@@ -160,6 +160,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 }
 
 void BrowserProcessImpl::StartTearDown() {
+#if defined(ENABLE_AUTOMATION)
   // Delete the AutomationProviderList before NotificationService,
   // since it may try to unregister notifications
   // Both NotificationService and AutomationProvider are singleton instances in
@@ -168,6 +169,7 @@ void BrowserProcessImpl::StartTearDown() {
   // NotificationService. NotificationService won't be destroyed until after
   // this destructor is run.
   automation_provider_list_.reset();
+#endif
 
   // We need to shutdown the SdchDictionaryFetcher as it regularly holds
   // a pointer to a URLFetcher, and that URLFetcher (upon destruction) will do
@@ -435,9 +437,13 @@ ThumbnailGenerator* BrowserProcessImpl::GetThumbnailGenerator() {
 
 AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
   DCHECK(CalledOnValidThread());
+#if defined(ENABLE_AUTOMATION)
   if (automation_provider_list_.get() == NULL)
     automation_provider_list_.reset(new AutomationProviderList());
   return automation_provider_list_.get();
+#else
+  return NULL;
+#endif
 }
 
 void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(

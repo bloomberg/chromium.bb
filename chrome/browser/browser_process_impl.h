@@ -187,7 +187,9 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_notification_ui_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
 
+#if defined(ENABLE_AUTOMATION)
   scoped_ptr<AutomationProviderList> automation_provider_list_;
+#endif
 
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;

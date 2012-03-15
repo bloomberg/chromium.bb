@@ -81,7 +81,9 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
     autocomplete_history_manager_->SetExternalDelegate(
         autofill_external_delegate_.get());
   }
+#if defined(ENABLE_AUTOMATION)
   automation_tab_helper_.reset(new AutomationTabHelper(contents));
+#endif
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
