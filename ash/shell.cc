@@ -230,11 +230,11 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   // Overridden from SystemTrayDelegate:
   virtual const std::string GetUserDisplayName() const OVERRIDE {
-    return "chronos";
+    return "Über tray";
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
-    return "chr@nos";
+    return "über@tray";
   }
 
   virtual const SkBitmap& GetUserImage() const OVERRIDE {

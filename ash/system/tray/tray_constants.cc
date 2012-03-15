@@ -6,6 +6,7 @@
 
 namespace ash {
 
+const int kTrayPaddingBetweenItems = 8;
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 
 }  // namespace ash

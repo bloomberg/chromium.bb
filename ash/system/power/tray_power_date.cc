@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -281,7 +282,7 @@ TrayPowerDate::~TrayPowerDate() {
 views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(tray::DateView::TIME));
   date_tray_->label()->SetFont(
-      date_tray_->label()->font().DeriveFont(-1, gfx::Font::BOLD));
+      date_tray_->label()->font().DeriveFont(2, gfx::Font::BOLD));
   date_tray_->label()->SetAutoColorReadabilityEnabled(false);
   date_tray_->label()->SetEnabledColor(SK_ColorWHITE);
 
@@ -289,7 +290,7 @@ views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
 
   views::View* container = new views::View;
   container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 0));
+        views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
   container->AddChildView(power_tray_.get());
   container->AddChildView(date_tray_.get());
 

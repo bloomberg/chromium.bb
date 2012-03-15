@@ -8,6 +8,7 @@
 
 namespace ash {
 
+extern const int kTrayPaddingBetweenItems;
 extern const int kTrayPopupAutoCloseDelayInSeconds;
 
 }  // namespace ash

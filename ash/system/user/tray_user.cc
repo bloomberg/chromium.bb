@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/button.h"
@@ -20,7 +21,13 @@
 
 namespace {
 
-const int kUpdateNotificationPadding = 5;
+const int kPaddingAroundButtons = 5;
+
+const int kUserInfoHorizontalPadding = 14;
+const int kUserInfoVerticalPadding = 10;
+const int kUserInfoPaddingBetweenItems = 3;
+
+const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 // A custom textbutton with some extra vertical padding, and custom border,
 // alignment and hover-effects.
@@ -30,8 +37,10 @@ class TrayButton : public views::TextButton {
       : views::TextButton(listener, text),
         hover_(false),
         hover_bg_(views::Background::CreateSolidBackground(SkColorSetARGB(
-               10, 0, 0, 0))) {
+               10, 0, 0, 0))),
+        hover_border_(views::Border::CreateSolidBorder(1, kButtonStrokeColor)) {
     set_alignment(ALIGN_CENTER);
+    set_border(NULL);
   }
 
   virtual ~TrayButton() {}
@@ -61,8 +70,16 @@ class TrayButton : public views::TextButton {
       views::TextButton::OnPaintBackground(canvas);
   }
 
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE {
+    if (hover_)
+      hover_border_->Paint(*this, canvas);
+    else
+      views::TextButton::OnPaintBorder(canvas);
+  }
+
   bool hover_;
-  views::Background* hover_bg_;
+  scoped_ptr<views::Background> hover_bg_;
+  scoped_ptr<views::Border> hover_border_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayButton);
 };
@@ -86,14 +103,17 @@ class UserView : public views::View,
         lock_(NULL) {
     CHECK(status != ash::user::LOGGED_IN_NONE);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-          0, 0, 3));
+          0, 0, 0));
 
     if (status != ash::user::LOGGED_IN_GUEST)
       AddUserInfo();
 
     views::View* button_container = new views::View;
     views::BoxLayout *layout = new
-        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 5, 0);
+        views::BoxLayout(views::BoxLayout::kHorizontal,
+            kPaddingAroundButtons,
+            kPaddingAroundButtons,
+            -1);
     layout->set_spread_blank_space(true);
     button_container->SetLayoutManager(layout);
 
@@ -101,21 +121,21 @@ class UserView : public views::View,
 
     shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_SHUT_DOWN));
-    shutdown_->set_border(NULL);
+    shutdown_->set_border(views::Border::CreateSolidSidedBorder(0, 0, 0, 1,
+        kButtonStrokeColor));
     button_container->AddChildView(shutdown_);
 
     signout_ = new TrayButton(this, bundle.GetLocalizedString(
         status == ash::user::LOGGED_IN_GUEST ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
                                                IDS_ASH_STATUS_TRAY_SIGN_OUT));
-    signout_->set_border(views::Border::CreateSolidSidedBorder(
-          0, 1, 0, 1, SkColorSetARGB(25, 0, 0, 0)));
     button_container->AddChildView(signout_);
 
     if (status != ash::user::LOGGED_IN_GUEST) {
+      signout_->set_border(views::Border::CreateSolidSidedBorder(0, 0, 0, 1,
+          kButtonStrokeColor));
       lock_ = new TrayButton(this, bundle.GetLocalizedString(
             IDS_ASH_STATUS_TRAY_LOCK));
       button_container->AddChildView(lock_);
-      lock_->set_border(NULL);
     }
 
     AddChildView(button_container);
@@ -145,10 +165,10 @@ class UserView : public views::View,
       update_->AddChildView(icon);
 
       update_->set_border(views::Border::CreateEmptyBorder(
-          kUpdateNotificationPadding,
-          kUpdateNotificationPadding,
-          kUpdateNotificationPadding,
-          kUpdateNotificationPadding));
+          kUserInfoVerticalPadding,
+          kUserInfoHorizontalPadding,
+          kUserInfoVerticalPadding,
+          kUserInfoHorizontalPadding));
 
       user_info_->AddChildView(update_);
     } else if (update_) {
@@ -163,19 +183,20 @@ class UserView : public views::View,
   void AddUserInfo() {
     user_info_ = new views::View;
     user_info_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 3));
+        views::BoxLayout::kHorizontal, kUserInfoHorizontalPadding,
+        kUserInfoVerticalPadding, kUserInfoPaddingBetweenItems));
 
     views::View* user = new views::View;
     user->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 14, 5, 0));
+        views::BoxLayout::kVertical, 0, 5, 0));
     ash::SystemTrayDelegate* tray =
         ash::Shell::GetInstance()->tray_delegate();
-    username_ = new views::Label(ASCIIToUTF16(tray->GetUserDisplayName()));
+    username_ = new views::Label(UTF8ToUTF16(tray->GetUserDisplayName()));
     username_->SetFont(username_->font().DeriveFont(2));
     username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     user->AddChildView(username_);
 
-    email_ = new views::Label(ASCIIToUTF16(tray->GetUserEmail()));
+    email_ = new views::Label(UTF8ToUTF16(tray->GetUserEmail()));
     email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     email_->SetEnabled(false);
     user->AddChildView(email_);

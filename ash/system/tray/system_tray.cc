@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/login_status.h"
@@ -298,7 +299,7 @@ SystemTray::SystemTray()
       popup_(NULL) {
   container_ = new views::View;
   container_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 5, 0, 3));
+      views::BoxLayout::kHorizontal, 5, 0, kTrayPaddingBetweenItems));
   container_->set_background(new SystemTrayBackground);
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));

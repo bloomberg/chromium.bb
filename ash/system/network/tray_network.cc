@@ -114,7 +114,11 @@ class HoverHighlightView : public views::View {
 // A custom scroll-view that has a specified dimension.
 class FixedSizedScrollView : public views::ScrollView {
  public:
-  FixedSizedScrollView() {}
+  FixedSizedScrollView() {
+    set_focusable(true);
+    set_notify_enter_exit_on_child(true);
+  }
+
   virtual ~FixedSizedScrollView() {}
 
   void SetContentsView(View* view) {
@@ -128,6 +132,21 @@ class FixedSizedScrollView : public views::ScrollView {
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return fixed_size_;
+  }
+
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
+    views::View* contents = GetContents();
+    gfx::Rect bounds = contents->bounds();
+    bounds.set_width(width() - GetScrollBarWidth());
+    contents->SetBoundsRect(bounds);
+  }
+
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    RequestFocus();
+  }
+
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
+    // Do not paint the focus border.
   }
 
   gfx::Size fixed_size_;
