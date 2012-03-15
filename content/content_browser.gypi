@@ -227,6 +227,8 @@
     'browser/device_orientation/provider.h',
     'browser/device_orientation/provider_impl.cc',
     'browser/device_orientation/provider_impl.h',
+    'browser/dom_storage/dom_storage_message_filter_new.cc',
+    'browser/dom_storage/dom_storage_message_filter_new.h',
     'browser/download/base_file.cc',
     'browser/download/base_file.h',
     'browser/download/download_buffer.cc',
