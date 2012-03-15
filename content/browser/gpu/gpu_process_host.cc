@@ -79,10 +79,10 @@ void ReleasePermanentXIDDispatcher(gfx::PluginWindowHandle surface) {
 
 #endif
 
-void SendGpuProcessMessage(int client_id,
+void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
                            content::CauseForGpuLaunch cause,
                            IPC::Message* message) {
-  GpuProcessHost* host = GpuProcessHost::GetForClient(client_id, cause);
+  GpuProcessHost* host = GpuProcessHost::Get(kind, cause);
   if (host) {
     host->Send(message);
   } else {
@@ -208,8 +208,8 @@ bool GpuProcessHost::HostIsValid(GpuProcessHost* host) {
 }
 
 // static
-GpuProcessHost* GpuProcessHost::GetForClient(
-    int client_id, content::CauseForGpuLaunch cause) {
+GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
+                                    content::CauseForGpuLaunch cause) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Don't grant further access to GPU if it is not allowed.
@@ -217,14 +217,16 @@ GpuProcessHost* GpuProcessHost::GetForClient(
   if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
     return NULL;
 
-  // The current policy is to ignore the renderer ID and use a single GPU
-  // process (the first valid host in the host-id map) for all renderers. Later
-  // this will be extended to allow the use of multiple GPU processes.
+  // TODO(apatrick): This is a mess. There are only two GpuProcessHosts that
+  // can legitimately be returned by this function: the sandboxed one or the
+  // unsandboxed one. There should be no need for a map indexed by host ID.
+  // Historical note: there was once a command line switch to launch one GPU
+  // process per renderer process and this is its legacy.
   for (IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
        !it.IsAtEnd(); it.Advance()) {
     GpuProcessHost* host = it.GetCurrentValue();
 
-    if (host->sandboxed() != (client_id != 0))
+    if (host->kind() != kind)
       continue;
 
     if (HostIsValid(host))
@@ -241,7 +243,7 @@ GpuProcessHost* GpuProcessHost::GetForClient(
                             cause,
                             content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM);
 
-  GpuProcessHost* host = new GpuProcessHost(host_id, client_id != 0);
+  GpuProcessHost* host = new GpuProcessHost(host_id, kind);
   if (host->Init())
     return host;
 
@@ -250,13 +252,13 @@ GpuProcessHost* GpuProcessHost::GetForClient(
 }
 
 // static
-void GpuProcessHost::SendOnIO(int client_id,
+void GpuProcessHost::SendOnIO(GpuProcessKind kind,
                               content::CauseForGpuLaunch cause,
                               IPC::Message* message) {
   BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &SendGpuProcessMessage, client_id, cause, message));
+            &SendGpuProcessMessage, kind, cause, message));
 }
 
 // static
@@ -273,12 +275,12 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   return NULL;
 }
 
-GpuProcessHost::GpuProcessHost(int host_id, bool sandboxed)
+GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     : host_id_(host_id),
       gpu_process_(base::kNullProcessHandle),
       in_process_(false),
       software_rendering_(false),
-      sandboxed_(sandboxed),
+      kind_(kind),
       process_launched_(false) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
@@ -311,7 +313,7 @@ GpuProcessHost::~GpuProcessHost() {
   // Ending only acts as a failure if the GPU process was actually started and
   // was intended for actual rendering (and not just checking caps or other
   // options).
-  if (process_launched_ && sandboxed_) {
+  if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     if (software_rendering_) {
       if (++g_gpu_software_crash_count >= kGpuMaxCrashCount) {
         // The software renderer is too unstable to use. Disable it for current
@@ -558,7 +560,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       params.size,
       params.surface_handle,
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-                 host_id_,
+                 GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                  params.route_id));
 }
 
@@ -608,8 +610,8 @@ bool GpuProcessHost::software_rendering() {
   return software_rendering_;
 }
 
-bool GpuProcessHost::sandboxed() {
-  return sandboxed_;
+GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
+  return kind_;
 }
 
 void GpuProcessHost::ForceShutdown() {
@@ -645,7 +647,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
-  if (!sandboxed_)
+  if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
     cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
 
   // Propagate relevant command line switches.

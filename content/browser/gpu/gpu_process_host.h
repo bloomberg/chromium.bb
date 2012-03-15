@@ -32,6 +32,11 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
                        public IPC::Message::Sender,
                        public base::NonThreadSafe {
  public:
+  enum GpuProcessKind {
+    GPU_PROCESS_KIND_UNSANDBOXED,
+    GPU_PROCESS_KIND_SANDBOXED
+  };
+
   typedef base::Callback<void(const IPC::ChannelHandle&,
                               base::ProcessHandle,
                               const content::GPUInfo&)>
@@ -41,18 +46,18 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   static bool gpu_enabled() { return gpu_enabled_; }
 
-  // Creates a new GpuProcessHost or gets one for a particular client, resulting
-  // in the launching of a GPU process if required.  Returns null on failure. It
+  // Creates a new GpuProcessHost or gets an existing one, resulting in the
+  // launching of a GPU process if required.  Returns null on failure. It
   // is not safe to store the pointer once control has returned to the message
   // loop as it can be destroyed. Instead store the associated GPU host ID.
   // This could return NULL if GPU access is not allowed (blacklisted).
-  static GpuProcessHost* GetForClient(int client_id,
-                                      content::CauseForGpuLaunch cause);
+  static GpuProcessHost* Get(GpuProcessKind kind,
+                             content::CauseForGpuLaunch cause);
 
   // Helper function to send the given message to the GPU process on the IO
-  // thread.  Calls GetForClient and if a host is returned, sends it.
-  // Can be called from any thread.
-  CONTENT_EXPORT static void SendOnIO(int client_id,
+  // thread.  Calls Get and if a host is returned, sends it.  Can be called from
+  // any thread.
+  CONTENT_EXPORT static void SendOnIO(GpuProcessKind kind,
                                       content::CauseForGpuLaunch cause,
                                       IPC::Message* message);
 
@@ -83,15 +88,15 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // Whether this GPU process is set up to use software rendering.
   bool software_rendering();
 
-  // Whether this GPU process is sandboxed.
-  bool sandboxed();
+  // What kind of GPU process, e.g. sandboxed or unsandboxed.
+  GpuProcessKind kind();
 
   void ForceShutdown();
 
  private:
   static bool HostIsValid(GpuProcessHost* host);
 
-  GpuProcessHost(int host_id, bool sandboxed);
+  GpuProcessHost(int host_id, GpuProcessKind kind);
   virtual ~GpuProcessHost();
 
   bool Init();
@@ -163,7 +168,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   bool in_process_;
 
   bool software_rendering_;
-  bool sandboxed_;
+  GpuProcessKind kind_;
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
 

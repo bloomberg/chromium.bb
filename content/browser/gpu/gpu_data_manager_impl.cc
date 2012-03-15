@@ -108,7 +108,7 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
   complete_gpu_info_already_requested_ = true;
 
   GpuProcessHost::SendOnIO(
-      0,
+      GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED,
       content::CAUSE_FOR_GPU_LAUNCH_GPUDATAMANAGER_REQUESTCOMPLETEGPUINFOIFNEEDED,
       new GpuMsg_CollectGraphicsInfo());
 }

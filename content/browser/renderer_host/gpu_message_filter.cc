@@ -100,8 +100,8 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   // to something like OnCreateGpuProcess.
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host) {
-    host = GpuProcessHost::GetForClient(
-        render_process_id_, cause_for_gpu_launch);
+    host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                               cause_for_gpu_launch);
     if (!host) {
       reply->set_reply_error();
       Send(reply);

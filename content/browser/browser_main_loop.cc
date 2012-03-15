@@ -437,8 +437,8 @@ void BrowserMainLoop::CreateThreads() {
 
   BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE, base::Bind(
-          base::IgnoreResult(&GpuProcessHost::GetForClient),
-          1,  // Arbitrary non-0 (to cause sandboxing) client_id.
+          base::IgnoreResult(&GpuProcessHost::Get),
+          GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
           content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP),
       // Arbitrary delay to avoid allow browser init precious CPU cycles.
       base::TimeDelta::FromSeconds(5));
