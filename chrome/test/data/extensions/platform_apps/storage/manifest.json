@@ -1,5 +1,5 @@
 {
-  "name": "Platform App Test: loalStorage/WebSQL are disallowed",
+  "name": "Platform App Test: localStorage/WebSQL are disallowed",
   "platform_app": true,
   "version": "1",
   "manifest_version": 2,
