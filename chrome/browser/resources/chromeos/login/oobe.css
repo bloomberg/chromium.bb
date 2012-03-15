@@ -749,3 +749,15 @@ html[dir=rtl] .error-message {
 #offline-network-control {
   margin-left: 60px;
 }
+
+#notification-area {
+  color: #666;
+  height: 0;
+  margin: 8px auto;
+  max-width: 850px;
+  text-align: center;
+}
+
+#notification-area a {
+  color: rgb(37, 79, 155);
+}

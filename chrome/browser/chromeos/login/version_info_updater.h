@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,10 @@ class VersionInfoUpdater : policy::CloudPolicySubsystem::Observer {
     // Called when boot times label should be updated.
     virtual void OnBootTimesLabelTextUpdated(
         const std::string& boot_times_label_text) = 0;
+
+    // Called when the enterprise info notice should be updated.
+    virtual void OnEnterpriseInfoUpdated(
+        const std::string& enterprise_info) = 0;
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);

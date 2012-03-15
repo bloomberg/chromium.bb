@@ -402,6 +402,16 @@ cr.define('cr.ui.login', function() {
     $(labelId).textContent = labelText;
   };
 
+  /**
+   * Sets the text content of the enterprise info message.
+   * @param {string} messageText The message text.
+   */
+  DisplayManager.setEnterpriseInfo = function(messageText) {
+    $('enterprise-info-message').textContent = messageText;
+    if (messageText)
+      $('enterprise-info-container').hidden = false;
+  };
+
   // Export
   return {
     DisplayManager: DisplayManager

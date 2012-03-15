@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,8 +62,6 @@ void EulaScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_EULA_SCREEN_TITLE));
   localized_strings->SetString("checkboxLogging",
       l10n_util::GetStringUTF16(IDS_EULA_CHECKBOX_ENABLE_LOGGING));
-  localized_strings->SetString("learnMore",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   localized_strings->SetString("back",
       l10n_util::GetStringUTF16(IDS_EULA_BACK_BUTTON));
   localized_strings->SetString("acceptAgreement",

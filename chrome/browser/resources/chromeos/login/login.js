@@ -159,6 +159,15 @@ cr.define('cr.ui', function() {
     DisplayManager.setLabelText(labelId, labelText);
   };
 
+  /**
+   * Sets the text content of the enterprise info message.
+   * If the text is empty, the entire notification will be hidden.
+   * @param {string} messageText The message text.
+   */
+  Oobe.setEnterpriseInfo = function(messageText) {
+    DisplayManager.setEnterpriseInfo(messageText);
+  };
+
   // Export
   return {
     Oobe: Oobe

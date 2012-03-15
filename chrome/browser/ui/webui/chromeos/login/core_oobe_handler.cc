@@ -43,6 +43,8 @@ void CoreOobeHandler::GetLocalizedStrings(
       "title", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   localized_strings->SetString(
       "productName", l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  localized_strings->SetString(
+      "learnMore", l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 }
 
 void CoreOobeHandler::Initialize() {
@@ -98,6 +100,13 @@ void CoreOobeHandler::OnOSVersionLabelTextUpdated(
 void CoreOobeHandler::OnBootTimesLabelTextUpdated(
     const std::string& boot_times_label_text) {
   UpdateLabel("boot-times", boot_times_label_text);
+}
+
+void CoreOobeHandler::OnEnterpriseInfoUpdated(
+    const std::string& message_text) {
+  base::StringValue message_text_vaue(UTF8ToUTF16(message_text));
+  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setEnterpriseInfo",
+                                   message_text_vaue);
 }
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,

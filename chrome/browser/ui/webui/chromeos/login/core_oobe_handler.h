@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,8 @@ class CoreOobeHandler : public BaseScreenHandler,
       const std::string& os_version_label_text) OVERRIDE;
   virtual void OnBootTimesLabelTextUpdated(
       const std::string& boot_times_label_text) OVERRIDE;
+  virtual void OnEnterpriseInfoUpdated(
+      const std::string& message_text) OVERRIDE;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);

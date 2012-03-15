@@ -161,12 +161,23 @@ void VersionInfoUpdater::UpdateEnterpriseInfo() {
 }
 
 void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
-                                       const std::string& status_text) {
+                                           const std::string& status_text) {
   if (domain_name != enterprise_domain_text_ ||
       status_text != enterprise_status_text_) {
     enterprise_domain_text_ = domain_name;
     enterprise_status_text_ = status_text;
     UpdateVersionLabel();
+
+    // Update the notification about device status reporting.
+    if (delegate_) {
+      std::string enterprise_info;
+      if (!domain_name.empty()) {
+        enterprise_info = l10n_util::GetStringFUTF8(
+            IDS_LOGIN_MANAGED_BY_NOTICE,
+            UTF8ToUTF16(enterprise_domain_text_));
+        delegate_->OnEnterpriseInfoUpdated(enterprise_info);
+      }
+    }
   }
 }
 
