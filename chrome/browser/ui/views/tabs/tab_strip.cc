@@ -1022,7 +1022,7 @@ int TabStrip::GetMiniTabCount() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabStrip, views::BaseButton::ButtonListener implementation:
+// TabStrip, views::ButtonListener implementation:
 
 void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == newtab_button_)

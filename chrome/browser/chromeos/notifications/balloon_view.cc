@@ -34,7 +34,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -61,7 +61,7 @@ namespace chromeos {
 // NotificationControlView has close and menu buttons and
 // overlays on top of renderer view.
 class NotificationControlView : public views::View,
-                                public views::MenuButtonDelegate,
+                                public views::MenuButtonListener,
                                 public ui::SimpleMenuModel::Delegate,
                                 public views::ButtonListener {
  public:
@@ -121,8 +121,9 @@ class NotificationControlView : public views::View,
     return total_bounds.size();
   }
 
-  // views::MenuButtonDelegate implements.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) {
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE {
     CreateOptionsMenu();
 
     views::MenuModelAdapter menu_model_adapter(options_menu_contents_.get());

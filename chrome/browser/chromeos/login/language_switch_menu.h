@@ -10,7 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/view.h"
 
@@ -25,7 +25,7 @@ namespace chromeos {
 
 class LanguageList;
 
-class LanguageSwitchMenu : public views::MenuButtonDelegate,
+class LanguageSwitchMenu : public views::MenuButtonListener,
                            public views::MenuDelegate {
  public:
   LanguageSwitchMenu();
@@ -52,10 +52,11 @@ class LanguageSwitchMenu : public views::MenuButtonDelegate,
  private:
   static void LoadFontsForCurrentLocale();
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
-  // views::MenuDelegate implementation.
+  // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // The menu.

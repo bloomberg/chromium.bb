@@ -635,7 +635,8 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Close();
 }
 
-void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
+void PanelBrowserFrameView::OnMenuButtonClicked(views::View* source,
+                                                const gfx::Point& point) {
   if (!EnsureSettingsMenuCreated())
     return;
 

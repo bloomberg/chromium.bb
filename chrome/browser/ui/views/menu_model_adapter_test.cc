@@ -8,7 +8,7 @@
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -246,7 +246,7 @@ class TopMenuModel : public CommonMenuModel {
 }  // namespace
 
 class MenuModelAdapterTest : public ViewEventTestBase,
-                             public views::MenuButtonDelegate {
+                             public views::MenuButtonListener {
  public:
   MenuModelAdapterTest()
       : ViewEventTestBase(),
@@ -287,8 +287,9 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     return button_->GetPreferredSize();
   }
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE {
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE {
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());

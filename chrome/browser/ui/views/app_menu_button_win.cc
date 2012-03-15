@@ -7,8 +7,8 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/widget/widget.h"
 
-AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonDelegate* menu_delegate)
-    : views::MenuButton(NULL, string16(), menu_delegate, false) {
+AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonListener* listener)
+    : views::MenuButton(NULL, string16(), listener, false) {
 }
 
 bool AppMenuButtonWin::OnKeyPressed(const views::KeyEvent& event) {

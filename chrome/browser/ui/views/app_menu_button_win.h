@@ -12,7 +12,7 @@
 // menu.
 class AppMenuButtonWin : public views::MenuButton {
  public:
-  explicit AppMenuButtonWin(views::MenuButtonDelegate* menu_delegate);
+  explicit AppMenuButtonWin(views::MenuButtonListener* menu_button_listener);
 
   // MenuButton:
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;

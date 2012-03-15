@@ -33,8 +33,8 @@ const int kIconHorizontalPad = 2;
 // StatusAreaButton
 
 StatusAreaButton::StatusAreaButton(Delegate* button_delegate,
-                                   views::MenuButtonDelegate* menu_delegate)
-    : MenuButton(NULL, string16(), menu_delegate, false),
+                                   views::MenuButtonListener* listener)
+    : MenuButton(NULL, string16(), listener, false),
       menu_active_(true),
       delegate_(button_delegate) {
   set_border(NULL);

@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
 class PrefService;
@@ -34,11 +34,11 @@ class MenuRunner;
 namespace chromeos {
 
 // A class for the dropdown menu for switching input method and keyboard layout.
-// Since the class provides the views::MenuButtonDelegate interface, it's easy
+// Since the class provides the views::MenuButtonListener interface, it's easy
 // to create a button widget (e.g. views::MenuButton, StatusAreaButton) which
 // shows the dropdown menu on click.
 class InputMethodMenu
-    : public views::MenuButtonDelegate,
+    : public views::MenuButtonListener,
       public ui::MenuModel,
       public input_method::InputMethodManager::Observer,
       public input_method::InputMethodManager::PreferenceObserver,
@@ -68,9 +68,9 @@ class InputMethodMenu
   virtual void MenuWillShow() OVERRIDE;
   virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
 
-  // views::MenuButtonDelegate implementation. Sub classes can override the
-  // method to adjust the position of the menu.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // InputMethodManager::Observer implementation.
   virtual void InputMethodChanged(

@@ -386,9 +386,10 @@ void InputMethodMenu::ActivatedAt(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuButtonDelegate implementation:
+// views::MenuButtonListener implementation:
 
-void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
+void InputMethodMenu::OnMenuButtonClicked(views::View* source,
+                                          const gfx::Point& point) {
   PrepareForMenuOpen();
 
   if (minimum_input_method_menu_width_ > 0) {

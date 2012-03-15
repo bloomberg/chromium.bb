@@ -26,7 +26,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
@@ -265,7 +265,7 @@ class BrowserActionView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer
     : public views::View,
-      public views::MenuButtonDelegate,
+      public views::MenuButtonListener,
       public views::DragController,
       public views::ResizeAreaDelegate,
       public ui::AnimationDelegate,
@@ -340,8 +340,9 @@ class BrowserActionsContainer
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // Overridden from views::DragController:
   virtual void WriteDragDataForView(View* sender,

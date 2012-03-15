@@ -190,21 +190,22 @@ void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuButtonDelegate implementation.
+// views::MenuButtonListener implementation.
 
-void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
+void LanguageSwitchMenu::OnMenuButtonClicked(views::View* source,
+                                             const gfx::Point& point) {
   DCHECK(menu_ != NULL);
   views::MenuButton* button = static_cast<views::MenuButton*>(source);
 
   // We align on the left edge of the button for non RTL case.
-  // MenuButton passes in pt the lower left corner for RTL and the
+  // MenuButton passes in |point| the lower left corner for RTL and the
   // lower right corner for non-RTL (with menu_offset applied).
   const int reverse_offset = button->width() + button->menu_offset().x() * 2;
-  gfx::Point new_pt(pt);
+  gfx::Point new_pt(point);
   if (base::i18n::IsRTL())
-    new_pt.set_x(pt.x() + reverse_offset);
+    new_pt.set_x(point.x() + reverse_offset);
   else
-    new_pt.set_x(pt.x() - reverse_offset);
+    new_pt.set_x(point.x() - reverse_offset);
 
   if (menu_runner_->RunMenuAt(button->GetWidget(), button,
           gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT,

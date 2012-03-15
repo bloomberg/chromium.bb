@@ -74,11 +74,11 @@ void InputMethodMenuButton::OnLocaleChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuButtonDelegate implementation:
+// views::MenuButtonListener implementation:
 
-void InputMethodMenuButton::RunMenu(views::View* unused_source,
-                                    const gfx::Point& pt) {
-  menu_->RunMenu(unused_source, pt);
+void InputMethodMenuButton::OnMenuButtonClicked(views::View* source,
+                                                const gfx::Point& point) {
+  menu_->OnMenuButtonClicked(source, point);
 }
 
 bool InputMethodMenuButton::WindowIsActive() {

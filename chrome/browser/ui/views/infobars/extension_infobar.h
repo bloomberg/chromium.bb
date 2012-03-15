@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 
 class Browser;
 namespace views {
@@ -20,7 +20,7 @@ class MenuButton;
 class ExtensionInfoBar : public InfoBarView,
                          public ImageLoadingTracker::Observer,
                          public ExtensionInfoBarDelegate::DelegateObserver,
-                         public views::MenuButtonDelegate {
+                         public views::MenuButtonListener {
  public:
   ExtensionInfoBar(Browser* browser,
                    InfoBarTabHelper* owner,
@@ -32,8 +32,8 @@ class ExtensionInfoBar : public InfoBarView,
   // InfoBarView:
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
 
   // ImageLoadingTracker::Observer:
@@ -44,8 +44,9 @@ class ExtensionInfoBar : public InfoBarView,
   // ExtensionInfoBarDelegate::DelegateObserver:
   virtual void OnDelegateDeleted() OVERRIDE;
 
-  // views::MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   ExtensionInfoBarDelegate* GetDelegate();
 

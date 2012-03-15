@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 
 namespace gfx {
 class Canvas;
@@ -30,7 +30,7 @@ void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image);
 // The button can optionally have a menu attached to it.
 
 class AvatarMenuButton : public views::MenuButton,
-                         public views::MenuButtonDelegate {
+                         public views::MenuButtonListener {
  public:
   // Creates a new button. If |has_menu| is true then clicking on the button
   // will cause the profile menu to be displayed.
@@ -38,18 +38,19 @@ class AvatarMenuButton : public views::MenuButton,
 
   virtual ~AvatarMenuButton();
 
-  // views::MenuButton
+  // views::MenuButton:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
   virtual void SetAvatarIcon(const gfx::Image& icon,
-                       bool is_gaia_picture);
+                             bool is_gaia_picture);
 
   void ShowAvatarBubble();
 
  private:
-  // views::MenuButtonDelegate
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   Browser* browser_;
   bool has_menu_;

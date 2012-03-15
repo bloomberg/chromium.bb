@@ -20,7 +20,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -41,7 +41,7 @@ class MenuRunner;
 // A balloon view is the UI component for a desktop notification toasts.
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
-                        public views::MenuButtonDelegate,
+                        public views::MenuButtonListener,
                         public views::WidgetDelegateView,
                         public views::ButtonListener,
                         public content::NotificationObserver,
@@ -66,8 +66,9 @@ class BalloonViewImpl : public BalloonView,
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // views::MenuButtonDelegate interface.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener interface.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // views::WidgetDelegate interface.
   virtual void OnDisplayChanged() OVERRIDE;

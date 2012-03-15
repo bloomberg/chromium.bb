@@ -218,9 +218,10 @@ int MemoryMenuButton::horizontal_padding() {
   return 3;
 }
 
-// MemoryMenuButton, views::MenuButtonDelegate implementation:
+// MemoryMenuButton, views::MenuButtonListener implementation:
 
-void MemoryMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+void MemoryMenuButton::OnMenuButtonClicked(views::View* source,
+                                           const gfx::Point& point) {
   // View passed in must be a views::MenuButton, i.e. the MemoryMenuButton.
   DCHECK_EQ(source, this);
 

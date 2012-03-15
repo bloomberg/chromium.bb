@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 namespace base {
@@ -26,7 +26,7 @@ class MenuRunner;
 // Memory debugging display that lives in the status area.
 class MemoryMenuButton : public StatusAreaButton,
                          public views::MenuDelegate,
-                         public views::MenuButtonDelegate,
+                         public views::MenuButtonListener,
                          public content::NotificationObserver {
  public:
   explicit MemoryMenuButton(StatusAreaButton::Delegate* delegate);
@@ -37,8 +37,9 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,

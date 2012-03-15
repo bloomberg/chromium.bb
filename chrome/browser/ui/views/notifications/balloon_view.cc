@@ -154,7 +154,8 @@ BalloonHost* BalloonViewImpl::GetHost() const {
   return html_contents_.get();
 }
 
-void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
+void BalloonViewImpl::OnMenuButtonClicked(views::View* source,
+                                          const gfx::Point& point) {
   CreateOptionsMenu();
 
   views::MenuModelAdapter menu_model_adapter(options_menu_model_.get());

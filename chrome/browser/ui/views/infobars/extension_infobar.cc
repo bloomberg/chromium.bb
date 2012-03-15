@@ -68,8 +68,8 @@ void ExtensionInfoBar::Layout() {
 }
 
 void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
-                                            View* parent,
-                                            View* child) {
+                                            views::View* parent,
+                                            views::View* child) {
   if (!is_add || (child != this) || (menu_ != NULL)) {
     InfoBarView::ViewHierarchyChanged(is_add, parent, child);
     return;
@@ -138,7 +138,8 @@ void ExtensionInfoBar::OnDelegateDeleted() {
   delegate_ = NULL;
 }
 
-void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
+                                           const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   const Extension* extension = GetDelegate()->extension_host()->extension();

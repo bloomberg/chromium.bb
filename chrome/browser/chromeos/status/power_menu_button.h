@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 namespace base {
@@ -28,7 +28,7 @@ class StatusAreaBubbleContentView;
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
-                        public views::MenuButtonDelegate,
+                        public views::MenuButtonListener,
                         public PowerManagerClient::Observer {
  public:
   explicit PowerMenuButton(StatusAreaButton::Delegate* delegate);
@@ -45,8 +45,9 @@ class PowerMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // Format strings with power status
   string16 GetBatteryIsChargedText() const;

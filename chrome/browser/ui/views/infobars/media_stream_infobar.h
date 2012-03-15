@@ -10,7 +10,7 @@
 #include "chrome/browser/media/media_stream_devices_menu_model.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 
 class MediaStreamInfoBarDelegate;
 
@@ -23,7 +23,7 @@ class MenuButton;
 // also provides a way for the user to select which device(s) will be used by
 // the page.
 class MediaStreamInfoBar : public InfoBarView,
-                           public views::MenuButtonDelegate {
+                           public views::MenuButtonListener {
  public:
   MediaStreamInfoBar(InfoBarTabHelper* contents,
                      MediaStreamInfoBarDelegate* delegate);
@@ -34,14 +34,15 @@ class MediaStreamInfoBar : public InfoBarView,
   // InfoBarView:
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
 
-  // views::MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   MediaStreamInfoBarDelegate* delegate_;
 

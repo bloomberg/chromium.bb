@@ -725,7 +725,8 @@ void BrowserActionsContainer::GetAccessibleState(
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS);
 }
 
-void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
+void BrowserActionsContainer::OnMenuButtonClicked(views::View* source,
+                                                  const gfx::Point& point) {
   if (source == chevron_) {
     overflow_menu_ = new BrowserActionOverflowMenuController(
         this, chevron_, browser_action_views_, VisibleBrowserActions());

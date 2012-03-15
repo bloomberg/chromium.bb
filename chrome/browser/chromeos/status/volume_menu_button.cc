@@ -230,7 +230,8 @@ void VolumeMenuButton::OnVolumeChanged() {
   UpdateIcon();
 }
 
-void VolumeMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+void VolumeMenuButton::OnMenuButtonClicked(views::View* source,
+                                           const gfx::Point& point) {
   // TODO(achuith): Minimum width of MenuItemView is 27 pix which is too wide
   // for our purposes here.
   views::MenuItemView* menu = new views::MenuItemView(this);

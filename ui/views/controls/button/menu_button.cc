@@ -15,7 +15,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -48,12 +48,12 @@ const char MenuButton::kViewClassName[] = "views/MenuButton";
 
 MenuButton::MenuButton(ButtonListener* listener,
                        const string16& text,
-                       MenuButtonDelegate* menu_delegate,
+                       MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
     : TextButton(listener, text),
       menu_visible_(false),
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
-      menu_delegate_(menu_delegate),
+      listener_(menu_button_listener),
       show_menu_marker_(show_menu_marker),
       menu_marker_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_MENU_DROPARROW).ToSkBitmap()),
@@ -74,7 +74,7 @@ MenuButton::~MenuButton() {
 
 bool MenuButton::Activate() {
   SetState(BS_PUSHED);
-  if (menu_delegate_) {
+  if (listener_) {
     gfx::Rect lb = GetLocalBounds();
 
     // The position of the menu depends on whether or not the locale is
@@ -108,7 +108,7 @@ bool MenuButton::Activate() {
     bool destroyed = false;
     destroyed_flag_ = &destroyed;
 
-    menu_delegate_->RunMenu(this, menu_position);
+    listener_->OnMenuButtonClicked(this, menu_position);
 
     if (destroyed) {
       // The menu was deleted while showing. Don't attempt any processing.

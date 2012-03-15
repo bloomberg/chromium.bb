@@ -46,7 +46,7 @@ namespace chromeos {
 // <icon> will show the strength of the wifi/cellular networks.
 // The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
-                          public views::MenuButtonDelegate,
+                          public views::MenuButtonListener,
                           public NetworkMenu::Delegate,
                           public NetworkMenuIcon::Delegate,
                           public NetworkLibrary::NetworkDeviceObserver,
@@ -87,8 +87,9 @@ class NetworkMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener implementation.
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // views::Widget::Observer implementation:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

@@ -52,10 +52,10 @@ AccessibilityMenuButton::~AccessibilityMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuButtonDelegate implementation:
+// views::MenuButtonListener implementation:
 
-void AccessibilityMenuButton::RunMenu(views::View* source,
-                                      const gfx::Point& pt) {
+void AccessibilityMenuButton::OnMenuButtonClicked(views::View* source,
+                                                  const gfx::Point& point) {
   PrepareMenu();
 
   gfx::Point screen_location;
@@ -63,8 +63,7 @@ void AccessibilityMenuButton::RunMenu(views::View* source,
   gfx::Rect bounds(screen_location, source->size());
   CHECK(menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                 this, bounds, views::MenuItemView::TOPRIGHT,
-                                0) ==
-        views::MenuRunner::NORMAL_EXIT);
+                                0) == views::MenuRunner::NORMAL_EXIT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

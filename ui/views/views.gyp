@@ -80,7 +80,7 @@
         'controls/button/image_button.h',
         'controls/button/menu_button.cc',
         'controls/button/menu_button.h',
-        'controls/button/menu_button_delegate.h',
+        'controls/button/menu_button_listener.h',
         'controls/button/radio_button.cc',
         'controls/button/radio_button.h',
         'controls/button/text_button.cc',

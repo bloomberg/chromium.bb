@@ -346,9 +346,10 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::MenuButtonDelegate implementation:
+// ToolbarView, views::MenuButtonListener implementation:
 
-void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
+void ToolbarView::OnMenuButtonClicked(views::View* source,
+                                      const gfx::Point& point) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   wrench_menu_.reset(new WrenchMenu(browser_));

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 
 class Extension;
 class PanelBrowserView;
@@ -36,7 +36,7 @@ class MenuRunner;
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public views::MenuButtonDelegate,
+                              public views::MenuButtonListener,
                               public TabIconView::TabIconViewModel,
                               public ui::AnimationDelegate {
  public:
@@ -89,8 +89,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from views::MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;

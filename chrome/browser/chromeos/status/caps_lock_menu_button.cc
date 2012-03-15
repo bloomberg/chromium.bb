@@ -115,9 +115,10 @@ string16 CapsLockMenuButton::GetLabel(int id) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::MenuButtonDelegate implementation:
+// views::MenuButtonListener implementation:
 
-void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+void CapsLockMenuButton::OnMenuButtonClicked(views::View* source,
+                                             const gfx::Point& point) {
   static const int kDummyCommandId = 1000;
 
   if (IsBubbleShown())

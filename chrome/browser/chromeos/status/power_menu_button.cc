@@ -265,9 +265,10 @@ void PowerMenuButton::OnLocaleChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, views::MenuButtonDelegate implementation:
+// PowerMenuButton, views::MenuButtonListener implementation:
 
-void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+void PowerMenuButton::OnMenuButtonClicked(views::View* source,
+                                          const gfx::Point& point) {
   // Explicitly query the power status.
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
       PowerManagerClient::UPDATE_USER);

@@ -60,8 +60,8 @@ void MediaStreamInfoBar::Layout() {
 }
 
 void MediaStreamInfoBar::ViewHierarchyChanged(bool is_add,
-                                              View* parent,
-                                              View* child) {
+                                              views::View* parent,
+                                              views::View* child) {
   if (is_add && child == this && (label_ == NULL)) {
     int message_id = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
     DCHECK(delegate_->has_audio() || delegate_->has_video());
@@ -120,7 +120,8 @@ int MediaStreamInfoBar::ContentMinimumWidth() const {
       (kButtonButtonSpacing + devices_menu_button_->GetPreferredSize().width());
 }
 
-void MediaStreamInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+void MediaStreamInfoBar::OnMenuButtonClicked(views::View* source,
+                                             const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   DCHECK_EQ(devices_menu_button_, source);

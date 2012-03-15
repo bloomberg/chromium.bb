@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,8 +85,8 @@ void BeforeTranslateInfoBar::Layout() {
 }
 
 void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
-                                                  View* parent,
-                                                  View* child) {
+                                                  views::View* parent,
+                                                  views::View* child) {
   if (!is_add || (child != this) || (label_1_ != NULL)) {
     TranslateInfoBarBase::ViewHierarchyChanged(is_add, parent, child);
     return;
@@ -187,7 +187,8 @@ void BeforeTranslateInfoBar::OriginalLanguageChanged() {
   }
 }
 
-void BeforeTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
+void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
+                                                 const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   ui::MenuModel* menu_model = NULL;

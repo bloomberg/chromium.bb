@@ -225,8 +225,9 @@ void NetworkMenuButton::OnLocaleChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, views::MenuButtonDelegate implementation:
-void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+// NetworkMenuButton, views::MenuButtonListener implementation:
+void NetworkMenuButton::OnMenuButtonClicked(views::View* source,
+                                            const gfx::Point& point) {
   network_menu_->RunMenu(source);
 }
 

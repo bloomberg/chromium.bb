@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -19,7 +19,7 @@
 class StatusIconChromeOS::NotificationTrayButton
     : public StatusAreaButton,
       public views::MenuDelegate,
-      public views::MenuButtonDelegate {
+      public views::MenuButtonListener {
  public:
   NotificationTrayButton(StatusIconChromeOS* status_icon,
                          StatusAreaButton::Delegate* delegate)
@@ -40,7 +40,7 @@ class StatusIconChromeOS::NotificationTrayButton
     SchedulePaint();
   }
 
-  // views::MenuButton overrides.
+  // Overridden from views::MenuButton:
   virtual bool Activate() OVERRIDE {
     // All tray buttons are removed on status icon destruction.
     // This should never be called afterwards.
@@ -49,9 +49,9 @@ class StatusIconChromeOS::NotificationTrayButton
     return retval;
   }
 
-  // views::MenuButtonDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt)
-      OVERRIDE {
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE {
     views::MenuRunner* menu_runner = status_icon_->menu_runner();
     if (!menu_runner)
       return;

@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_2.h"
 #include "ui/views/layout/fill_layout.h"
@@ -59,14 +59,15 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuModel);
 };
 
-class ExampleMenuButton : public MenuButton, public MenuButtonDelegate {
+class ExampleMenuButton : public MenuButton, public MenuButtonListener {
  public:
   ExampleMenuButton(const string16& test, bool show_menu_marker);
   virtual ~ExampleMenuButton();
 
  private:
-  // Overridden from MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& point) OVERRIDE;
+  // Overridden from MenuButtonListener:
+  virtual void OnMenuButtonClicked(View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   scoped_ptr<ExampleMenuModel> menu_model_;
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuButton);
@@ -187,7 +188,8 @@ ExampleMenuButton::ExampleMenuButton(const string16& test,
 ExampleMenuButton::~ExampleMenuButton() {
 }
 
-void ExampleMenuButton::RunMenu(View* source, const gfx::Point& point) {
+void ExampleMenuButton::OnMenuButtonClicked(View* source,
+                                            const gfx::Point& point) {
   if (!menu_model_.get())
     menu_model_.reset(new ExampleMenuModel);
 

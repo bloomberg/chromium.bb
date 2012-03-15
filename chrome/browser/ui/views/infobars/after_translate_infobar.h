@@ -9,7 +9,7 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 
 class TranslateInfoBarDelegate;
 namespace views {
@@ -17,7 +17,7 @@ class MenuButton;
 }
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase,
-                              public views::MenuButtonDelegate {
+                              public views::MenuButtonListener {
  public:
   AfterTranslateInfoBar(InfoBarTabHelper* owner,
                         TranslateInfoBarDelegate* delegate);
@@ -28,16 +28,17 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   // TranslateInfoBarBase:
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
   virtual void OriginalLanguageChanged() OVERRIDE;
   virtual void TargetLanguageChanged() OVERRIDE;
 
-  // MenuButtonDelegate:
-  virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
+  // views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2> [more text in some languages]"

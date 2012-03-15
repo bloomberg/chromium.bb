@@ -28,7 +28,7 @@ class LinkListener;
 class MenuButton;
 class MenuRunner;
 class TextButton;
-class MenuButtonDelegate;
+class MenuButtonListener;
 }
 
 class InfoBarView : public InfoBar,
@@ -59,7 +59,7 @@ class InfoBarView : public InfoBar,
   // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::MenuButton* CreateMenuButton(
       const string16& text,
-      views::MenuButtonDelegate* menu_delegate);
+      views::MenuButtonListener* menu_button_listener);
 
   // Creates a text button with an infobar-specific appearance.
   // NOTE: Subclasses must ignore button presses if we're unowned.

@@ -20,7 +20,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_delegate.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
 class BrowserActionsContainer;
@@ -33,7 +33,7 @@ class MenuListener;
 
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
-                    public views::MenuButtonDelegate,
+                    public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
                     public content::NotificationObserver,
@@ -86,8 +86,9 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::MenuButtonDelegate:
-  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
+  // Overridden from views::MenuButtonListener:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // Overridden from LocationBarView::Delegate:
   virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
@@ -107,9 +108,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
-  // Overridden from views::BaseButton::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
-      OVERRIDE;
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

@@ -142,8 +142,9 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
   SchedulePaint();
 }
 
-// views::MenuButtonDelegate implementation
-void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+// views::MenuButtonListener implementation
+void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
+                                           const gfx::Point& point) {
   ShowAvatarBubble();
 }
 
