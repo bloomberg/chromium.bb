@@ -880,7 +880,7 @@ class ArchiveStageTest(AbstractStageTest):
     parser = cbuildbot._CreateParser()
     (self.options, args) = cbuildbot._ParseCommandLine(parser, argv)
     test_config = config.config['x86-mario-release']
-    self._build_config = config.OverrideConfigForTrybot(test_config)
+    self._build_config = config.OverrideConfigForTrybot(test_config, True)
 
     background.RunParallelSteps(mox.IgnoreArg())
     commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())

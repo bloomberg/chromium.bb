@@ -439,21 +439,6 @@ class FullInterfaceTest(unittest.TestCase):
     self.mox.ReplayAll()
     cbuildbot.main(['x86-generic-paladin'])
 
-  def testValidateClobberForClobberOption(self):
-    """Test that we ask for clobber confirmation for trybot runs."""
-    self.mox.StubOutWithMock(commands, 'ValidateClobber')
-    commands.ValidateClobber(self._BUILD_ROOT)
-    self.mox.ReplayAll()
-    cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber',
-                    'x86-generic-paladin'])
-
-  def testNoClobberConfirmationForBuildBotBuilds(self):
-    """Test that we don't ask for clobber confirmation for --buildbot runs."""
-    self.mox.StubOutWithMock(commands, 'ValidateClobber')
-    self.mox.ReplayAll()
-    cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber', '--buildbot',
-                    'x86-generic-paladin'])
-
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
     # Need to do this since a cros_lib.IsInsideChroot() call is already queued

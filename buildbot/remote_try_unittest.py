@@ -33,7 +33,7 @@ class RemoteTryTests(mox.MoxTestBase):
     job = remote_try.RemoteTryJob(options, BOTS)
     job.Submit(workdir=self.tempdir, dryrun=True)
     # Get the file that was just created.
-    created_file = sorted(glob.glob(os.path.join(self.tempdir,
+    created_file = sorted(glob.glob(os.path.join(self.tempdir, job.user,
                           job.user + '*')), reverse=True)[0]
     with open(created_file, 'rb') as job_desc_file:
       values = json.load(job_desc_file)
@@ -41,8 +41,11 @@ class RemoteTryTests(mox.MoxTestBase):
     self.assertFalse(re.search('\@google\.com', values['email'][0]) is None and
                      re.search('\@chromium\.org', values['email'][0]) is None)
 
-    self.assertTrue(PATCHES[0] in values['gerrit_patches'] and
-                     PATCHES[1] in values['gerrit_patches'])
+    for arg in values['extra_args']:
+      if PATCHES[0] in arg and PATCHES[1] in arg:
+        break
+    else:
+      self.assertTrue(False, "Patches couldn't be found in extra_args...")
 
     self.assertTrue(BOTS[0] in values['bot'] and
                     BOTS[1] in values['bot'])
