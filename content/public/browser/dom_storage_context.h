@@ -8,14 +8,13 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/string16.h"
-#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
 class FilePath;
 
 namespace base {
-class SequencedTaskRunner;
 class Time;
 }
 
@@ -24,17 +23,14 @@ namespace content {
 class BrowserContext;
 
 // Represents the per-BrowserContext Local Storage data.
-// Call these methods only on tasks scheduled via it's task_runner().
-class DOMStorageContext : public base::RefCountedThreadSafe<DOMStorageContext> {
+class DOMStorageContext {
  public:
-  virtual ~DOMStorageContext() {}
+  typedef base::Callback<void(const std::vector<FilePath>&)>
+      GetAllStorageFilesCallback;
 
-  // Returns a task runner which should be used to schedule tasks
-  // which can invoke the other methods of this interface.
-  virtual base::SequencedTaskRunner* task_runner() const = 0;
-
-  // Returns all the file paths of local storage files.
-  virtual std::vector<FilePath> GetAllStorageFiles() = 0;
+  // Returns all the file paths of local storage files to the given callback.
+  virtual void GetAllStorageFiles(
+      const GetAllStorageFilesCallback& callback) = 0;
 
   // Get the file name of the local storage file for the given origin.
   virtual FilePath GetFilePath(const string16& origin_id) const = 0;
@@ -49,6 +45,9 @@ class DOMStorageContext : public base::RefCountedThreadSafe<DOMStorageContext> {
   // date that's supplied. Protected origins, per the SpecialStoragePolicy,
   // are not deleted by this method.
   virtual void DeleteDataModifiedSince(const base::Time& cutoff) = 0;
+
+ protected:
+  virtual ~DOMStorageContext() {}
 };
 
 }  // namespace content

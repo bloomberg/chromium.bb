@@ -52,7 +52,7 @@ BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
     Profile* profile)
     : dom_storage_context_(BrowserContext::GetDOMStorageContext(profile)),
       is_fetching_(false) {
-  DCHECK(dom_storage_context_.get());
+  DCHECK(dom_storage_context_);
 }
 
 BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
@@ -66,11 +66,9 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 
   is_fetching_ = true;
   completion_callback_ = callback;
-  dom_storage_context_->task_runner()->PostTask(
-      FROM_HERE,
+  dom_storage_context_->GetAllStorageFiles(
       base::Bind(
-          &BrowsingDataLocalStorageHelper::FetchLocalStorageInfoHelper,
-          this));
+          &BrowsingDataLocalStorageHelper::GetAllStorageFilesCallback, this));
 }
 
 void BrowsingDataLocalStorageHelper::CancelNotification() {
@@ -81,16 +79,23 @@ void BrowsingDataLocalStorageHelper::CancelNotification() {
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  dom_storage_context_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BrowsingDataLocalStorageHelper::DeleteLocalStorageFileHelper,
-          this, file_path));
+  dom_storage_context_->DeleteLocalStorageFile(file_path);
 }
 
-void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoHelper() {
-  DCHECK(dom_storage_context_->task_runner()->RunsTasksOnCurrentThread());
-  std::vector<FilePath> files = dom_storage_context_->GetAllStorageFiles();
+void BrowsingDataLocalStorageHelper::GetAllStorageFilesCallback(
+    const std::vector<FilePath>& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &BrowsingDataLocalStorageHelper::FetchLocalStorageInfo,
+          this, files));
+}
+
+void BrowsingDataLocalStorageHelper::FetchLocalStorageInfo(
+    const std::vector<FilePath>& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (size_t i = 0; i < files.size(); ++i) {
     FilePath file_path = files[i];
     WebSecurityOrigin web_security_origin =
@@ -130,12 +135,6 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
     completion_callback_.Reset();
   }
   is_fetching_ = false;
-}
-
-void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileHelper(
-    const FilePath& file_path) {
-  DCHECK(dom_storage_context_->task_runner()->RunsTasksOnCurrentThread());
-  dom_storage_context_->DeleteLocalStorageFile(file_path);
 }
 
 //---------------------------------------------------------

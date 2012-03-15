@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/public/browser/dom_storage_context.h"
 
@@ -34,7 +35,8 @@ class SpecialStoragePolicy;
 // and in StorageNamespace and StorageArea.  Everything is only to be accessed
 // on the WebKit thread unless noted otherwise.
 class CONTENT_EXPORT DOMStorageContextImpl :
-    NON_EXPORTED_BASE(public content::DOMStorageContext) {
+    NON_EXPORTED_BASE(public content::DOMStorageContext),
+    public base::RefCountedThreadSafe<DOMStorageContextImpl> {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextImpl(const FilePath& data_path,
@@ -42,8 +44,8 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   virtual ~DOMStorageContextImpl();
 
   // DOMStorageContext implementation:
-  virtual base::SequencedTaskRunner* task_runner() const OVERRIDE;
-  virtual std::vector<FilePath> GetAllStorageFiles() OVERRIDE;
+  virtual void GetAllStorageFiles(
+      const GetAllStorageFilesCallback& callback) OVERRIDE;
   virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
   virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
   virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
@@ -125,6 +127,9 @@ class CONTENT_EXPORT DOMStorageContextImpl :
 
   // The WebKit thread half of CloneSessionStorage above.
   void CompleteCloningSessionStorage(int64 existing_id, int64 clone_id);
+
+  void RunAllStorageFilesCallback(const std::vector<FilePath>& files,
+                                  const GetAllStorageFilesCallback& callback);
 
   // The last used storage_area_id and storage_namespace_id's.  For the storage
   // namespaces, IDs allocated on the UI thread are positive and count up while

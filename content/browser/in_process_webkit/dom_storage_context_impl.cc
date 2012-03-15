@@ -204,6 +204,14 @@ void DOMStorageContextImpl::PurgeMemory() {
 }
 
 void DOMStorageContextImpl::DeleteDataModifiedSince(const base::Time& cutoff) {
+  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
+    webkit_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &DOMStorageContextImpl::DeleteDataModifiedSince, this, cutoff));
+    return;
+  }
+
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
   PurgeMemory();
@@ -226,7 +234,13 @@ void DOMStorageContextImpl::DeleteDataModifiedSince(const base::Time& cutoff) {
 }
 
 void DOMStorageContextImpl::DeleteLocalStorageFile(const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
+    webkit_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &DOMStorageContextImpl::DeleteLocalStorageFile, this, file_path));
+    return;
+  }
 
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
@@ -238,7 +252,6 @@ void DOMStorageContextImpl::DeleteLocalStorageFile(const FilePath& file_path) {
 }
 
 void DOMStorageContextImpl::DeleteForOrigin(const string16& origin_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   DeleteLocalStorageFile(GetFilePath(origin_id));
 }
 
@@ -295,11 +308,16 @@ void DOMStorageContextImpl::CompleteCloningSessionStorage(
     RegisterStorageNamespace(existing_namespace->Copy(clone_id));
 }
 
-base::SequencedTaskRunner* DOMStorageContextImpl::task_runner() const {
-  return webkit_message_loop_;
-}
+void DOMStorageContextImpl::GetAllStorageFiles(
+    const GetAllStorageFilesCallback& callback) {
+  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
+    webkit_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &DOMStorageContextImpl::GetAllStorageFiles, this, callback));
+    return;
+  }
 
-std::vector<FilePath> DOMStorageContextImpl::GetAllStorageFiles() {
   std::vector<FilePath> files;
   file_util::FileEnumerator file_enumerator(
       data_path_.Append(kLocalStorageDirectory), false,
@@ -309,7 +327,17 @@ std::vector<FilePath> DOMStorageContextImpl::GetAllStorageFiles() {
     if (file_path.Extension() == kLocalStorageExtension)
       files.push_back(file_path);
   }
-  return files;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DOMStorageContextImpl::RunAllStorageFilesCallback,
+                 this, files, callback));
+}
+
+void DOMStorageContextImpl::RunAllStorageFilesCallback(
+    const std::vector<FilePath>& files,
+    const GetAllStorageFilesCallback& callback) {
+  callback.Run(files);
 }
 
 FilePath DOMStorageContextImpl::GetFilePath(const string16& origin_id) const {

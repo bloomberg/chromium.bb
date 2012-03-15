@@ -303,11 +303,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
-    DOMStorageContext* context = BrowserContext::GetDOMStorageContext(profile_);
-    context->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowsingDataRemover::ClearDOMStorageInSequencedTask,
-                   base::Unretained(this), make_scoped_refptr(context)));
+    BrowserContext::GetDOMStorageContext(profile_)->DeleteDataModifiedSince(
+        delete_begin_);
   }
 
   if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
@@ -434,13 +431,6 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
       break;
   }
   return delete_begin_time - diff;
-}
-
-void BrowsingDataRemover::ClearDOMStorageInSequencedTask(
-    DOMStorageContext* dom_storage_context) {
-  // We assume the end time is now.
-  DCHECK(dom_storage_context->task_runner()->RunsTasksOnCurrentThread());
-  dom_storage_context->DeleteDataModifiedSince(delete_begin_);
 }
 
 void BrowsingDataRemover::Observe(int type,

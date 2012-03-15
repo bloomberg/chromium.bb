@@ -70,11 +70,6 @@ class ExtensionDataDeleter
   // thread.
   void DeleteDatabaseOnFileThread();
 
-  // Deletes local storage for the extension. May only be called in a
-  // DOMStorageContext sequenced task.
-  void DeleteLocalStorageInSequencedTask(
-    content::DOMStorageContext* dom_storage_context);
-
   // Deletes indexed db files for the extension. May only be called on the
   // webkit thread.
   void DeleteIndexedDBOnWebkitThread(

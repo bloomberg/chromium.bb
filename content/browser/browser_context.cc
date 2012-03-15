@@ -72,11 +72,11 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
                        new UserDataAdapter<DatabaseTracker>(db_tracker));
 
   FilePath path = context->IsOffTheRecord() ? FilePath() : context->GetPath();
-  scoped_refptr<DOMStorageContext> dom_storage_context =
+  scoped_refptr<DOMStorageContextImpl> dom_storage_context =
       new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
   context->SetUserData(
       kDOMStorageContextKeyName,
-      new UserDataAdapter<DOMStorageContext>(dom_storage_context));
+      new UserDataAdapter<DOMStorageContextImpl>(dom_storage_context));
 
   scoped_refptr<IndexedDBContext> indexed_db_context = new IndexedDBContextImpl(
       path, context->GetSpecialStoragePolicy(), quota_manager->proxy(),
@@ -138,7 +138,7 @@ QuotaManager* BrowserContext::GetQuotaManager(BrowserContext* context) {
 DOMStorageContext* BrowserContext::GetDOMStorageContext(
     BrowserContext* context) {
   CreateQuotaManagerAndClients(context);
-  return UserDataAdapter<DOMStorageContext>::Get(
+  return UserDataAdapter<DOMStorageContextImpl>::Get(
       context, kDOMStorageContextKeyName);
 }
 
@@ -250,8 +250,8 @@ BrowserContext::~BrowserContext() {
 
   if (GetUserData(kDOMStorageContextKeyName) &&
       BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    DOMStorageContext* dom_storage_context =
-        (static_cast<UserDataAdapter<DOMStorageContext>*>(
+    DOMStorageContextImpl* dom_storage_context =
+        (static_cast<UserDataAdapter<DOMStorageContextImpl>*>(
             GetUserData(kDOMStorageContextKeyName)))->release();
     BrowserThread::ReleaseSoon(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context);

@@ -84,7 +84,8 @@ class BrowsingDataLocalStorageHelper
   // Notifies the completion callback in the UI thread.
   void NotifyInUIThread();
 
-  scoped_refptr<content::DOMStorageContext> dom_storage_context_;
+  // Owned by the profile
+  content::DOMStorageContext* dom_storage_context_;
 
   // This only mutates on the UI thread.
   base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;
@@ -99,10 +100,10 @@ class BrowsingDataLocalStorageHelper
   std::list<LocalStorageInfo> local_storage_info_;
 
  private:
-  // Enumerates all local storage files in a sequenced task.
-  void FetchLocalStorageInfoHelper();
-  // Delete a single local storage file in a sequenced task.
-  void DeleteLocalStorageFileHelper(const FilePath& file_path);
+  // Called back with the all the local storage files.
+  void GetAllStorageFilesCallback(const std::vector<FilePath>& files);
+  // Get the file info on the file thread.
+  void FetchLocalStorageInfo(const std::vector<FilePath>& files);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };
