@@ -49,26 +49,6 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void);
 void NaClChromeMainStart(struct NaClChromeMainArgs *args);
 
 
-/*
- * TODO(mseaborn): The functions below are the old interface used by
- * Chromium.  Once Chromium is switched to the new interface (above),
- * remove the old interface.
- */
-
-/*
- * Register the integrated runtime (IRT) library file for use by
- * NaClMainForChromium().  This takes a file descriptor, even on
- * Windows (where file descriptors are emulated by the C runtime
- * library).
- */
-void NaClSetIrtFileDesc(int fd);
-
-void NaClSetValidationCache(struct NaClValidationCache *cache);
-
-void NaClMainForChromium(int handle_count, const NaClHandle *handles,
-                         int debug);
-
-
 EXTERN_C_END
 
 #endif

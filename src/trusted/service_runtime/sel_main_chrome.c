@@ -34,27 +34,28 @@
 
 static int const kSrpcFd = 5;
 
-int verbosity = 0;
-
-static int g_irt_file_desc = -1;
-
-static struct NaClValidationCache *g_validation_cache = NULL;
-
-void NaClSetIrtFileDesc(int fd) {
-  CHECK(g_irt_file_desc == -1);
-  g_irt_file_desc = fd;
+struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
+  struct NaClChromeMainArgs *args = malloc(sizeof(*args));
+  if (args == NULL)
+    return NULL;
+  args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
+  args->irt_fd = -1;
+  args->enable_debug_stub = 0;
+  args->create_memory_object_func = NULL;
+  args->validation_cache = NULL;
+  return args;
 }
 
-static void NaClLoadIrt(struct NaClApp *nap) {
+static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   int file_desc;
   struct GioPio gio_pio;
   struct Gio *gio_desc;
 
-  if (g_irt_file_desc == -1) {
+  if (irt_fd == -1) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Integrated runtime (IRT) not present.\n");
   }
 
-  file_desc = DUP(g_irt_file_desc);
+  file_desc = DUP(irt_fd);
   if (file_desc < 0) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to dup() file descriptor\n");
   }
@@ -78,12 +79,7 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
 }
 
-void NaClSetValidationCache(struct NaClValidationCache *cache) {
-  g_validation_cache = cache;
-}
-
-void NaClMainForChromium(int handle_count, const NaClHandle *handles,
-                         int debug) {
+void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   char *av[1];
   int ac = 1;
   const char **envp;
@@ -117,8 +113,11 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   errcode = LOAD_OK;
 
+  if (args->create_memory_object_func != NULL)
+    NaClSetCreateMemoryObjectFunc(args->create_memory_object_func);
+
   /* Inject the validation caching interface, if it exists. */
-  nap->validation_cache = g_validation_cache;
+  nap->validation_cache = args->validation_cache;
 
   NaClAppInitialDescriptorHookup(nap);
 
@@ -128,8 +127,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
    */
 
   /* import IMC handle - used to be "-i" */
-  CHECK(handle_count == 1);
-  NaClAddImcHandle(nap, handles[0], export_addr_to);
+  NaClAddImcHandle(nap, args->imc_bootstrap_handle, export_addr_to);
 
   /*
    * in order to report load error to the browser plugin through the
@@ -179,7 +177,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
    * of faults inside x86-64 sandboxed code.  The sandbox is not
    * secure on 64-bit Windows without this.
    */
-  if (!debug) {
+  if (!args->enable_debug_stub) {
 #if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
      NACL_BUILD_SUBARCH == 64)
     NaClPatchWindowsExceptionDispatcher();
@@ -255,12 +253,15 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   }
 
   /* Load the integrated runtime (IRT) library. */
-  NaClLoadIrt(nap);
+  NaClLoadIrt(nap, args->irt_fd);
 
   /*
    * Enable debugging if requested.
    */
-  nap->enable_debug_stub = debug;
+  nap->enable_debug_stub = args->enable_debug_stub;
+
+  free(args);
+  args = NULL;
 
   NaClEnvCleanserCtor(&env_cleanser, 1);
   if (!NaClEnvCleanserInit(&env_cleanser, envp, NULL)) {
@@ -308,24 +309,4 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClAllModulesFini();
 
   NaClExit(ret_code);
-}
-
-struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
-  struct NaClChromeMainArgs *args = malloc(sizeof(*args));
-  if (args == NULL)
-    return NULL;
-  args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
-  args->irt_fd = -1;
-  args->enable_debug_stub = 0;
-  args->create_memory_object_func = NULL;
-  args->validation_cache = NULL;
-  return args;
-}
-
-void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
-  NaClSetIrtFileDesc(args->irt_fd);
-  if (args->create_memory_object_func != NULL)
-    NaClSetCreateMemoryObjectFunc(args->create_memory_object_func);
-  NaClSetValidationCache(args->validation_cache);
-  NaClMainForChromium(1, &args->imc_bootstrap_handle, args->enable_debug_stub);
 }
