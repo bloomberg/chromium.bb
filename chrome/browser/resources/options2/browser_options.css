@@ -245,8 +245,12 @@ input[type='range'] {
 }
 
 .network-menu {
+  -webkit-box-shadow:
+      0 0 0 1px rgba(0,0,0,0.1),
+      0 5px 1px 1px rgba(0,0,0,0.1),
+      0 5px 2px 1px rgba(0,0,0,0.1),
+      0 5px 12px 1px rgba(0,0,0,0.5);
   background: #fff;
-  box-shadow: 2px 2px 4px 4px #ccc;
   display: block;
   overflow-y: auto;
   position: absolute;
