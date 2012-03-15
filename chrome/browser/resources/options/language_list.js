@@ -405,8 +405,6 @@ cr.define('options', function() {
         // valid after the data model is loaded. This is neeeded to keep
         // the selected language after the languge is added or removed.
         this.selectionModel.selectedIndex = originalSelectedIndex;
-        // The lead index should be updated too.
-        this.selectionModel.leadIndex = originalSelectedIndex;
       } else if (this.dataModel.length > 0){
         // Otherwise, select the first item if it's not empty.
         // Note that ListSingleSelectionModel won't select an item

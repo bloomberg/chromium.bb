@@ -33,7 +33,9 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @type {!Array} The selected indexes.
+     * The selected indexes.
+     * Setter also changes lead and anchor indexes if value list is nonempty.
+     * @type {!Array}
      */
     get selectedIndexes() {
       return Object.keys(this.selectedIndexes_).map(Number);
@@ -70,6 +72,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience getter which returns the first selected index.
+     * Setter also changes lead and anchor indexes if value is nonnegative.
      * @type {number}
      */
     get selectedIndex() {

@@ -41,6 +41,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience getter which returns the first selected index.
+     * Setter also changes lead and anchor indexes if value is nonegative.
      * @type {number}
      */
     get selectedIndex() {
@@ -52,7 +53,9 @@ cr.define('cr.ui', function() {
 
       if (i != oldSelectedIndex) {
         this.beginChange();
-        this.selectedIndex_ = i
+        this.selectedIndex_ = i;
+        if (i >= 0)
+          this.leadIndex = i;
         this.endChange();
       }
     },
