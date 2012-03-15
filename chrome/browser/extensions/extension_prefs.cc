@@ -699,13 +699,14 @@ void ExtensionPrefs::UpdateBlacklist(
             remove_pref_ids.push_back(id);
           } else {
             // Remove the blacklist bit.
-            ext->Remove(kPrefBlacklist, NULL);
+            UpdateExtensionPref(id, kPrefBlacklist, NULL);
           }
         }
       } else {
         if (!IsBlacklistBitSet(ext)) {
           // Only set the blacklist if it was not set.
-          ext->SetBoolean(kPrefBlacklist, true);
+          UpdateExtensionPref(id, kPrefBlacklist,
+                              Value::CreateBooleanValue(true));
         }
         // Keep the record if this extension is already processed.
         used_id_set.insert(id);
@@ -1541,6 +1542,23 @@ void ExtensionPrefs::GetExtensions(ExtensionIdSet* out) {
     ExtensionInfo* info = extensions_info->at(i).get();
     out->push_back(info->extension_id);
   }
+}
+
+// static
+ExtensionPrefs::ExtensionIdSet ExtensionPrefs::GetExtensionsFrom(
+    const base::DictionaryValue* extension_prefs) {
+  ExtensionIdSet result;
+  for (base::DictionaryValue::key_iterator it = extension_prefs->begin_keys();
+       it != extension_prefs->end_keys(); ++it) {
+    DictionaryValue* ext;
+    if (!extension_prefs->GetDictionaryWithoutPathExpansion(*it, &ext)) {
+      NOTREACHED() << "Invalid pref for extension " << *it;
+      continue;
+    }
+    if (!IsBlacklistBitSet(ext))
+      result.push_back(*it);
+  }
+  return result;
 }
 
 void ExtensionPrefs::FixMissingPrefs(const ExtensionIdSet& extension_ids) {

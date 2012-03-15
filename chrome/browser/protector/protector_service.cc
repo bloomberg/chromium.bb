@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/protector/settings_change_global_error.h"
 #include "chrome/browser/protector/keys.h"
+#include "chrome/browser/protector/protected_prefs_watcher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,6 +23,8 @@ namespace protector {
 ProtectorService::ProtectorService(Profile* profile)
     : profile_(profile),
       has_active_change_(false) {
+  // Start observing pref changes.
+  prefs_watcher_.reset(new ProtectedPrefsWatcher(profile));
 }
 
 ProtectorService::~ProtectorService() {
@@ -72,6 +75,10 @@ void ProtectorService::DismissChange(BaseSettingChange* change) {
 void ProtectorService::OpenTab(const GURL& url, Browser* browser) {
   DCHECK(browser);
   browser->ShowSingletonTab(url);
+}
+
+ProtectedPrefsWatcher* ProtectorService::GetPrefsWatcher() {
+  return prefs_watcher_.get();
 }
 
 void ProtectorService::Shutdown() {

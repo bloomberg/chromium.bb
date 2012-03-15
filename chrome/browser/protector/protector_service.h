@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_helpers.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/protector/base_setting_change.h"
@@ -23,6 +24,7 @@ class TemplateURLService;
 
 namespace protector {
 
+class ProtectedPrefsWatcher;
 class SettingsChangeGlobalError;
 
 // Presents a SettingChange to user and handles possible user actions.
@@ -56,6 +58,10 @@ class ProtectorService : public ProfileKeyedService,
   // bubble for.
   virtual void OpenTab(const GURL& url, Browser* browser);
 
+  // Returns the ProtectedPrefsWatcher instance for access to protected prefs
+  // backup.
+  ProtectedPrefsWatcher* GetPrefsWatcher();
+
   // Returns the most recent change instance or NULL if there are no changes.
   BaseSettingChange* GetLastChange();
 
@@ -65,7 +71,8 @@ class ProtectorService : public ProfileKeyedService,
  private:
   friend class ProtectorServiceTest;
 
-  // Pair of error and corresponding change instance.
+  // Pair of error and corresponding change instance. linked_ptr is used because
+  // Item instances are stored in a std::vector and must be copyable.
   struct Item {
     Item();
     ~Item();
@@ -116,6 +123,9 @@ class ProtectorService : public ProfileKeyedService,
   // True if there is a change that has been shown and not yet accepted or
   // discarded by user.
   bool has_active_change_;
+
+  // Observes changes to protected prefs and updates the backup.
+  scoped_ptr<ProtectedPrefsWatcher> prefs_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectorService);
 };

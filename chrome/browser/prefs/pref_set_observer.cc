@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/pref_set_observer.h"
 
 #include "chrome/common/pref_names.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/notification_types.h"
 
 PrefSetObserver::PrefSetObserver(PrefService* pref_service,
@@ -66,6 +67,24 @@ PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
   pref_set->AddPref(prefs::kDefaultSearchProviderInstantURL);
   pref_set->AddPref(prefs::kDefaultSearchProviderEncodings);
   pref_set->AddPref(prefs::kSyncedDefaultSearchProviderGUID);
+
+  return pref_set;
+}
+
+// static
+PrefSetObserver* PrefSetObserver::CreateProtectedPrefSetObserver(
+    PrefService* pref_service,
+    content::NotificationObserver* observer) {
+  PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
+  // Homepage.
+  pref_set->AddPref(prefs::kHomePageIsNewTabPage);
+  pref_set->AddPref(prefs::kHomePage);
+  pref_set->AddPref(prefs::kShowHomeButton);
+  // Session startup.
+  pref_set->AddPref(prefs::kRestoreOnStartup);
+  pref_set->AddPref(prefs::kURLsToRestoreOnStartup);
+  // Extensions.
+  pref_set->AddPref(ExtensionPrefs::kExtensionsPref);
 
   return pref_set;
 }

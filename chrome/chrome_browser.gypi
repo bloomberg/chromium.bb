@@ -1829,6 +1829,8 @@
         'browser/protector/internal/keys_internal.cc',
         'browser/protector/keys.cc',
         'browser/protector/keys.h',
+        'browser/protector/protected_prefs_watcher.cc',
+        'browser/protector/protected_prefs_watcher.h',
         'browser/protector/protector_service.cc',
         'browser/protector/protector_service.h',
         'browser/protector/protector_service_factory.cc',

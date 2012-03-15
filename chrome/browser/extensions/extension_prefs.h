@@ -121,6 +121,12 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   // Returns all installed extensions
   void GetExtensions(ExtensionIdSet* out);
 
+  // Returns all installed extensions from |extension_prefs|. This is exposed
+  // for ProtectedPrefsWatcher because it needs access to the extension ID list
+  // before the ExtensionService is initialized.
+  static ExtensionIdSet GetExtensionsFrom(
+      const base::DictionaryValue* extension_prefs);
+
   // Getter and setter for browser action visibility.
   bool GetBrowserActionVisibility(const Extension* extension);
   void SetBrowserActionVisibility(const Extension* extension, bool visible);

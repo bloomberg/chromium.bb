@@ -14,6 +14,9 @@ namespace protector {
 // provider. Values are below.
 extern const char kProtectorHistogramDefaultSearchProvider[];
 
+// Histogram name to report protection errors for preferences. Values are below.
+extern const char kProtectorHistogramPrefs[];
+
 // Protector histogram values.
 enum ProtectorError {
   kProtectorErrorBackupInvalid,

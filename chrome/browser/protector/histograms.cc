@@ -13,6 +13,9 @@ namespace protector {
 const char kProtectorHistogramDefaultSearchProvider[] =
     "Protector.DefaultSearchProvider";
 
+const char kProtectorHistogramPrefs[] =
+    "Protector.Preferences";
+
 const char kProtectorHistogramSearchProviderApplied[] =
     "Protector.SearchProvider.Applied";
 const char kProtectorHistogramSearchProviderCorrupt[] =

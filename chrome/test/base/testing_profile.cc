@@ -32,6 +32,7 @@
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -537,6 +538,12 @@ WebDataService* TestingProfile::GetWebDataServiceWithoutCreating() {
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
+  // ProtectorService binds itself very closely to the PrefService at the moment
+  // of Profile creation and watches pref changes to update their backup.
+  // For tests that replace the PrefService after TestingProfile creation,
+  // ProtectorService is disabled to prevent further invalid memory accesses.
+  protector::ProtectorServiceFactory::GetInstance()->
+      SetTestingFactory(this, NULL);
   prefs_.reset(prefs);
 }
 

@@ -1631,6 +1631,7 @@
         'browser/profiles/profile_info_cache_unittest.h',
         'browser/profiles/profile_info_util_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
+        'browser/protector/protected_prefs_watcher_unittest.cc',
         'browser/protector/session_startup_change_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/renderer_host/plugin_info_message_filter_unittest.cc',
