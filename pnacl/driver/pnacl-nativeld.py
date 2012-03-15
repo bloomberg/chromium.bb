@@ -213,9 +213,15 @@ def RunLDSRPC():
                                        files,
                                        outfile)
 
-  RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-             '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
-             stdin=script, echo_stdout=False, echo_stderr=False)
+  retcode, stdout, stderr = RunWithLog(
+      '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
+      '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
+      stdin=script, echo_stdout=False, echo_stderr=False,
+      return_stdout=True, return_stderr=True, errexit=False)
+  if retcode:
+    Log.FatalWithResult(retcode, 'ERROR: Sandboxed LD Failed. stdout:\n' +
+    stdout + '\nstderr:\n' + stderr)
+    driver_tools.DriverExit(retcode)
 
 def MakeSelUniversalScriptForLD(ld_flags,
                                 main_input,

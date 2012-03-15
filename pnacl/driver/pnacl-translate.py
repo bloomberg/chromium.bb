@@ -415,7 +415,11 @@ def RunLLCSRPC():
   retcode, stdout, stderr = driver_tools.RunWithLog('${SEL_UNIVERSAL_PREFIX} ' +
                  '${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} -- ${LLC_SRPC}',
                   stdin=script, echo_stdout=False, echo_stderr=False,
-                  return_stdout=True)
+                  return_stdout=True, return_stderr=True, errexit=False)
+  if retcode:
+    Log.FatalWithResult(retcode, 'ERROR: Sandboxed LLC Failed. stdout:\n' +
+                        stdout + '\nstderr:\n' + stderr)
+    driver_tools.DriverExit(retcode)
   # Get the values returned from the llc RPC to use in input to ld
   is_shared = re.search(r'output\s+0:\s+i\(([0|1])\)', stdout).group(1)
   is_shared = (is_shared == '1')
