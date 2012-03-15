@@ -46,6 +46,9 @@ MockDocumentsService::MockDocumentsService() {
       .WillByDefault(Invoke(this, &MockDocumentsService::AuthenticateStub));
   ON_CALL(*this, GetDocuments(_, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::GetDocumentsStub));
+  ON_CALL(*this, GetAccountMetadata(_))
+      .WillByDefault(Invoke(this,
+                            &MockDocumentsService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteDocument(_, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DeleteDocumentStub));
   ON_CALL(*this, DownloadDocument(_, _, _, _))
@@ -66,6 +69,7 @@ MockDocumentsService::MockDocumentsService() {
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
+  account_metadata_.reset(LoadJSONFile("account_metadata.json"));
   feed_data_.reset(LoadJSONFile("basic_feed.json"));
   directory_data_.reset(LoadJSONFile("subdir_feed.json"));
 }
@@ -85,6 +89,13 @@ void MockDocumentsService::GetDocumentsStub(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS, base::Passed(&feed_data_)));
+}
+
+void MockDocumentsService::GetAccountMetadataStub(
+    const GetDataCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&account_metadata_)));
 }
 
 void MockDocumentsService::DeleteDocumentStub(

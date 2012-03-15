@@ -32,6 +32,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD2(GetDocuments, void(const GURL& feed_url,
                                   const GetDataCallback& callback));
+  MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
                                     const EntryActionCallback& callback));
   MOCK_METHOD4(DownloadDocument, void(const FilePath& virtual_path,
@@ -78,6 +79,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
   void GetDocumentsStub(const GURL& feed_url,
                         const GetDataCallback& callback);
 
+  // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
+  // value of |account_metadata_|.
+  void GetAccountMetadataStub(const GetDataCallback& callback);
+
   // Will call |callback| with HTTP_SUCCESS and the |document_url|.
   void DeleteDocumentStub(const GURL& document_url,
                           const EntryActionCallback& callback);
@@ -123,15 +128,22 @@ class MockDocumentsService : public DocumentsServiceInterface {
                         const GURL& content_url,
                         const DownloadActionCallback& callback);
 
-  void set_feed_data(base::Value* document_data) {
-    feed_data_.reset(document_data);
+  void set_account_metadata(base::Value* account_metadata) {
+    feed_data_.reset(account_metadata);
   }
 
-  void set_directory_data(base::Value* document_data) {
-    directory_data_.reset(document_data);
+  void set_feed_data(base::Value* feed_data) {
+    feed_data_.reset(feed_data);
+  }
+
+  void set_directory_data(base::Value* directory_data) {
+    directory_data_.reset(directory_data);
   }
 
  private:
+  // Account meta data to be returned from GetAccountMetadata.
+  scoped_ptr<base::Value> account_metadata_;
+
   // Feed data to be returned from GetDocuments.
   scoped_ptr<base::Value> feed_data_;
 

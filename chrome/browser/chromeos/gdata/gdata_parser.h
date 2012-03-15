@@ -458,6 +458,49 @@ class DocumentFeed : public GDataEntry {
   DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };
 
+// Account metadata feed represents the metadata object attached to the user's
+// account.
+class AccountMetadataFeed {
+ public:
+  virtual ~AccountMetadataFeed();
+
+  // Creates feed from parsed JSON Value.  You should call this
+  // instead of instantiating JSONValueConverter by yourself because
+  // this method does some post-process for some fields.  See
+  // FillRemainingFields comment and implementation in DocumentEntry
+  // class for the details.
+  static AccountMetadataFeed* CreateFrom(base::Value* value);
+
+  int quota_bytes_total() const {
+    return quota_bytes_total_;
+  }
+
+  int quota_bytes_used() const {
+    return quota_bytes_used_;
+  }
+
+  // Registers the mapping between JSON field names and the members in
+  // this class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<AccountMetadataFeed>* converter);
+
+ private:
+  AccountMetadataFeed();
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(base::Value* value);
+
+  int quota_bytes_total_;
+  int quota_bytes_used_;
+
+  static const char kQuotaBytesTotalField[];
+  static const char kQuotaBytesUsedField[];
+
+  DISALLOW_COPY_AND_ASSIGN(AccountMetadataFeed);
+};
+
+
 }  // namespace gdata
 
 #endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_PARSER_H_

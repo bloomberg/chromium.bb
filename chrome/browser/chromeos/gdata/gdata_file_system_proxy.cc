@@ -250,6 +250,11 @@ void GDataFileSystemProxy::Move(const GURL& src_file_url,
   file_system_->Move(src_file_path, dest_file_path, callback);
 }
 
+void DoNothing(base::PlatformFileError /*error*/,
+               int /*bytes_total*/,
+               int /*bytes_used*/) {
+}
+
 void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {
   FilePath file_path;

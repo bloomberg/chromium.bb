@@ -19,6 +19,7 @@ using base::DictionaryValue;
 using base::ListValue;
 using gdata::DocumentEntry;
 using gdata::DocumentFeed;
+using gdata::AccountMetadataFeed;
 using gdata::FeedLink;
 using gdata::GDataEntry;
 using gdata::Link;
@@ -148,4 +149,19 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   const DocumentEntry* document_entry = feed->entries()[2];
   ASSERT_TRUE(document_entry);
   EXPECT_EQ(gdata::DocumentEntry::DOCUMENT, document_entry->kind());
+}
+
+TEST_F(GDataParserTest, AccountMetadataFeedParser) {
+  scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));
+  ASSERT_TRUE(document.get());
+  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
+  DictionaryValue* entry_value;
+  ASSERT_TRUE(reinterpret_cast<DictionaryValue*>(document.get())->GetDictionary(
+      std::string("entry"), &entry_value));
+  ASSERT_TRUE(entry_value);
+
+  scoped_ptr<AccountMetadataFeed> feed(
+      AccountMetadataFeed::CreateFrom(document.get()));
+  EXPECT_EQ(1234, feed->quota_bytes_used());
+  EXPECT_EQ(12345, feed->quota_bytes_total());
 }

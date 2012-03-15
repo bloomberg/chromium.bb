@@ -39,6 +39,8 @@ const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheBlobsDir[] = FILE_PATH_LITERAL("blobs");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
+const FilePath::CharType kAccountMetadataFile[] =
+    FILE_PATH_LITERAL("account_metadata.json");
 
 // Internal callback for InitializeCacheOnIOThreadPool which is posted by
 // InitializeCache.
@@ -1106,6 +1108,40 @@ FilePath GDataFileSystem::GetFromCacheForPath(const FilePath& gdata_file_path) {
   return cache_file_path;
 }
 
+void GDataFileSystem::GetAvailableSpace(
+    const GetAvailableSpaceCallback& callback) {
+  documents_service_->GetAccountMetadata(
+      base::Bind(&GDataFileSystem::OnGetAvailableSpace,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void GDataFileSystem::OnGetAvailableSpace(
+    const GetAvailableSpaceCallback& callback,
+    GDataErrorCode status,
+    scoped_ptr<base::Value> data) {
+
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error, -1, -1);
+    return;
+  }
+
+  scoped_ptr<AccountMetadataFeed> feed;
+  if (data.get())
+      feed.reset(AccountMetadataFeed::CreateFrom(data.get()));
+  if (!feed.get()) {
+    callback.Run(base::PLATFORM_FILE_ERROR_FAILED, -1, -1);
+    return;
+  }
+
+  SaveFeed(data.Pass(), FilePath(kAccountMetadataFile));
+
+  callback.Run(base::PLATFORM_FILE_OK,
+               feed->quota_bytes_total(),
+               feed->quota_bytes_used());
+}
+
 void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,
     GDataErrorCode status,
@@ -1214,8 +1250,10 @@ void GDataFileSystem::OnGetDocuments(
   }
 
   // If this was the root feed, cache its content.
-  if (params.directory_path == FilePath(kGDataRootDirectory))
-    SaveRootFeeds(feed_list.Pass());
+  if (params.directory_path == FilePath(kGDataRootDirectory)) {
+    scoped_ptr<base::Value> feed_list_value(feed_list.release());
+    SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
+  }
 
   // Continue file content search operation.
   FindFileByPath(params.file_path,
@@ -1325,17 +1363,20 @@ void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
     callback.Run(error, updated_file_path);
 }
 
-void GDataFileSystem::SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector) {
+void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
+                               const FilePath& name) {
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&GDataFileSystem::SaveRootFeedsOnIOThreadPool,
+      base::Bind(&GDataFileSystem::SaveFeedOnIOThreadPool,
                  cache_paths_[CACHE_TYPE_META],
-                 base::Passed(&feed_vector)));
+                 base::Passed(&feed),
+                 name));
 }
 
 // Static.
-void GDataFileSystem::SaveRootFeedsOnIOThreadPool(
+void GDataFileSystem::SaveFeedOnIOThreadPool(
     const FilePath& meta_cache_path,
-    scoped_ptr<base::ListValue> feed_vector) {
+    scoped_ptr<base::Value> feed,
+    const FilePath& name) {
   if (!file_util::DirectoryExists(meta_cache_path)) {
     if (!file_util::CreateDirectory(meta_cache_path)) {
       LOG(WARNING) << "GData metadata cache directory can't be created at "
@@ -1344,9 +1385,9 @@ void GDataFileSystem::SaveRootFeedsOnIOThreadPool(
     }
   }
 
-  FilePath file_name = meta_cache_path.Append(kLastFeedFile);
+  FilePath file_name = meta_cache_path.Append(name);
   std::string json;
-  base::JSONWriter::Write(feed_vector.get(),
+  base::JSONWriter::Write(feed.get(),
                           false,   // pretty_print
                           &json);
 

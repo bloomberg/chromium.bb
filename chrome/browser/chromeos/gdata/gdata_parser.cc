@@ -126,6 +126,9 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// Author implementation
+
 const char Author::kNameField[] = "name.$t";
 const char Author::kEmailField[] = "email.$t";
 
@@ -138,6 +141,9 @@ void Author::RegisterJSONConverter(
   converter->RegisterStringField(kNameField, &Author::name_);
   converter->RegisterStringField(kEmailField, &Author::email_);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Link implementation
 
 const char Link::kHrefField[] = "href";
 const char Link::kRelField[] = "rel";
@@ -171,6 +177,9 @@ void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
   converter->RegisterStringField(kTypeField, &Link::mime_type_);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// FeedLink implementation
+
 const char FeedLink::kHrefField[] = "href";
 const char FeedLink::kRelField[] = "rel";
 
@@ -198,6 +207,9 @@ void FeedLink::RegisterJSONConverter(
   converter->RegisterCustomField(
       kHrefField, &FeedLink::href_, &GetGURLFromString);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Category implementation
 
 const char Category::kLabelField[] = "label";
 const char Category::kSchemeField[] = "scheme";
@@ -236,6 +248,9 @@ const Link* GDataEntry::GetLinkByType(Link::LinkType type) const {
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Content implementation
+
 const char Content::kSrcField[] = "src";
 const char Content::kTypeField[] = "type";
 
@@ -248,6 +263,9 @@ void Content::RegisterJSONConverter(
   converter->RegisterCustomField(kSrcField, &Content::url_, &GetGURLFromString);
   converter->RegisterStringField(kTypeField, &Content::mime_type_);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// GDataEntry implementation
 
 const char GDataEntry::kTimeParsingDelimiters[] = "-:.TZ";
 const char GDataEntry::kAuthorField[] = "author";
@@ -300,6 +318,9 @@ bool GDataEntry::GetTimeFromString(const base::StringPiece& raw_value,
   *time = base::Time::FromLocalExploded(exploded);
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// DocumentEntry implementation
 
 const char DocumentEntry::kFeedLinkField[] = "gd$feedLink";
 const char DocumentEntry::kContentField[] = "content";
@@ -390,6 +411,22 @@ void DocumentEntry::FillRemainingFields() {
   }
 }
 
+// static
+DocumentEntry* DocumentEntry::CreateFrom(base::Value* value) {
+  base::JSONValueConverter<DocumentEntry> converter;
+  scoped_ptr<DocumentEntry> entry(new DocumentEntry());
+  if (!converter.Convert(*value, entry.get())) {
+    DVLOG(1) << "Invalid document entry!";
+    return NULL;
+  }
+
+  entry->FillRemainingFields();
+  return entry.release();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DocumentFeed implementation
+
 const char DocumentFeed::kStartIndexField[] = "openSearch$startIndex.$t";
 const char DocumentFeed::kItemsPerPageField[] =
     "openSearch$itemsPerPage.$t";
@@ -417,20 +454,6 @@ void DocumentFeed::RegisterJSONConverter(
   converter->RegisterStringField(kTitleField, &DocumentFeed::title_);
   converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
 }
-
-// static
-DocumentEntry* DocumentEntry::CreateFrom(base::Value* value) {
-  base::JSONValueConverter<DocumentEntry> converter;
-  scoped_ptr<DocumentEntry> entry(new DocumentEntry());
-  if (!converter.Convert(*value, entry.get())) {
-    DVLOG(1) << "Invalid document entry!";
-    return NULL;
-  }
-
-  entry->FillRemainingFields();
-  return entry.release();
-}
-
 
 bool DocumentFeed::Parse(base::Value* value) {
   base::JSONValueConverter<DocumentFeed> converter;
@@ -465,6 +488,53 @@ bool DocumentFeed::GetNextFeedURL(GURL* url) {
     }
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AccountMetadataFeed implementation
+
+const char AccountMetadataFeed::kQuotaBytesTotalField[] =
+    "entry.gd$quotaBytesTotal.$t";
+const char AccountMetadataFeed::kQuotaBytesUsedField[] =
+    "entry.gd$quotaBytesUsed.$t";
+
+AccountMetadataFeed::AccountMetadataFeed()
+    : quota_bytes_total_(0),
+      quota_bytes_used_(0) {
+}
+
+AccountMetadataFeed::~AccountMetadataFeed() {
+}
+
+// static
+void AccountMetadataFeed::RegisterJSONConverter(
+    base::JSONValueConverter<AccountMetadataFeed>* converter) {
+  converter->RegisterCustomField<int>(kQuotaBytesTotalField,
+                                      &AccountMetadataFeed::quota_bytes_total_,
+                                      &base::StringToInt);
+  converter->RegisterCustomField<int>(kQuotaBytesUsedField,
+                                      &AccountMetadataFeed::quota_bytes_used_,
+                                      &base::StringToInt);
+}
+
+// static
+AccountMetadataFeed* AccountMetadataFeed::CreateFrom(base::Value* value) {
+  scoped_ptr<AccountMetadataFeed> feed(new AccountMetadataFeed());
+  if (!feed->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
+    return NULL;
+  }
+
+  return feed.release();
+}
+
+bool AccountMetadataFeed::Parse(base::Value* value) {
+  base::JSONValueConverter<AccountMetadataFeed> converter;
+  if (!converter.Convert(*value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid account metadata feed!";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace gdata

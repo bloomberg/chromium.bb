@@ -68,6 +68,10 @@ const char kGetDocumentListURL[] =
 const char kDocumentListRootURL[] =
     "https://docs.google.com/feeds/default/private/full";
 
+// Metadata feed with things like user quota.
+const char kAccountMetadataURL[] =
+    "https://docs.google.com/feeds/metadata/default";
+
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadContentType[] = "X-Upload-Content-Type: ";
 const char kUploadContentLength[] = "X-Upload-Content-Length: ";
@@ -586,6 +590,34 @@ GURL GetDocumentsOperation::GetURL() const {
     return AddFeedUrlParams(override_url_);
 
   return AddFeedUrlParams(GURL(kGetDocumentListURL));
+}
+
+//========================= GetAccountMetadataOperation ========================
+
+// Account metadata fetching operation.
+class GetAccountMetadataOperation : public GetDataOperation {
+ public:
+  GetAccountMetadataOperation(GDataOperationRegistry* registry,
+                              Profile* profile,
+                              const GetDataCallback& callback);
+  virtual ~GetAccountMetadataOperation() {}
+
+ private:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
+};
+
+GetAccountMetadataOperation::GetAccountMetadataOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const GetDataCallback& callback)
+    : GetDataOperation(registry, profile, callback) {
+}
+
+GURL GetAccountMetadataOperation::GetURL() const {
+  return AddStandardUrlParams(GURL(kAccountMetadataURL));
 }
 
 //============================ DownloadFileOperation ===========================
@@ -1400,6 +1432,14 @@ void DocumentsService::GetDocuments(const GURL& url,
       new GetDocumentsOperation(operation_registry_.get(), profile_, callback);
   if (!url.is_empty())
     operation->SetUrl(url);
+  StartOperationOnUIThread(operation);
+}
+
+void DocumentsService::GetAccountMetadata(const GetDataCallback& callback) {
+  GetAccountMetadataOperation* operation =
+      new GetAccountMetadataOperation(operation_registry_.get(),
+                                      profile_,
+                                      callback);
   StartOperationOnUIThread(operation);
 }
 

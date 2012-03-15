@@ -163,6 +163,13 @@ class DocumentsServiceInterface {
   virtual void GetDocuments(const GURL& feed_url,
                             const GetDataCallback& callback) = 0;
 
+  // Gets the account metadata from the server using the default account
+  // metadata URL. Upon completion, invokes |callback| with results on the
+  // calling thread.
+  //
+  // Can be called on any thread.
+  virtual void GetAccountMetadata(const GetDataCallback& callback) = 0;
+
   // Deletes a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
   //
@@ -267,6 +274,7 @@ class DocumentsService
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,
                             const GetDataCallback& callback) OVERRIDE;
+  virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void DeleteDocument(const GURL& document_url,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadDocument(

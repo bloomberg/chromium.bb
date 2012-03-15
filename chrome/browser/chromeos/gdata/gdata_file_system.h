@@ -96,6 +96,12 @@ class GDataFileSystem : public ProfileKeyedService {
                               const FilePath& file_path)>
       GetFileCallback;
 
+  // Used to get available space for the account from GData.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              int bytes_total,
+                              int bytes_used)>
+      GetAvailableSpaceCallback;
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -207,6 +213,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // Returns empty FilePath if cache has not been initialized or file doesn't
   // exist in GData or cache.
   FilePath GetFromCacheForPath(const FilePath& gdata_file_path);
+
+  // Fetches the user's Account Metadata to find out current quota information
+  // and returns it to the callback.
+  void GetAvailableSpace(const GetAvailableSpaceCallback& callback);
 
  private:
   friend class GDataUploader;
@@ -359,6 +369,12 @@ class GDataFileSystem : public ProfileKeyedService {
       GDataErrorCode status,
       const GURL& document_url);
 
+  // Callback for handling account metadata fetch.
+  void OnGetAvailableSpace(
+      const GetAvailableSpaceCallback& callback,
+      GDataErrorCode status,
+      scoped_ptr<base::Value> data);
+
   // Callback for handling document remove attempt.
   void OnRemovedDocument(
       const FileOperationCallback& callback,
@@ -440,12 +456,14 @@ class GDataFileSystem : public ProfileKeyedService {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
-  // Saves collected root feeds in GCache directory under
-  // <user_profile_dir>/GCache/v1/meta/last_feed.json.
-  void SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector);
-  static void SaveRootFeedsOnIOThreadPool(
+  // Saves a collected feed in GCache directory under
+  // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
+  void SaveFeed(scoped_ptr<base::Value> feed_vector,
+                const FilePath& name);
+  static void SaveFeedOnIOThreadPool(
       const FilePath& meta_cache_path,
-      scoped_ptr<base::ListValue> feed_vector);
+      scoped_ptr<base::Value> feed_vector,
+      const FilePath& name);
 
   // Finds and returns upload url of a given directory. Returns empty url
   // if directory can't be found.

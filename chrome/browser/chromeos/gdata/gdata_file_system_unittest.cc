@@ -313,7 +313,10 @@ class GDataFileSystemTestBase : public testing::Test {
   class CallbackHelper
     : public base::RefCountedThreadSafe<CallbackHelper> {
    public:
-    CallbackHelper() : last_error_(base::PLATFORM_FILE_OK) {}
+    CallbackHelper()
+        : last_error_(base::PLATFORM_FILE_OK),
+          quota_bytes_total_(0),
+          quota_bytes_used_(0) {}
     virtual ~CallbackHelper() {}
     virtual void GetFileCallback(base::PlatformFileError error,
                                  const FilePath& file_path) {
@@ -325,9 +328,18 @@ class GDataFileSystemTestBase : public testing::Test {
 
       last_error_ = error;
     }
+    virtual void GetAvailableSpaceCallback(base::PlatformFileError error,
+                                           int bytes_total,
+                                           int bytes_used) {
+      last_error_ = error;
+      quota_bytes_total_ = bytes_total;
+      quota_bytes_used_ = bytes_used;
+    }
 
     base::PlatformFileError last_error_;
     FilePath download_path_;
+    int quota_bytes_total_;
+    int quota_bytes_used_;
   };
 
   MessageLoopForUI message_loop_;
@@ -1223,6 +1235,20 @@ TEST_F(GDataFileSystemTest, GetFile) {
   EXPECT_STREQ("file_content_url/",
                callback_helper_->download_path_.value().c_str());
 }
+
+TEST_F(GDataFileSystemTest, GetAvailableSpace) {
+  GDataFileSystem::GetAvailableSpaceCallback callback =
+      base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
+                 callback_helper_.get());
+
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_));
+
+  file_system_->GetAvailableSpace(callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(1234, callback_helper_->quota_bytes_used_);
+  EXPECT_EQ(12345, callback_helper_->quota_bytes_total_);
+}
+
 
 class GDataFileSystemInitCacheTest : public GDataFileSystemTestBase {
  protected:
