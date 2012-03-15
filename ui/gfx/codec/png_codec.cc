@@ -383,6 +383,27 @@ bool BuildPNGStruct(const unsigned char* input, size_t input_size,
   return true;
 }
 
+// Libpng user error and warning functions which allows us to print libpng
+// errors and warnings using Chrome's logging facilities instead of stderr.
+
+void LogLibPNGDecodeError(png_structp png_ptr, png_const_charp error_msg) {
+  DLOG(ERROR) << "libpng decode error: " << error_msg;
+  longjmp(png_jmpbuf(png_ptr), 1);
+}
+
+void LogLibPNGDecodeWarning(png_structp png_ptr, png_const_charp warning_msg) {
+  DLOG(ERROR) << "libpng decode warning: " << warning_msg;
+}
+
+void LogLibPNGEncodeError(png_structp png_ptr, png_const_charp error_msg) {
+  DLOG(ERROR) << "libpng encode error: " << error_msg;
+  longjmp(png_jmpbuf(png_ptr), 1);
+}
+
+void LogLibPNGEncodeWarning(png_structp png_ptr, png_const_charp warning_msg) {
+  DLOG(ERROR) << "libpng encode warning: " << warning_msg;
+}
+
 }  // namespace
 
 // static
@@ -404,6 +425,7 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
 
   PngDecoderState state(format, output);
 
+  png_set_error_fn(png_ptr, NULL, LogLibPNGDecodeError, LogLibPNGDecodeWarning);
   png_set_progressive_read_fn(png_ptr, &state, &DecodeInfoCallback,
                               &DecodeRowCallback, &DecodeEndCallback);
   png_process_data(png_ptr,
@@ -601,6 +623,7 @@ bool DoLibpngWrite(png_struct* png_ptr, png_info* info_ptr,
 
   // Set our callback for libpng to give us the data.
   png_set_write_fn(png_ptr, state, EncoderWriteCallback, FakeFlushCallback);
+  png_set_error_fn(png_ptr, NULL, LogLibPNGEncodeError, LogLibPNGEncodeWarning);
 
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, png_output_color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
