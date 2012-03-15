@@ -94,7 +94,7 @@ TabContentsViewGtk::TabContentsViewGtk(
   drag_source_.reset(new content::WebDragSourceGtk(web_contents));
 
   if (delegate_.get())
-    delegate_->Initialize(expanded_.get());
+    delegate_->Initialize(expanded_.get(), &focus_store_);
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -255,10 +255,6 @@ void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
   int x = 0, y = 0, w, h;
   gdk_window_get_geometry(window, &x, &y, &w, &h, NULL);
   out->SetRect(x, y, w, h);
-}
-
-void TabContentsViewGtk::SetFocusedWidget(GtkWidget* widget) {
-  focus_store_.SetWidget(widget);
 }
 
 WebContents* TabContentsViewGtk::web_contents() {

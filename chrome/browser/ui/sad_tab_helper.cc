@@ -19,7 +19,7 @@
 
 #include <gtk/gtk.h>
 
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #endif
 
@@ -58,11 +58,11 @@ void SadTabHelper::Observe(int type,
 #elif defined(TOOLKIT_VIEWS)
         sad_tab_->Close();
 #elif defined(TOOLKIT_GTK)
-        content::TabContentsViewGtk* view =
-            static_cast<content::TabContentsViewGtk*>(
-                web_contents()->GetView());
+        GtkWidget* expanded_container =
+            ChromeWebContentsViewDelegateGtk::GetFor(web_contents())->
+                expanded_container();
         gtk_container_remove(
-            GTK_CONTAINER(view->expanded_container()), sad_tab_->widget());
+            GTK_CONTAINER(expanded_container), sad_tab_->widget());
 #else
 #error Unknown platform
 #endif
@@ -106,10 +106,10 @@ void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED
           ? SadTabGtk::KILLED
           : SadTabGtk::CRASHED));
-  content::TabContentsViewGtk* view =
-      static_cast<content::TabContentsViewGtk*>(web_contents()->GetView());
-  gtk_container_add(
-      GTK_CONTAINER(view->expanded_container()), sad_tab_->widget());
+  GtkWidget* expanded_container =
+      ChromeWebContentsViewDelegateGtk::GetFor(web_contents())->
+          expanded_container();
+  gtk_container_add(GTK_CONTAINER(expanded_container), sad_tab_->widget());
   gtk_widget_show(sad_tab_->widget());
 #else
 #error Unknown platform

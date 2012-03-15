@@ -39,7 +39,6 @@ include_rules = [
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",
   "+content/browser/renderer_host/resource_request_details.h",
   "+content/browser/renderer_host/resource_request_info_impl.h",
-  "+content/browser/tab_contents/tab_contents_view_gtk.h",
   "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/test_tab_contents.h",
   "+content/browser/tab_contents/web_contents_drag_win.h",

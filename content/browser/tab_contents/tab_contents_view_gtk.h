@@ -37,13 +37,8 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
                      WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewGtk();
 
-  // Override the stored focus widget. This call only makes sense when the
-  // tab contents is not focused.
-  void SetFocusedWidget(GtkWidget* widget);
-
   WebContentsViewDelegate* delegate() const { return delegate_.get(); }
   TabContents* tab_contents() { return tab_contents_; }
-  GtkWidget* expanded_container() { return expanded_.get(); }
   WebContents* web_contents();
 
   // WebContentsView implementation --------------------------------------------

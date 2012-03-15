@@ -23,6 +23,10 @@ namespace gfx {
 class Size;
 }
 
+namespace ui {
+class FocusStoreGtk;
+}
+
 namespace content {
 
 class RenderWidgetHost;
@@ -52,7 +56,8 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual void SizeChanged(const gfx::Size& size) = 0;
 #elif defined(TOOLKIT_USES_GTK)
   // Initializes the WebContentsViewDelegate.
-  virtual void Initialize(GtkWidget* expanded_container) = 0;
+  virtual void Initialize(GtkWidget* expanded_container,
+                          ui::FocusStoreGtk* focus_store) = 0;
 
   // Returns the top widget that contains |view| passed in from WrapView. This
   // is exposed through TabContentsViewGtk::GetNativeView() when a wrapper is

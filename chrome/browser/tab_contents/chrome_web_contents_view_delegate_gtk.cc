@@ -4,6 +4,9 @@
 
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
 
+#include <map>
+
+#include "base/lazy_instance.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
@@ -13,20 +16,38 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_floating_container.h"
+
+static base::LazyInstance<std::map<
+    content::WebContents*, ChromeWebContentsViewDelegateGtk*> >
+        g_instances = LAZY_INSTANCE_INITIALIZER;
+
+ChromeWebContentsViewDelegateGtk* ChromeWebContentsViewDelegateGtk::GetFor(
+    content::WebContents* web_contents) {
+  if (!g_instances.Get().count(web_contents))
+    return 0;
+  return g_instances.Get()[web_contents];
+}
 
 ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
     content::WebContents* web_contents)
     : floating_(gtk_floating_container_new()),
       constrained_window_(NULL),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      expanded_container_(NULL),
+      focus_store_(NULL) {
   gtk_widget_set_name(floating_.get(), "chrome-tab-contents-wrapper-view");
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
+  DCHECK_EQ(g_instances.Get().count(web_contents), 0u);
+  g_instances.Get()[web_contents] = this;
 }
 
 ChromeWebContentsViewDelegateGtk::~ChromeWebContentsViewDelegateGtk() {
   floating_.Destroy();
+  DCHECK_EQ(g_instances.Get().count(web_contents_), 1u);
+  g_instances.Get().erase(web_contents_);
 }
 
 void ChromeWebContentsViewDelegateGtk::AttachConstrainedWindow(
@@ -48,7 +69,9 @@ void ChromeWebContentsViewDelegateGtk::RemoveConstrainedWindow(
 }
 
 void ChromeWebContentsViewDelegateGtk::Initialize(
-    GtkWidget* expanded_container) {
+    GtkWidget* expanded_container, ui::FocusStoreGtk* focus_store) {
+  expanded_container_ = expanded_container;
+  focus_store_ = focus_store;
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
   bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);

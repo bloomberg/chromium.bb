@@ -28,6 +28,12 @@ class ChromeWebContentsViewDelegateGtk
   explicit ChromeWebContentsViewDelegateGtk(content::WebContents* web_contents);
   virtual ~ChromeWebContentsViewDelegateGtk();
 
+  static ChromeWebContentsViewDelegateGtk* GetFor(
+      content::WebContents* web_contents);
+
+  GtkWidget* expanded_container() { return expanded_container_; }
+  ui::FocusStoreGtk* focus_store() { return focus_store_; }
+
   // Unlike Windows, ConstrainedWindows need to collaborate with the
   // TabContentsViewGtk to position the dialogs.
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
@@ -37,7 +43,8 @@ class ChromeWebContentsViewDelegateGtk
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
-  virtual void Initialize(GtkWidget* expanded_container) OVERRIDE;
+  virtual void Initialize(GtkWidget* expanded_container,
+                          ui::FocusStoreGtk* focus_store) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual gboolean OnNativeViewFocusEvent(GtkWidget* widget,
@@ -65,6 +72,9 @@ class ChromeWebContentsViewDelegateGtk
   scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
 
   content::WebContents* web_contents_;
+
+  GtkWidget* expanded_container_;
+  ui::FocusStoreGtk* focus_store_;
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_DELEGATE_GTK_H_

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 
@@ -22,7 +23,6 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
 
 using content::BrowserThread;
@@ -126,8 +126,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // TODO(estade): this define should not need to be here because this class
   // should not be used on linux/views.
 #if defined(TOOLKIT_GTK)
-    static_cast<content::TabContentsViewGtk*>(
-        wrapper_->web_contents()->GetView())->SetFocusedWidget(focus_widget);
+    ContainingView()->focus_store()->SetWidget(focus_widget);
 #endif
   }
 }
@@ -139,9 +138,7 @@ ConstrainedWindowGtk::TabContentsViewType*
       static_cast<TabContentsViewViews*>(wrapper_->web_contents()->GetView())->
           native_tab_contents_view());
 #else
-  return static_cast<TabContentsViewType*>(
-      static_cast<content::TabContentsViewGtk*>(
-          wrapper_->web_contents()->GetView())->delegate());
+  return ChromeWebContentsViewDelegateGtk::GetFor(wrapper_->web_contents());
 #endif
 }
 
