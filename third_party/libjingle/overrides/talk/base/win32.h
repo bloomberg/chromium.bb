@@ -47,19 +47,10 @@ typedef struct _TOKEN_MANDATORY_LABEL {
 
 #undef SetPort
 
-#include <stdlib.h>
 #include <string>
 
 #include "talk/base/stringutils.h"
 #include "talk/base/basictypes.h"
-
-// This is to remove the dependency to ws2_32.dll especially for chrome,
-// where we don't load the ws2_32.dll in the render process.
-// This is correct only on little-endian machines.
-#define ntohl(x) _byteswap_ulong(x)
-#define ntohs(x) _byteswap_ushort(x)
-#define htonl(x) _byteswap_ulong(x)
-#define htons(x) _byteswap_ushort(x)
 
 namespace talk_base {
 

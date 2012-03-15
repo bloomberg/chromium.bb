@@ -8,7 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
-#include "third_party/libjingle/overrides/talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 
 namespace remoting {
 namespace protocol {

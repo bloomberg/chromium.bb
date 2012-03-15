@@ -52,10 +52,11 @@ void IpcNetworkManager::OnNetworkListChanged(
     if (it->address.size() != net::kIPv4AddressSize)
       continue;
     memcpy(&address, &it->address[0], sizeof(uint32));
-    address = ntohl(address);
-    networks.push_back(
-        new talk_base::Network(
-            it->name, it->name, talk_base::IPAddress(address)));
+    address = talk_base::NetworkToHost32(address);
+    talk_base::Network* network = new talk_base::Network(
+        it->name, it->name, talk_base::IPAddress(address), 32);
+    network->AddIP(talk_base::IPAddress(address));
+    networks.push_back(network);
   }
 
   bool changed = false;

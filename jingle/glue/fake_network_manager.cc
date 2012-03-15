@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,8 @@ FakeNetworkManager::FakeNetworkManager(const net::IPAddressNumber& address)
   talk_base::SocketAddress socket_address;
   CHECK(IPEndPointToSocketAddress(endpoint, &socket_address));
   network_.reset(new talk_base::Network("fake", "Fake Network",
-                                        socket_address.ipaddr()));
+                                        socket_address.ipaddr(), 32));
+  network_->AddIP(socket_address.ipaddr());
 }
 
 FakeNetworkManager::~FakeNetworkManager() {

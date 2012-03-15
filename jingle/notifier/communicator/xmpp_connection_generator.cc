@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -161,7 +161,7 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
        addr != NULL; addr = addr->ai_next) {
     const sockaddr_in& sockaddr =
         *reinterpret_cast<const sockaddr_in*>(addr->ai_addr);
-    uint32 ip = ntohl(sockaddr.sin_addr.s_addr);
+    uint32 ip = talk_base::NetworkToHost32(sockaddr.sin_addr.s_addr);
     ip_list.push_back(ip);
   }
   successfully_resolved_dns_ = !ip_list.empty();

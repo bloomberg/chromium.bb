@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "remoting/jingle_glue/ssl_adapter.h"
-#include "third_party/libjingle/overrides/talk/base/byteorder.h"
 #include "third_party/libjingle/overrides/talk/base/thread.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 #include "third_party/libjingle/source/talk/base/common.h"
 #include "third_party/libjingle/source/talk/base/firewallsocketserver.h"
 #include "third_party/libjingle/source/talk/base/socketadapters.h"

@@ -5,7 +5,7 @@
 #include "remoting/protocol/rtp_utils.h"
 
 #include "base/logging.h"
-#include "third_party/libjingle/overrides/talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 
 using talk_base::GetBE16;
 using talk_base::GetBE32;

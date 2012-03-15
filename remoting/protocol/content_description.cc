@@ -159,6 +159,14 @@ ContentDescription::ContentDescription(
 
 ContentDescription::~ContentDescription() { }
 
+ContentDescription* ContentDescription::Copy() const {
+  if (!candidate_config_.get() || !authenticator_message_.get()) {
+    return NULL;
+  }
+  scoped_ptr<XmlElement> message(new XmlElement(*authenticator_message_));
+  return new ContentDescription(candidate_config_->Clone(), message.Pass());
+}
+
 // ToXml() creates content description for chromoting session. The
 // description looks as follows:
 //   <description xmlns="google:remoting">

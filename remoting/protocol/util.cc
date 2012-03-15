@@ -8,7 +8,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "third_party/libjingle/overrides/talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 
 namespace {
 

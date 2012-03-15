@@ -177,7 +177,6 @@
         
         # TODO(ronghuawu): Remove below overrides once below bug is fixed:
         # http://crbug.com/115702
-        'overrides/talk/base/byteorder.h',
         'overrides/talk/base/messagequeue.cc',
         'overrides/talk/base/messagequeue.h',
         'overrides/talk/base/thread.cc',
@@ -204,6 +203,7 @@
         'source/talk/base/basicpacketsocketfactory.h',
         'source/talk/base/bytebuffer.cc',
         'source/talk/base/bytebuffer.h',
+        'source/talk/base/byteorder.h',
         'source/talk/base/checks.cc',
         'source/talk/base/checks.h',
         'source/talk/base/common.cc',
@@ -240,12 +240,15 @@
         'source/talk/base/linked_ptr.h',
         'source/talk/base/md5.h',
         'source/talk/base/md5c.c',
+        'source/talk/base/messagedigest.cc',
+        'source/talk/base/messagedigest.h',
         'source/talk/base/messagehandler.cc',
         'source/talk/base/messagehandler.h',
         'source/talk/base/nethelpers.cc',
         'source/talk/base/nethelpers.h',
         'source/talk/base/network.cc',
         'source/talk/base/network.h',
+        'source/talk/base/nullsocketserver.h',
         'source/talk/base/pathutils.cc',
         'source/talk/base/pathutils.h',
         'source/talk/base/physicalsocketserver.cc',
@@ -257,6 +260,8 @@
         'source/talk/base/ratetracker.cc',
         'source/talk/base/ratetracker.h',
         'source/talk/base/sec_buffer.h',
+        'source/talk/base/sha1.c',
+        'source/talk/base/sha1.h',
         'source/talk/base/signalthread.cc',
         'source/talk/base/signalthread.h',
         'source/talk/base/sigslot.h',
@@ -280,8 +285,6 @@
         'source/talk/base/sslsocketfactory.h',
         'source/talk/base/stream.cc',
         'source/talk/base/stream.h',
-        'source/talk/base/stringdigest.cc',
-        'source/talk/base/stringdigest.h',
         'source/talk/base/stringencode.cc',
         'source/talk/base/stringencode.h',
         'source/talk/base/stringutils.cc',
@@ -352,10 +355,8 @@
             'overrides/talk/base/win32socketinit.cc',
             'source/talk/base/schanneladapter.cc',
             'source/talk/base/schanneladapter.h',
-            # TODO(ronghuawu): Remove below overrides once below bug is fixed:
-            # http://crbug.com/115702
-            'overrides/talk/base/win32.h',
-            'overrides/talk/base/win32.cc',
+            'source/talk/base/win32.cc',
+            'source/talk/base/win32.h',
             'source/talk/base/win32filesystem.cc',
             'source/talk/base/win32filesystem.h',
             'source/talk/base/win32window.h',
@@ -369,6 +370,10 @@
         }],
         ['os_posix == 1', {
           'sources': [
+            'source/talk/base/openssladapter.cc',
+            'source/talk/base/openssladapter.h',
+            'source/talk/base/openssldigest.cc',
+            'source/talk/base/openssldigest.h',
             'source/talk/base/sslstreamadapter.cc',
             'source/talk/base/sslstreamadapter.h',
             'source/talk/base/unixfilesystem.cc',
@@ -393,6 +398,9 @@
         }],
         ['OS=="android"', {
           'sources!': [
+            # The openssl is not available in android build.
+            'source/talk/base/openssldigest.cc',
+            'source/talk/base/openssldigest.h',
             # These depend on jsoncpp which we don't load because we probably
             # don't actually need this code at all.
             'source/talk/base/json.cc',
@@ -544,9 +552,13 @@
         'source/talk/session/phone/channelmanager.h',
         'source/talk/session/phone/codec.cc',
         'source/talk/session/phone/codec.h',
+        'source/talk/session/phone/constants.cc',
+        'source/talk/session/phone/constants.h',
         'source/talk/session/phone/cryptoparams.h',
         'source/talk/session/phone/currentspeakermonitor.cc',
         'source/talk/session/phone/currentspeakermonitor.h',
+        'source/talk/session/phone/dataengine.cc',
+        'source/talk/session/phone/dataengine.h',
         'source/talk/session/phone/devicemanager.cc',
         'source/talk/session/phone/devicemanager.h',
         'source/talk/session/phone/dummydevicemanager.cc',

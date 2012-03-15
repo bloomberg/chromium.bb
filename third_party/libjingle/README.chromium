@@ -1,8 +1,8 @@
 Name: Libjingle library. Used for p2p voice and video communication.
 Short Name: libjingle
 URL: http://code.google.com/p/libjingle/
-Version: 0.6.14
-Revision: 119
+Version: 0.6.16
+Revision: 124
 License: BSD
 License File: source/COPYING
 Security Critical: yes
