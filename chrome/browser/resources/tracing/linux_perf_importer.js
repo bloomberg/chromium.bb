@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,6 +189,13 @@ cr.define('tracing', function() {
       if (!this.alignClocks())
         return;
       this.buildPerThreadCpuSlicesFromCpuState();
+    },
+
+    /**
+     * Called by the TimelineModel after all other importers have imported their
+     * events.
+     */
+    finalizeImport: function() {
     },
 
     /**

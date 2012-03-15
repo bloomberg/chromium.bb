@@ -396,7 +396,7 @@ cr.define('tracing', function() {
         threads.forEach(function(thread) {
           var track = new tracing.TimelineThreadTrack();
           track.heading = thread.userFriendlyName + ':';
-          track.tooltip = thread.userFriendlyDetials;
+          track.tooltip = thread.userFriendlyDetails;
           track.headingWidth = maxHeadingWidth;
           track.viewport = this.viewport_;
           track.thread = thread;
@@ -661,16 +661,17 @@ cr.define('tracing', function() {
     },
 
     onMouseDown_: function(e) {
-      rect = this.tracks_.getClientRects()[0];
+      var canv = this.firstCanvas;
+      var rect = this.tracks_.getClientRects()[0];
       var inside = rect &&
           e.clientX >= rect.left &&
           e.clientX < rect.right &&
           e.clientY >= rect.top &&
-          e.clientY < rect.bottom;
+          e.clientY < rect.bottom &&
+          e.x >= canv.offsetLeft;
       if (!inside)
         return;
 
-      var canv = this.firstCanvas;
       var pos = {
         x: e.clientX - canv.offsetLeft,
         y: e.clientY - canv.offsetTop
@@ -743,6 +744,10 @@ cr.define('tracing', function() {
     },
 
     onDblClick_: function(e) {
+      var canv = this.firstCanvas;
+      if (e.x < canv.offsetLeft)
+        return;
+
       var scale = 4;
       if (e.shiftKey)
         scale = 1 / scale;

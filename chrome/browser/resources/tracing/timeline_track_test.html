@@ -40,14 +40,29 @@ found in the LICENSE file.
 <script>
 </script>
 <script>
+  var TimelineAsyncSlice = tracing.TimelineAsyncSlice;
+  var TimelineAsyncSliceGroup = tracing.TimelineAsyncSliceGroup;
   var TimelineCounter = tracing.TimelineCounter;
   var TimelineCounterTrack = tracing.TimelineCounterTrack;
   var TimelineCpu = tracing.TimelineCpu;
   var TimelineCpuTrack = tracing.TimelineCpuTrack;
+  var TimelineProcess = tracing.TimelineProcess;
   var TimelineSliceTrack = tracing.TimelineSliceTrack;
   var TimelineSlice = tracing.TimelineSlice;
+  var TimelineThread = tracing.TimelineThread;
+  var TimelineThreadSlice = tracing.TimelineThreadSlice;
+  var TimelineThreadTrack = tracing.TimelineThreadTrack;
   var TimelineViewport = tracing.TimelineViewport;
   var testDivs = {};
+
+  // Helper function to create a slice.
+  function newAsyncSlice(start, duration, startThread, endThread) {
+    var s = new TimelineAsyncSlice('a', 0, start);
+    s.duration = duration;
+    s.startThread = startThread;
+    s.endThread = endThread;
+    return s;
+  }
 
   function getTestDiv(name) {
     if (!testDivs[name]) {
@@ -63,6 +78,23 @@ found in the LICENSE file.
     var track = TimelineSliceTrack();
     testEl.appendChild(track);
     track.heading = 'testBasicSlices';
+    track.slices = [
+      new TimelineSlice('a', 0, 1, {}, 1),
+      new TimelineSlice('b', 1, 2.1, {}, 4.8),
+      new TimelineSlice('b', 1, 7, {}, 0.5),
+      new TimelineSlice('c', 2, 7.6, {}, 0.4)
+    ];
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+       track.clientWidth / (1.1 * track.slices[track.slices.length - 1].end));
+  }
+
+  function testBasicSlicesWithAsyncFlag() {
+    var testEl = getTestDiv('testBasicSlicesWithAsyncFlag');
+    var track = TimelineSliceTrack();
+    testEl.appendChild(track);
+    track.asyncStyle = true;
+    track.heading = 'testBasicSlices+AsyncFlag';
     track.slices = [
       new TimelineSlice('a', 0, 1, {}, 1),
       new TimelineSlice('b', 1, 2.1, {}, 4.8),
@@ -186,8 +218,8 @@ found in the LICENSE file.
 
   /* You'll need visual inspection to test eliding with this one. */
   function testElideVisualInspection() {
-    var optDicts = [ { trackName: 'elideOff', elide: false }, 
-                     { trackName: 'elideOn', elide: true } ];
+    var optDicts = [{ trackName: 'elideOff', elide: false },
+                    { trackName: 'elideOn', elide: true }];
     for (dictIndex in optDicts) {
       dict = optDicts[dictIndex];
       var testEl = getTestDiv(dict.trackName);
@@ -198,7 +230,7 @@ found in the LICENSE file.
         track.SHOULD_ELIDE_TEXT = false;
       }
       var tooLongTitle = 'Unless eliding this SHOULD NOT BE DISPLAYED.  ';
-      var bigTitle = 'Very big title name that goes on longer ' + 
+      var bigTitle = 'Very big title name that goes on longer ' +
                      'than you may expect';
       testEl.appendChild(track);
       track.heading = 'Visual: ' + dict.trackName;
@@ -219,7 +251,7 @@ found in the LICENSE file.
     var testEl = getTestDiv('testElide');
     var track = TimelineSliceTrack();
     testEl.appendChild(track);
-    var bigtitle = 'Super duper long long title ' + 
+    var bigtitle = 'Super duper long long title ' +
       'holy moly when did you get so verbose?';
     var smalltitle = 'small';
     track.viewport = new TimelineViewport(testEl);
@@ -227,26 +259,26 @@ found in the LICENSE file.
     track.slices = [
         // title, colorId, start, args, opt_duration
         new TimelineSlice(bigtitle, 0, 1, {}, 1),
-        new TimelineSlice(smalltitle, 1, 2, {}, 1),
+        new TimelineSlice(smalltitle, 1, 2, {}, 1)
     ];
     track.viewport = new TimelineViewport(testEl);
     track.viewport.setPanAndScale(0,
       track.clientWidth / (1.1 * track.slices[track.slices.length - 1].end));
     var stringWidthPair = undefined;
     var pixWidth = track.viewport_.xViewVectorToWorld(1);
-    
+
     // Small titles on big slices are not elided.
-    stringWidthPair = track.elidedTitleCache.get(track, pixWidth, smalltitle, 
+    stringWidthPair = track.elidedTitleCache.get(track, pixWidth, smalltitle,
       track.labelWidth(smalltitle), 1);
     assertEquals(smalltitle, stringWidthPair.string);
     // Keep shrinking the slice until eliding starts.
     var elidedWhenSmallEnough = false;
     for (var sliceLength = 1; sliceLength >= 0.00001; sliceLength /= 2.0) {
-      stringWidthPair = track.elidedTitleCache.get(track, pixWidth, smalltitle, 
+      stringWidthPair = track.elidedTitleCache.get(track, pixWidth, smalltitle,
         track.labelWidth(smalltitle), sliceLength);
       if (stringWidthPair.string.length < smalltitle.length) {
-	elidedWhenSmallEnough = true;
-	break;
+        elidedWhenSmallEnough = true;
+        break;
       }
     }
     assertTrue(elidedWhenSmallEnough);
@@ -256,12 +288,70 @@ found in the LICENSE file.
     for (var x = 0; x < 10; x++) {
       superBigTitle += bigtitle;
     }
-    stringWidthPair = track.elidedTitleCache.get(track, pixWidth, 
+    stringWidthPair = track.elidedTitleCache.get(track, pixWidth,
       superBigTitle, track.labelWidth(superBigTitle), 1);
     assertTrue(stringWidthPair.string.length < superBigTitle.length);
     // And elided text ends with ...
     var len = stringWidthPair.string.length;
-    assertEquals('...', stringWidthPair.string.substring(len-3, len));
+    assertEquals('...', stringWidthPair.string.substring(len - 3, len));
+  }
+
+  function testTimelineThreadTrackWithRegularSlices() {
+    var testEl = getTestDiv('testTimelineThreadTrackWithRegularSlices');
+    var track = TimelineThreadTrack();
+    testEl.appendChild(track);
+    track.heading = 'testTimelineThreadTrackWithRegularSlices';
+    var thread = new TimelineThread(new TimelineProcess(7), 1);
+    thread.subRows = [
+      [
+        new TimelineThreadSlice('a', 0, 1, {}, 1),
+        new TimelineThreadSlice('b', 1, 2.1, {}, 4.8),
+        new TimelineThreadSlice('b', 1, 7, {}, 0.5),
+        new TimelineThreadSlice('c', 2, 7.6, {}, 0.4)
+      ],
+      [
+        new TimelineThreadSlice('d', 3, 1.1, {}, 0.8),
+        new TimelineThreadSlice('e', 4, 7.1, {}, 0.3)
+      ]
+    ];
+    thread.updateBounds();
+    track.heading = 'thread regular';
+    track.headingWidth = '150px';
+    track.toolTip = thread.userFriendlyDetails + ':';
+    track.thread = thread;
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp));
+  }
+
+  function testTimelineThreadTrackWithRegularAndAsyncSlices() {
+    var testEl = getTestDiv('testTimelineThreadTrackWithAsyncSlices');
+    var track = TimelineThreadTrack();
+    testEl.appendChild(track);
+    var thread = new TimelineThread(new TimelineProcess(7), 1);
+    thread.subRows = [
+      [
+        new TimelineThreadSlice('a', 0, 1, {}, 1),
+        new TimelineThreadSlice('b', 1, 2.1, {}, 4.8),
+        new TimelineThreadSlice('b', 1, 7, {}, 0.5),
+        new TimelineThreadSlice('c', 2, 7.6, {}, 0.4)
+      ],
+      [
+        new TimelineThreadSlice('d', 3, 1.1, {}, 0.8),
+        new TimelineThreadSlice('e', 4, 7.1, {}, 0.3)
+      ]
+    ];
+    thread.asyncSlices.push(newAsyncSlice(1.2, 7.2 - 1.2, thread, thread));
+    thread.asyncSlices.push(newAsyncSlice(1.3, 7.3 - 1.3, thread, thread));
+    thread.updateBounds();
+    track.heading = 'thread regular + async';
+    track.headingWidth = '150px';
+    track.toolTip = thread.userFriendlyDetails + ':';
+    track.thread = thread;
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+        track.clientWidth /
+        (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
   }
 
 </script>

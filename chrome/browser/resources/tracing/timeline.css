@@ -1,8 +1,13 @@
 /*
-Copyright (c) 2012 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.timeline * {
+  -webkit-user-select: none;
+  cursor: default;
+}
 
 .timeline-drag-box {
   background-color: rgba(0, 0, 255, 0.25);
@@ -15,6 +20,27 @@ found in the LICENSE file.
   -webkit-box-orient: vertical;
   display: -webkit-box;
   padding: 1px 0;
+  position: relative;
+}
+
+.timeline-track-close-button {
+  left: 0px;
+  position: absolute;
+  top: 0px;
+}
+
+.timeline-track-button {
+  color: rgba(0,0,0,0.1);
+  font-size: 10px;
+  height: 12px;
+  text-align: center;
+  width: 12px;
+}
+.timeline-track-button:hover {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 25%;
+  box-shadow: 0 0 .05em rgba(0,0,0,0.4);
+  color: rgba(0,0,0,0.5);
 }
 
 .timeline-thread-track:not(:first-child) {
@@ -61,4 +87,5 @@ found in the LICENSE file.
 
 .timeline-counter-track {
   height: 30px;
+  position: relative;
 }

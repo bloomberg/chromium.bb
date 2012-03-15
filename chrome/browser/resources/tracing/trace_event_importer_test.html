@@ -23,7 +23,7 @@ found in the LICENSE file.
 
 function testCanImportEmpty() {
   self.assertFalse(tracing.TraceEventImporter.canImport([]));
-  self.assertFalse(tracing.TraceEventImporter.canImport(""));
+  self.assertFalse(tracing.TraceEventImporter.canImport(''));
 }
 
 function testBasicSingleThreadNonnestedParsing() {
@@ -558,6 +558,33 @@ function testImportStringWithMissingCloseSquareBracketAndNewline() {
   var m = new tracing.TimelineModel(dropped + '\n');
   assertEquals(1, m.numProcesses);
 }
+
+function testStartFinishOneSliceOneThread() {
+  var events = [
+    // Time is intentionally out of order.
+    {name: 'a', args: {}, pid: 52, ts: 560, cat: 'foo', tid: 53,
+       ph: 'F', id: 72},
+    {name: 'a', args: {}, pid: 52, ts: 524, cat: 'foo', tid: 53,
+       ph: 'S', id: 72, args: {foo: 'bar'}}
+  ];
+
+  var m = new tracing.TimelineModel(events);
+  var t = m.processes[52].threads[53];
+  assertNotUndefined(t);
+  assertEquals(1, t.asyncSlices.slices.length);
+  assertEquals('a', t.asyncSlices.slices[0].title);
+  assertEquals(72, t.asyncSlices.slices[0].id);
+  assertEquals('bar', t.asyncSlices.slices[0].args.foo);
+  assertEquals(0, t.asyncSlices.slices[0].start);
+  assertAlmostEquals((60 - 24) / 1000, t.asyncSlices.slices[0].duration);
+  assertEquals(t, t.asyncSlices.slices[0].startThread);
+  assertEquals(t, t.asyncSlices.slices[0].endThread);
+}
+
+// TODO(nduca): one slice, two threads
+// TODO(nduca): one slice, two pids
+// TODO(nduca): one slice that doesnt end
+// TODO(nduca): one slice that is missing a start
 
 </script>
 </body>

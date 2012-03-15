@@ -21,18 +21,8 @@
  */
 cr.define('tracing', function() {
   /**
-   * A TimelineSlice represents an interval of time on a given resource plus
-   * parameters associated with that interval.
-   *
-   * A slice is typically associated with a specific trace event pair on a
-   * specific thread.
-   * For example,
-   *   TRACE_EVENT_BEGIN1("x","myArg", 7) at time=0.1ms
-   *   TRACE_EVENT_END()                  at time=0.3ms
-   * This results in a single timeline slice from 0.1 with duration 0.2 on a
-   * specific thread.
-   *
-   * A slice can also be an interval of time on a Cpu on a TimelineCpu.
+   * A TimelineSlice represents an interval of time plus parameters associated
+   * with that interval.
    *
    * All time units are stored in milliseconds.
    * @constructor
@@ -43,7 +33,6 @@ cr.define('tracing', function() {
     this.colorId = colorId;
     this.args = args;
     this.didNotFinish = false;
-    this.subSlices = [];
     if (opt_duration !== undefined)
       this.duration = opt_duration;
   }
@@ -59,18 +48,81 @@ cr.define('tracing', function() {
   };
 
   /**
+   * A TimelineThreadSlice represents an interval of time on a thread resource
+   * with associated nestinged slice information.
+   *
+   * ThreadSlices are typically associated with a specific trace event pair on a
+   * specific thread.
+   * For example,
+   *   TRACE_EVENT_BEGIN1("x","myArg", 7) at time=0.1ms
+   *   TRACE_EVENT_END0()                 at time=0.3ms
+   * This results in a single timeline slice from 0.1 with duration 0.2 on a
+   * specific thread.
+   *
+   * @constructor
+   */
+  function TimelineThreadSlice(title, colorId, start, args, opt_duration) {
+    TimelineSlice.call(this, title, colorId, start, args, opt_duration);
+    this.subSlices = [];
+  }
+
+  TimelineThreadSlice.prototype = {
+    __proto__: TimelineSlice.prototype
+  };
+
+  /**
+   * A TimelineAsyncSlice represents an interval of time during which an
+   * asynchronous operation is in progress. An AsyncSlice consumes no CPU time
+   * itself and so is only associated with Threads at its start and end point.
+   *
+   * @constructor
+   */
+  function TimelineAsyncSlice(title, colorId, start, args) {
+    TimelineSlice.call(this, title, colorId, start, args);
+  };
+
+  TimelineAsyncSlice.prototype = {
+    __proto__: TimelineSlice.prototype,
+
+    id: undefined,
+
+    startThread: undefined,
+
+    endThread: undefined
+  };
+
+  /**
    * A TimelineThread stores all the trace events collected for a particular
-   * thread. We organize the slices on a thread by "subrows," where subrow 0
-   * has all the root slices, subrow 1 those nested 1 deep, and so on. There
-   * is also a set of non-nested subrows.
+   * thread. We organize the synchronous slices on a thread by "subrows," where
+   * subrow 0 has all the root slices, subrow 1 those nested 1 deep, and so on.
+   * The asynchronous slices are stored in an TimelineAsyncSliceGroup object.
+   *
+   * The slices stored on a TimelineThread should be instances of
+   * TimelineThreadSlice.
    *
    * @constructor
    */
   function TimelineThread(parent, tid) {
+    if (!parent)
+      throw 'Parent must be provided.';
     this.parent = parent;
     this.tid = tid;
     this.subRows = [[]];
-    this.nonNestedSubRows = [];
+    this.asyncSlices = new TimelineAsyncSliceGroup(this.ptid);
+  }
+
+  var ptidMap = {};
+
+  /**
+   * @return {String} A string that can be used as a unique key for a specific
+   * thread within a process.
+   */
+  TimelineThread.getPTIDFromPidAndTid = function(pid, tid) {
+    if (!ptidMap[pid])
+      ptidMap[pid] = {};
+    if (!ptidMap[pid][tid])
+      ptidMap[pid][tid] = pid + ':' + tid;
+    return ptidMap[pid][tid];
   }
 
   TimelineThread.prototype = {
@@ -79,27 +131,46 @@ cr.define('tracing', function() {
      */
     name: undefined,
 
+    /**
+     * @return {string} A concatenation of the parent id and the thread's
+     * tid. Can be used to uniquely identify a thread.
+     */
+    get ptid() {
+      return TimelineThread.getPTIDFromPidAndTid(this.tid, this.parent.pid);
+    },
+
     getSubrow: function(i) {
       while (i >= this.subRows.length)
         this.subRows.push([]);
       return this.subRows[i];
     },
 
-    addNonNestedSlice: function(slice) {
-      for (var i = 0; i < this.nonNestedSubRows.length; i++) {
-        var currSubRow = this.nonNestedSubRows[i];
-        var lastSlice = currSubRow[currSubRow.length - 1];
-        if (slice.start >= lastSlice.start + lastSlice.duration) {
-          currSubRow.push(slice);
-          return;
-        }
+
+    shiftSubRow_: function(subRow, amount) {
+      for (var tS = 0; tS < subRow.length; tS++) {
+        var slice = subRow[tS];
+        slice.start = (slice.start + amount);
       }
-      this.nonNestedSubRows.push([slice]);
+    },
+
+    /**
+     * Shifts all the timestamps inside this thread forward by the amount
+     * specified.
+     */
+    shiftTimestampsForward: function(amount) {
+      if (this.cpuSlices)
+        this.shiftSubRow_(this.cpuSlices, amount);
+
+      for (var tSR = 0; tSR < this.subRows.length; tSR++) {
+        this.shiftSubRow_(this.subRows[tSR], amount);
+      }
+
+      this.asyncSlices.shiftTimestampsForward(amount);
     },
 
     /**
      * Updates the minTimestamp and maxTimestamp fields based on the
-     * current slices and nonNestedSubRows attached to the thread.
+     * current objects associated with the thread.
      */
     updateBounds: function() {
       var values = [];
@@ -109,10 +180,10 @@ cr.define('tracing', function() {
         values.push(slices[0].start);
         values.push(slices[slices.length - 1].end);
       }
-      for (var i = 0; i < this.nonNestedSubRows.length; ++i) {
-        slices = this.nonNestedSubRows[i];
-        values.push(slices[0].start);
-        values.push(slices[slices.length - 1].end);
+      if (this.asyncSlices.slices.length) {
+        this.asyncSlices.updateBounds();
+        values.push(this.asyncSlices.minTimestamp);
+        values.push(this.asyncSlices.maxTimestamp);
       }
       if (values.length) {
         this.minTimestamp = Math.min.apply(Math, values);
@@ -134,7 +205,7 @@ cr.define('tracing', function() {
     /**
      * @return {String} User friendly details about this thread.
      */
-    get userFriendlyDetials() {
+    get userFriendlyDetails() {
       return 'pid: ' + this.parent.pid +
           ', tid: ' + this.tid +
           (this.name ? ', name: ' + this.name : '');
@@ -188,6 +259,15 @@ cr.define('tracing', function() {
 
     get numSamples() {
       return this.timestamps.length;
+    },
+
+    /**
+     * Shifts all the timestamps inside this counter forward by the amount
+     * specified.
+     */
+    shiftTimestampsForward: function(amount) {
+      for (var sI = 0; sI < this.timestamps.length; sI++)
+        this.timestamps[sI] = (this.timestamps[sI] + amount);
     },
 
     /**
@@ -260,6 +340,17 @@ cr.define('tracing', function() {
     },
 
     /**
+     * Shifts all the timestamps inside this process forward by the amount
+     * specified.
+     */
+    shiftTimestampsForward: function(amount) {
+      for (var tid in this.threads)
+        this.threads[tid].shiftTimestampsForward(amount);
+      for (var id in this.counters)
+        this.counters[id].shiftTimestampsForward(amount);
+    },
+
+    /**
      * @return {TimlineThread} The thread identified by tid on this process,
      * creating it if it doesn't exist.
      */
@@ -315,6 +406,17 @@ cr.define('tracing', function() {
     },
 
     /**
+     * Shifts all the timestamps inside this CPU forward by the amount
+     * specified.
+     */
+    shiftTimestampsForward: function(amount) {
+      for (var sI = 0; sI < this.slices.length; sI++)
+        this.slices[sI].start = (this.slices[sI].start + amount);
+      for (var id in this.counters)
+        this.counters[id].shiftTimestampsForward(amount);
+    },
+
+    /**
      * Updates the minTimestamp and maxTimestamp fields based on the
      * current slices attached to the cpu.
      */
@@ -335,6 +437,145 @@ cr.define('tracing', function() {
    */
   TimelineCpu.compare = function(x, y) {
     return x.cpuNumber - y.cpuNumber;
+  };
+
+  /**
+   * A group of AsyncSlices.
+   * @constructor
+   */
+  function TimelineAsyncSliceGroup(name) {
+    this.name = name;
+    this.slices = [];
+  }
+
+  TimelineAsyncSliceGroup.prototype = {
+    __proto__: Object.prototype,
+
+    /**
+     * Helper function that pushes the provided slice onto the slices array.
+     */
+    push: function(slice) {
+      this.slices.push(slice);
+    },
+
+    /**
+     * @return {Number} The number of slices in this group.
+     */
+    get length() {
+      return this.slices.length;
+    },
+
+    /**
+     * Built automatically by rebuildSubRows().
+     */
+    subRows_: undefined,
+
+    /**
+     * Updates the bounds for this group based on the slices it contains.
+     */
+    sortSlices_: function() {
+      this.slices.sort(function(x, y) {
+        return x.start - y.start;
+      });
+    },
+
+    /**
+     * Shifts all the timestamps inside this group forward by the amount
+     * specified.
+     */
+    shiftTimestampsForward: function(amount) {
+      for (var sI = 0; sI < this.slices.length; sI++)
+        this.slices[sI].start = (this.slices[sI].start + amount);
+    },
+
+    /**
+     * Updates the bounds for this group based on the slices it contains.
+     */
+    updateBounds: function() {
+      this.sortSlices_();
+      if (this.slices.length) {
+        this.minTimestamp = this.slices[0].start;
+        this.maxTimestamp = this.slices[this.slices.length - 1].end;
+      } else {
+        this.minTimestamp = undefined;
+        this.maxTimestamp = undefined;
+      }
+      this.subRows_ = undefined;
+    },
+
+    get subRows() {
+      if (!this.subRows_)
+        this.rebuildSubRows_();
+      return this.subRows_;
+    },
+
+    /**
+     * Breaks up the list of slices into N rows, each of which is a list of
+     * slices that are non overlapping.
+     *
+     * It uses a very simple approach: walk through the slices in sorted order
+     * by start time. For each slice, try to fit it in an existing subRow. If it
+     * doesn't fit in any subrow, make another subRow.
+     */
+    rebuildSubRows_: function() {
+      this.sortSlices_();
+      var subRows = [];
+      for (var i = 0; i < this.slices.length; i++) {
+        var slice = this.slices[i];
+
+        var found = false;
+        for (var j = 0; j < subRows.length; j++) {
+          var subRow = subRows[j];
+          var lastSliceInSubRow = subRow[subRow.length - 1];
+          if (slice.start >= lastSliceInSubRow.end) {
+            found = true;
+            subRow.push(slice);
+          }
+        }
+        if (!found) {
+          subRows.push([slice]);
+        }
+      }
+      this.subRows_ = subRows;
+    },
+
+    /**
+     * Breaks up this group into slices based on start thread.
+     *
+     * @return {Array} An array of TimelineAsyncSliceGroups where each group has
+     * slices that started on the same thread.
+     **/
+    computeSubGroups: function() {
+      var subGroupsByPTID = {};
+      for (var i = 0; i < this.slices.length; ++i) {
+        var slice = this.slices[i];
+        var slicePTID = slice.startThread.ptid;
+        if (!subGroupsByPTID[slicePTID])
+          subGroupsByPTID[slicePTID] = new TimelineAsyncSliceGroup(this.name);
+        subGroupsByPTID[slicePTID].slices.push(slice);
+      }
+      var groups = [];
+      for (var ptid in subGroupsByPTID) {
+        var group = subGroupsByPTID[ptid];
+        group.updateBounds();
+        groups.push(group);
+      }
+      return groups;
+    }
+
+  };
+
+  /**
+   * Comparison between counters that orders by pid, then name.
+   */
+  TimelineCounter.compare = function(x, y) {
+    if (x.parent.pid != y.parent.pid) {
+      return TimelineProcess.compare(x.parent, y.parent.pid);
+    }
+    var tmp = x.name.localeCompare(y.name);
+    if (tmp == 0)
+      return x.tid - y.tid;
+    return tmp;
   };
 
   // The color pallette is split in half, with the upper
@@ -487,6 +728,7 @@ cr.define('tracing', function() {
     this.cpus = {};
     this.processes = {};
     this.importErrors = [];
+    this.asyncSliceGroups = {};
 
     if (opt_eventData)
       this.importEvents(opt_eventData, opt_zeroAndBoost);
@@ -519,7 +761,9 @@ cr.define('tracing', function() {
   TimelineModelEmptyImporter.prototype = {
     __proto__: Object.prototype,
 
-    importEvents : function() {
+    importEvents: function() {
+    },
+    finalizeImport: function() {
     }
   };
 
@@ -579,7 +823,7 @@ cr.define('tracing', function() {
           for (var s = 0; s < thread.subRows.length; s++)
             hasNonEmptySubrow |= thread.subRows[s].length > 0;
 
-          if (hasNonEmptySubrow || thread.nonNestedSubRows.legnth)
+          if (hasNonEmptySubrow || thread.asyncSlices.length > 0)
             prunedThreads[tid] = thread;
         }
         process.threads = prunedThreads;
@@ -638,38 +882,10 @@ cr.define('tracing', function() {
       if (this.minTimestamp === undefined)
         return;
       var timeBase = this.minTimestamp;
-      var threads = this.getAllThreads();
-      for (var tI = 0; tI < threads.length; tI++) {
-        var thread = threads[tI];
-        var shiftSubRow = function(subRow) {
-          for (var tS = 0; tS < subRow.length; tS++) {
-            var slice = subRow[tS];
-            slice.start = (slice.start - timeBase);
-          }
-        };
-
-        if (thread.cpuSlices)
-          shiftSubRow(thread.cpuSlices);
-
-        for (var tSR = 0; tSR < thread.subRows.length; tSR++) {
-          shiftSubRow(thread.subRows[tSR]);
-        }
-        for (var tSR = 0; tSR < thread.nonNestedSubRows.length; tSR++) {
-          shiftSubRow(thread.nonNestedSubRows[tSR]);
-        }
-      }
-      var counters = this.getAllCounters();
-      for (var tI = 0; tI < counters.length; tI++) {
-        var counter = counters[tI];
-        for (var sI = 0; sI < counter.timestamps.length; sI++)
-          counter.timestamps[sI] = (counter.timestamps[sI] - timeBase);
-      }
-      var cpus = this.getAllCpus();
-      for (var tI = 0; tI < cpus.length; tI++) {
-        var cpu = cpus[tI];
-        for (var sI = 0; sI < cpu.slices.length; sI++)
-          cpu.slices[sI].start = (cpu.slices[sI].start - timeBase);
-      }
+      for (var pid in this.processes)
+        this.processes[pid].shiftTimestampsForward(-timeBase);
+      for (var cpuNumber in this.cpus)
+        this.cpus[cpuNumber].shiftTimestampsForward(-timeBase);
       this.updateBounds();
     },
 
@@ -732,6 +948,7 @@ cr.define('tracing', function() {
      * @param {Object} events Events to import.
      * @param {boolean} isChildImport True the eventData being imported is an
      *     additional trace after the primary eventData.
+     * @return {TimelineModelImporter} The importer used for the eventData.
      */
     importOneTrace_: function(eventData, isAdditionalImport) {
       var importerConstructor;
@@ -747,7 +964,7 @@ cr.define('tracing', function() {
       var importer = new importerConstructor(
           this, eventData, isAdditionalImport);
       importer.importEvents();
-      this.pruneEmptyThreads();
+      return importer;
     },
 
     /**
@@ -772,12 +989,20 @@ cr.define('tracing', function() {
       if (opt_zeroAndBoost === undefined)
         opt_zeroAndBoost = true;
 
-      this.importOneTrace_(eventData, false);
+      activeImporters = [];
+      var importer = this.importOneTrace_(eventData, false);
+      activeImporters.push(importer);
       if (opt_additionalEventData) {
         for (var i = 0; i < opt_additionalEventData.length; ++i) {
-          this.importOneTrace_(opt_additionalEventData[i], true);
+          importer = this.importOneTrace_(opt_additionalEventData[i], true);
+          activeImporters.push(importer);
         }
       }
+      for (var i = 0; i < activeImporters.length; ++i)
+        activeImporters[i].finalizeImport();
+
+      for (var i = 0; i < activeImporters.length; ++i)
+        this.pruneEmptyThreads();
 
       this.updateBounds();
 
@@ -802,10 +1027,13 @@ cr.define('tracing', function() {
     getStringColorId: getStringColorId,
 
     TimelineSlice: TimelineSlice,
+    TimelineThreadSlice: TimelineThreadSlice,
+    TimelineAsyncSlice: TimelineAsyncSlice,
     TimelineThread: TimelineThread,
     TimelineCounter: TimelineCounter,
     TimelineProcess: TimelineProcess,
     TimelineCpu: TimelineCpu,
+    TimelineAsyncSliceGroup: TimelineAsyncSliceGroup,
     TimelineModel: TimelineModel
   };
 
