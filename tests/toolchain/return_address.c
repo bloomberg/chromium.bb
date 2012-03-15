@@ -14,11 +14,9 @@
 int main(int argc, char* argv[]);
 
 void recurse(int n, int is_first) {
+  /* c.f.  http://gcc.gnu.org/onlinedocs/gcc/Return-Address.html */
   void* ra = (void*) __builtin_return_address (0);
-  void* era = (void*) __builtin_extract_return_addr(ra);
-  printf("ra: %p %p\n", ra, era);
-  ASSERT(ra == era,
-         "ERROR: until we know better we assert that ra == era\n");
+  printf("ra: %p\n", ra);
 
   if (is_first) {
     ASSERT((void*) main < ra,

@@ -1,19 +1,23 @@
 /*
- * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* NOTE: because of fun pointer casting we need to disable -padantic. */
-/* NOTE: because of aggressive inlining we need to disable -O2. */
+/* NOTE: because of fun pointer casting we need to disable -pedantic. */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unwind.h>
 #include "native_client/tests/toolchain/utils.h"
 
+
 int main(int argc, char* argv[]);
-void recurse(int n);
+/* prevent inlining */
+void recurse(int n)  __attribute__((noinline));
+void DumpContext(struct _Unwind_Context* context)  __attribute__((noinline));
+_Unwind_Reason_Code TraceCallback(struct _Unwind_Context* context, void* dummy)
+  __attribute__((noinline));
 
 void DumpContext(struct _Unwind_Context* context) {
   ASSERT(context != 0, "null context\n");
@@ -62,12 +66,20 @@ _Unwind_Reason_Code TraceCallback(struct _Unwind_Context* context,
 
 
 void recurse(int n) {
-  printf("recurse %d\n", n);
+  printf("recurse -> %d\n", n);
   if (n == 0) {
-    _Unwind_Backtrace(TraceCallback, 0);
+    if (_Unwind_Backtrace(TraceCallback, 0)) {
+      printf("backtrace failed\n");
+    }
     return;
   }
   recurse(n - 1);
+  /* NOTE: this print statement also prevents this function
+   * from tail recursing into itself.
+   * On gcc this behavior can also be controlled using
+   *   -foptimize-sibling-calls
+   */
+  printf("recurse <- %d\n", n);
 }
 
 

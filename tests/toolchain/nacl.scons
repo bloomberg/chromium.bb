@@ -166,9 +166,6 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_loop_break.cc',
               ]:
     is_broken = False
-    if src in ['unwind_trace.cc', 'stack_frame.cc']:
-      # the tracing gets messed up by optimizations
-      is_broken |= tag.startswith('opt')
 
     if not env.Bit('bitcode') and src in ['eh_return.c']:
       # for some reason gcc does not allow us to use
