@@ -46,6 +46,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
@@ -55,8 +56,8 @@ using content::BrowserThread;
 using content::UserMetricsAction;
 
 static const char* kMediaPlayerAppName = "mediaplayer";
-static const int kPopupLeft = 0;
-static const int kPopupTop = 0;
+static const int kPopupRight = 20;
+static const int kPopupBottom = 50;
 static const int kPopupWidth = 280;
 
 // Set the initial height to the minimum possible height. Keep the constants
@@ -91,12 +92,15 @@ MediaPlayer* MediaPlayer::GetInstance() {
   return Singleton<MediaPlayer>::get();
 }
 
-void MediaPlayer::SetWindowHeight(int height) {
+void MediaPlayer::SetWindowHeight(int content_height) {
   if (mediaplayer_browser_ != NULL) {
-    mediaplayer_browser_->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                                        kPopupTop,
-                                                        kPopupWidth,
-                                                        height + kTitleHeight));
+    int window_height = content_height + kTitleHeight;
+    gfx::Rect bounds = mediaplayer_browser_->window()->GetBounds();
+    mediaplayer_browser_->window()->SetBounds(gfx::Rect(
+        bounds.x(),
+        std::max(0, bounds.bottom() - window_height),
+        bounds.width(),
+        window_height));
   }
 }
 
@@ -157,16 +161,21 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                    static_cast<Browser*>(NULL)));
     return;
   }
-  if (mediaplayer_browser_)
-    return;  // Already opened.
+  if (mediaplayer_browser_) {  // Already opened.
+    mediaplayer_browser_->window()->Show();
+    return;
+  }
+
+  const gfx::Size screen = gfx::Screen::GetPrimaryMonitorSize();
+  const gfx::Rect bounds(screen.width() - kPopupRight - kPopupWidth,
+                         screen.height() - kPopupBottom - kPopupHeight,
+                         kPopupWidth,
+                         kPopupHeight);
 
   Profile* profile = BrowserList::GetLastActive()->profile();
   mediaplayer_browser_ = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                kMediaPlayerAppName,
-                                               gfx::Rect(kPopupLeft,
-                                                         kPopupTop,
-                                                         kPopupWidth,
-                                                         kPopupHeight),
+                                               bounds,
                                                profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSED,
