@@ -156,12 +156,12 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
         browser()->GetSelectedWebContents()->GetRenderViewHost(),
         L"", js_call.str()));
 
-    ASSERT_TRUE(message_queue.WaitForMessage(NULL));
+    std::string message;
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
     message_queue.ClearQueue();
     browser()->window()->SetBounds(new_bounds);
 
     // Wait for message from test page indicating the rendering is done.
-    std::string message;
     while (message.compare("\"resized\"")) {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
       message_queue.ClearQueue();

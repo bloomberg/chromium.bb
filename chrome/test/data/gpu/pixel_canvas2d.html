@@ -8,15 +8,20 @@
 }
 </style>
 <script>
-var g_swapsBeforeAck = 6;
+var g_swapsBeforeAck = 15;
 var g_targetHeight, g_targetWidth;
 
-function main()
+function onresized()
 {
   if (window.outerHeight != g_targetHeight ||
       window.outerWidth != g_targetWidth)
     return;
 
+  main();
+}
+
+function main()
+{
   draw();
   waitForFinish();
 }
@@ -52,7 +57,7 @@ function preCallResizeInChromium(targetWidth, targetHeight)
 {
   g_targetWidth = targetWidth;
   g_targetHeight = targetHeight;
-  window.onresize = main;
+  window.onresize = onresized;
   // Call main() on a timeout in case the window did not resize for whatever
   // reason.
   setTimeout(main, 10000);

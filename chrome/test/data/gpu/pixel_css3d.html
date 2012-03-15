@@ -27,12 +27,18 @@
 var g_swapsBeforeAck = 15;
 var g_targetWidth, g_targetHeight;
 
-function main()
+function onresized()
 {
   if (g_targetWidth != window.outerWidth ||
       g_targetHeight != window.outerHeight)
     return;
 
+  main();
+}
+
+
+function main()
+{
   waitForFinish();
 }
 
@@ -58,7 +64,7 @@ function preCallResizeInChromium(targetWidth, targetHeight)
 {
   g_targetWidth = targetWidth;
   g_targetHeight = targetHeight;
-  window.onresize = main;
+  window.onresize = onresized;
 
   // Call main() on a timeout in case the window did not resize for whatever
   // reason.
