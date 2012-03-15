@@ -84,6 +84,8 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::FunctionTemplate::New(PortAddRef);
     } else if (name->Equals(v8::String::New("PortRelease"))) {
       return v8::FunctionTemplate::New(PortRelease);
+    } else if (name->Equals(v8::String::New("BindToGC"))) {
+      return v8::FunctionTemplate::New(BindToGC);
     }
     return ChromeV8Extension::GetNativeFunction(name);
   }
@@ -146,6 +148,35 @@ class ExtensionImpl : public ChromeV8Extension {
             new ExtensionHostMsg_CloseChannel(port_id));
         ClearPortData(port_id);
       }
+    }
+    return v8::Undefined();
+  }
+
+  struct GCCallbackArgs {
+    v8::Persistent<v8::Object> object;
+    v8::Persistent<v8::Function> callback;
+  };
+
+  static void GCCallback(v8::Persistent<v8::Value> object, void* parameter) {
+    v8::HandleScope handle_scope;
+    GCCallbackArgs* args = reinterpret_cast<GCCallbackArgs*>(parameter);
+    args->callback->Call(args->callback->CreationContext()->Global(), 0, NULL);
+    args->callback.Dispose();
+    args->object.Dispose();
+    delete args;
+  }
+
+  // Binds a callback to be invoked when the given object is garbage collected.
+  static v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
+    if (args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction()) {
+      GCCallbackArgs* context = new GCCallbackArgs;
+      context->callback = v8::Persistent<v8::Function>::New(
+          v8::Handle<v8::Function>::Cast(args[1]));
+      context->object = v8::Persistent<v8::Object>::New(
+          v8::Handle<v8::Object>::Cast(args[0]));
+      context->object.MakeWeak(context, GCCallback);
+    } else {
+      NOTREACHED();
     }
     return v8::Undefined();
   }

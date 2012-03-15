@@ -15,6 +15,7 @@ var chrome = chrome || {};
   native function PostMessage(portId, msg);
   native function GetChromeHidden();
   native function Print();
+  native function BindToGC();
 
   var chromeHidden = GetChromeHidden();
   var manifestVersion;
@@ -123,7 +124,7 @@ var chrome = chrome || {};
       if (requestEvent.hasListeners()) {
         var port = chromeHidden.Port.createPort(portId, channelName);
         port.onMessage.addListener(function(request) {
-          requestEvent.dispatch(request, sender, function(response) {
+          var responseCallback = function(response) {
             if (port) {
               port.postMessage(response);
               port = null;
@@ -141,7 +142,18 @@ var chrome = chrome || {};
               chrome.extension.lastError = {"message": errorMsg};
               console.error("Could not send response: " + errorMsg);
             }
+          };
+          // In case the extension never invokes the responseCallback, and also
+          // doesn't keep a reference to it, we need to clean up the port. Do
+          // so by attaching to the garbage collection of the responseCallback
+          // using some native hackery.
+          BindToGC(responseCallback, function() {
+            if (port) {
+              port.disconnect();
+              port = null;
+            }
           });
+          requestEvent.dispatch(request, sender, responseCallback);
         });
       }
       return;

@@ -63,9 +63,7 @@ chrome.tabs.getSelected(null, function(tab) {
 On the receiving end, you need to set up an
 <a href="extension.html#event-onRequest">chrome.extension.onRequest</a>
 event listener to handle the message. This looks the same from a content
-script or extension page. The request will remain open until you call
-sendResponse, so it is good practice to call sendResponse with an empty
-object to allow the request to be cleaned up.
+script or extension page.
 <pre>
 chrome.extension.onRequest.addListener(
   function(request, sender, sendResponse) {
@@ -74,8 +72,6 @@ chrome.extension.onRequest.addListener(
                 "from the extension");
     if (request.greeting == "hello")
       sendResponse({farewell: "goodbye"});
-    else
-      sendResponse({}); // snub them.
   });
 </pre>
 
@@ -185,7 +181,7 @@ methods. Here's an example of each:
 chrome.extension.onRequestExternal.addListener(
   function(request, sender, sendResponse) {
     if (sender.id == blacklistedExtension)
-      sendResponse({});  // don't allow this extension access
+      return;  // don't allow this extension access
     else if (request.getTargetData)
       sendResponse({targetData: targetData});
     else if (request.activateLasers) {
