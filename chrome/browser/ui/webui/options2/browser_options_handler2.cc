@@ -299,6 +299,9 @@ void BrowserOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON },
     { "proxiesConfigureButton", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
 #endif
+#if defined(OS_CHROMEOS) && defined(USE_ASH)
+    { "setWallpaper", IDS_SET_WALLPAPER_BUTTON },
+#endif
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
     { "advancedSectionTitleBackground",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND },

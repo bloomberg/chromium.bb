@@ -175,24 +175,25 @@
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="aura/small_shadow_bottom.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="aura/small_shadow_bottom_right.png" type="BINDATA" />
         <include name="IDR_AURA_STATUS_MOCK" file="aura/statusbar.png" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_1" file="aura/wallpaper_1.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_1_THUMB" file="aura/wallpaper_1_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_2" file="aura/wallpaper_2.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_2_THUMB" file="aura/wallpaper_2_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_3" file="aura/wallpaper_3.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_3_THUMB" file="aura/wallpaper_3_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_4" file="aura/wallpaper_4.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_4_THUMB" file="aura/wallpaper_4_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_5" file="aura/wallpaper_5.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_5_THUMB" file="aura/wallpaper_5_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_6" file="aura/wallpaper_6.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_6_THUMB" file="aura/wallpaper_6_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_7" file="aura/wallpaper_7.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_7_THUMB" file="aura/wallpaper_7_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_8" file="aura/wallpaper_8.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_8_THUMB" file="aura/wallpaper_8_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_9" file="aura/wallpaper_9.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_9_THUMB" file="aura/wallpaper_9_thumb.jpg" type="BINDATA" />
+        <!-- TODO(bshe): Change the file names to follow the IDR naming rules. -->
+        <include name="IDR_AURA_WALLPAPER" file="aura/wallpaper_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_THUMB" file="aura/wallpaper_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_1" file="aura/wallpaper_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_1_THUMB" file="aura/wallpaper_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_2" file="aura/wallpaper_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_2_THUMB" file="aura/wallpaper_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_3" file="aura/wallpaper_4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_3_THUMB" file="aura/wallpaper_4_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_4" file="aura/wallpaper_5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_4_THUMB" file="aura/wallpaper_5_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_5" file="aura/wallpaper_6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_5_THUMB" file="aura/wallpaper_6_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_6" file="aura/wallpaper_7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_6_THUMB" file="aura/wallpaper_7_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_7" file="aura/wallpaper_8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_7_THUMB" file="aura/wallpaper_8_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_8" file="aura/wallpaper_9.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPER_8_THUMB" file="aura/wallpaper_9_thumb.jpg" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" type="BINDATA" />

@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#images-grid {
+.image-picker {
   -webkit-user-drag: none;
   -webkit-user-select: none;
   margin: 10px;
@@ -11,19 +11,19 @@
   width: 600px;
 }
 
-#images-grid * {
+.image-picker * {
   margin: 0;
   padding: 0;
 }
 
-#images-grid img {
+.image-picker img {
   background-color: white;
   height: 64px;
   vertical-align: middle;
   width: 64px;
 }
 
-#images-grid [role=listitem] {
+.image-picker [role=listitem] {
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   display: inline-block;
@@ -31,7 +31,7 @@
   padding: 3px;
 }
 
-#images-grid [selected] {
+.image-picker [selected] {
   border: 2px solid rgb(0, 102, 204);
   padding: 2px;
 }

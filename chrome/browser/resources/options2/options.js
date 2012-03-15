@@ -164,6 +164,15 @@ function load() {
                                   LanguageOptions.getInstance());
     }
   }
+
+<if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
+  if (SetWallpaperOptions) {
+    OptionsPage.registerOverlay(SetWallpaperOptions.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('set-wallpaper')]);
+  }
+</if>
+
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance(),
                                 CertificateManager.getInstance());

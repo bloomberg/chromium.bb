@@ -19,6 +19,7 @@
 #include "ui/gfx/insets.h"
 
 class CommandLine;
+class SkBitmap;
 
 namespace aura {
 class EventFilter;
@@ -40,6 +41,7 @@ class Widget;
 namespace ash {
 
 class AcceleratorController;
+class DesktopBackgroundController;
 class Launcher;
 class NestedDispatcherController;
 class PowerButtonController;
@@ -77,11 +79,6 @@ class WorkspaceController;
 // takes ownership of the Shell.
 class ASH_EXPORT Shell {
  public:
-  enum BackgroundMode {
-    BACKGROUND_IMAGE,
-    BACKGROUND_SOLID_COLOR
-  };
-
   enum Direction {
     FORWARD,
     BACKWARD
@@ -117,8 +114,8 @@ class ASH_EXPORT Shell {
   // Get the singleton RootWindow used by the Shell.
   static aura::RootWindow* GetRootWindow();
 
-  BackgroundMode desktop_background_mode() const {
-    return desktop_background_mode_;
+  internal::RootWindowLayoutManager* root_window_layout() const {
+    return root_window_layout_;
   }
 
   aura::Window* GetContainer(int container_id);
@@ -134,9 +131,6 @@ class ASH_EXPORT Shell {
 
   // Toggles app list.
   void ToggleAppList();
-
-  // Sets the desktop background mode.
-  void SetDesktopBackgroundMode(BackgroundMode mode);
 
   // Returns true if the screen is locked.
   bool IsScreenLocked() const;
@@ -175,6 +169,9 @@ class ASH_EXPORT Shell {
   }
   internal::PartialScreenshotEventFilter* partial_screenshot_filter() {
     return partial_screenshot_filter_.get();
+  }
+  DesktopBackgroundController* desktop_background_controller() {
+    return desktop_background_controller_.get();
   }
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
@@ -263,6 +260,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
   scoped_ptr<internal::VisibilityController> visibility_controller_;
+  scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
@@ -286,9 +284,6 @@ class ASH_EXPORT Shell {
   internal::ShelfLayoutManager* shelf_;
 
   ObserverList<ShellObserver> observers_;
-
-  // Can change at runtime.
-  BackgroundMode desktop_background_mode_;
 
   // Owned by aura::RootWindow, cached here for type safety.
   internal::RootWindowLayoutManager* root_window_layout_;
