@@ -130,6 +130,10 @@ cr.define('ntp', function() {
       if (e.target.classList.contains('close-button')) {
         this.blacklist_();
         e.preventDefault();
+      } else {
+        // Records the index of this tile.
+        chrome.send('metricsHandler:recordInHistogram',
+                    ['NewTabPage.SuggestedSite', this.index, 8]);
       }
     },
 
