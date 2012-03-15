@@ -22,10 +22,6 @@ struct AutocompleteMatch;
 class AutocompleteResultView;
 class Profile;
 
-namespace gfx {
-class CanvasSkia;
-}
-
 namespace views {
 class BubbleBorder;
 }

@@ -1190,7 +1190,7 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
                                              CPaintDC* dc) {
   if (!background_.empty()) {
     gfx::Rect dirty_area(dirty_rect);
-    gfx::CanvasSkia canvas(dirty_area.size(), true);
+    gfx::Canvas canvas(dirty_area.size(), true);
     canvas.Translate(gfx::Point().Subtract(dirty_area.origin()));
 
     gfx::Rect dc_rect(dc->m_ps.rcPaint);

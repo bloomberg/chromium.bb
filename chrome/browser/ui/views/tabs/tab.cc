@@ -385,7 +385,7 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   SkBitmap background_image = background_canvas.ExtractBitmap();
 
   // Draw a radial gradient to hover_canvas.
-  gfx::CanvasSkia hover_canvas(size(), false);
+  gfx::Canvas hover_canvas(size(), false);
   int radius = kMiniTitleChangeGradientRadius;
   int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
   int x1 = radius;
@@ -453,10 +453,10 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
       0 : background_offset_.y();
 
-  // We need a CanvasSkia object to be able to extract the bitmap from.
+  // We need a gfx::Canvas object to be able to extract the bitmap from.
   // We draw everything to this canvas and then output it to the canvas
   // parameter in addition to using it to mask the hover glow if needed.
-  gfx::CanvasSkia background_canvas(size(), false);
+  gfx::Canvas background_canvas(size(), false);
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.

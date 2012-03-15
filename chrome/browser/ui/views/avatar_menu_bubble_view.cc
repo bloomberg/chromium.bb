@@ -317,7 +317,7 @@ SkBitmap ProfileItemView::GetBadgedIcon(const SkBitmap& icon) {
   const float kBadgeOverlapRatioY = 1.0f / 3.0f;
   int height = icon_rect.height() + badge.height() * kBadgeOverlapRatioY;
 
-  gfx::CanvasSkia canvas(gfx::Size(width, height), false);
+  gfx::Canvas canvas(gfx::Size(width, height), false);
   canvas.DrawBitmapInt(icon, 0, 0, icon.width(), icon.height(), 0, 0,
                        icon_rect.width(), icon_rect.height(), true);
   canvas.DrawBitmapInt(badge, width - badge.width(), height - badge.height());

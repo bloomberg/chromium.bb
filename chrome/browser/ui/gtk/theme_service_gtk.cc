@@ -1000,8 +1000,7 @@ SkBitmap* ThemeServiceGtk::GenerateFrameImage(
   DCHECK(it != colors_.end());
   SkColor base = it->second;
 
-  gfx::CanvasSkia canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight),
-                         true);
+  gfx::Canvas canvas(gfx::Size(kToolbarImageWidth, kToolbarImageHeight), true);
 
   int gradient_size;
   const GdkColor* gradient_top_color = NULL;

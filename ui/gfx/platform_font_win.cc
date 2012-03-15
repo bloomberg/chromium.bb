@@ -103,8 +103,8 @@ int PlatformFontWin::GetAverageCharacterWidth() const {
 }
 
 int PlatformFontWin::GetStringWidth(const string16& text) const {
-  return CanvasSkia::GetStringWidth(text,
-                                    Font(const_cast<PlatformFontWin*>(this)));
+  return Canvas::GetStringWidth(text,
+                                Font(const_cast<PlatformFontWin*>(this)));
 }
 
 int PlatformFontWin::GetExpectedTextWidth(int length) const {

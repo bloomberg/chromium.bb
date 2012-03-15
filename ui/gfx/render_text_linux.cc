@@ -242,7 +242,7 @@ void RenderTextLinux::ResetLayout() {
 
 void RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
-    CanvasSkia canvas(display_rect().size(), false);
+    Canvas canvas(display_rect().size(), false);
     skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
     cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
 
@@ -253,7 +253,7 @@ void RenderTextLinux::EnsureLayout() {
         font_list().GetFontDescriptionString(),
         display_rect().width(),
         base::i18n::GetFirstStrongCharacterDirection(text()),
-        CanvasSkia::DefaultCanvasTextAlignment());
+        Canvas::DefaultCanvasTextAlignment());
 
     // No width set so that the x-axis position is relative to the start of the
     // text. ToViewPoint and ToTextPoint take care of the position conversion

@@ -161,9 +161,9 @@ const SkBitmap& GetEmptyVpnBadge() {
 }
 
 const SkBitmap GetVpnResource(int resource_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const SkBitmap* ethernet_icon = rb.GetBitmapNamed(resource_id);
-  gfx::CanvasSkia canvas(
+  gfx::Canvas canvas(
       gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
   canvas.DrawBitmapInt(*ethernet_icon, 0, 0);
   const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
@@ -758,7 +758,7 @@ const SkBitmap NetworkMenuIcon::GenerateBitmapFromComponents(
     const SkBitmap* bottom_left_badge,
     const SkBitmap* bottom_right_badge) {
   DCHECK(!icon.empty());
-  gfx::CanvasSkia canvas(icon, false);
+  gfx::Canvas canvas(icon, false);
 
   if (top_left_badge) {
     canvas.DrawBitmapInt(*top_left_badge, kBadgeLeftX, kBadgeTopY);

@@ -69,8 +69,8 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
     return;
 
   // Draw a radial gradient to hover_canvas.
-  gfx::CanvasSkia hover_canvas(
-      gfx::Size(mask_image.width(), mask_image.height()), false);
+  gfx::Canvas hover_canvas(gfx::Size(mask_image.width(), mask_image.height()),
+                           false);
 
   // Draw a radial gradient to hover_canvas.
   int radius = view_->width() / 3;

@@ -410,7 +410,7 @@ void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
   if (!multi_line_)
     flags |= gfx::Canvas::NO_ELLIPSIS;
 
-  gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
+  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, flags);
 
   // Add 2 extra pixels to width and height when text halo is used.
   if (has_text_halo_) {
@@ -509,7 +509,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     SkColor text_color = (show_multiple_icon_states_ &&
         (state() == BS_HOT || state() == BS_PUSHED)) ? color_hover_ : color_;
 
-    int draw_string_flags = gfx::CanvasSkia::DefaultCanvasTextAlignment() |
+    int draw_string_flags = gfx::Canvas::DefaultCanvasTextAlignment() |
         ComputeCanvasStringFlags();
 
     if (mode == PB_FOR_DRAG) {

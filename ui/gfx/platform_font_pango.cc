@@ -235,8 +235,8 @@ int PlatformFontPango::GetAverageCharacterWidth() const {
 }
 
 int PlatformFontPango::GetStringWidth(const string16& text) const {
-  return CanvasSkia::GetStringWidth(text,
-                                    Font(const_cast<PlatformFontPango*>(this)));
+  return Canvas::GetStringWidth(text,
+                                Font(const_cast<PlatformFontPango*>(this)));
 }
 
 int PlatformFontPango::GetExpectedTextWidth(int length) const {

@@ -36,9 +36,8 @@ bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
 #if defined(TOOLKIT_USES_GTK)
 const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
-  gfx::CanvasSkia canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
-                                   gdk_pixbuf_get_height(pixbuf)),
-                         /*is_opaque=*/false);
+  gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
+                               gdk_pixbuf_get_height(pixbuf)), false);
   skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);

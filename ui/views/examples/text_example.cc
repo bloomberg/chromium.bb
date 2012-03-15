@@ -96,7 +96,7 @@ class TextExample::TextExampleView : public View {
       text_flags_(0),
       halo_(false),
       fade_(false),
-      fade_mode_(gfx::CanvasSkia::TruncateFadeTail) {
+      fade_mode_(gfx::Canvas::TruncateFadeTail) {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -132,8 +132,8 @@ class TextExample::TextExampleView : public View {
   bool fade() const { return fade_; }
   void set_fade(bool fade) { fade_ = fade; }
 
-  gfx::CanvasSkia::TruncateFadeMode fade_mode() const { return fade_mode_; }
-  void set_fade_mode(gfx::CanvasSkia::TruncateFadeMode fade_mode) {
+  gfx::Canvas::TruncateFadeMode fade_mode() const { return fade_mode_; }
+  void set_fade_mode(gfx::Canvas::TruncateFadeMode fade_mode) {
     fade_mode_ = fade_mode;
   }
 
@@ -163,7 +163,7 @@ class TextExample::TextExampleView : public View {
   bool fade_;
 
   // If |fade_| is |true|, fade mode parameter to |DrawFadeTruncatingString()|.
-  gfx::CanvasSkia::TruncateFadeMode fade_mode_;
+  gfx::Canvas::TruncateFadeMode fade_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(TextExampleView);
 };
@@ -338,15 +338,15 @@ void TextExample::ItemChanged(Combobox* combo_box,
         break;
 #if defined(OS_WIN)
       case 2:
-        text_view_->set_fade_mode(gfx::CanvasSkia::TruncateFadeTail);
+        text_view_->set_fade_mode(gfx::Canvas::TruncateFadeTail);
         text_view_->set_fade(true);
         break;
       case 3:
-        text_view_->set_fade_mode(gfx::CanvasSkia::TruncateFadeHead);
+        text_view_->set_fade_mode(gfx::Canvas::TruncateFadeHead);
         text_view_->set_fade(true);
         break;
       case 4:
-        text_view_->set_fade_mode(gfx::CanvasSkia::TruncateFadeHeadAndTail);
+        text_view_->set_fade_mode(gfx::Canvas::TruncateFadeHeadAndTail);
         text_view_->set_fade(true);
         break;
 #endif

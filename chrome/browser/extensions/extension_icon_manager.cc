@@ -25,10 +25,9 @@ namespace {
 // around the original bitmap.
 static SkBitmap ApplyPadding(const SkBitmap& source,
                              const gfx::Insets& padding) {
-  scoped_ptr<gfx::CanvasSkia> result(
-      new gfx::CanvasSkia(gfx::Size(source.width() + padding.width(),
-                                    source.height() + padding.height()),
-                          false));
+  scoped_ptr<gfx::Canvas> result(
+      new gfx::Canvas(gfx::Size(source.width() + padding.width(),
+                                source.height() + padding.height()), false));
   result->DrawBitmapInt(
       source,
       0, 0, source.width(), source.height(),

@@ -694,7 +694,7 @@ HIMAGELIST TreeView::CreateImageList() {
       // IDR_FOLDER_CLOSED if they aren't already.
       if (model_images[i].width() != width ||
           model_images[i].height() != height) {
-        gfx::CanvasSkia canvas(gfx::Size(width, height), false);
+        gfx::Canvas canvas(gfx::Size(width, height), false);
 
         // Draw our icons into this canvas.
         int height_offset = (height - model_images[i].height()) / 2;
@@ -749,7 +749,7 @@ LRESULT CALLBACK TreeView::TreeWndProc(HWND window,
 
       HDC dc = skia::BeginPlatformPaint(canvas.sk_canvas());
       if (base::i18n::IsRTL()) {
-        // gfx::CanvasSkia ends up configuring the DC with a mode of
+        // gfx::Canvas ends up configuring the DC with a mode of
         // GM_ADVANCED. For some reason a graphics mode of ADVANCED triggers
         // all the text to be mirrored when RTL. Set the mode back to COMPATIBLE
         // and explicitly set the layout. Additionally SetWorldTransform and

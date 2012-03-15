@@ -84,8 +84,8 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
     badge_width--;
 
   // Render the badge bitmap and overlay into a canvas.
-  scoped_ptr<gfx::CanvasSkia> canvas(
-      new gfx::CanvasSkia(gfx::Size(badge_width, icon.height()), false));
+  scoped_ptr<gfx::Canvas> canvas(
+      new gfx::Canvas(gfx::Size(badge_width, icon.height()), false));
   canvas->DrawBitmapInt(icon, 0, 0);
 
   // Draw the text overlay centered horizontally and vertically. Skia expects

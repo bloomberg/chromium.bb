@@ -230,7 +230,7 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
   SkBitmap* mask = GetThemeProvider()->GetBitmapNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
-  gfx::CanvasSkia canvas(gfx::Size(width, height), false);
+  gfx::Canvas canvas(gfx::Size(width, height), false);
 
   // For custom images the background starts at the top of the tab strip.
   // Otherwise the background starts at the top of the frame.
@@ -261,7 +261,7 @@ SkBitmap NewTabButton::GetBitmapForState(
       IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
   SkBitmap* overlay = GetThemeProvider()->GetBitmapNamed(overlay_id);
 
-  gfx::CanvasSkia canvas(gfx::Size(overlay->width(), overlay->height()), false);
+  gfx::Canvas canvas(gfx::Size(overlay->width(), overlay->height()), false);
   canvas.DrawBitmapInt(GetBackgroundBitmap(state), 0, 0);
 
   // Draw the button border with a slight alpha.

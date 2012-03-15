@@ -100,8 +100,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
     const int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
-    scoped_ptr<gfx::CanvasSkia> canvas(
-        new gfx::CanvasSkia(
+    scoped_ptr<gfx::Canvas> canvas(
+        new gfx::Canvas(
             gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),
                       image_size), false));
     canvas->DrawBitmapInt(*icon,

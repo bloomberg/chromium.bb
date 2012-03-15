@@ -31,8 +31,7 @@ const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 
 SkBitmap* CreateRadioButtonImage(bool selected) {
   // + 2 (1px on each side) to cover rounding error.
-  gfx::CanvasSkia canvas(gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2),
-                         false);
+  gfx::Canvas canvas(gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2), false);
   canvas.Translate(gfx::Point(1, 1));
 
   SkPoint gradient_points[3];
@@ -87,7 +86,7 @@ SkBitmap* GetRtlSubmenuArrowImage() {
   if (!kRtlArrow) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const SkBitmap* r = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap();
-    gfx::CanvasSkia canvas(gfx::Size(r->width(), r->height()), false);
+    gfx::Canvas canvas(gfx::Size(r->width(), r->height()), false);
     canvas.Scale(-1, 1);
     canvas.DrawBitmapInt(*r, - r->width(), 0);
     kRtlArrow = new SkBitmap(canvas.ExtractBitmap());

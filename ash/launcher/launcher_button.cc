@@ -101,7 +101,7 @@ void LauncherButton::SetImage(const SkBitmap& image) {
     icon_view_->SetImage(&image);
     return;
   }
-  gfx::CanvasSkia canvas(gfx::Size(width, height), false);
+  gfx::Canvas canvas(gfx::Size(width, height), false);
   canvas.DrawBitmapInt(image, 0, 0, image.width(), image.height(),
                        0, 0, width, height, false);
   SkBitmap resized_image(canvas.ExtractBitmap());

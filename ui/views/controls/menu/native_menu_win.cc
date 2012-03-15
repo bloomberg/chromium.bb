@@ -248,7 +248,7 @@ class NativeMenuWin::MenuHostWindow {
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
         // We currently don't support items with both icons and checkboxes.
         DCHECK(type != ui::MenuModel::TYPE_CHECK);
-        gfx::CanvasSkia canvas(icon, false);
+        gfx::Canvas canvas(icon, false);
         skia::DrawToNativeContext(
             canvas.sk_canvas(), dc,
             draw_item_struct->rcItem.left + kItemLeftMargin,
@@ -271,8 +271,8 @@ class NativeMenuWin::MenuHostWindow {
         int icon_y = kItemTopMargin +
             (height - kItemTopMargin - kItemBottomMargin -
              config.check_height) / 2;
-        gfx::CanvasSkia canvas(gfx::Size(config.check_width,
-                                         config.check_height), false);
+        gfx::Canvas canvas(gfx::Size(config.check_width, config.check_height),
+                           false);
         NativeTheme::ExtraParams extra;
         extra.menu_check.is_radio = false;
         gfx::Rect bounds(0, 0, config.check_width, config.check_height);

@@ -15,7 +15,6 @@ class OmniboxView;
 
 namespace gfx {
 class Canvas;
-class CanvasSkia;
 }
 
 namespace views {

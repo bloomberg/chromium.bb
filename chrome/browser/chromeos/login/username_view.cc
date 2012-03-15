@@ -59,18 +59,16 @@ gfx::NativeCursor UsernameView::GetCursor(const views::MouseEvent& event) {
 
 void UsernameView::PaintUsername(const gfx::Rect& bounds) {
   margin_width_ = bounds.height() * kMarginRatio;
-  gfx::CanvasSkia canvas(bounds.size(), false);
+  gfx::Canvas canvas(bounds.size(), false);
   // Draw transparent background.
   canvas.sk_canvas()->drawColor(0);
 
   // Calculate needed space.
-  int flags = gfx::Canvas::TEXT_ALIGN_LEFT |
-      gfx::Canvas::TEXT_VALIGN_MIDDLE |
-      gfx::Canvas::NO_ELLIPSIS;
+  int flags = gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE |
+              gfx::Canvas::NO_ELLIPSIS;
   int text_height, text_width;
-  gfx::CanvasSkia::SizeStringInt(GetText(), font(),
-                                 &text_width, &text_height,
-                                 flags);
+  gfx::Canvas::SizeStringInt(GetText(), font(), &text_width, &text_height,
+                             flags);
   text_width += margin_width_;
 
   // Also leave the right margin.
