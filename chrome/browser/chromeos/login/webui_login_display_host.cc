@@ -189,6 +189,8 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 #endif
     login_view_->OnWindowCreated();
   }
+  // crosbug.com/26646.
+  LOG(WARNING) << "LoadURL:" << url;
   login_view_->LoadURL(url);
 }
 

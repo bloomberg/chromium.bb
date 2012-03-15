@@ -277,6 +277,12 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(GetRoutingID(), params);
 
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "Navigation url=" << params.url
+             << ", suspended=" << navigations_suspended_;
+#endif
+
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
   if (navigations_suspended_) {
