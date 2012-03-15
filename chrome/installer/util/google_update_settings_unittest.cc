@@ -23,10 +23,6 @@ using installer::ChannelInfo;
 
 namespace {
 
-const wchar_t kHKCUReplacement[] =
-    L"Software\\Google\\InstallUtilUnittest\\HKCU";
-const wchar_t kHKLMReplacement[] =
-    L"Software\\Google\\InstallUtilUnittest\\HKLM";
 const wchar_t kGoogleUpdatePoliciesKey[] =
     L"SOFTWARE\\Policies\\Google\\Update";
 const wchar_t kGoogleUpdateUpdateDefault[] = L"UpdateDefault";
@@ -45,38 +41,9 @@ const wchar_t kTestProductGuid[] = L"{89F1B351-B15D-48D4-8F10-1298721CF13D}";
 // and user settings.
 class GoogleUpdateSettingsTest: public testing::Test {
  protected:
-  virtual void SetUp() {
-    // Wipe the keys we redirect to.
-    // This gives us a stable run, even in the presence of previous
-    // crashes or failures.
-    LSTATUS err = SHDeleteKey(HKEY_CURRENT_USER, kHKCUReplacement);
-    EXPECT_TRUE(err == ERROR_SUCCESS || err == ERROR_FILE_NOT_FOUND);
-    err = SHDeleteKey(HKEY_CURRENT_USER, kHKLMReplacement);
-    EXPECT_TRUE(err == ERROR_SUCCESS || err == ERROR_FILE_NOT_FOUND);
-
-    // Create the keys we're redirecting HKCU and HKLM to.
-    ASSERT_EQ(ERROR_SUCCESS,
-        hkcu_.Create(HKEY_CURRENT_USER, kHKCUReplacement, KEY_READ));
-    ASSERT_EQ(ERROR_SUCCESS,
-        hklm_.Create(HKEY_CURRENT_USER, kHKLMReplacement, KEY_READ));
-
-    // And do the switcharoo.
-    ASSERT_EQ(ERROR_SUCCESS,
-              ::RegOverridePredefKey(HKEY_CURRENT_USER, hkcu_.Handle()));
-    ASSERT_EQ(ERROR_SUCCESS,
-              ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, hklm_.Handle()));
-  }
-
-  virtual void TearDown() {
-    // Undo the redirection.
-    EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_CURRENT_USER, NULL));
-    EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(HKEY_LOCAL_MACHINE, NULL));
-
-    // Close our handles and delete the temp keys we redirected to.
-    hkcu_.Close();
-    hklm_.Close();
-    EXPECT_EQ(ERROR_SUCCESS, SHDeleteKey(HKEY_CURRENT_USER, kHKCUReplacement));
-    EXPECT_EQ(ERROR_SUCCESS, SHDeleteKey(HKEY_CURRENT_USER, kHKLMReplacement));
+  virtual void SetUp() OVERRIDE {
+    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE, L"HKLM_pit");
+    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER, L"HKCU_pit");
   }
 
   enum SystemUserInstall {
@@ -181,8 +148,7 @@ class GoogleUpdateSettingsTest: public testing::Test {
     return ap_key_value;
   }
 
-  RegKey hkcu_;
-  RegKey hklm_;
+  registry_util::RegistryOverrideManager registry_overrides_;
 };
 
 }  // namespace
@@ -589,6 +555,65 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
 }
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+// Test GoogleUpdateSettings::GetUninstallCommandLine at system- or user-level,
+// according to the param.
+class GetUninstallCommandLine : public GoogleUpdateSettingsTest,
+                                public testing::WithParamInterface<bool> {
+ protected:
+  static const wchar_t kDummyCommand[];
+
+  virtual void SetUp() OVERRIDE {
+    GoogleUpdateSettingsTest::SetUp();
+    system_install_ = GetParam();
+    root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  }
+
+  HKEY root_key_;
+  bool system_install_;
+};
+
+const wchar_t GetUninstallCommandLine::kDummyCommand[] =
+    L"\"goopdate.exe\" /spam";
+
+// Tests that GetUninstallCommandLine returns an empty string if there's no
+// Software\Google\Update key.
+TEST_P(GetUninstallCommandLine, TestNoKey) {
+  EXPECT_EQ(string16(),
+            GoogleUpdateSettings::GetUninstallCommandLine(system_install_));
+}
+
+// Tests that GetUninstallCommandLine returns an empty string if there's no
+// UninstallCmdLine value in the Software\Google\Update key.
+TEST_P(GetUninstallCommandLine, TestNoValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE);
+  EXPECT_EQ(string16(),
+            GoogleUpdateSettings::GetUninstallCommandLine(system_install_));
+}
+
+// Tests that GetUninstallCommandLine returns an empty string if there's an
+// empty UninstallCmdLine value in the Software\Google\Update key.
+TEST_P(GetUninstallCommandLine, TestEmptyValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE)
+    .WriteValue(google_update::kRegUninstallCmdLine, L"");
+  EXPECT_EQ(string16(),
+            GoogleUpdateSettings::GetUninstallCommandLine(system_install_));
+}
+
+// Tests that GetUninstallCommandLine returns the correct string if there's an
+// UninstallCmdLine value in the Software\Google\Update key.
+TEST_P(GetUninstallCommandLine, TestRealValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE)
+      .WriteValue(google_update::kRegUninstallCmdLine, kDummyCommand);
+  EXPECT_EQ(string16(kDummyCommand),
+            GoogleUpdateSettings::GetUninstallCommandLine(system_install_));
+  // Make sure that there's no value in the other level (user or system).
+  EXPECT_EQ(string16(),
+            GoogleUpdateSettings::GetUninstallCommandLine(!system_install_));
+}
+
+INSTANTIATE_TEST_CASE_P(GetUninstallCommandLineAtLevel, GetUninstallCommandLine,
+                        testing::Bool());
 
 // Test values for use by the CollectStatsConsent test fixture.
 class StatsState {

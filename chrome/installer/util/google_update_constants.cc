@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@ const wchar_t kRegPathClients[] = L"Software\\Google\\Update\\Clients";
 const wchar_t kRegPathClientState[] = L"Software\\Google\\Update\\ClientState";
 const wchar_t kRegPathClientStateMedium[]
     = L"Software\\Google\\Update\\ClientStateMedium";
+const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
 
 const wchar_t kRegCommandsKey[] = L"Commands";
 
@@ -41,6 +42,7 @@ const wchar_t kRegRLZReactivationBrandField[] = L"reactivationbrand";
 const wchar_t kRegReferralField[] = L"referral";
 const wchar_t kRegRenameCmdField[] = L"cmd";
 const wchar_t kRegSendsPingsField[] = L"SendsPings";
+const wchar_t kRegUninstallCmdLine[] = L"UninstallCmdLine";
 const wchar_t kRegUsageStatsField[] = L"usagestats";
 const wchar_t kRegVersionField[] = L"pv";
 const wchar_t kRegWebAccessibleField[] = L"WebAccessible";

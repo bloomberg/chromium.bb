@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,13 @@ extern const wchar_t kChromeUpgradeCode[];
 extern const wchar_t kRegPathClients[];
 
 // The difference between ClientState and ClientStateMedium is that the former
-// lives on HKCU or HKLM and the later always lives in HKLM. The only use of
-// the ClientStateMedium is for the EULA consent. See bug 1594565.
+// lives on HKCU or HKLM and the later always lives in HKLM. ClientStateMedium
+// is primarily used for consent of the EULA and stats collection. See bug
+// 1594565.
 extern const wchar_t kRegPathClientState[];
 extern const wchar_t kRegPathClientStateMedium[];
+
+extern const wchar_t kRegPathGoogleUpdate[];
 
 // The name of the "Commands" key that lives in an app's Clients key
 // (a.k.a. "Version" key).
@@ -50,6 +53,7 @@ extern const wchar_t kRegRLZReactivationBrandField[];
 extern const wchar_t kRegReferralField[];
 extern const wchar_t kRegRenameCmdField[];
 extern const wchar_t kRegSendsPingsField[];
+extern const wchar_t kRegUninstallCmdLine[];
 extern const wchar_t kRegUsageStatsField[];
 extern const wchar_t kRegVersionField[];
 extern const wchar_t kRegWebAccessibleField[];

@@ -531,3 +531,16 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
 
   return update_policy;
 }
+
+string16 GoogleUpdateSettings::GetUninstallCommandLine(bool system_install) {
+  const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  string16 cmd_line;
+  RegKey update_key;
+
+  if (update_key.Open(root_key, google_update::kRegPathGoogleUpdate,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    update_key.ReadValue(google_update::kRegUninstallCmdLine, &cmd_line);
+  }
+
+  return cmd_line;
+}

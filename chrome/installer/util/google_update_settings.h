@@ -196,6 +196,10 @@ class GoogleUpdateSettings {
   static UpdatePolicy GetAppUpdatePolicy(const std::wstring& app_guid,
                                          bool* is_overridden);
 
+  // Returns Google Update's uninstall command line, or an empty string if none
+  // is found.
+  static string16 GetUninstallCommandLine(bool system_install);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };
