@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 
-class Browser;
+class ToolbarModelDelegate;
 
 namespace content {
 class NavigationController;
@@ -39,7 +39,7 @@ class ToolbarModel {
     NUM_SECURITY_LEVELS,
   };
 
-  explicit ToolbarModel(Browser* browser);
+  explicit ToolbarModel(ToolbarModelDelegate* delegate);
   ~ToolbarModel();
 
   // Returns the text that should be displayed in the location bar.
@@ -75,7 +75,7 @@ class ToolbarModel {
   // If this returns NULL, default values are used.
   content::NavigationController* GetNavigationController() const;
 
-  Browser* browser_;
+  ToolbarModelDelegate* delegate_;
 
   // Whether the text in the location bar is currently being edited.
   bool input_in_progress_;

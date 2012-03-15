@@ -32,6 +32,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -1377,7 +1378,9 @@ gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
   content_setting_bubble_ = new ContentSettingBubbleGtk(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          parent_->browser(), tab_contents, profile,
+          parent_->browser()->content_setting_bubble_model_delegate(),
+          tab_contents,
+          profile,
           content_setting_image_model_->get_content_settings_type()),
       profile, tab_contents->web_contents());
   return TRUE;

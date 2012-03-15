@@ -435,7 +435,7 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
                                bool popup_window_mode,
                                views::View* location_bar)
     : model_(new AutocompleteEditModel(this, controller,
-                                       parent_view->browser()->profile())),
+                                       parent_view->profile())),
       popup_view_(new AutocompletePopupContentsView(parent_view->font(), this,
                                                     model_.get(),
                                                     location_bar)),

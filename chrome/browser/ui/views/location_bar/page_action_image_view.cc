@@ -27,16 +27,17 @@
 using content::WebContents;
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
-                                         ExtensionAction* page_action)
+                                         ExtensionAction* page_action,
+                                         Browser* browser)
     : owner_(owner),
       page_action_(page_action),
+      browser_(browser),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL) {
-  const Extension* extension = owner_->browser()->profile()->
-      GetExtensionService()->GetExtensionById(page_action->extension_id(),
-                                              false);
+  const Extension* extension = owner_->profile()->GetExtensionService()->
+      GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
   // Load all the icons declared in the manifest. This is the contents of the
@@ -55,7 +56,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(
-                     owner_->browser()->profile()->GetOriginalProfile()));
+                     owner_->profile()->GetOriginalProfile()));
 
   set_accessibility_focusable(true);
 
@@ -105,13 +106,13 @@ void PageActionImageView::ExecuteAction(int button,
 
     popup_ = ExtensionPopup::ShowPopup(
         page_action_->GetPopupUrl(current_tab_id_),
-        owner_->browser(),
+        browser_,
         this,
         arrow_location,
         inspect_with_devtools);
     popup_->GetWidget()->AddObserver(this);
   } else {
-    Profile* profile = owner_->browser()->profile();
+    Profile* profile = owner_->profile();
     ExtensionService* service = profile->GetExtensionService();
     service->browser_event_router()->PageActionExecuted(
         profile, page_action_->extension_id(), page_action_->id(),
@@ -159,14 +160,13 @@ bool PageActionImageView::OnKeyPressed(const views::KeyEvent& event) {
 
 void PageActionImageView::ShowContextMenu(const gfx::Point& p,
                                           bool is_mouse_gesture) {
-  const Extension* extension = owner_->browser()->profile()->
-      GetExtensionService()->GetExtensionById(page_action()->extension_id(),
-                                              false);
+  const Extension* extension = owner_->profile()->GetExtensionService()->
+      GetExtensionById(page_action()->extension_id(), false);
   if (!extension->ShowConfigureContextMenus())
     return;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
-      new ExtensionContextMenuModel(extension, owner_->browser(), this));
+      new ExtensionContextMenuModel(extension, browser_, this));
   views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   gfx::Point screen_loc;

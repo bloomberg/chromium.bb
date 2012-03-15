@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/timer.h"
 #include "ui/views/controls/button/image_button.h"
 
-class Browser;
+class CommandUpdater;
 class LocationBarView;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ class ReloadButton : public views::ToggleImageButton,
   // The button's class name.
   static const char kViewClassName[];
 
-  ReloadButton(LocationBarView* location_bar, Browser* Browser);
+  ReloadButton(LocationBarView* location_bar, CommandUpdater* command_updater);
   virtual ~ReloadButton();
 
   // Ask for a specified button state.  If |force| is true this will be applied
@@ -61,7 +61,7 @@ class ReloadButton : public views::ToggleImageButton,
 
   // These may be NULL when testing.
   LocationBarView* location_bar_;
-  Browser* browser_;
+  CommandUpdater* command_updater_;
 
   // The mode we should be in assuming no timers are running.
   Mode intended_mode_;

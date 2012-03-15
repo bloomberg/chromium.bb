@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class Browser;
+class ContentSettingBubbleModelDelegate;
 class Profile;
 class TabContentsWrapper;
 
@@ -27,8 +27,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
  public:
   virtual ~ContentSettingBubbleModel();
 
+  typedef ContentSettingBubbleModelDelegate Delegate;
+
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
-      Browser* browser,
+      Delegate* delegate,
       TabContentsWrapper* tab_contents,
       Profile* profile,
       ContentSettingsType content_type);

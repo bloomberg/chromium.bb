@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -32,8 +32,8 @@ using content::NavigationEntry;
 using content::SSLStatus;
 using content::WebContents;
 
-ToolbarModel::ToolbarModel(Browser* browser)
-    : browser_(browser),
+ToolbarModel::ToolbarModel(ToolbarModelDelegate* delegate)
+    : delegate_(delegate),
       input_in_progress_(false) {
 }
 
@@ -84,7 +84,7 @@ bool ToolbarModel::ShouldDisplayURL() const {
     }
   }
 
-  WebContents* web_contents = browser_->GetSelectedWebContents();
+  WebContents* web_contents = delegate_->GetActiveWebContents();
   if (web_contents && web_contents->GetWebUIForCurrentState())
     return !web_contents->GetWebUIForCurrentState()->ShouldHideURL();
 
@@ -174,6 +174,6 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   // This |current_tab| can be NULL during the initialization of the
   // toolbar during window creation (i.e. before any tabs have been added
   // to the window).
-  WebContents* current_tab = browser_->GetSelectedWebContents();
+  WebContents* current_tab = delegate_->GetActiveWebContents();
   return current_tab ? &current_tab->GetController() : NULL;
 }

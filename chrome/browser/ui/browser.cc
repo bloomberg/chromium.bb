@@ -103,10 +103,12 @@
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/browser_toolbar_model_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -339,7 +341,6 @@ Browser::Browser(Type type, Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_handler_(TabHandler::CreateTabHandler(this))),
       command_updater_(this),
-      toolbar_model_(this),
       chrome_updater_factory_(this),
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
@@ -351,6 +352,12 @@ Browser::Browser(Type type, Profile* profile)
       last_blocked_command_disposition_(CURRENT_TAB),
       pending_web_app_action_(NONE),
       ALLOW_THIS_IN_INITIALIZER_LIST(
+          content_setting_bubble_model_delegate_(
+              new BrowserContentSettingBubbleModelDelegate(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          toolbar_model_delegate_(
+              new BrowserToolbarModelDelegate(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_restore_service_delegate_(
               new BrowserTabRestoreServiceDelegate(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -358,6 +365,8 @@ Browser::Browser(Type type, Profile* profile)
               new BrowserSyncedWindowDelegate(this))),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       window_has_shown_(false) {
+  toolbar_model_.reset(new ToolbarModel(toolbar_model_delegate_.get()));
+
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -1860,7 +1869,7 @@ void Browser::WriteCurrentURLToClipboard() {
   // RenderContextViewMenu.
 
   WebContents* contents = GetSelectedWebContents();
-  if (!toolbar_model_.ShouldDisplayURL())
+  if (!toolbar_model_->ShouldDisplayURL())
     return;
 
   chrome_browser_net::WriteURLToClipboard(
@@ -2914,6 +2923,115 @@ void Browser::UpdateTargetURLHelper(WebContents* tab, int32 page_id,
   tcw->prerender_tab_helper()->UpdateTargetURL(page_id, url);
 }
 
+void Browser::ExecuteCommand(int id) {
+  ExecuteCommandWithDisposition(id, CURRENT_TAB);
+}
+
+void Browser::ExecuteCommand(int id, int event_flags) {
+  ExecuteCommandWithDisposition(
+      id, browser::DispositionFromEventFlags(event_flags));
+}
+
+bool Browser::ExecuteCommandIfEnabled(int id) {
+  if (command_updater_.SupportsCommand(id) &&
+      command_updater_.IsCommandEnabled(id)) {
+    ExecuteCommand(id, CURRENT_TAB);
+    return true;
+  }
+  return false;
+}
+
+bool Browser::IsReservedCommandOrKey(int command_id,
+                                     const NativeWebKeyboardEvent& event) {
+#if defined(OS_CHROMEOS)
+  // Chrome OS's top row of keys produces F1-10.  Make sure that web pages
+  // aren't able to block Chrome from performing the standard actions for F1-F4
+  // (F5-7 are grabbed by other X clients and hence don't need this protection,
+  // and F8-10 are handled separately in Chrome via a GDK event filter, but
+  // let's future-proof this).
+  ui::KeyboardCode key_code =
+      static_cast<ui::KeyboardCode>(event.windowsKeyCode);
+  if (key_code == ui::VKEY_F1 ||
+      key_code == ui::VKEY_F2 ||
+      key_code == ui::VKEY_F3 ||
+      key_code == ui::VKEY_F4 ||
+      key_code == ui::VKEY_F5 ||
+      key_code == ui::VKEY_F6 ||
+      key_code == ui::VKEY_F7 ||
+      key_code == ui::VKEY_F8 ||
+      key_code == ui::VKEY_F9 ||
+      key_code == ui::VKEY_F10) {
+    return true;
+  }
+#endif
+
+  if (window_->IsFullscreen() && command_id == IDC_FULLSCREEN)
+    return true;
+  return command_id == IDC_CLOSE_TAB ||
+         command_id == IDC_CLOSE_WINDOW ||
+         command_id == IDC_NEW_INCOGNITO_WINDOW ||
+         command_id == IDC_NEW_TAB ||
+         command_id == IDC_NEW_WINDOW ||
+         command_id == IDC_RESTORE_TAB ||
+         command_id == IDC_SELECT_NEXT_TAB ||
+         command_id == IDC_SELECT_PREVIOUS_TAB ||
+         command_id == IDC_TABPOSE ||
+         command_id == IDC_EXIT ||
+         command_id == IDC_SEARCH;
+}
+
+void Browser::SetBlockCommandExecution(bool block) {
+  block_command_execution_ = block;
+  if (block) {
+    last_blocked_command_id_ = -1;
+    last_blocked_command_disposition_ = CURRENT_TAB;
+  }
+}
+
+int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
+  if (disposition)
+    *disposition = last_blocked_command_disposition_;
+  return last_blocked_command_id_;
+}
+
+void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
+                                         content::PageTransition transition,
+                                         bool user_initiated) {
+  tab_handler_->GetTabStripModel()->TabNavigating(contents, transition);
+
+  bool contents_is_selected = contents == GetSelectedTabContentsWrapper();
+  if (user_initiated && contents_is_selected && window()->GetLocationBar()) {
+    // Forcibly reset the location bar if the url is going to change in the
+    // current tab, since otherwise it won't discard any ongoing user edits,
+    // since it doesn't realize this is a user-initiated action.
+    window()->GetLocationBar()->Revert();
+  }
+
+  if (GetStatusBubble())
+    GetStatusBubble()->Hide();
+
+  // Update the location bar. This is synchronous. We specifically don't
+  // update the load state since the load hasn't started yet and updating it
+  // will put it out of sync with the actual state like whether we're
+  // displaying a favicon, which controls the throbber. If we updated it here,
+  // the throbber will show the default favicon for a split second when
+  // navigating away from the new tab page.
+  ScheduleUIUpdate(contents->web_contents(), content::INVALIDATE_TYPE_URL);
+
+  if (contents_is_selected)
+    contents->web_contents()->Focus();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, PageNavigator implementation:
+
+WebContents* Browser::OpenURL(const OpenURLParams& params) {
+  return OpenURLFromTab(NULL, params);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Browser, CommandUpdater::CommandUpdaterDelegate implementation:
+
 void Browser::ExecuteCommandWithDisposition(
   int id, WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
@@ -3110,115 +3228,6 @@ void Browser::ExecuteCommandWithDisposition(
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
   }
-}
-
-void Browser::ExecuteCommand(int id, int event_flags) {
-  ExecuteCommandWithDisposition(
-      id, browser::DispositionFromEventFlags(event_flags));
-}
-
-bool Browser::ExecuteCommandIfEnabled(int id) {
-  if (command_updater_.SupportsCommand(id) &&
-      command_updater_.IsCommandEnabled(id)) {
-    ExecuteCommand(id);
-    return true;
-  }
-  return false;
-}
-
-bool Browser::IsReservedCommandOrKey(int command_id,
-                                     const NativeWebKeyboardEvent& event) {
-#if defined(OS_CHROMEOS)
-  // Chrome OS's top row of keys produces F1-10.  Make sure that web pages
-  // aren't able to block Chrome from performing the standard actions for F1-F4
-  // (F5-7 are grabbed by other X clients and hence don't need this protection,
-  // and F8-10 are handled separately in Chrome via a GDK event filter, but
-  // let's future-proof this).
-  ui::KeyboardCode key_code =
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode);
-  if (key_code == ui::VKEY_F1 ||
-      key_code == ui::VKEY_F2 ||
-      key_code == ui::VKEY_F3 ||
-      key_code == ui::VKEY_F4 ||
-      key_code == ui::VKEY_F5 ||
-      key_code == ui::VKEY_F6 ||
-      key_code == ui::VKEY_F7 ||
-      key_code == ui::VKEY_F8 ||
-      key_code == ui::VKEY_F9 ||
-      key_code == ui::VKEY_F10) {
-    return true;
-  }
-#endif
-
-  if (window_->IsFullscreen() && command_id == IDC_FULLSCREEN)
-    return true;
-  return command_id == IDC_CLOSE_TAB ||
-         command_id == IDC_CLOSE_WINDOW ||
-         command_id == IDC_NEW_INCOGNITO_WINDOW ||
-         command_id == IDC_NEW_TAB ||
-         command_id == IDC_NEW_WINDOW ||
-         command_id == IDC_RESTORE_TAB ||
-         command_id == IDC_SELECT_NEXT_TAB ||
-         command_id == IDC_SELECT_PREVIOUS_TAB ||
-         command_id == IDC_TABPOSE ||
-         command_id == IDC_EXIT ||
-         command_id == IDC_SEARCH;
-}
-
-void Browser::SetBlockCommandExecution(bool block) {
-  block_command_execution_ = block;
-  if (block) {
-    last_blocked_command_id_ = -1;
-    last_blocked_command_disposition_ = CURRENT_TAB;
-  }
-}
-
-int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
-  if (disposition)
-    *disposition = last_blocked_command_disposition_;
-  return last_blocked_command_id_;
-}
-
-void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
-                                         content::PageTransition transition,
-                                         bool user_initiated) {
-  tab_handler_->GetTabStripModel()->TabNavigating(contents, transition);
-
-  bool contents_is_selected = contents == GetSelectedTabContentsWrapper();
-  if (user_initiated && contents_is_selected && window()->GetLocationBar()) {
-    // Forcibly reset the location bar if the url is going to change in the
-    // current tab, since otherwise it won't discard any ongoing user edits,
-    // since it doesn't realize this is a user-initiated action.
-    window()->GetLocationBar()->Revert();
-  }
-
-  if (GetStatusBubble())
-    GetStatusBubble()->Hide();
-
-  // Update the location bar. This is synchronous. We specifically don't
-  // update the load state since the load hasn't started yet and updating it
-  // will put it out of sync with the actual state like whether we're
-  // displaying a favicon, which controls the throbber. If we updated it here,
-  // the throbber will show the default favicon for a split second when
-  // navigating away from the new tab page.
-  ScheduleUIUpdate(contents->web_contents(), content::INVALIDATE_TYPE_URL);
-
-  if (contents_is_selected)
-    contents->web_contents()->Focus();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, PageNavigator implementation:
-
-WebContents* Browser::OpenURL(const OpenURLParams& params) {
-  return OpenURLFromTab(NULL, params);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Browser, CommandUpdater::CommandUpdaterDelegate implementation:
-
-void Browser::ExecuteCommand(int id) {
-  ExecuteCommandWithDisposition(id, CURRENT_TAB);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4878,7 +4887,7 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->GetController().CanViewSource());
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
-      toolbar_model_.ShouldDisplayURL() && current_tab->GetURL().is_valid());
+      toolbar_model_->ShouldDisplayURL() && current_tab->GetURL().is_valid());
   if (is_devtools())
       command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, false);
 
