@@ -278,48 +278,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       spdy_servers->push_back(server_str);
     }
 
-    // Get SpdySettings.
+    // TODO(rtenneti): Implement reading of SpdySettings.
     DCHECK(!ContainsKey(*spdy_settings_map, server));
-    base::ListValue* spdy_settings_list = NULL;
-    if (server_pref_dict->GetListWithoutPathExpansion(
-        "settings", &spdy_settings_list)) {
-      spdy::SpdySettings spdy_settings;
-
-      for (base::ListValue::const_iterator list_it =
-           spdy_settings_list->begin();
-           list_it != spdy_settings_list->end(); ++list_it) {
-        if ((*list_it)->GetType() != Value::TYPE_DICTIONARY) {
-          DVLOG(1) << "Malformed SpdySettingsList for server: " << server_str;
-          detected_corrupted_prefs = true;
-          continue;
-        }
-
-        const base::DictionaryValue* spdy_setting_dict =
-            static_cast<const base::DictionaryValue*>(*list_it);
-
-        int id = 0;
-        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("id", &id)) {
-          DVLOG(1) << "Malformed id in SpdySettings for server: " << server_str;
-          detected_corrupted_prefs = true;
-          continue;
-        }
-
-        int value = 0;
-        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("value",
-                                                               &value)) {
-          DVLOG(1) << "Malformed value in SpdySettings for server: " <<
-              server_str;
-          detected_corrupted_prefs = true;
-          continue;
-        }
-
-        spdy::SettingsFlagsAndId flags_and_id(
-            spdy::SETTINGS_FLAG_PERSISTED, id);
-        spdy_settings.push_back(spdy::SpdySetting(flags_and_id, value));
-      }
-
-      (*spdy_settings_map)[server] = spdy_settings;
-    }
 
     int pipeline_capability = net::PIPELINE_UNKNOWN;
     if ((server_pref_dict->GetInteger(
@@ -575,21 +535,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     // Save supports_spdy.
     server_pref_dict->SetBoolean("supports_spdy", server_pref.supports_spdy);
 
-    // Save SpdySettings.
-    if (server_pref.settings) {
-      base::ListValue* spdy_settings_list = new ListValue();
-      for (spdy::SpdySettings::const_iterator it =
-           server_pref.settings->begin();
-           it != server_pref.settings->end(); ++it) {
-        uint32 id = it->first.id();
-        uint32 value = it->second;
-        base::DictionaryValue* spdy_setting_dict = new base::DictionaryValue;
-        spdy_setting_dict->SetInteger("id", id);
-        spdy_setting_dict->SetInteger("value", value);
-        spdy_settings_list->Append(spdy_setting_dict);
-      }
-      server_pref_dict->Set("settings", spdy_settings_list);
-    }
+    // TODO(rtenneti): Implement save SpdySettings.
 
     // Save alternate_protocol.
     if (server_pref.alternate_protocol) {

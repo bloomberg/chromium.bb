@@ -139,15 +139,6 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set supports_spdy for www.google.com:80.
   server_pref_dict->SetBoolean("supports_spdy", true);
 
-  // Set up the SpdySettings for www.google.com:80.
-  base::ListValue* spdy_settings_list = new base::ListValue;
-  base::DictionaryValue* spdy_setting_dict = new base::DictionaryValue;
-  spdy_setting_dict->SetInteger("flags", spdy::SETTINGS_FLAG_PERSISTED);
-  spdy_setting_dict->SetInteger("id", 1234);
-  spdy_setting_dict->SetInteger("value", 31337);
-  spdy_settings_list->Append(spdy_setting_dict);
-  server_pref_dict->Set("settings", spdy_settings_list);
-
   // Set up alternate_protocol for www.google.com:80.
   base::DictionaryValue* alternate_protocol = new base::DictionaryValue;
   alternate_protocol->SetInteger("port", 443);
@@ -169,15 +160,6 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Set supports_spdy for mail.google.com:80
   server_pref_dict1->SetBoolean("supports_spdy", true);
-
-  // Set up the SpdySettings for mail.google.com:80
-  base::ListValue* spdy_settings_list1 = new base::ListValue;
-  base::DictionaryValue* spdy_setting_dict1 = new base::DictionaryValue;
-  spdy_setting_dict1->SetInteger("flags", spdy::SETTINGS_FLAG_PERSISTED);
-  spdy_setting_dict1->SetInteger("id", 5678);
-  spdy_setting_dict1->SetInteger("value", 62667);
-  spdy_settings_list1->Append(spdy_setting_dict1);
-  server_pref_dict1->Set("settings", spdy_settings_list1);
 
   // Set up alternate_protocol for mail.google.com:80
   base::DictionaryValue* alternate_protocol1 = new base::DictionaryValue;
@@ -212,25 +194,6 @@ TEST_F(HttpServerPropertiesManagerTest,
       net::HostPortPair::FromString("mail.google.com:80")));
   EXPECT_FALSE(http_server_props_manager_->SupportsSpdy(
       net::HostPortPair::FromString("foo.google.com:1337")));
-
-  // Verify SpdySettings.
-  spdy::SpdySettings spdy_settings_ret =
-      http_server_props_manager_->GetSpdySettings(
-          net::HostPortPair::FromString("www.google.com:80"));
-  ASSERT_EQ(1U, spdy_settings_ret.size());
-  spdy::SpdySetting spdy_setting1_ret = spdy_settings_ret.front();
-  spdy::SettingsFlagsAndId id1_ret(spdy_setting1_ret.first);
-  EXPECT_EQ(1234U, id1_ret.id());
-  EXPECT_EQ(spdy::SETTINGS_FLAG_PERSISTED, id1_ret.flags());
-  EXPECT_EQ(31337u, spdy_setting1_ret.second);
-  spdy_settings_ret = http_server_props_manager_->GetSpdySettings(
-          net::HostPortPair::FromString("mail.google.com:80"));
-  ASSERT_EQ(1U, spdy_settings_ret.size());
-  spdy_setting1_ret = spdy_settings_ret.front();
-  id1_ret = spdy_setting1_ret.first;
-  EXPECT_EQ(5678U, id1_ret.id());
-  EXPECT_EQ(spdy::SETTINGS_FLAG_PERSISTED, id1_ret.flags());
-  EXPECT_EQ(62667u, spdy_setting1_ret.second);
 
   // Verify AlternateProtocol.
   ASSERT_TRUE(http_server_props_manager_->HasAlternateProtocol(
