@@ -3065,8 +3065,7 @@
         'browser/ui/login/login_prompt_gtk.cc',
         'browser/ui/login/login_prompt_mac.h',
         'browser/ui/login/login_prompt_mac.mm',
-        'browser/ui/login/login_prompt_ui.cc',
-        'browser/ui/login/login_prompt_win.cc',
+        'browser/ui/login/login_prompt_views.cc',
         'browser/ui/media_stream_infobar_delegate.cc',
         'browser/ui/media_stream_infobar_delegate.cc',
         'browser/ui/omnibox/location_bar.h',
@@ -4672,7 +4671,6 @@
             'browser/ui/certificate_dialogs.h',
             'browser/ui/crypto_module_password_dialog.cc',
             'browser/ui/crypto_module_password_dialog_nss.cc',
-            'browser/ui/login/login_prompt_ui.cc',
             'browser/ui/views/keyboard_overlay_delegate.cc',
             'browser/ui/views/keyboard_overlay_dialog_view.cc',
             'browser/ui/views/simple_message_box_views.cc',
@@ -4785,7 +4783,6 @@
                 ['include', '^browser/ui/gtk/theme_service_gtk.h'],
                 ['include', '^browser/ui/gtk/view_id_util.cc'],
                 ['include', '^browser/ui/gtk/view_id_util.h'],
-                ['include', '^browser/ui/login/login_prompt_ui.cc'],
                 ['include', '^browser/ui/tabs/dock_info.cc'],
                 ['include', '^browser/ui/tabs/dock_info.h'],
                 ['include', '^browser/ui/views/about_chrome_view.cc'],
@@ -4944,6 +4941,8 @@
                 ['include', '^browser/ui/views/location_bar/suggested_text_view.h'],
                 ['include', '^browser/ui/views/location_bar/star_view.cc'],
                 ['include', '^browser/ui/views/location_bar/star_view.h'],
+                ['include', '^browser/ui/views/login_view.cc'],
+                ['include', '^browser/ui/views/login_view.h'],
                 ['include', '^browser/ui/views/native_constrained_window_gtk.cc'],
                 ['include', '^browser/ui/views/notifications/balloon_view.cc'],
                 ['include', '^browser/ui/views/notifications/balloon_view.h'],
@@ -5034,7 +5033,6 @@
               ],
             }, { # else: OS=="linux" and toolkit_views==1
               'sources/': [
-                ['exclude', '^browser/ui/login/login_prompt_ui.cc'],
                 ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
                 ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
               ]

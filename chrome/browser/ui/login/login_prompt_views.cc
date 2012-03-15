@@ -24,16 +24,16 @@ using content::WebContents;
 using webkit::forms::PasswordForm;
 
 // ----------------------------------------------------------------------------
-// LoginHandlerWin
+// LoginHandlerViews
 
 // This class simply forwards the authentication from the LoginView (on
 // the UI thread) to the net::URLRequest (on the I/O thread).
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
-class LoginHandlerWin : public LoginHandler,
-                        public views::DialogDelegate {
+class LoginHandlerViews : public LoginHandler,
+                          public views::DialogDelegate {
  public:
-  LoginHandlerWin(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
+  LoginHandlerViews(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request),
         login_view_(NULL) {
   }
@@ -119,7 +119,7 @@ class LoginHandlerWin : public LoginHandler,
     // so natural destruction order means we don't have to worry about
     // disassociating the model from the view, because the view will
     // be deleted before the password manager.
-    login_view_ = new LoginView(UTF16ToWideHack(explanation), manager);
+    login_view_ = new LoginView(explanation, manager);
 
     // Scary thread safety note: This can potentially be called *after* SetAuth
     // or CancelAuth (say, if the request was cancelled before the UI thread got
@@ -134,19 +134,19 @@ class LoginHandlerWin : public LoginHandler,
   }
 
  private:
-  friend class base::RefCountedThreadSafe<LoginHandlerWin>;
+  friend class base::RefCountedThreadSafe<LoginHandlerViews>;
   friend class LoginPrompt;
 
-  ~LoginHandlerWin() {}
+  ~LoginHandlerViews() {}
 
   // The LoginView that contains the user's login information
   LoginView* login_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginHandlerWin);
+  DISALLOW_COPY_AND_ASSIGN(LoginHandlerViews);
 };
 
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
                                    net::URLRequest* request) {
-  return new LoginHandlerWin(auth_info, request);
+  return new LoginHandlerViews(auth_info, request);
 }

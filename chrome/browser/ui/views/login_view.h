@@ -22,16 +22,16 @@ class LoginView : public views::View, public LoginModelObserver {
   // |model| is observed for the entire lifetime of the LoginView.
   // Therefore |model| should not be destroyed before the LoginView
   // object.
-  LoginView(const std::wstring& explanation, LoginModel* model);
+  LoginView(const string16& explanation, LoginModel* model);
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.
-  std::wstring GetUsername();
-  std::wstring GetPassword();
+  string16 GetUsername();
+  string16 GetPassword();
 
   // LoginModelObserver implementation.
-  virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) OVERRIDE;
+  virtual void OnAutofillDataAvailable(const string16& username,
+                                       const string16& password) OVERRIDE;
 
   // Used by LoginHandlerWin to set the initial focus.
   views::View* GetInitiallyFocusedView();
