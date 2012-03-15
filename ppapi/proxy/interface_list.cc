@@ -87,6 +87,7 @@
 #include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
+#include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"

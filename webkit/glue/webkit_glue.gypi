@@ -291,6 +291,8 @@
         '../plugins/ppapi/ppb_graphics_2d_impl.h',
         '../plugins/ppapi/ppb_graphics_3d_impl.cc',
         '../plugins/ppapi/ppb_graphics_3d_impl.h',
+        '../plugins/ppapi/ppb_host_resolver_private_impl.cc',
+        '../plugins/ppapi/ppb_host_resolver_private_impl.h',
         '../plugins/ppapi/ppb_image_data_impl.cc',
         '../plugins/ppapi/ppb_image_data_impl.h',
         '../plugins/ppapi/ppb_layer_compositor_impl.cc',

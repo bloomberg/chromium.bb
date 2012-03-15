@@ -133,6 +133,9 @@
         'shared_impl/private/ppb_browser_font_trusted_shared.h',
         'shared_impl/private/ppb_char_set_shared.cc',
         'shared_impl/private/ppb_char_set_shared.h',
+
+        'shared_impl/private/ppb_host_resolver_shared.cc',
+        'shared_impl/private/ppb_host_resolver_shared.h',
         'shared_impl/private/ppb_tcp_server_socket_shared.cc',
         'shared_impl/private/ppb_tcp_server_socket_shared.h',
         'shared_impl/private/tcp_socket_private_impl.cc',
@@ -195,6 +198,8 @@
         'thunk/ppb_graphics_3d_api.h',
         'thunk/ppb_graphics_3d_thunk.cc',
         'thunk/ppb_graphics_3d_trusted_thunk.cc',
+        'thunk/ppb_host_resolver_private_api.h',
+        'thunk/ppb_host_resolver_private_thunk.cc',
         'thunk/ppb_image_data_api.h',
         'thunk/ppb_image_data_thunk.cc',
         'thunk/ppb_image_data_trusted_thunk.cc',

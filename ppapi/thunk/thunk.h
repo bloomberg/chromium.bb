@@ -11,6 +11,7 @@
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
+#include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -70,6 +71,8 @@ PPAPI_THUNK_EXPORT const PPB_Flash_NetConnector_0_2*
     GetPPB_Flash_NetConnector_0_2_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted_1_0*
     GetPPB_Graphics3DTrusted_1_0_Thunk();
+PPAPI_THUNK_EXPORT const PPB_HostResolver_Private_0_1*
+    GetPPB_HostResolver_Private_0_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_ImageDataTrusted_0_4*
     GetPPB_ImageDataTrusted_0_4_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Instance_Private_0_1*

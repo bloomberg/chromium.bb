@@ -31,6 +31,7 @@
 #include "webkit/quota/quota_types.h"
 
 class GURL;
+struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 class SkBitmap;
 class TransportDIB;
@@ -53,7 +54,9 @@ class CommandBuffer;
 }
 
 namespace ppapi {
+class PPB_HostResolver_Shared;
 struct DeviceRefData;
+struct HostPortPair;
 struct Preferences;
 }
 
@@ -482,6 +485,16 @@ class PluginDelegate {
   virtual void TCPServerSocketAccept(uint32 real_socket_id) = 0;
   virtual void TCPServerSocketStopListening(uint32 real_socket_id,
                                             uint32 temp_socket_id) = 0;
+
+  // For PPB_HostResolver_Private.
+  virtual void RegisterHostResolver(
+      ::ppapi::PPB_HostResolver_Shared* host_resolver,
+      uint32 host_resolver_id) = 0;
+  virtual void HostResolverResolve(
+      uint32 host_resolver_id,
+      const ::ppapi::HostPortPair& host_port,
+      const PP_HostResolver_Private_Hint* hint) = 0;
+  virtual void UnregisterHostResolver(uint32 host_resolver_id) = 0;
 
   // Add/remove a network list observer.
   virtual bool AddNetworkListObserver(

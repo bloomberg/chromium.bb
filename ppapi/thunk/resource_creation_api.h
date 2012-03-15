@@ -84,6 +84,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateGraphics3DRaw(PP_Instance instance,
                                           PP_Resource share_context,
                                           const int32_t* attrib_list) = 0;
+  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,

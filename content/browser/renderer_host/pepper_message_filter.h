@@ -23,6 +23,7 @@ class ListValue;
 class PepperTCPServerSocket;
 class PepperTCPSocket;
 class PepperUDPSocket;
+struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
 namespace content {
@@ -33,6 +34,10 @@ namespace net {
 class AddressList;
 class CertVerifier;
 class HostResolver;
+}
+
+namespace ppapi {
+struct HostPortPair;
 }
 
 // This class is used in two contexts, both supporting PPAPI plugins. The first
@@ -82,6 +87,17 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   const net::SSLConfig& ssl_config() { return ssl_config_; }
 
  private:
+  struct OnConnectTcpBoundInfo {
+    int routing_id;
+    int request_id;
+  };
+
+  struct OnHostResolverResolveBoundInfo {
+    int32 routing_id;
+    uint32 plugin_dispatcher_id;
+    uint32 host_resolver_id;
+  };
+
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
   void OnConnectTcp(int routing_id,
@@ -96,14 +112,10 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   bool SendConnectTcpACKError(int routing_id,
                               int request_id);
 
-  // Used by |OnConnectTcp()| (below).
-  class LookupRequest;
-  friend class LookupRequest;
-
   // Continuation of |OnConnectTcp()|.
-  void ConnectTcpLookupFinished(int routing_id,
-                                int request_id,
-                                const net::AddressList& addresses);
+  void ConnectTcpLookupFinished(int result,
+                                const net::AddressList& addresses,
+                                const OnConnectTcpBoundInfo& bound_info);
   void ConnectTcpOnWorkerThread(int routing_id,
                                 int request_id,
                                 net::AddressList addresses);
@@ -153,6 +165,20 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
                          int32_t backlog);
   void OnTCPServerAccept(uint32 real_socket_id);
 
+  void OnHostResolverResolve(int32 routing_id,
+                             uint32 plugin_dispatcher_id,
+                             uint32 host_resolver_id,
+                             const ppapi::HostPortPair& host_port,
+                             const PP_HostResolver_Private_Hint& hint);
+  // Continuation of |OnHostResolverResolve()|.
+  void OnHostResolverResolveLookupFinished(
+      int result,
+      const net::AddressList& addresses,
+      const OnHostResolverResolveBoundInfo& bound_info);
+  bool SendHostResolverResolveACKError(int32 routing_id,
+                                       uint32 plugin_dispatcher_id,
+                                       uint32 host_resolver_id);
+
   void DoTCPConnect(bool allowed,
                     int32 routing_id,
                     uint32 socket_id,
@@ -172,6 +198,12 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
                          uint32 temp_socket_id,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
+  void DoHostResolverResolve(bool allowed,
+                             int32 routing_id,
+                             uint32 plugin_dispatcher_id,
+                             uint32 host_resolver_id,
+                             const ppapi::HostPortPair& host_port,
+                             const PP_HostResolver_Private_Hint& hint);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

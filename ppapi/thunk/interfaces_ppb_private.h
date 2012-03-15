@@ -8,6 +8,7 @@
 #include "ppapi/thunk/interfaces_preamble.h"
 
 PROXIED_API(PPB_Broker)
+PROXIED_API(PPB_HostResolver_Private)
 PROXIED_API(PPB_TCPSocket_Private)
 PROXIED_API(PPB_UDPSocket_Private)
 
@@ -22,6 +23,8 @@ PROXIED_IFACE(PPB_FileRef, PPB_FILEREFPRIVATE_INTERFACE_0_1,
 // This uses the FileIO API which is declared in the public stable file.
 PROXIED_IFACE(PPB_FileIO, PPB_FILEIOTRUSTED_INTERFACE_0_4,
               PPB_FileIOTrusted_0_4)
+PROXIED_IFACE(PPB_HostResolver_Private, PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
+              PPB_HostResolver_Private_0_1)
 PROXIED_IFACE(PPB_Instance, PPB_FLASHFULLSCREEN_INTERFACE_0_1,
               PPB_FlashFullscreen_0_1)
 PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_0_1,

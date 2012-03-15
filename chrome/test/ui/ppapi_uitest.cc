@@ -480,6 +480,13 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 // TODO(ygorshenin): http://crbug.com/116480.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_TCPServerSocketPrivate)
 
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_Create)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPV4)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Create)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPV4)
+
 // URLLoader tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicPOST)

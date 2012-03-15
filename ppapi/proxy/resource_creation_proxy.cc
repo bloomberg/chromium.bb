@@ -23,6 +23,7 @@
 #include "ppapi/proxy/ppb_flash_net_connector_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
+#include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
@@ -170,6 +171,11 @@ PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                     PP_Bool is_always_opaque) {
   return PPB_Graphics2D_Proxy::CreateProxyResource(instance, size,
                                                    is_always_opaque);
+}
+
+PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(
+    PP_Instance instance) {
+  return PPB_HostResolver_Private_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateImageData(PP_Instance instance,

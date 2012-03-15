@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +14,7 @@
 #include "base/process_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
+#include "content/browser/renderer_host/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper_tcp_socket.h"
 #include "content/browser/renderer_host/pepper_udp_socket.h"
@@ -25,16 +27,18 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/host_resolver.h"
-#include "net/base/net_errors.h"
-#include "net/base/single_request_host_resolver.h"
+#include "net/base/sys_addrinfo.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/c/private/ppb_host_resolver_private.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 
 #if defined(ENABLE_FLAPPER_HACKS)
@@ -88,7 +92,8 @@ void PepperMessageFilter::OverrideThreadForMessage(
   if (message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
       message.type() == PpapiHostMsg_PPBUDPSocket_Bind::ID ||
-      message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID) {
+      message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
+      message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -130,6 +135,10 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                         OnTCPServerAccept)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Destroy,
                         RemoveTCPServerSocket)
+
+    // HostResolver messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBHostResolver_Resolve,
+                        OnHostResolverResolve)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -217,48 +226,6 @@ int ConnectTcpSocket(const PP_NetAddress_Private& addr,
 
 }  // namespace
 
-class PepperMessageFilter::LookupRequest {
- public:
-  LookupRequest(PepperMessageFilter* pepper_message_filter,
-                net::HostResolver* resolver,
-                int routing_id,
-                int request_id,
-                const net::HostResolver::RequestInfo& request_info)
-      : pepper_message_filter_(pepper_message_filter),
-        resolver_(resolver),
-        routing_id_(routing_id),
-        request_id_(request_id),
-        request_info_(request_info) {
-  }
-
-  void Start() {
-    int result = resolver_.Resolve(
-        request_info_, &addresses_,
-        base::Bind(&LookupRequest::OnLookupFinished, base::Unretained(this)),
-        net::BoundNetLog());
-    if (result != net::ERR_IO_PENDING)
-      OnLookupFinished(result);
-  }
-
- private:
-  void OnLookupFinished(int /*result*/) {
-    pepper_message_filter_->ConnectTcpLookupFinished(
-        routing_id_, request_id_, addresses_);
-    delete this;
-  }
-
-  PepperMessageFilter* pepper_message_filter_;
-  net::SingleRequestHostResolver resolver_;
-
-  int routing_id_;
-  int request_id_;
-  net::HostResolver::RequestInfo request_info_;
-
-  net::AddressList addresses_;
-
-  DISALLOW_COPY_AND_ASSIGN(LookupRequest);
-};
-
 void PepperMessageFilter::OnConnectTcp(int routing_id,
                                        int request_id,
                                        const std::string& host,
@@ -267,10 +234,18 @@ void PepperMessageFilter::OnConnectTcp(int routing_id,
 
   net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
 
+  scoped_ptr<OnConnectTcpBoundInfo> bound_info(new OnConnectTcpBoundInfo);
+  bound_info->routing_id = routing_id;
+  bound_info->request_id = request_id;
+
   // The lookup request will delete itself on completion.
-  LookupRequest* lookup_request =
-      new LookupRequest(this, GetHostResolver(),
-                        routing_id, request_id, request_info);
+  PepperLookupRequest<OnConnectTcpBoundInfo>* lookup_request =
+      new PepperLookupRequest<OnConnectTcpBoundInfo>(
+          GetHostResolver(),
+          request_info,
+          bound_info.release(),
+          base::Bind(&PepperMessageFilter::ConnectTcpLookupFinished,
+                     this));
   lookup_request->Start();
 }
 
@@ -302,9 +277,9 @@ bool PepperMessageFilter::SendConnectTcpACKError(int routing_id,
 }
 
 void PepperMessageFilter::ConnectTcpLookupFinished(
-    int routing_id,
-    int request_id,
-    const net::AddressList& addresses) {
+    int result,
+    const net::AddressList& addresses,
+    const OnConnectTcpBoundInfo& bound_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If the lookup returned addresses, continue (doing |connect()|) on a worker
@@ -314,9 +289,9 @@ void PepperMessageFilter::ConnectTcpLookupFinished(
           FROM_HERE,
           base::Bind(
               &PepperMessageFilter::ConnectTcpOnWorkerThread, this,
-              routing_id, request_id, addresses),
+              bound_info.routing_id, bound_info.request_id, addresses),
           true)) {
-    SendConnectTcpACKError(routing_id, request_id);
+    SendConnectTcpACKError(bound_info.routing_id, bound_info.request_id);
   }
 }
 
@@ -645,6 +620,121 @@ void PepperMessageFilter::OnTCPServerAccept(uint32 real_socket_id) {
     return;
   }
   iter->second->Accept();
+}
+
+void PepperMessageFilter::OnHostResolverResolve(
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id,
+    const ppapi::HostPortPair& host_port,
+    const PP_HostResolver_Private_Hint& hint) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperMessageFilter::DoHostResolverResolve, this,
+                 CanUseSocketAPIs(routing_id),
+                 routing_id,
+                 plugin_dispatcher_id,
+                 host_resolver_id,
+                 host_port,
+                 hint));
+}
+
+void PepperMessageFilter::DoHostResolverResolve(
+    bool allowed,
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id,
+    const ppapi::HostPortPair& host_port,
+    const PP_HostResolver_Private_Hint& hint) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!allowed) {
+    SendHostResolverResolveACKError(routing_id,
+                                    plugin_dispatcher_id,
+                                    host_resolver_id);
+    return;
+  }
+
+  net::HostResolver::RequestInfo request_info(
+      net::HostPortPair(host_port.host, host_port.port));
+
+  net::AddressFamily address_family;
+  switch (hint.family) {
+    case PP_NETADDRESSFAMILY_IPV4:
+      address_family = net::ADDRESS_FAMILY_IPV4;
+      break;
+    case PP_NETADDRESSFAMILY_IPV6:
+      address_family = net::ADDRESS_FAMILY_IPV6;
+      break;
+    default:
+      address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+  }
+  request_info.set_address_family(address_family);
+
+  net::HostResolverFlags host_resolver_flags = 0;
+  if (hint.flags & PP_HOST_RESOLVER_FLAGS_CANONNAME)
+    host_resolver_flags |= net::HOST_RESOLVER_CANONNAME;
+  if (hint.flags & PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY)
+    host_resolver_flags |= net::HOST_RESOLVER_LOOPBACK_ONLY;
+  request_info.set_host_resolver_flags(host_resolver_flags);
+
+  scoped_ptr<OnHostResolverResolveBoundInfo> bound_info(
+      new OnHostResolverResolveBoundInfo);
+  bound_info->routing_id = routing_id;
+  bound_info->plugin_dispatcher_id = plugin_dispatcher_id;
+  bound_info->host_resolver_id = host_resolver_id;
+
+  // The lookup request will delete itself on completion.
+  PepperLookupRequest<OnHostResolverResolveBoundInfo>* lookup_request =
+      new PepperLookupRequest<OnHostResolverResolveBoundInfo>(
+          GetHostResolver(),
+          request_info,
+          bound_info.release(),
+          base::Bind(&PepperMessageFilter::OnHostResolverResolveLookupFinished,
+                     this));
+  lookup_request->Start();
+}
+
+void PepperMessageFilter::OnHostResolverResolveLookupFinished(
+    int result,
+    const net::AddressList& addresses,
+    const OnHostResolverResolveBoundInfo& bound_info) {
+  if (result != net::OK) {
+    SendHostResolverResolveACKError(bound_info.routing_id,
+                                    bound_info.plugin_dispatcher_id,
+                                    bound_info.host_resolver_id);
+  } else {
+    std::string canonical_name;
+    addresses.GetCanonicalName(&canonical_name);
+    scoped_ptr<ppapi::NetAddressList> net_address_list(
+        ppapi::CreateNetAddressListFromAddrInfo(addresses.head()));
+    if (!net_address_list.get()) {
+      SendHostResolverResolveACKError(bound_info.routing_id,
+                                      bound_info.plugin_dispatcher_id,
+                                      bound_info.host_resolver_id);
+    } else {
+      Send(new PpapiMsg_PPBHostResolver_ResolveACK(
+          bound_info.routing_id,
+          bound_info.plugin_dispatcher_id,
+          bound_info.host_resolver_id,
+          true,
+          canonical_name,
+          *net_address_list.get()));
+    }
+  }
+}
+
+bool PepperMessageFilter::SendHostResolverResolveACKError(
+    int32 routing_id,
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id) {
+  return Send(new PpapiMsg_PPBHostResolver_ResolveACK(
+      routing_id,
+      plugin_dispatcher_id,
+      host_resolver_id,
+      false,
+      "",
+      ppapi::NetAddressList()));
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

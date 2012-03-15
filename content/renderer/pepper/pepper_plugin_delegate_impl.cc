@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 
 #include <cmath>
+#include <cstddef>
 #include <map>
 #include <queue>
 
@@ -60,9 +61,9 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -1090,6 +1091,44 @@ void PepperPluginDelegateImpl::TCPServerSocketStopListening(
   }
 }
 
+void PepperPluginDelegateImpl::RegisterHostResolver(
+    ppapi::PPB_HostResolver_Shared* host_resolver,
+    uint32 host_resolver_id) {
+  host_resolvers_.AddWithID(host_resolver, host_resolver_id);
+}
+
+void PepperPluginDelegateImpl::HostResolverResolve(
+    uint32 host_resolver_id,
+    const ::ppapi::HostPortPair& host_port,
+    const PP_HostResolver_Private_Hint* hint) {
+  DCHECK(host_resolvers_.Lookup(host_resolver_id));
+  if (!hint) {
+    PP_HostResolver_Private_Hint empty_hint;
+    empty_hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
+    empty_hint.flags = static_cast<PP_HostResolver_Private_Flags>(0);
+    render_view_->Send(
+        new PpapiHostMsg_PPBHostResolver_Resolve(
+            GetRoutingID(),
+            0,
+            host_resolver_id,
+            host_port,
+            empty_hint));
+  } else {
+    render_view_->Send(
+        new PpapiHostMsg_PPBHostResolver_Resolve(
+            GetRoutingID(),
+            0,
+            host_resolver_id,
+            host_port,
+            *hint));
+  }
+}
+
+void PepperPluginDelegateImpl::UnregisterHostResolver(
+    uint32 host_resolver_id) {
+  host_resolvers_.Remove(host_resolver_id);
+}
+
 bool PepperPluginDelegateImpl::AddNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 #if defined(ENABLE_P2P_APIS)
@@ -1371,6 +1410,8 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPServerSocketListenACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                         OnTCPServerSocketAcceptACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBHostResolver_ResolveACK,
+                        OnHostResolverResolveACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1495,6 +1536,21 @@ void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
                               accepted_socket_id,
                               local_addr,
                               remote_addr);
+  }
+}
+
+void PepperPluginDelegateImpl::OnHostResolverResolveACK(
+    uint32 plugin_dispatcher_id,
+    uint32 host_resolver_id,
+    bool succeeded,
+    const std::string& canonical_name,
+    const ppapi::NetAddressList& net_address_list) {
+  ppapi::PPB_HostResolver_Shared* host_resolver =
+      host_resolvers_.Lookup(host_resolver_id);
+  if (host_resolver) {
+    host_resolver->OnResolveCompleted(succeeded,
+                                      canonical_name,
+                                      net_address_list);
   }
 }
 

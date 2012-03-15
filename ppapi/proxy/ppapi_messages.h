@@ -31,6 +31,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/c/private/ppb_host_resolver_private.h"
+#include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -41,6 +43,7 @@
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT
@@ -48,11 +51,12 @@
 #define IPC_MESSAGE_START PpapiMsgStart
 
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
-IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
+IPC_ENUM_TRAITS(PP_InputEvent_Type)
+IPC_ENUM_TRAITS(PP_NetAddressFamily_Private)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
-IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
+IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -94,6 +98,11 @@ IPC_STRUCT_TRAITS_BEGIN(PP_VideoCaptureDeviceInfo_Dev)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
   IPC_STRUCT_TRAITS_MEMBER(frames_per_second)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_HostResolver_Private_Hint)
+  IPC_STRUCT_TRAITS_MEMBER(family)
+  IPC_STRUCT_TRAITS_MEMBER(flags)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::DeviceRefData)
@@ -143,6 +152,11 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)
   IPC_STRUCT_TRAITS_MEMBER(composition_target_segment)
   IPC_STRUCT_TRAITS_MEMBER(composition_selection_start)
   IPC_STRUCT_TRAITS_MEMBER(composition_selection_end)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::HostPortPair)
+  IPC_STRUCT_TRAITS_MEMBER(host)
+  IPC_STRUCT_TRAITS_MEMBER(port)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data)
@@ -317,7 +331,7 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_WriteACK,
                     bool /* succeeded */,
                     int32_t /* bytes_written */)
 
-// PPB_UDPSocket_Private
+// PPB_UDPSocket_Private.
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_BindACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
@@ -354,6 +368,14 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                     uint32 /* accepted_socket_id */,
                     PP_NetAddress_Private /* local_addr */,
                     PP_NetAddress_Private /* remote_addr */)
+
+// PPB_HostResolver_Private.
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBHostResolver_ResolveACK,
+                    uint32 /* plugin_dispatcher_id */,
+                    uint32 /* host_resolver_id */,
+                    bool /* succeeded */,
+                    std::string /* canonical_name */,
+                    ppapi::NetAddressList /* net_address_list */)
 
 // PPB_Graphics2D.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics2D_FlushACK,
@@ -785,6 +807,14 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer,
                            uint32 /* size */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */)
+
+// PPB_HostResolver_Private.
+IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBHostResolver_Resolve,
+                     int32 /* routing_id */,
+                     uint32 /* plugin_dispatcher_id */,
+                     uint32 /* host_resolver_id */,
+                     ppapi::HostPortPair /* host_port */,
+                     PP_HostResolver_Private_Hint /* hint */)
 
 // PPB_ImageData.
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
@@ -1259,4 +1289,3 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Destroy,
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,
                             std::string /* result */)
 #endif  // !defined(OS_NACL)
-

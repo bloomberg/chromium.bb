@@ -25,6 +25,7 @@
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
+#include "webkit/plugins/ppapi/ppb_host_resolver_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_network_monitor_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
@@ -177,6 +178,11 @@ PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Resource share_context,
     const int32_t* attrib_list) {
   return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list);
+}
+
+PP_Resource ResourceCreationImpl::CreateHostResolverPrivate(
+    PP_Instance instance) {
+  return (new PPB_HostResolver_Private_Impl(instance))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,

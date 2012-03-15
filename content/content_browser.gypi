@@ -513,6 +513,7 @@
     'browser/renderer_host/native_web_keyboard_event_win.cc',
     'browser/renderer_host/pepper_file_message_filter.cc',
     'browser/renderer_host/pepper_file_message_filter.h',
+    'browser/renderer_host/pepper_lookup_request.h',
     'browser/renderer_host/pepper_message_filter.cc',
     'browser/renderer_host/pepper_message_filter.h',
     'browser/renderer_host/pepper_tcp_server_socket.cc',
