@@ -28,11 +28,6 @@ class ChromeNetLog : public net::NetLog {
   virtual ~ChromeNetLog();
 
   // NetLog implementation:
-  virtual void AddEntry(EventType type,
-                        const base::TimeTicks& time,
-                        const Source& source,
-                        EventPhase phase,
-                        EventParameters* params) OVERRIDE;
   virtual uint32 NextID() OVERRIDE;
   virtual LogLevel GetLogLevel() const OVERRIDE;
   virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
@@ -46,6 +41,12 @@ class ChromeNetLog : public net::NetLog {
   }
 
  private:
+  // NetLog implementation:
+  virtual void AddEntry(EventType type,
+                        const Source& source,
+                        EventPhase phase,
+                        const scoped_refptr<EventParameters>& params) OVERRIDE;
+
   // Called whenever an observer is added or removed, or has its log level
   // changed.  Must have acquired |lock_| prior to calling.
   void UpdateLogLevel();

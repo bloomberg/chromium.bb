@@ -89,6 +89,8 @@ var SourceTracker = (function() {
         var logEntry = logEntries[e];
 
         // Assign unique ID, if needed.
+        // TODO(mmenke):  Remove this, and all other code to handle 0 source
+        //                IDs when M19 hits stable.
         if (logEntry.source.id == 0) {
           logEntry.source.id = this.nextSourcelessEventId_;
           --this.nextSourcelessEventId_;

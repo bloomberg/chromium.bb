@@ -49,11 +49,13 @@ ChromeNetLog::~ChromeNetLog() {
     RemoveThreadSafeObserver(net_log_logger_.get());
 }
 
-void ChromeNetLog::AddEntry(EventType type,
-                            const base::TimeTicks& time,
-                            const Source& source,
-                            EventPhase phase,
-                            EventParameters* params) {
+void ChromeNetLog::AddEntry(
+    EventType type,
+    const Source& source,
+    EventPhase phase,
+    const scoped_refptr<EventParameters>& params) {
+  base::TimeTicks time(base::TimeTicks::Now());
+
   base::AutoLock lock(lock_);
 
   // Notify all of the log observers.

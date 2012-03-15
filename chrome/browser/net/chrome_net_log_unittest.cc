@@ -37,9 +37,7 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
 };
 
 void AddEvent(ChromeNetLog* net_log) {
-  net::NetLog::Source source(net::NetLog::SOURCE_SOCKET, net_log->NextID());
-  net_log->AddEntry(net::NetLog::TYPE_SOCKET_ALIVE, base::TimeTicks(),
-                    source, net::NetLog::PHASE_BEGIN, NULL);
+  net_log->AddGlobalEntry(net::NetLog::TYPE_CANCELLED, NULL);
 }
 
 // A thread that waits until an event has been signalled before calling
