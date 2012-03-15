@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,6 +25,8 @@ setup_memcheck() {
 
   # Prompt to attach gdb when there was an error detected.
   DEFAULT_TOOL_FLAGS=("--db-command=$GDB -nw %f %p" "--db-attach=yes" \
+                      # Keep the registers in gdb in sync with the code.
+                      "--vex-iropt-precise-memory-exns=yes" \
                       # Overwrite newly allocated or freed objects
                       # with 0x41 to catch inproper use.
                       "--malloc-fill=41" "--free-fill=41" \
