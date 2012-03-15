@@ -18,9 +18,9 @@
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/cros/chromeos_network.h"
 
 namespace base {
 class DictionaryValue;

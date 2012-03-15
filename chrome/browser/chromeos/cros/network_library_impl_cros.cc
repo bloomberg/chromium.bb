@@ -180,18 +180,18 @@ NetworkLibraryImplCros::NetworkLibraryImplCros()
 
 NetworkLibraryImplCros::~NetworkLibraryImplCros() {
   if (network_manager_monitor_)
-    chromeos::DisconnectNetworkPropertiesMonitor(network_manager_monitor_);
+    CrosDisconnectNetworkPropertiesMonitor(network_manager_monitor_);
   if (data_plan_monitor_)
-    chromeos::DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
+    CrosDisconnectDataPlanUpdateMonitor(data_plan_monitor_);
   for (NetworkPropertiesMonitorMap::iterator iter =
            montitored_networks_.begin();
        iter != montitored_networks_.end(); ++iter) {
-    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
+    CrosDisconnectNetworkPropertiesMonitor(iter->second);
   }
   for (NetworkPropertiesMonitorMap::iterator iter =
            montitored_devices_.begin();
        iter != montitored_devices_.end(); ++iter) {
-    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
+    CrosDisconnectNetworkPropertiesMonitor(iter->second);
   }
 }
 
@@ -201,12 +201,12 @@ void NetworkLibraryImplCros::Init() {
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
-  chromeos::RequestNetworkManagerProperties(&NetworkManagerUpdate, this);
+  CrosRequestNetworkManagerProperties(&NetworkManagerUpdate, this);
   network_manager_monitor_ =
-      chromeos::MonitorNetworkManagerProperties(
+      CrosMonitorNetworkManagerProperties(
           &NetworkManagerStatusChangedHandler, this);
   data_plan_monitor_ =
-      chromeos::MonitorCellularDataPlan(&DataPlanUpdateHandler, this);
+      CrosMonitorCellularDataPlan(&DataPlanUpdateHandler, this);
   // Always have at least one device obsever so that device updates are
   // always received.
   network_device_observer_.reset(new NetworkLibraryDeviceObserver());
@@ -223,7 +223,7 @@ void NetworkLibraryImplCros::MonitorNetworkStart(
     const std::string& service_path) {
   if (montitored_networks_.find(service_path) == montitored_networks_.end()) {
     chromeos::NetworkPropertiesMonitor monitor =
-        chromeos::MonitorNetworkServiceProperties(
+        CrosMonitorNetworkServiceProperties(
             &NetworkStatusChangedHandler, service_path.c_str(), this);
     montitored_networks_[service_path] = monitor;
   }
@@ -234,7 +234,7 @@ void NetworkLibraryImplCros::MonitorNetworkStop(
   NetworkPropertiesMonitorMap::iterator iter =
       montitored_networks_.find(service_path);
   if (iter != montitored_networks_.end()) {
-    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
+    CrosDisconnectNetworkPropertiesMonitor(iter->second);
     montitored_networks_.erase(iter);
   }
 }
@@ -243,7 +243,7 @@ void NetworkLibraryImplCros::MonitorNetworkDeviceStart(
     const std::string& device_path) {
   if (montitored_devices_.find(device_path) == montitored_devices_.end()) {
     chromeos::NetworkPropertiesMonitor monitor =
-        chromeos::MonitorNetworkDeviceProperties(
+        CrosMonitorNetworkDeviceProperties(
             &NetworkDevicePropertyChangedHandler, device_path.c_str(), this);
     montitored_devices_[device_path] = monitor;
   }
@@ -254,7 +254,7 @@ void NetworkLibraryImplCros::MonitorNetworkDeviceStop(
   NetworkPropertiesMonitorMap::iterator iter =
       montitored_devices_.find(device_path);
   if (iter != montitored_devices_.end()) {
-    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
+    CrosDisconnectNetworkPropertiesMonitor(iter->second);
     montitored_devices_.erase(iter);
   }
 }
@@ -337,9 +337,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
     NotifyNetworkDeviceChanged(device, index);
     // If a device's power state changes, new properties may become defined.
     if (index == PROPERTY_INDEX_POWERED)
-      chromeos::RequestNetworkDeviceProperties(path.c_str(),
-                                               &NetworkDeviceUpdate,
-                                               this);
+      CrosRequestNetworkDeviceProperties(path.c_str(),
+                                         &NetworkDeviceUpdate,
+                                         this);
   }
 }
 
@@ -368,8 +368,8 @@ void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
     base::JSONWriter::Write(static_cast<Value*>(dict.get()), true, &dict_json);
     VLOG(2) << "ConfigureService will be called on:" << dict_json;
   }
-  chromeos::ConfigureService(identifier.c_str(), ghash,
-                             ConfigureServiceCallback, this);
+  CrosConfigureService(identifier.c_str(), ghash,
+                       ConfigureServiceCallback, this);
 }
 
 // static callback
@@ -405,8 +405,8 @@ void NetworkLibraryImplCros::NetworkConnectCallback(
 
 void NetworkLibraryImplCros::CallConnectToNetwork(Network* network) {
   DCHECK(network);
-  chromeos::RequestNetworkServiceConnect(network->service_path().c_str(),
-                                         NetworkConnectCallback, this);
+  CrosRequestNetworkServiceConnect(network->service_path().c_str(),
+                                   NetworkConnectCallback, this);
 }
 
 // static callback
@@ -430,7 +430,7 @@ void NetworkLibraryImplCros::CallRequestWifiNetworkAndConnect(
     const std::string& ssid, ConnectionSecurity security) {
   // Asynchronously request service properties and call
   // WifiServiceUpdateAndConnect.
-  chromeos::RequestHiddenWifiNetworkProperties(
+  CrosRequestHiddenWifiNetworkProperties(
       ssid.c_str(),
       SecurityToString(security),
       WifiServiceUpdateAndConnect,
@@ -461,7 +461,7 @@ void NetworkLibraryImplCros::CallRequestVirtualNetworkAndConnect(
     const std::string& service_name,
     const std::string& server_hostname,
     ProviderType provider_type) {
-  chromeos::RequestVirtualNetworkProperties(
+  CrosRequestVirtualNetworkProperties(
       service_name.c_str(),
       server_hostname.c_str(),
       ProviderTypeToString(provider_type),
@@ -472,7 +472,7 @@ void NetworkLibraryImplCros::CallRequestVirtualNetworkAndConnect(
 void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
     const std::string& profile_path,
     const std::string& service_path) {
-  chromeos::DeleteServiceFromProfile(
+  CrosDeleteServiceFromProfile(
       profile_path.c_str(), service_path.c_str());
 }
 
@@ -487,9 +487,9 @@ void NetworkLibraryImplCros::ChangePin(const std::string& old_pin,
     return;
   }
   sim_operation_ = SIM_OPERATION_CHANGE_PIN;
-  chromeos::RequestChangePin(cellular->device_path().c_str(),
-                             old_pin.c_str(), new_pin.c_str(),
-                             PinOperationCallback, this);
+  CrosRequestChangePin(cellular->device_path().c_str(),
+                       old_pin.c_str(), new_pin.c_str(),
+                       PinOperationCallback, this);
 }
 
 void NetworkLibraryImplCros::ChangeRequirePin(bool require_pin,
@@ -502,9 +502,9 @@ void NetworkLibraryImplCros::ChangeRequirePin(bool require_pin,
     return;
   }
   sim_operation_ = SIM_OPERATION_CHANGE_REQUIRE_PIN;
-  chromeos::RequestRequirePin(cellular->device_path().c_str(),
-                              pin.c_str(), require_pin,
-                              PinOperationCallback, this);
+  CrosRequestRequirePin(cellular->device_path().c_str(),
+                        pin.c_str(), require_pin,
+                        PinOperationCallback, this);
 }
 
 void NetworkLibraryImplCros::EnterPin(const std::string& pin) {
@@ -514,9 +514,9 @@ void NetworkLibraryImplCros::EnterPin(const std::string& pin) {
     return;
   }
   sim_operation_ = SIM_OPERATION_ENTER_PIN;
-  chromeos::RequestEnterPin(cellular->device_path().c_str(),
-                            pin.c_str(),
-                            PinOperationCallback, this);
+  CrosRequestEnterPin(cellular->device_path().c_str(),
+                      pin.c_str(),
+                      PinOperationCallback, this);
 }
 
 void NetworkLibraryImplCros::UnblockPin(const std::string& puk,
@@ -527,9 +527,9 @@ void NetworkLibraryImplCros::UnblockPin(const std::string& puk,
     return;
   }
   sim_operation_ = SIM_OPERATION_UNBLOCK_PIN;
-  chromeos::RequestUnblockPin(cellular->device_path().c_str(),
-                              puk.c_str(), new_pin.c_str(),
-                              PinOperationCallback, this);
+  CrosRequestUnblockPin(cellular->device_path().c_str(),
+                        puk.c_str(), new_pin.c_str(),
+                        PinOperationCallback, this);
 }
 
 // static callback
@@ -570,7 +570,7 @@ void NetworkLibraryImplCros::RequestCellularScan() {
     NOTREACHED() << "Calling RequestCellularScan method w/o cellular device.";
     return;
   }
-  chromeos::ProposeScan(cellular->device_path().c_str());
+  CrosProposeScan(cellular->device_path().c_str());
 }
 
 void NetworkLibraryImplCros::RequestCellularRegister(
@@ -580,10 +580,10 @@ void NetworkLibraryImplCros::RequestCellularRegister(
     NOTREACHED() << "Calling CellularRegister method w/o cellular device.";
     return;
   }
-  chromeos::RequestCellularRegister(cellular->device_path().c_str(),
-                                    network_id.c_str(),
-                                    CellularRegisterCallback,
-                                    this);
+  CrosRequestCellularRegister(cellular->device_path().c_str(),
+                              network_id.c_str(),
+                              CellularRegisterCallback,
+                              this);
 }
 
 // static callback
@@ -608,7 +608,7 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
     return;
   }
   scoped_ptr<GValue> gvalue(ConvertBoolToGValue(new_value));
-  chromeos::SetNetworkDevicePropertyGValue(
+  CrosSetNetworkDevicePropertyGValue(
       cellular->device_path().c_str(),
       flimflam::kCellularAllowRoamingProperty, gvalue.get());
 }
@@ -631,19 +631,19 @@ bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
 void NetworkLibraryImplCros::RequestNetworkScan() {
   if (wifi_enabled()) {
     wifi_scanning_ = true;  // Cleared when updates are received.
-    chromeos::RequestNetworkScan(flimflam::kTypeWifi);
+    CrosRequestNetworkScan(flimflam::kTypeWifi);
   }
   if (cellular_network())
     cellular_network()->RefreshDataPlansIfNeeded();
   // Make sure all Manager info is up to date. This will also update
   // remembered networks and visible services.
-  chromeos::RequestNetworkManagerProperties(&NetworkManagerUpdate, this);
+  CrosRequestNetworkManagerProperties(&NetworkManagerUpdate, this);
 }
 
 bool NetworkLibraryImplCros::GetWifiAccessPoints(
     WifiAccessPointVector* result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DeviceNetworkList* network_list = chromeos::GetDeviceNetworkList();
+  DeviceNetworkList* network_list = CrosGetDeviceNetworkList();
   if (network_list == NULL)
     return false;
   result->clear();
@@ -661,7 +661,7 @@ bool NetworkLibraryImplCros::GetWifiAccessPoints(
     ap.channel = network_list->networks[i].channel;
     result->push_back(ap);
   }
-  chromeos::FreeDeviceNetworkList(network_list);
+  CrosFreeDeviceNetworkList(network_list);
   return true;
 }
 
@@ -669,26 +669,26 @@ void NetworkLibraryImplCros::DisconnectFromNetwork(const Network* network) {
   DCHECK(network);
   // Asynchronous disconnect request. Network state will be updated through
   // the network manager once disconnect completes.
-  chromeos::RequestNetworkServiceDisconnect(network->service_path().c_str());
+  CrosRequestNetworkServiceDisconnect(network->service_path().c_str());
 }
 
 void NetworkLibraryImplCros::CallEnableNetworkDeviceType(
     ConnectionType device, bool enable) {
   busy_devices_ |= 1 << device;
-  chromeos::RequestNetworkDeviceEnable(
+  CrosRequestNetworkDeviceEnable(
       ConnectionTypeToString(device), enable);
 }
 
 void NetworkLibraryImplCros::CallRemoveNetwork(const Network* network) {
   const char* service_path = network->service_path().c_str();
   if (network->connected())
-    chromeos::RequestNetworkServiceDisconnect(service_path);
-  chromeos::RequestRemoveNetworkService(service_path);
+    CrosRequestNetworkServiceDisconnect(service_path);
+  CrosRequestRemoveNetworkService(service_path);
 }
 
 void NetworkLibraryImplCros::EnableOfflineMode(bool enable) {
   // If network device is already enabled/disabled, then don't do anything.
-  if (chromeos::SetOfflineMode(enable))
+  if (CrosSetOfflineMode(enable))
     offline_mode_ = enable;
 }
 
@@ -700,7 +700,7 @@ NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigs(
   hardware_address->clear();
   NetworkIPConfigVector ipconfig_vector;
   if (!device_path.empty()) {
-    IPConfigStatus* ipconfig_status = ListIPConfigs(device_path.c_str());
+    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path.c_str());
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; ++i) {
         IPConfig ipconfig = ipconfig_status->ips[i];
@@ -710,7 +710,7 @@ NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigs(
                             ipconfig.name_servers));
       }
       *hardware_address = ipconfig_status->hardware_address;
-      FreeIPConfigStatus(ipconfig_status);
+      CrosFreeIPConfigStatus(ipconfig_status);
     }
   }
 
@@ -740,7 +740,7 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
   IPConfig* ipconfig_static = NULL;
 
   IPConfigStatus* ipconfig_status =
-      chromeos::ListIPConfigs(ipconfig.device_path.c_str());
+      CrosListIPConfigs(ipconfig.device_path.c_str());
   if (ipconfig_status) {
     for (int i = 0; i < ipconfig_status->size; ++i) {
       if (ipconfig_status->ips[i].type == chromeos::IPCONFIG_TYPE_DHCP)
@@ -754,19 +754,19 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
   if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
     // If switching from static to dhcp, create new dhcp ip config.
     if (!ipconfig_dhcp)
-      chromeos::AddIPConfig(ipconfig.device_path.c_str(),
-                            chromeos::IPCONFIG_TYPE_DHCP);
+      CrosAddIPConfig(ipconfig.device_path.c_str(),
+                      chromeos::IPCONFIG_TYPE_DHCP);
     // User wants DHCP now. So delete the static ip config.
     if (ipconfig_static)
-      chromeos::RemoveIPConfig(ipconfig_static);
+      CrosRemoveIPConfig(ipconfig_static);
   } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
     // If switching from dhcp to static, create new static ip config.
     if (!ipconfig_static) {
-      chromeos::AddIPConfig(ipconfig.device_path.c_str(),
-                            chromeos::IPCONFIG_TYPE_IPV4);
+      CrosAddIPConfig(ipconfig.device_path.c_str(),
+                      chromeos::IPCONFIG_TYPE_IPV4);
       // Now find the newly created IP config.
       ipconfig_status2 =
-          chromeos::ListIPConfigs(ipconfig.device_path.c_str());
+          CrosListIPConfigs(ipconfig.device_path.c_str());
       if (ipconfig_status2) {
         for (int i = 0; i < ipconfig_status2->size; ++i) {
           if (ipconfig_status2->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
@@ -778,7 +778,7 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
       // Save any changed details.
       if (ipconfig.address != ipconfig_static->address) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.address));
-        chromeos::SetNetworkIPConfigPropertyGValue(
+        CrosSetNetworkIPConfigPropertyGValue(
             ipconfig_static->path, flimflam::kAddressProperty, gvalue.get());
       }
       if (ipconfig.netmask != ipconfig_static->netmask) {
@@ -788,32 +788,32 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
                   << ipconfig.netmask;
         } else {
           scoped_ptr<GValue> gvalue(ConvertIntToGValue(prefixlen));
-          chromeos::SetNetworkIPConfigPropertyGValue(
+          CrosSetNetworkIPConfigPropertyGValue(
               ipconfig_static->path,
               flimflam::kPrefixlenProperty, gvalue.get());
         }
       }
       if (ipconfig.gateway != ipconfig_static->gateway) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.gateway));
-        chromeos::SetNetworkIPConfigPropertyGValue(
+        CrosSetNetworkIPConfigPropertyGValue(
             ipconfig_static->path, flimflam::kGatewayProperty, gvalue.get());
       }
       if (ipconfig.name_servers != ipconfig_static->name_servers) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.name_servers));
-        chromeos::SetNetworkIPConfigPropertyGValue(
+        CrosSetNetworkIPConfigPropertyGValue(
             ipconfig_static->path,
             flimflam::kNameServersProperty, gvalue.get());
       }
       // Remove dhcp ip config if there is one.
       if (ipconfig_dhcp)
-        chromeos::RemoveIPConfig(ipconfig_dhcp);
+        CrosRemoveIPConfig(ipconfig_dhcp);
     }
   }
 
   if (ipconfig_status)
-    chromeos::FreeIPConfigStatus(ipconfig_status);
+    CrosFreeIPConfigStatus(ipconfig_status);
   if (ipconfig_status2)
-    chromeos::FreeIPConfigStatus(ipconfig_status2);
+    CrosFreeIPConfigStatus(ipconfig_status2);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1060,9 +1060,9 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       // Use update_request map to store network priority.
       network_update_requests_[service_path] = network_priority_order++;
       wifi_scanning_ = true;
-      chromeos::RequestNetworkServiceProperties(service_path.c_str(),
-                                                &NetworkServiceUpdate,
-                                                this);
+      CrosRequestNetworkServiceProperties(service_path.c_str(),
+                                          &NetworkServiceUpdate,
+                                          this);
     }
   }
   // Iterate through list of remaining networks that are no longer in the
@@ -1105,9 +1105,9 @@ void NetworkLibraryImplCros::UpdateWatchedNetworkServiceList(
     (*iter)->GetAsString(&service_path);
     if (!service_path.empty()) {
       VLOG(1) << "Watched Service: " << service_path;
-      chromeos::RequestNetworkServiceProperties(service_path.c_str(),
-                                                &NetworkServiceUpdate,
-                                                this);
+      CrosRequestNetworkServiceProperties(service_path.c_str(),
+                                          &NetworkServiceUpdate,
+                                          this);
     }
   }
 }
@@ -1216,7 +1216,7 @@ void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
        iter != profile_list_.end(); ++iter) {
     NetworkProfile& profile = *iter;
     VLOG(1) << " Requesting Profile: " << profile.path;
-    chromeos::RequestNetworkProfileProperties(
+    CrosRequestNetworkProfileProperties(
         profile.path.c_str(), &ProfileUpdate, this);
   }
 }
@@ -1269,7 +1269,7 @@ void NetworkLibraryImplCros::UpdateRememberedServiceList(
     // Add service to profile list.
     profile.services.insert(service_path);
     // Request update for remembered network.
-    chromeos::RequestNetworkProfileEntryProperties(
+    CrosRequestNetworkProfileEntryProperties(
         profile_path,
         service_path.c_str(),
         &RememberedNetworkServiceUpdate,
@@ -1341,7 +1341,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
       VLOG(1) << "Requesting VPN: " << vpn->name()
               << " Server: " << vpn->server_hostname()
               << " Type: " << provider_type;
-      chromeos::RequestVirtualNetworkProperties(
+      CrosRequestVirtualNetworkProperties(
           vpn->name().c_str(),
           vpn->server_hostname().c_str(),
           provider_type.c_str(),
@@ -1374,9 +1374,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
         device_map_[device_path] = found->second;
         old_device_map.erase(found);
       }
-      chromeos::RequestNetworkDeviceProperties(device_path.c_str(),
-                                               &NetworkDeviceUpdate,
-                                               this);
+      CrosRequestNetworkDeviceProperties(device_path.c_str(),
+                                         &NetworkDeviceUpdate,
+                                         this);
     }
   }
   // Delete any old devices that no longer exist.

@@ -425,6 +425,8 @@
         'browser/chromeos/cros/cert_library.h',
         'browser/chromeos/cros/cros_library.cc',
         'browser/chromeos/cros/cros_library.h',
+        'browser/chromeos/cros/cros_network_functions.cc',
+        'browser/chromeos/cros/cros_network_functions.h',
         'browser/chromeos/cros/cryptohome_library.cc',
         'browser/chromeos/cros/cryptohome_library.h',
         'browser/chromeos/cros/enum_mapper.h',

@@ -305,7 +305,7 @@ void Network::SetValueProperty(const char* prop, Value* value) {
     return;
   scoped_ptr<GValue> gvalue(
       NetworkLibraryImplCros::ConvertValueToGValue(value));
-  chromeos::SetNetworkServicePropertyGValue(
+  CrosSetNetworkServicePropertyGValue(
       service_path_.c_str(), prop, gvalue.get());
 }
 
@@ -313,7 +313,7 @@ void Network::ClearProperty(const char* prop) {
   DCHECK(prop);
   if (!EnsureCrosLoaded())
     return;
-  chromeos::ClearNetworkServiceProperty(service_path_.c_str(), prop);
+  CrosClearNetworkServiceProperty(service_path_.c_str(), prop);
 }
 
 void Network::SetStringProperty(
@@ -486,8 +486,7 @@ void Network::InitIPAddress() {
     return;
   // If connected, get ip config.
   if (connected() && !device_path_.empty()) {
-    IPConfigStatus* ipconfig_status =
-        chromeos::ListIPConfigs(device_path_.c_str());
+    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path_.c_str());
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; ++i) {
         IPConfig ipconfig = ipconfig_status->ips[i];
@@ -496,7 +495,7 @@ void Network::InitIPAddress() {
           break;
         }
       }
-      chromeos::FreeIPConfigStatus(ipconfig_status);
+      CrosFreeIPConfigStatus(ipconfig_status);
     }
   }
 }
@@ -1000,7 +999,7 @@ CellularNetwork::~CellularNetwork() {
 bool CellularNetwork::StartActivation() {
   if (!EnsureCrosLoaded())
     return false;
-  if (!chromeos::ActivateCellularModem(service_path().c_str(), NULL))
+  if (!CrosActivateCellularModem(service_path().c_str(), NULL))
     return false;
   // Don't wait for flimflam to tell us that we are really activating since
   // other notifications in the message loop might cause us to think that
@@ -1013,7 +1012,7 @@ void CellularNetwork::RefreshDataPlansIfNeeded() const {
   if (!EnsureCrosLoaded())
     return;
   if (connected() && activated())
-    chromeos::RequestCellularDataPlanUpdate(service_path().c_str());
+    CrosRequestCellularDataPlanUpdate(service_path().c_str());
 }
 
 void CellularNetwork::SetApn(const CellularApn& apn) {
