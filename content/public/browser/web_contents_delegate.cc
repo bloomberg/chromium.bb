@@ -134,12 +134,6 @@ bool WebContentsDelegate::IsFullscreenForTab(const WebContents* tab) const {
   return false;
 }
 
-content::ColorChooser* WebContentsDelegate::OpenColorChooser(WebContents* tab,
-    int color_chooser_id,
-    const SkColor& color) {
-  return NULL;
-}
-
 void WebContentsDelegate::WebIntentDispatch(
     WebContents* tab,
     WebIntentsDispatcher* intents_dispatcher) {

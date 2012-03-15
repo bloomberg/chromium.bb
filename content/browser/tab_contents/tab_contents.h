@@ -36,7 +36,6 @@ class SessionStorageNamespaceImpl;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
-class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogCreator;
 class RenderViewHost;
@@ -224,9 +223,6 @@ class CONTENT_EXPORT TabContents
   virtual content::WebUI* GetWebUIForCurrentState() OVERRIDE;
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
   virtual bool HasOpener() const OVERRIDE;
-  virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            const SkColor&) OVERRIDE;
-  virtual void DidEndColorChooser(int color_chooser_id) OVERRIDE;
 
   // Implementation of PageNavigator.
   virtual content::WebContents* OpenURL(
@@ -450,11 +446,6 @@ class CONTENT_EXPORT TabContents
                    bool final_update);
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
-  void OnOpenColorChooser(int color_chooser_id,
-                          const SkColor& color);
-  void OnEndColorChooser(int color_chooser_id);
-  void OnSetSelectedColorInColorChooser(int color_chooser_id,
-                                        const SkColor& color);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -678,9 +669,6 @@ class CONTENT_EXPORT TabContents
 
   // Is there an opener associated with this?
   bool has_opener_;
-
-  // Color chooser that was opened by this tab.
-  content::ColorChooser* color_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

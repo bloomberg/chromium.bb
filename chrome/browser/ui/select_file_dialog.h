@@ -12,7 +12,6 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/base_shell_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -25,6 +24,21 @@ struct SelectedFileInfo;
 extern std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
                                             const std::wstring& filter_selected,
                                             const std::wstring& suggested_ext);
+
+// A base class for shell dialogs.
+class BaseShellDialog {
+ public:
+  // Returns true if a shell dialog box is currently being shown modally
+  // to the specified owner.
+  virtual bool IsRunning(gfx::NativeWindow owning_window) const = 0;
+
+  // Notifies the dialog box that the listener has been destroyed and it should
+  // no longer be sent notifications.
+  virtual void ListenerDestroyed() = 0;
+
+ protected:
+  virtual ~BaseShellDialog() {}
+};
 
 // Shows a dialog box for selecting a file or a folder.
 class SelectFileDialog

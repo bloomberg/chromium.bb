@@ -11786,11 +11786,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
-    <!-- Color chooser dialog default titles (only used on Linux) -->
-    <message name="IDS_SELECT_COLOR_DIALOG_TITLE" desc="The default title for the Select Color color chooser dialog.">
-      Select Color
-    </message>
-
     <!-- File chooser dialog default titles (only used on Linux) -->
     <message name="IDS_SELECT_FOLDER_DIALOG_TITLE" desc="The default title for the Select Folder file chooser dialog.">
       Select Folder

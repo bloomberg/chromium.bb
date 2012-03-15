@@ -38,7 +38,6 @@
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/download_manager.h"
@@ -273,8 +272,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       temporary_zoom_settings_(false),
       content_restrictions_(0),
       view_type_(content::VIEW_TYPE_TAB_CONTENTS),
-      has_opener_(false),
-      color_chooser_(NULL) {
+      has_opener_(false) {
   render_manager_.Init(browser_context, site_instance, routing_id);
 
   view_.reset(content::GetContentClient()->browser()->
@@ -313,9 +311,6 @@ TabContents::~TabContents() {
   // Clear out any JavaScript state.
   if (dialog_creator_)
     dialog_creator_->ResetJavaScriptState(this);
-
-  if (color_chooser_)
-    color_chooser_->End();
 
   NotifyDisconnected();
 
@@ -563,10 +558,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EndColorChooser, OnEndColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSelectedColorInColorChooser,
-                        OnSetSelectedColorInColorChooser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1390,20 +1381,6 @@ bool TabContents::HasOpener() const {
   return has_opener_;
 }
 
-void TabContents::DidChooseColorInColorChooser(int color_chooser_id,
-                                               const SkColor& color) {
-  GetRenderViewHost()->Send(new ViewMsg_DidChooseColorResponse(
-      GetRenderViewHost()->GetRoutingID(), color_chooser_id, color));
-}
-
-void TabContents::DidEndColorChooser(int color_chooser_id) {
-  GetRenderViewHost()->Send(new ViewMsg_DidEndColorChooser(
-      GetRenderViewHost()->GetRoutingID(), color_chooser_id));
-  if (delegate_)
-    delegate_->DidEndColorChooser();
-  color_chooser_ = NULL;
-}
-
 bool TabContents::FocusLocationBarByDefault() {
   content::WebUI* web_ui = GetWebUIForCurrentState();
   if (web_ui)
@@ -1711,24 +1688,6 @@ void TabContents::OnAppCacheAccessed(const GURL& manifest_url,
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     AppCacheAccessed(manifest_url, blocked_by_policy));
-}
-
-void TabContents::OnOpenColorChooser(int color_chooser_id,
-                                     const SkColor& color) {
-  color_chooser_ = delegate_->OpenColorChooser(this, color_chooser_id, color);
-}
-
-void TabContents::OnEndColorChooser(int color_chooser_id) {
-  if (color_chooser_ &&
-      color_chooser_id == color_chooser_->identifier())
-    color_chooser_->End();
-}
-
-void TabContents::OnSetSelectedColorInColorChooser(int color_chooser_id,
-                                                   const SkColor& color) {
-  if (color_chooser_ &&
-      color_chooser_id == color_chooser_->identifier())
-    color_chooser_->SetSelectedColor(color);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

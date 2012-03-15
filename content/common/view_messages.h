@@ -1010,12 +1010,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 IPC_MESSAGE_ROUTED1(ViewMsg_SetAltErrorPageURL,
                     GURL)
 
-// Notifies the color chooser client that the user selected a color.
-IPC_MESSAGE_ROUTED2(ViewMsg_DidChooseColorResponse, unsigned, SkColor)
-
-// Notifies the color chooser client that the color chooser has ended.
-IPC_MESSAGE_ROUTED1(ViewMsg_DidEndColorChooser, unsigned)
-
 IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
                     std::vector<content::SelectedFileInfo>)
 
@@ -1696,19 +1690,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionBoundsChanged,
                     gfx::Rect /* start rect */,
                     gfx::Rect /* end rect */)
-
-// Asks the browser to open the color chooser.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenColorChooser,
-                    int /* id */,
-                    SkColor /* color */)
-
-// Asks the browser to end the color chooser.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_EndColorChooser, int /* id */)
-
-// Change the selected color in the color chooser.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSelectedColorInColorChooser,
-                    int /* id */,
-                    SkColor /* color */)
 
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewHost_RunFileChooserResponse message.

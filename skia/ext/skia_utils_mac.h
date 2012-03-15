@@ -64,13 +64,8 @@ SkColor CGColorRefToSkColor(CGColorRef color);
 // Converts ARGB to CGColorRef.
 CGColorRef SkColorToCGColorRef(SkColor color);
 
-// Converts NSColor to ARGB. Returns raw rgb values and does no colorspace
-// conversion. Only valid for colors in calibrated and device color spaces.
-SK_API SkColor NSDeviceColorToSkColor(NSColor* color);
-
 // Converts ARGB to NSColor.
 SK_API NSColor* SkColorToCalibratedNSColor(SkColor color);
-SK_API NSColor* SkColorToDeviceNSColor(SkColor color);
 
 // Converts a CGImage to a SkBitmap.
 SK_API SkBitmap CGImageToSkBitmap(CGImageRef image);

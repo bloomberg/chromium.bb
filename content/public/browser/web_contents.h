@@ -15,7 +15,6 @@
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/view_type.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -356,13 +355,6 @@ class WebContents : public PageNavigator {
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
   virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
-
-  // Called when the user has selected a color in the color chooser.
-  virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            const SkColor&) = 0;
-
-  // Called when the color chooser has ended.
-  virtual void DidEndColorChooser(int color_chooser_id) = 0;
 
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
