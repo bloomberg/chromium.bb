@@ -854,7 +854,7 @@
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
 {
-  bug_118319
+  bug_118319_a
   ThreadSanitizer:Race
   fun:content::BrowserThreadImpl::~BrowserThreadImpl
   fun:content::BrowserProcessSubThread::~BrowserProcessSubThread
@@ -869,11 +869,17 @@
   fun:main
 }
 {
-  bug_118345
+  bug_118319_b
   ThreadSanitizer:Race
   fun:base::Thread::message_loop
   fun:content::BrowserThreadImpl::PostTaskHelper
   fun:content::BrowserThread::PostTask
   fun:PluginLoaderPosix::GetPluginsToLoad
   fun:base::internal::RunnableAdapter::Run
+}
+{
+  bug_118319_c
+  ThreadSanitizer:Race
+  fun:base::Thread::ThreadMain
+  fun:base::::ThreadFunc
 }
