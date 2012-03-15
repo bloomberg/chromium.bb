@@ -415,9 +415,10 @@ bool GDataRootDirectory::CacheFileExists(const std::string& res_id,
                                          const std::string& md5) {
   // GDataFileSystem has already locked.
   CacheMap::const_iterator iter = cache_map_.find(res_id);
-  // It's only a valid file if entry exists in cache map and its CACHE_OK bit
-  // is set i.e. not corrupted.
+  // It's only a valid file if entry exists in cache map and its md5 matches and
+  // its CACHE_OK bit is set i.e. not corrupted.
   return iter != cache_map_.end() &&
+      iter->second->md5 == md5 &&
       iter->second->mode_bits & CACHE_OK;
 }
 

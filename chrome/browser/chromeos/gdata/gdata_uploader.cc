@@ -274,11 +274,10 @@ void GDataUploader::OnResumeUploadResponseReceived(
     // Done uploading.
     DCHECK(!response.resource_id.empty());
     DCHECK(!response.md5_checksum.empty());
-    bool ok = file_system_->StoreToCache(response.resource_id,
+    file_system_->StoreToCache(response.resource_id,
         response.md5_checksum,
         upload_file_info->file_path,
         CacheOperationCallback());
-    DCHECK(ok);
     RemovePendingUpload(upload_file_info);
     return;
   }

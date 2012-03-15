@@ -24,7 +24,10 @@
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "net/base/net_errors.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace gdata {
 
@@ -62,9 +65,17 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
 };
 
 // Callback for completion of cache operation.
-typedef base::Callback<void(net::Error error,
-                            const std::string& res_id,
+typedef base::Callback<void(base::PlatformFileError error,
+                            const std::string& resource_id,
                             const std::string& md5)> CacheOperationCallback;
+
+// Callback for GetFromCache.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const std::string& resource_id,
+                            const std::string& md5,
+                            const FilePath& gdata_file_path,
+                            const FilePath& cache_file_path)>
+    GetFromCacheCallback;
 
 // GData file system abstraction layer.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
@@ -209,10 +220,18 @@ class GDataFileSystem : public ProfileKeyedService {
   // Returns NULL if it does not find the file.
   GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
 
-  // Returns absolute path of cache file corresponding to |gdata_file_path|.
-  // Returns empty FilePath if cache has not been initialized or file doesn't
-  // exist in GData or cache.
-  FilePath GetFromCacheForPath(const FilePath& gdata_file_path);
+  // Gets absolute path of cache file corresponding to |gdata_file_path|.
+  // Upon completion, |callback| is invoked on the same thread where this method
+  // was called, with path if it exists and is accessible or empty FilePath
+  // otherwise.
+  void GetFromCacheForPath(const FilePath& gdata_file_path,
+                           const GetFromCacheCallback& callback);
+
+  // Returns the tmp sub-directory under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1/tmp
+  FilePath GetGDataCacheTmpDirectory() {
+    return cache_paths_[CACHE_TYPE_TMP];
+  }
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
@@ -259,6 +278,7 @@ class GDataFileSystem : public ProfileKeyedService {
   enum CacheType {  // This indexes into |cache_paths_| vector.
     CACHE_TYPE_BLOBS = 0,
     CACHE_TYPE_META,
+    CACHE_TYPE_TMP,
   };
 
   // Callback similar to FileOperationCallback but with a given
@@ -323,6 +343,13 @@ class GDataFileSystem : public ProfileKeyedService {
                                const FilePathUpdateCallback& callback,
                                base::PlatformFileError error,
                                const FilePath& file_path);
+
+  // Removes file under |file_path| from in-memory snapshot of the file system.
+  // |resource_id| contains the resource id of the removed file if it was a
+  // file.
+  // Return PLATFORM_FILE_OK if successful.
+  base::PlatformFileError RemoveFileFromGData(const FilePath& file_path,
+                                              std::string* resource_id);
 
   // Callback for handling feed content fetching while searching for file info.
   // This callback is invoked after async feed fetch operation that was
@@ -426,7 +453,8 @@ class GDataFileSystem : public ProfileKeyedService {
       const FilePath& file_path, const FilePath& dir_path,
       FilePath* updated_file_path);
 
-  // Removes file under |file_path| from in-memory snapshot of the file system.
+  // Removes file under |file_path| from in-memory snapshot of the file system
+  // and the corresponding file from cache if it exists.
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
 
@@ -481,24 +509,17 @@ class GDataFileSystem : public ProfileKeyedService {
   // - uploads dirty files to gdata server.
   // - etc.
 
-  // Initializes cache, including creating cache directory and its sub-
-  // directories, scanning blobs directory to populate cache map with existing
-  // cache files and their status, etc.
-  void InitializeCache();
-
   // Returns absolute path of the file if it were cached or to be cached.
-  FilePath GetCacheFilePath(const std::string& res_id,
+  FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5);
 
-  // Stores |source_path| corresponding to |res_id| and |md5| to cache.
-  // Returns false immediately if cache has not been initialized i.e. the cache
-  // directory and its sub-directories have not been created or the blobs sub-
-  // directory has not been scanned to initialize the cache map.
+  // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
+  // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
   // TODO(kuan): When URLFetcher can save response to a specified file (as
   // opposed to only temporary file currently), remove |source_path| parameter.
-  bool StoreToCache(const std::string& res_id,
+  void StoreToCache(const std::string& resource_id,
                     const std::string& md5,
                     const FilePath& temp_file,
                     const CacheOperationCallback& callback);
@@ -506,18 +527,19 @@ class GDataFileSystem : public ProfileKeyedService {
   // Checks if file corresponding to |resource_id| and |md5| exist on disk and
   // can be accessed i.e. not corrupted by previous file operations that didn't
   // complete for whatever reasons.
-  // Returns false if cache has not been initialized.
-  // Otherwise, if file exists on disk and is accessible, |path| contains its
-  // absolute path, else |path| is empty.
-  bool GetFromCache(const std::string& res_id,
+  // Initializes cache if it has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called with the cache file path if it exists and is accessible or empty
+  // otherwise.
+  void GetFromCache(const std::string& resource_id,
                     const std::string& md5,
-                    FilePath* path);
+                    const GetFromCacheCallback& callback);
 
   // Removes all files corresponding to |resource_id| from cache.
-  // Returns false if cache has not been initialized.
+  // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
-  bool RemoveFromCache(const std::string& res_id,
+  void RemoveFromCache(const std::string& resource_id,
                        const CacheOperationCallback& callback);
 
   // Pin file corresponding to |resource_id| and |md5| by setting the
@@ -526,56 +548,69 @@ class GDataFileSystem : public ProfileKeyedService {
   // on disk and pinned files are the only ones left.
   // If the file to be pinned is not stored in the cache,
   // net::ERR_FILE_NOT_FOUND will be passed to the |callback|.
-  // Returns false if cache has not been initialized.
+  // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
-  bool Pin(const std::string& res_id,
+  void Pin(const std::string& resource_id,
            const std::string& md5,
            const CacheOperationCallback& callback);
 
   // Unpin file corresponding to |resource_id| and |md5| by setting the
   // appropriate file attributes.
   // Unpinned files would be evicted when space on disk runs out.
-  // Returns false if cache has not been initialized.
+  // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
-  bool Unpin(const std::string& res_id,
+  void Unpin(const std::string& resource_id,
              const std::string& md5,
              const CacheOperationCallback& callback);
 
-  // Cache callbacks from cache tasks that were run on IO thread pool.
+  // Initializes cache if it hasn't been initialized by posting
+  // InitializeCacheOnIOThreadPool task to IO thread pool.
+  void InitializeCacheIfNecessary();
 
-  // Callback for InitializeCache that updates the necessary data members with
-  // results from InitializeCacheOnIoThreadPool.
-  void OnCacheInitialized(net::Error error,
-                          bool initialized,
-                          const GDataRootDirectory::CacheMap& cache_map);
+  // Task posted from InitializeCacheIfNecessary to run on IO thread pool.
+  // Creates cache directory and its sub-directories if they don't exist,
+  // or scans blobs sub-directory for files and their attributes and updates the
+  // info into cache map.
+  void InitializeCacheOnIOThreadPool();
+
+  // Cache callbacks from cache tasks that were run on IO thread pool.
 
   // Callback for StoreToCache that updates the data members with results from
   // StoreToCacheOnIOThreadPool.
-  void OnStoredToCache(net::Error error,
-                       const std::string& res_id,
+  void OnStoredToCache(base::PlatformFileError error,
+                       const std::string& resource_id,
                        const std::string& md5,
                        mode_t mode_bits,
                        const CacheOperationCallback& callback);
 
-  // Default callback for RemoveFromCache.
-  void OnRemovedFromCache(net::Error error,
-                          const std::string& res_id,
+  // Callback for GetFromCache that checks if file corresponding to
+  // |resource_id| and |md5| exist in cache map.
+  void OnGottenFromCache(const std::string& resource_id,
+                         const std::string& md5,
+                         const FilePath& gdata_file_path,
+                         const GetFromCacheCallback& callback);
+
+  // Default dummy callback for RemoveFromCache.
+  void OnRemovedFromCache(base::PlatformFileError error,
+                          const std::string& resource_id,
                           const std::string& md5);
 
   // Callback for any method that needs to modify cache status, e.g. Pin and
   // Unpin.
-  void OnCacheStatusModified(net::Error error,
-                             const std::string& res_id,
+  void OnCacheStatusModified(base::PlatformFileError error,
+                             const std::string& resource_id,
                              const std::string& md5,
                              mode_t mode_bits,
                              const CacheOperationCallback& callback);
 
   // Cache internal helper functions.
 
-  // Checks if cache has been initialized, safe because it's with locking.
-  bool SafeIsCacheInitialized();
+  void GetFromCacheInternal(const std::string& resource_id,
+                            const std::string& md5,
+                            const FilePath& gdata_file_path,
+                            const GetFromCacheCallback& callback);
 
   scoped_ptr<GDataRootDirectory> root_;
 
@@ -598,9 +633,11 @@ class GDataFileSystem : public ProfileKeyedService {
   // Paths for all subdirectories of GCache, one for each CacheType enum.
   std::vector<FilePath> cache_paths_;
 
-  // True if cache has been initialized properly, determined in
-  // OnCacheInitialized callback for GDataCache::Initialize.
-  bool cache_initialized_;
+  scoped_ptr<base::WaitableEvent> on_cache_initialized_;
+
+  // True if cache initialization has started, is in progress or has completed,
+  // we only want to initialize cache once.
+  bool cache_initialization_started_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 };
