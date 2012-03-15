@@ -52,7 +52,6 @@ SK_API CGAffineTransform SkMatrixToCGAffineTransform(const SkMatrix& matrix);
 
 // Rectangle converters.
 SkRect CGRectToSkRect(const CGRect& rect);
-SkIRect CGRectToSkIRect(const CGRect& rect);
 
 // Converts a Skia rect to a CoreGraphics CGRect.
 CGRect SkIRectToCGRect(const SkIRect& rect);

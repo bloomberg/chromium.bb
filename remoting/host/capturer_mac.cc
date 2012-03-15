@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,21 @@
 #include "base/synchronization/waitable_event.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
-#include "skia/ext/skia_utils_mac.h"
 
 
 namespace remoting {
 
 namespace {
+
+SkIRect CGRectToSkIRect(const CGRect& rect) {
+  SkIRect sk_rect = {
+    SkScalarRound(rect.origin.x),
+    SkScalarRound(rect.origin.y),
+    SkScalarRound(rect.origin.x + rect.size.width),
+    SkScalarRound(rect.origin.y + rect.size.height)
+  };
+  return sk_rect;
+}
 
 #if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5)
 // Possibly remove CapturerMac::CgBlitPreLion as well depending on performance
@@ -555,7 +564,7 @@ const SkISize& CapturerMac::size_most_recent() const {
 void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
   SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
-    skirect_array[i] = gfx::CGRectToSkIRect(rect_array[i]);
+    skirect_array[i] = CGRectToSkIRect(rect_array[i]);
   }
   SkRegion region;
   region.setRects(skirect_array, count);
@@ -569,7 +578,7 @@ void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
     rect = CGRectOffset(rect, delta.dX, delta.dY);
-    skirect_new_array[i] = gfx::CGRectToSkIRect(rect);
+    skirect_new_array[i] = CGRectToSkIRect(rect);
   }
   SkRegion region;
   region.setRects(skirect_new_array, count);
