@@ -579,7 +579,8 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     current_gesture_type_ = kGestureTypeMove;
     return;
   }
-  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2) {
+  if ((hw_props_.supports_t5r2 || hw_props_.support_semi_mt) &&
+      (hwstate.touch_cnt > 2)) {
     current_gesture_type_ = kGestureTypeScroll;
     return;
   }

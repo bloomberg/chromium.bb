@@ -145,6 +145,63 @@ TEST(ImmediateInterpreterTest, MoveUpWithRestingThumbTest) {
             ii.SyncInterpret(&hardware_states[4], NULL));
 }
 
+TEST(ImmediateInterpreterTest, SemiMtScrollUpWithRestingThumbTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    1000,  // right edge
+    1000,  // bottom edge
+    20,  // pixels/TP width
+    20,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    3,  // max touch
+    0,  // tripletap
+    1,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 100, 0, 50, 950, 1},
+    {0, 0, 0, 0, 100, 0, 415, 900, 2},
+
+    {0, 0, 0, 0, 100, 0, 50, 950, 1},
+    {0, 0, 0, 0, 100, 0, 415, 800, 2},
+
+    {0, 0, 0, 0, 100, 0, 50, 950, 1},
+    {0, 0, 0, 0, 100, 0, 415, 700, 2},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0.200000, 0, 2, 3, &finger_states[0] },
+    { 0.250000, 0, 2, 3, &finger_states[2] },
+    { 0.300000, 0, 2, 3, &finger_states[4] }
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[0], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[1], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  EXPECT_FLOAT_EQ(0, gs->details.move.dx);
+  EXPECT_FLOAT_EQ(-100, gs->details.move.dy);
+  EXPECT_DOUBLE_EQ(0.200000, gs->start_time);
+  EXPECT_DOUBLE_EQ(0.250000, gs->end_time);
+
+  gs = ii.SyncInterpret(&hardware_states[2], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+  EXPECT_FLOAT_EQ(0, gs->details.move.dx);
+  EXPECT_FLOAT_EQ(-100, gs->details.move.dy);
+  EXPECT_DOUBLE_EQ(0.250000, gs->start_time);
+  EXPECT_DOUBLE_EQ(0.300000, gs->end_time);
+}
+
 void ScrollUpTest(float pressure_a, float pressure_b) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
