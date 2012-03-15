@@ -17,10 +17,8 @@
 %module(docstring="Python interface to Automation Proxy.") pyautolib
 %feature("autodoc", "1");
 
-%include <cpointer.i>
-%include <std_string.i>
 %include <std_wstring.i>
-%include <typemaps.i>
+%include <std_string.i>
 
 %include "chrome/test/pyautolib/argc_argv.i"
 
@@ -32,11 +30,6 @@
 %include "chrome/app/chrome_dll_resource.h"
 %include "chrome/common/automation_constants.h"
 %include "chrome/common/pref_names.h"
-%include "content/public/common/page_type.h"
-%include "content/public/common/security_style.h"
-// Must come before cert_status_flags.h
-%include "net/base/net_export.h"
-%include "net/base/cert_status_flags.h"
 
 %{
 #include "chrome/common/automation_constants.h"
@@ -154,42 +147,6 @@ class TabProxy {
           "button, if false to 'Take me out of there' button.")
       TakeActionOnSSLBlockingPage;
   bool TakeActionOnSSLBlockingPage(bool proceed);
-  %extend {
-    %feature("docstring", "Retrieves the different security states for the "
-             "current tab.")
-        GetSecurityState;
-    PyObject* GetSecurityState() {
-      content::SecurityStyle security_style;
-      net::CertStatus ssl_cert_status;
-      int insecure_content_status;
-      PyObject* result_dict = PyDict_New();
-      if ($self->GetSecurityState(
-          &security_style, &ssl_cert_status, &insecure_content_status)) {
-        PyDict_SetItem(result_dict, PyString_FromString("security_style"),
-                       PyInt_FromLong(security_style));
-        PyDict_SetItem(result_dict, PyString_FromString("ssl_cert_status"),
-                       PyInt_FromLong(ssl_cert_status));
-        PyDict_SetItem(result_dict,
-                       PyString_FromString("insecure_content_status"),
-                       PyInt_FromLong(insecure_content_status));
-      }
-      return result_dict;
-    }
-  };
-  %extend {
-    %feature("docstring", "Returns the type of page currently showing "
-             "(normal, interstitial, error.")
-        GetPageType;
-    PyObject* GetPageType() {
-      content::PageType page_type;
-      PyObject* result_dict = PyDict_New();
-      if ($self->GetPageType(&page_type)) {
-        PyDict_SetItem(result_dict, PyString_FromString("page_type"),
-                       PyInt_FromLong(page_type));
-      }
-      return result_dict;
-    }
-  };
 
   // HTTP Auth
   %feature("docstring",
@@ -518,6 +475,3 @@ struct HTTPSOptions {
 %{
 typedef net::TestServer::HTTPSOptions HTTPSOptions;
 %}
-
-%pointer_class(int, int_ptr);
-%pointer_class(uint32, uint32_ptr);
