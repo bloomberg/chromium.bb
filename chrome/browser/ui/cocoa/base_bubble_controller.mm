@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,7 +119,7 @@ class Bridge : public content::NotificationObserver {
   DCHECK(bubble_);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  base_bridge_.reset(new BaseBubbleControllerInternal::Bridge(self));
+  baseBridge_.reset(new BaseBubbleControllerInternal::Bridge(self));
 
   [bubble_ setArrowLocation:info_bubble::kTopRight];
 }
