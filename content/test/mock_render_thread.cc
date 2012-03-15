@@ -13,7 +13,7 @@
 namespace content {
 
 MockRenderThread::MockRenderThread()
-    : routing_id_(0), surface_id_(0), opener_id_(0) {
+    : routing_id_(0), surface_id_(0), opener_id_(0), new_window_routing_id_(0) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -73,13 +73,17 @@ IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
 
 void MockRenderThread::AddRoute(int32 routing_id,
                                 IPC::Channel::Listener* listener) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = listener;
+  // We may hear this for views created from OnMsgCreateWindow as well,
+  // in which case we don't want to track the new widget.
+  if (routing_id_ == routing_id)
+    widget_ = listener;
 }
 
 void MockRenderThread::RemoveRoute(int32 routing_id) {
-  EXPECT_EQ(routing_id_, routing_id);
-  widget_ = NULL;
+  // We may hear this for views created from OnMsgCreateWindow as well,
+  // in which case we don't want to track the new widget.
+  if (routing_id_ == routing_id)
+    widget_ = NULL;
 }
 
 int MockRenderThread::GenerateRoutingID() {
@@ -180,6 +184,17 @@ void MockRenderThread::OnMsgCreateWidget(int opener_id,
   *surface_id = surface_id_;
 }
 
+// The View expects to be returned a valid route_id different from its own.
+void MockRenderThread::OnMsgCreateWindow(
+    const ViewHostMsg_CreateWindow_Params& params,
+    int* route_id,
+    int* surface_id,
+    int64* cloned_session_storage_namespace_id) {
+  *route_id = new_window_routing_id_;
+  *surface_id = surface_id_;
+  *cloned_session_storage_namespace_id = 0;
+}
+
 bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   // Save the message in the sink.
   sink_.OnMessageReceived(msg);
@@ -188,6 +203,7 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;

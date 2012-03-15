@@ -40,6 +40,7 @@
 #include "content/common/request_extra_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -2316,32 +2317,45 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
-  // top-level navigations within the current tab (as opposed to, for example,
-  // opening a new window). But we sometimes navigate to about:blank to clear a
-  // tab, and we want to still allow that.
+  // top-level navigations (not iframes). But we sometimes navigate to
+  // about:blank to clear a tab, and we want to still allow that.
   //
-  // Note: we do this only for GET requests because our mechanism for switching
-  // processes only issues GET requests. In particular, POST requests don't
-  // work, because this mechanism does not preserve form POST data. If it
-  // becomes necessary to support process switching for POST requests, we will
-  // need to send the request's httpBody data up to the browser process, and
-  // issue a special POST navigation in WebKit (via
+  // Note: this is known to break POST submissions when crossing process
+  // boundaries until http://crbug.com/101395 is fixed.  This is better for
+  // security than loading a WebUI, extension or app page in the wrong process.
+  // POST requests don't work because this mechanism does not preserve form
+  // POST data. We will need to send the request's httpBody data up to the
+  // browser process, and issue a special POST navigation in WebKit (via
   // FrameLoader::loadFrameRequest). See ResourceDispatcher and WebURLLoaderImpl
   // for examples of how to send the httpBody data.
   if (!frame->parent() && is_content_initiated &&
-      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
+      !url.SchemeIs(chrome::kAboutScheme)) {
     bool send_referrer = false;
+
+    // All navigations to WebUI URLs or within WebUI-enabled RenderProcesses
+    // must be handled by the browser process so that the correct bindings and
+    // data sources can be registered.
+    // Similarly, navigations to view-source URLs or within ViewSource mode
+    // must be handled by the browser process.
+    int cumulative_bindings =
+        RenderProcess::current()->GetEnabledBindings();
     bool should_fork =
-        (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI) ||
-        frame->isViewSourceModeEnabled() ||
-        url.SchemeIs(chrome::kViewSourceScheme);
+        content::GetContentClient()->HasWebUIScheme(url) ||
+        (cumulative_bindings & content::BINDINGS_POLICY_WEB_UI) ||
+        url.SchemeIs(chrome::kViewSourceScheme) ||
+        frame->isViewSourceModeEnabled();
 
     if (!should_fork) {
       // Give the embedder a chance.
-      bool is_initial_navigation = page_id_ == -1;
-      should_fork = content::GetContentClient()->renderer()->ShouldFork(
-          frame, url, is_initial_navigation, &send_referrer);
+      // For now, we skip this for POST submissions.  This is because
+      // http://crbug.com/101395 is more likely to cause compatibility issues
+      // with hosted apps and extensions than WebUI pages.  We will remove this
+      // check when cross-process POST submissions are supported.
+      if (request.httpMethod() == "GET") {
+        bool is_initial_navigation = page_id_ == -1;
+        should_fork = content::GetContentClient()->renderer()->ShouldFork(
+            frame, url, is_initial_navigation, &send_referrer);
+      }
     }
 
     if (should_fork) {
@@ -4074,6 +4088,9 @@ void RenderViewImpl::OnCSSInsertRequest(const string16& frame_xpath,
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
   enabled_bindings_ |= enabled_bindings_flags;
+
+  // Keep track of the total bindings accumulated in this process.
+  RenderProcess::current()->AddBindings(enabled_bindings_flags);
 }
 
 void RenderViewImpl::OnSetWebUIProperty(const std::string& name,

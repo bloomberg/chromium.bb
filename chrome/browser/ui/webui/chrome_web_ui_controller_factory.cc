@@ -54,6 +54,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -382,12 +383,6 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
       UseWebUIForURL(browser_context, url);
 }
 
-bool ChromeWebUIControllerFactory::HasWebUIScheme(const GURL& url) const {
-  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-         url.SchemeIs(chrome::kChromeInternalScheme) ||
-         url.SchemeIs(chrome::kChromeUIScheme);
-}
-
 bool ChromeWebUIControllerFactory::IsURLAcceptableForWebUI(
     content::BrowserContext* browser_context,
     const GURL& url) const {
@@ -463,7 +458,7 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return NULL;
   }
 
-  if (!HasWebUIScheme(page_url))
+  if (!content::GetContentClient()->HasWebUIScheme(page_url))
     return NULL;
 
 #if defined(OS_WIN)

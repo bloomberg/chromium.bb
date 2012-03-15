@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "content/public/common/url_constants.h"
 #include "grit/common_resources.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -344,6 +345,12 @@ void ChromeContentClient::AddPepperPlugins(
 
 void ChromeContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
+}
+
+bool ChromeContentClient::HasWebUIScheme(const GURL& url) const {
+  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeInternalScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme);
 }
 
 bool ChromeContentClient::CanHandleWhileSwappedOut(

@@ -21,6 +21,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
+#include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,18 +53,25 @@ class SiteInstanceTestWebUIControllerFactory
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
-  }
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs(chrome::kChromeUIScheme);
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
   virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
       const GURL& url) const OVERRIDE {
     return false;
+  }
+};
+
+class SiteInstanceTestClient : public TestContentClient {
+ public:
+  SiteInstanceTestClient() {
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs(chrome::kChromeUIScheme);
   }
 };
 
@@ -102,10 +110,13 @@ class SiteInstanceTest : public testing::Test {
  public:
   SiteInstanceTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        old_client_(NULL),
         old_browser_client_(NULL) {
   }
 
   virtual void SetUp() {
+    old_client_ = content::GetContentClient();
+    content::SetContentClient(&client_);
     old_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
     url_util::AddStandardScheme(kPrivilegedScheme);
@@ -114,6 +125,7 @@ class SiteInstanceTest : public testing::Test {
 
   virtual void TearDown() {
     content::GetContentClient()->set_browser(old_browser_client_);
+    content::SetContentClient(old_client_);
   }
 
   void set_privileged_process_id(int process_id) {
@@ -124,7 +136,9 @@ class SiteInstanceTest : public testing::Test {
   MessageLoopForUI message_loop_;
   BrowserThreadImpl ui_thread_;
 
+  SiteInstanceTestClient client_;
   SiteInstanceTestBrowserClient browser_client_;
+  content::ContentClient* old_client_;
   content::ContentBrowserClient* old_browser_client_;
 };
 

@@ -38,7 +38,8 @@ RenderProcessImpl::RenderProcessImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
           FROM_HERE, base::TimeDelta::FromSeconds(5),
           this, &RenderProcessImpl::ClearTransportDIBCache)),
-      transport_dib_next_sequence_number_(0) {
+      transport_dib_next_sequence_number_(0),
+      enabled_bindings_(0) {
   in_process_plugins_ = InProcessPlugins();
   for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
     shared_mem_cache_[i] = NULL;
@@ -96,6 +97,14 @@ bool RenderProcessImpl::InProcessPlugins() {
   return command_line.HasSwitch(switches::kInProcessPlugins) ||
          command_line.HasSwitch(switches::kSingleProcess);
 #endif
+}
+
+void RenderProcessImpl::AddBindings(int bindings) {
+  enabled_bindings_ |= bindings;
+}
+
+int RenderProcessImpl::GetEnabledBindings() const {
+  return enabled_bindings_;
 }
 
 // -----------------------------------------------------------------------------

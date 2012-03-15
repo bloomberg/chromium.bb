@@ -12,6 +12,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 
+struct ViewHostMsg_CreateWindow_Params;
+
 namespace IPC {
 class MessageReplyDeserializer;
 }
@@ -19,8 +21,9 @@ class MessageReplyDeserializer;
 namespace content {
 
 // This class is a very simple mock of RenderThread. It simulates an IPC channel
-// which supports only two messages:
+// which supports only three messages:
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
+// ViewHostMsg_CreateWindow : sync message sent by the Widget.
 // ViewMsg_Close : async, send to the Widget.
 class MockRenderThread : public content::RenderThread {
  public:
@@ -91,6 +94,10 @@ class MockRenderThread : public content::RenderThread {
     return widget_ ? true : false;
   }
 
+  void set_new_window_routing_id(int32 id) {
+    new_window_routing_id_ = id;
+  }
+
   // Simulates the Widget receiving a close message. This should result
   // on releasing the internal reference counts and destroying the internal
   // state.
@@ -106,6 +113,15 @@ class MockRenderThread : public content::RenderThread {
                          WebKit::WebPopupType popup_type,
                          int* route_id,
                          int* surface_id);
+
+  // The View expects to be returned a valid route_id different from its own.
+  // We do not keep track of the newly created widget in MockRenderThread,
+  // so it must be cleaned up on its own.
+  void OnMsgCreateWindow(
+    const ViewHostMsg_CreateWindow_Params& params,
+    int* route_id,
+    int* surface_id,
+    int64* cloned_session_storage_namespace_id);
 
 #if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
@@ -124,8 +140,12 @@ class MockRenderThread : public content::RenderThread {
   int32 opener_id_;
 
   // We only keep track of one Widget, we learn its pointer when it
-  // adds a new route.
+  // adds a new route.  We do not keep track of Widgets created with
+  // OnMsgCreateWindow.
   IPC::Channel::Listener* widget_;
+
+  // Routing id that will be assigned to a CreateWindow Widget.
+  int32 new_window_routing_id_;
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

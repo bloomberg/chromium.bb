@@ -698,12 +698,6 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
       return true;
   }
 
-  // Navigating to a new chrome:// scheme (in a new tab) from within a
-  // chrome:// page must be a browser navigation so that the browser can
-  // register the new associated data source.
-  if (url.SchemeIs(kChromeUIScheme))
-    return true;
-
   return false;
 }
 

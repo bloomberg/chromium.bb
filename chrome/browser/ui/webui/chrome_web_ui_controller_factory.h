@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_FACTORY_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_CONTROLLER_FACTORY_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -24,7 +24,6 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
                               const GURL& url) const OVERRIDE;
   virtual bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE;
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool IsURLAcceptableForWebUI(content::BrowserContext* browser_context,
                                        const GURL& url) const OVERRIDE;
   virtual content::WebUIController* CreateWebUIControllerForURL(
@@ -54,4 +53,4 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIControllerFactory);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROME_WEB_UI_CONTROLLER_FACTORY_H_

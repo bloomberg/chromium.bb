@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@ class TestContentClient : public content::ContentClient {
       std::vector<content::PepperPluginInfo>* plugins) OVERRIDE;
   virtual void AddNPAPIPlugins(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE;
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& msg) OVERRIDE;
   virtual std::string GetUserAgent(bool* overriding) const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;

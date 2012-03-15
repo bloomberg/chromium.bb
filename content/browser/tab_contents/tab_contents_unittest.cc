@@ -25,6 +25,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
@@ -50,7 +51,7 @@ class TabContentsTestWebUIControllerFactory
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
       content::WebUI* web_ui, const GURL& url) const OVERRIDE {
-   if (!HasWebUIScheme(url))
+   if (!content::GetContentClient()->HasWebUIScheme(url))
      return NULL;
 
    return new WebUIController(web_ui);
@@ -63,21 +64,27 @@ class TabContentsTestWebUIControllerFactory
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
-  }
-
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs("tabcontentstest");
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context, const GURL& url) const {
-    return HasWebUIScheme(url);
+    return content::GetContentClient()->HasWebUIScheme(url);
+  }
+};
+
+class TabContentsTestClient : public TestContentClient {
+ public:
+  TabContentsTestClient() {
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs("tabcontentstest");
   }
 };
 
@@ -261,6 +268,7 @@ class TabContentsTest : public RenderViewHostImplTestHarness {
  public:
   TabContentsTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        old_client_(NULL),
         old_browser_client_(NULL) {
   }
 
@@ -269,6 +277,8 @@ class TabContentsTest : public RenderViewHostImplTestHarness {
     // We must register it similarly to kChromeUIScheme.
     url_util::AddStandardScheme("tabcontentstest");
 
+    old_client_ = content::GetContentClient();
+    content::SetContentClient(&client_);
     old_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
     RenderViewHostTestHarness::SetUp();
@@ -276,12 +286,15 @@ class TabContentsTest : public RenderViewHostImplTestHarness {
 
   virtual void TearDown() {
     content::GetContentClient()->set_browser(old_browser_client_);
+    content::SetContentClient(old_client_);
     RenderViewHostTestHarness::TearDown();
   }
 
  private:
+  TabContentsTestClient client_;
   TabContentsTestBrowserClient browser_client_;
   content::TestBrowserThread ui_thread_;
+  content::ContentClient* old_client_;
   content::ContentBrowserClient* old_browser_client_;
 };
 

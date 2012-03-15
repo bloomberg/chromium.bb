@@ -22,6 +22,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
+#include "content/test/test_content_client.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/url_util.h"
@@ -45,8 +46,6 @@ using content::WebUIController;
 
 namespace {
 
-const char kChromeUISchemeButNotWebUIURL[] = "chrome://not-webui";
-
 class RenderViewHostManagerTestWebUIControllerFactory
     : public content::WebUIControllerFactory {
  public:
@@ -62,7 +61,8 @@ class RenderViewHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-    if (!(should_create_webui_ && HasWebUIScheme(url)))
+    if (!(should_create_webui_ &&
+          content::GetContentClient()->HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
@@ -74,17 +74,12 @@ class RenderViewHostManagerTestWebUIControllerFactory
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
-  }
-
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs(chrome::kChromeUIScheme) &&
-        url.spec() != kChromeUISchemeButNotWebUIURL;
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
@@ -96,6 +91,16 @@ class RenderViewHostManagerTestWebUIControllerFactory
   bool should_create_webui_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIControllerFactory);
+};
+
+class RenderViewHostManagerTestClient : public TestContentClient {
+ public:
+  RenderViewHostManagerTestClient() {
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs(chrome::kChromeUIScheme);
+  }
 };
 
 class RenderViewHostManagerTestBrowserClient
@@ -127,6 +132,8 @@ class RenderViewHostManagerTest
  public:
   virtual void SetUp() OVERRIDE {
     RenderViewHostTestHarness::SetUp();
+    old_client_ = content::GetContentClient();
+    content::SetContentClient(&client_);
     old_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
@@ -135,6 +142,7 @@ class RenderViewHostManagerTest
   virtual void TearDown() OVERRIDE {
     RenderViewHostTestHarness::TearDown();
     content::GetContentClient()->set_browser(old_browser_client_);
+    content::SetContentClient(old_client_);
   }
 
   void set_should_create_webui(bool should_create_webui) {
@@ -172,7 +180,9 @@ class RenderViewHostManagerTest
   }
 
  private:
+  RenderViewHostManagerTestClient client_;
   RenderViewHostManagerTestBrowserClient browser_client_;
+  content::ContentClient* old_client_;
   content::ContentBrowserClient* old_browser_client_;
 };
 
@@ -672,34 +682,6 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   // Commit.
   manager.DidNavigateMainFrame(host);
-}
-
-// Tests that chrome: URLs that are not Web UI pages do not get grouped into
-// Web UI renderers, even if --process-per-tab is enabled.  In that mode, we
-// still swap processes if ShouldSwapProcessesForNavigation is true.
-// Regression test for bug 46290.
-TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
-  BrowserThreadImpl thread(BrowserThread::UI, &message_loop_);
-  SiteInstance* instance = SiteInstance::Create(browser_context());
-  TestTabContents tab_contents(browser_context(), instance);
-  RenderViewHostManager manager(&tab_contents, &tab_contents);
-  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
-
-  // NTP is a Web UI page.
-  const GURL kNtpUrl(chrome::kTestNewTabURL);
-  NavigationEntryImpl ntp_entry(NULL /* instance */, -1 /* page_id */, kNtpUrl,
-                                content::Referrer(), string16() /* title */,
-                                content::PAGE_TRANSITION_TYPED,
-                                false /* is_renderer_init */);
-
-  // A URL with the Chrome UI scheme, that isn't handled by Web UI.
-  GURL about_url(kChromeUISchemeButNotWebUIURL);
-  NavigationEntryImpl about_entry(
-      NULL /* instance */, -1 /* page_id */, about_url,
-      content::Referrer(), string16() /* title */,
-      content::PAGE_TRANSITION_TYPED, false /* is_renderer_init */);
-
-  EXPECT_TRUE(ShouldSwapProcesses(&manager, &ntp_entry, &about_entry));
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and

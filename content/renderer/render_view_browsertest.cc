@@ -10,6 +10,7 @@
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/render_view_test.h"
 #include "net/base/net_errors.h"
@@ -18,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -57,6 +59,102 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   ProcessPendingMessages();
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID));
+}
+
+TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
+  // Navigations to normal HTTP URLs can be handled locally.
+  WebKit::WebURLRequest request(GURL("http://foo.com"));
+  WebKit::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      request,
+      WebKit::WebNavigationTypeLinkClicked,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyCurrentTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyCurrentTab, policy);
+
+  // Verify that form posts to WebUI URLs will be sent to the browser process.
+  WebKit::WebURLRequest form_request(GURL("chrome://foo"));
+  form_request.setHTTPMethod("POST");
+  policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      form_request,
+      WebKit::WebNavigationTypeFormSubmitted,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyCurrentTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  // Verify that popup links to WebUI URLs also are sent to browser.
+  WebKit::WebURLRequest popup_request(GURL("chrome://foo"));
+  policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      popup_request,
+      WebKit::WebNavigationTypeLinkClicked,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyNewForegroundTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+}
+
+TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
+  // Enable bindings to simulate a WebUI view.
+  view()->OnAllowBindings(content::BINDINGS_POLICY_WEB_UI);
+
+  // Navigations to normal HTTP URLs will be sent to browser process.
+  WebKit::WebURLRequest request(GURL("http://foo.com"));
+  WebKit::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      request,
+      WebKit::WebNavigationTypeLinkClicked,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyCurrentTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  // Navigations to WebUI URLs will also be sent to browser process.
+  WebKit::WebURLRequest webui_request(GURL("chrome://foo"));
+  policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      webui_request,
+      WebKit::WebNavigationTypeLinkClicked,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyCurrentTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  // Verify that form posts to data URLs will be sent to the browser process.
+  WebKit::WebURLRequest data_request(GURL("data:text/html,foo"));
+  data_request.setHTTPMethod("POST");
+  policy = view()->decidePolicyForNavigation(
+      GetMainFrame(),
+      data_request,
+      WebKit::WebNavigationTypeFormSubmitted,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyCurrentTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  // Verify that a popup that creates a view first and then navigates to a
+  // normal HTTP URL will be sent to the browser process, even though the
+  // new view does not have any enabled_bindings_.
+  WebKit::WebURLRequest popup_request(GURL("http://foo.com"));
+  WebKit::WebView* new_web_view = view()->createView(
+      GetMainFrame(), popup_request, WebKit::WebWindowFeatures(), "foo",
+      WebKit::WebNavigationPolicyNewForegroundTab);
+  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
+  policy = new_view->decidePolicyForNavigation(
+      new_web_view->mainFrame(),
+      popup_request,
+      WebKit::WebNavigationTypeLinkClicked,
+      WebKit::WebNode(),
+      WebKit::WebNavigationPolicyNewForegroundTab,
+      false);
+  EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  // Clean up after the new view so we don't leak it.
+  new_view->Close();
+  new_view->Release();
 }
 
 // Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is

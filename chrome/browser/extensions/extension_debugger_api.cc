@@ -34,6 +34,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/webkit_glue.h"
@@ -377,7 +378,7 @@ bool DebuggerFunction::InitTabContents() {
   }
   contents_ = wrapper->web_contents();
 
-  if (ChromeWebUIControllerFactory::GetInstance()->HasWebUIScheme(
+  if (content::GetContentClient()->HasWebUIScheme(
           contents_->GetURL())) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kAttachToWebUIError,

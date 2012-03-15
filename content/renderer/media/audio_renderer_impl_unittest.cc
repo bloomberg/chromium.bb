@@ -37,6 +37,8 @@ class MockRenderProcess : public RenderProcess {
       const gfx::Rect& rect) { return NULL; }
   virtual void ReleaseTransportDIB(TransportDIB* memory) {}
   virtual bool UseInProcessPlugins() const { return false; }
+  virtual void AddBindings(int bindings) {}
+  virtual int GetEnabledBindings() const { return 0; }
   virtual bool HasInitializedMediaLibrary() const { return false; }
 
  private:

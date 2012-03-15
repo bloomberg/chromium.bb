@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,11 @@ void ShellContentClient::AddPepperPlugins(
 
 void ShellContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
+}
+
+bool ShellContentClient::HasWebUIScheme(const GURL& url) const {
+  // There are no WebUI URLs in content_shell.
+  return false;
 }
 
 bool ShellContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {

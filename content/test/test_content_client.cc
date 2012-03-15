@@ -35,6 +35,10 @@ void TestContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
 }
 
+bool TestContentClient::HasWebUIScheme(const GURL& url) const {
+  return false;
+}
+
 bool TestContentClient::CanHandleWhileSwappedOut(const IPC::Message& msg) {
   // TestContentClient does not need to handle any additional messages.
   return false;

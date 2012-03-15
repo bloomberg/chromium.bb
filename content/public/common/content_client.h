@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,6 +93,10 @@ class CONTENT_EXPORT ContentClient {
   // Gives the embedder a chance to register its own internal NPAPI plugins.
   virtual void AddNPAPIPlugins(
       webkit::npapi::PluginList* plugin_list) = 0;
+
+  // Returns true if the url has a scheme for WebUI.  See also
+  // WebUIControllerFactory::UseWebUIForURL in the browser process.
+  virtual bool HasWebUIScheme(const GURL& url) const = 0;
 
   // Returns whether the given message should be processed in the browser on
   // behalf of a swapped out renderer.

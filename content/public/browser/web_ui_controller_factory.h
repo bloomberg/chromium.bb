@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,17 +35,14 @@ class CONTENT_EXPORT WebUIControllerFactory {
                                      const GURL& url) const = 0;
 
   // Shorthand for the above, but returns a simple yes/no.
+  // See also ContentClient::HasWebUIScheme, which only checks the scheme
+  // (faster) and can be used to determine security policy.
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const = 0;
 
   // Returns true for the subset of WebUIs that actually need WebUI bindings.
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const = 0;
-
-  // Returns true if the url has a scheme for WebUI. This differs from the above
-  // in that it only checks the scheme; it is faster and can be used to
-  // determine security policy.
-  virtual bool HasWebUIScheme(const GURL& url) const = 0;
 
   // Returns true if the given URL can be loaded by Web UI system. This allows
   // URLs with WebUI types (as above) and also URLs that can be loaded by
