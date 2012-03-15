@@ -229,11 +229,7 @@ cr.define('options', function() {
         };
       } else {
         $('import-data').onclick = function(event) {
-          // Make sure that any previous import success message is hidden, and
-          // we're showing the UI to import further data.
-          $('import-data-configure').hidden = false;
-          $('import-data-success').hidden = true;
-          OptionsPage.navigateToPage('importData');
+          ImportDataOverlay.show();
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 

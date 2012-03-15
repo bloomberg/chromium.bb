@@ -153,11 +153,11 @@ cr.define('options', function() {
     },
 
     /**
-    * Clear import prefs set when user checks/unchecks a checkbox so that each
-    * checkbox goes back to the default "checked" state (or alternatively, to
-    * the state set by a recommended policy).
-    * @private
-    */
+     * Clear import prefs set when user checks/unchecks a checkbox so that each
+     * checkbox goes back to the default "checked" state (or alternatively, to
+     * the state set by a recommended policy).
+     * @private
+     */
     clearUserPrefs_: function() {
       var importPrefs = ['import_history',
                          'import_bookmarks',
@@ -165,6 +165,21 @@ cr.define('options', function() {
                          'import_search_engine'];
       for (var i = 0; i < importPrefs.length; i++)
         Preferences.clearPref(importPrefs[i], undefined);
+    },
+
+    /**
+     * Update the dialog layout to reflect success state.
+     * @param {boolean} success If true, show success dialog elements.
+     * @private
+     */
+    updateSuccessState_: function(success) {
+      var sections = document.querySelectorAll('.import-data-configure');
+      for (var i = 0; i < sections.length; i++)
+        sections[i].hidden = success;
+
+      sections = document.querySelectorAll('.import-data-success');
+      for (var i = 0; i < sections.length; i++)
+        sections[i].hidden = !success;
     },
   };
 
@@ -210,9 +225,19 @@ cr.define('options', function() {
   ImportDataOverlay.confirmSuccess = function() {
     var showBookmarksMessage = $('import-favorites').checked;
     ImportDataOverlay.setImportingState(false);
-    $('import-data-configure').hidden = true;
-    $('import-data-success').hidden = false;
     $('import-find-your-bookmarks').hidden = !showBookmarksMessage;
+    ImportDataOverlay.getInstance().updateSuccessState_(true);
+  };
+
+  /**
+   * Show the import data overlay.
+   */
+  ImportDataOverlay.show = function() {
+    // Make sure that any previous import success message is hidden, and
+    // we're showing the UI to import further data.
+    ImportDataOverlay.getInstance().updateSuccessState_(false);
+
+    OptionsPage.navigateToPage('importData');
   };
 
   // Export
