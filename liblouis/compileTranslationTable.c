@@ -1703,7 +1703,6 @@ getCharacters (FileInfo * nested, CharsString * characters)
 static int
 getRuleCharsText (FileInfo * nested, CharsString * ruleChars)
 {
-
   CharsString token;
   if (getToken (nested, &token, "Characters operand"))
     if (parseChars (nested, ruleChars, &token))
@@ -3750,6 +3749,104 @@ compileCharDef (FileInfo * nested,
   int k;
   if (!getRuleCharsText (nested, &ruleChars))
     return 0;
+  if (attributes & (CTC_Letter | CTC_UpperCase | CTC_LowerCase))
+    {
+      TranslationTableCharacter *upperChar;
+      TranslationTableCharacter *lowerChar;
+      TranslationTableCharacter *upperCell = NULL;
+      TranslationTableCharacter *lowerCell = NULL;
+      CharsString upperDots;
+      CharsString lowerDots;
+      int haveLowerDots = 0;
+      ruleChars.chars[1] = ruleChars.chars[0];
+      ruleChars.length = 2;
+      if (!getToken (nested, &ruleDots, "dots operand"))
+	return 0;
+      for (k = 0; k < ruleDots.length && ruleDots.chars[k] != ','; k++);
+      if (k == ruleDots.length)
+	{
+	  if (!parseDots (nested, &upperDots, &ruleDots))
+	    return 0;
+	  lowerDots.length = upperDots.length;
+	  for (k = 0; k < upperDots.length; k++)
+	    lowerDots.chars[k] = upperDots.chars[k];
+	  lowerDots.chars[k] = 0;
+	}
+      else
+	{
+	  haveLowerDots = ruleDots.length;
+	  ruleDots.length = k;
+	  if (!parseDots (nested, &upperDots, &ruleDots))
+	    return 0;
+	  ruleDots.length = 0;
+	  k++;
+	  for (; k < haveLowerDots; k++)
+	    ruleDots.chars[ruleDots.length++] = ruleDots.chars[k];
+	  if (!parseDots (nested, &lowerDots, &ruleDots))
+	    return 0;
+	}
+      if (upperDots.length < 1)
+	{
+	  compileError (nested, "At least one cell is required.");
+	  return 0;
+	}
+      if (haveLowerDots && lowerDots.length < 1)
+	{
+	  compileError (nested,
+			"at least one cell is required after the comma.");
+	  return 0;
+	}
+      upperChar = addCharOrDots (nested, ruleChars.chars[0], 0);
+      upperChar->attributes |= CTC_Letter | CTC_UpperCase;
+      upperChar->uppercase = ruleChars.chars[0];
+      upperChar->lowercase = ruleChars.chars[1];
+      lowerChar = addCharOrDots (nested, ruleChars.chars[1], 0);
+      lowerChar->attributes |= CTC_Letter | CTC_LowerCase;
+      lowerChar->uppercase = ruleChars.chars[0];
+      lowerChar->lowercase = ruleChars.chars[1];
+      for (k = 0; k < upperDots.length; k++)
+	if (!compile_findCharOrDots (upperDots.chars[k], 1))
+	  {
+	    attr = CTC_Letter | CTC_UpperCase;
+	    upperCell = addCharOrDots (nested, upperDots.chars[k], 1);
+	    if (upperDots.length != 1)
+	      attr = CTC_Space;
+	    upperCell->attributes |= attr;
+	    upperCell->uppercase = upperCell->realchar;
+	  }
+      if (haveLowerDots)
+	{
+	  for (k = 0; k < lowerDots.length; k++)
+	    if (!compile_findCharOrDots (lowerDots.chars[k], 1))
+	      {
+		attr = CTC_Letter | CTC_LowerCase;
+		lowerCell = addCharOrDots (nested, lowerDots.chars[k], 1);
+		if (lowerDots.length != 1)
+		  attr = CTC_Space;
+		lowerCell->attributes |= attr;
+		lowerCell->lowercase = lowerCell->realchar;
+	      }
+	}
+      else if (upperCell != NULL && upperDots.length == 1)
+	upperCell->attributes |= CTC_LowerCase;
+      if (lowerDots.length == 1)
+	putCharAndDots (nested, ruleChars.chars[1], lowerDots.chars[0]);
+      if (upperCell != NULL)
+	upperCell->lowercase = lowerDots.chars[0];
+      if (lowerCell != NULL)
+	lowerCell->uppercase = upperDots.chars[0];
+      if (upperDots.length == 1)
+	putCharAndDots (nested, ruleChars.chars[0], upperDots.chars[0]);
+      ruleChars.length = 1;
+      ruleChars.chars[2] = ruleChars.chars[0];
+      ruleChars.chars[0] = ruleChars.chars[1];
+      if (!addRule (nested, CTO_LowerCase, &ruleChars, &lowerDots, 0, 0))
+	return 0;
+      ruleChars.chars[0] = ruleChars.chars[2];
+      if (!addRule (nested, CTO_UpperCase, &ruleChars, &upperDots, 0, 0))
+	return 0;
+      return 1;
+    }
   if (!getRuleDotsPattern (nested, &ruleDots))
     return 0;
   if (ruleChars.length != 1 || ruleDots.length < 1)
@@ -3758,8 +3855,6 @@ compileCharDef (FileInfo * nested,
 		    "Exactly one Unicode character and at least one cell are required.");
       return 0;
     }
-  if ((attributes & (CTC_UpperCase | CTC_LowerCase)))
-    attributes |= CTC_Letter;
   character = addCharOrDots (nested, ruleChars.chars[0], 0);
   character->attributes |= attributes;
   character->uppercase = character->lowercase = character->realchar;
@@ -4325,31 +4420,31 @@ doOpcode:
 	  }
       break;
     case CTO_Space:
-	compileCharDef (nested, opcode, CTC_Space);
-	break;
+      compileCharDef (nested, opcode, CTC_Space);
+      break;
     case CTO_Digit:
-	compileCharDef (nested, opcode, CTC_Digit);
-	break;
+      compileCharDef (nested, opcode, CTC_Digit);
+      break;
     case CTO_LitDigit:
-	compileCharDef (nested, opcode, CTC_LitDigit);
-	break;
+      compileCharDef (nested, opcode, CTC_LitDigit);
+      break;
     case CTO_Punctuation:
-	compileCharDef (nested, opcode, CTC_Punctuation);
-	break;
+      compileCharDef (nested, opcode, CTC_Punctuation);
+      break;
     case CTO_Math:
-	compileCharDef (nested, opcode, CTC_Math);
-	break;
+      compileCharDef (nested, opcode, CTC_Math);
+      break;
     case CTO_Sign:
-	compileCharDef (nested, opcode, CTC_Sign);
-	break;
+      compileCharDef (nested, opcode, CTC_Sign);
+      break;
     case CTO_Letter:
-	compileCharDef (nested, opcode, CTC_Letter);
-	break;
+      compileCharDef (nested, opcode, CTC_Letter);
+      break;
     case CTO_UpperCase:
-	compileCharDef (nested, opcode, CTC_UpperCase);
-	break;
+      compileCharDef (nested, opcode, CTC_UpperCase);
+      break;
     case CTO_LowerCase:
-	compileCharDef (nested, opcode, CTC_LowerCase);
+      compileCharDef (nested, opcode, CTC_LowerCase);
       break;
     case CTO_NoBreak:
       ok = compileNoBreak (nested);
