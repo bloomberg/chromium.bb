@@ -6,47 +6,35 @@
 Import('env')
 import os
 
-# Since we test that the hello world executable size is
-# under 64K (for glibc), be sure not to link in the
-# pnacl IRT shim, which is at least 50KB.
-# Since we are modifying the link flags, do not do this in pnacl pexe mode.
-def AddNonPortableTests():
-  extra_hello_flags = []
-  if env.Bit('bitcode'):
-    # --pnacl-allow-native allows us to specify --noirtshim.
-    extra_hello_flags += ['--pnacl-allow-native',
-                          '-Wt,--noirtshim']
+hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c',
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl(
+    'hello_world_test.out',
+    hello_nexe,
+    stdout_golden=env.File('hello_world.stdout'),
+    track_cmdtime='1',
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests', 'performance_tests'],
+                       'run_hello_world_test')
 
-  hello_nexe = env.ComponentProgram('hello_world', 'hello_world.c',
-                                    EXTRA_LIBS=['${NONIRT_LIBS}'],
-                                    EXTRA_LINKFLAGS=extra_hello_flags)
-  node = env.CommandSelLdrTestNacl(
-      'hello_world_test.out',
-      hello_nexe,
-      stdout_golden=env.File('hello_world.stdout'),
-      track_cmdtime='1',
-      )
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests', 'performance_tests'],
-                         'run_hello_world_test')
+if not env.Bit('nacl_static_link') and not env.Bit('bitcode'):
+  # Check the (unstripped) executable size.  The main purpose of this
+  # is to check that we have not acquired any 64k-page-size padding,
+  # which would bump the size above 64k.
+  expected_max = 16000
+else:
+  expected_max = None
 
-  if not env.Bit('nacl_static_link'):
-    # Check the (unstripped) executable size.  The main purpose of this
-    # is to check that we have not acquired any 64k-page-size padding,
-    # which would bump the size above 64k.
-    expected_max = 16000
-  else:
-    expected_max = None
 
-  node = env.FileSizeTest('hello_world_size.out',
-                          hello_nexe,
-                          expected_max)
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'performance_tests'],
-                         'run_hello_world_size_test')
+node = env.FileSizeTest('hello_world_size.out',
+                        hello_nexe,
+                        expected_max)
 
-if not env.Bit('pnacl_generate_pexe'):
-  AddNonPortableTests()
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'performance_tests'],
+                       'run_hello_world_size_test')
+
 
 at_exit_nexe = env.ComponentProgram('at_exit', 'at_exit.c',
                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
