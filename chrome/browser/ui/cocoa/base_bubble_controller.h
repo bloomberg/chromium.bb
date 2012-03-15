@@ -34,6 +34,8 @@ class Bridge;
 }
 
 @property(nonatomic, readonly) NSWindow* parentWindow;
+// The point in base screen coordinates at which the bubble should open and the
+// arrow tip points.
 @property(nonatomic, assign) NSPoint anchorPoint;
 @property(nonatomic, readonly) InfoBubbleView* bubble;
 

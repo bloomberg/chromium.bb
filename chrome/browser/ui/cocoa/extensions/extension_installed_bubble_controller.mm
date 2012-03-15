@@ -92,11 +92,9 @@ class ExtensionLoadedNotificationObserver
                       icon:(SkBitmap)icon {
   NSString* nibName = bundle ? @"ExtensionInstalledBubbleBundle" :
                                @"ExtensionInstalledBubble";
-  NSString* nibPath = [base::mac::FrameworkBundle() pathForResource:nibName
-                                                             ofType:@"nib"];
-  if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    DCHECK(parentWindow);
-    parentWindow_ = parentWindow;
+  if ((self = [super initWithWindowNibPath:nibName
+                              parentWindow:parentWindow
+                                anchoredAt:NSZeroPoint])) {
     extension_ = extension;
     bundle_ = bundle;
     DCHECK(browser);
@@ -124,29 +122,8 @@ class ExtensionLoadedNotificationObserver
       extensionObserver_.reset(new ExtensionLoadedNotificationObserver(
           self, browser->profile()));
     }
-
-    // Watch to see if the parent window closes, and if so, close this one.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(parentWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:parentWindow_];
   }
   return self;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-- (void)close {
-  [[[self window] parentWindow] removeChildWindow:[self window]];
-  [super close];
-}
-
-- (void)parentWindowWillClose:(NSNotification*)notification {
-  [self close];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -155,24 +132,18 @@ class ExtensionLoadedNotificationObserver
   [self removePageActionPreviewIfNecessary];
   extension_ = NULL;
   browser_ = NULL;
-  parentWindow_ = nil;
-  // We caught a close so we don't need to watch for the parent closing.
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self autorelease];
+
+  [super windowWillClose:notification];
 }
 
 // The controller is the delegate of the window, so it receives "did resign
 // key" notifications.  When key is resigned, close the window.
 - (void)windowDidResignKey:(NSNotification*)notification {
-  NSWindow* window = [self window];
-  DCHECK_EQ([notification object], window);
-  DCHECK([window isVisible]);
-
   // If the browser window is closing, we need to remove the page action
   // immediately, otherwise the closing animation may overlap with
   // browser destruction.
   [self removePageActionPreviewIfNecessary];
-  [self close];
+  [super windowDidResignKey:notification];
 }
 
 - (IBAction)closeWindow:(id)sender {
@@ -264,7 +235,7 @@ class ExtensionLoadedNotificationObserver
   // Load nib and calculate height based on messages to be shown.
   NSWindow* window = [self initializeWindow];
   int newWindowHeight = [self calculateWindowHeight];
-  [infoBubbleView_ setFrameSize:NSMakeSize(
+  [self.bubble setFrameSize:NSMakeSize(
       NSWidth([[window contentView] bounds]), newWindowHeight)];
   NSSize windowDelta = NSMakeSize(
       0, newWindowHeight - NSHeight([[window contentView] bounds]));
@@ -277,19 +248,9 @@ class ExtensionLoadedNotificationObserver
   [self setMessageFrames:newWindowHeight];
 
   // Find window origin, taking into account bubble size and arrow location.
-  NSPoint origin =
-      [parentWindow_ convertBaseToScreen:[self calculateArrowPoint]];
-  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                              info_bubble::kBubbleArrowWidth / 2.0, 0);
-  offsets = [[window contentView] convertSize:offsets toView:nil];
-  if ([infoBubbleView_ arrowLocation] == info_bubble::kTopRight)
-    origin.x -= NSWidth([window frame]) - offsets.width;
-  origin.y -= NSHeight([window frame]);
-  [window setFrameOrigin:origin];
-
-  [parentWindow_ addChildWindow:window
-                        ordered:NSWindowAbove];
-  [window makeKeyAndOrderFront:self];
+  self.anchorPoint =
+      [self.parentWindow convertBaseToScreen:[self calculateArrowPoint]];
+  [super showWindow:sender];
 }
 
 // Finish nib loading, set arrow location and load icon into window.  This
@@ -298,9 +259,9 @@ class ExtensionLoadedNotificationObserver
   NSWindow* window = [self window];  // completes nib load
 
   if (type_ == extension_installed_bubble::kOmniboxKeyword) {
-    [infoBubbleView_ setArrowLocation:info_bubble::kTopLeft];
+    [self.bubble setArrowLocation:info_bubble::kTopLeft];
   } else {
-    [infoBubbleView_ setArrowLocation:info_bubble::kTopRight];
+    [self.bubble setArrowLocation:info_bubble::kTopRight];
   }
 
   if (type_ == extension_installed_bubble::kBundle)

@@ -11,6 +11,7 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
@@ -43,16 +44,14 @@ typedef enum {
   kBundle,
 } ExtensionType;
 
-}
+}  // namespace extension_installed_bubble
 
 // Controller for the extension installed bubble.  This bubble pops up after
 // an extension has been installed to inform the user that the install happened
 // properly, and to let the user know how to manage this extension in the
 // future.
-@interface ExtensionInstalledBubbleController :
-    NSWindowController<NSWindowDelegate> {
+@interface ExtensionInstalledBubbleController : BaseBubbleController {
  @private
-  NSWindow* parentWindow_;  // weak
   const Extension* extension_;  // weak
   const extensions::BundleInstaller* bundle_;  // weak
   Browser* browser_;  // weak
@@ -71,7 +70,6 @@ typedef enum {
   scoped_ptr<ExtensionLoadedNotificationObserver> extensionObserver_;
 
   // References below are weak, being obtained from the nib.
-  IBOutlet InfoBubbleView* infoBubbleView_;
   IBOutlet HoverCloseButton* closeButton_;
   IBOutlet NSImageView* iconImage_;
   IBOutlet NSTextField* extensionInstalledMsg_;
@@ -110,7 +108,7 @@ typedef enum {
 
 @end
 
-@interface ExtensionInstalledBubbleController(ExposedForTesting)
+@interface ExtensionInstalledBubbleController (ExposedForTesting)
 
 - (void)removePageActionPreviewIfNecessary;
 - (NSWindow*)initializeWindow;
