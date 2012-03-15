@@ -997,28 +997,27 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
     if (restore_policy->GetAsInteger(&restore_value) &&
         SessionStartupPref::PrefValueToType(restore_value) ==
             SessionStartupPref::LAST) {
+
       const base::Value* cookies_policy =
           policies.GetValue(key::kCookiesSessionOnlyForUrls);
-      const base::Value* exit_policy =
-          policies.GetValue(key::kClearSiteDataOnExit);
-
       const base::ListValue *cookies_value;
-      if (cookies_policy->GetAsList(&cookies_value) &&
+      if (cookies_policy && cookies_policy->GetAsList(&cookies_value) &&
           !cookies_value->empty()) {
         errors->AddError(key::kCookiesSessionOnlyForUrls,
                          IDS_POLICY_OVERRIDDEN,
                          key::kRestoreOnStartup);
       }
 
+      const base::Value* exit_policy =
+          policies.GetValue(key::kClearSiteDataOnExit);
       bool exit_value;
-      if (exit_policy->GetAsBoolean(&exit_value) && exit_value) {
+      if (exit_policy && exit_policy->GetAsBoolean(&exit_value) && exit_value) {
         errors->AddError(key::kClearSiteDataOnExit,
                          IDS_POLICY_OVERRIDDEN,
                          key::kRestoreOnStartup);
       }
     }
   }
-
   return true;
 }
 
