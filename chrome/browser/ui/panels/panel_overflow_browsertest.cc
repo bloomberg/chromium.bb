@@ -204,14 +204,14 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
 
 // TODO(dimich): remove the guard when overflow indicator is implemented on
 // other platforms.
-#if defined(OS_WIN)
-#define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
-#define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
-#define MAYBE_DrawOverflowAttention DrawOverflowAttention
-#else
+#if defined(OS_MACOSX)
 #define MAYBE_CreateMoreOverflowPanels DISABLED_CreateMoreOverflowPanels
 #define MAYBE_OverflowIndicatorCount DISABLED_OverflowIndicatorCount
 #define MAYBE_DrawOverflowAttention DISABLED_DrawOverflowAttention
+#else
+#define MAYBE_CreateMoreOverflowPanels CreateMoreOverflowPanels
+#define MAYBE_OverflowIndicatorCount OverflowIndicatorCount
+#define MAYBE_DrawOverflowAttention DrawOverflowAttention
 #endif
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CheckPanelProperties) {
@@ -1451,7 +1451,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_OverflowIndicatorCount) {
   //   docked:               P0, P1, P2
   //   overflow:             P3, P4, P5
   const int panel_widths[] = {
-      250, 250, 210,  // docked
+      250, 200, 250,  // docked
       250, 250, 260   // overflow
   };
   std::vector<Panel*> panels = CreateOverflowPanels(3, 3, panel_widths);
@@ -1523,15 +1523,16 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_OverflowIndicatorCount) {
   EXPECT_FALSE(IsPanelVisible(panels[10]));
   EXPECT_EQ(3, overflow_strip->overflow_indicator()->GetCount());
 
-  // Activating a big overflow panel will cause 2 docked panels to move to the
-  // oevrflow area and also get the top visible overflow panel bumped to the
-  // overflow-on-overflow.
+  // Widen a docked panel to bump a panel to overflow and also get the
+  // top visible overflow panel bumped to the overflow-to-overflow.
   // Expect the overflow indicator count gets increased by 1.
-  //   docked:               P0, P5
-  //   overflow:             P1, P2, P6, (P7, P8, P9, P10)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
-  WaitForLayoutModeChanged(panels[5], PanelStrip::DOCKED);
+  //   docked:               P0, P1
+  //   overflow:             P2, P5, P6, (P7, P8, P9, P10)
+  gfx::Size larger_size = panels[1]->GetBounds().size();
+  larger_size.Enlarge(50, 50);
+  panel_manager->ResizePanel(panels[1], larger_size);
+  WaitForBoundsAnimationFinished(panels[1]);
+  WaitForLayoutModeChanged(panels[2], PanelStrip::IN_OVERFLOW);
   EXPECT_TRUE(IsPanelVisible(panels[6]));
   EXPECT_FALSE(IsPanelVisible(panels[7]));
   EXPECT_FALSE(IsPanelVisible(panels[8]));
@@ -1543,6 +1544,13 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_OverflowIndicatorCount) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
+  // IceWM may activate another panel when an overflow-on-overflow
+  // panel is hidden. It happens to pick the panel we want to draw attention
+  // to, but drawing attention on an active panel is a no-op, so this test
+  // fails under IceWM.
+  if (SkipTestIfIceWM())
+    return;
+
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   OverflowPanelStrip* overflow_strip = panel_manager->overflow_strip();
@@ -1553,7 +1561,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   // The panels enclosed in parentheses are hidden.
   const int panel_widths[] = {
       100, 210, 210, 210,  // docked
-      210, 260, 210,       // overflow
+      210, 210, 210,       // overflow
       210, 210, 210,       // overflow-on-overflow on shrunk
       210, 210             // overflow-on-overflow on expanded
   };
@@ -1572,19 +1580,18 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
   EXPECT_TRUE(panels[5]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
-  // Activating this overflow panel will clear its attention.
+  // Stop drawing attention for the visible overflow panel.
   // Expect no impact to the overflow indicator.
-  //   docked:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, P8, P9, P10, P11)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, P6, (P7, P8, P9, P10, P11)
+  panels[5]->FlashFrame(false);
   EXPECT_FALSE(panels[5]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
   // Draw attention for an overflow-on-overflow panel.
   // Expect the overflow indicator is showing attention.
-  //   docked:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, *P8, P9, P10, P11)
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, P6, (P7, *P8, P9, P10, P11)
   EXPECT_FALSE(panels[8]->IsDrawingAttention());
   panels[8]->FlashFrame(true);
   EXPECT_TRUE(panels[8]->IsDrawingAttention());
@@ -1592,64 +1599,64 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_DrawOverflowAttention) {
 
   // Draw attention for another overflow-on-overflow panel.
   // Expect the overflow indicator is still showing attention.
-  //   docked:               P0, P1, P2, P5
-  //   overflow:             P3, P4, P6, (P7, *P8, P9, *P10, P11)
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, P6, (P7, *P8, P9, *P10, P11)
   EXPECT_FALSE(panels[10]->IsDrawingAttention());
   panels[10]->FlashFrame(true);
   EXPECT_TRUE(panels[10]->IsDrawingAttention());
   EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
 
-  // Stop drawing attention for an overflow-on-overflow panel by activating it.
+  // Stop drawing attention for one overflow-on-overflow panel.
   // Expect the overflow indicator is still showing attention.
-  //   docked:               P0, P1, P2, P8
-  //   overflow:             P5, P3, P4, (P6, P7, P9, *P10, P11)
-  panels[8]->Activate();
-  WaitForPanelActiveState(panels[8], SHOW_AS_ACTIVE);
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, P6, (P7, P8, P9, *P10, P11)
+  panels[8]->FlashFrame(false);
   EXPECT_FALSE(panels[8]->IsDrawingAttention());
   EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
 
-  // Stop drawing attention for another overflow-on-overflow panel by activating
-  // it. Expect the overflow indicator is not showing attention.
-  //   docked:               P0, P1, P2, P10
-  //   overflow:             P8, P5, P3, (P4, P6, P7, P9, P11)
-  panels[10]->Activate();
-  WaitForPanelActiveState(panels[10], SHOW_AS_ACTIVE);
+  // Stop drawing attention for the other overflow-on-overflow panel.
+  // Expect the overflow indicator is not showing attention.
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, P6, (P7, P8, P9, P10, P11)
+  panels[10]->FlashFrame(false);
   EXPECT_FALSE(panels[10]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
   // Draw attention for the top overflow panel.
   // Expect no impact to the overflow indicator.
-  //   docked:               P0, P1, P2, P10
-  //   overflow:             P8, P5, *P3, (P4, P6, P7, P9, P11)
-  EXPECT_TRUE(IsPanelVisible(panels[3]));
-  EXPECT_FALSE(panels[3]->IsDrawingAttention());
-  panels[3]->FlashFrame(true);
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
+  //   docked:               P0, P1, P2, P3
+  //   overflow:             P4, P5, *P6, (P7, P8, P9, P10, P11)
+  EXPECT_TRUE(IsPanelVisible(panels[6]));
+  EXPECT_FALSE(panels[6]->IsDrawingAttention());
+  panels[6]->FlashFrame(true);
+  EXPECT_TRUE(panels[6]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
-  // Activating a big overflow panel will cause 2 docked panels to move to the
-  // overflow area and also get the top visible overflow panel bumped to the
-  // overflow-on-overflow.
+  // Widen a panel in the dock to bump a panel to the overflow area
+  // and also get the top visible overflow panel bumped to overflow-on-overflow.
   // Expect the overflow indicator is showing attention.
-  //   docked:               P0, P1, P5
-  //   overflow:             P2, P10, P8, (*P3, P4, P6, P7, P9, P11)
-  panels[5]->Activate();
-  WaitForPanelActiveState(panels[5], SHOW_AS_ACTIVE);
-  WaitForLayoutModeChanged(panels[5], PanelStrip::DOCKED);
+  //   docked:               P0, P1, P2,
+  //   overflow:             P3, P4, P5, (*P6, P7, P8, P9, P10, P11)
+  gfx::Size larger_size = panels[0]->GetBounds().size();
+  larger_size.Enlarge(150, 50);
+  panel_manager->ResizePanel(panels[0], larger_size);
+  WaitForLayoutModeChanged(panels[3], PanelStrip::IN_OVERFLOW);
   EXPECT_EQ(3, docked_strip->num_panels());
   EXPECT_EQ(9, overflow_strip->num_panels());
-  EXPECT_FALSE(IsPanelVisible(panels[3]));
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
+  WaitForBoundsAnimationFinished(panels[6]);
+  EXPECT_FALSE(IsPanelVisible(panels[6]));
+  EXPECT_TRUE(panels[6]->IsDrawingAttention());
   EXPECT_TRUE(overflow_indicator->IsDrawingAttention());
 
-  // Close an overflow panel that would move the first oveflow-on-overflow panel
-  // to become visible. Expect the overflow indicator is not showing attention.
-  //   docked:               P0, P1, P5
-  //   overflow:             P2, P10, P3, (P4, P6, P7, P9, P11)
-  CloseWindowAndWait(panels[8]->browser());
+  // Close an overflow panel that would cause the first oveflow-on-overflow
+  // panel to become visible. Expect the overflow indicator is no longer
+  // showing attention.
+  //   docked:               P0, P1, P2,
+  //   overflow:             P4, P5, *P6, (P7, P8, P9, P10, P11)
+  CloseWindowAndWait(panels[3]->browser());
   EXPECT_EQ(3, docked_strip->num_panels());
   EXPECT_EQ(8, overflow_strip->num_panels());
-  EXPECT_TRUE(panels[3]->IsDrawingAttention());
+  EXPECT_TRUE(panels[6]->IsDrawingAttention());
   EXPECT_FALSE(overflow_indicator->IsDrawingAttention());
 
   panel_manager->CloseAll();

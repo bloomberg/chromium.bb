@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,11 @@
 
 #include "chrome/browser/ui/panels/panel_overflow_indicator.h"
 
+#include <gtk/gtk.h>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/base/gtk/gtk_signal.h"
 
 class PanelOverflowIndicatorGtk : public PanelOverflowIndicator {
  public:
@@ -27,6 +30,15 @@ class PanelOverflowIndicatorGtk : public PanelOverflowIndicator {
   virtual bool IsDrawingAttention() const OVERRIDE;
 
  private:
+  CHROMEGTK_CALLBACK_1(PanelOverflowIndicatorGtk, gboolean, OnExpose,
+                       GdkEventExpose*);
+
+  int count_;
+  bool is_drawing_attention_;
+  GtkWidget* window_;
+  GtkWidget* title_;
+  gfx::Rect bounds_;
+
   DISALLOW_COPY_AND_ASSIGN(PanelOverflowIndicatorGtk);
 };
 
