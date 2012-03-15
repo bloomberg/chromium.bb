@@ -18,6 +18,12 @@ namespace gpu {
 
 class TransferBuffer;
 
+namespace gles2 {
+
+class GLES2Implementation;
+
+}  // namespace gles2
+
 namespace demos {
 
 class Demo;
@@ -56,6 +62,7 @@ class Window {
   scoped_refptr<gfx::GLSurface> surface_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
+  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

@@ -21,9 +21,7 @@ gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event, gpointer data) {
   Window* window = static_cast<Window*>(data);
   window->OnPaint();
 
-  // TODO(alokp): Figure out why this is crashing. Animation will not work
-  // until then.
-  //gtk_widget_queue_draw(widget);
+  gtk_widget_queue_draw(widget);
   return FALSE;
 }
 }  // namespace

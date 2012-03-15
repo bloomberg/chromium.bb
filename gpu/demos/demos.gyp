@@ -218,6 +218,17 @@
         'compressed_textures/compressed_textures.cc',
       ],
     },
+    {
+      'target_name': 'occlusion_query_exe',
+      'type': 'executable',
+      'dependencies': [
+        'gpu_demo_framework_exe',
+        '../../third_party/gles2_book/gles2_book.gyp:es_util',
+      ],
+      'sources': [
+        'occlusion_query/occlusion_query.cc',
+      ],
+    },
   ],
   'conditions': [
     ['enable_pepper_demos==1', {

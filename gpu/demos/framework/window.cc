@@ -36,6 +36,13 @@ Window::Window()
 }
 
 Window::~Window() {
+  demo_.reset();
+
+  // must free client before service.
+  gles2_implementation_.reset();
+  transfer_buffer_.reset();
+  gles2_cmd_helper_.reset();
+
   if (decoder_.get()) {
     decoder_->Destroy();
   }
@@ -108,15 +115,15 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_cmd_helper_.get()));
 
   ::gles2::Initialize();
-  GLES2Implementation* gles2_implementation = new GLES2Implementation(
+  gles2_implementation_.reset(new GLES2Implementation(
       gles2_cmd_helper_.get(),
       transfer_buffer_.get(),
       false,
-      true);
+      true));
 
-  ::gles2::SetGLContext(gles2_implementation);
+  ::gles2::SetGLContext(gles2_implementation_.get());
 
-  if (!gles2_implementation->Initialize(
+  if (!gles2_implementation_->Initialize(
       kTransferBufferSize,
       kTransferBufferSize,
       kTransferBufferSize)) {
