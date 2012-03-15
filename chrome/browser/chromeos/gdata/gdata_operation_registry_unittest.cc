@@ -88,8 +88,9 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
   EXPECT_EQ(1U, observer.status().size());
   EXPECT_EQ(100LL, observer.status()[0].progress_current);
   EXPECT_EQ(100LL, observer.status()[0].progress_total);
-  op1->NotifyFinish(MockOperation::OPERATION_SUCCESS);
-  EXPECT_EQ(0U, observer.status().size());
+  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  EXPECT_EQ(1U, observer.status().size()); // contains "COMPLETED" notification
+  EXPECT_EQ(0U, registry.GetProgressStatusList().size()); // then it is removed
   EXPECT_EQ(NULL, op1.get()); // deleted
 }
 
@@ -109,7 +110,8 @@ TEST_F(GDataOperationRegistryTest, OneCancel) {
   EXPECT_EQ(0LL, observer.status()[0].progress_current);
   EXPECT_EQ(100LL, observer.status()[0].progress_total);
   registry.CancelAll();
-  EXPECT_EQ(0U, observer.status().size());
+  EXPECT_EQ(1U, observer.status().size());
+  EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get()); // deleted
 }
 
@@ -131,11 +133,14 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   EXPECT_EQ(2U, observer.status().size());
   EXPECT_EQ(100LL, observer.status()[0].progress_total);
   EXPECT_EQ(200LL, observer.status()[1].progress_total);
-  op1->NotifyFinish(MockOperation::OPERATION_SUCCESS);
+  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  EXPECT_EQ(2U, observer.status().size());
+  EXPECT_EQ(1U, registry.GetProgressStatusList().size());
+  EXPECT_EQ(200LL, observer.status()[1].progress_total);
+  op2->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
   EXPECT_EQ(1U, observer.status().size());
   EXPECT_EQ(200LL, observer.status()[0].progress_total);
-  op2->NotifyFinish(MockOperation::OPERATION_SUCCESS);
-  EXPECT_EQ(0U, observer.status().size());
+  EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get()); // deleted
   EXPECT_EQ(NULL, op2.get()); // deleted
 }
@@ -155,7 +160,8 @@ TEST_F(GDataOperationRegistryTest, TwoCancel) {
   op2->NotifyStart();
   EXPECT_EQ(2U, observer.status().size());
   registry.CancelAll();
-  EXPECT_EQ(0U, observer.status().size());
+  EXPECT_EQ(1U, observer.status().size()); // holds the last one "COMPLETED"
+  EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get()); // deleted
   EXPECT_EQ(NULL, op2.get()); // deleted
 }

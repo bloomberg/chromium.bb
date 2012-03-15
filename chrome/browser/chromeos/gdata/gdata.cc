@@ -237,7 +237,7 @@ void AuthOperation::DoCancel() {
 void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback_.Run(HTTP_SUCCESS, access_token);
-  NotifyFinish(OPERATION_SUCCESS);
+  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
@@ -245,7 +245,7 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(WARNING) << "AuthOperation: token request using refresh token failed";
   callback_.Run(HTTP_UNAUTHORIZED, std::string());
-  NotifyFinish(OPERATION_FAILURE);
+  NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
 }
 
 //=========================== GDataOperationInterface ==========================
@@ -414,13 +414,13 @@ class UrlFetchOperation : public GDataOperationInterface,
 
     // Overridden by each specialization
     ProcessURLFetchResults(source);
-    NotifyFinish(OPERATION_SUCCESS);
+    NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
   }
 
   // Overridden from GDataOperationInterface.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE {
     RunCallbackOnAuthFailed(code);
-    NotifyFinish(OPERATION_FAILURE);
+    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
   }
 
   Profile* profile_;

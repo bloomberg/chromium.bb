@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/id_map.h"
 #include "base/observer_list.h"
 #include "base/time.h"
@@ -26,19 +27,39 @@ class GDataOperationRegistry {
   // Unique ID to identify each operation.
   typedef int32 OperationID;
 
+  // Enumeration type for indicating the direction of the operation.
+  enum OperationType {
+    OPERATION_UPLOAD,
+    OPERATION_DOWNLOAD,
+    OPERATION_OTHER,
+  };
+
+  enum OperationTransferState {
+    OPERATION_NOT_STARTED,
+    OPERATION_STARTED,
+    OPERATION_IN_PROGRESS,
+    OPERATION_COMPLETED,
+    OPERATION_FAILED,
+  };
+
+  static std::string OperationTypeToString(OperationType type);
+  static std::string OperationTransferStateToString(
+      OperationTransferState state);
+
   // Structure that packs progress information of each operation.
   struct ProgressStatus {
-    ProgressStatus();
+    ProgressStatus(OperationType type, const FilePath& file_path);
     // For debugging
     std::string ToString() const;
 
     OperationID operation_id;
 
-    // TODO(kinaba): http://crosbug.com/27371
-    // Add more information for explaining what the operation is doing.
-    //  (1) type of the operation: update/download.
-    //  (2) virtual path of the file dealt with the operation.
-
+    // Type of the operation: upload/download.
+    OperationType operation_type;
+    // GData path of the file dealt with the current operation.
+    FilePath file_path;
+    // Current state of the transfer;
+    OperationTransferState transfer_state;
     // The time when the operation is initiated.
     base::Time start_time;
     // Current fraction of progress of the operation.
@@ -63,6 +84,9 @@ class GDataOperationRegistry {
   class Operation {
    public:
     explicit Operation(GDataOperationRegistry* registry);
+    Operation(GDataOperationRegistry* registry,
+              OperationType type,
+              const FilePath& file_path);
     virtual ~Operation();
 
     // Cancels the ongoing operation. NotifyFinish() is called and the Operation
@@ -72,17 +96,11 @@ class GDataOperationRegistry {
     // Retrieves the current progress status of the operation.
     const ProgressStatus& progress_status() const { return progress_status_; }
 
-    // Enumeration type for indicating how an operation has ended.
-    enum FinishStatus {
-      OPERATION_FAILURE,
-      OPERATION_SUCCESS
-    };
-
    protected:
     // Notifies the registry about current status.
     void NotifyStart();
     void NotifyProgress(int64 current, int64 total);
-    void NotifyFinish(FinishStatus status);
+    void NotifyFinish(OperationTransferState status);
 
    private:
     // Does the cancellation.
@@ -90,10 +108,6 @@ class GDataOperationRegistry {
 
     GDataOperationRegistry* const registry_;
     ProgressStatus progress_status_;
-
-    // Used for internal assertions.
-    bool is_started_;
-    bool is_finished_;
   };
 
   // Cancels all in-flight operations.
@@ -112,7 +126,7 @@ class GDataOperationRegistry {
   // The registry assigns a fresh operation ID and return it to *id.
   void OnOperationStart(Operation* operation, OperationID* id);
   void OnOperationProgress(OperationID operation);
-  void OnOperationFinish(OperationID operation, Operation::FinishStatus status);
+  void OnOperationFinish(OperationID operation);
 
   typedef IDMap<Operation, IDMapOwnPointer> OperationIDMap;
   OperationIDMap in_flight_operations_;
