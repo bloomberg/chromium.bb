@@ -1189,6 +1189,9 @@ const char kEnableGData[]                   = "enable-gdata";
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
+// Enables bluetooth support on ChromeOS.
+const char kEnableBluetooth[]               = "enable-bluetooth";
+
 // Enables device policy support on ChromeOS.
 const char kEnableDevicePolicy[]            = "enable-device-policy";
 
