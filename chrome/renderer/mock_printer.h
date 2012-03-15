@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,8 @@ class MockPrinter {
   void ResetPrinter();
   void SetDefaultPrintSettings(const PrintMsg_Print_Params& params);
   void UseInvalidSettings();
+  void UseInvalidPageSize();
+  void UseInvalidContentSize();
 
   // Functions that handles IPC events.
   void GetDefaultPrintSettings(PrintMsg_Print_Params* params);

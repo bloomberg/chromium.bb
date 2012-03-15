@@ -759,6 +759,46 @@ TEST_F(PrintWebViewHelperPreviewTest,
   VerifyPrintPreviewGenerated(false);
 }
 
+// Tests that when the selected printer has invalid page settings, print preview
+// receives error message.
+TEST_F(PrintWebViewHelperPreviewTest,
+       OnPrintPreviewUsingInvalidPageSize) {
+  LoadHTML(kPrintPreviewHTML);
+
+  chrome_render_thread_->printer()->UseInvalidPageSize();
+
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  OnPrintPreview(dict);
+
+  VerifyPrintPreviewInvalidPrinterSettings(true);
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+
+  // It should receive the invalid printer settings message only.
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(false);
+}
+
+// Tests that when the selected printer has invalid content settings, print
+// preview receives error message.
+TEST_F(PrintWebViewHelperPreviewTest,
+       OnPrintPreviewUsingInvalidContentSize) {
+  LoadHTML(kPrintPreviewHTML);
+
+  chrome_render_thread_->printer()->UseInvalidContentSize();
+
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  OnPrintPreview(dict);
+
+  VerifyPrintPreviewInvalidPrinterSettings(true);
+  EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
+
+  // It should receive the invalid printer settings message only.
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(false);
+}
+
 TEST_F(PrintWebViewHelperPreviewTest,
        OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);

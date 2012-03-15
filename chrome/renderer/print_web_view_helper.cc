@@ -98,12 +98,11 @@ int GetDPI(const PrintMsg_Print_Params* print_params) {
 #endif  // defined(OS_MACOSX)
 }
 
-bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
-  return !params.document_cookie && !params.desired_dpi && !params.max_shrink &&
-         !params.min_shrink && !params.dpi && params.content_size.IsEmpty() &&
-         !params.selection_only && params.page_size.IsEmpty() &&
-         !params.margin_top && !params.margin_left &&
-         !params.supports_alpha_blend;
+bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
+  return !params.content_size.IsEmpty() && !params.page_size.IsEmpty() &&
+         !params.printable_area.IsEmpty() && params.document_cookie &&
+         params.desired_dpi && params.max_shrink && params.min_shrink &&
+         params.dpi && (params.margin_top >= 0) && (params.margin_left >= 0);
 }
 
 bool PageLayoutIsEqual(const PrintMsg_PrintPages_Params& oldParams,
@@ -1194,7 +1193,7 @@ bool PrintWebViewHelper::InitPrintSettings() {
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
   bool result = true;
-  if (PrintMsg_Print_Params_IsEmpty(settings.params))
+  if (!PrintMsg_Print_Params_IsValid(settings.params))
     result = false;
 
   if (result &&
@@ -1294,7 +1293,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
       cookie, *job_settings, &settings));
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
 
-  if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
+  if (!PrintMsg_Print_Params_IsValid(settings.params)) {
     if (!print_for_preview) {
       print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
     } else {
