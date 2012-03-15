@@ -61,7 +61,7 @@ cr.define('cr.ui.overlay', function() {
    */
   function setupOverlay(overlay) {
     // Close the overlay on clicking any of the pages' close buttons.
-    var closeButtons = overlay.querySelectorAll('.page .close-button');
+    var closeButtons = overlay.querySelectorAll('.page > .close-button');
     for (var i = 0; i < closeButtons.length; i++) {
       closeButtons[i].addEventListener('click', function(e) {
         cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
