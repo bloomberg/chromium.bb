@@ -177,15 +177,15 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
   if (![self isBundleInstall])
     [iconView_ setImage:prompt_->icon().ToNSImage()];
 
-  // Resize |titleField_| to fit the title.
-  CGFloat originalTitleWidth = [titleField_ frame].size.width;
-  [titleField_ sizeToFit];
-  CGFloat newTitleWidth = [titleField_ frame].size.width;
-  if (newTitleWidth > originalTitleWidth) {
-    NSRect frame = [[self window] frame];
-    frame.size.width += newTitleWidth - originalTitleWidth;
-    [[self window] setFrame:frame display:NO];
-  }
+  // The dialog is laid out in the NIB exactly how we want it assuming that
+  // each label fits on one line. However, for each label, we want to allow
+  // wrapping onto multiple lines. So we accumulate an offset by measuring how
+  // big each label wants to be, and comparing it to how big it actually is.
+  // Then we shift each label down and resize by the appropriate amount, then
+  // finally resize the window.
+  CGFloat totalOffset = 0.0;
+
+  OffsetControlVerticallyToFitContent(titleField_, &totalOffset);
 
   // Resize |okButton_| and |cancelButton_| to fit the button labels, but keep
   // them right-aligned.
@@ -200,14 +200,6 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
     [cancelButton_ setFrame:NSOffsetRect([cancelButton_ frame],
                                          -buttonDelta.width, 0)];
   }
-
-  // The dialog is laid out in the NIB exactly how we want it assuming that
-  // each label fits on one line. However, for each label, we want to allow
-  // wrapping onto multiple lines. So we accumulate an offset by measuring how
-  // big each label wants to be, and comparing it to how big it actually is.
-  // Then we shift each label down and resize by the appropriate amount, then
-  // finally resize the window.
-  CGFloat totalOffset = 0.0;
 
   if ([self isBundleInstall]) {
     [subtitleField_ setStringValue:base::SysUTF16ToNSString(
@@ -228,7 +220,6 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
     [itemsField_ setStringValue:joinedItems];
 
     // Adjust the controls to fit the list of extensions.
-    OffsetControlVerticallyToFitContent(titleField_, &totalOffset);
     OffsetControlVerticallyToFitContent(itemsField_, &totalOffset);
   }
 
