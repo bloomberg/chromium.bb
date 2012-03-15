@@ -53,11 +53,6 @@ BluetoothOptionsHandler::BluetoothOptionsHandler() : weak_ptr_factory_(this) {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
-  if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    return;
-  }
-
   if (adapter_.get())
     adapter_->RemoveObserver(this);
 }

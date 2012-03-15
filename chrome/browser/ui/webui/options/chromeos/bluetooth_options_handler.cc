@@ -34,7 +34,8 @@ BluetoothOptionsHandler::BluetoothOptionsHandler() {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {
-  adapter_->RemoveObserver(this);
+  if (adapter_.get())
+    adapter_->RemoveObserver(this);
 }
 
 void BluetoothOptionsHandler::GetLocalizedValues(
@@ -112,13 +113,6 @@ void BluetoothOptionsHandler::GetLocalizedValues(
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  // Bluetooth support is a work in progress.  Supress the feature unless
-  // explicitly enabled via a command line flag.
-  if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableBluetooth)) {
-    return;
-  }
-
   adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
   adapter_->AddObserver(this);
 
