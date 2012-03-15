@@ -109,6 +109,7 @@ class PrintWebViewHelper
 
   enum PrintingResult {
     OK,
+    FAIL_PRINT_INIT,
     FAIL_PRINT,
     FAIL_PREVIEW,
   };
@@ -193,7 +194,7 @@ class PrintWebViewHelper
 
   // Initialize print page settings with default settings.
   // Used only for native printing workflow.
-  bool InitPrintSettings(WebKit::WebFrame* frame, const WebKit::WebNode& node);
+  bool InitPrintSettings();
 
   // Initialize print page settings with default settings and prepare the frame
   // for print. A new PrepareFrameAndViewForPrint is created to fulfill the
@@ -338,6 +339,7 @@ class PrintWebViewHelper
   // Returns true if print preview should continue, false on failure.
   bool PreviewPageRendered(int page_number, printing::Metafile* metafile);
 
+  // WebView used only to print the selection.
   WebKit::WebView* print_web_view_;
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;

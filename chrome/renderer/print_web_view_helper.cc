@@ -1004,7 +1004,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   // Initialize print settings.
   scoped_ptr<PrepareFrameAndViewForPrint> prepare;
   if (!InitPrintSettingsAndPrepareFrame(frame, node, &prepare)) {
-    DidFinishPrinting(FAIL_PRINT);
+    DidFinishPrinting(FAIL_PRINT_INIT);
     return;  // Failed to init print page settings.
   }
 
@@ -1042,23 +1042,34 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   bool store_print_pages_params = true;
-  if (result == FAIL_PRINT) {
-    DisplayPrintJobError();
+  switch (result) {
+    case OK:
+      break;
 
-    if (notify_browser_of_print_failure_ && print_pages_params_.get()) {
-      int cookie = print_pages_params_->params.document_cookie;
-      Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
-    }
-  } else if (result == FAIL_PREVIEW) {
-    DCHECK(is_preview_enabled_);
-    store_print_pages_params = false;
-    int cookie = print_pages_params_.get() ?
-                     print_pages_params_->params.document_cookie : 0;
-    if (notify_browser_of_print_failure_)
-      Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
-    else
-      Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
-    print_preview_context_.Failed(notify_browser_of_print_failure_);
+    case FAIL_PRINT_INIT:
+      DCHECK(!notify_browser_of_print_failure_);
+      break;
+
+    case FAIL_PRINT:
+      DisplayPrintJobError();
+
+      if (notify_browser_of_print_failure_ && print_pages_params_.get()) {
+        int cookie = print_pages_params_->params.document_cookie;
+        Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
+      }
+      break;
+
+    case FAIL_PREVIEW:
+      DCHECK(is_preview_enabled_);
+      store_print_pages_params = false;
+      int cookie = print_pages_params_.get() ?
+          print_pages_params_->params.document_cookie : 0;
+      if (notify_browser_of_print_failure_)
+        Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+      else
+        Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
+      print_preview_context_.Failed(notify_browser_of_print_failure_);
+      break;
   }
 
   if (print_web_view_) {
@@ -1175,28 +1186,16 @@ void PrintWebViewHelper::UpdateFrameAndViewFromCssPageLayout(
   prepare->UpdatePrintParams(print_params);
 }
 
-bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
-                                           const WebKit::WebNode& node) {
-  DCHECK(frame);
+bool PrintWebViewHelper::InitPrintSettings() {
   PrintMsg_PrintPages_Params settings;
-
-  // Reset to default values.
-  ignore_css_margins_ = false;
-  fit_to_page_ = true;
-
   Send(new PrintHostMsg_GetDefaultPrintSettings(routing_id(),
                                                 &settings.params));
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
   bool result = true;
-  if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
-    render_view()->RunModalAlertDialog(
-        frame,
-        l10n_util::GetStringUTF16(
-            IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+  if (PrintMsg_Print_Params_IsEmpty(settings.params))
     result = false;
-  }
 
   if (result &&
       (settings.params.dpi < kMinDpi || settings.params.document_cookie == 0)) {
@@ -1205,7 +1204,11 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
     result = false;
   }
 
+  // Reset to default values.
+  ignore_css_margins_ = false;
+  fit_to_page_ = true;
   settings.pages.clear();
+
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   return result;
 }
@@ -1213,8 +1216,14 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
 bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
     WebKit::WebFrame* frame, const WebKit::WebNode& node,
     scoped_ptr<PrepareFrameAndViewForPrint>* prepare) {
-  if (!InitPrintSettings(frame, node))
+  DCHECK(frame);
+  if (!InitPrintSettings()) {
+    notify_browser_of_print_failure_ = false;
+    render_view()->RunModalAlertDialog(
+        frame,
+        l10n_util::GetStringUTF16(IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
     return false;
+  }
 
   DCHECK(!prepare->get());
   prepare->reset(new PrepareFrameAndViewForPrint(print_pages_params_->params,

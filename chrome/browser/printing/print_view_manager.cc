@@ -135,8 +135,7 @@ void PrintViewManager::PrintPreviewDone() {
 void PrintViewManager::PreviewPrintingRequestCancelled() {
   if (!web_contents())
     return;
-  RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->GetRoutingID()));
+  Send(new PrintMsg_PreviewPrintingRequestCancelled(routing_id()));
 }
 
 void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
@@ -486,10 +485,9 @@ void PrintViewManager::DisconnectFromCurrentPrintJob() {
 }
 
 void PrintViewManager::PrintingDone(bool success) {
-  if (!print_job_.get() || !web_contents())
+  if (!print_job_.get())
     return;
-  RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PrintingDone(rvh->GetRoutingID(), success));
+  Send(new PrintMsg_PrintingDone(routing_id(), success));
 }
 
 void PrintViewManager::TerminatePrintJob(bool cancel) {
@@ -593,8 +591,10 @@ bool PrintViewManager::OpportunisticallyCreatePrintJob(int cookie) {
 
 bool PrintViewManager::PrintNowInternal(IPC::Message* message) {
   // Don't print / print preview interstitials.
-  if (web_contents()->ShowingInterstitialPage())
+  if (web_contents()->ShowingInterstitialPage()) {
+    delete message;
     return false;
+  }
   return Send(message);
 }
 
