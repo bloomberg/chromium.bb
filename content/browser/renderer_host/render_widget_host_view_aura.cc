@@ -112,10 +112,7 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 
     // Overridden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    // TODO: It would be better to not use aura::RootWindow here
-    ui::Compositor* compositor = view_->GetCompositor();
-    if (compositor && compositor->HasObserver(view_))
-      compositor->RemoveObserver(view_);
+    view_->RemovingFromRootWindow();
   }
 
  private:
@@ -1006,12 +1003,7 @@ void RenderWidgetHostViewAura::OnLostActive() {
 // RenderWidgetHostViewAura, ui::CompositorDelegate implementation:
 
 void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
-  for (std::vector< base::Callback<void(void)> >::const_iterator
-      it = on_compositing_ended_callbacks_.begin();
-      it != on_compositing_ended_callbacks_.end(); ++it) {
-    it->Run();
-  }
-  on_compositing_ended_callbacks_.clear();
+  RunCompositingCallbacks();
   compositor->RemoveObserver(this);
 }
 
@@ -1122,6 +1114,28 @@ bool RenderWidgetHostViewAura::ShouldMoveToCenter() {
       global_mouse_position_.x() > rect.right() - border_x ||
       global_mouse_position_.y() < rect.y() + border_y ||
       global_mouse_position_.y() > rect.bottom() - border_y;
+}
+
+void RenderWidgetHostViewAura::RunCompositingCallbacks() {
+  for (std::vector< base::Callback<void(void)> >::const_iterator
+      it = on_compositing_ended_callbacks_.begin();
+      it != on_compositing_ended_callbacks_.end(); ++it) {
+    it->Run();
+  }
+  on_compositing_ended_callbacks_.clear();
+}
+
+void RenderWidgetHostViewAura::RemovingFromRootWindow() {
+  // We are about to disconnect ourselves from the compositor, we need to issue
+  // the callbacks now, because we won't get notified when the frame is done.
+  // TODO(piman): this might in theory cause a race where the GPU process starts
+  // drawing to the buffer we haven't yet displayed. This will only show for 1
+  // frame though, because we will reissue a new frame right away without that
+  // composited data.
+  RunCompositingCallbacks();
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor && compositor->HasObserver(this))
+    compositor->RemoveObserver(this);
 }
 
 ui::Compositor* RenderWidgetHostViewAura::GetCompositor() {

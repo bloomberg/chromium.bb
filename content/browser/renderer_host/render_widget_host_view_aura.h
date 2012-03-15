@@ -205,6 +205,12 @@ class RenderWidgetHostViewAura
   // moved to center.
   bool ShouldMoveToCenter();
 
+  // Run the compositing callbacks.
+  void RunCompositingCallbacks();
+
+  // Called when window_ is removed from the window tree.
+  void RemovingFromRootWindow();
+
   ui::Compositor* GetCompositor();
 
   // The model object.
