@@ -48,7 +48,7 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
@@ -650,7 +650,7 @@ bool ConstrainedWindowViews::CanHandleAccelerators() const {
 // ConstrainedWindowViews, views::Widget overrides:
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);

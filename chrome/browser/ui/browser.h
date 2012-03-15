@@ -288,7 +288,7 @@ class Browser : public TabHandlerDelegate,
       const GURL& override_url,
       WindowOpenDisposition disposition);
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Opens |url| in a new application panel window for the specified url.
   static content::WebContents* OpenApplicationPanel(
       Profile* profile,

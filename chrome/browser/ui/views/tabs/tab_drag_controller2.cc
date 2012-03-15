@@ -40,7 +40,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/wm/property_util.h"
 #endif
 
@@ -1423,7 +1423,7 @@ Browser* TabDragController2::CreateBrowserForDrag(
 
 void TabDragController2::SetTrackedByWorkspace(gfx::NativeWindow window,
                                                bool value) {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   ash::SetTrackedByWorkspace(window, value);
 #endif
 }

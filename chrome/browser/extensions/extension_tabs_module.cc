@@ -63,7 +63,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
@@ -576,7 +576,7 @@ bool CreateWindowFunction::RunImpl() {
 #if !defined(OS_ANDROID)
         use_panels = PanelManager::ShouldUsePanels(extension_id);
 #endif
-#if defined(USE_AURA)
+#if defined(USE_ASH)
         if (CommandLine::ForCurrentProcess()->HasSwitch(
                 ash::switches::kAuraPanelManager))
           use_panels = true;
@@ -592,7 +592,7 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Aura Panels create a new PanelViewAura.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAuraPanelManager) &&

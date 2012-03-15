@@ -122,6 +122,10 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 #endif
 
+#if defined(USE_ASH)
+#include "chrome/browser/chrome_browser_main_extra_parts_ash.h"
+#endif
+
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
@@ -340,6 +344,10 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 #if defined(USE_AURA)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
+#endif
+
+#if defined(USE_ASH)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 
   return main_parts;

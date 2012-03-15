@@ -212,7 +212,7 @@
 #include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
@@ -730,7 +730,7 @@ WebContents* Browser::OpenApplication(
       break;
     }
     case extension_misc::LAUNCH_PANEL:
-#if defined(USE_AURA)
+#if defined(USE_ASH)
       if (extension &&
           CommandLine::ForCurrentProcess()->HasSwitch(
               ash::switches::kAuraPanelManager)) {
@@ -755,7 +755,7 @@ WebContents* Browser::OpenApplication(
   return tab;
 }
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 // static
 WebContents* Browser::OpenApplicationPanel(
     Profile* profile,
@@ -4601,7 +4601,7 @@ BrowserWindow* Browser::CreateBrowserWindow() {
   // Android build.
 #if !defined(OS_ANDROID)
   bool create_panel = false;
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAuraPanelManager))
     create_panel = is_type_panel();

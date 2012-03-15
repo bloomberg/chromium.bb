@@ -24,8 +24,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/ash_switches.h"
+#endif
+
+#if defined(USE_AURA)
 #include "ui/aura/aura_switches.h"
 #endif
 
@@ -436,7 +439,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePointerLock)
   },
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   {
     "aura-google-dialog-frames",
     IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_NAME,
@@ -444,6 +447,8 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
   },
+#endif
+#if defined(USE_AURA)
   {
     "aura-disable-hold-mouse-moves",
     IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_NAME,
@@ -565,7 +570,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableNTPOtherSessionsMenu)
   },
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   {
     "enable-ash-uber-tray",
     IDS_FLAGS_ENABLE_ASH_UBER_TRAY_NAME,
