@@ -81,6 +81,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
+#include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -1739,6 +1740,15 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   }
 
   return did_execute_command;
+}
+
+WebKit::WebColorChooser* RenderViewImpl::createColorChooser(
+    WebKit::WebColorChooserClient* client,
+    const WebKit::WebColor& initial_color) {
+  RendererWebColorChooserImpl* color_chooser =
+      new RendererWebColorChooserImpl(this, client);
+  color_chooser->Open(static_cast<SkColor>(initial_color));
+  return color_chooser;
 }
 
 bool RenderViewImpl::runFileChooser(

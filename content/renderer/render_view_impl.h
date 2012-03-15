@@ -75,6 +75,7 @@ class PepperDeviceTest;
 struct PP_NetAddress_Private;
 class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
+class RendererWebColorChooserImpl;
 class SkBitmap;
 class InputTagSpeechDispatcher;
 struct ViewMsg_Navigate_Params;
@@ -376,6 +377,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
+  virtual WebKit::WebColorChooser* createColorChooser(
+      WebKit::WebColorChooserClient*, const WebKit::WebColor& initial_color);
   virtual bool runFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);

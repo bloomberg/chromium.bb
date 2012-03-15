@@ -190,12 +190,32 @@ CGColorRef SkColorToCGColorRef(SkColor color) {
                                  SkColorGetA(color) / 255.0);
 }
 
+// Converts NSColor to ARGB
+SkColor NSDeviceColorToSkColor(NSColor* color) {
+  DCHECK([color colorSpace] == [NSColorSpace genericRGBColorSpace] ||
+         [color colorSpace] == [NSColorSpace deviceRGBColorSpace]);
+  CGFloat red, green, blue, alpha;
+  color = [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+  [color getRed:&red green:&green blue:&blue alpha:&alpha];
+  return SkColorSetARGB(SkScalarRound(255.0 * alpha),
+                        SkScalarRound(255.0 * red),
+                        SkScalarRound(255.0 * green),
+                        SkScalarRound(255.0 * blue));
+}
+
 // Converts ARGB to NSColor.
 NSColor* SkColorToCalibratedNSColor(SkColor color) {
   return [NSColor colorWithCalibratedRed:SkColorGetR(color) / 255.0
                                    green:SkColorGetG(color) / 255.0
                                     blue:SkColorGetB(color) / 255.0
                                    alpha:SkColorGetA(color) / 255.0];
+}
+
+NSColor* SkColorToDeviceNSColor(SkColor color) {
+  return [NSColor colorWithDeviceRed:SkColorGetR(color) / 255.0
+                               green:SkColorGetG(color) / 255.0
+                                blue:SkColorGetB(color) / 255.0
+                               alpha:SkColorGetA(color) / 255.0];
 }
 
 SkBitmap CGImageToSkBitmap(CGImageRef image) {

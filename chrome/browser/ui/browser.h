@@ -1024,6 +1024,11 @@ class Browser : public TabHandlerDelegate,
   virtual void DidNavigateToPendingEntry(content::WebContents* tab) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* tab,
+      int color_chooser_id,
+      const SkColor& color) OVERRIDE;
+  virtual void DidEndColorChooser() OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
@@ -1473,6 +1478,10 @@ class Browser : public TabHandlerDelegate,
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
+
+  // Currently open color chooser. Non-NULL after OpenColorChooser is called and
+  // before DidEndColorChooser is called.
+  scoped_ptr<content::ColorChooser> color_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

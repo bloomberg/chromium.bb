@@ -149,6 +149,7 @@
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -4134,6 +4135,28 @@ void Browser::DidNavigateToPendingEntry(WebContents* tab) {
 
 content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
+}
+
+content::ColorChooser* Browser::OpenColorChooser(WebContents* tab,
+                                                 int color_chooser_id,
+                                                 const SkColor& color) {
+#if defined(OS_WIN)
+  // On Windows, only create a color chooser if one doesn't exist, because we
+  // can't close the old color chooser dialog.
+  if (!color_chooser_.get())
+    color_chooser_.reset(content::ColorChooser::Create(color_chooser_id, tab,
+                                                       color));
+#else
+  if (color_chooser_.get())
+    color_chooser_->End();
+  color_chooser_.reset(content::ColorChooser::Create(color_chooser_id, tab,
+                                                     color));
+#endif
+  return color_chooser_.get();
+}
+
+void Browser::DidEndColorChooser() {
+  color_chooser_.reset();
 }
 
 void Browser::RunFileChooser(WebContents* tab,
