@@ -545,7 +545,7 @@ const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
       return NULL;
     }
 
-    gfx::Image* ret = new gfx::Image(new SkBitmap(bitmap));
+    gfx::Image* ret = new gfx::Image(bitmap);
     loaded_images_[prs_id] = ret;
 
     return ret;
@@ -892,7 +892,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
       SkBitmap bitmap;
       if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
                                 &bitmap)) {
-        (*raw_bitmaps)[it->first] = new gfx::Image(new SkBitmap(bitmap));
+        (*raw_bitmaps)[it->first] = new gfx::Image(bitmap);
       } else {
         NOTREACHED() << "Unable to decode theme image resource " << it->first;
       }

@@ -48,7 +48,7 @@ static void ShowGenericExtensionInstalledInfoBar(
                        IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
-      infobar_helper, new gfx::Image(new SkBitmap(icon)), msg, true);
+      infobar_helper, new gfx::Image(icon), msg, true);
   infobar_helper->AddInfoBar(delegate);
 }
 
