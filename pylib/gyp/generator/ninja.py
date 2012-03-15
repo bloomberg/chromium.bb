@@ -722,6 +722,9 @@ class NinjaWriter:
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
     elif self.flavor == 'win':
+      libflags = self.msvs_settings.GetLibFlags(config_name, spec)
+      self.WriteVariableList(
+          'libflags', gyp.common.uniquer(map(self.ExpandSpecial, libflags)))
       ldflags = self.msvs_settings.GetLdflags(config_name,
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
@@ -1083,7 +1086,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   # Grab make settings for CC/CXX.
   if flavor == 'win':
-    cc = cxx = 'cl'
+    cc = cxx = gyp.msvs_emulation.GetCLPath(generator_flags)
   else:
     cc, cxx = 'gcc', 'g++'
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
@@ -1096,21 +1099,21 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   flock = 'flock'
   if flavor == 'mac':
     flock = './gyp-mac-tool flock'
-  master_ninja.variable('ar', os.environ.get('AR', 'ar'))
   master_ninja.variable('cc', os.environ.get('CC', cc))
   master_ninja.variable('cxx', os.environ.get('CXX', cxx))
   if flavor == 'win':
-    master_ninja.variable('ld', 'link')
+    master_ninja.variable('ld', gyp.msvs_emulation.GetLinkPath(generator_flags))
+    master_ninja.variable('idl',
+        gyp.msvs_emulation.GetMidlPath(generator_flags))
+    master_ninja.variable('ar', gyp.msvs_emulation.GetLibPath(generator_flags))
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
+    master_ninja.variable('ar', os.environ.get('AR', 'ar'))
 
   master_ninja.variable('ar_target', os.environ.get('AR_target', '$ar'))
   master_ninja.variable('cc_target', os.environ.get('CC_target', '$cc'))
   master_ninja.variable('cxx_target', os.environ.get('CXX_target', '$cxx'))
-  if flavor == 'win':
-    master_ninja.variable('ld_target', 'link')
-  else:
-    master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
+  master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
 
   if flavor == 'mac':
     master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
@@ -1135,18 +1138,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'cc',
       description='CC $out',
-      command=('cmd /c $cc /nologo /showIncludes '
+      command=('cmd /s /c "$cc /nologo /showIncludes '
                '$defines $includes $cflags $cflags_c '
-               '$cflags_pch_c /c $in /Fo$out '
-               '| ninja-deplist-helper -q -f cl -o $out.dl'),
+               '$cflags_pch_c /c $in /Fo$out /Fd$out.pdb '
+               '| ninja-deplist-helper -q -f cl -o $out.dl"'),
       deplist='$out.dl')
     master_ninja.rule(
       'cxx',
       description='CXX $out',
-      command=('cmd /c $cxx /nologo /showIncludes '
+      command=('cmd /s /c "$cxx /nologo /showIncludes '
                '$defines $includes $cflags $cflags_cc '
-               '$cflags_pch_cc /c $in /Fo$out '
-               '| ninja-deplist-helper -q -f cl -o $out.dl'),
+               '$cflags_pch_cc /c $in /Fo$out /Fd$out.pdb '
+               '| ninja-deplist-helper -q -f cl -o $out.dl"'),
       deplist='$out.dl')
 
   if flavor != 'mac' and flavor != 'win':
@@ -1173,7 +1176,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'alink',
       description='LIB $out',
-      command='lib /nologo /OUT:$out $in')
+      command='lib /nologo /ignore:4221 $libflags /OUT:$out $in')
     master_ninja.rule(
       'solink',
       description='LINK(DLL) $dll',

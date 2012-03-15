@@ -7,8 +7,11 @@ This module helps emulate Visual Studio 2008 behavior on top of other
 build systems, primarily ninja.
 """
 
+import os
 import re
 import sys
+
+import gyp.MSVSVersion
 
 windows_quoter_regex = re.compile(r'(\\*)"')
 
@@ -118,9 +121,10 @@ class MsvsSettings(object):
     """Convert from VS macro names to something equivalent."""
     if '$' in s:
       replacements = {
-          # TODO(scottmg): obviously
-          '$(VSInstallDir)':
-              r'C:\Program Files (x86)\Microsoft Visual Studio 9.0\\',
+          '$(VSInstallDir)': os.environ.get('VSInstallDir') + '\\',
+          '$(VCInstallDir)': os.environ.get('VCInstallDir') + '\\',
+          '$(DXSDK_DIR)': os.environ.get('DXSDK_DIR') + '\\',
+          '$(OutDir)\\': '',
       }
       for old, new in replacements.iteritems():
         s = s.replace(old, new)
@@ -211,8 +215,22 @@ class MsvsSettings(object):
     """Returns the flags that need to be added to .cc compilations."""
     return ['/TP']
 
+  def GetLibFlags(self, config, spec):
+    """Returns the flags that need to be added to lib commands."""
+    libflags = []
+    self.configname = config
+    lib = self._GetWrapper(self, self.msvs_settings[config],
+                          'VCLibrarianTool', append=libflags)
+    libpaths = self.Setting(('VCLibrarianTool', 'AdditionalLibraryDirectories'),
+                            default=[])
+    libpaths = [os.path.normpath(self._ConvertVSMacros(p)) for p in libpaths]
+    libflags.extend(['/LIBPATH:"' + p + '"' for p in libpaths])
+    lib('AdditionalOptions')
+    self.configname = None
+    return libflags
+
   def GetLdflags(self, config, product_dir, gyp_to_build_path):
-    """Returns the flags that need to be added to link and lib commands."""
+    """Returns the flags that need to be added to link commands."""
     ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
@@ -239,3 +257,30 @@ class MsvsSettings(object):
         'oleaut32.lib', 'uuid.lib', 'odbc32.lib', 'odbccp32.lib',
         'DelayImp.lib'))
     return ldflags
+
+
+vs_version = None
+def GetVSVersion(generator_flags):
+  global vs_version
+  if not vs_version:
+    vs_version = gyp.MSVSVersion.SelectVisualStudioVersion(
+        generator_flags.get('msvs_version', 'auto'))
+  return vs_version
+
+def _GetBinaryPath(generator_flags, tool):
+  vs = GetVSVersion(generator_flags)
+  return ('"' +
+          os.path.normpath(os.path.join(vs.Path(), "VC/bin", tool)) +
+          '"')
+
+def GetCLPath(generator_flags):
+  return _GetBinaryPath(generator_flags, 'cl.exe')
+
+def GetLinkPath(generator_flags):
+  return _GetBinaryPath(generator_flags, 'link.exe')
+
+def GetLibPath(generator_flags):
+  return _GetBinaryPath(generator_flags, 'lib.exe')
+
+def GetMidlPath(generator_flags):
+  return _GetBinaryPath(generator_flags, 'midl.exe')
