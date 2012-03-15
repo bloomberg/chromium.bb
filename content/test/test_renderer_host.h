@@ -149,6 +149,10 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+#if defined(USE_AURA)
+  aura::RootWindow* root_window() const { return root_window_.get(); }
+#endif
+
   // Replaces the RPH being used.
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 

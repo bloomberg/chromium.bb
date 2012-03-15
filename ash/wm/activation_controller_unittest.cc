@@ -191,7 +191,7 @@ TEST_F(ActivationControllerTest, ClickOnMenu) {
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &wd, 1, gfx::Rect(100, 100), NULL));
   ad1.SetWindow(w1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(NULL));
+  EXPECT_EQ(NULL, wm::GetActiveWindow());
 
   // Clicking on an activatable window activtes the window.
   aura::test::EventGenerator generator(Shell::GetRootWindow(), w1.get());
@@ -259,8 +259,8 @@ TEST_F(ActivationControllerTest, NotActiveInLostActive) {
   // Should not have gotten a OnLostActive yet.
   EXPECT_EQ(0, ad1.lost_active_count());
 
-  // ActivateWindow(NULL) should deactivate the active window.
-  wm::ActivateWindow(NULL);
+  // Deactivate the active window.
+  wm::DeactivateWindow(w1.get());
   EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
   EXPECT_EQ(1, ad1.lost_active_count());
   EXPECT_FALSE(ad1.window_was_active());

@@ -22,17 +22,26 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kOpenWindowSplitKey, false);
 namespace wm {
 
 void ActivateWindow(aura::Window* window) {
-  aura::client::GetActivationClient(Shell::GetRootWindow())->ActivateWindow(
+  DCHECK(window);
+  DCHECK(window->GetRootWindow());
+  aura::client::GetActivationClient(window->GetRootWindow())->ActivateWindow(
       window);
 }
 
 void DeactivateWindow(aura::Window* window) {
-  aura::client::GetActivationClient(Shell::GetRootWindow())->DeactivateWindow(
+  DCHECK(window);
+  DCHECK(window->GetRootWindow());
+  aura::client::GetActivationClient(window->GetRootWindow())->DeactivateWindow(
       window);
 }
 
 bool IsActiveWindow(aura::Window* window) {
-  return GetActiveWindow() == window;
+  DCHECK(window);
+  if (!window->GetRootWindow())
+    return false;
+
+  return aura::client::GetActivationClient(window->GetRootWindow())->
+      GetActiveWindow() == window;
 }
 
 aura::Window* GetActiveWindow() {

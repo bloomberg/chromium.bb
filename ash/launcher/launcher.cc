@@ -157,4 +157,8 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
                    bounds.height());
 }
 
+internal::LauncherView* Launcher::GetLauncherViewForTest() {
+  return static_cast<internal::LauncherView*>(
+      widget_->GetContentsView()->child_at(0));
+}
 }  // namespace ash

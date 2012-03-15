@@ -773,14 +773,16 @@ bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
 }
 
 void NativeWidgetAura::OnActivated() {
-  GetWidget()->GetFocusManager()->RestoreFocusedView();
+  if (GetWidget()->HasFocusManager())
+    GetWidget()->GetFocusManager()->RestoreFocusedView();
   delegate_->OnNativeWidgetActivationChanged(true);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
 }
 
 void NativeWidgetAura::OnLostActive() {
-  GetWidget()->GetFocusManager()->StoreFocusedView();
+  if (GetWidget()->HasFocusManager())
+    GetWidget()->GetFocusManager()->StoreFocusedView();
   delegate_->OnNativeWidgetActivationChanged(false);
   if (IsVisible() && GetWidget()->non_client_view())
     GetWidget()->non_client_view()->SchedulePaint();
