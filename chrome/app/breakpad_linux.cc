@@ -574,19 +574,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
         false /* Don't strip whitespace. */);
   }
 
-  unsigned printer_info_len =
-      my_strlen(child_process_logging::g_printer_info);
-  if (printer_info_len) {
-    static const char printer_info_msg[] = "prn-info-";
-    static const unsigned kMaxPrnInfoLen =
-        kMaxReportedPrinterRecords * child_process_logging::kPrinterInfoStrLen;
-    writer.AddPairDataInChunks(printer_info_msg, sizeof(printer_info_msg) - 1,
-        child_process_logging::g_printer_info,
-        std::min(printer_info_len, kMaxPrnInfoLen),
-        child_process_logging::kPrinterInfoStrLen,
-        true);
-  }
-
   if (my_strlen(child_process_logging::g_num_switches)) {
     writer.AddPairString("num-switches",
                          child_process_logging::g_num_switches);

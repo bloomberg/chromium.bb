@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
@@ -37,7 +36,6 @@ const char *kGPUGLVersionParamName = "gpu-glver";
 const char *kNumberOfViews = "num-views";
 NSString* const kNumExtensionsName = @"num-extensions";
 NSString* const kExtensionNameFormat = @"extension-%d";
-NSString* const kPrinterInfoNameFormat = @"prn-info-%d";
 
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
@@ -165,19 +163,6 @@ void SetGpuInfo(const content::GPUInfo& gpu_info) {
     SetGpuInfoImpl(gpu_info, SetCrashKeyValue);
 }
 
-void SetPrinterInfo(const char* printer_info) {
-  std::vector<std::string> info;
-  base::SplitString(printer_info, L';', &info);
-  info.resize(kMaxReportedPrinterRecords);
-  for (size_t i = 0; i < info.size(); ++i) {
-    NSString* key = [NSString stringWithFormat:kPrinterInfoNameFormat, i];
-    ClearCrashKey(key);
-    if (!info[i].empty()) {
-      NSString *value = [NSString stringWithUTF8String:info[i].c_str()];
-      SetCrashKeyValue(key, value);
-    }
-  }
-}
 
 void SetNumberOfViewsImpl(int number_of_views,
                           SetCrashKeyValueFuncPtr set_key_func) {

@@ -74,7 +74,6 @@ static size_t g_num_of_extensions_offset;
 static size_t g_extension_ids_offset;
 static size_t g_client_id_offset;
 static size_t g_gpu_info_offset;
-static size_t g_printer_info_offset;
 static size_t g_num_of_views_offset;
 static size_t g_num_switches_offset;
 static size_t g_switches_offset;
@@ -258,29 +257,19 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
         base::StringPrintf(L"extension-%i", i + 1).c_str(), L""));
   }
 
-  // Add empty values for the gpu_info. We'll put the actual values when we
-  // collect them at this location.
+  // Add empty values for the gpu_info. We'll put the actual values
+  // when we collect them at this location.
   g_gpu_info_offset = g_custom_entries->size();
-  static const wchar_t* const kGpuEntries[] = {
-    L"gpu-venid",
-    L"gpu-devid",
-    L"gpu-driver",
-    L"gpu-psver",
-    L"gpu-vsver",
-  };
-  for (size_t i = 0; i < arraysize(kGpuEntries); ++i) {
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(kGpuEntries[i], L""));
-  }
-
-  // Add empty values for the prn_info-*. We'll put the actual values when we
-  // collect them at this location.
-  g_printer_info_offset = g_custom_entries->size();
-  for (size_t i = 0; i < kMaxReportedPrinterRecords; ++i) {
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(
-            base::StringPrintf(L"prn-info-%d", i + 1).c_str(), L""));
-  }
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-venid", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-devid", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-driver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-psver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-vsver", L""));
 
   // Read the id from registry. If reporting has never been enabled
   // the result will be empty string. Its OK since when user enables reporting
@@ -498,34 +487,21 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
   if (!g_custom_entries)
     return;
 
-  const wchar_t* info[] = {
-    vendor_id,
-    device_id,
-    driver_version,
-    pixel_shader_version,
-    vertex_shader_version
-  };
-
-  for (size_t i = 0; i < arraysize(info); ++i) {
-    base::wcslcpy((*g_custom_entries)[g_gpu_info_offset + i].value,
-                  info[i],
-                  google_breakpad::CustomInfoEntry::kValueMaxLength);
-  }
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetPrinterInfo(
-    const wchar_t* printer_info) {
-  if (!g_custom_entries)
-    return;
-  std::vector<string16> info;
-  base::SplitString(printer_info, L';', &info);
-  DCHECK_LE(info.size(), kMaxReportedPrinterRecords);
-  info.resize(kMaxReportedPrinterRecords);
-  for (size_t i = 0; i < info.size(); ++i) {
-    base::wcslcpy((*g_custom_entries)[g_printer_info_offset + i].value,
-                info[i].c_str(),
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset].value,
+                vendor_id,
                 google_breakpad::CustomInfoEntry::kValueMaxLength);
-  }
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+1].value,
+                device_id,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+2].value,
+                driver_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+3].value,
+                pixel_shader_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
+  base::wcslcpy((*g_custom_entries)[g_gpu_info_offset+4].value,
+                vertex_shader_version,
+                google_breakpad::CustomInfoEntry::kValueMaxLength);
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
