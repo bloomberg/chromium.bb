@@ -344,6 +344,8 @@
         '../plugins/ppapi/usb_key_code_conversion.h',
         '../plugins/ppapi/usb_key_code_conversion.cc',
         '../plugins/ppapi/usb_key_code_conversion_linux.cc',
+        '../plugins/ppapi/usb_key_code_conversion_mac.cc',
+        '../plugins/ppapi/usb_keycode_map.h',
         '../plugins/sad_plugin.cc',
         '../plugins/sad_plugin.h',
         '../plugins/webkit_plugins_export.h',
