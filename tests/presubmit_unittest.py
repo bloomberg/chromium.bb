@@ -2250,13 +2250,27 @@ class CannedChecksUnittest(PresubmitTestsBase):
         rietveld_response=response,
         expected_output='')
 
-  def testCannedCheckOwners_NoIssue(self):
+  def testCannedCheckOwners_NoIssueNoFiles(self):
     self.AssertOwnersWorks(issue=None,
         expected_output="OWNERS check failed: this change has no Rietveld "
                         "issue number, so we can't check it for approvals.\n")
-
     self.AssertOwnersWorks(issue=None, is_committing=False,
         expected_output="")
+
+  def testCannedCheckOwners_NoIssue(self):
+    self.AssertOwnersWorks(issue=None,
+        uncovered_dirs=set(['foo']),
+        expected_output="OWNERS check failed: this change has no Rietveld "
+                        "issue number, so we can't check it for approvals.\n")
+    self.AssertOwnersWorks(issue=None,
+        is_committing=False,
+        uncovered_dirs=set(['foo']),
+        expected_output='Missing OWNER reviewers for files in these '
+                        'directories:\n'
+                        '    foo\n'
+                        'Until the issue is uploaded, this list will include '
+                        'directories for which you \n'
+                        'are an OWNER.\n')
 
   def testCannedCheckOwners_NoLGTM(self):
     self.AssertOwnersWorks(expected_output='Missing LGTM from someone '

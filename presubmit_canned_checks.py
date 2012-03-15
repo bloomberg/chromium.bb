@@ -752,19 +752,19 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       approval_needed=input_api.is_committing)
 
   if owner_email:
+    message = ''
     reviewers_plus_owner = reviewers.union(set([owner_email]))
-  elif input_api.is_committing:
-    return [output_api.PresubmitWarning(
-        'The issue was not uploaded so you have no OWNER approval.')]
   else:
+    message = ('\nUntil the issue is uploaded, this list will include '
+               'directories for which you \nare an OWNER.')
     owner_email = ''
     reviewers_plus_owner = set()
 
   missing_directories = owners_db.directories_not_covered_by(affected_files,
       reviewers_plus_owner)
   if missing_directories:
-    return [output('Missing %s for files in these directories:\n    %s' %
-                   (needed, '\n    '.join(missing_directories)))]
+    return [output('Missing %s for files in these directories:\n    %s%s' %
+                   (needed, '\n    '.join(missing_directories), message))]
 
   if input_api.is_committing and not reviewers:
     return [output('Missing LGTM from someone other than %s' % owner_email)]
