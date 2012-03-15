@@ -849,6 +849,8 @@
   fun:base::Thread::message_loop
   fun:content::BrowserThreadImpl::PostTaskHelper
   fun:content::BrowserThread::PostTask
+  fun:AudioRendererHost::OnCreated
+  fun:media::AudioOutputController::DoCreate
 }
 {
   bug_116421
