@@ -88,71 +88,71 @@ FilterHost* CompositeFilter::host() {
   return host_impl_.get() ? host_impl_->host() : NULL;
 }
 
-void CompositeFilter::Play(const base::Closure& play_callback) {
+void CompositeFilter::Play(const base::Closure& play_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    play_callback.Run();
+    play_cb.Run();
     return;
   } else if (state_ == kPlaying) {
-    play_callback.Run();
+    play_cb.Run();
     return;
   } else if (!host() || (state_ != kPaused && state_ != kCreated)) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    play_callback.Run();
+    play_cb.Run();
     return;
   }
 
   ChangeState(kPlayPending);
-  callback_ = play_callback;
+  callback_ = play_cb;
   StartSerialCallSequence();
 }
 
-void CompositeFilter::Pause(const base::Closure& pause_callback) {
+void CompositeFilter::Pause(const base::Closure& pause_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    pause_callback.Run();
+    pause_cb.Run();
     return;
   } else if (state_ == kPaused) {
-    pause_callback.Run();
+    pause_cb.Run();
     return;
   } else if (!host() || state_ != kPlaying) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    pause_callback.Run();
+    pause_cb.Run();
     return;
   }
 
   ChangeState(kPausePending);
-  callback_ = pause_callback;
+  callback_ = pause_cb;
   StartSerialCallSequence();
 }
 
-void CompositeFilter::Flush(const base::Closure& flush_callback) {
+void CompositeFilter::Flush(const base::Closure& flush_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (IsOperationPending()) {
     SendErrorToHost(PIPELINE_ERROR_OPERATION_PENDING);
-    flush_callback.Run();
+    flush_cb.Run();
     return;
   } else if (!host() || (state_ != kCreated && state_ != kPaused)) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    flush_callback.Run();
+    flush_cb.Run();
     return;
   }
 
   ChangeState(kFlushPending);
-  callback_ = flush_callback;
+  callback_ = flush_cb;
   StartParallelCallSequence();
 }
 
-void CompositeFilter::Stop(const base::Closure& stop_callback) {
+void CompositeFilter::Stop(const base::Closure& stop_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   if (!host()) {
     SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-    stop_callback.Run();
+    stop_cb.Run();
     return;
   } else if (state_ == kStopped) {
-    stop_callback.Run();
+    stop_cb.Run();
     return;
   }
 
@@ -177,7 +177,7 @@ void CompositeFilter::Stop(const base::Closure& stop_callback) {
       break;
     default:
       SendErrorToHost(PIPELINE_ERROR_INVALID_STATE);
-      stop_callback.Run();
+      stop_cb.Run();
       return;
   }
 
@@ -186,7 +186,7 @@ void CompositeFilter::Stop(const base::Closure& stop_callback) {
     status_cb_.Reset();
   }
 
-  callback_ = stop_callback;
+  callback_ = stop_cb;
   if (state_ == kStopPending) {
     StartSerialCallSequence();
   }

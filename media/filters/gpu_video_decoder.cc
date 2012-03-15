@@ -142,18 +142,18 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
 }
 
 void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const PipelineStatusCB& pipeline_status_cb,
+                                 const PipelineStatusCB& status_cb,
                                  const StatisticsCB& statistics_cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize, this,
-        make_scoped_refptr(demuxer_stream), pipeline_status_cb, statistics_cb));
+        make_scoped_refptr(demuxer_stream), status_cb, statistics_cb));
     return;
   }
 
   DCHECK(!demuxer_stream_);
   if (!demuxer_stream) {
-    pipeline_status_cb.Run(PIPELINE_ERROR_DECODE);
+    status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }
 
@@ -162,13 +162,13 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   // decoder objects.
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid video stream - " << config.AsHumanReadableString();
-    pipeline_status_cb.Run(PIPELINE_ERROR_DECODE);
+    status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator(config.profile(), this);
   if (!vda_) {
-    pipeline_status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
@@ -181,7 +181,7 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   config_frame_duration_ = GetFrameDuration(config);
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
-  pipeline_status_cb.Run(PIPELINE_OK);
+  status_cb.Run(PIPELINE_OK);
 }
 
 void GpuVideoDecoder::Read(const ReadCB& read_cb) {

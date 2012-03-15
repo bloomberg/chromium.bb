@@ -41,7 +41,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Decoder implementation.
   virtual void Initialize(
       media::DemuxerStream* demuxer_stream,
-      const media::PipelineStatusCB& pipeline_status_cb,
+      const media::PipelineStatusCB& status_cb,
       const media::StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& callback) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;

@@ -40,13 +40,13 @@ void AudioRendererBase::Play(const base::Closure& callback) {
 void AudioRendererBase::Pause(const base::Closure& callback) {
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPlaying || state_ == kUnderflow || state_ == kRebuffering);
-  pause_callback_ = callback;
+  pause_cb_ = callback;
   state_ = kPaused;
 
   // Pause only when we've completed our pending read.
   if (!pending_read_) {
-    pause_callback_.Run();
-    pause_callback_.Reset();
+    pause_cb_.Run();
+    pause_cb_.Reset();
   } else {
     state_ = kPaused;
   }
@@ -62,8 +62,8 @@ void AudioRendererBase::Stop(const base::Closure& callback) {
     base::AutoLock auto_lock(lock_);
     state_ = kStopped;
     algorithm_.reset(NULL);
-    audio_time_cb_.Reset();
-    underflow_callback_.Reset();
+    time_cb_.Reset();
+    underflow_cb_.Reset();
   }
   if (!callback.is_null()) {
     callback.Run();
@@ -74,7 +74,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK(!pending_read_) << "Pending read must complete before seeking";
-  DCHECK(pause_callback_.is_null());
+  DCHECK(pause_cb_.is_null());
   DCHECK(seek_cb_.is_null());
   state_ = kSeeking;
   seek_cb_ = cb;
@@ -90,17 +90,17 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 }
 
 void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
-                                   const PipelineStatusCB& init_callback,
-                                   const base::Closure& underflow_callback,
-                                   const AudioTimeCB& audio_time_cb) {
+                                   const PipelineStatusCB& init_cb,
+                                   const base::Closure& underflow_cb,
+                                   const TimeCB& time_cb) {
   DCHECK(decoder);
-  DCHECK(!init_callback.is_null());
-  DCHECK(!underflow_callback.is_null());
-  DCHECK(!audio_time_cb.is_null());
+  DCHECK(!init_cb.is_null());
+  DCHECK(!underflow_cb.is_null());
+  DCHECK(!time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   decoder_ = decoder;
-  underflow_callback_ = underflow_callback;
-  audio_time_cb_ = audio_time_cb;
+  underflow_cb_ = underflow_cb;
+  time_cb_ = time_cb;
 
   // Create a callback so our algorithm can request more reads.
   base::Closure cb = base::Bind(&AudioRendererBase::ScheduleRead_Locked, this);
@@ -125,13 +125,13 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
   // Give the subclass an opportunity to initialize itself.
   if (!config_ok || !OnInitialize(bits_per_channel, channel_layout,
                                   sample_rate)) {
-    init_callback.Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    init_cb.Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
   // Finally, execute the start callback.
   state_ = kPaused;
-  init_callback.Run(PIPELINE_OK);
+  init_cb.Run(PIPELINE_OK);
 }
 
 bool AudioRendererBase::HasEnded() {
@@ -176,7 +176,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
       if (buffer && !buffer->IsEndOfStream())
         algorithm_->EnqueueBuffer(buffer);
       DCHECK(!pending_read_);
-      ResetAndRunCB(&pause_callback_);
+      ResetAndRunCB(&pause_cb_);
       return;
     case kSeeking:
       if (IsBeforeSeekTime(buffer)) {
@@ -253,7 +253,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
         OnRenderEndOfStream();
       } else if (state_ == kPlaying) {
         state_ = kUnderflow;
-        underflow_cb = underflow_callback_;
+        underflow_cb = underflow_cb_;
       }
     } else {
       // Otherwise fill the buffer.
@@ -269,7 +269,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   if (last_fill_buffer_time.InMicroseconds() > 0 &&
       (last_fill_buffer_time != last_fill_buffer_time_ ||
        new_current_time > host()->GetTime())) {
-    audio_time_cb_.Run(new_current_time, last_fill_buffer_time);
+    time_cb_.Run(new_current_time, last_fill_buffer_time);
   }
 
   if (!underflow_cb.is_null())

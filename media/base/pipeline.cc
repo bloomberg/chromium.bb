@@ -90,37 +90,37 @@ Pipeline::~Pipeline() {
 
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const std::string& url,
-                     const PipelineStatusCB& ended_callback,
-                     const PipelineStatusCB& error_callback,
-                     const NetworkEventCB& network_callback,
-                     const PipelineStatusCB& start_callback) {
+                     const PipelineStatusCB& ended_cb,
+                     const PipelineStatusCB& error_cb,
+                     const NetworkEventCB& network_cb,
+                     const PipelineStatusCB& start_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
 
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      url, ended_callback, error_callback, network_callback, start_callback));
+      url, ended_cb, error_cb, network_cb, start_cb));
 }
 
-void Pipeline::Stop(const PipelineStatusCB& stop_callback) {
+void Pipeline::Stop(const PipelineStatusCB& stop_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(running_) << "Media pipeline isn't running";
 
   // Stop the pipeline, which will set |running_| to false on our behalf.
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::StopTask, this, stop_callback));
+      &Pipeline::StopTask, this, stop_cb));
 }
 
 void Pipeline::Seek(base::TimeDelta time,
-                    const PipelineStatusCB& seek_callback) {
+                    const PipelineStatusCB& seek_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(running_) << "Media pipeline isn't running";
 
   download_rate_monitor_.Stop();
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::SeekTask, this, time, seek_callback));
+      &Pipeline::SeekTask, this, time, seek_cb));
 }
 
 bool Pipeline::IsRunning() const {
@@ -381,9 +381,9 @@ void Pipeline::FinishInitialization() {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Execute the seek callback, if present.  Note that this might be the
   // initial callback passed into Start().
-  if (!seek_callback_.is_null()) {
-    seek_callback_.Run(status_);
-    seek_callback_.Reset();
+  if (!seek_cb_.is_null()) {
+    seek_cb_.Run(status_);
+    seek_cb_.Reset();
   }
 }
 
@@ -602,18 +602,18 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const std::string& url,
-                         const PipelineStatusCB& ended_callback,
-                         const PipelineStatusCB& error_callback,
-                         const NetworkEventCB& network_callback,
-                         const PipelineStatusCB& start_callback) {
+                         const PipelineStatusCB& ended_cb,
+                         const PipelineStatusCB& error_cb,
+                         const NetworkEventCB& network_cb,
+                         const PipelineStatusCB& start_cb) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(kCreated, state_);
   filter_collection_ = filter_collection.Pass();
   url_ = url;
-  ended_callback_ = ended_callback;
-  error_callback_ = error_callback;
-  network_callback_ = network_callback;
-  seek_callback_ = start_callback;
+  ended_cb_ = ended_cb;
+  error_cb_ = error_cb;
+  network_cb_ = network_cb;
+  seek_cb_ = start_cb;
 
   // Kick off initialization.
   pipeline_init_state_.reset(new PipelineInitState());
@@ -636,7 +636,7 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
 //
 // When all required filters have been created and have called their
 // FilterHost's InitializationComplete() method, the pipeline will update its
-// state to kStarted and |init_callback_|, will be executed.
+// state to kStarted and |init_cb_|, will be executed.
 //
 // TODO(hclam): InitializeTask() is now starting the pipeline asynchronously. It
 // works like a big state change table. If we no longer need to start filters
@@ -746,7 +746,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
 // TODO(scherkus): beware!  this can get posted multiple times since we post
 // Stop() tasks even if we've already stopped.  Perhaps this should no-op for
 // additional calls, however most of this logic will be changing.
-void Pipeline::StopTask(const PipelineStatusCB& stop_callback) {
+void Pipeline::StopTask(const PipelineStatusCB& stop_cb) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!IsPipelineStopPending());
   DCHECK_NE(state_, kStopped);
@@ -758,13 +758,13 @@ void Pipeline::StopTask(const PipelineStatusCB& stop_callback) {
 
   if (state_ == kStopped) {
     // Already stopped so just run callback.
-    stop_callback.Run(status_);
+    stop_cb.Run(status_);
     return;
   }
 
   if (IsPipelineTearingDown() && error_caused_teardown_) {
     // If we are stopping due to SetError(), stop normally instead of
-    // going to error state and calling |error_callback_|. This converts
+    // going to error state and calling |error_cb_|. This converts
     // the teardown in progress from an error teardown into one that acts
     // like the error never occurred.
     base::AutoLock auto_lock(lock_);
@@ -772,7 +772,7 @@ void Pipeline::StopTask(const PipelineStatusCB& stop_callback) {
     error_caused_teardown_ = false;
   }
 
-  stop_callback_ = stop_callback;
+  stop_cb_ = stop_cb;
 
   stop_pending_ = true;
   if (!IsPipelineSeeking() && !IsPipelineTearingDown()) {
@@ -855,7 +855,7 @@ void Pipeline::PreloadChangedTask(Preload preload) {
 }
 
 void Pipeline::SeekTask(base::TimeDelta time,
-                        const PipelineStatusCB& seek_callback) {
+                        const PipelineStatusCB& seek_cb) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!IsPipelineStopPending());
 
@@ -880,7 +880,7 @@ void Pipeline::SeekTask(base::TimeDelta time,
   //   kStarted
   SetState(kPausing);
   seek_timestamp_ = time;
-  seek_callback_ = seek_callback;
+  seek_cb_ = seek_cb;
 
   // Kick off seeking!
   {
@@ -926,15 +926,15 @@ void Pipeline::NotifyEndedTask() {
     clock_->EndOfStream();
   }
 
-  if (!ended_callback_.is_null()) {
-    ended_callback_.Run(status_);
+  if (!ended_cb_.is_null()) {
+    ended_cb_.Run(status_);
   }
 }
 
 void Pipeline::NotifyNetworkEventTask(NetworkEvent type) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  if (!network_callback_.is_null())
-    network_callback_.Run(type);
+  if (!network_cb_.is_null())
+    network_cb_.Run(type);
 }
 
 void Pipeline::DisableAudioRendererTask() {
@@ -1098,14 +1098,14 @@ void Pipeline::FinishDestroyingFiltersTask() {
 
   pipeline_filter_ = NULL;
 
-  if (error_caused_teardown_ && !IsPipelineOk() && !error_callback_.is_null())
-    error_callback_.Run(status_);
+  if (error_caused_teardown_ && !IsPipelineOk() && !error_cb_.is_null())
+    error_cb_.Run(status_);
 
   if (stop_pending_) {
     stop_pending_ = false;
     ResetState();
     PipelineStatusCB stop_cb;
-    std::swap(stop_cb, stop_callback_);
+    std::swap(stop_cb, stop_cb_);
     // Notify the client that stopping has finished.
     if (!stop_cb.is_null()) {
       stop_cb.Run(status_);

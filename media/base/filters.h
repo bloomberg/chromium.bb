@@ -124,7 +124,7 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // callback upon completion.
   // statistics_cb is used to update global pipeline statistics.
   virtual void Initialize(DemuxerStream* stream,
-                          const PipelineStatusCB& callback,
+                          const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 
   // Request a frame to be decoded and returned via the provided callback.
@@ -171,14 +171,14 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
   // Used to update the pipeline's clock time. The parameter is the time that
   // the clock should not exceed.
-  typedef base::Callback<void(base::TimeDelta)> VideoTimeCB;
+  typedef base::Callback<void(base::TimeDelta)> TimeCB;
 
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
   virtual void Initialize(VideoDecoder* decoder,
-                          const PipelineStatusCB& callback,
+                          const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb,
-                          const VideoTimeCB& time_cb) = 0;
+                          const TimeCB& time_cb) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.
@@ -191,18 +191,18 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
   // Used to update the pipeline's clock time. The first parameter is the
   // current time, and the second parameter is the time that the clock must not
   // exceed.
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> AudioTimeCB;
+  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
 
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
-  // |init_callback| upon completion. |underflow_callback| is called when the
+  // |init_cb| upon completion. |underflow_cb| is called when the
   // renderer runs out of data to pass to the audio card during playback.
-  // If the |underflow_callback| is called ResumeAfterUnderflow() must be called
+  // If the |underflow_cb| is called ResumeAfterUnderflow() must be called
   // to resume playback. Pause(), Seek(), or Stop() cancels the underflow
   // condition.
   virtual void Initialize(const scoped_refptr<AudioDecoder>& decoder,
-                          const PipelineStatusCB& init_callback,
-                          const base::Closure& underflow_callback,
-                          const AudioTimeCB& time_cb) = 0;
+                          const PipelineStatusCB& init_cb,
+                          const base::Closure& underflow_cb,
+                          const TimeCB& time_cb) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.

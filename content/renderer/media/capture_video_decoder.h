@@ -42,7 +42,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   // Decoder implementation.
   virtual void Initialize(
       media::DemuxerStream* demuxer_stream,
-      const media::PipelineStatusCB& pipeline_status_cb,
+      const media::PipelineStatusCB& status_cb,
       const media::StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& callback) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
@@ -79,7 +79,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   void InitializeOnDecoderThread(
       media::DemuxerStream* demuxer_stream,
-      const media::PipelineStatusCB& pipeline_status_cb,
+      const media::PipelineStatusCB& status_cb,
       const media::StatisticsCB& statistics_cb);
   void ReadOnDecoderThread(const ReadCB& callback);
 

@@ -96,7 +96,7 @@ class AudioRendererBaseTest : public ::testing::Test {
     CHECK(current_time <= max_time);
   }
 
-  AudioRenderer::AudioTimeCB NewAudioTimeClosure() {
+  AudioRenderer::TimeCB NewAudioTimeClosure() {
     return base::Bind(&AudioRendererBaseTest::OnAudioTimeCallback,
                       base::Unretained(this));
   }

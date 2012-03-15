@@ -40,20 +40,20 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
 RTCVideoDecoder::~RTCVideoDecoder() {}
 
 void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const PipelineStatusCB& pipeline_status_cb,
+                                 const PipelineStatusCB& status_cb,
                                  const StatisticsCB& statistics_cb) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&RTCVideoDecoder::Initialize, this,
                    make_scoped_refptr(demuxer_stream),
-                   pipeline_status_cb, statistics_cb));
+                   status_cb, statistics_cb));
     return;
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   state_ = kNormal;
-  pipeline_status_cb.Run(PIPELINE_OK);
+  status_cb.Run(PIPELINE_OK);
 
   // TODO(acolwell): Implement stats.
 }

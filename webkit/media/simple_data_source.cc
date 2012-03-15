@@ -63,9 +63,9 @@ void SimpleDataSource::Stop(const base::Closure& callback) {
 
 void SimpleDataSource::Initialize(
     const GURL& url,
-    const media::PipelineStatusCB& callback) {
+    const media::PipelineStatusCB& status_cb) {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!callback.is_null());
+  DCHECK(!status_cb.is_null());
 
   // Reference to prevent destruction while inside the |initialize_cb_|
   // call. This is a temporary fix to prevent crashes caused by holding the
@@ -75,7 +75,7 @@ void SimpleDataSource::Initialize(
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(state_, UNINITIALIZED);
     state_ = INITIALIZING;
-    initialize_cb_ = callback;
+    initialize_cb_ = status_cb;
 
     // Validate the URL.
     url_ = url;

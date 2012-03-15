@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,10 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // media::Filter methods.
   virtual void set_host(FilterHost* host) OVERRIDE;
   virtual FilterHost* host() OVERRIDE;
-  virtual void Play(const base::Closure& play_callback) OVERRIDE;
-  virtual void Pause(const base::Closure& pause_callback) OVERRIDE;
-  virtual void Flush(const base::Closure& flush_callback) OVERRIDE;
-  virtual void Stop(const base::Closure& stop_callback) OVERRIDE;
+  virtual void Play(const base::Closure& play_cb) OVERRIDE;
+  virtual void Pause(const base::Closure& pause_cb) OVERRIDE;
+  virtual void Flush(const base::Closure& flush_cb) OVERRIDE;
+  virtual void Stop(const base::Closure& stop_cb) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
   virtual void Seek(
       base::TimeDelta time, const FilterStatusCB& seek_cb) OVERRIDE;

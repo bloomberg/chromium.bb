@@ -109,7 +109,7 @@ class AudioRendererImplTest
     renderer_ = new TestAudioRendererImpl(default_sink.get());
     renderer_->Initialize(decoder_,
                           media::NewExpectedStatusCB(media::PIPELINE_OK),
-                          NewUnderflowClosure(), NewAudioTimeClosure());
+                          NewUnderflowClosure(), NewTimeClosure());
 
     // We need an event to verify that all tasks are done before leaving
     // our tests.
@@ -127,13 +127,13 @@ class AudioRendererImplTest
                       base::Unretained(this));
   }
 
-  void OnAudioTimeCallback(
+  void OnTimeCallback(
       base::TimeDelta current_time, base::TimeDelta max_time) {
     CHECK(current_time <= max_time);
   }
 
-  media::AudioRenderer::AudioTimeCB NewAudioTimeClosure() {
-    return base::Bind(&AudioRendererImplTest::OnAudioTimeCallback,
+  media::AudioRenderer::TimeCB NewTimeClosure() {
+    return base::Bind(&AudioRendererImplTest::OnTimeCallback,
                       base::Unretained(this));
   }
 

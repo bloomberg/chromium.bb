@@ -159,8 +159,8 @@ class PipelineTest : public ::testing::Test {
   }
 
   // Sets up expectations to allow the audio renderer to initialize.
-  void InitializeAudioRenderer(bool disable_after_init_callback = false) {
-    if (disable_after_init_callback) {
+  void InitializeAudioRenderer(bool disable_after_init_cb = false) {
+    if (disable_after_init_cb) {
       EXPECT_CALL(*mocks_->audio_renderer(), Initialize(
           scoped_refptr<AudioDecoder>(mocks_->audio_decoder()), _, _, _))
           .WillOnce(DoAll(Invoke(&RunPipelineStatusCB4),
@@ -854,25 +854,25 @@ TEST_F(PipelineTest, StartTimeIsNonZero) {
 class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {
  public:
   FlexibleCallbackRunner(base::TimeDelta delay, PipelineStatus status,
-                         const PipelineStatusCB& callback)
+                         const PipelineStatusCB& status_cb)
       : delay_(delay),
         status_(status),
-        callback_(callback) {
+        status_cb_(status_cb) {
     if (delay_ < base::TimeDelta()) {
-      callback_.Run(status_);
+      status_cb_.Run(status_);
       return;
     }
   }
   virtual void Run() {
     if (delay_ < base::TimeDelta()) return;
     base::PlatformThread::Sleep(delay_);
-    callback_.Run(status_);
+    status_cb_.Run(status_);
   }
 
  private:
   base::TimeDelta delay_;
   PipelineStatus status_;
-  PipelineStatusCB callback_;
+  PipelineStatusCB status_cb_;
 };
 
 void TestPipelineStatusNotification(base::TimeDelta delay) {

@@ -86,7 +86,7 @@ class SimpleDataSource
 
   // webkit_glue::WebDataSource implementation.
   virtual void Initialize(const GURL& url,
-                          const media::PipelineStatusCB& callback) OVERRIDE;
+                          const media::PipelineStatusCB& status_cb) OVERRIDE;
   virtual bool HasSingleOrigin() OVERRIDE;
   virtual void Abort() OVERRIDE;
 

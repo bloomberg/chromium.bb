@@ -68,7 +68,7 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void InitializeDataSource(const char* url,
-                            const media::PipelineStatusCB& callback) {
+                            const media::PipelineStatusCB& status_cb) {
     gurl_ = GURL(url);
 
     url_loader_ = new NiceMock<MockWebURLLoader>();
@@ -80,7 +80,7 @@ class SimpleDataSourceTest : public testing::Test {
     data_source_->set_host(&host_);
     data_source_->SetURLLoaderForTest(url_loader_);
 
-    data_source_->Initialize(gurl_, callback);
+    data_source_->Initialize(gurl_, status_cb);
     MessageLoop::current()->RunAllPending();
   }
 

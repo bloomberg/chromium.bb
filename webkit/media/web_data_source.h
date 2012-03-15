@@ -25,7 +25,7 @@ class WebDataSource : public media::DataSource {
   //
   // Method called on the render thread.
   virtual void Initialize(const GURL& url,
-                          const media::PipelineStatusCB& callback) = 0;
+                          const media::PipelineStatusCB& status_cb) = 0;
 
   // Returns true if the media resource has a single origin, false otherwise.
   //

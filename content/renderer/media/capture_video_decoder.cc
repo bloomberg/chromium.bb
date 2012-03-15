@@ -34,13 +34,13 @@ CaptureVideoDecoder::~CaptureVideoDecoder() {}
 
 void CaptureVideoDecoder::Initialize(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& pipeline_status_cb,
+    const media::PipelineStatusCB& status_cb,
     const media::StatisticsCB& statistics_cb) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CaptureVideoDecoder::InitializeOnDecoderThread,
                  this, make_scoped_refptr(demuxer_stream),
-                 pipeline_status_cb, statistics_cb));
+                 status_cb, statistics_cb));
 }
 
 void CaptureVideoDecoder::Read(const ReadCB& read_cb) {
@@ -135,7 +135,7 @@ void CaptureVideoDecoder::OnDeviceInfoReceived(
 
 void CaptureVideoDecoder::InitializeOnDecoderThread(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& pipeline_status_cb,
+    const media::PipelineStatusCB& status_cb,
     const media::StatisticsCB& statistics_cb) {
   DVLOG(1) << "InitializeOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
@@ -143,7 +143,7 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
 
   statistics_cb_ = statistics_cb;
-  pipeline_status_cb.Run(media::PIPELINE_OK);
+  status_cb.Run(media::PIPELINE_OK);
   state_ = kNormal;
   capture_engine_->StartCapture(this, capability_);
 }

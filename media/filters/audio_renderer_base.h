@@ -43,9 +43,9 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
 
   // AudioRenderer implementation.
   virtual void Initialize(const scoped_refptr<AudioDecoder>& decoder,
-                          const PipelineStatusCB& init_callback,
-                          const base::Closure& underflow_callback,
-                          const AudioTimeCB& audio_time_cb) OVERRIDE;
+                          const PipelineStatusCB& init_cb,
+                          const base::Closure& underflow_cb,
+                          const TimeCB& time_cb) OVERRIDE;
   virtual bool HasEnded() OVERRIDE;
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) OVERRIDE;
 
@@ -153,12 +153,12 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   base::TimeDelta last_fill_buffer_time_;
 
   // Filter callbacks.
-  base::Closure pause_callback_;
+  base::Closure pause_cb_;
   FilterStatusCB seek_cb_;
 
-  base::Closure underflow_callback_;
+  base::Closure underflow_cb_;
 
-  AudioTimeCB audio_time_cb_;
+  TimeCB time_cb_;
 
   base::TimeDelta seek_timestamp_;
 
