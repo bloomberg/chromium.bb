@@ -179,8 +179,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedHtmlUI>;
-  if (url.host() == chrome::kChromeUIDownloadsHost)
-    return &NewWebUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIFeedbackHost)
@@ -230,7 +228,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
    * OS Specific #defines
    ***************************************************************************/
 #if !defined(OS_ANDROID)
-  // Android doesn't use the Options/Options2 pages
+  // Android uses the native download manager.
+  if (url.host() == chrome::kChromeUIDownloadsHost)
+    return &NewWebUI<DownloadsUI>;
+  // Android doesn't use the Options/Options2 pages.
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
@@ -473,9 +474,6 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUICrashesHost)
     return CrashesUI::GetFaviconResourceBytes();
 
-  if (page_url.host() == chrome::kChromeUIDownloadsHost)
-    return DownloadsUI::GetFaviconResourceBytes();
-
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes();
 
@@ -489,6 +487,10 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return FlashUI::GetFaviconResourceBytes();
 
 #if !defined(OS_ANDROID)
+  // Android uses the native download manager
+  if (page_url.host() == chrome::kChromeUIDownloadsHost)
+    return DownloadsUI::GetFaviconResourceBytes();
+
   // Android doesn't use the Options/Options2 pages
   if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();

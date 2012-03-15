@@ -4467,6 +4467,7 @@
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
+            ['exclude', '^browser/ui/webui/downloads_'],
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
             ['exclude', '^browser/ui/webui/print_preview/'],
