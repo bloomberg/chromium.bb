@@ -783,7 +783,9 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
                                              FindInPageDirection forward,
                                              FindInPageCase match_case,
                                              bool find_next) {
-  DCHECK(tab_.get());
+  // Note that we can be called by the find dialog after the tab has gone away.
+  if (!tab_)
+    return;
 
   // What follows is quite similar to TabProxy::FindInPage() but uses
   // the SyncMessageReplyDispatcher to avoid concerns about blocking

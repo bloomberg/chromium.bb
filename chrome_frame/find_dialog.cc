@@ -1,11 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/find_dialog.h"
 
-#include <Richedit.h>
+#include <richedit.h>
 
+#include "base/utf_string_conversions.h"
+#include "chrome/common/guid.h"
 #include "chrome_frame/chrome_frame_automation.h"
 
 const int kMaxFindChars = 1024;
@@ -20,15 +22,26 @@ void CFFindDialog::Init(ChromeFrameAutomationClient* automation_client) {
 
 LRESULT CFFindDialog::OnDestroy(UINT msg, WPARAM wparam, LPARAM lparam,
                                 BOOL& handled) {
+  // In order to cancel the selection when the Find dialog is dismissed, we
+  // do a fake search for a string that is unlikely to appear on the page.
+  // TODO(robertshield): Change this to plumb through a StopFinding automation
+  // message that triggers a ViewMsg_StopFinding.
+  std::string guid(guid::GenerateGUID());
+  automation_client_->FindInPage(ASCIIToWide(guid), FWD, CASE_SENSITIVE, false);
+
   UninstallMessageHook();
   return 0;
 }
 
 LRESULT CFFindDialog::OnFind(WORD wNotifyCode, WORD wID, HWND hWndCtl,
                              BOOL& bHandled) {
-  wchar_t buffer[kMaxFindChars + 1];
-  GetDlgItemText(IDC_FIND_TEXT, buffer, kMaxFindChars);
-  std::wstring find_text(buffer);
+  string16 find_text(kMaxFindChars, L'\0');
+  find_text.resize(GetDlgItemText(IDC_FIND_TEXT, &find_text[0], kMaxFindChars));
+
+  // Repeated searches for the same string should move to the next instance.
+  bool find_next = (find_text == last_find_text_);
+  if (!find_next)
+    last_find_text_ = find_text;
 
   bool match_case = IsDlgButtonChecked(IDC_MATCH_CASE) == BST_CHECKED;
   bool search_down = IsDlgButtonChecked(IDC_DIRECTION_DOWN) == BST_CHECKED;
@@ -36,7 +49,7 @@ LRESULT CFFindDialog::OnFind(WORD wNotifyCode, WORD wID, HWND hWndCtl,
   automation_client_->FindInPage(find_text,
                                  search_down ? FWD : BACK,
                                  match_case ? CASE_SENSITIVE : IGNORE_CASE,
-                                 false);
+                                 find_next);
 
   return 0;
 }
