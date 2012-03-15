@@ -202,6 +202,18 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_AIRPLANE_MODE" desc="The label used in the network dialog to turn on airplane mode.">
         Airplane mode
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
+        Enable Wi-fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_WIFI" desc="The label used for the item to disable wifi.">
+        Disable Wi-fi
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
+        Enable cellular
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_MOBILE" desc="The label used for the item to disable cellular networks.">
+        Disable cellular
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update
       </message>

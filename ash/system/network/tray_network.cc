@@ -241,10 +241,13 @@ class NetworkDetailedView : public views::View,
       : login_(login),
         header_(NULL),
         airplane_(NULL),
+        toggle_wifi_(NULL),
+        toggle_mobile_(NULL),
         settings_(NULL),
         proxy_settings_(NULL) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
+    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
     Update();
   }
 
@@ -253,10 +256,19 @@ class NetworkDetailedView : public views::View,
   void Update() {
     RemoveAllChildViews(true);
 
+    header_ = NULL;
+    airplane_ = NULL;
+    toggle_wifi_ = NULL;
+    toggle_mobile_ = NULL;
+    settings_ = NULL;
+    proxy_settings_ = NULL;
+
     AppendHeaderEntry();
     AppendNetworkEntries();
-    AppendAirplaneModeEntry();
+    AppendNetworkToggles();
     AppendSettingsEntry();
+
+    Layout();
   }
 
  private:
@@ -300,6 +312,29 @@ class NetworkDetailedView : public views::View,
     AddChildView(scroller);
   }
 
+  void AppendNetworkToggles() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    if (delegate->GetWifiAvailable()) {
+      HoverHighlightView* container = new HoverHighlightView(this);
+      container->AddLabel(rb.GetLocalizedString(delegate->GetWifiEnabled() ?
+          IDS_ASH_STATUS_TRAY_DISABLE_WIFI :
+          IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
+      AddChildView(container);
+      toggle_wifi_ = container;
+    }
+
+    if (delegate->GetCellularAvailable()) {
+      HoverHighlightView* container = new HoverHighlightView(this);
+      container->AddLabel(rb.GetLocalizedString(
+          delegate->GetCellularEnabled() ?  IDS_ASH_STATUS_TRAY_DISABLE_MOBILE :
+                                            IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
+      AddChildView(container);
+      toggle_mobile_ = container;
+    }
+  }
+
   void AppendAirplaneModeEntry() {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     HoverHighlightView* container = new HoverHighlightView(this);
@@ -341,6 +376,10 @@ class NetworkDetailedView : public views::View,
       delegate->ShowNetworkSettings();
     } else if (sender == proxy_settings_) {
       delegate->ChangeProxySettings();
+    } else if (sender == toggle_wifi_) {
+      delegate->ToggleWifi();
+    } else if (sender == toggle_mobile_) {
+      delegate->ToggleCellular();
     } else if (sender == airplane_) {
       delegate->ToggleAirplaneMode();
     } else {
@@ -357,6 +396,8 @@ class NetworkDetailedView : public views::View,
   std::map<views::View*, std::string> network_map_;
   views::View* header_;
   views::View* airplane_;
+  views::View* toggle_wifi_;
+  views::View* toggle_mobile_;
   views::View* settings_;
   views::View* proxy_settings_;
   DISALLOW_COPY_AND_ASSIGN(NetworkDetailedView);

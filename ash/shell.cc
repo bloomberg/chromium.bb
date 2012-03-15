@@ -221,6 +221,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
  public:
   DummySystemTrayDelegate()
       : muted_(false),
+        wifi_enabled_(true),
+        cellular_enabled_(true),
         volume_(0.5) {
   }
 
@@ -286,7 +288,11 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void ShutDown() OVERRIDE {}
-  virtual void SignOut() OVERRIDE {}
+
+  virtual void SignOut() OVERRIDE {
+    MessageLoop::current()->Quit();
+  }
+
   virtual void RequestLockScreen() OVERRIDE {}
   virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
     return NetworkIconInfo();
@@ -301,10 +307,48 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleAirplaneMode() OVERRIDE {
   }
 
+  virtual void ToggleWifi() OVERRIDE {
+    wifi_enabled_ = !wifi_enabled_;
+    ash::NetworkObserver* observer =
+        ash::Shell::GetInstance()->tray()->network_controller();
+    if (observer) {
+      ash::NetworkIconInfo info;
+      observer->OnNetworkRefresh(info);
+    }
+  }
+
+  virtual void ToggleCellular() OVERRIDE {
+    cellular_enabled_ = !cellular_enabled_;
+    ash::NetworkObserver* observer =
+        ash::Shell::GetInstance()->tray()->network_controller();
+    if (observer) {
+      ash::NetworkIconInfo info;
+      observer->OnNetworkRefresh(info);
+    }
+  }
+
+  virtual bool GetWifiAvailable() OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetCellularAvailable() OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetWifiEnabled() OVERRIDE {
+    return wifi_enabled_;
+  }
+
+  virtual bool GetCellularEnabled() OVERRIDE {
+    return cellular_enabled_;
+  }
+
   virtual void ChangeProxySettings() OVERRIDE {
   }
 
   bool muted_;
+  bool wifi_enabled_;
+  bool cellular_enabled_;
   float volume_;
   SkBitmap null_image_;
 

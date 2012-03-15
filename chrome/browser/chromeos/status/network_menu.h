@@ -102,6 +102,10 @@ class NetworkMenu {
   // Used in a closure for doing actual network connection.
   void DoConnect(Network* network);
 
+  // Enables/disables wifi/cellular network device.
+  void ToggleWifi();
+  void ToggleCellular();
+
  private:
   friend class NetworkMenuModel;
 

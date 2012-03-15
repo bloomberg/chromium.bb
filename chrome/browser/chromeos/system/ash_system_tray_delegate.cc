@@ -250,6 +250,30 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     crosnet->EnableOfflineMode(!crosnet->offline_mode());
   }
 
+  virtual void ToggleWifi() OVERRIDE {
+    network_menu_->ToggleWifi();
+  }
+
+  virtual void ToggleCellular() OVERRIDE {
+    network_menu_->ToggleCellular();
+  }
+
+  virtual bool GetWifiAvailable() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
+  }
+
+  virtual bool GetCellularAvailable() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->cellular_available();
+  }
+
+  virtual bool GetWifiEnabled() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->wifi_enabled();
+  }
+
+  virtual bool GetCellularEnabled() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->cellular_enabled();
+  }
+
   virtual void ChangeProxySettings() OVERRIDE {
     CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
     BaseLoginDisplayHost::default_host()->OpenProxySettings();

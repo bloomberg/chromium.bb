@@ -466,19 +466,9 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_ETHERNET) {
     cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
   } else if (flags & FLAG_TOGGLE_WIFI) {
-    cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
+    owner_->ToggleWifi();
   } else if (flags & FLAG_TOGGLE_CELLULAR) {
-    const NetworkDevice* cellular = cros->FindCellularDevice();
-    if (!cellular) {
-      LOG(ERROR) << "No cellular device found, it should be available.";
-      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-    } else if (cellular->sim_lock_state() == SIM_UNLOCKED ||
-               cellular->sim_lock_state() == SIM_UNKNOWN) {
-      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-    } else {
-      SimDialogDelegate::ShowDialog(owner_->delegate()->GetNativeWindow(),
-                                    SimDialogDelegate::SIM_DIALOG_UNLOCK);
-    }
+    owner_->ToggleCellular();
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
@@ -1115,6 +1105,26 @@ void NetworkMenu::DoConnect(Network* network) {
       // Connection failures are responsible for updating the UI, including
       // reopening dialogs.
     }
+  }
+}
+
+void NetworkMenu::ToggleWifi() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
+}
+
+void NetworkMenu::ToggleCellular() {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  const NetworkDevice* cellular = cros->FindCellularDevice();
+  if (!cellular) {
+    LOG(ERROR) << "No cellular device found, it should be available.";
+    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+  } else if (cellular->sim_lock_state() == SIM_UNLOCKED ||
+             cellular->sim_lock_state() == SIM_UNKNOWN) {
+    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+  } else {
+    SimDialogDelegate::ShowDialog(delegate()->GetNativeWindow(),
+                                  SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
 }
 

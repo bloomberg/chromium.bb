@@ -95,6 +95,24 @@ class SystemTrayDelegate {
   // Toggles airplane mode.
   virtual void ToggleAirplaneMode() = 0;
 
+  // Toggles wifi network.
+  virtual void ToggleWifi() = 0;
+
+  // Toggles cellular network.
+  virtual void ToggleCellular() = 0;
+
+  // Returns whether wifi is available.
+  virtual bool GetWifiAvailable() = 0;
+
+  // Returns whether cellular networking is available.
+  virtual bool GetCellularAvailable() = 0;
+
+  // Returns whether wifi is enabled.
+  virtual bool GetWifiEnabled() = 0;
+
+  // Returns whether cellular networking is enabled.
+  virtual bool GetCellularEnabled() = 0;
+
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;
 };
