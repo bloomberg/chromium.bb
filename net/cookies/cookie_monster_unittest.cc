@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/cookie_store_unittest.h"
+#include "net/cookies/cookie_store_unittest.h"
 
 #include <time.h>
 #include <string>
@@ -18,9 +18,9 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cookie_monster.h"
-#include "net/base/cookie_monster_store_test.h"  // For CookieStore mock
-#include "net/base/cookie_util.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
+#include "net/cookies/cookie_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

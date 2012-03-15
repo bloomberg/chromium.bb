@@ -42,7 +42,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 
 #include <algorithm>
 #include <set>
@@ -61,7 +61,7 @@
 #include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
-#include "net/base/cookie_util.h"
+#include "net/cookies/cookie_util.h"
 #include "net/base/registry_controlled_domain.h"
 
 using base::Time;

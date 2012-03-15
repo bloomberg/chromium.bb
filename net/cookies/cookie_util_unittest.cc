@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "net/base/cookie_util.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(CookieUtilTest, TestDomainIsHostOnly) {
