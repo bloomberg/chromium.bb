@@ -74,15 +74,22 @@
 }
 
 #bluetooth-pairing-instructions,
-#bluetooth-passkey {
-  margin: 10px;
+#bluetooth-pairing-passkey-display,
+#bluetooth-pairing-passkey-entry,
+#bluetooth-pairing-pincode-entry,
+#bluetooth-passkey,
+#bluetooth-pincode {
   text-align: center;
 }
 
+#bluetooth-pairing-instructions {
+  margin: 10px;
+}
+
 #bluetooth-pairing-passkey-display,
-#bluetooth-pairing-passkey-entry  {
+#bluetooth-pairing-passkey-entry,
+#bluetooth-pairing-pincode-entry {
   margin: 40px 0;
-  text-align: center;
 }
 
 .bluetooth-keyboard-button {

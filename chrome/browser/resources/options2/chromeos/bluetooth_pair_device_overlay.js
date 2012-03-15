@@ -30,6 +30,7 @@ cr.define('options', function() {
    */
   var ELEMENTS = ['bluetooth-pairing-passkey-display',
                   'bluetooth-pairing-passkey-entry',
+                  'bluetooth-pairing-pincode-entry',
                   'bluetooth-pair-device-connect-button',
                   'bluetooth-pair-device-cancel-button',
                   'bluetooth-pair-device-accept-button',
@@ -85,10 +86,12 @@ cr.define('options', function() {
       $('bluetooth-pair-device-connect-button').onclick = function() {
         var args = [self.device_.address, 'connect'];
         var passkey = self.device_.passkey;
-        if (!passkey && !$('bluetooth-pairing-passkey-entry').hidden)
-          passkey = $('bluetooth-passkey').value;
         if (passkey)
           args.push(String(passkey));
+        else if (!$('bluetooth-pairing-passkey-entry').hidden)
+          args.push($('bluetooth-passkey').value);
+        else if (!$('bluetooth-pairing-pincode-entry').hidden)
+          args.push($('bluetooth-pincode').value);
         chrome.send('updateBluetoothDevice', args);
         OptionsPage.closeOverlay();
       };
@@ -101,8 +104,21 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
       };
       $('bluetooth-passkey').oninput = function() {
+        var inputField = $('bluetooth-passkey');
+        var value = inputField.value;
+        // Note that using <input type="number"> is insufficient to restrict
+        // the input as it allows negative numbers and does not limit the
+        // number of charactes typed even if a range is set.  Furthermore,
+        // it sometimes produces strange repaint artifacts.
+        var filtered = value.replace(/[^0-9]/g, '');
+        if (filtered != value)
+          inputField.value = filtered;
         $('bluetooth-pair-device-connect-button').disabled =
-            $('bluetooth-passkey').value.length == 0;
+            inputField.value.length == 0;
+      }
+      $('bluetooth-pincode').oninput = function() {
+        $('bluetooth-pair-device-connect-button').disabled =
+            $('bluetooth-pincode').value.length == 0;
       }
     },
 
@@ -151,20 +167,24 @@ cr.define('options', function() {
                                'bluetooth-pair-device-cancel-button']);
       } else if (this.device_.pairing == PAIRING.ENTER_PIN_CODE) {
         // Prompting the user to enter a PIN code.
-        this.displayElements_(['bluetooth-pairing-passkey-entry',
+        this.displayElements_(['bluetooth-pairing-pincode-entry',
                                'bluetooth-pair-device-connect-button',
                                'bluetooth-pair-device-cancel-button']);
+        $('bluetooth-pincode').value = '';
       } else if (this.device_.pairing == PAIRING.ENTER_PASSKEY) {
         // Prompting the user to enter a passkey.
         this.displayElements_(['bluetooth-pairing-passkey-entry',
                                'bluetooth-pair-device-connect-button',
                                'bluetooth-pair-device-cancel-button']);
+        $('bluetooth-passkey').value = '';
       } else {
         // Displaying an error message.
         this.displayElements_(['bluetooth-pair-device-dismiss-button']);
       }
-      $('bluetooth-pair-device-connect-button').disabled =
-          $('bluetooth-passkey').value.length == 0;
+      // User is required to enter a passkey or pincode before the connect
+      // button can be enabled.  The 'oninput' methods for the input fields
+      // determine when the connect button becomes active.
+      $('bluetooth-pair-device-connect-button').disabled = true;
     },
 
     /**
