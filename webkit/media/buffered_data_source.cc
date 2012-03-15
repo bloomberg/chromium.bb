@@ -42,7 +42,6 @@ BufferedDataSource::BufferedDataSource(
       media_is_paused_(true),
       media_has_played_(false),
       preload_(media::AUTO),
-      using_range_request_(true),
       cache_miss_retries_left_(kNumCacheMissRetries),
       bitrate_(0),
       playback_rate_(0.0),
@@ -390,19 +389,6 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   } else {
     // TODO(hclam): In case of failure, we can retry several times.
     loader_->Stop();
-  }
-
-  if (error == net::ERR_INVALID_RESPONSE && using_range_request_) {
-    // Assuming that the Range header was causing the problem. Retry without
-    // the Range header.
-    using_range_request_ = false;
-    loader_.reset(CreateResourceLoader(kPositionNotSpecified,
-                                       kPositionNotSpecified));
-    loader_->Start(
-        base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
-        base::Bind(&BufferedDataSource::NetworkEventCallback, this),
-        frame_);
-    return;
   }
 
   // Reference to prevent destruction while inside the |initialize_cb_|

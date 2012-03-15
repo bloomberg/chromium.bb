@@ -196,10 +196,6 @@ class BufferedDataSource : public WebDataSource {
   // element.
   media::Preload preload_;
 
-  // Keeps track of whether we used a Range header in the initialization
-  // request.
-  bool using_range_request_;
-
   // Number of cache miss retries left.
   int cache_miss_retries_left_;
 

@@ -376,21 +376,28 @@ void BufferedResourceLoader::didReceiveResponse(
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     int error = net::OK;
 
-    // Check to see whether the server supports byte ranges.
-    std::string accept_ranges =
-        response.httpHeaderField("Accept-Ranges").utf8();
-    range_supported_ = (accept_ranges.find("bytes") != std::string::npos);
-
     partial_response = (response.httpStatusCode() == kHttpPartialContent);
+    bool ok_response = (response.httpStatusCode() == kHttpOK);
 
     if (range_requested_) {
+      // Check to see whether the server supports byte ranges.
+      std::string accept_ranges =
+          response.httpHeaderField("Accept-Ranges").utf8();
+      range_supported_ = (accept_ranges.find("bytes") != std::string::npos);
+
       // If we have verified the partial response and it is correct, we will
       // return net::OK. It's also possible for a server to support range
       // requests without advertising Accept-Ranges: bytes.
-      if (partial_response && VerifyPartialResponse(response))
+      if (partial_response && VerifyPartialResponse(response)) {
         range_supported_ = true;
-      else
+      } else if (ok_response && first_byte_position_ == 0 &&
+                 last_byte_position_ == kPositionNotSpecified) {
+        // We accept a 200 response for a Range:0- request and down-grade the
+        // data source to streaming.
+        range_supported_ = false;
+      } else {
         error = net::ERR_INVALID_RESPONSE;
+      }
     } else if (response.httpStatusCode() != kHttpOK) {
       // We didn't request a range but server didn't reply with "200 OK".
       error = net::ERR_FAILED;
@@ -400,19 +407,15 @@ void BufferedResourceLoader::didReceiveResponse(
       DoneStart(error);
       return;
     }
-  } else {
-    // For any protocol other than HTTP and HTTPS, assume range request is
-    // always fulfilled.
-    partial_response = range_requested_;
   }
 
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.
   content_length_ = response.expectedContentLength();
 
-  // If we have not requested a range, then the size of the instance is equal
-  // to the content length.
-  if (!partial_response)
+  // If we have not requested a range or have not received a range, then the
+  // size of the instance is equal to the content length.
+  if (!range_requested_ || !partial_response)
     instance_size_ = content_length_;
 
   // Calls with a successful response.

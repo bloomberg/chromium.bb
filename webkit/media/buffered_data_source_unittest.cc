@@ -202,14 +202,6 @@ TEST_F(BufferedDataSourceTest, Range_Supported) {
 
 TEST_F(BufferedDataSourceTest, Range_NotFound) {
   Initialize(media::PIPELINE_ERROR_NETWORK);
-
-  // It'll try again.
-  //
-  // TODO(scherkus): don't try again on errors http://crbug.com/105230
-  ExpectCreateResourceLoader();
-  Respond(response_generator_.Generate404());
-
-  // Now it's done and will fail.
   Respond(response_generator_.Generate404());
 
   EXPECT_FALSE(data_source_->loading());
@@ -218,14 +210,6 @@ TEST_F(BufferedDataSourceTest, Range_NotFound) {
 
 TEST_F(BufferedDataSourceTest, Range_NotSupported) {
   Initialize(media::PIPELINE_OK);
-
-  // It'll try again.
-  //
-  // TODO(scherkus): try to reuse existing connection http://crbug.com/104783
-  ExpectCreateResourceLoader();
-  Respond(response_generator_.Generate200());
-
-  // Now it'll succeed.
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
   EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate200());
@@ -237,15 +221,6 @@ TEST_F(BufferedDataSourceTest, Range_NotSupported) {
 
 TEST_F(BufferedDataSourceTest, Range_MissingContentRange) {
   Initialize(media::PIPELINE_ERROR_NETWORK);
-
-  // It'll try again.
-  //
-  // TODO(scherkus): don't try again on errors http://crbug.com/105230
-  ExpectCreateResourceLoader();
-  Respond(response_generator_.Generate206(
-      0, TestResponseGenerator::kNoContentRange));
-
-  // Now it's done and will fail.
   Respond(response_generator_.Generate206(
       0, TestResponseGenerator::kNoContentRange));
 
@@ -268,12 +243,6 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
 
 TEST_F(BufferedDataSourceTest, Range_WrongContentRange) {
   Initialize(media::PIPELINE_ERROR_NETWORK);
-
-  // It'll try again.
-  //
-  // TODO(scherkus): don't try again on errors http://crbug.com/105230
-  ExpectCreateResourceLoader();
-  Respond(response_generator_.Generate206(1337));
 
   // Now it's done and will fail.
   Respond(response_generator_.Generate206(1337));
