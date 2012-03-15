@@ -1869,7 +1869,7 @@
 {
    bug_102621
    Memcheck:Uninitialized
-   fun:NSHFSTypeCodeFromFileType
+   ...
    fun:-[NSPasteboard(ChimeraPasteboardURLUtils) getURLs:andTitles:convertingFilenames:]
    fun:_ZN2ui33PopulateURLAndTitleFromPasteboardEP4GURLPSbItN4base20string16_char_traitsESaItEEP12NSPasteboarda
    fun:_ZN24WebDragDestTest_URL_Test8TestBodyEv
@@ -1909,7 +1909,7 @@
    fun:_ZN12_GLOBAL__N_115EnvironmentImpl10SetVarImplEPKcRKSs
    fun:_ZN12_GLOBAL__N_115EnvironmentImpl6SetVarEPKcRKSs
    fun:_Z18AppendToPythonPathRK8FilePath
-   fun:_ZNK3net15LocalTestServer13SetPythonPathEv
+   fun:_ZN*3net15LocalTestServer13SetPythonPathEv
    fun:_ZN3net15LocalTestServer5StartEv
    fun:_ZN12_GLOBAL__N_132MimeTypeTests_MimeTypeTests_Test8TestBodyEv
 }
