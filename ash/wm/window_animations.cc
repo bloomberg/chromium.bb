@@ -5,6 +5,8 @@
 #include "ash/wm/window_animations.h"
 
 #include "ash/ash_switches.h"
+#include "ash/launcher/launcher.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -18,6 +20,7 @@
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationType)
@@ -69,6 +72,7 @@ const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
 const float kWindowAnimation_TranslateFactor = -0.025f;
 const float kWindowAnimation_ScaleFactor = 1.05f;
+const float kWindowAnimation_MinimizeRotate = -90.f;
 
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
 
@@ -328,6 +332,48 @@ void AnimateHideWindow_Workspace(aura::Window* window) {
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
 }
 
+gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
+  gfx::Rect target_bounds = Shell::GetInstance()->launcher()->
+      GetScreenBoundsOfItemIconForWindow(window);
+  if (target_bounds.IsEmpty()) {
+    // Assume the launcher is overflowed, zoom off to the bottom right of the
+    // work area.
+    gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+    target_bounds.SetRect(work_area.right(), work_area.bottom(), 0, 0);
+  }
+  return target_bounds;
+}
+
+void AnimateShowWindow_Minimize(aura::Window* window) {
+  // Recalculate the transform at restore time since the launcher item may have
+  // moved while the window was minimized.
+  gfx::Rect target_bounds = GetMinimizeRectForWindow(window);
+  ui::Transform transform;
+  transform.ConcatScale(
+      static_cast<float>(target_bounds.height()) / window->bounds().width(),
+      static_cast<float>(target_bounds.width()) / window->bounds().height());
+  transform.ConcatTranslate(target_bounds.x() - window->bounds().x(),
+                            target_bounds.y() - window->bounds().y());
+
+  AnimateShowWindowCommon(window, transform, ui::Transform());
+
+  // Now that the window has been restored, we need to clear its animation style
+  // to default so that normal animation applies.
+  SetWindowVisibilityAnimationType(
+      window, WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+}
+
+void AnimateHideWindow_Minimize(aura::Window* window) {
+  gfx::Rect target_bounds = GetMinimizeRectForWindow(window);
+  ui::Transform transform;
+  transform.ConcatScale(
+      static_cast<float>(target_bounds.height()) / window->bounds().width(),
+      static_cast<float>(target_bounds.width()) / window->bounds().height());
+  transform.ConcatTranslate(target_bounds.x() - window->bounds().x(),
+                            target_bounds.y() - window->bounds().y());
+  AnimateHideWindowCommon(window, transform);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!HasWindowVisibilityAnimationTransition(window, ANIMATE_SHOW))
     return false;
@@ -344,6 +390,9 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW:
       AnimateShowWindow_Workspace(window);
+      return true;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+      AnimateShowWindow_Minimize(window);
       return true;
     default:
       NOTREACHED();
@@ -367,6 +416,9 @@ bool AnimateHideWindow(aura::Window* window) {
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE:
       AnimateHideWindow_Workspace(window);
+      return true;
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+      AnimateHideWindow_Minimize(window);
       return true;
     default:
       NOTREACHED();

@@ -6,6 +6,7 @@
 
 #include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -111,19 +112,25 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
   if (key == aura::client::kShowStateKey &&
       workspace_manager_->IsManagedWindow(window)) {
+    ui::WindowShowState last_show_state = static_cast<ui::WindowShowState>(old);
     if (wm::IsWindowMinimized(window)) {
       // Save the previous show state so that we can correctly restore it.
-      window->SetProperty(kRestoreShowStateKey,
-                          static_cast<ui::WindowShowState>(old));
+      window->SetProperty(kRestoreShowStateKey, last_show_state);
       workspace_manager_->RemoveWindow(window);
+      SetWindowVisibilityAnimationType(
+          window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+
       // Effectively hide the window.
-      window->layer()->SetVisible(false);
+      window->Hide();
       // Activate another window.
       if (wm::IsActiveWindow(window))
         wm::DeactivateWindow(window);
       return;
     }
-    if (window->TargetVisibility() &&
+    // We can end up here if the window was minimized and we are transitioning
+    // to another state. In that case the window is hidden.
+    if ((window->TargetVisibility() ||
+            (last_show_state == ui::SHOW_STATE_MINIMIZED)) &&
         !workspace_manager_->IsManagingWindow(window)) {
       workspace_manager_->AddWindow(window);
       if (!window->layer()->visible()) {

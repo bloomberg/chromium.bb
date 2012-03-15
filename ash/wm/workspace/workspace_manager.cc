@@ -260,6 +260,7 @@ void WorkspaceManager::SetWindowLayerVisibility(
       // Reset the animation type so it isn't used in a future hide/show.
       ash::SetWindowVisibilityAnimationType(
           windows[i], ash::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+      windows[i]->ClearProperty(aura::client::kAnimationsDisabledKey);
     }
   }
 }
