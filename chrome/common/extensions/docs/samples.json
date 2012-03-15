@@ -2196,8 +2196,8 @@
       "features": [
         "<all_urls>",
         "browser_action",
-        "experimental",
         "options_page",
+        "storage",
         "tabs"
       ],
       "icon": null,
@@ -2206,7 +2206,7 @@
       "packaged_app": false,
       "path": "examples\/api\/storage\/stylizr\/",
       "protocols": [],
-      "search_string": "STYLIZR SPRUCE UP YOUR PAGES WITH CUSTOM CSS. <ALL_URLS> BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE TABS CHROME.EXTENSION.GETURL CHROME.TABS.INSERTCSS",
+      "search_string": "STYLIZR SPRUCE UP YOUR PAGES WITH CUSTOM CSS. <ALL_URLS> BROWSER_ACTION OPTIONS_PAGE STORAGE TABS CHROME.EXTENSION.GETURL CHROME.TABS.INSERTCSS",
       "source_files": [
         "manifest.json",
         "options.html",
@@ -2214,7 +2214,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "d037912040032793d06755ea44f5e638e8bac10f",
+      "source_hash": "61ccd353013bfd844716c43d0f0a46cde5d1690a",
       "zip_path": "examples\/api\/storage\/stylizr.zip"
     },
     {

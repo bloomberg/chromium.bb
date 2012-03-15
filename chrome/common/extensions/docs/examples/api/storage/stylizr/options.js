@@ -33,6 +33,8 @@ function saveChanges() {
 
 function loadChanges() {
   storage.get('css', function(items) {
+    // To avoid checking items.css we could specify storage.get({css: ''}) to
+    // return a default value of '' if there is no css value yet.
     if (items.css) {
       textarea.value = items.css;
       message('Loaded saved CSS.');
@@ -41,7 +43,8 @@ function loadChanges() {
 }
 
 function reset() {
-  // Remove the saved value from storage
+  // Remove the saved value from storage. storage.clear would achieve the same
+  // thing.
   storage.remove('css', function(items) {
     message('Reset stored CSS');
   });
