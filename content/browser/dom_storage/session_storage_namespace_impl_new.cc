@@ -4,10 +4,10 @@
 
 #include "content/browser/dom_storage/session_storage_namespace_impl_new.h"
 
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+
 #include "content/browser/dom_storage/dom_storage_context_impl_new.h"
 #include "webkit/dom_storage/dom_storage_session.h"
-
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
 
 using dom_storage::DomStorageSession;
 

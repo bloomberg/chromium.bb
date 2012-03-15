@@ -1,8 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+// content/browser/dom_storage/session_storage_namespace_impl_new.h
+#else
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -40,3 +45,5 @@ SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {
   return new SessionStorageNamespaceImpl(
       dom_storage_context_, dom_storage_context_->CloneSessionStorage(id_));
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

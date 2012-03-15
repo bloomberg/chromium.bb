@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+#include "content/browser/dom_storage/session_storage_namespace_impl_new.h"
+#else
 
 class DOMStorageContextImpl;
 
@@ -39,4 +45,5 @@ class SessionStorageNamespaceImpl
   DISALLOW_COPY_AND_ASSIGN(SessionStorageNamespaceImpl);
 };
 
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_SESSION_STORAGE_NAMESPACE_IMPL_H_
