@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 #include <string>
@@ -36,6 +37,7 @@
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -65,9 +67,6 @@ const char kOobeComplete[] = "OobeComplete";
 
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
-
-// Path to flag file indicating that both parts of OOBE were completed.
-const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
 // Time in seconds that we wait for the device to reboot.
 // If reboot didn't happen, ask user to reboot device manually.
@@ -586,13 +585,32 @@ void WizardController::MarkOobeCompleted() {
   SaveBoolPreferenceForced(kOobeComplete, true);
 }
 
+// Returns the path to flag file indicating that both parts of OOBE were
+// completed.
+// On chrome device, returns /home/chronos/.oobe_completed.
+// On Linux desktop, returns $HOME/.oobe_completed.
+static FilePath GetOobeCompleteFlagPath() {
+  // The constant is defined here so it won't be referenced directly.
+  const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
+
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
+    return FilePath(kOobeCompleteFlagFilePath);
+  } else {
+    const char* home = getenv("HOME");
+    // Unlikely but if HOME is not defined, use the current directory.
+    if (!home)
+      home = "";
+    return FilePath(home).AppendASCII(".oobe_completed");
+  }
+}
+
 static void CreateOobeCompleteFlagFile() {
   // Create flag file for boot-time init scripts.
-  FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
+  FilePath oobe_complete_path = GetOobeCompleteFlagPath();
   if (!file_util::PathExists(oobe_complete_path)) {
     FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
     if (oobe_flag_file == NULL)
-      DLOG(WARNING) << kOobeCompleteFlagFilePath << " doesn't exist.";
+      DLOG(WARNING) << oobe_complete_path.value() << " doesn't exist.";
     else
       file_util::CloseFile(oobe_flag_file);
   }
@@ -614,7 +632,8 @@ bool WizardController::IsDeviceRegistered() {
     // Pref is not set. For compatibility check flag file. It causes blocking
     // IO on UI thread. But it's required for update from old versions.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
+    FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
+    DVLOG(1) << "Checking " << oobe_complete_flag_file_path.value();
     bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
     SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
     return file_exists;
