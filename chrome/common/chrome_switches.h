@@ -324,7 +324,6 @@ extern const char kWinHttpProxyResolver[];
 #if defined(OS_CHROMEOS)
 extern const char kEnableGData[];
 extern const char kSkipOAuthLogin[];
-extern const char kEnableBluetooth[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableKioskMode[];

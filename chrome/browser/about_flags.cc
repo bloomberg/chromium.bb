@@ -382,15 +382,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableShortcutsProvider)
   },
-#if defined(OS_CHROMEOS)
-  {
-    "enable-bluetooth",
-    IDS_FLAGS_ENABLE_BLUETOOTH_NAME,
-    IDS_FLAGS_ENABLE_BLUETOOTH_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableBluetooth)
-  },
-#endif
   {
     "memory-widget",
     IDS_FLAGS_MEMORY_WIDGET_NAME,
