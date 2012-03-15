@@ -2,19 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function readFile(entry, successCallback, errorCallback) {
-  var reader = new FileReader();
-  reader.onloadend = function(e) {
-    successCallback(reader.result);
-  };
-  reader.onerror = function(e) {
-    errorCallback(reader.error);
-  };
-  entry.file(function(file) {
-    reader.readAsText(file);
-  });
-};
-
 // Checks that filesystem_handler read the file correctly (original and received
 // text match) and changed its content in expected way (file should contain
 // originalText + originalText).

@@ -94,7 +94,7 @@ TestExpectations.prototype.verifyTasks = function(tasks,
 // Class that is in charge for running the test.
 var TestRunner = function(expectations) {
   this.expectations_ = expectations;
-  this.fileCreator_ = new TestFileCreator();
+  this.fileCreator_ = new TestFileCreator("tmp", true /* shouldRandomize */);
   this.listener_ = this.onHandlerRequest_.bind(this);
 };
 

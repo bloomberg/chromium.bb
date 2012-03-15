@@ -5,11 +5,11 @@
 // The ID of this extension.
 var fileBrowserExtensionId = 'ddammdhioacbehjngdmkjcjbnfginlla';
 
-var testDirNameSuffix = 'tmp/test_dir_';
-var testFileNameSuffix = 'test_file_';
+var testDirNamePrefix = 'test_dir';
+var testFileNamePrefix = 'test_file';
 
-function createRandomName(suffix) {
-  return suffix + Math.floor(Math.random() * 10000);
+function createRandomName(prefix) {
+  return prefix + '_' + Math.floor(Math.random() * 10000);
 };
 
 function createFileUrl(dirName, fileName) {
@@ -17,11 +17,32 @@ function createFileUrl(dirName, fileName) {
          '/external/' + dirName + '/' + fileName
 };
 
+// Reads the file pointed by |entry|, and runs the callbacks on success or
+// failure. The file contents are passed to successCallback as text.
+function readFile(entry, successCallback, errorCallback) {
+  var reader = new FileReader();
+  reader.onloadend = function(e) {
+    successCallback(reader.result);
+  };
+  reader.onerror = function(e) {
+    errorCallback(reader.error);
+  };
+  entry.file(function(file) {
+    reader.readAsText(file);
+  });
+};
+
 // Class that handles creation and destruction of filessystem resources in the
 // test.
-function TestFileCreator(filesystem) {
-  this.directoryName = createRandomName(testDirNameSuffix);
-  this.baseFileName = createRandomName(testFileNameSuffix);
+function TestFileCreator(mountPointDir, shouldRandomize) {
+  if (shouldRandomize) {
+    this.directoryName = createRandomName(mountPointDir + '/' +
+                                          testDirNamePrefix);
+    this.baseFileName = createRandomName(testFileNamePrefix);
+  } else {
+    this.directoryName = mountPointDir + '/' + testDirNamePrefix;
+    this.baseFileName = testFileNamePrefix;
+  }
   this.directoryEntry = undefined;
 };
 
@@ -60,6 +81,21 @@ TestFileCreator.prototype.createFile = function(ext, callback, errorCallback) {
                               errorCallback);
 };
 
+// Opens file in the previously created directory (init must be called by
+// now). Unlike createFile(), this function does not create a file.
+// |callback| expects created fileEntry object and the contents written to the
+// created file, |errorCallback| expects error object.
+TestFileCreator.prototype.openFile = function(
+    baseName, callback, errorCallback) {
+  chrome.test.assertTrue(!!this.directoryEntry,
+                         'TestFileCreator not initialized');
+
+  console.log('Opening file: ' + baseName);
+  this.directoryEntry.getFile(baseName, {create: false},
+                              callback,
+                              errorCallback);
+};
+
 TestFileCreator.prototype.createWriter_ = function(callback,
                                                    errorCallback,
                                                    file) {
@@ -93,4 +129,3 @@ TestFileCreator.prototype.cleanupAndEndTest = function(successCallback,
   this.directoryEntry.removeRecursively(successCallback, errorCallback);
   this.directoryEntry = undefined;
 };
-
