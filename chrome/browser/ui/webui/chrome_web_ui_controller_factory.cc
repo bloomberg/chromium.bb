@@ -236,6 +236,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
+  // Android doesn't support print/print-preview
+  if (url.host() == chrome::kChromeUIPrintHost &&
+      !g_browser_process->local_state()->GetBoolean(
+          prefs::kPrintPreviewDisabled)) {
+    return &NewWebUI<PrintPreviewUI>;
+  }
 #endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
@@ -287,12 +293,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ConstrainedHtmlUI>;
   }
 #endif
-
-  if (url.host() == chrome::kChromeUIPrintHost &&
-      !g_browser_process->local_state()->GetBoolean(
-          prefs::kPrintPreviewDisabled)) {
-    return &NewWebUI<PrintPreviewUI>;
-  }
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUISyncPromoHost) {

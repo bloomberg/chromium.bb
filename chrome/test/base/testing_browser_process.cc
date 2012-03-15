@@ -178,18 +178,28 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 
 printing::PrintPreviewTabController*
 TestingBrowserProcess::print_preview_tab_controller() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
   if (!print_preview_tab_controller_.get())
     print_preview_tab_controller_ = new printing::PrintPreviewTabController();
   return print_preview_tab_controller_.get();
+#endif
 }
 
 printing::BackgroundPrintingManager*
 TestingBrowserProcess::background_printing_manager() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
   if (!background_printing_manager_.get()) {
     background_printing_manager_.reset(
         new printing::BackgroundPrintingManager());
   }
   return background_printing_manager_.get();
+#endif
 }
 
 const std::string& TestingBrowserProcess::GetApplicationLocale() {
