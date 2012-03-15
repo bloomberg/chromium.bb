@@ -45,20 +45,6 @@ class SettingsView : public views::View {
     return true;
   }
 
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
-    gfx::Font font = label_->font();
-    label_->SetFont(font.DeriveFont(0,
-          font.GetStyle() | gfx::Font::UNDERLINED));
-    SchedulePaint();
-  }
-
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
-    gfx::Font font = label_->font();
-    label_->SetFont(font.DeriveFont(0,
-          font.GetStyle() & ~gfx::Font::UNDERLINED));
-    SchedulePaint();
-  }
-
  private:
   views::Label* label_;
 

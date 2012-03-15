@@ -19,14 +19,15 @@ views::View* TrayEmpty::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
-  views::View* view = new views::View;
+  if (status == user::LOGGED_IN_NONE)
+    return NULL;
 
+  views::View* view = new views::View;
   view->set_background(views::Background::CreateSolidBackground(
         SkColorSetARGB(0, 0, 0, 0)));
   view->set_border(views::Border::CreateEmptyBorder(10, 0, 0, 0));
   view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
         0, 0, 0));
-
   return view;
 }
 

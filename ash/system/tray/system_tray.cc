@@ -25,6 +25,7 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
@@ -47,10 +48,55 @@ const int kShadowHeight = 3;
 const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
 const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
 const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 
 const SkColor kTrayBackgroundColor = SkColorSetARGB(100, 0, 0, 0);
 const SkColor kTrayBackgroundHover = SkColorSetARGB(150, 0, 0, 0);
+
+// A view with some special behaviour for tray items:
+// - changes background color on hover.
+// - TODO: accessibility
+class TrayItemContainer : public views::View {
+ public:
+  explicit TrayItemContainer(views::View* view) : hover_(false) {
+    set_notify_enter_exit_on_child(true);
+    set_border(view->border() ? views::Border::CreateEmptyBorder(0, 0, 0, 0) :
+                                NULL);
+    SetLayoutManager(new views::FillLayout);
+    AddChildView(view);
+  }
+
+  virtual ~TrayItemContainer() {}
+
+ private:
+  // Overridden from views::View.
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    hover_ = true;
+    SchedulePaint();
+  }
+
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+    hover_ = false;
+    SchedulePaint();
+  }
+
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    views::View* view = child_at(0);
+    if (!view->background()) {
+      canvas->FillRect(gfx::Rect(size()),
+          hover_ ? kHoverBackgroundColor : kBackgroundColor);
+    } else {
+      canvas->FillRect(gfx::Rect(view->x() + kShadowOffset, view->y(),
+                                 view->width() - kShadowOffset, kShadowHeight),
+                       kShadowColor);
+    }
+  }
+
+  bool hover_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayItemContainer);
+};
 
 class SystemTrayBubbleBackground : public views::Background {
  public:
@@ -66,14 +112,6 @@ class SystemTrayBubbleBackground : public views::Background {
     views::View* last_view = NULL;
     for (int i = 0; i < owner_->child_count(); i++) {
       views::View* v = owner_->child_at(i);
-
-      if (!v->background()) {
-        canvas->FillRect(v->bounds(), kBackgroundColor);
-      } else if (last_view) {
-        canvas->FillRect(gfx::Rect(v->x() + kShadowOffset, v->y(),
-                                   v->width() - kShadowOffset, kShadowHeight),
-                         kShadowColor);
-      }
 
       if (!v->border()) {
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
@@ -247,7 +285,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
       views::View* view = detailed_ ? (*it)->CreateDetailedView(login_status) :
                                       (*it)->CreateDefaultView(login_status);
       if (view)
-        AddChildView(view);
+        AddChildView(new TrayItemContainer(view));
     }
   }
 

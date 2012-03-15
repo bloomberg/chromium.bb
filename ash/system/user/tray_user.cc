@@ -104,6 +104,7 @@ class UserView : public views::View,
     CHECK(status != ash::user::LOGGED_IN_NONE);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 0));
+    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
     if (status != ash::user::LOGGED_IN_GUEST)
       AddUserInfo();
