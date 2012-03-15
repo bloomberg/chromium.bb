@@ -64,6 +64,8 @@
 #include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -1073,34 +1075,26 @@ void PepperPluginDelegateImpl::UDPSocketClose(uint32 socket_id) {
 }
 
 void PepperPluginDelegateImpl::TCPServerSocketListen(
-    webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket,
-    uint32 temp_socket_id,
+    PP_Resource socket_resource,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
-  uninitialized_tcp_server_sockets_.AddWithID(socket, temp_socket_id);
   render_view_->Send(
       new PpapiHostMsg_PPBTCPServerSocket_Listen(
-          render_view_->routing_id(), 0, temp_socket_id, addr, backlog));
+          render_view_->routing_id(), 0, socket_resource, addr, backlog));
 }
 
-void PepperPluginDelegateImpl::TCPServerSocketAccept(uint32 real_socket_id) {
-  DCHECK(tcp_server_sockets_.Lookup(real_socket_id));
+void PepperPluginDelegateImpl::TCPServerSocketAccept(uint32 server_socket_id) {
+  DCHECK(tcp_server_sockets_.Lookup(server_socket_id));
   render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Accept(
-      real_socket_id));
+      render_view_->routing_id(), server_socket_id));
 }
 
 void PepperPluginDelegateImpl::TCPServerSocketStopListening(
-    uint32 real_socket_id,
-    uint32 temp_socket_id) {
-  if (real_socket_id == 0) {
-    if (uninitialized_tcp_server_sockets_.Lookup(temp_socket_id)) {
-      // Pending Listen request.
-      uninitialized_tcp_server_sockets_.Remove(temp_socket_id);
-    }
-  } else {
-    render_view_->Send(
-        new PpapiHostMsg_PPBTCPServerSocket_Destroy(real_socket_id));
-    tcp_server_sockets_.Remove(real_socket_id);
+    PP_Resource socket_resource,
+    uint32 socket_id) {
+  if (socket_id != 0) {
+    render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
+    tcp_server_sockets_.Remove(socket_id);
   }
 }
 
@@ -1517,38 +1511,40 @@ void PepperPluginDelegateImpl::OnUDPSocketSendToACK(uint32 plugin_dispatcher_id,
 
 void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(
     uint32 plugin_dispatcher_id,
-    uint32 real_socket_id,
-    uint32 temp_socket_id,
+    PP_Resource socket_resource,
+    uint32 socket_id,
     int32_t status) {
-  webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket =
-      uninitialized_tcp_server_sockets_.Lookup(temp_socket_id);
-  if (socket == NULL) {
-    // StopListening was called before completion of Listen.
-    render_view_->Send(
-        new PpapiHostMsg_PPBTCPServerSocket_Destroy(real_socket_id));
-  } else {
-    uninitialized_tcp_server_sockets_.Remove(temp_socket_id);
-
+  ppapi::thunk::EnterResource<ppapi::thunk::PPB_TCPServerSocket_Private_API>
+      enter(socket_resource, true);
+  if (enter.succeeded()) {
+    ppapi::PPB_TCPServerSocket_Shared* socket =
+        static_cast<ppapi::PPB_TCPServerSocket_Shared*>(enter.object());
     if (status == PP_OK)
-      tcp_server_sockets_.AddWithID(socket, real_socket_id);
-    socket->OnListenCompleted(real_socket_id, status);
+      tcp_server_sockets_.AddWithID(socket, socket_id);
+    socket->OnListenCompleted(socket_id, status);
+  } else if (socket_id != 0 && status == PP_OK) {
+    // StopListening was called before completion of Listen.
+    render_view_->Send(new PpapiHostMsg_PPBTCPServerSocket_Destroy(socket_id));
   }
 }
 
 void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
     uint32 plugin_dispatcher_id,
-    uint32 real_server_socket_id,
+    uint32 server_socket_id,
     uint32 accepted_socket_id,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
-  webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket =
-      tcp_server_sockets_.Lookup(real_server_socket_id);
+  ppapi::PPB_TCPServerSocket_Shared* socket =
+      tcp_server_sockets_.Lookup(server_socket_id);
   if (socket) {
-    bool succeeded = accepted_socket_id != 0;
+    bool succeeded = (accepted_socket_id != 0);
     socket->OnAcceptCompleted(succeeded,
                               accepted_socket_id,
                               local_addr,
                               remote_addr);
+  } else if (accepted_socket_id != 0) {
+    render_view_->Send(
+        new PpapiHostMsg_PPBTCPSocket_Disconnect(accepted_socket_id));
   }
 }
 

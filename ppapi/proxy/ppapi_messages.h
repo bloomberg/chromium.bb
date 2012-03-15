@@ -351,6 +351,8 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
 
 // PPB_TCPServerSocket_Private.
 
+// |socket_resource| should not be used as Resource in browser. The
+// only purpose of this argument is to be echoed back.
 // |status| == PP_ERROR_NOSPACE means that the socket table is full
 // and new socket can't be initialized.
 // |status| == PP_ERROR_FAILED means that socket is correctly
@@ -359,12 +361,12 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBUDPSocket_SendToACK,
 // needed) and Listen call succeeds.
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPServerSocket_ListenACK,
                     uint32 /* plugin_dispatcher_id */,
-                    uint32 /* real_socket_id */,
-                    uint32 /* temp_socket_id */,
+                    PP_Resource /* socket_resource */,
+                    uint32 /* socket_id */,
                     int32_t /* status */)
 IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                     uint32 /* plugin_dispatcher_id */,
-                    uint32 /* real_server_socket_id */,
+                    uint32 /* server_socket_id */,
                     uint32 /* accepted_socket_id */,
                     PP_NetAddress_Private /* local_addr */,
                     PP_NetAddress_Private /* remote_addr */)
@@ -1289,13 +1291,14 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBUDPSocket_Close,
 IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPServerSocket_Listen,
                      int32 /* routing_id */,
                      uint32 /* plugin_dispatcher_id */,
-                     uint32 /* temp_socket_id */,
+                     PP_Resource /* socket_resource */,
                      PP_NetAddress_Private /* addr */,
                      int32_t /* backlog */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Accept,
-                     uint32 /* real_socket_id */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPServerSocket_Accept,
+                     int32 /* tcp_client_socket_routing_id */,
+                     uint32 /* server_socket_id */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPServerSocket_Destroy,
-                     uint32 /* real_socket_id */)
+                     uint32 /* socket_id */)
 
 // PPB_Font.
 IPC_SYNC_MESSAGE_CONTROL0_1(PpapiHostMsg_PPBFont_GetFontFamilies,

@@ -26,7 +26,13 @@ IDToSocketMap* g_id_to_socket = NULL;
 
 class TCPSocket : public TCPSocketPrivateImpl {
  public:
+  // C-tor for new sockets.
   TCPSocket(const HostResource& resource, uint32 socket_id);
+  // C-tor for already connected sockets.
+  TCPSocket(const HostResource& resource,
+            uint32 socket_id,
+            const PP_NetAddress_Private& local_addr,
+            const PP_NetAddress_Private& remote_addr);
   virtual ~TCPSocket();
 
   virtual void SendConnect(const std::string& host, uint16_t port) OVERRIDE;
@@ -49,6 +55,22 @@ TCPSocket::TCPSocket(const HostResource& resource, uint32 socket_id)
   if (!g_id_to_socket)
     g_id_to_socket = new IDToSocketMap();
   DCHECK(g_id_to_socket->find(socket_id) == g_id_to_socket->end());
+  (*g_id_to_socket)[socket_id] = this;
+}
+
+TCPSocket::TCPSocket(const HostResource& resource,
+                     uint32 socket_id,
+                     const PP_NetAddress_Private& local_addr,
+                     const PP_NetAddress_Private& remote_addr)
+    : TCPSocketPrivateImpl(resource, socket_id) {
+  if (!g_id_to_socket)
+    g_id_to_socket = new IDToSocketMap();
+  DCHECK(g_id_to_socket->find(socket_id) == g_id_to_socket->end());
+
+  connection_state_ = CONNECTED;
+  local_addr_ = local_addr;
+  remote_addr_ = remote_addr;
+
   (*g_id_to_socket)[socket_id] = this;
 }
 
@@ -119,6 +141,18 @@ PP_Resource PPB_TCPSocket_Private_Proxy::CreateProxyResource(
     return 0;
   return (new TCPSocket(HostResource::MakeInstanceOnly(instance),
                         socket_id))->GetReference();
+}
+
+// static
+PP_Resource PPB_TCPSocket_Private_Proxy::CreateProxyResourceForConnectedSocket(
+    PP_Instance instance,
+    uint32 socket_id,
+    const PP_NetAddress_Private& local_addr,
+    const PP_NetAddress_Private& remote_addr) {
+  return (new TCPSocket(HostResource::MakeInstanceOnly(instance),
+                        socket_id,
+                        local_addr,
+                        remote_addr))->GetReference();
 }
 
 bool PPB_TCPSocket_Private_Proxy::OnMessageReceived(const IPC::Message& msg) {

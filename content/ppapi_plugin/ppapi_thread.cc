@@ -83,6 +83,10 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_ListenACK,
+                                OnPluginDispatcherMessageReceived(msg))
+    IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_AcceptACK,
+                                OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_ConnectACK,
                                 OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,

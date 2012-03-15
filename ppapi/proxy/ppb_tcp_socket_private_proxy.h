@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,11 @@ class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
   virtual ~PPB_TCPSocket_Private_Proxy();
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
+  static PP_Resource CreateProxyResourceForConnectedSocket(
+      PP_Instance instance,
+      uint32 socket_id,
+      const PP_NetAddress_Private& local_addr,
+      const PP_NetAddress_Private& remote_addr);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);

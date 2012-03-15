@@ -9,6 +9,7 @@
 
 PROXIED_API(PPB_Broker)
 PROXIED_API(PPB_HostResolver_Private)
+PROXIED_API(PPB_TCPServerSocket_Private)
 PROXIED_API(PPB_TCPSocket_Private)
 PROXIED_API(PPB_UDPSocket_Private)
 
@@ -31,6 +32,9 @@ PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_0_1,
               PPB_NetAddress_Private_0_1)
 PROXIED_IFACE(NoAPIName, PPB_NETADDRESS_PRIVATE_INTERFACE_1_0,
               PPB_NetAddress_Private_1_0)
+PROXIED_IFACE(PPB_TCPServerSocket_Private,
+              PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1,
+              PPB_TCPServerSocket_Private_0_1)
 PROXIED_IFACE(PPB_TCPSocket_Private, PPB_TCPSOCKET_PRIVATE_INTERFACE_0_3,
               PPB_TCPSocket_Private_0_3)
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,

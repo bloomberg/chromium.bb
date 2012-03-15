@@ -25,6 +25,7 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
@@ -286,8 +287,7 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
 #if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
-  // TODO (ygorshenin): implement this
-  return 0;
+  return PPB_TCPServerSocket_Private_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(

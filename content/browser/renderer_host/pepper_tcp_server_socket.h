@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ppapi/c/pp_resource.h"
 
 class PepperMessageFilter;
 struct PP_NetAddress_Private;
@@ -25,12 +26,12 @@ class PepperTCPServerSocket {
   PepperTCPServerSocket(PepperMessageFilter* manager,
                         int32 routing_id,
                         uint32 plugin_dispatcher_id,
-                        uint32 real_socket_id,
-                        uint32 temp_socket_id);
+                        PP_Resource socket_resource,
+                        uint32 socket_id);
   ~PepperTCPServerSocket();
 
   void Listen(const PP_NetAddress_Private& addr, int32 backlog);
-  void Accept();
+  void Accept(int32 tcp_client_socket_routing_id);
 
  private:
   enum State {
@@ -44,13 +45,17 @@ class PepperTCPServerSocket {
   void SendAcceptACKError();
 
   void OnListenCompleted(int result);
-  void OnAcceptCompleted(int result);
+  void OnAcceptCompleted(int32 tcp_client_socket_routing_id,
+                         int result);
 
   PepperMessageFilter* manager_;
   int32 routing_id_;
   uint32 plugin_dispatcher_id_;
-  uint32 real_socket_id_;
-  uint32 temp_socket_id_;
+  // socket_resource_ is used only as an ID on the browser side. So we
+  // don't hold the ref to this resource and it may become invalid at
+  // the renderer/plugin side.
+  PP_Resource socket_resource_;
+  uint32 socket_id_;
 
   State state_;
 

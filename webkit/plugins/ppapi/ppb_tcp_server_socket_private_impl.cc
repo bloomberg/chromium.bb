@@ -32,7 +32,7 @@ PP_Resource PPB_TCPServerSocket_Private_Impl::CreateResource(
 
 void PPB_TCPServerSocket_Private_Impl::OnAcceptCompleted(
     bool succeeded,
-    uint32 tcp_socket_id,
+    uint32 accepted_socket_id,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   if (!::ppapi::TrackedCallback::IsPending(accept_callback_) ||
@@ -44,7 +44,7 @@ void PPB_TCPServerSocket_Private_Impl::OnAcceptCompleted(
   if (succeeded) {
     *tcp_socket_buffer_ =
         PPB_TCPSocket_Private_Impl::CreateConnectedSocket(pp_instance(),
-                                                          tcp_socket_id,
+                                                          accepted_socket_id,
                                                           local_addr,
                                                           remote_addr);
   }
@@ -55,14 +55,13 @@ void PPB_TCPServerSocket_Private_Impl::OnAcceptCompleted(
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendListen(
-    uint32 temp_socket_id,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPServerSocketListen(this, temp_socket_id, addr, backlog);
+  plugin_delegate->TCPServerSocketListen(pp_resource(), addr, backlog);
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendAccept() {
@@ -70,7 +69,7 @@ void PPB_TCPServerSocket_Private_Impl::SendAccept() {
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPServerSocketAccept(real_socket_id_);
+  plugin_delegate->TCPServerSocketAccept(socket_id_);
 }
 
 void PPB_TCPServerSocket_Private_Impl::SendStopListening() {
@@ -78,8 +77,7 @@ void PPB_TCPServerSocket_Private_Impl::SendStopListening() {
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPServerSocketStopListening(real_socket_id_,
-                                                temp_socket_id_);
+  plugin_delegate->TCPServerSocketStopListening(pp_resource(), socket_id_);
 }
 
 }  // namespace ppapi

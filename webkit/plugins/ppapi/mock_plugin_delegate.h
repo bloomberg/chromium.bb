@@ -136,13 +136,12 @@ class MockPluginDelegate : public PluginDelegate {
                                const std::string& buffer,
                                const PP_NetAddress_Private& addr);
   virtual void UDPSocketClose(uint32 socket_id);
-  virtual void TCPServerSocketListen(PPB_TCPServerSocket_Private_Impl* socket,
-                                     uint32 temp_socket_id,
+  virtual void TCPServerSocketListen(PP_Resource socket_resource,
                                      const PP_NetAddress_Private& addr,
                                      int32_t backlog);
-  virtual void TCPServerSocketAccept(uint32 real_socket_id);
-  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
-                                            uint32 temp_socket_id);
+  virtual void TCPServerSocketAccept(uint32 server_socket_id);
+  virtual void TCPServerSocketStopListening(PP_Resource socket_resource,
+                                            uint32 socket_id);
   virtual void RegisterHostResolver(
       ::ppapi::PPB_HostResolver_Shared* host_resolver,
       uint32 host_resolver_id);

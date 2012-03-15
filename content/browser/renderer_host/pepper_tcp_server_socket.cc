@@ -24,13 +24,13 @@ PepperTCPServerSocket::PepperTCPServerSocket(
     PepperMessageFilter* manager,
     int32 routing_id,
     uint32 plugin_dispatcher_id,
-    uint32 real_socket_id,
-    uint32 temp_socket_id)
+    PP_Resource socket_resource,
+    uint32 socket_id)
     : manager_(manager),
       routing_id_(routing_id),
       plugin_dispatcher_id_(plugin_dispatcher_id),
-      real_socket_id_(real_socket_id),
-      temp_socket_id_(temp_socket_id),
+      socket_resource_(socket_resource),
+      socket_id_(socket_id),
       state_(BEFORE_LISTENING) {
   DCHECK(manager);
 }
@@ -57,7 +57,7 @@ void PepperTCPServerSocket::Listen(const PP_NetAddress_Private& addr,
     OnListenCompleted(result);
 }
 
-void PepperTCPServerSocket::Accept() {
+void PepperTCPServerSocket::Accept(int32 tcp_client_socket_routing_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (state_ != LISTENING) {
@@ -70,30 +70,31 @@ void PepperTCPServerSocket::Accept() {
   int result = socket_->Accept(
       &socket_buffer_,
       base::Bind(&PepperTCPServerSocket::OnAcceptCompleted,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 tcp_client_socket_routing_id));
   if (result != net::ERR_IO_PENDING)
-    OnAcceptCompleted(result);
+    OnAcceptCompleted(tcp_client_socket_routing_id, result);
 }
 
 void PepperTCPServerSocket::CancelListenRequest() {
   manager_->Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
       routing_id_,
       plugin_dispatcher_id_,
+      socket_resource_,
       0,
-      temp_socket_id_,
       PP_ERROR_FAILED));
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&PepperMessageFilter::RemoveTCPServerSocket, manager_,
-                 real_socket_id_));
+                 socket_id_));
 }
 
 void PepperTCPServerSocket::SendAcceptACKError() {
   manager_->Send(new PpapiMsg_PPBTCPServerSocket_AcceptACK(
       routing_id_,
       plugin_dispatcher_id_,
-      real_socket_id_,
+      socket_id_,
       0,
       NetAddressPrivateImpl::kInvalidNetAddress,
       NetAddressPrivateImpl::kInvalidNetAddress));
@@ -108,14 +109,16 @@ void PepperTCPServerSocket::OnListenCompleted(int result) {
     manager_->Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(
         routing_id_,
         plugin_dispatcher_id_,
-        real_socket_id_,
-        temp_socket_id_,
+        socket_resource_,
+        socket_id_,
         PP_OK));
     state_ = LISTENING;
   }
 }
 
-void PepperTCPServerSocket::OnAcceptCompleted(int result) {
+void PepperTCPServerSocket::OnAcceptCompleted(
+    int32 tcp_client_socket_routing_id,
+    int result) {
   DCHECK(state_ == ACCEPT_IN_PROGRESS && socket_buffer_.get());
 
   if (result != net::OK) {
@@ -139,14 +142,14 @@ void PepperTCPServerSocket::OnAcceptCompleted(int result) {
       SendAcceptACKError();
     } else {
       uint32 accepted_socket_id =
-          manager_->AddAcceptedTCPSocket(routing_id_,
+          manager_->AddAcceptedTCPSocket(tcp_client_socket_routing_id,
                                          plugin_dispatcher_id_,
                                          socket.release());
       if (accepted_socket_id != 0) {
         manager_->Send(new PpapiMsg_PPBTCPServerSocket_AcceptACK(
             routing_id_,
             plugin_dispatcher_id_,
-            real_socket_id_,
+            socket_id_,
             accepted_socket_id,
             local_addr,
             remote_addr));

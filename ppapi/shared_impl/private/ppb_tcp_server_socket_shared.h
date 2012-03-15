@@ -40,16 +40,15 @@ class PPAPI_SHARED_EXPORT PPB_TCPServerSocket_Shared
                          PP_CompletionCallback callback) OVERRIDE;
   virtual void StopListening() OVERRIDE;
 
-  void OnListenCompleted(uint32 real_socket_id, int32_t status);
+  void OnListenCompleted(uint32 socket_id, int32_t status);
   virtual void OnAcceptCompleted(bool succeeded,
-                                 uint32 tcp_socket_id,
+                                 uint32 accepted_socket_id,
                                  const PP_NetAddress_Private& local_addr,
                                  const PP_NetAddress_Private& remote_addr) = 0;
 
   // Send functions that need to be implemented differently for the
   // proxied and non-proxied derived classes.
-  virtual void SendListen(uint32 temp_socket_id,
-                          const PP_NetAddress_Private& addr,
+  virtual void SendListen(const PP_NetAddress_Private& addr,
                           int32_t backlog) = 0;
   virtual void SendAccept() = 0;
   virtual void SendStopListening() = 0;
@@ -65,10 +64,7 @@ class PPAPI_SHARED_EXPORT PPB_TCPServerSocket_Shared
     CLOSED
   };
 
-  static uint32 GenerateTempSocketID();
-
-  uint32 real_socket_id_;
-  uint32 temp_socket_id_;
+  uint32 socket_id_;
   State state_;
 
   scoped_refptr<TrackedCallback> listen_callback_;

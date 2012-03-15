@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/stream_socket.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
 class ListValue;
@@ -82,7 +83,7 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   uint32 AddAcceptedTCPSocket(int32 routing_id,
                               uint32 plugin_dispatcher_id,
                               net::StreamSocket* socket);
-  void RemoveTCPServerSocket(uint32 real_socket_id);
+  void RemoveTCPServerSocket(uint32 socket_id);
 
   const net::SSLConfig& ssl_config() { return ssl_config_; }
 
@@ -160,10 +161,11 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
 
   void OnTCPServerListen(int32 routing_id,
                          uint32 plugin_dispatcher_id,
-                         uint32 temp_socket_id,
+                         PP_Resource socket_resource,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
-  void OnTCPServerAccept(uint32 real_socket_id);
+  void OnTCPServerAccept(int32 tcp_client_socket_routing_id,
+                         uint32 server_socket_id);
 
   void OnHostResolverResolve(int32 routing_id,
                              uint32 plugin_dispatcher_id,
@@ -195,7 +197,7 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   void DoTCPServerListen(bool allowed,
                          int32 routing_id,
                          uint32 plugin_dispatcher_id,
-                         uint32 temp_socket_id,
+                         PP_Resource socket_resource,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
   void DoHostResolverResolve(bool allowed,

@@ -107,6 +107,8 @@
         'proxy/ppb_message_loop_proxy.h',
         'proxy/ppb_pdf_proxy.cc',
         'proxy/ppb_pdf_proxy.h',
+        'proxy/ppb_tcp_server_socket_private_proxy.cc',
+        'proxy/ppb_tcp_server_socket_private_proxy.h',
         'proxy/ppb_tcp_socket_private_proxy.cc',
         'proxy/ppb_tcp_socket_private_proxy.h',
         'proxy/ppb_testing_proxy.cc',

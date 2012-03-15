@@ -18,12 +18,11 @@ class PPB_TCPServerSocket_Private_Impl
 
   virtual void OnAcceptCompleted(
       bool succeeded,
-      uint32 tcp_socket_id,
+      uint32 accepted_socket_id,
       const PP_NetAddress_Private& local_addr,
       const PP_NetAddress_Private& remote_addr) OVERRIDE;
 
-  virtual void SendListen(uint32_t temp_socket_id,
-                          const PP_NetAddress_Private& addr,
+  virtual void SendListen(const PP_NetAddress_Private& addr,
                           int32_t backlog) OVERRIDE;
   virtual void SendAccept() OVERRIDE;
   virtual void SendStopListening() OVERRIDE;

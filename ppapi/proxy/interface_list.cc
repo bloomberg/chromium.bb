@@ -92,6 +92,7 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_pdf_proxy.h"
+#include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_testing_proxy.h"
 #include "ppapi/proxy/ppb_text_input_proxy.h"

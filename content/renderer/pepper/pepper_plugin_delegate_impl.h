@@ -21,6 +21,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/pepper_parent_context_provider.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
+#include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ppapi/shared_impl/private/udp_socket_private_impl.h"
 #include "ui/base/ime/text_input_type.h"
@@ -301,13 +302,13 @@ class PepperPluginDelegateImpl
                                const PP_NetAddress_Private& addr) OVERRIDE;
   virtual void UDPSocketClose(uint32 socket_id) OVERRIDE;
   virtual void TCPServerSocketListen(
-      webkit::ppapi::PPB_TCPServerSocket_Private_Impl* socket,
-      uint32 temp_socket_id,
+      PP_Resource socket_resource,
       const PP_NetAddress_Private& addr,
       int32_t backlog) OVERRIDE;
-  virtual void TCPServerSocketAccept(uint32 real_socket_id) OVERRIDE;
-  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
-                                            uint32 temp_socket_id) OVERRIDE;
+  virtual void TCPServerSocketAccept(uint32 server_socket_id) OVERRIDE;
+  virtual void TCPServerSocketStopListening(
+      PP_Resource socket_resource,
+      uint32 socket_id) OVERRIDE;
 
   virtual void RegisterHostResolver(
       ppapi::PPB_HostResolver_Shared* host_resolver,
@@ -402,11 +403,11 @@ class PepperPluginDelegateImpl
                               const std::string& data,
                               const PP_NetAddress_Private& addr);
   void OnTCPServerSocketListenACK(uint32 plugin_dispatcher_id,
-                                  uint32 real_socket_id,
-                                  uint32 temp_socket_id,
+                                  PP_Resource socket_resource,
+                                  uint32 socket_id,
                                   int32_t status);
   void OnTCPServerSocketAcceptACK(uint32 plugin_dispatcher_id,
-                                  uint32 real_server_socket_id,
+                                  uint32 socket_id,
                                   uint32 accepted_socket_id,
                                   const PP_NetAddress_Private& local_addr,
                                   const PP_NetAddress_Private& remote_addr);
@@ -467,10 +468,7 @@ class PepperPluginDelegateImpl
 
   IDMap<webkit::ppapi::PPB_UDPSocket_Private_Impl> udp_sockets_;
 
-  IDMap<webkit::ppapi::PPB_TCPServerSocket_Private_Impl> tcp_server_sockets_;
-
-  IDMap<webkit::ppapi::PPB_TCPServerSocket_Private_Impl>
-      uninitialized_tcp_server_sockets_;
+  IDMap<ppapi::PPB_TCPServerSocket_Shared> tcp_server_sockets_;
 
   IDMap<ppapi::PPB_HostResolver_Shared> host_resolvers_;
 

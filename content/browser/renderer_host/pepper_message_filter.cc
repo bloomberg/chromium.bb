@@ -175,8 +175,8 @@ uint32 PepperMessageFilter::AddAcceptedTCPSocket(
   return tcp_socket_id;
 }
 
-void PepperMessageFilter::RemoveTCPServerSocket(uint32 real_socket_id) {
-  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(real_socket_id);
+void PepperMessageFilter::RemoveTCPServerSocket(uint32 socket_id) {
+  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(socket_id);
   if (iter == tcp_server_sockets_.end()) {
     NOTREACHED();
     return;
@@ -567,7 +567,7 @@ void PepperMessageFilter::OnUDPClose(uint32 socket_id) {
 
 void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
                                             uint32 plugin_dispatcher_id,
-                                            uint32 temp_socket_id,
+                                            PP_Resource socket_resource,
                                             const PP_NetAddress_Private& addr,
                                             int32_t backlog) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -577,7 +577,7 @@ void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
                                      CanUseSocketAPIs(routing_id),
                                      routing_id,
                                      plugin_dispatcher_id,
-                                     temp_socket_id,
+                                     socket_resource,
                                      addr,
                                      backlog));
 }
@@ -585,41 +585,42 @@ void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
 void PepperMessageFilter::DoTCPServerListen(bool allowed,
                                             int32 routing_id,
                                             uint32 plugin_dispatcher_id,
-                                            uint32 temp_socket_id,
+                                            PP_Resource socket_resource,
                                             const PP_NetAddress_Private& addr,
                                             int32_t backlog) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!allowed) {
     Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
                                                    plugin_dispatcher_id,
+                                                   socket_resource,
                                                    0,
-                                                   temp_socket_id,
                                                    PP_ERROR_FAILED));
     return;
   }
-  uint32 real_socket_id = GenerateSocketID();
-  if (real_socket_id == kInvalidSocketID) {
+  uint32 socket_id = GenerateSocketID();
+  if (socket_id == kInvalidSocketID) {
     Send(new PpapiMsg_PPBTCPServerSocket_ListenACK(routing_id,
                                                    plugin_dispatcher_id,
-                                                   real_socket_id,
-                                                   temp_socket_id,
+                                                   socket_resource,
+                                                   0,
                                                    PP_ERROR_NOSPACE));
     return;
   }
   PepperTCPServerSocket* socket = new PepperTCPServerSocket(
-      this, routing_id, plugin_dispatcher_id, real_socket_id, temp_socket_id);
-  tcp_server_sockets_[real_socket_id] =
-      linked_ptr<PepperTCPServerSocket>(socket);
+      this, routing_id, plugin_dispatcher_id, socket_resource, socket_id);
+  tcp_server_sockets_[socket_id] = linked_ptr<PepperTCPServerSocket>(socket);
   socket->Listen(addr, backlog);
 }
 
-void PepperMessageFilter::OnTCPServerAccept(uint32 real_socket_id) {
-  TCPServerSocketMap::iterator iter = tcp_server_sockets_.find(real_socket_id);
+void PepperMessageFilter::OnTCPServerAccept(int32 tcp_client_socket_routing_id,
+                                            uint32 server_socket_id) {
+  TCPServerSocketMap::iterator iter =
+      tcp_server_sockets_.find(server_socket_id);
   if (iter == tcp_server_sockets_.end()) {
     NOTREACHED();
     return;
   }
-  iter->second->Accept();
+  iter->second->Accept(tcp_client_socket_routing_id);
 }
 
 void PepperMessageFilter::OnHostResolverResolve(

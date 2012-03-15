@@ -79,7 +79,6 @@
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
-#include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
@@ -359,8 +358,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::PPB_OpenGLES2_Shared::GetChromiumMapSubInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
-  if (strcmp(name, PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_TCPServerSocket_Private_0_1_Thunk();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)
     return PPB_UMA_Private_Impl::GetInterface();
   if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE_0_3) == 0)

@@ -304,17 +304,17 @@ void MockPluginDelegate::UDPSocketClose(uint32 socket_id) {
 }
 
 void MockPluginDelegate::TCPServerSocketListen(
-    PPB_TCPServerSocket_Private_Impl* socket,
-    uint32 temp_socket_id,
+    PP_Resource socket_resource,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
 }
 
-void MockPluginDelegate::TCPServerSocketAccept(uint32 real_socket_id) {
+void MockPluginDelegate::TCPServerSocketAccept(uint32 server_socket_id) {
 }
 
-void MockPluginDelegate::TCPServerSocketStopListening(uint32 real_socket_id,
-                                                      uint32 temp_socket_id) {
+void MockPluginDelegate::TCPServerSocketStopListening(
+    PP_Resource socket_resource,
+    uint32 socket_id) {
 }
 
 void MockPluginDelegate::RegisterHostResolver(

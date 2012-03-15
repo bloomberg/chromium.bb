@@ -13,8 +13,7 @@ namespace ppapi {
 
 PPB_TCPServerSocket_Shared::PPB_TCPServerSocket_Shared(PP_Instance instance)
     : Resource(OBJECT_IS_IMPL, instance),
-      real_socket_id_(0),
-      temp_socket_id_(GenerateTempSocketID()),
+      socket_id_(0),
       state_(BEFORE_LISTENING),
       tcp_socket_buffer_(NULL) {
 }
@@ -22,8 +21,7 @@ PPB_TCPServerSocket_Shared::PPB_TCPServerSocket_Shared(PP_Instance instance)
 PPB_TCPServerSocket_Shared::PPB_TCPServerSocket_Shared(
     const HostResource& resource)
     : Resource(OBJECT_IS_PROXY, resource),
-      real_socket_id_(0),
-      temp_socket_id_(GenerateTempSocketID()),
+      socket_id_(0),
       state_(BEFORE_LISTENING),
       tcp_socket_buffer_(NULL) {
 }
@@ -50,7 +48,7 @@ int32_t PPB_TCPServerSocket_Shared::Listen(const PP_NetAddress_Private* addr,
 
   listen_callback_ = new TrackedCallback(this, callback);
   // Send the request, the browser will call us back via ListenACK
-  SendListen(temp_socket_id_, *addr, backlog);
+  SendListen(*addr, backlog);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -80,7 +78,7 @@ void PPB_TCPServerSocket_Shared::StopListening() {
   state_ = CLOSED;
 
   SendStopListening();
-  real_socket_id_ = 0;
+  socket_id_ = 0;
 
   if (listen_callback_.get())
     listen_callback_->PostAbort();
@@ -89,7 +87,7 @@ void PPB_TCPServerSocket_Shared::StopListening() {
   tcp_socket_buffer_ = NULL;
 }
 
-void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 real_socket_id,
+void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 socket_id,
                                                    int32_t status) {
   if (state_ != BEFORE_LISTENING ||
       !TrackedCallback::IsPending(listen_callback_)) {
@@ -98,16 +96,11 @@ void PPB_TCPServerSocket_Shared::OnListenCompleted(uint32 real_socket_id,
   }
 
   if (status == PP_OK) {
-    real_socket_id_ = real_socket_id;
+    socket_id_ = socket_id;
     state_ = LISTENING;
   }
 
   TrackedCallback::ClearAndRun(&listen_callback_, status);
-}
-
-uint32 PPB_TCPServerSocket_Shared::GenerateTempSocketID() {
-  static uint32 socket_id = 0;
-  return socket_id++;
 }
 
 }  // namespace ppapi

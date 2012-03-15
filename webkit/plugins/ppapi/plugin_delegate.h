@@ -23,6 +23,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -88,7 +89,6 @@ class PluginModule;
 class PPB_Broker_Impl;
 class PPB_Flash_Menu_Impl;
 class PPB_Flash_NetConnector_Impl;
-class PPB_TCPServerSocket_Private_Impl;
 class PPB_TCPSocket_Private_Impl;
 class PPB_UDPSocket_Private_Impl;
 
@@ -481,13 +481,13 @@ class PluginDelegate {
   virtual void UDPSocketClose(uint32 socket_id) = 0;
 
   // For PPB_TCPServerSocket_Private.
-  virtual void TCPServerSocketListen(PPB_TCPServerSocket_Private_Impl* socket,
-                                     uint32 temp_socket_id,
+  virtual void TCPServerSocketListen(PP_Resource socket_resource,
                                      const PP_NetAddress_Private& addr,
                                      int32_t backlog) = 0;
-  virtual void TCPServerSocketAccept(uint32 real_socket_id) = 0;
-  virtual void TCPServerSocketStopListening(uint32 real_socket_id,
-                                            uint32 temp_socket_id) = 0;
+  virtual void TCPServerSocketAccept(uint32 server_socket_id) = 0;
+  virtual void TCPServerSocketStopListening(
+      PP_Resource socket_resource,
+      uint32 socket_id) = 0;
 
   // For PPB_HostResolver_Private.
   virtual void RegisterHostResolver(
