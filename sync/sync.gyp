@@ -246,6 +246,8 @@
     {
       'target_name': 'sync_tests',
       'type': 'none',
+      # We only want unit test executables to include this target.
+      'suppress_wildcard': 1,
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
