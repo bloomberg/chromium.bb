@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -125,6 +127,13 @@ string16 GetLanguageName(const std::string& language_code) {
   return language_name;
 }
 
+PrefService* GetPrefService() {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (profile)
+    return profile->GetPrefs();
+  return NULL;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -134,8 +143,7 @@ using input_method::InputMethodManager;
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu
 
-InputMethodMenu::InputMethodMenu(PrefService* pref_service,
-                                 bool for_out_of_box_experience_dialog)
+InputMethodMenu::InputMethodMenu()
     : initialized_prefs_(false),
       initialized_observers_(false),
       input_method_descriptors_(InputMethodManager::GetInstance()->
@@ -147,16 +155,13 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
           new views::MenuItemView(input_method_menu_delegate_.get())),
       input_method_menu_runner_(new views::MenuRunner(input_method_menu_)),
       minimum_input_method_menu_width_(0),
-      menu_alignment_(views::MenuItemView::TOPRIGHT),
-      pref_service_(pref_service),
-      for_out_of_box_experience_dialog_(for_out_of_box_experience_dialog) {
+      menu_alignment_(views::MenuItemView::TOPRIGHT) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
 
   // Sync current and previous input methods on Chrome prefs with ibus-daemon.
-  if (pref_service_ && StatusAreaViewChromeos::IsBrowserMode()) {
+  if (StatusAreaViewChromeos::IsBrowserMode())
     InitializePrefMembers();
-  }
 
   if (StatusAreaViewChromeos::IsLoginMode()) {
     registrar_.Add(this,
@@ -226,10 +231,8 @@ bool InputMethodMenu::IsItemCheckedAt(int index) const {
 int InputMethodMenu::GetGroupIdAt(int index) const {
   DCHECK_GE(index, 0);
 
-  if (IndexIsInInputMethodList(index)) {
-    return for_out_of_box_experience_dialog_ ?
-        kRadioGroupNone : kRadioGroupLanguage;
-  }
+  if (IndexIsInInputMethodList(index))
+    return kRadioGroupLanguage;
 
   if (GetPropertyIndex(index, &index)) {
     const input_method::InputMethodPropertyList& property_list
@@ -293,10 +296,8 @@ ui::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
     return ui::MenuModel::TYPE_COMMAND;  // "Customize language and input"
   }
 
-  if (IndexIsInInputMethodList(index)) {
-    return for_out_of_box_experience_dialog_ ?
-        ui::MenuModel::TYPE_COMMAND : ui::MenuModel::TYPE_RADIO;
-  }
+  if (IndexIsInInputMethodList(index))
+    return ui::MenuModel::TYPE_RADIO;
 
   if (GetPropertyIndex(index, &index)) {
     const input_method::InputMethodPropertyList& property_list
@@ -422,7 +423,7 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     const input_method::InputMethodDescriptor& previous_input_method,
     const input_method::InputMethodDescriptor& current_input_method) {
   if (StatusAreaViewChromeos::IsBrowserMode()) {
-    if (pref_service_) {  // make sure we're not in unit tests.
+    if (initialized_prefs_) {  // make sure we're not in unit tests.
       // Sometimes (e.g. initial boot) |previous_input_method.id()| is empty.
       previous_input_method_pref_.SetValue(previous_input_method.id());
       current_input_method_pref_.SetValue(current_input_method.id());
@@ -462,7 +463,7 @@ void InputMethodMenu::FirstObserverIsAdded(InputMethodManager* manager) {
   // NOTICE: Since this function might be called from the constructor of this
   // class, it's better to avoid calling virtual functions.
 
-  if (pref_service_ && (StatusAreaViewChromeos::IsBrowserMode())) {
+  if (initialized_prefs_ && StatusAreaViewChromeos::IsBrowserMode()) {
     // Get the input method name in the Preferences file which was in use last
     // time, and switch to the method. We remember two input method names in the
     // preference so that the Control+space hot-key could work fine from the
@@ -742,11 +743,14 @@ void InputMethodMenu::RemoveObservers() {
 
 void InputMethodMenu::InitializePrefMembers() {
   if (!initialized_prefs_) {
-    initialized_prefs_ = true;
-    previous_input_method_pref_.Init(
-        prefs::kLanguagePreviousInputMethod, pref_service_, this);
-    current_input_method_pref_.Init(
-        prefs::kLanguageCurrentInputMethod, pref_service_, this);
+    PrefService* pref_service = GetPrefService();
+    if (pref_service) {
+      initialized_prefs_ = true;
+      previous_input_method_pref_.Init(
+          prefs::kLanguagePreviousInputMethod, pref_service, this);
+      current_input_method_pref_.Init(
+          prefs::kLanguageCurrentInputMethod, pref_service, this);
+    }
   }
 }
 

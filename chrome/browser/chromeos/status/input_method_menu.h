@@ -44,8 +44,7 @@ class InputMethodMenu
       public input_method::InputMethodManager::PreferenceObserver,
       public content::NotificationObserver {
  public:
-  InputMethodMenu(PrefService* pref_service,
-                  bool for_out_of_box_experience_dialog);
+  InputMethodMenu();
   virtual ~InputMethodMenu();
 
   // ui::MenuModel implementation.
@@ -197,12 +196,7 @@ class InputMethodMenu
   // Menu alignment (default TOPRIGHT).
   views::MenuItemView::AnchorPosition menu_alignment_;
 
-  PrefService* pref_service_;
   content::NotificationRegistrar registrar_;
-
-  // true if the menu is for a dialog in OOBE screen. In the dialog, we don't
-  // use radio buttons.
-  const bool for_out_of_box_experience_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenu);
 };
