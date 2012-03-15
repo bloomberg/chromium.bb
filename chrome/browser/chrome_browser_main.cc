@@ -239,9 +239,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     net::CookieMonster::EnableFileScheme();
   }
 
-  if (parsed_command_line.HasSwitch(switches::kEnableMacCookies))
-    net::URLRequest::EnableMacCookies();
-
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     net::HttpStreamFactory::set_ignore_certificate_errors(true);
 

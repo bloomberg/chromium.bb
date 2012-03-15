@@ -149,7 +149,6 @@ extern const char kEnableInBrowserThumbnailing[];
 extern const char kEnableIPv6[];
 extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
-extern const char kEnableMacCookies[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];

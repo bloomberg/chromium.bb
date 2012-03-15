@@ -519,11 +519,6 @@ const char kEnableIPCFuzzing[]               = "enable-ipc-fuzzing";
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
 
-// Enables MAC cookies in the network stack. These cookies use HMAC to protect
-// session state from passive network attackers.
-// http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token
-const char kEnableMacCookies[]              = "enable-mac-cookies";
-
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 
