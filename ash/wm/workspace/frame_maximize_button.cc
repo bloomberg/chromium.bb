@@ -10,12 +10,80 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+// EscapeEventFilter is installed on the RootWindow to track when the escape key
+// is pressed. We use an EventFilter for this as the FrameMaximizeButton
+// normally does not get focus.
+class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
+ public:
+  explicit EscapeEventFilter(FrameMaximizeButton* button);
+  virtual ~EscapeEventFilter();
+
+  // EventFilter overrides:
+  virtual bool PreHandleKeyEvent(aura::Window* target,
+                                 aura::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(aura::Window* target,
+                                   aura::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
+
+ private:
+  FrameMaximizeButton* button_;
+
+  DISALLOW_COPY_AND_ASSIGN(EscapeEventFilter);
+};
+
+FrameMaximizeButton::EscapeEventFilter::EscapeEventFilter(
+    FrameMaximizeButton* button)
+    : button_(button) {
+  Shell::GetInstance()->AddRootWindowEventFilter(this);
+}
+
+FrameMaximizeButton::EscapeEventFilter::~EscapeEventFilter() {
+  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+}
+
+bool FrameMaximizeButton::EscapeEventFilter::PreHandleKeyEvent(
+    aura::Window* target,
+    aura::KeyEvent* event) {
+  if (event->type() == ui::ET_KEY_PRESSED &&
+      event->key_code() == ui::VKEY_ESCAPE) {
+    button_->Cancel();
+  }
+  return false;
+}
+
+bool FrameMaximizeButton::EscapeEventFilter::PreHandleMouseEvent(
+    aura::Window* target,
+    aura::MouseEvent* event) {
+  return false;
+}
+
+ui::TouchStatus FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
+      aura::Window* target,
+      aura::TouchEvent* event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+// FrameMaximizeButton ---------------------------------------------------------
 
 FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener)
     : ImageButton(listener),
@@ -32,6 +100,7 @@ FrameMaximizeButton::~FrameMaximizeButton() {
 bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
   is_snap_enabled_ = event.IsLeftMouseButton();
   if (is_snap_enabled_) {
+    InstallEventFilter();
     snap_type_ = SNAP_NONE;
     press_location_ = event.location();
     exceeded_drag_threshold_ = false;
@@ -63,6 +132,7 @@ bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
+  UninstallEventFilter();
   bool should_snap = is_snap_enabled_;
   is_snap_enabled_ = false;
   if (should_snap && snap_type_ != SNAP_NONE) {
@@ -75,9 +145,7 @@ void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void FrameMaximizeButton::OnMouseCaptureLost() {
-  is_snap_enabled_ = false;
-  phantom_window_.reset();
-  SchedulePaint();
+  Cancel();
   ImageButton::OnMouseCaptureLost();
 }
 
@@ -124,6 +192,24 @@ SkBitmap FrameMaximizeButton::GetImageToPaint() {
     return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToSkBitmap();
   }
   return ImageButton::GetImageToPaint();
+}
+
+void FrameMaximizeButton::Cancel() {
+  UninstallEventFilter();
+  is_snap_enabled_ = false;
+  phantom_window_.reset();
+  SchedulePaint();
+}
+
+void FrameMaximizeButton::InstallEventFilter() {
+  if (escape_event_filter_.get())
+    return;
+
+  escape_event_filter_.reset(new EscapeEventFilter(this));
+}
+
+void FrameMaximizeButton::UninstallEventFilter() {
+  escape_event_filter_.reset(NULL);
 }
 
 void FrameMaximizeButton::UpdateSnap(int delta_x, int delta_y) {

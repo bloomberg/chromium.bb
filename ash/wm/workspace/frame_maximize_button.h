@@ -34,6 +34,8 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   virtual SkBitmap GetImageToPaint() OVERRIDE;
 
  private:
+  class EscapeEventFilter;
+
   // Where to snap to.
   enum SnapType {
     SNAP_LEFT,
@@ -42,6 +44,13 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
     SNAP_MINIMIZE,
     SNAP_NONE
   };
+
+  // Cancels snap behavior.
+  void Cancel();
+
+  // Installs/uninstalls an EventFilter to track when escape is pressed.
+  void InstallEventFilter();
+  void UninstallEventFilter();
 
   // Updates |snap_type_| based on a mouse drag. The parameters are relative to
   // the mouse pressed location.
@@ -72,6 +81,8 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
 
   // Current snap type.
   SnapType snap_type_;
+
+  scoped_ptr<EscapeEventFilter> escape_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMaximizeButton);
 };
