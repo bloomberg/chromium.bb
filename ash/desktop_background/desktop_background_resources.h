@@ -5,14 +5,16 @@
 #ifndef ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_RESOURCES_H_
 #define ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_RESOURCES_H_
 
+#include "ash/ash_export.h"
+
 class SkBitmap;
 
 namespace ash {
 
-int GetDefaultWallpaperIndex();
-int GetWallpaperCount();
-const SkBitmap& GetWallpaper(int index);
-const SkBitmap& GetWallpaperThumbnail(int index);
+ASH_EXPORT int GetDefaultWallpaperIndex();
+ASH_EXPORT int GetWallpaperCount();
+ASH_EXPORT const SkBitmap& GetWallpaper(int index);
+ASH_EXPORT const SkBitmap& GetWallpaperThumbnail(int index);
 
 }  // namespace ash
 
