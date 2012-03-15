@@ -152,8 +152,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   // they are different.
   TemplateURL* backup_url =
       MakeTemplateURL(example_info, ASCIIToUTF16("a"), http_example_info);
+  int backup_histogram_id = protector::GetSearchProviderHistogramID(backup_url);
   TemplateURL* current_url =
       MakeTemplateURL(example_com, ASCIIToUTF16("b"), http_example_com);
+  int current_histogram_id =
+      protector::GetSearchProviderHistogramID(current_url);
 
   AddCopy(backup_url);
   AddAndSetDefault(current_url);
@@ -169,9 +172,9 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
-                       SEARCH_ENGINE_OTHER, 1);
+                       current_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_OTHER, 1);
+                       backup_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -185,14 +188,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   EXPECT_EQ(FindTemplateURL(http_example_info),
             turl_service_->GetDefaultSearchProvider());
   ExpectHistogramCount(kProtectorHistogramSearchProviderDiscarded,
-                       SEARCH_ENGINE_OTHER, 1);
+                       current_histogram_id, 1);
 
   // Verify that Apply switches back to |current_url|.
   change->Apply(browser());
   EXPECT_EQ(FindTemplateURL(http_example_com),
             turl_service_->GetDefaultSearchProvider());
   ExpectHistogramCount(kProtectorHistogramSearchProviderApplied,
-                       SEARCH_ENGINE_OTHER, 1);
+                       current_histogram_id, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
@@ -244,8 +247,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
 IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
   // Backup is invalid, current search provider exists, fallback to the
   // prepopulated default search, which exists among keywords.
+  int prepopulated_histogram_id =
+      protector::GetSearchProviderHistogramID(prepopulated_url_.get());
   TemplateURL* current_url =
       MakeTemplateURL(example_com, ASCIIToUTF16("b"), http_example_com);
+  int current_histogram_id =
+      protector::GetSearchProviderHistogramID(current_url);
 
   AddAndSetDefault(current_url);
 
@@ -263,11 +270,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       SEARCH_ENGINE_OTHER, 1);
+                       current_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -293,8 +300,12 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // Backup is invalid, current search provider exists, fallback to the
   // prepopulated default search, which was removed from keywords (will be
   // added).
+  int prepopulated_histogram_id =
+      protector::GetSearchProviderHistogramID(prepopulated_url_.get());
   TemplateURL* current_url =
       MakeTemplateURL(example_com, ASCIIToUTF16("b"), http_example_com);
+  int current_histogram_id =
+      protector::GetSearchProviderHistogramID(current_url);
 
   AddAndSetDefault(current_url);
 
@@ -315,13 +326,13 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       SEARCH_ENGINE_OTHER, 1);
+                       current_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderMissing,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -347,6 +358,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // Backup is valid, no current search provider.
   TemplateURL* backup_url =
       MakeTemplateURL(example_info, ASCIIToUTF16("a"), http_example_info);
+  int backup_histogram_id = protector::GetSearchProviderHistogramID(backup_url);
 
   AddCopy(backup_url);
   turl_service_->SetDefaultSearchProvider(NULL);
@@ -362,9 +374,9 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
-                       SEARCH_ENGINE_NONE, 1);
+                       protector::GetSearchProviderHistogramID(NULL), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       SEARCH_ENGINE_OTHER, 1);
+                       backup_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -388,6 +400,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
                        BackupInvalidCurrentRemoved) {
   // Backup is invalid, no current search provider, fallback to the prepopulated
   // default search.
+  int prepopulated_histogram_id =
+      protector::GetSearchProviderHistogramID(prepopulated_url_.get());
   turl_service_->SetDefaultSearchProvider(NULL);
 
   scoped_ptr<BaseSettingChange> change(
@@ -401,11 +415,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       SEARCH_ENGINE_NONE, 1);
+                       protector::GetSearchProviderHistogramID(NULL), 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
@@ -424,6 +438,8 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
                        BackupInvalidFallbackSameAsCurrent) {
   // Backup is invalid, fallback to the prepopulated default search which is
   // same as the current search provider.
+  int prepopulated_histogram_id =
+      protector::GetSearchProviderHistogramID(prepopulated_url_.get());
   const TemplateURL* current_url = turl_service_->GetDefaultSearchProvider();
 
   // Verify that current search provider is same as the prepopulated default.
@@ -440,11 +456,11 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderCorrupt,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
-                       prepopulated_url_->search_engine_type(), 1);
+                       prepopulated_histogram_id, 1);
 
   // Verify text messages.
   EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),

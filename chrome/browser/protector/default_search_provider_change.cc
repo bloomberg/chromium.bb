@@ -286,13 +286,12 @@ string16 DefaultSearchProviderChange::GetBubbleTitle() const {
 }
 
 string16 DefaultSearchProviderChange::GetBubbleMessage() const {
-  if (!is_fallback_) {
-    return l10n_util::GetStringUTF16(IDS_SEARCH_ENGINE_CHANGE_MESSAGE);
-  } else {
+  if (is_fallback_) {
     return l10n_util::GetStringFUTF16(
         IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE,
         default_search_provider_->short_name());
   }
+  return l10n_util::GetStringUTF16(IDS_SEARCH_ENGINE_CHANGE_MESSAGE);
 }
 
 string16 DefaultSearchProviderChange::GetApplyButtonText() const {
@@ -302,30 +301,27 @@ string16 DefaultSearchProviderChange::GetApplyButtonText() const {
     if (fallback_is_new_)
       return string16();
     string16 name = new_search_provider_->short_name();
-    if (name.length() > kMaxDisplayedNameLength)
-      return l10n_util::GetStringUTF16(IDS_CHANGE_SEARCH_ENGINE_NO_NAME);
-    else
-      return l10n_util::GetStringFUTF16(IDS_CHANGE_SEARCH_ENGINE, name);
-  } else if (!is_fallback_) {
-    // New setting is lost, offer to go to settings.
-    return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
-  } else {
+    return (name.length() > kMaxDisplayedNameLength) ?
+        l10n_util::GetStringUTF16(IDS_CHANGE_SEARCH_ENGINE_NO_NAME) :
+        l10n_util::GetStringFUTF16(IDS_CHANGE_SEARCH_ENGINE, name);
+  }
+  if (is_fallback_) {
     // Both settings are lost: don't show this button.
     return string16();
   }
+  // New setting is lost, offer to go to settings.
+  return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
 }
 
 string16 DefaultSearchProviderChange::GetDiscardButtonText() const {
   if (!is_fallback_) {
     string16 name = default_search_provider_->short_name();
-    if (name.length() > kMaxDisplayedNameLength)
-      return l10n_util::GetStringUTF16(IDS_KEEP_SETTING);
-    else
-      return l10n_util::GetStringFUTF16(IDS_KEEP_SEARCH_ENGINE, name);
-  } else {
-    // Old setting is lost, offer to go to settings.
-    return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
+    return (name.length() > kMaxDisplayedNameLength) ?
+        l10n_util::GetStringUTF16(IDS_KEEP_SETTING) :
+        l10n_util::GetStringFUTF16(IDS_KEEP_SEARCH_ENGINE, name);
   }
+  // Old setting is lost, offer to go to settings.
+  return l10n_util::GetStringUTF16(IDS_SELECT_SEARCH_ENGINE);
 }
 
 void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {
@@ -398,9 +394,8 @@ TemplateURLService* DefaultSearchProviderChange::GetTemplateURLService() {
   return url_service;
 }
 
-BaseSettingChange* CreateDefaultSearchProviderChange(
-    const TemplateURL* actual,
-    TemplateURL* backup) {
+BaseSettingChange* CreateDefaultSearchProviderChange(const TemplateURL* actual,
+                                                     TemplateURL* backup) {
   return new DefaultSearchProviderChange(actual, backup);
 }
 

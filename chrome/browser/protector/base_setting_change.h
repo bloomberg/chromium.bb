@@ -84,9 +84,8 @@ class BaseSettingChange {
 // |backup| will be owned by the returned |BaseSettingChange| instance. |actual|
 // is not owned and is safe to destroy after Protector::ShowChange has been
 // called for the returned instance.
-BaseSettingChange* CreateDefaultSearchProviderChange(
-    const TemplateURL* actual,
-    TemplateURL* backup);
+BaseSettingChange* CreateDefaultSearchProviderChange(const TemplateURL* actual,
+                                                     TemplateURL* backup);
 
 // Allocates and initializes BaseSettingChange implementation for session
 // startup setting. Reports corresponding histograms.
