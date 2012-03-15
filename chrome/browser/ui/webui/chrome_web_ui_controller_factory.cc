@@ -59,7 +59,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
-#include "chrome/browser/ui/webui/chromeos/idle_logout_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
 #include "chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -250,8 +249,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ActiveDownloadsUI>;
   if (url.host() == chrome::kChromeUIChooseMobileNetworkHost)
     return &NewWebUI<chromeos::ChooseMobileNetworkUI>;
-  if (url.host() == chrome::kChromeUIIdleLogoutDialogHost)
-    return &NewWebUI<IdleLogoutDialogUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewWebUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIKeyboardOverlayHost)

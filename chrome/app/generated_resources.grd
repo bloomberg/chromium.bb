@@ -11917,12 +11917,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Are you still there?
       </message>
       <message name="IDS_IDLE_LOGOUT_WARNING" desc="Warning for the idle logout dialog">
-        This Chromebook is now idle and the current user will be logged out.
-        Press any key or move the pointer to continue exploring.
-        <ph name="LINE_BREAK">&lt;br&gt;&lt;br&gt;</ph>
-        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-        Restarting in: <ph name="END_BOLD">&lt;/strong&gt;</ph>
-        <ph name="TIME_LEFT">$1<ex>20</ex></ph> seconds.
+        This computer is now idle and will be logged out, clearing all user data. Press any key to continue exploring.
+      </message>
+      <message name="IDS_IDLE_LOGOUT_WARNING_RESTART" desc="Restart label for the idle logout dialog">
+        Logging out in <ph name="LOGOUT_TIME_LEFT">$1<ex>20</ex></ph> seconds.
+      </message>
+      <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_1S" desc="Restart label for the idle logout dialog at 1 second left">
+        Logging out in 1 second.
+      </message>
+      <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_NOW" desc="Restart label for the idle logout dialog with no time left">
+        Logging out now.
       </message>
     </if>
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#include "chrome/browser/ui/webui/chromeos/idle_logout_dialog.h"
+#include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,11 +26,11 @@ const int64 kLoginIdleTimeout = 100; // seconds
 namespace browser {
 
 void ShowIdleLogoutDialog() {
-  IdleLogoutDialog::ShowIdleLogoutDialog();
+  IdleLogoutDialogView::ShowDialog();
 }
 
 void CloseIdleLogoutDialog() {
-  IdleLogoutDialog::CloseIdleLogoutDialog();
+  IdleLogoutDialogView::CloseDialog();
 }
 
 }  // namespace browser

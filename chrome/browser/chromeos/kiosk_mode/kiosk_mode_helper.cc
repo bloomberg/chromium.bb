@@ -79,7 +79,6 @@ int64 KioskModeHelper::GetIdleLogoutWarningTimeout() const {
   return kLoginIdleCountdownTimeout;
 }
 
-
 KioskModeHelper::KioskModeHelper() : is_initialized_(false) {
 }
 

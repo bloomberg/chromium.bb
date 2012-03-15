@@ -40,10 +40,13 @@ class KioskModeHelper {
   void Initialize(const base::Closure& notify_initialized);
   bool is_initialized() const { return is_initialized_; }
 
-  // Getters for various Kiosk Mode values.
+  // The path to the screensaver extension.
   std::string GetScreensaverPath() const;
+  // The timeout before which we'll start showing the screensaver.
   int64 GetScreensaverTimeout() const;
+  // The time to logout the user in on idle.
   int64 GetIdleLogoutTimeout() const;
+  // The time to show the countdown timer for.
   int64 GetIdleLogoutWarningTimeout() const;
 
  private:
