@@ -7017,22 +7017,25 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND" desc="Button to send the page to the target mobile device.">
         Send
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_0" desc="First label indicating that the page is being sent to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_0" desc="First animated text step indicating that the page is being sent to the device.">
         Sending
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_1" desc="Second label indicating that the page is being sent to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_1" desc="Second animated text step indicating that the page is being sent to the device.">
         Sending.
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_2" desc="Third label indicating that the page is being sent to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_2" desc="Third animated text step indicating that the page is being sent to the device.">
         Sending..
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_3" desc="Fourth label indicating that the page is being sent to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_3" desc="Fourth animated text step indicating that the page is being sent to the device.">
         Sending...
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENT" desc="Label indicating that the page has been sent to the device.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENT" desc="Text indicating that the page has been sent to the device.">
         Sent!
       </message>
-      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR" desc="Label indicating that an error has occured.">
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR" desc="Text indicating that an error occured sending the page to the device.">
+        Error
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR_MESSAGE" desc="The error message shown when an error occurs sending the page to the device.">
         An error occured while sending the page
       </message>
       <message name="IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP" desc="The tooltip for the Chrome To Mobile button.">

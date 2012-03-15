@@ -92,9 +92,6 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   views::TextButton* send_;
   views::TextButton* cancel_;
 
-  // The label indicating "Sending..."/"Sent" progress after invoking "Send".
-  views::Label* progress_label_;
-
   // An animation used to cycle through the "Sending..." status messages.
   scoped_ptr<ui::ThrobAnimation> progress_animation_;
 

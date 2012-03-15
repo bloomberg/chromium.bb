@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -34,14 +35,38 @@ using views::GridLayout;
 
 namespace {
 
+// The title label's color; matches the bookmark bubble's title.
+const SkColor kTitleColor = 0xFF062D75;
+
 // The millisecond duration of the "Sending..." progress throb animation.
 const size_t kProgressThrobDurationMS = 2400;
 
-// The bubble's margin for the "Sending..." and "Sent" states.
-const size_t kProgressMargin = 20;
+// The seconds to delay before automatically closing the bubble after sending.
+const int kAutoCloseDelay = 3;
 
-// The title label's color; matches the bookmark bubble's title.
-const SkColor kTitleColor = 0xFF062D75;
+// A custom TextButtonNativeThemeBorder with no left or right insets.
+class CheckboxNativeThemeBorder : public views::TextButtonNativeThemeBorder {
+ public:
+  explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate);
+  virtual ~CheckboxNativeThemeBorder();
+
+  // views::TextButtonNativeThemeBorder methods.
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CheckboxNativeThemeBorder);
+};
+
+CheckboxNativeThemeBorder::CheckboxNativeThemeBorder(
+    views::NativeThemeDelegate* delegate)
+    : views::TextButtonNativeThemeBorder(delegate) {}
+
+CheckboxNativeThemeBorder::~CheckboxNativeThemeBorder() {}
+
+void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
+  views::TextButtonNativeThemeBorder::GetInsets(insets);
+  insets->Set(insets->top(), 0, insets->bottom(), 0);
+}
 
 }  // namespace
 
@@ -130,7 +155,7 @@ void ChromeToMobileBubbleView::AnimationProgressed(
       message = IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_1;
     else if (animation_value < 0.75)
       message = IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_2;
-    progress_label_->SetText(l10n_util::GetStringUTF16(message));
+    send_->SetText(l10n_util::GetStringUTF16(message));
     // Run Layout but do not resize the bubble for each progress message.
     Layout();
     return;
@@ -159,9 +184,27 @@ void ChromeToMobileBubbleView::SnapshotGenerated(const FilePath& path,
 
 void ChromeToMobileBubbleView::OnSendComplete(bool success) {
   progress_animation_->Stop();
-  progress_label_->SetText(l10n_util::GetStringUTF16(success ?
-      IDS_CHROME_TO_MOBILE_BUBBLE_SENT : IDS_CHROME_TO_MOBILE_BUBBLE_ERROR));
-  SizeToContents();
+  send_->set_alignment(views::TextButtonBase::ALIGN_CENTER);
+
+  if (success) {
+    send_->SetText(l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SENT));
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&ChromeToMobileBubbleView::Hide),
+        base::TimeDelta::FromSeconds(kAutoCloseDelay));
+  } else {
+    send_->SetText(
+        l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_ERROR));
+    views::Label* error_label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_ERROR_MESSAGE));
+    error_label->SetEnabledColor(SK_ColorRED);
+    GridLayout* layout = static_cast<GridLayout*>(GetLayoutManager());
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    layout->StartRow(0, 0 /*single_column_set_id*/);
+    layout->AddView(error_label);
+    SizeToContents();
+  }
+
+  Layout();
 }
 
 void ChromeToMobileBubbleView::Init() {
@@ -189,11 +232,11 @@ void ChromeToMobileBubbleView::Init() {
       ChromeToMobileServiceFactory::GetForProfile(profile_)->mobiles();
   DCHECK_GT(mobiles.size(), 0U);
 
-  layout->StartRow(0, single_column_set_id);
   views::Label* title_label = new views::Label();
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   title_label->SetEnabledColor(kTitleColor);
+  layout->StartRow(0, single_column_set_id);
   layout->AddView(title_label);
 
   if (mobiles.size() == 1) {
@@ -206,13 +249,7 @@ void ChromeToMobileBubbleView::Init() {
     title_label->SetText(l10n_util::GetStringUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE));
 
-    const size_t radio_column_set_id = 2;
-    cs = layout->AddColumnSet(radio_column_set_id);
-    cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-    cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                  GridLayout::USE_PREF, 0, 0);
-
-    views::RadioButton* radio;
+    views::RadioButton* radio = NULL;
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     for (std::vector<DictionaryValue*>::const_iterator it = mobiles.begin();
          it != mobiles.end(); ++it) {
@@ -220,8 +257,9 @@ void ChromeToMobileBubbleView::Init() {
       (*it)->GetString("name", &name);
       radio = new views::RadioButton(name, 0);
       radio->set_listener(this);
+      radio->SetEnabledColor(SK_ColorBLACK);
       mobile_map_[radio] = *it;
-      layout->StartRow(0, radio_column_set_id);
+      layout->StartRow(0, single_column_set_id);
       layout->AddView(radio);
     }
     mobile_map_.begin()->first->SetChecked(true);
@@ -232,16 +270,19 @@ void ChromeToMobileBubbleView::Init() {
       l10n_util::GetStringFUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY,
           l10n_util::GetStringUTF16(
               IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_GENERATING)));
+  // Use CheckboxNativeThemeBorder to align the checkbox with the title label.
+  send_copy_->set_border(new CheckboxNativeThemeBorder(send_copy_));
+  send_copy_->SetEnabledColor(SK_ColorBLACK);
   send_copy_->SetEnabled(false);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(send_copy_);
 
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   send_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SEND));
   send_->SetIsDefault(true);
   cancel_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, button_column_set_id);
   layout->AddView(send_);
   layout->AddView(cancel_);
@@ -257,8 +298,7 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
       selected_mobile_(NULL),
       send_copy_(NULL),
       send_(NULL),
-      cancel_(NULL),
-      progress_label_(NULL) {
+      cancel_(NULL) {
   // Generate the MHTML snapshot now to report its size in the bubble.
   ChromeToMobileServiceFactory::GetForProfile(profile)->
       GenerateSnapshot(weak_ptr_factory_.GetWeakPtr());
@@ -284,31 +324,10 @@ void ChromeToMobileBubbleView::Send() {
       mobile_id, send_copy_->checked() ? snapshot_path_ : FilePath(),
       weak_ptr_factory_.GetWeakPtr());
 
-  // Re-initialize the view's contents to show progress sending the page.
-  RemoveAllChildViews(true);
-  send_copy_ = NULL;
-  send_ = NULL;
-  cancel_ = NULL;
-
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
-
-  const size_t single_column_set_id = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(single_column_set_id);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                GridLayout::USE_PREF, 0, 0);
-  set_margin(kProgressMargin);
-
-  // Use the final (longest) progress label string to resize the bubble.
-  layout->StartRow(0, single_column_set_id);
-  progress_label_ = new views::Label(
-    l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_3));
-  progress_label_->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
-  progress_label_->SetEnabledColor(kTitleColor);
-  layout->AddView(progress_label_);
-  SizeToContents();
-
+  // Update the view's contents to show the "Sending..." progress animation.
+  cancel_->SetEnabled(false);
+  send_->SetEnabled(false);
+  send_->set_alignment(views::TextButtonBase::ALIGN_LEFT);
   progress_animation_.reset(new ui::ThrobAnimation(this));
   progress_animation_->SetDuration(kProgressThrobDurationMS);
   progress_animation_->StartThrobbing(-1);
