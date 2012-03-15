@@ -6,9 +6,6 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -71,14 +68,6 @@ void HTMLPageScreen::OnNetworkTimeout() {
   VLOG(1) << "HTMLPageScreen::OnNetworkTimeout";
   // Just show what we have now. We shouldn't exit from the screen on timeout.
   StopTimeoutTimer();
-  // Enable input methods (e.g. Chinese, Japanese) so that users could input
-  // their first and last names.
-  if (g_browser_process) {
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
-    manager->EnableInputMethods(locale, input_method::kAllInputMethods, "");
-  }
   view()->ShowPageContent();
 }
 
@@ -86,14 +75,6 @@ void HTMLPageScreen::OnNetworkTimeout() {
 // HTMLPageScreen, private:
 void HTMLPageScreen::CloseScreen(ScreenObserver::ExitCodes code) {
   StopTimeoutTimer();
-  // Disable input methods since they are not necessary to input username and
-  // password.
-  if (g_browser_process) {
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    input_method::InputMethodManager* manager =
-        input_method::InputMethodManager::GetInstance();
-    manager->EnableInputMethods(locale, input_method::kKeyboardLayoutsOnly, "");
-  }
   delegate()->GetObserver()->OnExit(code);
 }
 
