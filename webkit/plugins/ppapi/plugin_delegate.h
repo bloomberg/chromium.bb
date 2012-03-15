@@ -297,6 +297,9 @@ class PluginDelegate {
   // Notification that the plugin requested to cancel the current composition.
   virtual void PluginRequestedCancelComposition(
       webkit::ppapi::PluginInstance* instance) = 0;
+  // Notification that the text selection in the given plugin is changed.
+  virtual void PluginSelectionChanged(
+      webkit::ppapi::PluginInstance* instance) = 0;
 
   // Notification that the given plugin has crashed. When a plugin crashes, all
   // instances associated with that plugin will notify that they've crashed via

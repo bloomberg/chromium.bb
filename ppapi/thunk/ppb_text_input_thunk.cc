@@ -31,16 +31,41 @@ void CancelCompositionText(PP_Instance instance) {
     enter.functions()->CancelCompositionText(instance);
 }
 
-const PPB_TextInput_Dev g_ppb_textinput_thunk = {
+void UpdateSurroundingText(PP_Instance instance, const char* text,
+                           uint32_t caret, uint32_t anchor) {
+  EnterFunction<PPB_TextInput_FunctionAPI> enter(instance, true);
+  if (enter.succeeded())
+    enter.functions()->UpdateSurroundingText(instance, text, caret, anchor);
+}
+
+void SelectionChanged(PP_Instance instance) {
+  EnterFunction<PPB_TextInput_FunctionAPI> enter(instance, true);
+  if (enter.succeeded())
+    enter.functions()->SelectionChanged(instance);
+}
+
+const PPB_TextInput_Dev_0_1 g_ppb_textinput_0_1_thunk = {
   &SetTextInputType,
   &UpdateCaretPosition,
   &CancelCompositionText,
 };
 
+const PPB_TextInput_Dev g_ppb_textinput_0_2_thunk = {
+  &SetTextInputType,
+  &UpdateCaretPosition,
+  &CancelCompositionText,
+  &UpdateSurroundingText,
+  &SelectionChanged,
+};
+
 }  // namespace
 
 const PPB_TextInput_Dev_0_1* GetPPB_TextInput_Dev_0_1_Thunk() {
-  return &g_ppb_textinput_thunk;
+  return &g_ppb_textinput_0_1_thunk;
+}
+
+const PPB_TextInput_Dev_0_2* GetPPB_TextInput_Dev_0_2_Thunk() {
+  return &g_ppb_textinput_0_2_thunk;
 }
 
 }  // namespace thunk

@@ -109,6 +109,7 @@
 #include "ppapi/proxy/ppp_messaging_proxy.h"
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
 #include "ppapi/proxy/ppp_printing_proxy.h"
+#include "ppapi/proxy/ppp_text_input_proxy.h"
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
 #include "ppapi/proxy/resource_creation_proxy.h"
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
@@ -222,6 +223,9 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_PPP_PRINTING, &ProxyFactory<PPP_Printing_Proxy>);
   AddPPP(PPP_PRINTING_DEV_INTERFACE, API_ID_PPP_PRINTING,
          PPP_Printing_Proxy::GetProxyInterface());
+  AddProxy(API_ID_PPP_TEXT_INPUT, &ProxyFactory<PPP_TextInput_Proxy>);
+  AddPPP(PPP_TEXTINPUT_DEV_INTERFACE, API_ID_PPP_TEXT_INPUT,
+         PPP_TextInput_Proxy::GetProxyInterface());
 
   // Old-style GetInfo PPP interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h

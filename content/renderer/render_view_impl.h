@@ -271,6 +271,9 @@ class RenderViewImpl : public RenderWidget,
   // Cancels current composition.
   void PpapiPluginCancelComposition();
 
+  // Informs the render view that a PPAPI plugin has changed selection.
+  void PpapiPluginSelectionChanged();
+
   // Retrieves the current caret position if a PPAPI plugin has focus.
   bool GetPpapiPluginCaretBounds(gfx::Rect* rect);
 

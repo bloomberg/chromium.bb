@@ -415,6 +415,12 @@ void PepperPluginDelegateImpl::PluginRequestedCancelComposition(
     render_view_->PpapiPluginCancelComposition();
 }
 
+void PepperPluginDelegateImpl::PluginSelectionChanged(
+    webkit::ppapi::PluginInstance* instance) {
+  if (focused_plugin_ == instance && render_view_)
+    render_view_->PpapiPluginSelectionChanged();
+}
+
 void PepperPluginDelegateImpl::OnImeSetComposition(
     const string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,
@@ -484,6 +490,13 @@ ui::TextInputType PepperPluginDelegateImpl::GetTextInputType() const {
   if (!focused_plugin_)
     return ui::TEXT_INPUT_TYPE_NONE;
   return focused_plugin_->text_input_type();
+}
+
+void PepperPluginDelegateImpl::GetSurroundingText(string16* text,
+                                                  ui::Range* range) const {
+  if (!focused_plugin_)
+    return;
+  return focused_plugin_->GetSurroundingText(text, range);
 }
 
 bool PepperPluginDelegateImpl::IsPluginAcceptingCompositionEvents() const {

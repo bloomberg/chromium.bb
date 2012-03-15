@@ -1,9 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef PPAPI_PROXY_PPB_TEXT_INPUT_PROXY_H_
 #define PPAPI_PROXY_PPB_TEXT_INPUT_PROXY_H_
+
+#include <string>
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
@@ -31,6 +33,11 @@ class PPB_TextInput_Proxy
                                    const PP_Rect& caret,
                                    const PP_Rect& bounding_box) OVERRIDE;
   virtual void CancelCompositionText(PP_Instance instance) OVERRIDE;
+  virtual void SelectionChanged(PP_Instance instance) OVERRIDE;
+  virtual void UpdateSurroundingText(PP_Instance instance,
+                                     const char* text,
+                                     uint32_t caret,
+                                     uint32_t anchor) OVERRIDE;
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -44,6 +51,11 @@ class PPB_TextInput_Proxy
                                 PP_Rect caret,
                                 PP_Rect bounding_box);
   void OnMsgCancelCompositionText(PP_Instance instance);
+  void OnMsgSelectionChanged(PP_Instance instance);
+  void OnMsgUpdateSurroundingText(PP_Instance instance,
+                                  const std::string& text,
+                                  uint32_t caret,
+                                  uint32_t anchor);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TextInput_Proxy);
 };

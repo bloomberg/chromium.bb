@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,18 @@ void PPB_TextInput_Impl::UpdateCaretPosition(PP_Instance instance,
 void PPB_TextInput_Impl::CancelCompositionText(PP_Instance instance) {
   instance_->delegate()->PluginRequestedCancelComposition(instance_);
 }
+
+void PPB_TextInput_Impl::SelectionChanged(PP_Instance instance) {
+  instance_->SelectionChanged();
+}
+
+void PPB_TextInput_Impl::UpdateSurroundingText(PP_Instance instance,
+                                               const char* text,
+                                               uint32_t caret,
+                                               uint32_t anchor) {
+  instance_->UpdateSurroundingText(text, caret, anchor);
+}
+
 
 }  // namespace ppapi
 }  // namespace webkit

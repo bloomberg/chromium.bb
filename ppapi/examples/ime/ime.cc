@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,15 +92,17 @@ class TextFieldStatusHandler {
   virtual ~TextFieldStatusHandler() {}
   virtual void FocusIn(const pp::Rect& caret, const pp::Rect& bounding_box) {}
   virtual void FocusOut() {}
+  virtual void UpdateSelection(const std::string& text) {}
 };
 
-class TextFieldStatusNotifyingHanlder : public TextFieldStatusHandler {
+class TextFieldStatusNotifyingHandler : public TextFieldStatusHandler {
  public:
-  explicit TextFieldStatusNotifyingHanlder(pp::Instance* instance)
-      : instance_(instance),
-        textinput_control_(instance) {}
+  explicit TextFieldStatusNotifyingHandler(pp::Instance* instance)
+      : textinput_control_(instance) {
+  }
 
  protected:
+  // Implement TextFieldStatusHandler.
   virtual void FocusIn(const pp::Rect& caret, const pp::Rect& bounding_box) {
     textinput_control_.SetTextInputType(PP_TEXTINPUT_TYPE_TEXT);
     textinput_control_.UpdateCaretPosition(caret, bounding_box);
@@ -109,10 +111,22 @@ class TextFieldStatusNotifyingHanlder : public TextFieldStatusHandler {
     textinput_control_.CancelCompositionText();
     textinput_control_.SetTextInputType(PP_TEXTINPUT_TYPE_NONE);
   }
+  virtual void UpdateSelection(const std::string& text) {
+    textinput_control_.SetSelectionText(text);
+    textinput_control_.SelectionChanged();
+  }
 
  private:
-  pp::Instance* instance_;
-  pp::TextInput_Dev textinput_control_;
+  class MyTextInput : public pp::TextInput_Dev {
+   public:
+    MyTextInput(pp::Instance* instance) : pp::TextInput_Dev(instance) {}
+    virtual void RequestSurroundingText(uint32_t characters) {
+      UpdateSurroundingText(selection_text_, 0, selection_text_.size());
+    }
+    void SetSelectionText(const std::string& text) { selection_text_ = text; }
+    std::string selection_text_;
+  };
+  MyTextInput textinput_control_;
 };
 
 // Hand-made text field for demonstrating text input API.
@@ -361,6 +375,9 @@ class MyTextField {
       int px = font_.MeasureSimpleText(str);
       pp::Rect caret(area_.x() + px, area_.y(), 0, area_.height() + 2);
       status_handler_->FocusIn(caret, area_);
+      status_handler_->UpdateSelection(
+          utf8_text_.substr(SelectionLeft(),
+                            SelectionRight() - SelectionLeft()));
     }
   }
   size_t SelectionLeft() const {
@@ -430,14 +447,14 @@ class MyInstance : public pp::Instance {
           // say, show virtual keyboards or IMEs only at appropriate timing
           // that the plugin does need to accept text input.
           delete status_handler_;
-          status_handler_ = new TextFieldStatusNotifyingHanlder(this);
+          status_handler_ = new TextFieldStatusNotifyingHandler(this);
         } else if (argv[i] == std::string("full")) {
           // Demonstrating the behavior of plugins fully supporting IME.
           //
           // It notifies updates of caret positions to the browser,
           // and handles all text input events by itself.
           delete status_handler_;
-          status_handler_ = new TextFieldStatusNotifyingHanlder(this);
+          status_handler_ = new TextFieldStatusNotifyingHandler(this);
           RequestInputEvents(PP_INPUTEVENT_CLASS_IME);
         }
         break;

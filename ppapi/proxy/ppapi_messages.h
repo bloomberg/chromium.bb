@@ -513,6 +513,11 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_IsScalingDisabled,
                            PP_Instance /* instance */,
                            bool /* result */)
 
+// PPP_TextInput.
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPTextInput_RequestSurroundingText,
+                   PP_Instance /* instance */,
+                   uint32_t /* desired_number_of_characters */)
+
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
 IPC_MESSAGE_ROUTED1(
@@ -943,6 +948,13 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBTextInput_UpdateCaretPosition,
                     PP_Rect /* bounding_box */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_CancelCompositionText,
                     PP_Instance /* instance */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_SelectionChanged,
+                    PP_Instance /* instance */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBTextInput_UpdateSurroundingText,
+                    PP_Instance /* instance */,
+                    std::string /* text */,
+                    uint32_t /* caret */,
+                    uint32_t /* anchor */)
 
 // PPB_URLLoader.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_Create,

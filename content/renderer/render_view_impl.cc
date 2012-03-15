@@ -3650,34 +3650,42 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   if (!frame)
     return;
 
-  size_t location, length;
-  if (!webview()->caretOrSelectionRange(&location, &length))
-    return;
-
   string16 text;
   size_t offset;
-  ui::Range range(location, location + length);
+  ui::Range range;
 
-  if (webview()->textInputType() != WebKit::WebTextInputTypeNone) {
-    // If current focused element is editable, we will send 100 more chars
-    // before and after selection. It is for input method surrounding text
-    // feature.
-    if (location > kExtraCharsBeforeAndAfterSelection)
-      offset = location - kExtraCharsBeforeAndAfterSelection;
-    else
-      offset = 0;
-    length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
-    WebRange webrange = WebRange::fromDocumentRange(frame, offset, length);
-    if (!webrange.isNull())
-      text = WebRange::fromDocumentRange(frame, offset, length).toPlainText();
+  if (pepper_delegate_.IsPluginFocused()) {
+    pepper_delegate_.GetSurroundingText(&text, &range);
+    offset = 0; // Pepper API does not support offset reporting.
+    // TODO(kinaba): cut as needed.
   } else {
-    offset = location;
-    text = frame->selectionAsText();
-    // http://crbug.com/101435
-    // In some case, frame->selectionAsText() returned text's length is not
-    // equal to the length returned from webview()->caretOrSelectionRange().
-    // So we have to set the range according to text.length().
-    range.set_end(range.start() + text.length());
+    size_t location, length;
+    if (!webview()->caretOrSelectionRange(&location, &length))
+      return;
+
+    range = ui::Range(location, location + length);
+
+    if (webview()->textInputType() != WebKit::WebTextInputTypeNone) {
+      // If current focused element is editable, we will send 100 more chars
+      // before and after selection. It is for input method surrounding text
+      // feature.
+      if (location > kExtraCharsBeforeAndAfterSelection)
+        offset = location - kExtraCharsBeforeAndAfterSelection;
+      else
+        offset = 0;
+      length = location + length - offset + kExtraCharsBeforeAndAfterSelection;
+      WebRange webrange = WebRange::fromDocumentRange(frame, offset, length);
+      if (!webrange.isNull())
+        text = WebRange::fromDocumentRange(frame, offset, length).toPlainText();
+    } else {
+      offset = location;
+      text = frame->selectionAsText();
+      // http://crbug.com/101435
+      // In some case, frame->selectionAsText() returned text's length is not
+      // equal to the length returned from webview()->caretOrSelectionRange().
+      // So we have to set the range according to text.length().
+      range.set_end(range.start() + text.length());
+    }
   }
 
   // Sometimes we get repeated didChangeSelection calls from webkit when
@@ -4765,6 +4773,10 @@ void RenderViewImpl::PpapiPluginCancelComposition() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   ui::Range range(ui::Range::InvalidRange());
   Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+}
+
+void RenderViewImpl::PpapiPluginSelectionChanged() {
+  SyncSelectionIfRequired();
 }
 
 void RenderViewImpl::OnImeSetComposition(

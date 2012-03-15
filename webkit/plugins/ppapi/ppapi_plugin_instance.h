@@ -19,6 +19,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -63,6 +64,10 @@ namespace ppapi {
 struct InputEventData;
 struct PPP_Instance_Combined;
 class Resource;
+}
+
+namespace ui {
+class Range;
 }
 
 namespace webkit {
@@ -181,11 +186,15 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void UpdateCaretPosition(const gfx::Rect& caret,
                            const gfx::Rect& bounding_box);
   void SetTextInputType(ui::TextInputType type);
+  void SelectionChanged();
+  void UpdateSurroundingText(const std::string& text,
+                             size_t caret, size_t anchor);
 
   // Gets the current text input status.
   ui::TextInputType text_input_type() const { return text_input_type_; }
   gfx::Rect GetCaretBounds() const;
   bool IsPluginAcceptingCompositionEvents() const;
+  void GetSurroundingText(string16* text, ui::Range* range) const;
 
   // Notifications about focus changes, see has_webkit_focus_ below.
   void SetWebKitFocus(bool has_focus);
@@ -217,6 +226,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   string16 GetSelectedText(bool html);
   string16 GetLinkAtPosition(const gfx::Point& point);
+  bool RequestSurroundingText(size_t desired_number_of_characters);
   void Zoom(double factor, bool text_only);
   bool StartFind(const string16& search_text,
                  bool case_sensitive,
@@ -402,6 +412,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool LoadPrintInterface();
   bool LoadPrivateInterface();
   bool LoadSelectionInterface();
+  bool LoadTextInputInterface();
   bool LoadZoomInterface();
 
   // Determines if we think the plugin has focus, both content area and webkit
@@ -530,6 +541,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   const PPP_Instance_Private* plugin_private_interface_;
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Selection_Dev* plugin_selection_interface_;
+  const PPP_TextInput_Dev* plugin_textinput_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // Flags indicating whether we have asked this plugin instance for the
@@ -623,6 +635,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   gfx::Rect text_input_caret_;
   gfx::Rect text_input_caret_bounds_;
   bool text_input_caret_set_;
+
+  // Text selection status.
+  std::string surrounding_text_;
+  size_t selection_caret_;
+  size_t selection_anchor_;
 
   PP_CompletionCallback lock_mouse_callback_;
 

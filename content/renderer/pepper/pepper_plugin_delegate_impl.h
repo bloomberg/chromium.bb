@@ -47,6 +47,10 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+namespace ui {
+class Range;
+}
+
 namespace webkit {
 struct WebPluginInfo;
 namespace ppapi {
@@ -130,6 +134,7 @@ class PepperPluginDelegateImpl
   ui::TextInputType GetTextInputType() const;
   bool IsPluginAcceptingCompositionEvents() const;
   bool CanComposeInline() const;
+  void GetSurroundingText(string16* text, ui::Range* range) const;
 
   // IME events.
   void OnImeSetComposition(
@@ -150,6 +155,8 @@ class PepperPluginDelegateImpl
   virtual void PluginCaretPositionChanged(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginRequestedCancelComposition(
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void PluginSelectionChanged(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void InstanceCreated(

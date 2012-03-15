@@ -34,6 +34,9 @@ void MockPluginDelegate::PluginRequestedCancelComposition(
     PluginInstance* instance) {
 }
 
+void MockPluginDelegate::PluginSelectionChanged(PluginInstance* instance) {
+}
+
 void MockPluginDelegate::PluginCrashed(PluginInstance* instance) {
 }
 

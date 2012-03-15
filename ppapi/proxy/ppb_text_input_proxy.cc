@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,19 @@ void PPB_TextInput_Proxy::CancelCompositionText(PP_Instance instance) {
       API_ID_PPB_TEXT_INPUT, instance));
 }
 
+void PPB_TextInput_Proxy::SelectionChanged(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBTextInput_SelectionChanged(
+      API_ID_PPB_TEXT_INPUT, instance));
+}
+
+void PPB_TextInput_Proxy::UpdateSurroundingText(PP_Instance instance,
+                                                const char* text,
+                                                uint32_t caret,
+                                                uint32_t anchor) {
+  dispatcher()->Send(new PpapiHostMsg_PPBTextInput_UpdateSurroundingText(
+      API_ID_PPB_TEXT_INPUT, instance, text, caret, anchor));
+}
+
 bool PPB_TextInput_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_TextInput_Proxy, msg)
@@ -51,6 +64,10 @@ bool PPB_TextInput_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgUpdateCaretPosition)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTextInput_CancelCompositionText,
                         OnMsgCancelCompositionText)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTextInput_SelectionChanged,
+                        OnMsgSelectionChanged)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTextInput_UpdateSurroundingText,
+                        OnMsgUpdateSurroundingText)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -78,6 +95,24 @@ void PPB_TextInput_Proxy::OnMsgCancelCompositionText(PP_Instance instance) {
                                                                      true);
   if (enter.succeeded())
     enter.functions()->CancelCompositionText(instance);
+}
+
+void PPB_TextInput_Proxy::OnMsgSelectionChanged(PP_Instance instance) {
+  ppapi::thunk::EnterFunctionNoLock<PPB_TextInput_FunctionAPI> enter(instance,
+                                                                     true);
+  if (enter.succeeded())
+    enter.functions()->SelectionChanged(instance);
+}
+
+void PPB_TextInput_Proxy::OnMsgUpdateSurroundingText(PP_Instance instance,
+                                                     const std::string& text,
+                                                     uint32_t caret,
+                                                     uint32_t anchor) {
+  ppapi::thunk::EnterFunctionNoLock<PPB_TextInput_FunctionAPI> enter(instance,
+                                                                     true);
+  if (enter.succeeded())
+    enter.functions()->UpdateSurroundingText(instance,
+                                             text.c_str(), caret, anchor);
 }
 
 }  // namespace proxy

@@ -22,6 +22,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void PluginTextInputTypeChanged(PluginInstance* instance);
   virtual void PluginCaretPositionChanged(PluginInstance* instance);
   virtual void PluginRequestedCancelComposition(PluginInstance* instance);
+  virtual void PluginSelectionChanged(PluginInstance* instance);
   virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);
   virtual void InstanceDeleted(PluginInstance* instance);

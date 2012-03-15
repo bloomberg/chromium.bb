@@ -17,6 +17,7 @@
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
+#include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -55,6 +56,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/range/range.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
@@ -154,6 +156,11 @@ namespace {
 // Plugins need to explicitly opt out the text input mode if they know
 // that they don't accept texts.
 const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
+
+// The length of text to request as a surrounding context of selection.
+// For now, the value is copied from the one with render_view_impl.cc.
+// TODO(kinaba) implement a way to dynamically sync the requirement.
+static const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
@@ -286,6 +293,7 @@ PluginInstance::PluginInstance(
       plugin_private_interface_(NULL),
       plugin_pdf_interface_(NULL),
       plugin_selection_interface_(NULL),
+      plugin_textinput_interface_(NULL),
       plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
@@ -303,6 +311,8 @@ PluginInstance::PluginInstance(
       text_input_caret_(0, 0, 0, 0),
       text_input_caret_bounds_(0, 0, 0, 0),
       text_input_caret_set_(false),
+      selection_caret_(0),
+      selection_anchor_(0),
       lock_mouse_callback_(PP_BlockUntilComplete()),
       pending_user_gesture_(0.0) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -636,6 +646,31 @@ void PluginInstance::SetTextInputType(ui::TextInputType type) {
   delegate()->PluginTextInputTypeChanged(this);
 }
 
+void PluginInstance::SelectionChanged() {
+  // TODO(kinaba): currently the browser always calls RequestSurroundingText.
+  // It can be optimized so that it won't call it back until the information
+  // is really needed.
+  RequestSurroundingText(kExtraCharsBeforeAndAfterSelection);
+}
+
+void PluginInstance::UpdateSurroundingText(const std::string& text,
+                                           size_t caret, size_t anchor) {
+  surrounding_text_ = text;
+  selection_caret_ = caret;
+  selection_anchor_ = anchor;
+  delegate()->PluginSelectionChanged(this);
+}
+
+void PluginInstance::GetSurroundingText(string16* text,
+                                        ui::Range* range) const {
+  std::vector<size_t> offsets;
+  offsets.push_back(selection_anchor_);
+  offsets.push_back(selection_caret_);
+  *text = UTF8ToUTF16AndAdjustOffsets(surrounding_text_, &offsets);
+  range->set_start(offsets[0] == string16::npos ? text->size() : offsets[0]);
+  range->set_end(offsets[1] == string16::npos ? text->size() : offsets[1]);
+}
+
 bool PluginInstance::IsPluginAcceptingCompositionEvents() const {
   return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_IME) ||
       (input_event_mask_ & PP_INPUTEVENT_CLASS_IME);
@@ -904,6 +939,17 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   return link;
 }
 
+bool PluginInstance::RequestSurroundingText(
+    size_t desired_number_of_characters) {
+  // Keep a reference on the stack. See NOTE above.
+  scoped_refptr<PluginInstance> ref(this);
+  if (!LoadTextInputInterface())
+    return false;
+  plugin_textinput_interface_->RequestSurroundingText(
+      pp_instance(), desired_number_of_characters);
+  return true;
+}
+
 void PluginInstance::Zoom(double factor, bool text_only) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
@@ -1018,6 +1064,16 @@ bool PluginInstance::LoadSelectionInterface() {
             PPP_SELECTION_DEV_INTERFACE));
   }
   return !!plugin_selection_interface_;
+}
+
+bool PluginInstance::LoadTextInputInterface() {
+  if (!plugin_textinput_interface_) {
+    plugin_textinput_interface_ =
+        static_cast<const PPP_TextInput_Dev*>(module_->GetPluginInterface(
+            PPP_TEXTINPUT_DEV_INTERFACE));
+  }
+
+  return !!plugin_textinput_interface_;
 }
 
 bool PluginInstance::LoadZoomInterface() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,11 @@ class PPB_TextInput_Impl
                                    const PP_Rect& caret,
                                    const PP_Rect& bounding_box) OVERRIDE;
   virtual void CancelCompositionText(PP_Instance instance) OVERRIDE;
+  virtual void SelectionChanged(PP_Instance instance) OVERRIDE;
+  virtual void UpdateSurroundingText(PP_Instance instance,
+                                     const char* text,
+                                     uint32_t caret,
+                                     uint32_t anchor) OVERRIDE;
 
  private:
   PluginInstance* instance_;
