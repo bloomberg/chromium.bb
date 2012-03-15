@@ -104,7 +104,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     client_socket_ = socket.Pass();
   }
 
-  MessageLoopForIO message_loop_;
+  MessageLoop message_loop_;
 
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   std::string host_cert_;

@@ -49,7 +49,7 @@ class AuthenticatorTestBase : public testing::Test {
   void OnClientConnected(net::Error error,
                          scoped_ptr<net::StreamSocket> socket);
 
-  MessageLoopForIO message_loop_;
+  MessageLoop message_loop_;
 
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   std::string host_cert_;

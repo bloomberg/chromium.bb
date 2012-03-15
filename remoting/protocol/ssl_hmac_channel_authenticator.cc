@@ -97,8 +97,9 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     // because we use self-signed certs. Disable it so that the SSL
     // layer doesn't try to initialize OCSP (OCSP works only on the IO
     // thread).
-    ssl_config.allowed_bad_certs.push_back(cert_and_status);
+    ssl_config.cert_io_enabled = false;
     ssl_config.rev_checking_enabled = false;
+    ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     net::SSLClientSocketContext context;
