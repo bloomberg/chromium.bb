@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,14 +14,19 @@
 
 class TabContentsWrapper;
 
+namespace ui {
+class Accelerator;
+class AcceleratorTarget;
+}  // namespace ui
+
 namespace views {
 namespace internal {
 class NativeWidgetDelegate;
-}
+}  // namespace internal
 class NativeWidget;
 class NonClientFrameView;
 class WidgetDelegate;
-}
+}  // namespace views
 
 class NativeConstrainedWindowDelegate {
  public:
@@ -56,7 +61,8 @@ class NativeConstrainedWindow {
 //
 class ConstrainedWindowViews : public views::Widget,
                                public ConstrainedWindow,
-                               public NativeConstrainedWindowDelegate {
+                               public NativeConstrainedWindowDelegate,
+                               public ui::AcceleratorTarget {
  public:
   ConstrainedWindowViews(TabContentsWrapper* wrapper,
                          views::WidgetDelegate* widget_delegate);
@@ -70,6 +76,10 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool CanHandleAccelerators() const OVERRIDE;
 
  private:
   // Overridden from views::Widget:

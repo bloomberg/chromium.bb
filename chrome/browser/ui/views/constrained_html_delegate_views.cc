@@ -9,9 +9,13 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/event.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 
 using content::WebContents;
@@ -40,6 +44,17 @@ class ConstrainedHtmlUIDelegateImplViews
   // HtmlDialogTabContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
     window()->CloseConstrainedWindow();
+  }
+
+  // contents::WebContentsDelegate
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {
+#if defined(USE_AURA)
+    aura::KeyEvent aura_event(event.os_event->native_event(), false);
+    window()->GetNativeWindow()->delegate()->OnKeyEvent(&aura_event);
+#elif defined(OS_WIN)
+    // TODO(kochi): Fill this when this is necessary.
+#endif
   }
 
  private:

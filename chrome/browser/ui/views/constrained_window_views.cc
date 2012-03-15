@@ -24,6 +24,8 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "net/base/net_util.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -589,6 +591,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->UnregisterAccelerators(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,6 +606,13 @@ void ConstrainedWindowViews::ShowConstrainedWindow() {
     helper->delegate()->WillShowConstrainedWindow(wrapper_);
   Show();
   FocusConstrainedWindow();
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager) {
+    focus_manager->RegisterAccelerator(
+        ui::Accelerator(ui::VKEY_ESCAPE, false, false, false),
+        ui::AcceleratorManager::kNormalPriority,
+        this);
+  }
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
@@ -621,6 +633,17 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
 
 gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
+}
+
+bool ConstrainedWindowViews::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  CloseConstrainedWindow();
+  return true;
+}
+
+bool ConstrainedWindowViews::CanHandleAccelerators() const {
+  return IsVisible();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
