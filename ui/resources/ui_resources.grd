@@ -175,25 +175,146 @@
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="aura/small_shadow_bottom.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="aura/small_shadow_bottom_right.png" type="BINDATA" />
         <include name="IDR_AURA_STATUS_MOCK" file="aura/statusbar.png" type="BINDATA" />
-        <!-- TODO(bshe): Change the file names to follow the IDR naming rules. -->
-        <include name="IDR_AURA_WALLPAPER" file="aura/wallpaper_1.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_THUMB" file="aura/wallpaper_1_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_1" file="aura/wallpaper_2.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_1_THUMB" file="aura/wallpaper_2_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_2" file="aura/wallpaper_3.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_2_THUMB" file="aura/wallpaper_3_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_3" file="aura/wallpaper_4.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_3_THUMB" file="aura/wallpaper_4_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_4" file="aura/wallpaper_5.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_4_THUMB" file="aura/wallpaper_5_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_5" file="aura/wallpaper_6.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_5_THUMB" file="aura/wallpaper_6_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_6" file="aura/wallpaper_7.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_6_THUMB" file="aura/wallpaper_7_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_7" file="aura/wallpaper_8.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_7_THUMB" file="aura/wallpaper_8_thumb.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_8" file="aura/wallpaper_9.jpg" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPER_8_THUMB" file="aura/wallpaper_9_thumb.jpg" type="BINDATA" />
+      </if>
+
+      <!-- Wallpapers used by Ash. -->
+      <if expr="pp_ifdef('use_ash')">
+        <include name="IDR_AURA_WALLPAPERS_ROMAINGUY_0" file="aura/wallpapers/romainguy_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_ROMAINGUY_0_THUMB" file="aura/wallpapers/romainguy_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_0" file="aura/wallpapers/wallpaper_0.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_0_THUMB" file="aura/wallpapers/wallpaper_0_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_1" file="aura/wallpapers/wallpaper_1.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_1_THUMB" file="aura/wallpapers/wallpaper_1_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_2" file="aura/wallpapers/wallpaper_2.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_2_THUMB" file="aura/wallpapers/wallpaper_2_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_3" file="aura/wallpapers/wallpaper_3.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_3_THUMB" file="aura/wallpapers/wallpaper_3_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_4" file="aura/wallpapers/wallpaper_4.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_4_THUMB" file="aura/wallpapers/wallpaper_4_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_5" file="aura/wallpapers/wallpaper_5.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_5_THUMB" file="aura/wallpapers/wallpaper_5_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_6" file="aura/wallpapers/wallpaper_6.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_6_THUMB" file="aura/wallpapers/wallpaper_6_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_7" file="aura/wallpapers/wallpaper_7.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_7_THUMB" file="aura/wallpapers/wallpaper_7_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_8" file="aura/wallpapers/wallpaper_8.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_8_THUMB" file="aura/wallpapers/wallpaper_8_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_9" file="aura/wallpapers/wallpaper_9.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_9_THUMB" file="aura/wallpapers/wallpaper_9_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_10" file="aura/wallpapers/wallpaper_10.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_10_THUMB" file="aura/wallpapers/wallpaper_10_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_11" file="aura/wallpapers/wallpaper_11.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_11_THUMB" file="aura/wallpapers/wallpaper_11_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_12" file="aura/wallpapers/wallpaper_12.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALLPAPER_12_THUMB" file="aura/wallpapers/wallpaper_12_thumb.png" type="BINDATA" />
+      </if>
+
+      <!-- Wallpapers available to Ash when building Official ChromeOS. -->
+      <if expr="pp_ifdef('use_ash') and pp_ifdef('_google_chrome')">
+        <include name="IDR_AURA_WALLPAPERS_CHARLESDAVEY_0" file="aura/google_wallpapers/charlesdavey_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_CHARLESDAVEY_0_THUMB" file="aura/google_wallpapers/charlesdavey_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_0" file="aura/google_wallpapers/johannesvandonge_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_0_THUMB" file="aura/google_wallpapers/johannesvandonge_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_1" file="aura/google_wallpapers/johannesvandonge_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_1_THUMB" file="aura/google_wallpapers/johannesvandonge_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_2" file="aura/google_wallpapers/johannesvandonge_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_JOHANNESVANDONGE_2_THUMB" file="aura/google_wallpapers/johannesvandonge_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_0" file="aura/google_wallpapers/mariomoreno_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_0_THUMB" file="aura/google_wallpapers/mariomoreno_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_1" file="aura/google_wallpapers/mariomoreno_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_1_THUMB" file="aura/google_wallpapers/mariomoreno_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_2" file="aura/google_wallpapers/mariomoreno_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_2_THUMB" file="aura/google_wallpapers/mariomoreno_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_3" file="aura/google_wallpapers/mariomoreno_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_3_THUMB" file="aura/google_wallpapers/mariomoreno_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_4" file="aura/google_wallpapers/mariomoreno_4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_4_THUMB" file="aura/google_wallpapers/mariomoreno_4_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_5" file="aura/google_wallpapers/mariomoreno_5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_5_THUMB" file="aura/google_wallpapers/mariomoreno_5_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_6" file="aura/google_wallpapers/mariomoreno_6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_6_THUMB" file="aura/google_wallpapers/mariomoreno_6_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_7" file="aura/google_wallpapers/mariomoreno_7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_7_THUMB" file="aura/google_wallpapers/mariomoreno_7_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_8" file="aura/google_wallpapers/mariomoreno_8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARIOMORENO_8_THUMB" file="aura/google_wallpapers/mariomoreno_8_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_0" file="aura/google_wallpapers/markbridger_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_0_THUMB" file="aura/google_wallpapers/markbridger_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_1" file="aura/google_wallpapers/markbridger_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_1_THUMB" file="aura/google_wallpapers/markbridger_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_2" file="aura/google_wallpapers/markbridger_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_2_THUMB" file="aura/google_wallpapers/markbridger_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_3" file="aura/google_wallpapers/markbridger_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_3_THUMB" file="aura/google_wallpapers/markbridger_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_4" file="aura/google_wallpapers/markbridger_4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_4_THUMB" file="aura/google_wallpapers/markbridger_4_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_5" file="aura/google_wallpapers/markbridger_5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_5_THUMB" file="aura/google_wallpapers/markbridger_5_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_6" file="aura/google_wallpapers/markbridger_6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MARKBRIDGER_6_THUMB" file="aura/google_wallpapers/markbridger_6_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_0" file="aura/google_wallpapers/michelbricteux_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_0_THUMB" file="aura/google_wallpapers/michelbricteux_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_1" file="aura/google_wallpapers/michelbricteux_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_1_THUMB" file="aura/google_wallpapers/michelbricteux_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_2" file="aura/google_wallpapers/michelbricteux_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_2_THUMB" file="aura/google_wallpapers/michelbricteux_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_3" file="aura/google_wallpapers/michelbricteux_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MICHELBRICTEUX_3_THUMB" file="aura/google_wallpapers/michelbricteux_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_0" file="aura/google_wallpapers/mikereyfman_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_0_THUMB" file="aura/google_wallpapers/mikereyfman_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_1" file="aura/google_wallpapers/mikereyfman_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_1_THUMB" file="aura/google_wallpapers/mikereyfman_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_2" file="aura/google_wallpapers/mikereyfman_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_2_THUMB" file="aura/google_wallpapers/mikereyfman_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_3" file="aura/google_wallpapers/mikereyfman_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_3_THUMB" file="aura/google_wallpapers/mikereyfman_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_4" file="aura/google_wallpapers/mikereyfman_4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_4_THUMB" file="aura/google_wallpapers/mikereyfman_4_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_5" file="aura/google_wallpapers/mikereyfman_5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_5_THUMB" file="aura/google_wallpapers/mikereyfman_5_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_6" file="aura/google_wallpapers/mikereyfman_6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MIKEREYFMAN_6_THUMB" file="aura/google_wallpapers/mikereyfman_6_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_0" file="aura/google_wallpapers/neilkremer_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_0_THUMB" file="aura/google_wallpapers/neilkremer_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_1" file="aura/google_wallpapers/neilkremer_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_1_THUMB" file="aura/google_wallpapers/neilkremer_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_2" file="aura/google_wallpapers/neilkremer_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NEILKREMER_2_THUMB" file="aura/google_wallpapers/neilkremer_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_OLEGZHUKOV_0" file="aura/google_wallpapers/olegzhukov_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_OLEGZHUKOV_0_THUMB" file="aura/google_wallpapers/olegzhukov_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_OLEGZHUKOV_1" file="aura/google_wallpapers/olegzhukov_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_OLEGZHUKOV_1_THUMB" file="aura/google_wallpapers/olegzhukov_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_0" file="aura/google_wallpapers/pauloflop_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_0_THUMB" file="aura/google_wallpapers/pauloflop_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_1" file="aura/google_wallpapers/pauloflop_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_1_THUMB" file="aura/google_wallpapers/pauloflop_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_2" file="aura/google_wallpapers/pauloflop_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_2_THUMB" file="aura/google_wallpapers/pauloflop_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_3" file="aura/google_wallpapers/pauloflop_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_3_THUMB" file="aura/google_wallpapers/pauloflop_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_4" file="aura/google_wallpapers/pauloflop_4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_4_THUMB" file="aura/google_wallpapers/pauloflop_4_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_5" file="aura/google_wallpapers/pauloflop_5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PAULOFLOP_5_THUMB" file="aura/google_wallpapers/pauloflop_5_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_0" file="aura/google_wallpapers/stefanoronchi_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_0_THUMB" file="aura/google_wallpapers/stefanoronchi_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_1" file="aura/google_wallpapers/stefanoronchi_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_1_THUMB" file="aura/google_wallpapers/stefanoronchi_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_2" file="aura/google_wallpapers/stefanoronchi_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_2_THUMB" file="aura/google_wallpapers/stefanoronchi_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_3" file="aura/google_wallpapers/stefanoronchi_3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_STEFANORONCHI_3_THUMB" file="aura/google_wallpapers/stefanoronchi_3_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_0" file="aura/google_wallpapers/vitaliprokopenko_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_0_THUMB" file="aura/google_wallpapers/vitaliprokopenko_0_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_1" file="aura/google_wallpapers/vitaliprokopenko_1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_1_THUMB" file="aura/google_wallpapers/vitaliprokopenko_1_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_2" file="aura/google_wallpapers/vitaliprokopenko_2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_2_THUMB" file="aura/google_wallpapers/vitaliprokopenko_2_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALTERSOESTBERGEN_0" file="aura/google_wallpapers/waltersoestbergen_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_WALTERSOESTBERGEN_0_THUMB" file="aura/google_wallpapers/waltersoestbergen_0_thumb.jpg" type="BINDATA" />
+      </if>
+
+      <!-- Remaining images only used by Aura. -->
+      <if expr="pp_ifdef('use_aura')">
         <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" type="BINDATA" />

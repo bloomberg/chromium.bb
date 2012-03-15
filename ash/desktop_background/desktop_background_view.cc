@@ -77,10 +77,8 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
        0, 0, width(), height(),
        true);
   } else {
-    // Center the wallpaper in the destination rectangle (Skia will crop
-    // as needed). We might decide later to tile small solid color images.
-    canvas->DrawBitmapInt(wallpaper_, (width() - wallpaper_.width()) / 2,
-        (height() - wallpaper_.height()) / 2);
+    // Tiling.
+    canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
   }
 }
 
