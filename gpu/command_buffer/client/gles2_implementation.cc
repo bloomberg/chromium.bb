@@ -607,7 +607,8 @@ GLES2Implementation::GLES2Implementation(
       sharing_resources_(share_resources),
       bind_generates_resource_(bind_generates_resource),
       use_count_(0),
-      current_query_(NULL) {
+      current_query_(NULL),
+      error_message_callback_(NULL) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -828,6 +829,10 @@ void GLES2Implementation::SetGLError(GLenum error, const char* msg) {
                  << GLES2Util::GetStringError(error) << ": " << msg);
   if (msg) {
     last_error_ = msg;
+  }
+  if (error_message_callback_) {
+    std::string temp(GLES2Util::GetStringError(error)  + " : " + msg);
+    error_message_callback_->OnErrorMessage(temp.c_str(), 0);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }

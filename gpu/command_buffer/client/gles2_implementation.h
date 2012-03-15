@@ -108,6 +108,12 @@ class IdHandlerInterface {
 // shared memory and synchronization issues.
 class GLES2_IMPL_EXPORT GLES2Implementation {
  public:
+  class ErrorMessageCallback {
+   public:
+    virtual ~ErrorMessageCallback() { }
+    virtual void OnErrorMessage(const char* msg, int id) = 0;
+  };
+
   // Stores client side cached GL state.
   struct GLState {
     GLState()
@@ -214,6 +220,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   void FreeUnusedSharedMemory();
   void FreeEverything();
+
+  void SetErrorMessageCallback(ErrorMessageCallback* callback) {
+    error_message_callback_ = callback;
+  }
 
  private:
   friend class ClientSideBufferHelper;
@@ -521,6 +531,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   scoped_ptr<QueryTracker> query_tracker_;
   QueryTracker::Query* current_query_;
+
+  ErrorMessageCallback* error_message_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

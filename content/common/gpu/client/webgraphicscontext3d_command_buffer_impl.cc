@@ -44,6 +44,26 @@ void ClearSharedContexts() {
 
 } // namespace anonymous
 
+class WebGraphicsContext3DErrorMessageCallback
+    : public gpu::gles2::GLES2Implementation::ErrorMessageCallback {
+ public:
+  WebGraphicsContext3DErrorMessageCallback(
+      WebGraphicsContext3DCommandBufferImpl* context)
+      : context_(context) {
+  }
+
+  virtual void OnErrorMessage(const char* msg, int id) OVERRIDE;
+
+ private:
+  WebGraphicsContext3DCommandBufferImpl* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGraphicsContext3DErrorMessageCallback);
+};
+
+void WebGraphicsContext3DErrorMessageCallback::OnErrorMessage(
+    const char* msg, int id) {
+  context_->OnErrorMessage(msg, id);
+}
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     int surface_id,
@@ -72,6 +92,10 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
+  if (gl_) {
+    gl_->SetErrorMessageCallback(NULL);
+  }
+
   if (host_) {
     if (host_->WillGpuSwitchOccur(false, gpu_preference_)) {
       host_->ForciblyCloseChannel();
@@ -202,6 +226,10 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   context_->GetCommandBufferProxy()->SetOnConsoleMessageCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnErrorMessage,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  client_error_message_callback_.reset(
+      new WebGraphicsContext3DErrorMessageCallback(this));
+  gl_->SetErrorMessageCallback(client_error_message_callback_.get());
 
   // TODO(gman): Remove this.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

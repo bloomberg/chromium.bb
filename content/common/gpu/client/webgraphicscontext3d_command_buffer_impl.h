@@ -56,6 +56,8 @@ class WebGraphicsContext3DSwapBuffersClient {
   virtual void OnViewContextSwapBuffersAborted() = 0;
 };
 
+class WebGraphicsContext3DErrorMessageCallback;
+
 class WebGraphicsContext3DCommandBufferImpl
     : public WebKit::WebGraphicsContext3D {
  public:
@@ -501,6 +503,8 @@ class WebGraphicsContext3DCommandBufferImpl
 #endif
 
  private:
+  friend class WebGraphicsContext3DErrorMessageCallback;
+
   // Initialize the underlying GL context. May be called multiple times; second
   // and subsequent calls are ignored. Must be called from the thread that is
   // going to use this object to issue GL commands (which might not be the main
@@ -543,6 +547,8 @@ class WebGraphicsContext3DCommandBufferImpl
 
   WebGraphicsContext3D::WebGraphicsErrorMessageCallback*
       error_message_callback_;
+  scoped_ptr<WebGraphicsContext3DErrorMessageCallback>
+      client_error_message_callback_;
 
   WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM*
       swapbuffers_complete_callback_;
