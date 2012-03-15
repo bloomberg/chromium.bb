@@ -32,6 +32,7 @@ class AcceleratedPresenter
       int64 surface_id,
       const base::Callback<void(bool)>& completion_task);
   bool Present(gfx::NativeWindow window);
+  bool CopyTo(const gfx::Size& size, void* buf);
   void Suspend();
   void WaitForPendingTasks();
 
@@ -84,6 +85,12 @@ class SURFACE_EXPORT AcceleratedSurface {
 
   // Synchronously present a frame with no acknowledgement.
   bool Present(gfx::NativeWindow window);
+
+  // Copies the surface data to |buf|. The image data is transformed so that it
+  // fits in |size|.
+  // Caller must ensure that |buf| is allocated with the size no less than
+  // |4 * size.width() * size.height()| bytes.
+  bool CopyTo(const gfx::Size& size, void* buf);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

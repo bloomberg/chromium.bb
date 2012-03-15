@@ -5,6 +5,7 @@
 #include "ui/gfx/surface/accelerated_surface_win.h"
 
 #include <windows.h>
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -36,6 +37,47 @@ UINT GetPresentationInterval() {
     return D3DPRESENT_INTERVAL_IMMEDIATE;
   else
     return D3DPRESENT_INTERVAL_ONE;
+}
+
+// Calculate the number necessary to transform |source_size| into |dest_size|
+// by repeating downsampling of the image of |source_size| by a factor no more
+// than 2.
+int GetResampleCount(const gfx::Size& source_size, const gfx::Size& dest_size) {
+  int width_count = 0;
+  int width = source_size.width();
+  while (width > dest_size.width()) {
+    ++width_count;
+    width >>= 1;
+  }
+  int height_count = 0;
+  int height = source_size.height();
+  while (height > dest_size.height()) {
+    ++height_count;
+    height >>= 1;
+  }
+  return std::max(width_count, height_count);
+}
+
+// Returns half the size of |size| no smaller than |min_size|.
+gfx::Size GetHalfSizeNoLessThan(const gfx::Size& size,
+                                const gfx::Size& min_size) {
+  return gfx::Size(std::max(min_size.width(), size.width() / 2),
+                   std::max(min_size.height(), size.height() / 2));
+}
+
+bool CreateTemporarySurface(IDirect3DDevice9* device,
+                            const gfx::Size& size,
+                            IDirect3DSurface9** surface) {
+  HRESULT hr = device->CreateRenderTarget(
+        size.width(),
+        size.height(),
+        D3DFMT_A8R8G8B8,
+        D3DMULTISAMPLE_NONE,
+        0,
+        TRUE,
+        surface,
+        NULL);
+  return SUCCEEDED(hr);
 }
 
 }  // namespace anonymous
@@ -236,6 +278,106 @@ bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
         Sleep(0);
     } while (hr == S_FALSE);
   }
+
+  return true;
+}
+
+bool AcceleratedPresenter::CopyTo(const gfx::Size& size, void* buf) {
+  base::AutoLock locked(lock_);
+
+  if (!swap_chain_)
+    return false;
+
+  base::win::ScopedComPtr<IDirect3DSurface9> back_buffer;
+  HRESULT hr = swap_chain_->GetBackBuffer(0,
+                                          D3DBACKBUFFER_TYPE_MONO,
+                                          back_buffer.Receive());
+  if (FAILED(hr))
+    return false;
+
+  D3DSURFACE_DESC desc;
+  hr = back_buffer->GetDesc(&desc);
+  if (FAILED(hr))
+    return false;
+
+  const gfx::Size back_buffer_size(desc.Width, desc.Height);
+  if (back_buffer_size.IsEmpty())
+    return false;
+
+  // Set up intermediate buffers needed for downsampling.
+  const int resample_count =
+      GetResampleCount(gfx::Size(desc.Width, desc.Height), size);
+  base::win::ScopedComPtr<IDirect3DSurface9> final_surface;
+  base::win::ScopedComPtr<IDirect3DSurface9> temp_buffer[2];
+  if (resample_count == 0)
+    final_surface = back_buffer;
+  if (resample_count > 0) {
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                size,
+                                final_surface.Receive()))
+      return false;
+  }
+  const gfx::Size half_size = GetHalfSizeNoLessThan(back_buffer_size, size);
+  if (resample_count > 1) {
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                half_size,
+                                temp_buffer[0].Receive()))
+      return false;
+  }
+  if (resample_count > 2) {
+    const gfx::Size quarter_size = GetHalfSizeNoLessThan(half_size, size);
+    if (!CreateTemporarySurface(present_thread_->device(),
+                                quarter_size,
+                                temp_buffer[1].Receive()))
+      return false;
+  }
+
+  // Repeat downsampling the surface until its size becomes identical to
+  // |size|. We keep the factor of each downsampling no more than two because
+  // using a factor more than two can introduce aliasing.
+  gfx::Size read_size = back_buffer_size;
+  gfx::Size write_size = half_size;
+  int read_buffer_index = 1;
+  int write_buffer_index = 0;
+  for (int i = 0; i < resample_count; ++i) {
+    base::win::ScopedComPtr<IDirect3DSurface9> read_buffer =
+        (i == 0) ? back_buffer : temp_buffer[read_buffer_index];
+    base::win::ScopedComPtr<IDirect3DSurface9> write_buffer =
+        (i == resample_count - 1) ? final_surface :
+                                    temp_buffer[write_buffer_index];
+    RECT read_rect = {0, 0, read_size.width(), read_size.height()};
+    RECT write_rect = {0, 0, write_size.width(), write_size.height()};
+    hr = present_thread_->device()->StretchRect(read_buffer,
+                                                &read_rect,
+                                                write_buffer,
+                                                &write_rect,
+                                                D3DTEXF_LINEAR);
+    if (FAILED(hr))
+      return false;
+    read_size = write_size;
+    write_size = GetHalfSizeNoLessThan(write_size, size);
+    std::swap(read_buffer_index, write_buffer_index);
+  }
+
+  DCHECK(size == read_size);
+
+  base::win::ScopedComPtr<IDirect3DSurface9> temp_surface;
+  HANDLE handle = reinterpret_cast<HANDLE>(buf);
+  hr =  present_thread_->device()->CreateOffscreenPlainSurface(
+    size.width(),
+    size.height(),
+    D3DFMT_A8R8G8B8,
+    D3DPOOL_SYSTEMMEM,
+    temp_surface.Receive(),
+    &handle);
+  if (FAILED(hr))
+    return false;
+
+  // Copy the data in the temporary buffer to the surface backed by |buf|.
+  hr = present_thread_->device()->GetRenderTargetData(final_surface,
+                                                      temp_surface);
+  if (FAILED(hr))
+    return false;
 
   return true;
 }
@@ -444,7 +586,10 @@ bool AcceleratedSurface::Present(HWND window) {
   return presenter_->Present(window);
 }
 
+bool AcceleratedSurface::CopyTo(const gfx::Size& size, void* buf) {
+  return presenter_->CopyTo(size, buf);
+}
+
 void AcceleratedSurface::Suspend() {
   presenter_->Suspend();
 }
-

@@ -138,6 +138,12 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 
+  // Copies the contents of the compositing surface into the given
+  // (uninitialized) PlatformCanvas if any. Returns true on success, false
+  // otherwise.
+  virtual bool CopyFromCompositingSurface(const gfx::Size& size,
+                                          skia::PlatformCanvas* output) = 0;
+
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;
   // |params.window| and |params.surface_id| indicate which accelerated

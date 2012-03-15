@@ -525,6 +525,14 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
 }
 
+bool RenderWidgetHostViewAura::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
   GetDefaultScreenInfo(results);
 }

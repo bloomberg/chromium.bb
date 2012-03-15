@@ -1047,6 +1047,14 @@ void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
 }
 
+bool RenderWidgetHostViewGtk::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
     GtkWidget* widget, GdkEventMotion* event) {
   // If the widget is aligned with an edge of the monitor its on and the user

@@ -907,6 +907,22 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   render_widget_host_->SetBackground(background);
 }
 
+bool RenderWidgetHostViewWin::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  if (!accelerated_surface_.get())
+    return false;
+
+  if (size.IsEmpty())
+    return false;
+
+  if (!output->initialize(size.width(), size.height(), true))
+    return false;
+
+  return accelerated_surface_->CopyTo(
+      size, output->getTopDevice()->accessBitmap(true).getPixels());
+}
+
 void RenderWidgetHostViewWin::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
 }

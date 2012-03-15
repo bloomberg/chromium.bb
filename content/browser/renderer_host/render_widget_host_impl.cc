@@ -34,8 +34,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "skia/ext/image_operations.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -501,13 +504,54 @@ void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
   view_->SetIsLoading(is_loading);
 }
 
-bool RenderWidgetHostImpl::CopyFromBackingStore(skia::PlatformCanvas* output) {
+bool RenderWidgetHostImpl::CopyFromBackingStore(const gfx::Size& dest_size,
+                                                skia::PlatformCanvas* output) {
+  if (view_ && is_accelerated_compositing_active_) {
+    TRACE_EVENT0("browser",
+        "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
+    gfx::Size result_size = view_->GetViewBounds().size();
+    if (!dest_size.IsEmpty()) {
+      result_size.SetSize(std::min(result_size.width(), dest_size.width()),
+                          std::min(result_size.height(), dest_size.height()));
+    }
+    return view_->CopyFromCompositingSurface(result_size, output);
+  }
+
   BackingStore* backing_store = GetBackingStore(false);
   if (!backing_store)
     return false;
 
-  return backing_store->CopyFromBackingStore(
-      gfx::Rect(backing_store->size()), output);
+  TRACE_EVENT0("browser",
+      "RenderWidgetHostImpl::CopyFromBackingStore::FromBackingStore");
+  const gfx::Size backing_store_size = backing_store->size();
+  gfx::Size result_size = backing_store->size();
+  if (!dest_size.IsEmpty()) {
+    result_size.SetSize(std::min(result_size.width(), dest_size.width()),
+                        std::min(result_size.height(), dest_size.height()));
+  }
+  // When the result size is equal to the backing store size, copy from the
+  // backing store directly to the output canvas.
+  if (result_size == backing_store_size)
+    return backing_store->CopyFromBackingStore(gfx::Rect(result_size), output);
+
+  // Otherwise, first copy from the backing store to a temporary canvas, then
+  // resize it into the result size.
+  skia::PlatformCanvas temp_canvas;
+  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store_size),
+                                           &temp_canvas))
+    return false;
+
+  SkBitmap downsampled_bitmap =
+      SkBitmapOperations::DownsampleByTwoUntilSize(
+          skia::GetTopDevice(temp_canvas)->accessBitmap(false),
+          result_size.width(), result_size.height());
+  SkBitmap result_bitmap = skia::ImageOperations::Resize(
+      downsampled_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+      dest_size.width(), dest_size.height());
+  if (!output->initialize(result_size.width(), result_size.height(), true))
+    return false;
+  output->writePixels(result_bitmap, 0, 0);
+  return true;
 }
 
 #if defined(TOOLKIT_GTK)

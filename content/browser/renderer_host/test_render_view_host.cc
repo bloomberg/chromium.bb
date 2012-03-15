@@ -181,6 +181,12 @@ gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
 #endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(TOOLKIT_USES_GTK)
 
+bool TestRenderWidgetHostView::CopyFromCompositingSurface(
+    const gfx::Size& size,
+    skia::PlatformCanvas* output) {
+  return false;
+}
+
 gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::GLSurfaceHandle();
 }

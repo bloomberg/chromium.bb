@@ -177,8 +177,14 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   virtual void Blur() = 0;
 
   // Copies the contents of the backing store into the given (uninitialized)
-  // PlatformCanvas. Returns true on success, false otherwise.
-  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) = 0;
+  // PlatformCanvas. Returns true on success, false otherwise. When accelerated
+  // compositing is active, the contents is copied from the compositing surface.
+  // If non empty |dest_size| is given, the content is shrinked so that it fits
+  // in |dest_size|. If |dest_size| is larger than the contens size, the
+  // content is not resized. If |dest_size| is empty, the original size of the
+  // contents is copied.
+  virtual bool CopyFromBackingStore(const gfx::Size& dest_size,
+                                    skia::PlatformCanvas* output) = 0;
 
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.

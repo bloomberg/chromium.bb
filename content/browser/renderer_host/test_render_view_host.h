@@ -76,6 +76,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif  // defined(TOOLKIT_USES_GTK)
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
+  virtual bool CopyFromCompositingSurface(
+      const gfx::Size& size,
+             skia::PlatformCanvas* output) OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

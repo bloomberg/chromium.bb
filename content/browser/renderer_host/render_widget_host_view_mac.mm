@@ -1126,6 +1126,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
         render_widget_host_->GetRoutingID(), background));
 }
 
+bool RenderWidgetHostViewMac::CopyFromCompositingSurface(
+      const gfx::Size& size,
+      skia::PlatformCanvas* output) {
+  // TODO(mazda): Implement this.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   if (!GetBrowserAccessibilityManager()) {

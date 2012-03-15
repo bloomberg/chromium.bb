@@ -77,8 +77,9 @@ SkBitmap GetBitmapForRenderWidgetHost(
   // Get the bitmap as a Skia object so we can resample it. This is a large
   // allocation and we can tolerate failure here, so give up if the allocation
   // fails.
+  // TODO(mazda): Copy a shrinked size of image instead of the whole view size.
   skia::PlatformCanvas temp_canvas;
-  if (!render_widget_host->CopyFromBackingStore(&temp_canvas))
+  if (!render_widget_host->CopyFromBackingStore(gfx::Size(), &temp_canvas))
     return result;
   const SkBitmap& bmp_with_scrollbars =
       skia::GetTopDevice(temp_canvas)->accessBitmap(false);
