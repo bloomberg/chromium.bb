@@ -112,6 +112,7 @@
       'webapp/client_plugin_v1.js',
       'webapp/client_screen.js',
       'webapp/client_session.js',
+      'webapp/clipboard.js',
       'webapp/connection_history.css',
       'webapp/connection_history.js',
       'webapp/connection_stats.css',

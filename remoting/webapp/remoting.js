@@ -44,6 +44,7 @@ remoting.init = function() {
       document.getElementById('host-list-error'));
   remoting.toolbar = new remoting.Toolbar(
       document.getElementById('session-toolbar'));
+  remoting.clipboard = new remoting.Clipboard();
 
   refreshEmail_();
   var email = remoting.oauth2.getCachedEmail();
@@ -51,7 +52,9 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
+  window.addEventListener('focus', pluginGotFocus_, false);
   window.addEventListener('blur', pluginLostFocus_, false);
+  window.addEventListener('paste', pluginGotPaste_, false);
 
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
@@ -129,6 +132,29 @@ remoting.clearOAuth2 = function() {
   window.localStorage.removeItem(KEY_EMAIL_);
   remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
 };
+
+/**
+ * Callback function called when the browser window gets focus.
+ */
+function pluginGotFocus_() {
+  /** @type {function(string): void} */
+  document.execCommand;
+  document.execCommand("paste");
+}
+
+/**
+ * Callback function called when the browser window gets a paste operation.
+ *
+ * @param {Event} eventUncast
+ * @return {boolean}
+ */
+function pluginGotPaste_(eventUncast) {
+  var event = /** @type {remoting.ClipboardEvent} */ eventUncast;
+  if (event && event.clipboardData) {
+    remoting.clipboard.toHost(event.clipboardData);
+  }
+  return false;
+}
 
 /**
  * Callback function called when the browser window loses focus. In this case,
