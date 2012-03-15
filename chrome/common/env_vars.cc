@@ -17,10 +17,6 @@ const char kLogFileName[] = "CHROME_LOG_FILE";
 // The name of the session log directory when logged in to ChromeOS.
 const char kSessionLogDir[] = "CHROMEOS_SESSION_LOG_DIR";
 
-// If this environment variable is set, Chrome on Windows will log
-// to Event Tracing for Windows.
-const char kEtwLogging[] = "CHROME_ETW_LOGGING";
-
 // CHROME_CRASHED exists if a previous instance of chrome has crashed. This
 // triggers the 'restart chrome' dialog. CHROME_RESTART contains the strings
 // that are needed to show the dialog.

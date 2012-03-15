@@ -29,12 +29,6 @@ namespace logging_win {
 // - This class is not thread safe.
 // - This class uses facilities that require the process to run with admin
 //   rights; StartLogging() will return false if this is not the case.
-//
-// Initializing an instance will add the variable CHROME_ETW_LOGGING=1 to the
-// system-wide environment if it is not present.  In the case where it is not
-// already present, log messages will not be captured from currently running
-// instances of Chrome, Chrome Frame, or other providers that generate events
-// conditionally based on that environment variable.
 class FileLogger {
  public:
   enum EventProviderBits {
@@ -78,30 +72,11 @@ class FileLogger {
   }
 
  private:
-  // A helper for setting/clearing a variable in the system-wide environment.
-  class ScopedSystemEnvironmentVariable {
-   public:
-    ScopedSystemEnvironmentVariable(const string16& variable,
-                                    const string16& value);
-    ~ScopedSystemEnvironmentVariable();
-
-   private:
-    static void NotifyOtherProcesses();
-
-    // Non-empty if the variable was inserted into the system-wide environment.
-    string16 variable_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedSystemEnvironmentVariable);
-  };
-
   bool EnableProviders();
   void DisableProviders();
 
-  void ConfigureChromeEtwLogging();
-  void RevertChromeEtwLogging();
-
   static bool is_initialized_;
 
-  scoped_ptr<ScopedSystemEnvironmentVariable> etw_logging_configurator_;
   base::win::EtwTraceController controller_;
   uint32 event_provider_mask_;
 

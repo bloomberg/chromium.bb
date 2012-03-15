@@ -369,8 +369,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
-  if (env->HasVar(env_vars::kEtwLogging))
-    logging::LogEventProvider::Initialize(kChromeTraceProviderName);
+  logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
 
 #ifdef NDEBUG

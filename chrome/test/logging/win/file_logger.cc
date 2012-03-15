@@ -18,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/event_trace_consumer.h"
 #include "base/win/registry.h"
-#include "chrome/common/env_vars.h"
 
 namespace logging_win {
 
@@ -58,70 +57,7 @@ COMPILE_ASSERT((1 << arraysize(kProviders)) - 1 ==
                    FileLogger::kAllEventProviders,
                size_of_kProviders_is_inconsistent_with_kAllEventProviders);
 
-// The provider bits that require CHROME_ETW_LOGGING in the environment.
-const uint32 kChromeLogProviders =
-    FileLogger::CHROME_LOG_PROVIDER | FileLogger::CHROME_FRAME_LOG_PROVIDER;
-const HKEY kEnvironmentRoot = HKEY_LOCAL_MACHINE;
-const wchar_t kEnvironmentKey[] =
-    L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment";
-const wchar_t kEnvironment[] = L"Environment";
-const unsigned int kBroadcastTimeoutMilliseconds = 2 * 1000;
-
 }  // namespace
-
-// FileLogger::ScopedSystemEnvironmentVariable implementation.
-
-FileLogger::ScopedSystemEnvironmentVariable::ScopedSystemEnvironmentVariable(
-    const string16& variable,
-    const string16& value) {
-
-  // Set the value in this process and its children.
-  ::SetEnvironmentVariable(variable.c_str(), value.c_str());
-
-  // Set the value for the whole system and ask everyone to refresh.
-  base::win::RegKey environment;
-  LONG result = environment.Open(kEnvironmentRoot, kEnvironmentKey,
-                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
-  if (result == ERROR_SUCCESS) {
-    string16 old_value;
-    // The actual value of the variable is insignificant in the eyes of Chrome.
-    if (environment.ReadValue(variable.c_str(),
-                              &old_value) != ERROR_SUCCESS &&
-        environment.WriteValue(variable.c_str(),
-                               value.c_str()) == ERROR_SUCCESS) {
-      environment.Close();
-      // Remember that this needs to be reversed in the dtor.
-      variable_ = variable;
-      NotifyOtherProcesses();
-    }
-  } else {
-    SetLastError(result);
-    PLOG(ERROR) << "Failed to open HKLM to check/modify the system environment";
-  }
-}
-
-FileLogger::ScopedSystemEnvironmentVariable::~ScopedSystemEnvironmentVariable()
-{
-  if (!variable_.empty()) {
-    base::win::RegKey environment;
-    if (environment.Open(kEnvironmentRoot, kEnvironmentKey,
-                         KEY_SET_VALUE) == ERROR_SUCCESS) {
-      environment.DeleteValue(variable_.c_str());
-      environment.Close();
-      NotifyOtherProcesses();
-    }
-  }
-}
-
-// static
-void FileLogger::ScopedSystemEnvironmentVariable::NotifyOtherProcesses() {
-  // Announce to the system that a change has been made so that the shell and
-  // other Windowsy bits pick it up; see
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/ms682653.aspx.
-  SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
-                     reinterpret_cast<LPARAM>(kEnvironment), SMTO_ABORTIFHUNG,
-                     kBroadcastTimeoutMilliseconds, NULL);
-}
 
 bool FileLogger::is_initialized_ = false;
 
@@ -196,13 +132,6 @@ void FileLogger::Initialize() {
 
 void FileLogger::Initialize(uint32 event_provider_mask) {
   CHECK(!is_initialized_);
-
-  // Set up CHROME_ETW_LOGGING in the environment if providers that require it
-  // are enabled.
-  if (event_provider_mask & kChromeLogProviders) {
-    etw_logging_configurator_.reset(new ScopedSystemEnvironmentVariable(
-        ASCIIToWide(env_vars::kEtwLogging), L"1"));
-  }
 
   // Stop a previous session that wasn't shut down properly.
   base::win::EtwTraceProperties ignore;

@@ -28,7 +28,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_active_document.h"
@@ -856,10 +855,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     }
 
     // Enable trace control and transport through event tracing for Windows.
-    if (::GetEnvironmentVariable(ASCIIToWide(env_vars::kEtwLogging).c_str(),
-                                 NULL, 0)) {
-      logging::LogEventProvider::Initialize(kChromeFrameProvider);
-    }
+    logging::LogEventProvider::Initialize(kChromeFrameProvider);
 
     // Initialize the field test infrastructure. Must be done somewhere that
     // can only get called once. For Chrome Frame, that is here.
