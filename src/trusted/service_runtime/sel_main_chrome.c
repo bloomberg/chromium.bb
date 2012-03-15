@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
@@ -40,6 +41,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
     return NULL;
   args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
+  args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->create_memory_object_func = NULL;
   args->validation_cache = NULL;
@@ -197,6 +199,25 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
    */
   if (!NACL_OSX) {
     NaClSignalAssertNoHandlers();
+  }
+
+  if (args->enable_exception_handling) {
+    nap->enable_exception_handling = 1;
+#if NACL_LINUX
+    NaClSignalHandlerInit();
+#elif NACL_OSX
+    if (!NaClInterceptMachExceptions()) {
+      NaClLog(LOG_FATAL, "NaClChromeMainStart: "
+              "Failed to set up Mach exception handler\n");
+    }
+#elif NACL_WINDOWS
+    /*
+     * Nothing to do: The debug helper process must be set up
+     * separately by Chromium.
+     */
+#else
+# error Unknown host OS
+#endif
   }
 
   /* Give debuggers a well known point at which xlate_base is known.  */

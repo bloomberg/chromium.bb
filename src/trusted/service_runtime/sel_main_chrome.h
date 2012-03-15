@@ -29,6 +29,9 @@ struct NaClChromeMainArgs {
    */
   int irt_fd;
 
+  /* Whether to enable untrusted hardware exception handling.  Boolean. */
+  int enable_exception_handling;
+
   /* Whether to enable NaCl's built-in GDB RSP debug stub.  Boolean. */
   int enable_debug_stub;
 

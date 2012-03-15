@@ -44,14 +44,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
+#include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 #if NACL_WINDOWS
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-#elif NACL_OSX
-#include "native_client/src/trusted/service_runtime/osx/mach_exception_handler.h"
 #endif
 
 static void VmentryPrinter(void           *state,
