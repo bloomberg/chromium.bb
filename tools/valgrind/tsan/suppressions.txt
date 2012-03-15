@@ -810,16 +810,15 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-  bug_131771
+  bug_113771_a
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::TrackingStatus
   fun:tracked_objects::ThreadData::TallyABirthIfActive
   fun:base::TrackingInfo::TrackingInfo
   fun:base::PendingTask::PendingTask
-  ...
 }
 {
-  bug_131771_a
+  bug_113771_b
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::TrackingStatus
   fun:tracked_objects::ThreadData::Now
@@ -827,7 +826,7 @@
   fun:MessageLoop::RunTask
 }
 {
-  bug_131771_b
+  bug_113771_c
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::TrackingStatus
   fun:tracked_objects::ThreadData::Now
