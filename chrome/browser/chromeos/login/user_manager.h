@@ -72,6 +72,9 @@ class UserManager {
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;
 
+  // Indicates that a user just logged in as ephemeral.
+  virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
+
   // Removes the user from the device. Note, it will verify that the given user
   // isn't the owner, so calling this method for the owner will take no effect.
   // Note, |delegate| can be NULL.

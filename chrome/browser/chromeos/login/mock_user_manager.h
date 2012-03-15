@@ -23,6 +23,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(UserLoggedIn, void(const std::string&));
   MOCK_METHOD0(DemoUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
+  MOCK_METHOD1(EphemeralUserLoggedIn, void(const std::string&));
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));

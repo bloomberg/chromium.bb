@@ -44,6 +44,7 @@ class UserManagerImpl : public UserManager,
   virtual void UserLoggedIn(const std::string& email) OVERRIDE;
   virtual void DemoUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
+  virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;

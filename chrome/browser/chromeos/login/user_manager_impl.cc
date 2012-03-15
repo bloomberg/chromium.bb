@@ -321,52 +321,48 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
   is_user_logged_in_ = true;
 
   if (email == kGuestUser) {
-    is_current_user_ephemeral_ = true;
     GuestUserLoggedIn();
     return;
   }
 
   if (email == kDemoUser) {
-    is_current_user_ephemeral_ = true;
     DemoUserLoggedIn();
     return;
   }
 
   if (IsEphemeralUser(email)) {
-    is_current_user_new_ = true;
-    is_current_user_ephemeral_ = true;
-    logged_in_user_ = CreateUser(email);
-    SetInitialUserImage(email);
-  } else {
-    EnsureUsersLoaded();
-
-    // Clear the prefs view of the users.
-    PrefService* prefs = g_browser_process->local_state();
-    ListPrefUpdate prefs_users_update(prefs, UserManager::kLoggedInUsers);
-    prefs_users_update->Clear();
-
-    // Make sure this user is first.
-    prefs_users_update->Append(Value::CreateStringValue(email));
-    UserList::iterator logged_in_user = users_.end();
-    for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
-      std::string user_email = (*it)->email();
-      // Skip the most recent user.
-      if (email != user_email)
-        prefs_users_update->Append(Value::CreateStringValue(user_email));
-      else
-        logged_in_user = it;
-    }
-
-    if (logged_in_user == users_.end()) {
-      is_current_user_new_ = true;
-      logged_in_user_ = CreateUser(email);
-    } else {
-      logged_in_user_ = *logged_in_user;
-      users_.erase(logged_in_user);
-    }
-    // This user must be in the front of the user list.
-    users_.insert(users_.begin(), logged_in_user_);
+    EphemeralUserLoggedIn(email);
+    return;
   }
+
+  EnsureUsersLoaded();
+
+  // Clear the prefs view of the users.
+  PrefService* prefs = g_browser_process->local_state();
+  ListPrefUpdate prefs_users_update(prefs, UserManager::kLoggedInUsers);
+  prefs_users_update->Clear();
+
+  // Make sure this user is first.
+  prefs_users_update->Append(Value::CreateStringValue(email));
+  UserList::iterator logged_in_user = users_.end();
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    std::string user_email = (*it)->email();
+    // Skip the most recent user.
+    if (email != user_email)
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
+    else
+      logged_in_user = it;
+  }
+
+  if (logged_in_user == users_.end()) {
+    is_current_user_new_ = true;
+    logged_in_user_ = CreateUser(email);
+  } else {
+    logged_in_user_ = *logged_in_user;
+    users_.erase(logged_in_user);
+  }
+  // This user must be in the front of the user list.
+  users_.insert(users_.begin(), logged_in_user_);
 
   NotifyOnLogin();
 
@@ -404,12 +400,24 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
 }
 
 void UserManagerImpl::DemoUserLoggedIn() {
+  is_current_user_new_ = true;
+  is_current_user_ephemeral_ = true;
   logged_in_user_ = &demo_user_;
+  SetInitialUserImage(kDemoUser);
   NotifyOnLogin();
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
+  is_current_user_ephemeral_ = true;
   logged_in_user_ = &guest_user_;
+  NotifyOnLogin();
+}
+
+void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
+  is_current_user_new_ = true;
+  is_current_user_ephemeral_ = true;
+  logged_in_user_ = CreateUser(email);
+  SetInitialUserImage(email);
   NotifyOnLogin();
 }
 
