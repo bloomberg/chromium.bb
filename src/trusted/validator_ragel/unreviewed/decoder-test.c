@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -577,8 +577,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     print_name("repnz ");
   }
   if (instruction->prefix.repz) {
-    /* This prefix is "rep" for "ins", "movs", and "outs", "repz" otherwise.  */
+    /* This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
+     * instructions print "repz".
+     */
     if ((!strcmp(instruction_name, "ins")) ||
+        (!strcmp(instruction_name, "lods")) ||
         (!strcmp(instruction_name, "movs")) ||
         (!strcmp(instruction_name, "outs")) ||
         (!strcmp(instruction_name, "stos"))) {

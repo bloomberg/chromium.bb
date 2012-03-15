@@ -176,6 +176,9 @@ static void PrintError(const char* msg, uintptr_t ptr) {
     (0x49 0x8d 0x3c 0x3f)          # lea (%r15,%rdi,1),%rdi
   )) @process_normal_instruction;
 
+  data16condrep = (data16 | condrep data16 | data16 condrep);
+  data16rep = (data16 | rep data16 | data16 rep);
+
   special_instruction =
     (0x48 0x89 0xe5)                       | # mov %rsp,%rbp
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
@@ -278,8 +281,9 @@ static void PrintError(const char* msg, uintptr_t ptr) {
          restricted_register = kNoRestrictedReg;
        }
     } |
-    (0xac                      | # lods   %ds:(%rsi),%al
-     (data16|REXW_NONE)? 0xad)   # lods   %ds:(%rsi),%ax/%eax/%rax
+    (rep? 0xac                 | # lods   %ds:(%rsi),%al
+     data16rep 0xad            | # lods   %ds:(%rsi),%ax
+     rep? REXW_NONE? 0xad)       # lods   %ds:(%rsi),%eax/%rax
     @{ if (restricted_register != kSandboxedRsi) {
          PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
          result = 1;
@@ -289,13 +293,13 @@ static void PrintError(const char* msg, uintptr_t ptr) {
        BitmapClearBit(valid_targets, (begin - data));
        BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
-    (0xae                      | # scas   %ds:(%rsi),%al
-     (data16|REXW_NONE)? 0xaf  | # scas   %ds:(%rsi),%ax/%eax/%rax
+    (condrep? 0xae             | # scas   %es:(%rdi),%al
+     data16condrep 0xaf        | # scas   %es:(%rdi),%ax
+     condrep? REXW_NONE? 0xaf  | # scas   %es:(%rdi),%eax/%rax
+
      rep? 0xaa                 | # stos   %al,%es:(%rdi)
-     (data16 |
-      rep data16 |
-      data16 rep) 0xab         | # stos   %ax,%es:(%rdi)
-      rep? REXW_NONE? 0xab)      # stos   %eax/%rax,%es:(%rdi)
+     data16rep 0xab            | # stos   %ax,%es:(%rdi)
+     rep? REXW_NONE? 0xab)       # stos   %eax/%rax,%es:(%rdi)
     @{ if (restricted_register != kSandboxedRdi &&
            restricted_register != kSandboxedRsiSandboxedRdi) {
          PrintError("Incorrectly sandboxed %%rdi\n", begin - data);
@@ -307,14 +311,11 @@ static void PrintError(const char* msg, uintptr_t ptr) {
        BitmapClearBit(valid_targets, (sandboxed_rdi - data));
     } |
     (condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
-     (data16 |
-      condrep data16 |
-      data16 condrep) 0xa7    | # cmpsw    %es:(%rdi),%ds:(%rsi)
+     data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
      condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
+
      rep? 0xa4                | # movsb    %es:(%rdi),%ds:(%rsi)
-     (data16 |
-      rep data16 |
-      data16 rep) 0xa5        | # movsw    %es:(%rdi),%ds:(%rsi)
+     data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
      rep? REXW_NONE? 0xa5)      # movs[lq] %es:(%rdi),%ds:(%rsi)
     @{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
          PrintError("Incorrectly sandboxed %%rsi or %%rdi\n", begin - data);

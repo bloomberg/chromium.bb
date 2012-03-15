@@ -337,7 +337,7 @@ cmp Ib =Ev, 0x83 /7
 cmp G =E, 0x38
 cmp E =G, 0x3a
 ######## CMPS/CMPSB/CMPSW/CMPSD/CMPSQ ##########################################
-cmps Y X, 0xa6, condrep nacl-forbidden
+cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 ######## CMPXCHG ###############################################################
 cmpxchg G E, 0x0f 0xb0, lock
 ######## CMPXCHG8B/CMPXCHG16B ##################################################
@@ -470,7 +470,7 @@ lfence, 0x0f 0xae 0xe8, Fn0000_0001_EDX_SSE2
 ######## LLWPCB ################################################################
 llwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, Fn8000_0001_ECX_LWP
 ######## LODS/LODSB/LODSW/LODSD/LODSQ ##########################################
-lods X a, 0xac, nacl-forbidden
+lods X a, 0xac, rep nacl-amd64-forbidden
 ######## LOOP/LOOPE/LOOPNE/LOOPNZ/LOOPZ ########################################
 loop Jb, 0xe2, nacl-forbidden
 loope Jb, 0xe1, nacl-forbidden
@@ -523,7 +523,7 @@ movmskps Ups Gd, 0x0f 0x50, Fn0000_0001_EDX_SSE1
 ######## MOVNTI ################################################################
 movnti Gy My, 0x0f 0xc3, Fn0000_0001_EDX_SSE2
 ######## MOVS/MOVSB/MOVSW/MOVSD/MOVSQ ##########################################
-movs X Y, 0xa4, rep nacl-forbidden
+movs X Y, 0xa4, rep nacl-amd64-forbidden
 ######## MOVSX #################################################################
 # This is description according to AMD/Intel manual.
 # movsx Eb Gv, 0x0f 0xbe
@@ -671,7 +671,7 @@ sbb Ib Ev, 0x83 /3, lock
 sbb G E, 0x18, lock
 sbb E G, 0x1a, lock
 ######## SCAS/SCASB/SCASW/SCASD/SCASQ ##########################################
-scas Y a, 0xae, nacl-forbidden
+scas Y a, 0xae, condrep nacl-amd64-forbidden
 ######## SETcc #################################################################
 seta Eb, 0x0f 0x97, Fn0000_0001_EDX_CMOV
 setae Eb, 0x0f 0x93, Fn0000_0001_EDX_CMOV
@@ -708,7 +708,7 @@ stc, 0xf9
 ######## STD ###################################################################
 std, 0xfd
 ######## STOS/STOSB/STOSW/STOSD/STOSQ ##########################################
-stos a Y, 0xaa, rep nacl-forbidden
+stos a Y, 0xaa, rep nacl-amd64-forbidden
 ######## SUB ###################################################################
 sub I a, 0x2c
 sub I E, 0x80 /5, lock

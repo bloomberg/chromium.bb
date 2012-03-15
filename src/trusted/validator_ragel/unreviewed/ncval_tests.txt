@@ -116,8 +116,13 @@ TESTS64 += x87
 #     TESTS64=fpu
 # have .hex, but not .rval:
 #     TESTS64=data66prefix rdmsr stubseq test_alias test_insts wrmsr
+# long super-instruction (movl, lea, movl, lea, movsb) crosses bundle boundary,
+#   DFA-based validator reports error on offset movsb:
+#     TESTS64=movs_test
+# http://code.google.com/p/nativeclient/issues/detail?id=2650
+#     TESTS64=prefix-2
 # need more investigation:
-#     TESTS64=jump_outside mmx movs_test prefix-2 prefix-single strings sse
+#     TESTS64=mmx prefix-single strings sse
 
 # These tests pass.
 TESTS32 =  addr16
