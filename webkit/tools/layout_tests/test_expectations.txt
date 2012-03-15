@@ -40,3 +40,6 @@ BUGYANGGUO WIN : svg/css/stars-with-shadow.html = TEXT
 
 BUGCR117799 : fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
 
+// rebaseline when skia 3398 lands
+BUGEPOGER : platform/chromium/virtual/gpu/fast/canvas/quadraticCurveTo.xml = IMAGE
+
