@@ -27,6 +27,8 @@ cr.define('gpu', function() {
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
                                      this.refresh.bind(this));
+      browserBridge.addEventListener('crashListChange',
+                                     this.refresh.bind(this));
       this.refresh();
     },
 
@@ -183,6 +185,10 @@ cr.define('gpu', function() {
         featureStatusList.textContent = '';
         problemsDiv.hidden = true;
       }
+
+      // Crash list
+      jstProcess(new JsEvalContext({values: browserBridge.crashList}),
+                 document.getElementById('crash-list'));
 
       // Log messages
       jstProcess(new JsEvalContext({values: browserBridge.logMessages}),

@@ -27,6 +27,7 @@ cr.define('gpu', function() {
       chrome.send('browserBridgeInitialized');
       this.beginRequestClientInfo_();
       this.beginRequestLogMessages_();
+      this.beginRequestCrashList_();
     }
   }
 
@@ -137,6 +138,28 @@ cr.define('gpu', function() {
      */
     get logMessages() {
       return this.logMessages_;
+    },
+
+    /**
+     * This function checks for previous crash list.
+     * If it's not available yet, a refresh is triggered.
+     */
+    beginRequestCrashList_: function() {
+      this.callAsync('requestCrashList', undefined, (function(data) {
+        if (data === undefined) { // try again in 250 ms
+          window.setTimeout(this.beginRequestCrashList_.bind(this), 250);
+        } else {
+          this.crashList_ = data;
+          cr.dispatchSimpleEvent(this, 'crashListChange');
+        }
+      }).bind(this));
+    },
+
+    /**
+     * Returns an array of log messages issued by the GPU process, if any.
+     */
+    get crashList() {
+      return this.crashList_;
     }
 
   };
