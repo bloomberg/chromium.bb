@@ -157,7 +157,9 @@ void TextureImageTransportSurface::SetBufferAllocation(
       break;
     case BUFFER_ALLOCATION_FRONT_ONLY:
     case BUFFER_ALLOCATION_NONE:
-      ReleaseBackTexture();
+      // TODO(piman): Re-enable this (or something else) when we fix the
+      // renderer so it doesn't try to draw/swap on deleted back buffers.
+      // ReleaseBackTexture();
       break;
   };
 }
