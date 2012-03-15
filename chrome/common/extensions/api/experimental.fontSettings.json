@@ -76,13 +76,13 @@
               "script": {
                 "type": "string",
                 "enum": ["Arab", "Hang", "Hans", "Hant", "Hrkt"],
-                "description": "The ISO 15924 script code for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.",
+                "description": "The ISO 15924 script code for which the font setting should be set. If omitted, the global script font setting is set.",
                 "optional": true
               },
               "genericFamily": {
                 "type": "string",
                 "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
-                "description": "The CSS generic font family for which the font setting should be retrieved."
+                "description": "The CSS generic font family for which the font setting should be set."
               },
               "fontName": {
                 "type": "string",

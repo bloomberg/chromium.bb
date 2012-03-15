@@ -37,6 +37,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.dns.json',
   '../api/experimental.downloads.json',
   '../api/experimental.extension.json',
+  '../api/experimental.fontSettings.json',
   '../api/experimental.infobars.json',
   '../api/experimental.input.ui.json',
   '../api/experimental.input.virtualKeyboard.json',

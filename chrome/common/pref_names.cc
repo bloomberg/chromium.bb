@@ -140,7 +140,7 @@ const char kWebKitFantasyFontFamilyMap[] =
     "webkit.webprefs.fonts.fantasy";
 
 // If these change, the corresponding enums in the extension API
-// experimental.fonts.json must also change.
+// experimental.fontSettings.json must also change.
 // TODO(falken): Add all the scripts we should support.
 const char* const kWebKitScriptsForFontFamilyMaps[] =
     { "Arab", "Hang", "Hans", "Hant", "Hrkt" };
