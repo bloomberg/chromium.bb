@@ -1881,3 +1881,9 @@
    fun:invalidation::InvalidationClientImpl::Start
    fun:sync_notifier::ChromeInvalidationClient::Start
 }
+{
+   bug_118336
+   Heapcheck:Leak
+   ...
+   fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
+}
