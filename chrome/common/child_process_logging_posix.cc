@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -29,12 +30,13 @@ char g_client_id[kClientIdSize];
 char g_channel[kChannelSize] = "";
 
 static const size_t kGpuStringSize = 32;
-
 char g_gpu_vendor_id[kGpuStringSize] = "";
 char g_gpu_device_id[kGpuStringSize] = "";
 char g_gpu_driver_ver[kGpuStringSize] = "";
 char g_gpu_ps_ver[kGpuStringSize] = "";
 char g_gpu_vs_ver[kGpuStringSize] = "";
+
+char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 
 static const size_t kNumSize = 32;
 char g_num_extensions[kNumSize] = "";
@@ -101,6 +103,22 @@ void SetGpuInfo(const content::GPUInfo& gpu_info) {
           gpu_info.vertex_shader_version.c_str(),
           kGpuStringSize - 1);
   g_gpu_vs_ver[kGpuStringSize - 1] = '\0';
+}
+
+void SetPrinterInfo(const char* printer_info) {
+  std::string printer_info_str;
+  std::vector<std::string> info;
+  base::SplitString(printer_info, L';', &info);
+  DCHECK_LE(info.size(), kMaxReportedPrinterRecords);
+  info.resize(kMaxReportedPrinterRecords);
+  for (size_t i = 0; i < info.size(); ++i) {
+    printer_info_str += info[i];
+    // Truncate long switches, align short ones with spaces to be trimmed later.
+    printer_info_str.resize((i + 1) * kPrinterInfoStrLen, ' ');
+  }
+  strncpy(g_printer_info, printer_info_str.c_str(),
+          arraysize(g_printer_info) - 1);
+  g_printer_info[arraysize(g_printer_info) - 1] = '\0';
 }
 
 void SetNumberOfViews(int number_of_views) {
