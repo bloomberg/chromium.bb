@@ -19,6 +19,7 @@ class ExtensionDialog;
 
 namespace content {
 class RenderViewHost;
+struct SelectedFileInfo;
 }
 
 // Shows a dialog box for selecting a file or a folder, using the
@@ -40,9 +41,12 @@ class SelectFileDialogExtension
 
   // Routes callback to appropriate SelectFileDialog::Listener based on
   // the owning |tab_id|.
-  static void OnFileSelected(int32 tab_id, const FilePath& path, int index);
-  static void OnMultiFilesSelected(int32 tab_id,
-                                   const std::vector<FilePath>& files);
+  static void OnFileSelected(int32 tab_id,
+                             const content::SelectedFileInfo& file,
+                             int index);
+  static void OnMultiFilesSelected(
+      int32 tab_id,
+      const std::vector<content::SelectedFileInfo>& files);
   static void OnFileSelectionCanceled(int32 tab_id);
 
   // For testing, so we can inject JavaScript into the contained view.
@@ -103,7 +107,7 @@ class SelectFileDialogExtension
     MULTIPLE_FILES
   };
   SelectionType selection_type_;
-  std::vector<FilePath> selection_files_;
+  std::vector<content::SelectedFileInfo> selection_files_;
   int selection_index_;
   void* params_;
 

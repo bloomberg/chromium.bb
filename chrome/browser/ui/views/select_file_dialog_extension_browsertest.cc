@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/selected_file_info.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -48,6 +49,12 @@ class MockSelectFileDialogListener : public SelectFileDialog::Listener {
     file_selected_ = true;
     path_ = path;
     params_ = params;
+  }
+  virtual void FileSelectedWithExtraInfo(
+      const content::SelectedFileInfo& selected_file_info,
+      int index,
+      void* params) {
+    FileSelected(selected_file_info.path, index, params);
   }
   virtual void MultiFilesSelected(
       const std::vector<FilePath>& files, void* params) {}

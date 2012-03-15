@@ -36,6 +36,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/selected_file_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
@@ -703,7 +704,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePathList selected_files;
+  std::vector<content::SelectedFileInfo> selected_files;
 
   // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
 #if defined(OS_CHROMEOS)
@@ -749,41 +750,43 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
       }
     }
 
-    // If "localPath" is not found, build the real path from |file_url|.
-    if (real_path.empty()) {
-      GURL file_origin_url;
-      FilePath virtual_path;
-      fileapi::FileSystemType type;
+    // Extract the path from |file_url|.
+    GURL file_origin_url;
+    FilePath virtual_path;
+    fileapi::FileSystemType type;
 
-      if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
-                              &virtual_path)) {
-        continue;
-      }
-      if (type != fileapi::kFileSystemTypeExternal) {
-        NOTREACHED();
-        continue;
-      }
-
-      FilePath root = provider->GetFileSystemRootPathOnFileThread(
-          origin_url,
-          fileapi::kFileSystemTypeExternal,
-          FilePath(virtual_path),
-          false);
-      if (!root.empty()) {
-        real_path = root.Append(virtual_path);
-      } else {
-        LOG(WARNING) << "GetLocalPathsOnFileThread failed "
-                     << file_url.spec();
-      }
+    if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
+                            &virtual_path)) {
+      continue;
+    }
+    if (type != fileapi::kFileSystemTypeExternal) {
+      NOTREACHED();
+      continue;
     }
 
-    // TODO(satorux): The real path is human unreadable if the file is
-    // originated from gdata. We should propagate the display name to the
-    // WebKit layer, so the right name is displayed in the web page, and
-    // used for uploading. crosbug.com/27222.
+    FilePath::StringType display_name;
+    FilePath root = provider->GetFileSystemRootPathOnFileThread(
+        origin_url,
+        fileapi::kFileSystemTypeExternal,
+        FilePath(virtual_path),
+        false);
+    if (!root.empty()) {
+      // If we haven't got the real path from "localPath", use it as the
+      // real path.  Otherwise, use it as the display name.
+      if (real_path.empty())
+        real_path = root.Append(virtual_path);
+      else
+        display_name = virtual_path.BaseName().value();
+    } else {
+      LOG(WARNING) << "GetLocalPathsOnFileThread failed "
+                   << file_url.spec();
+    }
+
     if (!real_path.empty()) {
-      DVLOG(1) << "Selected: " << real_path.value();
-      selected_files.push_back(real_path);
+      DVLOG(1) << "Selected: real path: " << real_path.value()
+               << " display name: " << display_name;
+      selected_files.push_back(
+          content::SelectedFileInfo(real_path, display_name));
     }
   }
 #endif
@@ -808,7 +811,7 @@ bool SelectFileFunction::RunImpl() {
 }
 
 void SelectFileFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (files.size() != 1) {
     SendResponse(false);
@@ -859,13 +862,13 @@ bool ViewFilesFunction::RunImpl() {
 
 void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
     const std::string& internal_task_id,
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool success = true;
-  for (FilePathList::const_iterator iter = files.begin();
+  for (SelectedFileInfoList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    bool handled = file_manager_util::TryViewingFile(*iter);
+    bool handled = file_manager_util::TryViewingFile(iter->path);
     // If there is no default browser-defined handler for viewing this type
     // of file, try to see if we have any extension installed for it instead.
     if (!handled && files.size() == 1)
@@ -906,7 +909,7 @@ bool SelectFilesFunction::RunImpl() {
 }
 
 void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int32 tab_id = GetTabId();
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
@@ -1021,7 +1024,7 @@ void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
 
 void AddMountFunction::GetLocalPathsResponseOnUIThread(
     const std::string& mount_type_str,
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!files.size()) {
@@ -1030,7 +1033,7 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #if defined(OS_CHROMEOS)
-  FilePath source_file = files[0];
+  FilePath source_file = files[0].path;
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // MountPath() takes a std::string.
   disk_mount_manager->MountPath(source_file.AsUTF8Unsafe(),
@@ -1065,7 +1068,7 @@ bool RemoveMountFunction::RunImpl() {
 }
 
 void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (files.size() != 1) {
@@ -1073,7 +1076,7 @@ void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 #if defined(OS_CHROMEOS)
-  DiskMountManager::GetInstance()->UnmountPath(files[0].value());
+  DiskMountManager::GetInstance()->UnmountPath(files[0].path.value());
 #endif
 
   SendResponse(true);
@@ -1135,7 +1138,7 @@ bool GetSizeStatsFunction::RunImpl() {
 }
 
 void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (files.size() != 1) {
@@ -1148,7 +1151,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
       base::Bind(
           &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
           this,
-          files[0].value()));
+          files[0].path.value()));
 }
 
 void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
@@ -1212,7 +1215,7 @@ bool FormatDeviceFunction::RunImpl() {
 }
 
 void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (files.size() != 1) {
@@ -1221,7 +1224,7 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #if defined(OS_CHROMEOS)
-  DiskMountManager::GetInstance()->FormatMountedDevice(files[0].value());
+  DiskMountManager::GetInstance()->FormatMountedDevice(files[0].path.value());
 #endif
 
   SendResponse(true);
@@ -1256,7 +1259,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
 }
 
 void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Should contain volume's mount path.
@@ -1269,7 +1272,8 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
   result_.reset();
 
 #if defined(OS_CHROMEOS)
-  const DiskMountManager::Disk* volume = GetVolumeAsDisk(files[0].value());
+  const DiskMountManager::Disk* volume = GetVolumeAsDisk(
+      files[0].path.value());
   if (volume) {
     DictionaryValue* volume_info =
         CreateValueFromDisk(profile_, volume);
@@ -1616,12 +1620,12 @@ bool GetFileLocationsFunction::RunImpl() {
 }
 
 void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ListValue* locations = new ListValue;
   for (size_t i = 0; i < files.size(); ++i) {
-    if (gdata::util::IsUnderGDataMountPoint(files[i])) {
+    if (gdata::util::IsUnderGDataMountPoint(files[i].path)) {
       locations->Append(Value::CreateStringValue("gdata"));
     } else {
       locations->Append(Value::CreateStringValue("local"));
@@ -1661,12 +1665,12 @@ bool GetGDataFilesFunction::RunImpl() {
 }
 
 void GetGDataFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files) {
+    const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i]));
-    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i]);
+    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
+    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i].path);
     remaining_gdata_paths_.push(gdata_path);
   }
 

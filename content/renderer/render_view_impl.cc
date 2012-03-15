@@ -4153,13 +4153,20 @@ void RenderViewImpl::OnFileChooserResponse(
   if (file_chooser_completions_.empty())
     return;
 
-  WebVector<WebString> ws_file_names(files.size());
-  for (size_t i = 0; i < files.size(); ++i)
-    ws_file_names[i] = webkit_glue::FilePathToWebString(files[i].path);
+  // Convert Chrome's SelectedFileInfo list to WebKit's.
+  WebVector<WebFileChooserCompletion::SelectedFileInfo> selected_files(
+      files.size());
+  for (size_t i = 0; i < files.size(); ++i) {
+    WebFileChooserCompletion::SelectedFileInfo selected_file;
+    selected_file.path = webkit_glue::FilePathToWebString(files[i].path);
+    selected_file.displayName = webkit_glue::FilePathStringToWebString(
+        files[i].display_name);
+    selected_files[i] = selected_file;
+  }
 
-  // TODO(satorux,kinuko): Pass display names too. crosbug.com/27222
   if (file_chooser_completions_.front()->completion)
-    file_chooser_completions_.front()->completion->didChooseFile(ws_file_names);
+    file_chooser_completions_.front()->completion->didChooseFile(
+        selected_files);
   file_chooser_completions_.pop_front();
 
   // If there are more pending file chooser requests, schedule one now.

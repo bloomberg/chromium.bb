@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
 #include "base/file_path.h"
+#include "content/public/common/selected_file_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SelectFileDialogExtensionTest : public testing::Test {
@@ -51,7 +52,8 @@ TEST_F(SelectFileDialogExtensionTest, SelfDeleting) {
   SelfDeletingClient* client = new SelfDeletingClient(kTabId);
   // Ensure we don't crash or trip an Address Sanitizer warning about
   // use-after-free.
-  SelectFileDialogExtension::OnFileSelected(kTabId, FilePath(), 0);
+  content::SelectedFileInfo file_info;
+  SelectFileDialogExtension::OnFileSelected(kTabId, file_info, 0);
   // Simulate closing the dialog so the listener gets invoked.
   client->dialog()->ExtensionDialogClosing(NULL);
 }

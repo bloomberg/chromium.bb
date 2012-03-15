@@ -18,6 +18,10 @@
 
 class GURL;
 
+namespace content {
+struct SelectedFileInfo;
+}
+
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
 class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
  protected:
@@ -109,8 +113,9 @@ class FileBrowserFunction
 
  protected:
   typedef std::vector<GURL> UrlList;
-  typedef std::vector<FilePath> FilePathList;
-  typedef base::Callback<void(const FilePathList&)> GetLocalPathsCallback;
+  typedef std::vector<content::SelectedFileInfo> SelectedFileInfoList;
+  typedef base::Callback<void(const SelectedFileInfoList&)>
+      GetLocalPathsCallback;
 
   virtual ~FileBrowserFunction();
 
@@ -146,7 +151,7 @@ class SelectFileFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFile");
 };
@@ -167,7 +172,7 @@ class ViewFilesFunction
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const std::string& internal_task_id,
-                                       const FilePathList& files);
+                                       const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.viewFiles");
 };
@@ -187,7 +192,7 @@ class SelectFilesFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.selectFiles");
 };
@@ -231,7 +236,7 @@ class AddMountFunction
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const std::string& mount_type_str,
-                                       const FilePathList& files);
+                                       const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addMount");
 };
@@ -251,7 +256,7 @@ class RemoveMountFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.removeMount");
 };
@@ -286,7 +291,7 @@ class FormatDeviceFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.formatDevice");
 };
@@ -305,7 +310,7 @@ class GetSizeStatsFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   void GetSizeStatsCallbackOnUIThread(const std::string& mount_path,
                                       size_t total_size_kb,
@@ -329,7 +334,7 @@ class GetVolumeMetadataFunction
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");
 };
@@ -433,7 +438,7 @@ class GetFileLocationsFunction : public FileBrowserFunction {
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileLocations");
 };
@@ -459,7 +464,7 @@ class GetGDataFilesFunction : public FileBrowserFunction {
  private:
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
-  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
   // Gets the file on the top of the |remaining_gdata_paths_| or sends the
   // response if the queue is empty.

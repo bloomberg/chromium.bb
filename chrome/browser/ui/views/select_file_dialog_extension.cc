@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/selected_file_info.h"
 
 using content::BrowserThread;
 
@@ -155,20 +156,23 @@ void SelectFileDialogExtension::ExtensionTerminated(
 
 // static
 void SelectFileDialogExtension::OnFileSelected(
-    int32 tab_id, const FilePath& path, int index) {
+    int32 tab_id,
+    const content::SelectedFileInfo& file,
+    int index) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (!dialog)
     return;
   dialog->selection_type_ = SINGLE_FILE;
   dialog->selection_files_.clear();
-  dialog->selection_files_.push_back(path);
+  dialog->selection_files_.push_back(file);
   dialog->selection_index_ = index;
 }
 
 // static
 void SelectFileDialogExtension::OnMultiFilesSelected(
-    int32 tab_id, const std::vector<FilePath>& files) {
+    int32 tab_id,
+    const std::vector<content::SelectedFileInfo>& files) {
   scoped_refptr<SelectFileDialogExtension> dialog =
       PendingDialog::GetInstance()->Find(tab_id);
   if (!dialog)
@@ -203,10 +207,12 @@ void SelectFileDialogExtension::NotifyListener() {
       listener_->FileSelectionCanceled(params_);
       break;
     case SINGLE_FILE:
-      listener_->FileSelected(selection_files_[0], selection_index_, params_);
+      listener_->FileSelectedWithExtraInfo(selection_files_[0],
+                                           selection_index_,
+                                           params_);
       break;
     case MULTIPLE_FILES:
-      listener_->MultiFilesSelected(selection_files_, params_);
+      listener_->MultiFilesSelectedWithExtraInfo(selection_files_, params_);
       break;
     default:
       NOTREACHED();
