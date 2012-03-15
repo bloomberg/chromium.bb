@@ -861,3 +861,18 @@
   fun:logging::::LoggingTest_Dcheck_Test::TestBody
   fun:testing::internal::HandleSehExceptionsInMethodIfSupported
 }
+{
+  bug_118319
+  ThreadSanitizer:Race
+  fun:content::BrowserThreadImpl::~BrowserThreadImpl
+  fun:content::BrowserProcessSubThread::~BrowserProcessSubThread
+  fun:scoped_ptr::reset
+  fun:content::BrowserMainLoop::ShutdownThreadsAndCleanUp
+  fun:::BrowserMainRunnerImpl::Shutdown
+  fun:BrowserMain
+  fun:::RunNamedProcessTypeMain
+  fun:::ContentMainRunnerImpl::Run
+  fun:content::ContentMain
+  fun:ChromeMain
+  fun:main
+}
