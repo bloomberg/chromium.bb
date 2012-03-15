@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/dbus/mock_cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/mock_cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/mock_image_burner_client.h"
+#include "chrome/browser/chromeos/dbus/mock_introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_sensors_client.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
@@ -33,6 +34,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_image_burner_client_(new MockImageBurnerClient),
+      mock_introspectable_client_(new MockIntrospectableClient),
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
@@ -54,6 +56,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_cryptohome_client()));
   EXPECT_CALL(*this, GetImageBurnerClient())
       .WillRepeatedly(Return(mock_image_burner_client()));
+  EXPECT_CALL(*this, GetIntrospectableClient())
+      .WillRepeatedly(Return(mock_introspectable_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
   EXPECT_CALL(*this, GetSensorsClient())

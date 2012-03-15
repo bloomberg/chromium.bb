@@ -26,6 +26,7 @@ class  MockBluetoothNodeClient;
 class  MockCrosDisksClient;
 class  MockCryptohomeClient;
 class  MockImageBurnerClient;
+class  MockIntrospectableClient;
 class  MockPowerManagerClient;
 class  MockSensorsClient;
 class  MockSessionManagerClient;
@@ -49,6 +50,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
   MOCK_METHOD0(GetCryptohomeClient, CryptohomeClient*(void));
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
+  MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
   MOCK_METHOD0(GetSensorsClient, SensorsClient*(void));
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
@@ -79,6 +81,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockImageBurnerClient* mock_image_burner_client() {
     return mock_image_burner_client_.get();
   }
+  MockIntrospectableClient* mock_introspectable_client() {
+    return mock_introspectable_client_.get();
+  }
   MockPowerManagerClient* mock_power_manager_client() {
     return mock_power_manager_client_.get();
   }
@@ -104,6 +109,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
+  scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
   scoped_ptr<MockSensorsClient> mock_sensors_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;

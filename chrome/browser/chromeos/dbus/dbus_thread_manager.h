@@ -28,6 +28,7 @@ class BluetoothNodeClient;
 class CrosDisksClient;
 class CryptohomeClient;
 class ImageBurnerClient;
+class IntrospectableClient;
 class PowerManagerClient;
 class SessionManagerClient;
 class SensorsClient;
@@ -113,6 +114,11 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManger is shut
   // down.
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
+
+  // Returns the introspectable object client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManger is shut
+  // down.
+  virtual IntrospectableClient* GetIntrospectableClient() = 0;
 
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().

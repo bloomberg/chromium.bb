@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
+#include "chrome/browser/chromeos/dbus/introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/sensors_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -73,6 +74,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         CryptohomeClient::Create(system_bus_.get()));
     // Create the image burner client.
     image_burner_client_.reset(ImageBurnerClient::Create(system_bus_.get()));
+    // Create the introspectable object client.
+    introspectable_client_.reset(
+        IntrospectableClient::Create(system_bus_.get()));
     // Create the power manager client.
     power_manager_client_.reset(PowerManagerClient::Create(system_bus_.get()));
     // Create the session manager client.
@@ -141,6 +145,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE {
+    return introspectable_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE {
     return power_manager_client_.get();
   }
@@ -176,6 +185,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
+  scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
