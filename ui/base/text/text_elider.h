@@ -25,13 +25,28 @@ namespace ui {
 
 UI_EXPORT extern const char kEllipsis[];
 
+// Elides a well-formed email address (e.g. username@domain.com) to fit into
+// |available_pixel_width| using the specified |font|.
+// This function guarantees that the string returned will contain at least one
+// character, other than the ellipses, on either side of the '@'. If it is
+// impossible to achieve these requirements: only an ellipsis will be returned.
+// If possible: this elides only the username portion of the |email|. Otherwise,
+// the domain is elided in the middle so that it splits the available width
+// equally with the elided username (should the username be short enough that it
+// doesn't need half the available width: the elided domain will occupy that
+// extra width).
+UI_EXPORT string16 ElideEmail(const string16& email,
+                              const gfx::Font& font,
+                              int available_pixel_width);
+
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
-// than the available pixel width. For available pixel width = 0, empty
-// string is returned. |languages| is a comma separated list of ISO 639
-// language codes and is used to determine what characters are understood
-// by a user. It should come from |prefs::kAcceptLanguages|.
+// than the |available_pixel_width|. For |available_pixel_width| == 0, a
+// formatted, but un-elided, string is returned. |languages| is a comma
+// separated list of ISO 639 language codes and is used to determine what
+// characters are understood by a user. It should come from
+// |prefs::kAcceptLanguages|.
 //
 // Note: in RTL locales, if the URL returned by this function is going to be
 // displayed in the UI, then it is likely that the string needs to be marked
