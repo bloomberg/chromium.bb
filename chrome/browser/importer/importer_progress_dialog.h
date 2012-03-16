@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,9 @@ struct SourceProfile;
 
 // Shows an UI for importing and begins importing the specified |items| from
 // |source_profile| to |target_profile|. |importer_observer| is notified when
-// the process is complete, it can be NULL. |parent_window| is the window to
-// parent the UI to, it can be NULL if there's nothing to parent to. |first_run|
-// is true if it's invoked in the first run UI.
-void ShowImportProgressDialog(gfx::NativeWindow parent_window,
-                              uint16 items,
+// the process is complete, it can be NULL. |first_run| is true if it's invoked
+// in the first run UI.
+void ShowImportProgressDialog(uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
                               const SourceProfile& source_profile,

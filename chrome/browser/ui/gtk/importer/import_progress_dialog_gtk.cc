@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,19 +34,14 @@ void SetItemImportStatus(GtkWidget* label, int res_id, bool is_done) {
 
 // static
 void ImportProgressDialogGtk::StartImport(
-    GtkWindow* parent,
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
     const importer::SourceProfile& source_profile,
     Profile* profile,
     bool first_run) {
-  ImportProgressDialogGtk* dialog = new ImportProgressDialogGtk(
-      parent,
-      items,
-      importer_host,
-      importer_observer,
-      source_profile.importer_name,
+  ImportProgressDialogGtk* dialog = new ImportProgressDialogGtk(items,
+      importer_host, importer_observer, source_profile.importer_name,
       source_profile.importer_type == importer::TYPE_BOOKMARKS_FILE);
 
   // In headless mode it means that we don't show the progress window, but it
@@ -59,14 +54,12 @@ void ImportProgressDialogGtk::StartImport(
 }
 
 ImportProgressDialogGtk::ImportProgressDialogGtk(
-    GtkWindow* parent,
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
     const string16& importer_name,
     bool bookmarks_import)
-    : parent_(parent),
-      items_(items),
+    : items_(items),
       importer_host_(importer_host),
       importer_observer_(importer_observer),
       importing_(true) {
@@ -75,7 +68,7 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_TITLE).c_str(),
-      parent_,
+      NULL,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
@@ -218,17 +211,15 @@ void ImportProgressDialogGtk::ImportEnded() {
 
 namespace importer {
 
-void ShowImportProgressDialog(GtkWindow* parent,
-                              uint16 items,
+void ShowImportProgressDialog(uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
                               const SourceProfile& source_profile,
                               Profile* profile,
                               bool first_run) {
   DCHECK_NE(0, items);
-  ImportProgressDialogGtk::StartImport(
-      parent, items, importer_host, importer_observer, source_profile, profile,
-      first_run);
+  ImportProgressDialogGtk::StartImport(items, importer_host, importer_observer,
+                                       source_profile, profile, first_run);
 }
 
 }  // namespace importer

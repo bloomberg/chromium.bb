@@ -1055,8 +1055,6 @@
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
         'browser/first_run/first_run.h',
-        'browser/first_run/first_run_browser_process.cc',
-        'browser/first_run/first_run_browser_process.h',
         'browser/first_run/first_run_dialog.h',
         'browser/first_run/first_run_import_observer.cc',
         'browser/first_run/first_run_import_observer.h',

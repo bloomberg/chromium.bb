@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,8 +180,7 @@ void ImporterObserverBridge::ImportEnded() {
 
 namespace importer {
 
-void ShowImportProgressDialog(gfx::NativeWindow parent_window,
-                              uint16 items,
+void ShowImportProgressDialog(uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
                               const SourceProfile& source_profile,

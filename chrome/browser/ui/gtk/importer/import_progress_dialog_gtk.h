@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,7 @@ typedef struct _GtkWindow GtkWindow;
 class ImportProgressDialogGtk : public importer::ImporterProgressObserver {
  public:
   // Displays the import progress dialog box and starts the import process.
-  static void StartImport(GtkWindow* parent,
-                          uint16 items,
+  static void StartImport(uint16 items,
                           ImporterHost* importer_host,
                           ImporterObserver* importer_observer,
                           const importer::SourceProfile& source_profile,
@@ -32,8 +31,7 @@ class ImportProgressDialogGtk : public importer::ImporterProgressObserver {
                           bool first_run);
 
  private:
-  ImportProgressDialogGtk(GtkWindow* parent,
-                          uint16 items,
+  ImportProgressDialogGtk(uint16 items,
                           ImporterHost* importer_host,
                           ImporterObserver* importer_observer,
                           const string16& importer_name,
@@ -51,9 +49,6 @@ class ImportProgressDialogGtk : public importer::ImporterProgressObserver {
   virtual void ImportItemStarted(importer::ImportItem item) OVERRIDE;
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
   virtual void ImportEnded() OVERRIDE;
-
-  // Parent window.
-  GtkWindow* parent_;
 
   // Import progress dialog.
   GtkWidget* dialog_;

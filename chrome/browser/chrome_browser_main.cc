@@ -40,7 +40,6 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
-#include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -1142,19 +1141,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // unlocked in PostBrowserStart().
   process_singleton_->Lock(NULL);
 
-  is_first_run_ = first_run::IsChromeFirstRun() ||
-      parsed_command_line().HasSwitch(switches::kFirstRun);
-
-  if (parsed_command_line().HasSwitch(switches::kImport) ||
-      parsed_command_line().HasSwitch(switches::kImportFromFile)) {
-    // We use different BrowserProcess when importing so no GoogleURLTracker is
-    // instantiated (as it makes a net::URLRequest and we don't have an IO
-    // thread, see bug #1292702).
-    browser_process_.reset(new FirstRunBrowserProcess(parsed_command_line()));
-    is_first_run_ = false;
-  } else {
-    browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
-  }
+  is_first_run_ =
+      (first_run::IsChromeFirstRun() ||
+          parsed_command_line().HasSwitch(switches::kFirstRun)) &&
+      !parsed_command_line().HasSwitch(switches::kImport) &&
+      !parsed_command_line().HasSwitch(switches::kImportFromFile);
+  browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
 
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
     // User wants to override default tracking status.

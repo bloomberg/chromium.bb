@@ -19,7 +19,6 @@
 #include "ui/views/widget/widget.h"
 
 ImportProgressDialogView::ImportProgressDialogView(
-    HWND parent_window,
     uint16 items,
     ImporterHost* importer_host,
     ImporterObserver* importer_observer,
@@ -40,7 +39,6 @@ ImportProgressDialogView::ImportProgressDialogView(
           l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_HISTORY))),
       label_cookies_(new views::Label(
           l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_COOKIES))),
-      parent_window_(parent_window),
       items_(items),
       importer_host_(importer_host),
       importer_observer_(importer_observer),
@@ -118,10 +116,6 @@ string16 ImportProgressDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
   return l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL);
-}
-
-ui::ModalType ImportProgressDialogView::GetModalType() const {
-  return parent_window_ ? ui::MODAL_TYPE_WINDOW : ui::MODAL_TYPE_NONE;
 }
 
 string16 ImportProgressDialogView::GetWindowTitle() const {
@@ -281,8 +275,7 @@ void ImportProgressDialogView::ImportEnded() {
 
 namespace importer {
 
-void ShowImportProgressDialog(HWND parent_window,
-                              uint16 items,
+void ShowImportProgressDialog(uint16 items,
                               ImporterHost* importer_host,
                               ImporterObserver* importer_observer,
                               const SourceProfile& source_profile,
@@ -290,22 +283,19 @@ void ShowImportProgressDialog(HWND parent_window,
                               bool first_run) {
   DCHECK_NE(items, 0u);
   ImportProgressDialogView* progress_view = new ImportProgressDialogView(
-      parent_window,
       items,
       importer_host,
       importer_observer,
       source_profile.importer_name,
       source_profile.importer_type == importer::TYPE_BOOKMARKS_FILE);
 
-  views::Widget* window =
-      views::Widget::CreateWindowWithParent(progress_view, parent_window);
+  views::Widget* window = views::Widget::CreateWindow(progress_view);
 
   if (!importer_host->is_headless() && !first_run)
     window->Show();
 
-  importer_host->StartImportSettings(
-      source_profile, target_profile, items, new ProfileWriter(target_profile),
-      first_run);
+  importer_host->StartImportSettings(source_profile, target_profile, items,
+      new ProfileWriter(target_profile), first_run);
 }
 
 }  // namespace importer

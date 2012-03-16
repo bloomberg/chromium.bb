@@ -126,8 +126,7 @@ int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   source_profile.source_path = file_path;
 
   FirstRunImportObserver importer_observer;
-  importer::ShowImportProgressDialog(NULL,
-                                     importer::FAVORITES,
+  importer::ShowImportProgressDialog(importer::FAVORITES,
                                      importer_host,
                                      &importer_observer,
                                      source_profile,

@@ -51,6 +51,11 @@ bool ImportBookmarks(const FilePath& import_bookmarks_path) {
 
   import_cmd.CommandLine::AppendSwitchPath(switches::kImportFromFile,
                                            import_bookmarks_path);
+
+  // The importer doesn't need to do any background networking tasks so disable
+  // them.
+  import_cmd.CommandLine::AppendSwitch(switches::kDisableBackgroundNetworking);
+
   // Time to launch the process that is going to do the import. We'll wait
   // for the process to return.
   base::LaunchOptions options;

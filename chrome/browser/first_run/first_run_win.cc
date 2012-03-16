@@ -341,34 +341,23 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
 
 std::string EncodeImportParams(int importer_type,
                                int options,
-                               int skip_first_run_ui,
-                               HWND window) {
-  return base::StringPrintf(
-      "%d@%d@%d@%d", importer_type, options, skip_first_run_ui, window);
+                               bool skip_first_run_ui) {
+  return base::StringPrintf("%d@%d@%d", importer_type, options,
+                            skip_first_run_ui ? 1 : 0);
 }
 
 bool DecodeImportParams(const std::string& encoded,
                         int* importer_type,
                         int* options,
-                        int* skip_first_run_ui,
-                        HWND* window) {
+                        bool* skip_first_run_ui) {
   std::vector<std::string> parts;
   base::SplitString(encoded, '@', &parts);
-  if (parts.size() != 4)
+  int skip_first_run_ui_int;
+  if ((parts.size() != 3) || !base::StringToInt(parts[0], importer_type) ||
+      !base::StringToInt(parts[1], options) ||
+      !base::StringToInt(parts[2], &skip_first_run_ui_int))
     return false;
-
-  if (!base::StringToInt(parts[0], importer_type))
-    return false;
-
-  if (!base::StringToInt(parts[1], options))
-    return false;
-
-  if (!base::StringToInt(parts[2], skip_first_run_ui))
-    return false;
-
-  int64 window_int;
-  base::StringToInt64(parts[3], &window_int);
-  *window = reinterpret_cast<HWND>(window_int);
+  *skip_first_run_ui = !!skip_first_run_ui_int;
   return true;
 }
 
@@ -384,10 +373,9 @@ int ImportFromBrowser(Profile* profile,
   }
   int importer_type = 0;
   int items_to_import = 0;
-  int skip_first_run_ui = 0;
-  HWND parent_window = NULL;
+  bool skip_first_run_ui = false;
   if (!DecodeImportParams(import_info, &importer_type, &items_to_import,
-                          &skip_first_run_ui, &parent_window)) {
+                          &skip_first_run_ui)) {
     NOTREACHED();
     return false;
   }
@@ -399,16 +387,12 @@ int ImportFromBrowser(Profile* profile,
 
   // If |skip_first_run_ui|, we run in headless mode.  This means that if
   // there is user action required the import is automatically canceled.
-  if (skip_first_run_ui > 0)
+  if (skip_first_run_ui)
     importer_host->set_headless();
 
-  importer::ShowImportProgressDialog(
-      parent_window,
-      static_cast<uint16>(items_to_import),
-      importer_host,
-      &importer_observer,
-      importer_list->GetSourceProfileForImporterType(importer_type),
-      profile,
+  importer::ShowImportProgressDialog(static_cast<uint16>(items_to_import),
+      importer_host, &importer_observer,
+      importer_list->GetSourceProfileForImporterType(importer_type), profile,
       true);
   importer_observer.RunLoop();
   return importer_observer.import_result();
@@ -437,15 +421,18 @@ bool ImportSettingsWin(Profile* profile,
                                g_browser_process->GetApplicationLocale());
 
   if (items_to_import) {
-    import_cmd.CommandLine::AppendSwitchASCII(switches::kImport,
-        EncodeImportParams(importer_type, items_to_import,
-                           skip_first_run_ui ? 1 : 0, NULL));
+    import_cmd.AppendSwitchASCII(switches::kImport,
+        EncodeImportParams(importer_type, items_to_import, skip_first_run_ui));
   }
 
   if (!import_bookmarks_path.empty()) {
-    import_cmd.CommandLine::AppendSwitchPath(
-        switches::kImportFromFile, import_bookmarks_path);
+    import_cmd.AppendSwitchPath(switches::kImportFromFile,
+                                import_bookmarks_path);
   }
+
+  // The importer doesn't need to do any background networking tasks so disable
+  // them.
+  import_cmd.CommandLine::AppendSwitch(switches::kDisableBackgroundNetworking);
 
   // Time to launch the process that is going to do the import.
   base::ProcessHandle import_process;
@@ -530,8 +517,7 @@ void SetImportPreferencesAndLaunchImport(
     if (!ImportSettingsWin(NULL,
           importer_list->GetSourceProfileAt(0).importer_type,
           out_prefs->do_import_items,
-          FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
-          true)) {
+          FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)), true)) {
       LOG(WARNING) << "silent import failed";
     }
   }
