@@ -132,7 +132,7 @@ def GetPreferredTrySlaves():
       'nacl-win64_newlib_dbg',
       'nacl-win64_newlib_opt',
       'nacl-win64_glibc_opt',
-      'nacl-arm_opt',
+      'nacl-arm_opt_panda',
       # Clang bots
       'nacl-lucid_64-newlib-dbg-clang',
       'nacl-mac10.6-newlib-dbg-clang',
