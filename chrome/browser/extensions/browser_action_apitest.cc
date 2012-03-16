@@ -98,7 +98,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
-  EXPECT_FALSE(GetBrowserActionsBar().HasIcon(0));
+  EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
+
+  // Set prev_id which holds the id of the previous image, and use it in the
+  // next test to see if the image changes.
+  uint32_t prev_id = extension->browser_action()->GetIcon(0).getGenerationID();
 
   // Tell the extension to update the icon using setIcon({imageData:...}).
   ResultCatcher catcher;
@@ -108,18 +112,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   // Test that we received the changes.
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
-
-  // Set prev_id which holds the id of the previous image, and use it in the
-  // next test to see if the image changes.
-  uint32_t prev_id = extension->browser_action()->GetIcon(0).getGenerationID();
+  EXPECT_NE(prev_id, extension->browser_action()->GetIcon(0).getGenerationID());
+  prev_id = extension->browser_action()->GetIcon(0).getGenerationID();
 
   // Tell the extension to update the icon using setIcon({path:...}).
   ui_test_utils::NavigateToURL(browser(),
       GURL(extension->GetResourceURL("update2.html")));
   ASSERT_TRUE(catcher.GetNextResult());
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
-  EXPECT_TRUE(prev_id !=
-      extension->browser_action()->GetIcon(0).getGenerationID());
+  EXPECT_NE(prev_id, extension->browser_action()->GetIcon(0).getGenerationID());
 }
 
 // This test is flaky as per http://crbug.com/74557.

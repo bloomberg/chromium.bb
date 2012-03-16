@@ -100,17 +100,21 @@ void BrowserActionButton::ViewHierarchyChanged(
     // The Browser Action API does not allow the default icon path to be
     // changed at runtime, so we can load this now and cache it.
     std::string relative_path = browser_action_->default_icon_path();
-    if (relative_path.empty())
-      return;
-
-    // LoadImage is not guaranteed to be synchronous, so we might see the
-    // callback OnImageLoaded execute immediately. It (through UpdateState)
-    // expects parent() to return the owner for this button, so this
-    // function is as early as we can start this request.
-    tracker_.LoadImage(extension_, extension_->GetResource(relative_path),
-                       gfx::Size(Extension::kBrowserActionIconMaxSize,
-                                 Extension::kBrowserActionIconMaxSize),
-                       ImageLoadingTracker::DONT_CACHE);
+    if (!relative_path.empty()) {
+      // LoadImage is not guaranteed to be synchronous, so we might see the
+      // callback OnImageLoaded execute immediately. It (through UpdateState)
+      // expects parent() to return the owner for this button, so this
+      // function is as early as we can start this request.
+      tracker_.LoadImage(extension_, extension_->GetResource(relative_path),
+                         gfx::Size(Extension::kBrowserActionIconMaxSize,
+                                   Extension::kBrowserActionIconMaxSize),
+                         ImageLoadingTracker::DONT_CACHE);
+    } else {
+      // Set the icon to be the default extensions icon.
+      default_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_EXTENSIONS_FAVICON).ToSkBitmap();
+      UpdateState();
+    }
 
     // Iterate through all the keybindings and see if one is assigned to the
     // browserAction.

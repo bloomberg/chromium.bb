@@ -40,6 +40,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -113,8 +114,6 @@ class BrowserActionButton : public content::NotificationObserver,
 
     DCHECK(extension_->browser_action());
 
-    UpdateState();
-
     // The Browser Action API does not allow the default icon path to be
     // changed at runtime, so we can load this now and cache it.
     std::string path = extension_->browser_action()->default_icon_path();
@@ -123,7 +122,15 @@ class BrowserActionButton : public content::NotificationObserver,
                          gfx::Size(Extension::kBrowserActionIconMaxSize,
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
+    } else {
+      const SkBitmap* bm =
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_EXTENSIONS_FAVICON).ToSkBitmap();
+      default_skbitmap_ = *bm;
+      default_icon_ = gfx::GdkPixbufFromSkBitmap(bm);
     }
+
+    UpdateState();
 
     signals_.Connect(button(), "button-press-event",
                      G_CALLBACK(OnButtonPress), this);
