@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,9 @@ const BookmarkNode* GetBookmarkBarNode(int index) WARN_UNUSED_RESULT;
 
 // Used to access the "other bookmarks" node within a particular sync profile.
 const BookmarkNode* GetOtherNode(int index) WARN_UNUSED_RESULT;
+
+// Used to access the "Synced Bookmarks" node within a particular sync profile.
+const BookmarkNode* GetSyncedBookmarksNode(int index) WARN_UNUSED_RESULT;
 
 // Used to access the bookmarks within the verifier sync profile.
 BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;

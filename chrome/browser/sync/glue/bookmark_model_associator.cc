@@ -466,15 +466,17 @@ bool BookmarkModelAssociator::BuildAssociations(SyncError* error) {
         child_node = BookmarkChangeProcessor::CreateBookmarkNode(
             &sync_child_node, parent_node, bookmark_model_, index);
         if (!child_node) {
-          error->Reset(FROM_HERE,
-                       "Failed to create bookmark node with title " +
-                        sync_child_node.GetTitle() + " and url " +
-                        sync_child_node.GetURL().possibly_invalid_spec(),
-                       model_type());
-          return false;
+          // This can happen if a sync bookmark node doesn't have a valid url.
+          // As far as we can tell, it appears this can only happen if something
+          // interrupts association. For now, we just ignore the bookmark.
+          LOG(ERROR) << "Failed to create bookmark node with title "
+                     << sync_child_node.GetTitle() << " and url "
+                     << sync_child_node.GetURL().possibly_invalid_spec();
         }
       }
-      Associate(child_node, sync_child_id);
+      if (child_node) {
+        Associate(child_node, sync_child_id);
+      }
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);
 

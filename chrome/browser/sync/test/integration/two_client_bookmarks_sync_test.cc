@@ -18,6 +18,7 @@ using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetOtherNode;
+using bookmarks_helper::GetSyncedBookmarksNode;
 using bookmarks_helper::GetUniqueNodeByURL;
 using bookmarks_helper::HasNodeWithURL;
 using bookmarks_helper::IndexedFolderName;
@@ -1920,4 +1921,29 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RestartSyncService) {
   ASSERT_EQ(ProfileSyncService::Status::READY,
             GetClient(0)->GetStatus().summary);
   ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
+}
+
+// Trigger the server side creation of Synced Bookmarks. Ensure both clients
+// remain syncing afterwards. Add bookmarks to the synced bookmarks folder
+// and ensure both clients receive the boomkmark.
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, CreateSyncedBookmarks) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  TriggerCreateSyncedBookmarks();
+
+  // Add a bookmark on Client 0 and ensure it syncs over. This will also trigger
+  // both clients downloading the new Synced Bookmarks folder.
+  ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllModelsMatch());
+
+  // Now add a bookmark within the Synced Bookmarks folder and ensure it syncs
+  // over.
+  const BookmarkNode* synced_bookmarks = GetSyncedBookmarksNode(0);
+  ASSERT_TRUE(synced_bookmarks);
+  ASSERT_TRUE(AddURL(0, synced_bookmarks, 0, L"Google2",
+                     GURL("http://www.google2.com")));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatch());
 }

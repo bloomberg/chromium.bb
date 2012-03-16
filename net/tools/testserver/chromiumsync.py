@@ -264,13 +264,18 @@ class PermanentItem(object):
     sync_type: A value from ALL_TYPES, giving the datatype of this permanent
       item.  This controls which types of client GetUpdates requests will
       cause the permanent item to be created and returned.
+    create_by_default: Whether the permanent item is created at startup or not.
+      This value is set to True in the default case. Non-default permanent items
+      are those that are created only when a client explicitly tells the server
+      to do so.
   """
 
-  def __init__(self, tag, name, parent_tag, sync_type):
+  def __init__(self, tag, name, parent_tag, sync_type, create_by_default=True):
     self.tag = tag
     self.name = name
     self.parent_tag = parent_tag
     self.sync_type = sync_type
+    self.create_by_default = create_by_default
 
 
 class MigrationHistory(object):
@@ -409,6 +414,9 @@ class SyncDataModel(object):
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
       PermanentItem('other_bookmarks', name='Other Bookmarks',
                     parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK),
+      PermanentItem('synced_bookmarks', name='Synced Bookmarks',
+                    parent_tag='google_chrome_bookmarks', sync_type=BOOKMARK,
+                    create_by_default=False),
       PermanentItem('google_chrome_preferences', name='Preferences',
                     parent_tag='google_chrome', sync_type=PREFERENCE),
       PermanentItem('google_chrome_autofill', name='Autofill',
@@ -595,15 +603,15 @@ class SyncDataModel(object):
     self._WritePosition(entry, self._ServerTagToId(spec.parent_tag))
     self._SaveEntry(entry)
 
-  def _CreatePermanentItems(self, requested_types):
-    """Ensure creation of all permanent items for a given set of sync types.
+  def _CreateDefaultPermanentItems(self, requested_types):
+    """Ensure creation of all default permanent items for a given set of types.
 
     Args:
       requested_types: A list of sync data types from ALL_TYPES.
-        Permanent items of only these types will be created.
+        All default permanent items of only these types will be created.
     """
     for spec in self._PERMANENT_ITEM_SPECS:
-      if spec.sync_type in requested_types:
+      if spec.sync_type in requested_types and spec.create_by_default:
         self._CreatePermanentItem(spec)
 
   def ResetStoreBirthday(self):
@@ -634,7 +642,7 @@ class SyncDataModel(object):
     if not sieve.HasAnyTimestamp():
       return (0, [], 0)
     min_timestamp = sieve.GetMinTimestamp()
-    self._CreatePermanentItems(sieve.GetFirstTimeTypes())
+    self._CreateDefaultPermanentItems(sieve.GetFirstTimeTypes())
     change_log = sorted(self._entries.values(),
                         key=operator.attrgetter('version'))
     new_changes = [x for x in change_log if x.version > min_timestamp]
@@ -925,6 +933,18 @@ class SyncDataModel(object):
     nigori_new.specifics.nigori.sync_tabs = True
     self._SaveEntry(nigori_new)
 
+  def TriggerCreateSyncedBookmarks(self):
+    """Create the Synced Bookmarks folder under the Bookmarks permanent item.
+
+    Clients will then receive the Synced Bookmarks folder on future
+    GetUpdates, and new bookmarks can be added within the Synced Bookmarks
+    folder.
+    """
+
+    synced_bookmarks_spec, = [spec for spec in self._PERMANENT_ITEM_SPECS
+                              if spec.tag == "synced_bookmarks"]
+    self._CreatePermanentItem(synced_bookmarks_spec)
+
   def SetInducedError(self, error, error_frequency,
                       sync_count_before_errors):
     self.induced_error = error
@@ -1073,6 +1093,13 @@ class TestServer(object):
     return (
         200,
         '<html><title>Sync Tabs</title><H1>Sync Tabs</H1></html>')
+
+  def HandleCreateSyncedBookmarks(self):
+    """Create the Synced Bookmarks folder under Bookmarks."""
+    self.account.TriggerCreateSyncedBookmarks()
+    return (
+        200,
+        '<html><title>Synced Bookmarks</title><H1>Synced Bookmarks</H1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

@@ -28,6 +28,8 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
+static const char kMobileBookmarksTag[] = "synced_bookmarks";
+
 BookmarkChangeProcessor::BookmarkChangeProcessor(
     BookmarkModelAssociator* model_associator,
     DataTypeErrorHandler* error_handler)
@@ -449,11 +451,25 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       }
 
       if (!CreateOrUpdateBookmarkNode(&src, model)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE,
-            "Failed to create bookmark node with title " +
-            src.GetTitle() + " and url " +
-            src.GetURL().possibly_invalid_spec());
-        return;
+        // Because the Synced Bookmarks node can be created server side, it's
+        // possible it'll arrive at the client as an update. In that case it
+        // won't have been associated at startup, the GetChromeNodeFromSyncId
+        // call above will return NULL, and we won't detect it as a permanent
+        // node, resulting in us trying to create it here (which will
+        // fail). Therefore, we add special logic here just to detect the
+        // Synced Bookmarks folder.
+        sync_api::ReadNode synced_bookmarks(trans);
+        if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) &&
+            synced_bookmarks.GetId() == it->id) {
+          // This is a newly created Synced Bookmarks node. Associate it.
+          model_associator_->Associate(model->mobile_node(), it->id);
+        } else {
+          // We ignore bookmarks we can't add. Chances are this is caused by
+          // a bookmark that was not fully associated.
+          LOG(ERROR) << "Failed to create bookmark node with title "
+                     << src.GetTitle() + " and url "
+                     << src.GetURL().possibly_invalid_spec();
+        }
       }
     }
   }

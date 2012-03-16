@@ -17,6 +17,8 @@ import theme_specifics_pb2
 class SyncDataModelTest(unittest.TestCase):
   def setUp(self):
     self.model = chromiumsync.SyncDataModel()
+    # The Synced Bookmarks folder is not created by default
+    self._expect_synced_bookmarks_folder = False
 
   def AddToModel(self, proto):
     self.model._entries[proto.id_string] = proto
@@ -67,13 +69,16 @@ class SyncDataModelTest(unittest.TestCase):
     self.assertEqual(2, self.model._entries[proto.id_string].version)
 
   def testCreatePermanentItems(self):
-    self.model._CreatePermanentItems(chromiumsync.ALL_TYPES)
+    self.model._CreateDefaultPermanentItems(chromiumsync.ALL_TYPES)
     self.assertEqual(len(chromiumsync.ALL_TYPES) + 2,
                      len(self.model._entries))
 
   def ExpectedPermanentItemCount(self, sync_type):
     if sync_type == chromiumsync.BOOKMARK:
-      return 4
+      if self._expect_synced_bookmarks_folder:
+        return 5
+      else:
+        return 4
     elif sync_type == chromiumsync.TOP_LEVEL:
       return 1
     else:
@@ -107,8 +112,13 @@ class SyncDataModelTest(unittest.TestCase):
       # Doing a wider GetUpdates from timestamp zero shouldn't recreate either.
       new_version, changes, remaining = (
           self.GetChangesFromTimestamp(all_types, 0))
-      self.assertEqual(len(chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS),
-                       new_version)
+      if self._expect_synced_bookmarks_folder:
+        self.assertEqual(len(chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS),
+                         new_version)
+      else:
+        self.assertEqual(
+            len(chromiumsync.SyncDataModel._PERMANENT_ITEM_SPECS) -1,
+            new_version)
       self.assertEqual(new_version, len(changes))
       self.assertEqual(0, remaining)
       version, changes, remaining = (
@@ -560,6 +570,35 @@ class SyncDataModelTest(unittest.TestCase):
     marker.token = pickle.dumps((15413, 4))
     sieve = chromiumsync.UpdateSieve(msg, migrator)
     sieve.CheckMigrationState()
+
+  def testCreateSyncedBookmaks(self):
+    version1, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.BOOKMARK], 0))
+    id_string = self.model._MakeCurrentId(chromiumsync.BOOKMARK,
+                                          '<server tag>synced_bookmarks')
+    self.assertFalse(self.model._ItemExists(id_string))
+    self._expect_synced_bookmarks_folder = True
+    self.model.TriggerCreateSyncedBookmarks()
+    self.assertTrue(self.model._ItemExists(id_string))
+
+    # Check that the version changed when the folder was created and the only
+    # change was the folder creation.
+    version2, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.BOOKMARK], version1))
+    self.assertEqual(len(changes), 1)
+    self.assertEqual(changes[0].id_string, id_string)
+    self.assertNotEqual(version1, version2)
+    self.assertEqual(
+        self.ExpectedPermanentItemCount(chromiumsync.BOOKMARK),
+        version2)
+
+    # Ensure getting from timestamp 0 includes the folder.
+    version, changes, remaining = (
+        self.GetChangesFromTimestamp([chromiumsync.BOOKMARK], 0))
+    self.assertEqual(
+        self.ExpectedPermanentItemCount(chromiumsync.BOOKMARK),
+        len(changes))
+    self.assertEqual(version2, version)
 
 
 if __name__ == '__main__':

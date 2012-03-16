@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,6 +262,10 @@ const BookmarkNode* GetBookmarkBarNode(int index) {
 
 const BookmarkNode* GetOtherNode(int index) {
   return GetBookmarkModel(index)->other_node();
+}
+
+const BookmarkNode* GetSyncedBookmarksNode(int index) {
+  return GetBookmarkModel(index)->mobile_node();
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {
