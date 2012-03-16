@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 134
+#   For your editing convenience: highest ID currently used: 136
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1823,14 +1823,14 @@
       },
       'example_value': True,
       'id': 61,
-      'caption': '''Enable lock when ChromeOS devices become idle or suspended.''',
-      'desc': '''Enable lock when ChromeOS devices become idle or suspended.
+      'caption': '''Enable lock when the device become idle or suspended.''',
+      'desc': '''Enable lock when <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices become idle or suspended.
 
-      If you enable this setting, users will be asked for a password to unlock ChromeOS devices from sleep.
+      If you enable this setting, users will be asked for a password to unlock the device from sleep.
 
-      If you disable this setting, users will not be asked for a password to wake ChromeOS devices from sleep.
+      If you disable this setting, users will not be asked for a password to unlock the device from sleep.
 
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+      If you enable or disable this setting, users cannot change or override it.
 
       If the policy is left not set the user can choose whether he wants to be asked for password to unlock the device or not.''',
     },
@@ -2414,6 +2414,7 @@
       'name': 'ChromeOsReleaseChannelDelegated',
       'type': 'main',
       'supported_on': ['chrome_os:0.19-'],
+      'device_only': True,
       'features': {'dynamic_refresh': True},
       'example_value': False,
       'id': 134,
@@ -2431,7 +2432,7 @@
       'example_value': True,
       'id': 128,
       'caption': '''Wipe user data on sign-out''',
-      'desc': '''Determines whether Chrome OS keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
+      'desc': '''Determines whether <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
     },
     {
       'name': 'DeviceIdleLogoutTimeout',
@@ -2490,6 +2491,34 @@
       Determines the duration before the screen saver is shown on the sign-in screen for devices in retail mode.
 
       The policy value should be specified in milliseconds.''',
+    },
+    {
+      'name': 'DeviceAppPack',
+      'type': 'list',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "http://clients2.google.com/service/update2/crx", "online-only": True, } ],
+      'id': 135,
+      'caption': '''List of AppPack extensions''',
+      'desc': '''This policy is active in retail mode only.
+
+      Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
+
+      Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field. The optional 'online-only' field can be set to True to indicate that this extension should be installed only when the device is online at sign-in time.''',
+    },
+    {
+      'name': 'DeviceAutoUpdateDisabled',
+      'type': 'main',
+      'supported_on': ['chrome_os:19-'],
+      'device_only': True,
+      'features': {'dynamic_refresh': True},
+      'example_value': True,
+      'id': 136,
+      'caption': '''Disables Auto Update''',
+      'desc': '''Disables automatic updates when set to True.
+
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.''',
     },
   ],
   'messages': {

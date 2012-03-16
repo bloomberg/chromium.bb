@@ -192,6 +192,8 @@ class PolicyPrefsTestCases(object):
     'DeviceIdleLogoutWarningDuration': (15000, [], []),
     'DeviceLoginScreenSaverId': ('lcncmkcnkcdbbanbjakcencbaoegdjlp', [], []),
     'DeviceLoginScreenSaverTimeout': (30000, [], []),
+    'DeviceAppPack': ([], [], []),
+    'DeviceAutoUpdateDisabled': (True, [], []),
 
     # Chrome Frame policies:
     'ChromeFrameRendererSettings': (0, [], []),

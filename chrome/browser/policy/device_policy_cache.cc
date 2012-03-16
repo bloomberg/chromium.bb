@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
+#include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
@@ -414,6 +415,26 @@ void DevicePolicyCache::DecodeKioskPolicies(
                     DecodeIntegerValue(container.screen_saver_timeout()));
     }
   }
+
+  if (policy.has_app_pack()) {
+    const em::AppPackProto& container(policy.app_pack());
+    base::ListValue* app_pack_list = new base::ListValue();
+    for (int i = 0; i < container.app_pack_size(); ++i) {
+      const em::AppPackEntryProto& entry(container.app_pack(i));
+      if (entry.has_extension_id() && entry.has_update_url()) {
+        base::DictionaryValue* dict = new base::DictionaryValue();
+        dict->SetString(AppPackUpdater::kExtensionId, entry.extension_id());
+        dict->SetString(AppPackUpdater::kUpdateUrl, entry.update_url());
+        if (entry.has_online_only())
+          dict->SetBoolean(AppPackUpdater::kOnlineOnly, entry.online_only());
+        app_pack_list->Append(dict);
+      }
+    }
+    policies->Set(key::kDeviceAppPack,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE,
+                  app_pack_list);
+  }
 }
 
 // static
@@ -537,6 +558,16 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     POLICY_SCOPE_MACHINE,
                     Value::CreateBooleanValue(
                         container.release_channel_delegated()));
+    }
+  }
+
+  if (policy.has_auto_update_settings()) {
+    const em::AutoUpdateSettingsProto& container(policy.auto_update_settings());
+    if (container.has_update_disabled()) {
+      policies->Set(key::kDeviceAutoUpdateDisabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(container.update_disabled()));
     }
   }
 }
