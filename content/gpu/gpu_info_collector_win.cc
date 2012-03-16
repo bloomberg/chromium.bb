@@ -33,62 +33,65 @@ std::string VersionNumberToString(uint32 version_number) {
   return base::IntToString(hi) + "." + base::IntToString(low);
 }
 
-float GetComponentScore(IProvideWinSATAssessmentInfo* subcomponent) {
-  float score;
-  HRESULT hr = subcomponent->get_Score(&score);
-  if (FAILED(hr))
+float GetAssessmentScore(IProvideWinSATResultsInfo* results,
+                         WINSAT_ASSESSMENT_TYPE type) {
+  IProvideWinSATAssessmentInfo* subcomponent = NULL;
+  if (FAILED(results->GetAssessmentInfo(type, &subcomponent)))
     return 0.0;
+
+  float score = 0.0;
+  if (FAILED(subcomponent->get_Score(&score)))
+    score = 0.0;
+  subcomponent->Release();
   return score;
 }
 
 content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
-  HRESULT hr = S_OK;
   IQueryRecentWinSATAssessment* assessment = NULL;
   IProvideWinSATResultsInfo* results = NULL;
-  IProvideWinSATAssessmentInfo* subcomponent = NULL;
+
   content::GpuPerformanceStats stats;
 
-  hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  if (FAILED(hr))
-    goto cleanup;
+  do {
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "CoInitializeEx() failed";
+      break;
+    }
 
-  hr = CoCreateInstance(__uuidof(CQueryWinSAT),
-                        NULL,
-                        CLSCTX_INPROC_SERVER,
-                        __uuidof(IQueryRecentWinSATAssessment),
-                        reinterpret_cast<void**>(&assessment));
-  if (FAILED(hr))
-    goto cleanup;
+    hr = CoCreateInstance(__uuidof(CQueryWinSAT),
+                          NULL,
+                          CLSCTX_INPROC_SERVER,
+                          __uuidof(IQueryRecentWinSATAssessment),
+                          reinterpret_cast<void**>(&assessment));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "CoCreateInstance() failed";
+      break;
+    }
 
-  hr = assessment->get_Info(&results);
-  if (FAILED(hr))
-    goto cleanup;
+    hr = assessment->get_Info(&results);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "assessment->get_Info() failed";
+      break;
+    }
 
-  hr = results->get_SystemRating(&stats.overall);
-  if (FAILED(hr))
-    goto cleanup;
+    hr = results->get_SystemRating(&stats.overall);
+    if (FAILED(hr))
+      LOG(ERROR) << "Get overall score failed";
 
-  hr = results->GetAssessmentInfo(WINSAT_ASSESSMENT_D3D, &subcomponent);
-  if (FAILED(hr))
-    goto cleanup;
-  stats.gaming = GetComponentScore(subcomponent);
-  subcomponent->Release();
-  subcomponent = NULL;
+    stats.gaming = GetAssessmentScore(results, WINSAT_ASSESSMENT_D3D);
+    if (stats.gaming == 0.0)
+      LOG(ERROR) << "Get gaming score failed";
 
-  hr = results->GetAssessmentInfo(WINSAT_ASSESSMENT_GRAPHICS, &subcomponent);
-  if (FAILED(hr))
-    goto cleanup;
-  stats.graphics = GetComponentScore(subcomponent);
-  subcomponent->Release();
-  subcomponent = NULL;
+    stats.graphics = GetAssessmentScore(results, WINSAT_ASSESSMENT_GRAPHICS);
+    if (stats.graphics == 0.0)
+      LOG(ERROR) << "Get graphics score failed";
+  } while (false);
 
- cleanup:
   if (assessment)
     assessment->Release();
   if (results)
     results->Release();
-  if (subcomponent)
-    subcomponent->Release();
   CoUninitialize();
 
   return stats;
