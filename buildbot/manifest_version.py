@@ -587,14 +587,13 @@ class BuildSpecsManager(object):
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
-    self.RefreshManifestCheckout()
-
     last_error = None
     for index in range(0, retries + 1):
       try:
         self.CheckoutSourceCode()
 
         version_info = self.GetCurrentVersionInfo()
+        self.RefreshManifestCheckout()
         self.InitializeManifestVariables(version_info)
 
         if self.HasCheckoutBeenBuilt():
@@ -618,10 +617,9 @@ class BuildSpecsManager(object):
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
-
-        # Cleanse any failed local changes.
-        self.RefreshManifestCheckout()
     else:
+      # Cleanse any failed local changes and throw an exception.
+      self.RefreshManifestCheckout()
       raise GenerateBuildSpecException(last_error)
 
   def SetInFlight(self, version):
@@ -660,11 +658,10 @@ class BuildSpecsManager(object):
       success: True for success, False for failure
       retries: Number of retries for updating the status
     """
-    self.RefreshManifestCheckout()
-
     last_error = None
     for index in range(0, retries + 1):
       try:
+        self.RefreshManifestCheckout()
         CreatePushBranch(self.manifest_dir)
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
@@ -684,12 +681,11 @@ class BuildSpecsManager(object):
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
-
-        # Cleanse any failed local changes.
-        self.RefreshManifestCheckout()
       else:
         return
     else:
+      # Cleanse any failed local changes and throw an exception.
+      self.RefreshManifestCheckout()
       raise StatusUpdateException(last_error)
 
 
