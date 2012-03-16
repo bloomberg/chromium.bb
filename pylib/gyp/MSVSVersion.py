@@ -200,7 +200,7 @@ def _CreateVersion(name, path):
   return versions[str(name)]
 
 
-def _DetectVisualStudioVersions(versions_to_check):
+def _DetectVisualStudioVersions(versions_to_check, force_express):
   """Collect the list of installed visual studio versions.
 
   Returns:
@@ -231,7 +231,7 @@ def _DetectVisualStudioVersions(versions_to_check):
       # Check for full.
       full_path = os.path.join(path, 'devenv.exe')
       express_path = os.path.join(path, 'vcexpress.exe')
-      if os.path.exists(full_path):
+      if not force_express and os.path.exists(full_path):
         # Add this one.
         versions.append(_CreateVersion(version_to_year[version],
             os.path.join(path, '..', '..')))
@@ -258,10 +258,18 @@ def SelectVisualStudioVersion(version='auto'):
     # For now, prefer versions before VS2010
     'auto': ('9.0', '8.0', '10.0'),
     '2005': ('8.0',),
+    '2005e': ('8.0',),
     '2008': ('9.0',),
+    '2008e': ('9.0',),
     '2010': ('10.0',),
+    '2010e': ('10.0',),
   }
-  versions = _DetectVisualStudioVersions(version_map[str(version)])
+  version = str(version)
+  versions = _DetectVisualStudioVersions(version_map[version], 'e' in version)
   if not versions:
-    raise
+    if version == 'auto':
+      # Default to 2005 if we couldn't find anything
+      return _CreateVersion('2005', None)
+    else:
+      return _CreateVersion(version, None)
   return versions[0]
