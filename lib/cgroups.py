@@ -386,10 +386,10 @@ class Cgroup(object):
 
     If strict is True, then we must be removed.
     """
-    try:
-      return self._RemoveGroupOnDisk(self.path, strict=strict)
-    finally:
+    if self._RemoveGroupOnDisk(self.path, strict=strict):
       self._inited = None
+      return True
+    return False
 
   def RemoveGroup(self, name, strict=False):
     """Removes a nested cgroup of ours
@@ -425,10 +425,17 @@ class Cgroup(object):
       raise RuntimeError("cgroups.py: Was asked to wipe path %s, refusing. "
                          "strict was %r, sudo_strict was %r"
                          % (path, strict, sudo_strict))
-    cros_lib.SudoRunCommand(['find', path, '-depth', '-type', 'd',
-                            '-exec', 'rmdir', '{}', ';'],
-                            redirect_stderr=True, error_ok=not strict,
-                            print_cmd=False, strict=sudo_strict)
+
+    result = cros_lib.SudoRunCommand(
+        ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
+        redirect_stderr=True, error_ok=not strict,
+        print_cmd=False, strict=sudo_strict)
+    if result.returncode == 0:
+      return True
+    elif not os.path.isdir(path):
+      # We were invoked against a nonexistant path.
+      return True
+    return False
 
   def TransferCurrentPid(self):
     """Move the current process into this cgroup"""
@@ -490,10 +497,9 @@ class Cgroup(object):
       with self.TemporarilySwitchToGroup(node):
         yield
     finally:
-      node.KillProcesses()
-      node.RemoveThisGroup()
+      node.KillProcesses(remove=True)
 
-  def KillProcesses(self, poll_interval=0.05):
+  def KillProcesses(self, poll_interval=0.05, remove=False):
     """Kill all processes in this namespace."""
 
     def _SignalPids(pids, signum):
@@ -550,15 +556,21 @@ class Cgroup(object):
       # shutdown the processes.  They may still be transitioning to defunct
       # kernel side by when we hit this scan, but that's fine- the next will
       # get it.
-      groups_existed = False
-      for group in self.nested_groups:
-        # This needs to be nonstrict; it's possible the kernel is currently
-        # killing the pids we've just sigkill'd, thus the group isn't removable
-        # yet.  Additionally, it's possible a child got forked we didn't see.
-        # Ultimately via our killing/removal attempts, it will be removed,
-        # just not necessarily on the first run.
+      # This needs to be nonstrict; it's possible the kernel is currently
+      # killing the pids we've just sigkill'd, thus the group isn't removable
+      # yet.  Additionally, it's possible a child got forked we didn't see.
+      # Ultimately via our killing/removal attempts, it will be removed,
+      # just not necessarily on the first run.
+      if remove:
+        if self.RemoveThisGroup(strict=False):
+          # If we successfully removed this group, then there can be no pids,
+          # sub groups, etc, within it.  No need to scan further.
+          return True
         groups_existed = True
-        group.RemoveThisGroup(strict=False)
+      else:
+        groups_existed = [group.RemoveThisGroup(strict=False)
+                          for group in self.nested_groups]
+        groups_existed = not all(groups_existed)
 
 
 
