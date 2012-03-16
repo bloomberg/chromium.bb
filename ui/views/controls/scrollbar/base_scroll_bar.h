@@ -63,6 +63,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
 
   // ScrollBar overrides:

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,7 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
 
   // Overrideen from View for keyboard UI purpose.
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& e) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 
   // Overridden from ScrollBar.

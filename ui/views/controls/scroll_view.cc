@@ -399,6 +399,15 @@ bool ScrollView::OnKeyPressed(const KeyEvent& event) {
   return processed;
 }
 
+ui::GestureStatus ScrollView::OnGestureEvent(const GestureEvent& event) {
+  ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+  if (vert_sb_->visible())
+    status = vert_sb_->OnGestureEvent(event);
+  if (status == ui::GESTURE_STATUS_UNKNOWN && horiz_sb_->visible())
+    status = horiz_sb_->OnGestureEvent(event);
+  return status;
+}
+
 bool ScrollView::OnMouseWheel(const MouseWheelEvent& e) {
   bool processed = false;
   // Give vertical scrollbar priority

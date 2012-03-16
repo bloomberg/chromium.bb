@@ -184,6 +184,15 @@ bool BaseScrollBar::OnKeyPressed(const KeyEvent& event) {
   return false;
 }
 
+ui::GestureStatus BaseScrollBar::OnGestureEvent(const GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    ScrollByContentsOffset(IsHorizontal() ? event.delta_x() : event.delta_y());
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 bool BaseScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
   ScrollByContentsOffset(event.offset());
   return true;
