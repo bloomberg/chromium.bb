@@ -48,6 +48,10 @@ namespace content {
 class WebContents;
 }
 
+namespace ui {
+class AcceleratorGtk;
+}
+
 class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting,
@@ -207,6 +211,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   };
 
   class PageActionViewGtk : public ImageLoadingTracker::Observer,
+                            public content::NotificationObserver,
                             public ExtensionContextMenuModel::PopupDelegate {
    public:
     PageActionViewGtk(LocationBarViewGtk* owner, ExtensionAction* page_action);
@@ -235,6 +240,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();
 
+    // Implement the content::NotificationObserver interface.
+    virtual void Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
+
     // Overridden from ExtensionContextMenuModel::PopupDelegate:
     virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
@@ -243,10 +253,25 @@ class LocationBarViewGtk : public AutocompleteEditController,
     // with a debugger window attached. Returns true if a popup was shown.
     bool ShowPopup(bool devtools);
 
+    // Connect the accelerator for the page action popup.
+    void ConnectPageActionAccelerator();
+
+    // Disconnect the accelerator for the page action popup.
+    void DisconnectPageActionAccelerator();
+
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnButtonPressed,
                          GdkEventButton*);
     CHROMEGTK_CALLBACK_1(PageActionViewGtk, gboolean, OnExposeEvent,
                          GdkEventExpose*);
+    CHROMEGTK_CALLBACK_0(PageActionViewGtk, void, OnRealize);
+
+    // The accelerator handler for when the shortcuts to open the popup is
+    // struck.
+    static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
+                                     GObject* acceleratable,
+                                     guint keyval,
+                                     GdkModifierType modifier,
+                                     void* user_data);
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;
@@ -278,6 +303,18 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The URL we are currently showing the icon for.
     GURL current_url_;
+
+    // The native browser window of the location bar that owns us.
+    gfx::NativeWindow window_;
+
+    // The Notification registrar.
+    content::NotificationRegistrar registrar_;
+
+    // The accelerator group used to handle accelerators, owned by this object.
+    GtkAccelGroup* accel_group_;
+
+    // The keybinding accelerator registered to show the page action popup.
+    scoped_ptr<ui::AcceleratorGtk> keybinding_;
 
     // This is used for post-install visual feedback. The page_action icon
     // is briefly shown even if it hasn't been enabled by its extension.

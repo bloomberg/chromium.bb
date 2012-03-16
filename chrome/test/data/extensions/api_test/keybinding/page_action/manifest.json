@@ -1,0 +1,21 @@
+{
+  "name": "A page action that makes the page red",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+    "tabs", "http://*/*", "experimental", "keybinding"
+  ],
+  "page_action": {
+    "default_title": "Make this page red",
+    "default_icon": "icon.png"
+  },
+  "commands": {
+    "pageAction": {
+      "key": "Ctrl+Shift+F",
+      "description": ""
+    }
+  }
+}
