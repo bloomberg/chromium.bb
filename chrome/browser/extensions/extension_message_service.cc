@@ -435,7 +435,7 @@ bool ExtensionMessageService::MaybeAddPendingOpenChannelTask(
   ExtensionService* service = profile->GetExtensionService();
   const std::string& extension_id = params.target_extension_id;
   const Extension* extension = service->extensions()->GetByID(extension_id);
-  if (!extension->background_page_persists()) {
+  if (extension && !extension->background_page_persists()) {
     // If the extension uses spanning incognito mode, make sure we're always
     // using the original profile since that is what the extension process
     // will use.
