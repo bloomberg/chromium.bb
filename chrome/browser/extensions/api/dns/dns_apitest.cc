@@ -21,12 +21,12 @@ using extension_function_test_utils::RunFunctionAndReturnResult;
 
 namespace {
 
-class DnsApiTest : public ExtensionApiTest {
+class DNSApiTest : public ExtensionApiTest {
  public:
   static const std::string kHostname;
   static const std::string kAddress;
 
-  DnsApiTest() : resolver_event_(true, false),
+  DNSApiTest() : resolver_event_(true, false),
                  mock_host_resolver_(NULL) {
   }
 
@@ -38,13 +38,13 @@ class DnsApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     CreateMockHostResolverOnIOThread();
-    extensions::DnsResolveFunction::set_host_resolver_for_testing(
+    extensions::DNSResolveFunction::set_host_resolver_for_testing(
         get_mock_host_resolver());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     if (mock_host_resolver_) {
-      extensions::DnsResolveFunction::set_host_resolver_for_testing(NULL);
+      extensions::DNSResolveFunction::set_host_resolver_for_testing(NULL);
       DeleteMockHostResolverOnIOThread();
     }
   }
@@ -52,7 +52,7 @@ class DnsApiTest : public ExtensionApiTest {
   void CreateMockHostResolverOnIOThread() {
     bool result = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DnsApiTest::FinishMockHostResolverCreation, this));
+        base::Bind(&DNSApiTest::FinishMockHostResolverCreation, this));
     DCHECK(result);
 
     base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
@@ -74,7 +74,7 @@ class DnsApiTest : public ExtensionApiTest {
     resolver_event_.Reset();
     bool result = BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DnsApiTest::FinishMockHostResolverDeletion, this));
+        base::Bind(&DNSApiTest::FinishMockHostResolverDeletion, this));
     DCHECK(result);
 
     base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
@@ -100,14 +100,14 @@ class DnsApiTest : public ExtensionApiTest {
   // Plain pointer because we have to manage lifetime manually.
   net::MockHostResolver* mock_host_resolver_;
 };
-const std::string DnsApiTest::kHostname = "www.sowbug.org";
-const std::string DnsApiTest::kAddress = "9.8.7.6";
+const std::string DNSApiTest::kHostname = "www.sowbug.org";
+const std::string DNSApiTest::kAddress = "9.8.7.6";
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
-  scoped_refptr<extensions::DnsResolveFunction> resolve_function(
-      new extensions::DnsResolveFunction());
+IN_PROC_BROWSER_TEST_F(DNSApiTest, DNSResolveIPLiteral) {
+  scoped_refptr<extensions::DNSResolveFunction> resolve_function(
+      new extensions::DNSResolveFunction());
   scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
 
   resolve_function->set_extension(empty_extension.get());
@@ -127,16 +127,16 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   EXPECT_EQ("127.0.0.1", address);
 }
 
-IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
-  scoped_refptr<extensions::DnsResolveFunction> resolve_function(
-      new extensions::DnsResolveFunction());
+IN_PROC_BROWSER_TEST_F(DNSApiTest, DNSResolveHostname) {
+  scoped_refptr<extensions::DNSResolveFunction> resolve_function(
+      new extensions::DNSResolveFunction());
   scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
 
   std::string function_arguments("[\"");
-  function_arguments += DnsApiTest::kHostname;
+  function_arguments += DNSApiTest::kHostname;
   function_arguments += "\"]";
   scoped_ptr<base::Value> result(
       RunFunctionAndReturnResult(resolve_function.get(),
@@ -150,9 +150,9 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
 
   std::string address;
   EXPECT_TRUE(value->GetString("address", &address));
-  EXPECT_EQ(DnsApiTest::kAddress, address);
+  EXPECT_EQ(DNSApiTest::kAddress, address);
 }
 
-IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsExtension) {
+IN_PROC_BROWSER_TEST_F(DNSApiTest, DNSExtension) {
   ASSERT_TRUE(RunExtensionTest("dns/api")) << message_;
 }

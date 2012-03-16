@@ -22,9 +22,9 @@ namespace Resolve = extensions::api::experimental::Resolve;
 namespace extensions {
 
 // static
-net::HostResolver* DnsResolveFunction::host_resolver_for_testing;
+net::HostResolver* DNSResolveFunction::host_resolver_for_testing;
 
-DnsResolveFunction::DnsResolveFunction()
+DNSResolveFunction::DNSResolveFunction()
     : response_(false),
       io_thread_(g_browser_process->io_thread()),
       capturing_bound_net_log_(new net::CapturingBoundNetLog(
@@ -33,16 +33,16 @@ DnsResolveFunction::DnsResolveFunction()
       addresses_(new net::AddressList) {
 }
 
-DnsResolveFunction::~DnsResolveFunction() {
+DNSResolveFunction::~DNSResolveFunction() {
 }
 
 // static
-void DnsResolveFunction::set_host_resolver_for_testing(
+void DNSResolveFunction::set_host_resolver_for_testing(
     net::HostResolver* host_resolver_for_testing_param) {
   host_resolver_for_testing = host_resolver_for_testing_param;
 }
 
-bool DnsResolveFunction::RunImpl() {
+bool DNSResolveFunction::RunImpl() {
   scoped_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -50,12 +50,12 @@ bool DnsResolveFunction::RunImpl() {
 
   bool result = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DnsResolveFunction::WorkOnIOThread, this));
+      base::Bind(&DNSResolveFunction::WorkOnIOThread, this));
   DCHECK(result);
   return true;
 }
 
-void DnsResolveFunction::WorkOnIOThread() {
+void DNSResolveFunction::WorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   net::HostResolver* host_resolver = host_resolver_for_testing ?
@@ -71,7 +71,7 @@ void DnsResolveFunction::WorkOnIOThread() {
   net::HostResolver::RequestInfo request_info(host_port_pair);
   int resolve_result = host_resolver->Resolve(
       request_info, addresses_.get(),
-      base::Bind(&DnsResolveFunction::OnLookupFinished, this),
+      base::Bind(&DNSResolveFunction::OnLookupFinished, this),
       request_handle_.get(), capturing_bound_net_log_->bound());
 
   // Balanced in OnLookupFinished.
@@ -81,7 +81,7 @@ void DnsResolveFunction::WorkOnIOThread() {
     OnLookupFinished(resolve_result);
 }
 
-void DnsResolveFunction::OnLookupFinished(int resolve_result) {
+void DNSResolveFunction::OnLookupFinished(int resolve_result) {
 
   scoped_ptr<ResolveCallbackResolveInfo> resolve_info(
       new ResolveCallbackResolveInfo());
@@ -97,13 +97,13 @@ void DnsResolveFunction::OnLookupFinished(int resolve_result) {
 
   bool post_task_result = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DnsResolveFunction::RespondOnUIThread, this));
+      base::Bind(&DNSResolveFunction::RespondOnUIThread, this));
   DCHECK(post_task_result);
 
   Release();  // Added in WorkOnIOThread().
 }
 
-void DnsResolveFunction::RespondOnUIThread() {
+void DNSResolveFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(response_);
 }

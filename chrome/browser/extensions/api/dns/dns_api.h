@@ -19,10 +19,10 @@ class IOThread;
 
 namespace extensions {
 
-class DnsResolveFunction : public AsyncExtensionFunction {
+class DNSResolveFunction : public AsyncExtensionFunction {
  public:
-  DnsResolveFunction();
-  virtual ~DnsResolveFunction();
+  DNSResolveFunction();
+  virtual ~DNSResolveFunction();
 
   virtual bool RunImpl() OVERRIDE;
 

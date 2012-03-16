@@ -27,8 +27,7 @@ class HGenerator(object):
       .Append()
     )
 
-    ifndef_name = cpp_util.GenerateIfndefName(self._namespace.source_file_dir,
-                                              self._target_namespace)
+    ifndef_name = self._GenerateIfndefName()
     (c.Append('#ifndef %s' % ifndef_name)
       .Append('#define %s' % ifndef_name)
       .Append('#pragma once')
@@ -264,3 +263,13 @@ class HGenerator(object):
     c.Eblock('};')
 
     return c
+
+  def _GenerateIfndefName(self):
+    """Formats a path and filename as a #define name.
+
+    e.g chrome/extensions/gen, file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
+    """
+    return (('%s_%s_H__' %
+        (self._namespace.source_file_dir, self._target_namespace))
+        .upper().replace(os.sep, '_'))
+

@@ -6,7 +6,6 @@
 
 from datetime import datetime
 from model import PropertyType
-import os
 
 CHROMIUM_LICENSE = (
 """// Copyright (c) %d The Chromium Authors. All rights reserved.
@@ -14,10 +13,6 @@ CHROMIUM_LICENSE = (
 // found in the LICENSE file.""" % datetime.now().year
 )
 GENERATED_FILE_MESSAGE = """// GENERATED FROM THE API DEFINITION IN
-//   %s
-// DO NOT EDIT.
-"""
-GENERATED_BUNDLE_FILE_MESSAGE = """// GENERATED FROM THE API DEFINITIONS IN
 //   %s
 // DO NOT EDIT.
 """
@@ -72,11 +67,3 @@ def GetParameterDeclaration(param, type_):
     'type': type_,
     'name': param.unix_name,
   }
-
-def GenerateIfndefName(path, filename):
-    """Formats a path and filename as a #define name.
-
-    e.g chrome/extensions/gen, file.h becomes CHROME_EXTENSIONS_GEN_FILE_H__.
-    """
-    return (('%s_%s_H__' % (path, filename))
-            .upper().replace(os.sep, '_').replace('/', '_'))
