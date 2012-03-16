@@ -46,9 +46,6 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
-  // Without a shelf we don't need special insets anymore.
-  Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetRootWindow(), gfx::Insets());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
