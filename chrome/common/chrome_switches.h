@@ -95,6 +95,7 @@ extern const char kDisableInternalFlash[];
 extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
 extern const char kDisableNTPOtherSessionsMenu[];
+extern const char kDisableLoginAnimations[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRestoreBackgroundContents[];

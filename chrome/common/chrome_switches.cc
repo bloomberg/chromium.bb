@@ -322,6 +322,9 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
+// Avoid doing expensive animations upon login.
+const char kDisableLoginAnimations[]        = "disable-login-animations";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 

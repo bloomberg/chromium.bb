@@ -31,6 +31,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -60,18 +61,23 @@
 namespace {
 
 // Whether sign in transitions are enabled.
-const bool kEnableBackgroundAnimation = false;
+const bool kEnableBackgroundAnimation = true;
 const bool kEnableBrowserWindowsOpacityAnimation = true;
+const bool kEnableBrowserWindowsTransformAnimation = true;
 
 // Sign in transition timings.
 static const int kBackgroundTransitionPauseMs = 100;
 static const int kBackgroundTransitionDurationMs = 400;
 static const int kBrowserTransitionPauseMs = 750;
-static const int kBrowserTransitionDurationMs = 300;
+static const int kBrowserTransitionDurationMs = 350;
 
 // Parameters for background transform transition.
 const float kBackgroundScale = 1.05f;
 const int kBackgroundTranslate = -50;
+
+// Parameters for browser transform transition.
+const float kBrowserScale = 1.05f;
+const int kBrowserTranslate = -50;
 
 // The delay of triggering initialization of the device policy subsystem
 // after the login screen is initialized. This makes sure that device policy
@@ -302,67 +308,99 @@ void BaseLoginDisplayHost::StartAnimation() {
     return;
   }
 
+  // If we've been explicitly told not to do login animations, we will skip most
+  // of them. In particular, we'll avoid animating the background or animating
+  // the browser's transform.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool disable_animations = command_line->HasSwitch(
+      switches::kDisableLoginAnimations);
+
+  const bool do_background_animation =
+      kEnableBackgroundAnimation && !disable_animations;
+
+  const bool do_browser_transform_animation =
+      kEnableBrowserWindowsTransformAnimation && !disable_animations;
+
+  const bool do_browser_opacity_animation =
+      kEnableBrowserWindowsOpacityAnimation;
+
   // Background animation.
-  if (kEnableBackgroundAnimation) {
+  if (do_background_animation) {
+    ui::Layer* background_layer =
+        ash::Shell::GetInstance()->GetContainer(
+            ash::internal::kShellWindowId_DesktopBackgroundContainer)->
+                layer();
+
     ui::Transform background_transform;
     background_transform.SetScale(kBackgroundScale, kBackgroundScale);
     background_transform.SetTranslateX(kBackgroundTranslate);
     background_transform.SetTranslateY(kBackgroundTranslate);
-    scoped_ptr<ui::LayerAnimationElement>
-        background_transform_animation_initial(
-            ui::LayerAnimationElement::CreateTransformElement(
-                background_transform,
-                base::TimeDelta()));
+    background_layer->SetTransform(background_transform);
+
+    // Pause
     ui::LayerAnimationElement::AnimatableProperties background_pause_properties;
     background_pause_properties.insert(ui::LayerAnimationElement::TRANSFORM);
-    scoped_ptr<ui::LayerAnimationElement> background_pause(
-        ui::LayerAnimationElement::CreatePauseElement(
-            background_pause_properties,
-            base::TimeDelta::FromMilliseconds(kBackgroundTransitionPauseMs)));
-    scoped_ptr<ui::LayerAnimationElement> background_transform_animation(
-        ui::LayerAnimationElement::CreateTransformElement(
-            ui::Transform(),
-            base::TimeDelta::FromMilliseconds(
-                kBackgroundTransitionDurationMs)));
-    scoped_ptr<ui::LayerAnimationSequence> background_transition(
-        new ui::LayerAnimationSequence(
-            background_transform_animation_initial.release()));
-    background_transition->AddElement(background_pause.release());
-    background_transition->AddElement(background_transform_animation.release());
-    ui::Layer* background_layer =
-        ash::Shell::GetInstance()->GetContainer(
-            ash::internal::kShellWindowId_DesktopBackgroundContainer)->
-            layer();
     background_layer->GetAnimator()->StartAnimation(
-        background_transition.release());
+        new ui::LayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                background_pause_properties,
+                base::TimeDelta::FromMilliseconds(
+                    kBackgroundTransitionPauseMs))));
+
+    ui::ScopedLayerAnimationSettings settings(background_layer->GetAnimator());
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kBackgroundTransitionDurationMs));
+    settings.SetTweenType(ui::Tween::EASE_OUT);
+    background_layer->SetTransform(ui::Transform());
   }
 
-  // Browser windows layer opacity animation.
-  if (kEnableBrowserWindowsOpacityAnimation) {
-    scoped_ptr<ui::LayerAnimationElement> browser_opacity_animation_initial(
-        ui::LayerAnimationElement::CreateOpacityElement(
-            0.0f,
-            base::TimeDelta()));
-    ui::LayerAnimationElement::AnimatableProperties browser_pause_properties;
-    browser_pause_properties.insert(ui::LayerAnimationElement::OPACITY);
-    scoped_ptr<ui::LayerAnimationElement> browser_pause_animation(
-        ui::LayerAnimationElement::CreatePauseElement(
-            browser_pause_properties,
-            base::TimeDelta::FromMilliseconds(kBrowserTransitionPauseMs)));
-    scoped_ptr<ui::LayerAnimationElement> browser_opacity_animation(
-        ui::LayerAnimationElement::CreateOpacityElement(
-            1.0f,
-            base::TimeDelta::FromMilliseconds(kBrowserTransitionDurationMs)));
-    scoped_ptr<ui::LayerAnimationSequence> browser_transition(
-        new ui::LayerAnimationSequence(
-            browser_opacity_animation_initial.release()));
-    browser_transition->AddElement(browser_pause_animation.release());
-    browser_transition->AddElement(browser_opacity_animation.release());
+  // Browser windows layer opacity and transform animation.
+  if (do_browser_transform_animation || do_browser_opacity_animation) {
     ui::Layer* default_container_layer =
         ash::Shell::GetInstance()->GetContainer(
-            ash::internal::kShellWindowId_DefaultContainer)->layer();
-    default_container_layer->GetAnimator()->StartAnimation(
-        browser_transition.release());
+              ash::internal::kShellWindowId_DefaultContainer)->layer();
+
+    ui::LayerAnimationElement::AnimatableProperties browser_pause_properties;
+
+    // Set the initial opacity and transform.
+    if (do_browser_transform_animation) {
+      ui::Transform browser_transform;
+      browser_transform.SetScale(kBrowserScale, kBrowserScale);
+      browser_transform.SetTranslateX(kBrowserTranslate);
+      browser_transform.SetTranslateY(kBrowserTranslate);
+      default_container_layer->SetTransform(browser_transform);
+      browser_pause_properties.insert(ui::LayerAnimationElement::TRANSFORM);
+    }
+
+    if (do_browser_opacity_animation) {
+      default_container_layer->SetOpacity(0);
+      browser_pause_properties.insert(ui::LayerAnimationElement::OPACITY);
+    }
+
+    // Pause.
+    default_container_layer->GetAnimator()->ScheduleAnimation(
+        new ui::LayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                browser_pause_properties,
+                base::TimeDelta::FromMilliseconds(kBrowserTransitionPauseMs))));
+
+    ui::ScopedLayerAnimationSettings settings(
+        default_container_layer->GetAnimator());
+
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kBrowserTransitionDurationMs));
+
+    if (do_browser_opacity_animation) {
+      // Should interpolate linearly.
+      default_container_layer->SetOpacity(1);
+    }
+
+    if (do_browser_transform_animation) {
+      settings.SetTweenType(ui::Tween::EASE_OUT);
+      default_container_layer->SetTransform(ui::Transform());
+    }
   }
 #endif
 }

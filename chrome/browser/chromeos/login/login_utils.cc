@@ -1032,6 +1032,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kCompressSystemFeedback,
       switches::kDisableAcceleratedPlugins,
       switches::kDisableSeccompSandbox,
+      switches::kDisableLoginAnimations,
       switches::kEnableGView,
       switches::kEnableLogging,
       switches::kEnablePartialSwap,
