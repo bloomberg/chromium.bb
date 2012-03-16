@@ -37,41 +37,8 @@
 #include "talk/base/event.h"
 #include "talk/base/logging.h"
 #include "talk/base/messagequeue.h"
+#include "talk/base/nullsocketserver.h"
 #include "talk/base/physicalsocketserver.h"
-
-namespace {
-//------------------------------------------------------------------
-// NullSocketServer
-
-class NullSocketServer : public talk_base::SocketServer {
- public:
-  NullSocketServer() : event_(false, false) {}
-
-  virtual bool Wait(int cms, bool process_io) {
-    return event_.Wait(talk_base::kForever);
-  }
-
-  virtual void WakeUp() {
-    event_.Set();
-  }
-
-  virtual talk_base::Socket* CreateSocket(int type) {
-    ASSERT(false);
-    return NULL;
-  }
-
-  // Returns a new socket for nonblocking communication.  The type can be
-  // SOCK_DGRAM and/or SOCK_STREAM.
-  virtual talk_base::AsyncSocket* CreateAsyncSocket(int type) {
-    ASSERT(false);
-    return NULL;
-  }
-
- private:
-  talk_base::Event event_;
-};
-
-}  // namespace
 
 namespace talk_base {
 
