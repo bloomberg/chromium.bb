@@ -55,6 +55,8 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
   source->AddLocalizedString("danger_content_desc",
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
+  source->AddLocalizedString("danger_uncommon_desc",
+                             IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
   source->AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
 

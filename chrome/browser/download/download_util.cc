@@ -85,8 +85,8 @@ namespace {
 
 // Returns a string constant to be used as the |danger_type| value in
 // CreateDownloadItemValue().  We only return strings for DANGEROUS_FILE,
-// DANGEROUS_URL and DANGEROUS_CONTENT because the |danger_type| value is only
-// defined if the value of |state| is |DANGEROUS|.
+// DANGEROUS_URL, DANGEROUS_CONTENT, and UNCOMMON_CONTENT because the
+// |danger_type| value is only defined if the value of |state| is |DANGEROUS|.
 const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
   switch (danger_type) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
@@ -95,6 +95,8 @@ const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
       return "DANGEROUS_URL";
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       return "DANGEROUS_CONTENT";
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return "UNCOMMON_CONTENT";
     default:
       // We shouldn't be returning a danger type string if it is
       // NOT_DANGEROUS or MAYBE_DANGEROUS_CONTENT.
@@ -457,7 +459,9 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
              download->GetDangerType() ==
                  content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
              download->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
       const char* danger_type_value =
           GetDangerTypeString(download->GetDangerType());
       file_value->SetString("danger_type", danger_type_value);

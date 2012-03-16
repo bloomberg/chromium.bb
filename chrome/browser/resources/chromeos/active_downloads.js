@@ -335,6 +335,8 @@ DownloadRow.prototype = {
       dangerText = localStrings.getString('dangerousurl');
     } else if (dangerType == 'DANGEROUS_CONTENT') {
       dangerText = localStrings.getStringF('dangerouscontent', this.name);
+    } else if (dangerType == 'UNCOMMON_CONTENT') {
+      dangerText = localStrings.getStringF('uncommoncontent', this.name);
     } else if (dangerType == 'DANGEROUS_FILE' && this.path.match(/\.crx$/)) {
       dangerText = localStrings.getString('dangerousextension');
     } else {

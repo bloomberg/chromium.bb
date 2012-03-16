@@ -339,8 +339,9 @@ Download.DangerType = {
   NOT_DANGEROUS: 'NOT_DANGEROUS',
   DANGEROUS_FILE: 'DANGEROUS_FILE',
   DANGEROUS_URL: 'DANGEROUS_URL',
-  DANGEROUS_CONTENT: 'DANGEROUS_CONTENT'
-};
+  DANGEROUS_CONTENT: 'DANGEROUS_CONTENT',
+  UNCOMMON_CONTENT: 'UNCOMMON_CONTENT'
+}
 
 /**
  * Constants for the progress meter.
@@ -386,6 +387,9 @@ Download.prototype.update = function(download) {
     } else if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT) {
       this.dangerDesc_.textContent = localStrings.getStringF(
           'danger_content_desc', this.fileName_);
+    } else if (this.dangerType_ == Download.DangerType.UNCOMMON_CONTENT) {
+      this.dangerDesc_.textContent = localStrings.getStringF(
+          'danger_uncommon_desc', this.fileName_);
     }
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';

@@ -85,6 +85,8 @@ ChromeWebUIDataSource* CreateActiveDownloadsUIHTMLSource() {
   source->AddLocalizedString("dangerousurl", IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
   source->AddLocalizedString("dangerouscontent",
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
+  source->AddLocalizedString("uncommoncontent",
+                             IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
   source->AddLocalizedString("cancel", IDS_DOWNLOAD_LINK_CANCEL);
   source->AddLocalizedString("discard", IDS_DISCARD_DOWNLOAD);
   source->AddLocalizedString("continue", IDS_CONTINUE_EXTENSION_DOWNLOAD);

@@ -32,7 +32,8 @@ bool DownloadStateInfo::IsDangerous() const {
 #ifdef OS_WIN
   return (danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
           danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-          danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+          danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+          danger == content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
 #else
   return (danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
           danger == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);

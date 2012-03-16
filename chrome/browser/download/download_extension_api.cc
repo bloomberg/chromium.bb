@@ -82,6 +82,7 @@ const char kDangerContent[] = "content";
 const char kDangerFile[] = "file";
 const char kDangerKey[] = "danger";
 const char kDangerSafe[] = "safe";
+const char kDangerUncommon[] = "uncommon";
 const char kDangerUrl[] = "url";
 const char kEndTimeKey[] = "endTime";
 const char kErrorKey[] = "error";
@@ -114,14 +115,21 @@ const char kTotalBytesLessKey[] = "totalBytesLess";
 const char kUrlKey[] = "url";
 const char kUrlRegexKey[] = "urlRegex";
 
+// Note: Any change to the danger type strings, should be accompanied by a
+// corresponding change to {experimental.}downloads.json.
 const char* kDangerStrings[] = {
   kDangerSafe,
   kDangerFile,
   kDangerUrl,
   kDangerContent,
   kDangerSafe,
+  kDangerUncommon,
 };
+COMPILE_ASSERT(arraysize(kDangerStrings) == content::DOWNLOAD_DANGER_TYPE_MAX,
+               download_danger_type_enum_changed);
 
+// Note: Any change to the state strings, should be accompanied by a
+// corresponding change to {experimental.}downloads.json.
 const char* kStateStrings[] = {
   kStateInProgress,
   kStateComplete,
@@ -129,6 +137,8 @@ const char* kStateStrings[] = {
   NULL,
   kStateInterrupted,
 };
+COMPILE_ASSERT(arraysize(kStateStrings) == DownloadItem::MAX_DOWNLOAD_STATE,
+               download_item_state_enum_changed);
 
 const char* DangerString(content::DownloadDangerType danger) {
   DCHECK(danger >= 0);

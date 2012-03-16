@@ -77,6 +77,11 @@
         "value": "content",
         "description": "The download's content is malicious."
       },
+      "DANGER_UNCOMMON": {
+        "type": "string",
+        "value": "uncommon",
+        "description": "The download is not commonly downloaded and could be dangerous."
+      },
       "ERROR_GENERIC": {
         "type": "string",
         "value": "I'm afraid I can't do that.",
@@ -114,6 +119,12 @@
         }
       },
       {
+        "id": "DownloadDangerType",
+        "description": "String indicating whether a download is known to be safe or is considered dangerous. The values correspond to the <code>DANGER_SAFE</code>, <code>DANGER_FILE</code>, <code>DANGER_URL</code>, <code>DANGER_CONTENT</code>, and <code>DANGER_UNCOMMON</code> properties.",
+        "type": "string",
+        "enum": ["safe", "file", "url", "content", "uncommon"]
+      },
+      {
         "id": "DownloadItem",
         "type": "object",
         "nodoc": "true",
@@ -132,9 +143,8 @@
             "description": "absolute local path"
           },
           "danger": {
-            "type": "string",
+            "$ref": "DownloadDangerType",
             "description": "Indication of whether this download is thought to be safe or known to be suspicious.",
-            "enum": ["safe", "file", "url", "content"],
             "optional": true
           },
           "dangerAccepted": {
@@ -260,9 +270,8 @@
             "description": "absolute local path"
           },
           "danger": {
-            "type": "string",
+            "$ref": "DownloadDangerType",
             "description": "Indication of whether this download is thought to be safe or known to be suspicious.",
-            "enum": ["safe", "file", "url"],
             "optional": true
           },
           "dangerAccepted": {
