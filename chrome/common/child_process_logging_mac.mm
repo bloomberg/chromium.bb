@@ -37,7 +37,7 @@ const char *kGPUGLVersionParamName = "gpu-glver";
 const char *kNumberOfViews = "num-views";
 NSString* const kNumExtensionsName = @"num-extensions";
 NSString* const kExtensionNameFormat = @"extension-%d";
-NSString* const kPrinterInfoNameFormat = @"prn-info-%d";
+NSString* const kPrinterInfoNameFormat = @"prn-info-%zu";
 
 // Account for the terminating null character.
 static const size_t kClientIdSize = 32 + 1;
