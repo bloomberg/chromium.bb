@@ -119,9 +119,7 @@ test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests']
 
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
                                  dynamic_load_test_nexe)
-env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
-                       is_broken=(env.Bit('target_arm') and
-                                  not env.UsingEmulator()))
+env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test')
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode.out',

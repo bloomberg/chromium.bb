@@ -506,15 +506,6 @@ static INLINE void CopyCodeSafelyInitial(uint8_t  *dest,
   CopyBundleTails(dest, src, size, bundle_size);
   NaClWriteMemoryBarrier();
   CopyBundleHeads(dest, src, size, bundle_size);
-
-  /*
-   * Flush the processor's instruction cache.  This is not necessary
-   * for security, because any old cached instructions will just be
-   * safe halt instructions.  It is only necessary to ensure that
-   * untrusted code runs correctly when it tries to execute the
-   * dynamically-loaded code.
-   */
-  NaClClearInstructionCache(dest, dest + size);
 }
 
 static void MakeDynamicCodePageVisible(struct NaClApp *nap,
@@ -778,6 +769,15 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   }
 
   CopyCodeSafelyInitial(mapped_addr, code_copy, size, nap->bundle_size);
+  /*
+   * Flush the processor's instruction cache.  This is not necessary
+   * for security, because any old cached instructions will just be
+   * safe halt instructions.  It is only necessary to ensure that
+   * untrusted code runs correctly when it tries to execute the
+   * dynamically-loaded code.
+   */
+  NaClFlushCacheForDoublyMappedCode(mapped_addr, (uint8_t *) dest_addr, size);
+
   retval = 0;
 
   NaclTextMapClearCacheIfNeeded(nap, dest, size);
