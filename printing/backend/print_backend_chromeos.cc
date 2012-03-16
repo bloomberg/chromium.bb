@@ -44,10 +44,10 @@ bool PrintBackendChromeOS::GetPrinterCapsAndDefaults(
   return false;
 }
 
-std::string  PrintBackendChromeOS::GetPrinterDriverInfo(
+std::string PrintBackendChromeOS::GetPrinterDriverInfo(
     const std::string& printer_name) {
   NOTREACHED();
-  return false;
+  return std::string();
 }
 
 std::string PrintBackendChromeOS::GetDefaultPrinterName() {
