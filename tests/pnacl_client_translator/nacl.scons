@@ -51,9 +51,8 @@ env.Publish(pexe_name,
 node = env.PPAPIBrowserTester(
     'pnacl_test_example.out',
     url='pnacl_test_example.html',
-    nmfs=['pnacl_test_example.nmf'],
-    files=(env.ExtractPublishedFiles(pexe_name) + [borrowed_file]),
-    args=['--prefer_portable_in_manifest'])
+    nmf_names=['pnacl_test_example'],
+    files=env.ExtractPublishedFiles(pexe_name) + [borrowed_file])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

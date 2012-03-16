@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Copyright (c) 2012 The Native Client Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 -->
@@ -37,11 +37,19 @@ tester.addAsyncTest('trusted_crash_during_startup', function(status) {
   }), true);
 
   div.addEventListener('error', status.wrap(function(event) {
+    var expected_error;
     // This error occurs only because NACL_CRASH_TEST is set.  We would
     // not normally expect to get this error in the browser.
-    status.assertEqual(embed.lastError,
-                       'NaCl module load failed: ServiceRuntime: '
-                       + 'command channel creation failed');
+    // For PNaCl, the crash will occur while starting the compiler process.
+    var test_args = getTestArguments({ 'is_pnacl': 'false' });
+    if (test_args['is_pnacl'] != 'false') {
+      expected_error = ('NaCl module load failed: PnaclCoordinator: ' +
+                        'Compile process could not be created.');
+    } else {
+      expected_error = ('NaCl module load failed: ServiceRuntime: ' +
+                        'command channel creation failed');
+    }
+    status.assertEqual(embed.lastError, expected_error);
     status.pass();
   }), true);
 

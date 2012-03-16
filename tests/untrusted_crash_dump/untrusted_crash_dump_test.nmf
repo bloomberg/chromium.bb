@@ -2,6 +2,8 @@
   "program": {
     "x86-32": {"url": "inbrowser_untrusted_crash_dump_test.nexe"},
     "x86-64": {"url": "inbrowser_untrusted_crash_dump_test.nexe"},
-    "arm": {"url": "inbrowser_untrusted_crash_dump_test.nexe"}
+    "arm": {"url": "inbrowser_untrusted_crash_dump_test.nexe"},
+    "portable": {"pnacl-translate":
+                   {"url": "inbrowser_untrusted_crash_dump_test.pexe"}}
   }
 }

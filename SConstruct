@@ -1381,6 +1381,13 @@ def GenerateManifestFunc(target, source, env):
   target_file.close()
   return 0
 
+def GenerateManifestPnacl(env, dest_file, manifest, exe_file):
+  return env.Command(
+      dest_file,
+      ['${GENNMF}', exe_file, manifest],
+      # Generate a flat url scheme to simplify file-staging.
+      ('${SOURCES[0]} ${SOURCES[1]} -L${NACL_SDK_LIB} -L${LIB_DIR} '
+       ' --flat-url-scheme --base-nmf ${SOURCES[2]} -o ${TARGET}'))
 
 def GenerateManifestDynamicLink(env, dest_file, lib_list_file,
                                 manifest, exe_file):
@@ -1431,7 +1438,11 @@ pre_base_env.AddMethod(ProgramNameForNmf)
 def GenerateSimpleManifest(env, dest_file, exe_name):
   static_manifest = GenerateSimpleManifestStaticLink(
       env, '%s.static' % dest_file, exe_name)
-  if env.Bit('nacl_static_link'):
+  if env.Bit('pnacl_generate_pexe'):
+    return GenerateManifestPnacl(env, dest_file, static_manifest,
+                                 '${STAGING_DIR}/%s.pexe' %
+                                 env.ProgramNameForNmf(exe_name))
+  elif env.Bit('nacl_static_link'):
     return static_manifest
   else:
     return GenerateManifestDynamicLink(
@@ -1446,12 +1457,10 @@ def GetMainProgramFromManifest(env, manifest):
   obj = json.load(manifest_file)
   manifest_file.close()
   program_dict = obj['program']
-  # Only some scons browser tests for pnacl use 'portable' right now,
-  # so check portable first.
-  if env.Bit('bitcode') and 'portable' in program_dict:
-    return program_dict['portable']['pnacl-translate']['url'], True
+  if env.Bit('pnacl_generate_pexe') and 'portable' in program_dict:
+    return program_dict['portable']['pnacl-translate']['url']
   else:
-    return program_dict[env.subst('${TARGET_FULLARCH}')]['url'], False
+    return program_dict[env.subst('${TARGET_FULLARCH}')]['url']
 
 manifest_map = {}
 
@@ -1459,12 +1468,12 @@ manifest_map = {}
 def GeneratedManifestNode(env, manifest):
   manifest = env.subst(manifest)
   manifest_base_name = os.path.basename(manifest)
-  main_program, is_bitcode = GetMainProgramFromManifest(env, manifest)
+  main_program = GetMainProgramFromManifest(env, manifest)
   result = env.File('${STAGING_DIR}/' + manifest_base_name)
   # Always generate the manifest for nacl_glibc and pnacl pexes.
   # For nacl_glibc, generating the mapping of shared libraries is non-trivial.
   # For pnacl, the manifest currently hosts a sha for the pexe.
-  if not env.Bit('nacl_glibc') and not is_bitcode:
+  if not env.Bit('nacl_glibc') and not env.Bit('pnacl_generate_pexe'):
     if manifest_base_name not in manifest_map:
       env.Install('${STAGING_DIR}', manifest)
       manifest_map[manifest_base_name] = main_program
@@ -1476,15 +1485,12 @@ def GeneratedManifestNode(env, manifest):
       raise Exception("Two manifest files with the same name")
     return result
   manifest_map[manifest_base_name] = main_program
-  if is_bitcode:
-    nmf_node = env.Command(
-        result,
-        ['${GENNMF}',
-         env.File('${STAGING_DIR}/' + os.path.basename(main_program)),
-         manifest],
-        # Generate a flat url scheme to simplify file-staging.
-        '${SOURCES[0]} ${SOURCES[1]} -L${NACL_SDK_LIB} -L${LIB_DIR} ' +
-        ' --flat-url-scheme --base-nmf ${SOURCES[2]} -o ${TARGET}')
+  if env.Bit('pnacl_generate_pexe'):
+    return GenerateManifestPnacl(
+        env,
+        '${STAGING_DIR}/' + manifest_base_name,
+        manifest,
+        env.File('${STAGING_DIR}/' + os.path.basename(main_program)))
   else:
     return GenerateManifestDynamicLink(
         env, '${STAGING_DIR}/' + manifest_base_name,
@@ -1549,7 +1555,7 @@ def PPAPIBrowserTester(env,
                        mime_types=(),
                        timeout=20,
                        log_verbosity=2,
-                       args=(),
+                       args=[],
                        # list of key/value pairs that are passed to the test
                        test_args=(),
                        # list of "--flag=value" pairs (no spaces!)
@@ -1567,6 +1573,10 @@ def PPAPIBrowserTester(env,
   # Bug http://code.google.com/p/nativeclient/issues/detail?id=2224
   if env.Bit('target_arm_thumb2'):
     return []
+
+  if env.Bit('pnacl_generate_pexe'):
+    # We likely prefer to choose the 'portable' field in nmfs in this mode.
+    args = args + ['--prefer_portable_in_manifest']
 
   # Lint the extra arguments that are being passed to the tester.
   special_args = ['--ppapi_plugin', '--sel_ldr', '--irt_library', '--file',
@@ -1634,7 +1644,6 @@ def PPAPIBrowserTester(env,
 
   # Suppress debugging information on the Chrome waterfall.
   if env.Bit('disable_flaky_tests') and '--debug' in args:
-    args = list(args) # Might be a tuple.
     args.remove('--debug')
 
   command.extend(args)

@@ -33,10 +33,13 @@ env.Append(CPPDEFINES = ['IN_BROWSER'])
 
 # This crash in trusted code should produce a crash dump.
 crash_test_nexe = make_crash_test_nexe('crash_test')
+crash_test_url = 'trusted_crash_in_startup.html'
+if env.Bit('pnacl_generate_pexe'):
+  crash_test_url += '?is_pnacl=true'
 node = env.PPAPIBrowserTester(
     'inbrowser_trusted_crash_in_startup_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
-    url='trusted_crash_in_startup.html',
+    url=crash_test_url,
     nmf_names=['inbrowser_crash_test'],
     files=[crash_test_nexe,
            env.File('trusted_crash_in_startup.html')],
