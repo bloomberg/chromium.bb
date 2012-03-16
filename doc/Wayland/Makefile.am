@@ -51,7 +51,7 @@ install-data-local:
 	test -z "$(pubdir)/xml/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/css"
 	test -z "$(pubdir)/xml/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/images"
 	test -z "$(pubdir)/xml/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/images"
-	list=`find $(builddir)/Wayland/en-US -path './Wayland/en-US/xml_tmp' -prune -o -type f`; \
+	list=`find $(builddir)/Wayland/en-US -type f -not -path '$(builddir)/Wayland/en-US/xml_tmp*'`; \
 	for p in $$list; do \
 	  echo " $(INSTALL_DATA) '$$p' '$(DESTDIR)$(docdir)/$$p'"; \
 	  $(INSTALL_DATA) "$$p" "$(DESTDIR)$(docdir)/$$p"; \
