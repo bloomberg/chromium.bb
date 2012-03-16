@@ -13,7 +13,7 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
-#include "net/base/cookie_options.h"
+#include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

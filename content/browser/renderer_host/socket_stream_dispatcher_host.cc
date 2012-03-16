@@ -10,7 +10,7 @@
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
