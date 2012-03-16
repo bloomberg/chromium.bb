@@ -62,6 +62,11 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
 
   // Called when an error occurs while fetching feed content from the server.
   virtual void OnError(base::PlatformFileError error) = 0;
+
+  // Returns true if the delegate had already encountered a terminal state
+  // that stops the traversal through the file system (OnError, OnDirectoryFound
+  // or OnFileFound).
+  virtual bool had_terminated() const = 0;
 };
 
 // Callback for completion of cache operation.
@@ -106,6 +111,11 @@ class GDataFileSystem : public ProfileKeyedService {
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
       GetFileCallback;
+
+  // Used for file operations like removing files.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              scoped_ptr<base::Value> value)>
+    GetJsonDocumentCallback;
 
   // Used to get available space for the account from GData.
   typedef base::Callback<void(base::PlatformFileError error,
@@ -216,16 +226,17 @@ class GDataFileSystem : public ProfileKeyedService {
   // Can be called from any thread.
   void RefreshDirectoryAndContinueSearch(const FindFileParams& params);
 
-  // Finds file object by |file_path| and returns the file info.
-  // Returns NULL if it does not find the file.
-  GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
-
   // Gets absolute path of cache file corresponding to |gdata_file_path|.
   // Upon completion, |callback| is invoked on the same thread where this method
   // was called, with path if it exists and is accessible or empty FilePath
   // otherwise.
   void GetFromCacheForPath(const FilePath& gdata_file_path,
                            const GetFromCacheCallback& callback);
+
+  // Finds file object by |file_path| and returns its |file_info|.
+  // Returns true if file was found.
+  bool GetFileInfoFromPath(const FilePath& gdata_file_path,
+                           base::PlatformFileInfo* file_info);
 
   // Returns the tmp sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/tmp
@@ -290,6 +301,10 @@ class GDataFileSystem : public ProfileKeyedService {
   GDataFileSystem(Profile* profile,
                   DocumentsServiceInterface* documents_service);
   virtual ~GDataFileSystem();
+
+  // Finds file object by |file_path| and returns the file info.
+  // Returns NULL if it does not find the file.
+  GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
 
   // Initiates upload operation of file defined with |file_name|,
   // |content_type| and |content_length|. The operation will place the newly
@@ -470,7 +485,8 @@ class GDataFileSystem : public ProfileKeyedService {
   // feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
-      const FilePath& directory_path, base::ListValue* feed_list);
+      const FilePath& directory_path, base::ListValue* feed_list,
+      ContentOrigin origin);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
@@ -483,6 +499,23 @@ class GDataFileSystem : public ProfileKeyedService {
       const FilePath& directory_path,
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
+
+  // Starts root feed load from the cache. If successful, it will continue
+  // search given |parms| after it refreshes content from the cache.
+  void LoadRootFeed(const GDataFileSystem::FindFileParams& params);
+
+  // Loads root feed content from |file_path| on IO thread pool. Upon
+  // completion it will invoke |callback| on thread represented by
+  // |relay_proxy|.
+  static void LoadRootFeedOnIOThreadPool(
+      const FilePath& meta_cache_path,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      const GetJsonDocumentCallback& callback);
+
+  // Callback for handling root directory refresh from the cache.
+  void OnLoadRootFeed(const GDataFileSystem::FindFileParams& params,
+                      base::PlatformFileError error,
+                      scoped_ptr<base::Value> feed_list);
 
   // Saves a collected feed in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
@@ -714,6 +747,7 @@ class ReadOnlyFindFileDelegate : public FindFileDelegate {
   virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
                                                     GDataDirectory*) OVERRIDE;
   virtual void OnError(base::PlatformFileError) OVERRIDE;
+  virtual bool had_terminated() const OVERRIDE;
 
   // File entry that was found.
   GDataFileBase* file_;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -34,7 +35,7 @@ using content::BrowserThread;
 
 namespace {
 
-const char kGDataRootDirectory[] = "gdata";
+const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kFeedField[] = "feed";
 const char kWildCard[] = "*";
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
@@ -471,6 +472,10 @@ void ReadOnlyFindFileDelegate::OnError(base::PlatformFileError) {
   file_ = NULL;
 }
 
+bool ReadOnlyFindFileDelegate::had_terminated() const {
+  return false;
+}
+
 // FindFileDelegateReplyBase class implementation.
 
 FindFileDelegateReplyBase::FindFileDelegateReplyBase(
@@ -642,11 +647,27 @@ void GDataFileSystem::FindFileByPath(
 
 void GDataFileSystem::RefreshDirectoryAndContinueSearch(
     const FindFileParams& params) {
-  scoped_ptr<base::ListValue> feed_list(new base::ListValue());
-  // Kick off document feed fetching here if we don't have complete data
-  // to finish this call.
+  // This routine will start two simultaneous feed content retrieval attempts
+  // when we are dealing with the root directory - from the feed cache (local
+  // disk) and from the gdata server (HTTP request).
+  // The first of these two feed operations that finishes (either disk cache or
+  // server retrieval) will be responsible for replying to this particular
+  // search request. If the sever side content is retrieved after the cache,
+  // we will also raise directory content change notification. In the opposite
+  // case, the local content from the disk cache will be ignored since we
+  // the server feed holds the most current state.
+  // |params.delegate| implementation will ensure that the outcome of the first
+  // completed operation is the one that gets reported to the caller (callback).
+
+  // If we are refreshing the content of the root directory, try fetch the
+  // feed from the disk first.
+  if (params.directory_path == FilePath(kGDataRootDirectory))
+      LoadRootFeed(params);
+
+  // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
+  scoped_ptr<base::ListValue> feed_list(new base::ListValue());
   ContinueDirectoryRefresh(params, feed_list.Pass());
 }
 
@@ -1110,6 +1131,17 @@ void GDataFileSystem::UnsafeFindFileByPath(
   delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
 }
 
+bool GDataFileSystem::GetFileInfoFromPath(
+    const FilePath& file_path, base::PlatformFileInfo* file_info) {
+  base::AutoLock lock(lock_);
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
+  if (!file)
+    return false;
+
+  *file_info = file->file_info();
+  return true;
+}
+
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
@@ -1292,7 +1324,8 @@ void GDataFileSystem::OnGetDocuments(
   }
 
   error = UpdateDirectoryWithDocumentFeed(params.directory_path,
-                                          feed_list.get());
+                                          feed_list.get(),
+                                          FROM_SERVER);
   if (error != base::PLATFORM_FILE_OK) {
     params.delegate->OnError(error);
     return;
@@ -1304,10 +1337,94 @@ void GDataFileSystem::OnGetDocuments(
     SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
   }
 
-  // Continue file content search operation.
-  FindFileByPath(params.file_path,
-                 params.delegate);
+  // Continue file content search operation if the delegate hasn't terminated
+  // this search branch already.
+  if (!params.delegate->had_terminated())
+    FindFileByPath(params.file_path, params.delegate);
 }
+
+void GDataFileSystem::LoadRootFeed(
+    const GDataFileSystem::FindFileParams& params) {
+
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
+                 cache_paths_[CACHE_TYPE_META].Append(kLastFeedFile),
+                 base::MessageLoopProxy::current(),
+                 base::Bind(&GDataFileSystem::OnLoadRootFeed,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            params)));
+}
+
+void GDataFileSystem::OnLoadRootFeed(
+    const GDataFileSystem::FindFileParams& params,
+    base::PlatformFileError error,
+    scoped_ptr<base::Value> feed_list) {
+
+  if (error == base::PLATFORM_FILE_OK &&
+      (!feed_list.get() || feed_list->GetType() != Value::TYPE_LIST)) {
+    LOG(WARNING) << "No feed content!";
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    // Report error only if the other branch had already completed, otherwise
+    // the hope is that feed retrieval over HTTP might still succeed.
+    if (params.delegate->had_terminated())
+      params.delegate->OnError(error);
+    return;
+  }
+
+  // Don't update root directory content if we have already terminated this
+  // delegate.
+  if (params.delegate->had_terminated())
+    return;
+
+  error = UpdateDirectoryWithDocumentFeed(
+      params.directory_path,
+      reinterpret_cast<base::ListValue*>(feed_list.get()),
+      FROM_CACHE);
+  if (error != base::PLATFORM_FILE_OK) {
+    params.delegate->OnError(error);
+    return;
+  }
+
+  // Continue file content search operation if the delegate hasn't terminated
+  // this search branch already.
+  FindFileByPath(params.file_path, params.delegate);
+}
+
+// Static.
+void GDataFileSystem::LoadRootFeedOnIOThreadPool(
+    const FilePath& file_path,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy ,
+    const GetJsonDocumentCallback& callback) {
+
+  scoped_ptr<base::Value> root_value;
+  std::string contents;
+  if (!file_util::ReadFileToString(file_path, &contents)) {
+    relay_proxy ->PostTask(FROM_HERE,
+                           base::Bind(callback,
+                                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                                      base::Passed(&root_value)));
+    return;
+  }
+
+  int unused_error_code = -1;
+  std::string unused_error_message;
+  root_value.reset(base::JSONReader::ReadAndReturnError(
+      contents, false, &unused_error_code, &unused_error_message));
+
+  bool has_root = root_value.get();
+  if (!has_root)
+    LOG(WARNING) << "Cached content read failed for file " << file_path.value();
+
+  relay_proxy ->PostTask(FROM_HERE,
+      base::Bind(callback,
+                 has_root ? base::PLATFORM_FILE_OK :
+                            base::PLATFORM_FILE_ERROR_FAILED,
+                 base::Passed(&root_value)));
+}
+
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
                                         base::PlatformFileError error,
@@ -1630,6 +1747,10 @@ base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
       DocumentEntry* doc = *iter;
       GDataFileBase* file = GDataFileBase::FromDocumentEntry(NULL, doc,
                                                              root_.get());
+      // Some document entries don't map into files (i.e. sites).
+      if (!file)
+        continue;
+
       GURL parent_url;
       const Link* parent_link = doc->GetLinkByType(Link::PARENT);
       if (parent_link)
@@ -1659,7 +1780,13 @@ base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
 
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     const FilePath& directory_path,
-    base::ListValue* feed_list) {
+    base::ListValue* feed_list,
+    ContentOrigin origin) {
+  DVLOG(1) << "Updating directory content of  "
+           << directory_path.value().c_str()
+           << " with feed from "
+           << (origin == FROM_CACHE ? "cache" : "web server");
+
   // We need to lock here as well (despite FindFileByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
@@ -1677,6 +1804,7 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   if (!dir)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  dir->set_origin(origin);
   dir->set_refresh_time(base::Time::Now());
 
   // Remove all child elements if we are refreshing the entire content.

@@ -127,7 +127,7 @@ class GDataFileSystemTestBase : public testing::Test {
     GURL unused;
     return file_system_->UpdateDirectoryWithDocumentFeed(
         directory_path,
-        list) == base::PLATFORM_FILE_OK;
+        list, FROM_SERVER) == base::PLATFORM_FILE_OK;
   }
 
   bool RemoveFile(const FilePath& file_path) {
@@ -145,7 +145,7 @@ class GDataFileSystemTestBase : public testing::Test {
 
   void FindAndTestFilePath(const FilePath& file_path) {
     GDataFileBase* file = FindFile(file_path);
-    ASSERT_TRUE(file);
+    ASSERT_TRUE(file) << "File can't be found " << file_path.value();
     EXPECT_EQ(file->GetFilePath(), file_path);
   }
 
@@ -344,6 +344,30 @@ class GDataFileSystemTestBase : public testing::Test {
     message_loop_.RunAllPending();
   }
 
+  void TestLoadMetadataFromCache(const FilePath::StringType& feeds_path,
+                                 const FilePath& meta_cache_path) {
+    FilePath file_path = GetTestFilePath(feeds_path);
+    // Move test file into the correct cache location first.
+    FilePath cache_dir_path = profile_->GetPath();
+    cache_dir_path = cache_dir_path.Append(meta_cache_path).DirName();
+    ASSERT_TRUE(file_util::CreateDirectory(cache_dir_path));
+    ASSERT_TRUE(file_util::CopyFile(file_path,
+        cache_dir_path.Append(meta_cache_path.BaseName())));
+
+    scoped_refptr<ReadOnlyFindFileDelegate> delegate(
+        new ReadOnlyFindFileDelegate());
+    GDataFileSystem::FindFileParams params(
+        FilePath(FILE_PATH_LITERAL("gdata")),
+        true,
+        FilePath(FILE_PATH_LITERAL("gdata")),
+        GURL(),
+        true,
+        delegate);
+
+    file_system_->LoadRootFeed(params);
+    RunAllPendingForCache();
+  }
+
   static Value* LoadJSONFile(const std::string& filename) {
     FilePath path = GetTestFilePath(filename);
 
@@ -355,7 +379,7 @@ class GDataFileSystemTestBase : public testing::Test {
     return value;
   }
 
-  static FilePath GetTestFilePath(const std::string& filename) {
+  static FilePath GetTestFilePath(const FilePath::StringType& filename) {
     FilePath path;
     std::string error;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
@@ -439,6 +463,7 @@ class MockFindFileDelegate : public gdata::FindFileDelegate {
   MOCK_METHOD2(OnEnterDirectory, FindFileTraversalCommand(
       const FilePath&, GDataDirectory* dir));
   MOCK_METHOD1(OnError, void(base::PlatformFileError));
+  MOCK_CONST_METHOD0(had_terminated, bool());
 };
 
 TEST_F(GDataFileSystemTest, SearchRootDirectory) {
@@ -663,6 +688,23 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")));
   FindAndTestFilePath(
       FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")));
+}
+
+TEST_F(GDataFileSystemTest, CachedFeedLoading) {
+  TestLoadMetadataFromCache(FILE_PATH_LITERAL("cached_feeds.json"),
+      FilePath(FILE_PATH_LITERAL("GCache/v1/meta/last_feed.json")));
+
+  // Test first feed elements.
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Feed 1 File.txt")));
+  FindAndTestFilePath(
+      FilePath(FILE_PATH_LITERAL(
+          "gdata/Directory 1/Feed 1 SubDirectory File.txt")));
+
+  // Test second feed elements.
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Feed 2 File.txt")));
+  FindAndTestFilePath(
+      FilePath(FILE_PATH_LITERAL(
+          "gdata/Directory 1/Sub Directory Folder/Feed 2 Directory")));
 }
 
 TEST_F(GDataFileSystemTest, CopyNotExistingFile) {

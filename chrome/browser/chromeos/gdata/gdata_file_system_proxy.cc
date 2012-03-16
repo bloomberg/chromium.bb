@@ -87,6 +87,10 @@ class GetFileInfoDelegate : public FindFileDelegateReplyBase {
     Reply(error, base::PlatformFileInfo(), FilePath());
   }
 
+  virtual bool had_terminated() const OVERRIDE {
+    return false;
+  }
+
  private:
   // Relays reply back to the callback on calling thread.
   void Reply(base::PlatformFileError result,
@@ -127,7 +131,7 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
       : FindFileDelegateReplyBase(file_system,
                                   search_file_path,
                                   true  /* require_content */),
-        callback_(callback) {
+        callback_(callback), had_terminated_(false) {
   }
 
   // GDataFileSystemProxy::FindFileDelegate overrides.
@@ -166,31 +170,28 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
     Reply(error, std::vector<base::FileUtilProxy::Entry>(), false);
   }
 
+  virtual bool had_terminated() const OVERRIDE {
+    return had_terminated_;
+  }
+
  private:
   // Relays reply back to the callback on calling thread.
   void Reply(base::PlatformFileError result,
              const std::vector<base::FileUtilProxy::Entry>& file_list,
              bool has_more) {
+    if (had_terminated_)
+      return;
+
+    had_terminated_ = true;
     if (!callback_.is_null()) {
       reply_message_proxy_->PostTask(FROM_HERE,
-          Bind(&ReadDirectoryDelegate::ReplyOnCallingThread,
-               this,
-               result,
-               file_list,
-               has_more));
+          base::Bind(callback_, result, file_list, has_more));
     }
   }
 
-  // Responds to callback.
-  void ReplyOnCallingThread(
-      base::PlatformFileError result,
-      const std::vector<base::FileUtilProxy::Entry>& file_list,
-      bool has_more) {
-    if (!callback_.is_null())
-      callback_.Run(result, file_list, has_more);
-  }
-
   FileSystemOperationInterface::ReadDirectoryCallback callback_;
+  // Keeps the track if we have already replied to the callback.
+  bool had_terminated_;
 };
 
 // GDataFileSystemProxy class implementation.
@@ -310,8 +311,9 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  GDataFileBase* file = file_system_->GetGDataFileInfoFromPath(file_path);
-  if (!file) {
+
+  base::PlatformFileInfo file_info;
+  if (!file_system_->GetFileInfoFromPath(file_path, &file_info)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -324,7 +326,7 @@ void GDataFileSystemProxy::CreateSnapshotFile(
   file_system_->GetFile(file_path,
                         base::Bind(&CallSnapshotFileCallback,
                                    callback,
-                                   file->file_info()));
+                                   file_info));
 }
 
 // static.

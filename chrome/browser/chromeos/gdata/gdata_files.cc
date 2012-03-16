@@ -181,7 +181,7 @@ int GDataFile::GetCacheState() {
 // GDataDirectory class implementation.
 
 GDataDirectory::GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root)
-    : GDataFileBase(parent, root) {
+    : GDataFileBase(parent, root), origin_(UNINITIALIZED) {
   file_info_.is_directory = true;
 }
 

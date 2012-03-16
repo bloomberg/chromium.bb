@@ -28,6 +28,15 @@ class GDataDirectory;
 class GDataFile;
 class GDataRootDirectory;
 
+// Directory content origin.
+enum ContentOrigin {
+  UNINITIALIZED,
+  // Directory content is initialized from disk cache.
+  FROM_CACHE,
+  // Directory content is initialized from the direct server response.
+  FROM_SERVER,
+};
+
 // Base class for representing files and directories in gdata virtual file
 // system.
 class GDataFileBase {
@@ -213,6 +222,9 @@ class GDataDirectory : public GDataFileBase {
   void set_upload_url(const GURL& url) { upload_url_ = url; }
   // Collection of children GDataFileBase items.
   const GDataFileCollection& children() const { return children_; }
+  // Directory content origin.
+  const ContentOrigin origin() const { return origin_; }
+  void set_origin(ContentOrigin value) { origin_ = value; }
 
  private:
   // Removes the file from its children list without destroying the
@@ -229,6 +241,8 @@ class GDataDirectory : public GDataFileBase {
   GURL upload_url_;
   // Collection of children GDataFileBase items.
   GDataFileCollection children_;
+  // Directory content origin.
+  ContentOrigin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
@@ -311,7 +325,6 @@ class GDataRootDirectory : public GDataDirectory {
 
  private:
   ResourceMap resource_map_;
-
   CacheMap cache_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);

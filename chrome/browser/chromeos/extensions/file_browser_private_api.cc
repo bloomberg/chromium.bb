@@ -206,6 +206,7 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
       const FilePath&,
       gdata::GDataDirectory*) OVERRIDE;
   virtual void OnError(base::PlatformFileError error) OVERRIDE;
+  virtual bool had_terminated() const OVERRIDE { return false; }
 
   GURL thumbnail_url_;
   GURL edit_url_;
@@ -1713,3 +1714,4 @@ void GetGDataFilesFunction::OnFileReady(
   // Start getting the next file.
   GetFileOrSendResponse();
 }
+
