@@ -85,8 +85,18 @@ def GetArchStageTarball(tarballArch, version):
 
 def FetchRemoteTarball(url):
   """Fetches a tarball given by url, and place it in sdk/."""
-  tarball_dest = os.path.join(SDK_DIR,
-      os.path.basename(urlparse.urlparse(url).path))
+  tarball_name = os.path.basename(urlparse.urlparse(url).path)
+  tarball_dest = os.path.join(SDK_DIR, tarball_name)
+
+  # Cleanup old tarballs.
+  files_to_delete = [f for f in os.listdir(SDK_DIR) if f != tarball_name]
+  if files_to_delete:
+    print 'Cleaning up old tarballs: ' + str(files_to_delete)
+    for f in files_to_delete:
+      f_path = os.path.join(SDK_DIR, f)
+      # Only delete regular files that belong to us.
+      if os.path.isfile(f_path) and os.stat(f_path).st_uid == os.getuid():
+        os.remove(f_path)
 
   print 'Downloading sdk: "%s"' % url
   cmd = ['curl', '-f', '--retry', '5', '-L', '-y', '30',
