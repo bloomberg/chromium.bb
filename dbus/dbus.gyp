@@ -32,6 +32,8 @@
         'property.cc',
         'property.h',
         'scoped_dbus_error.h',
+        'values_util.cc',
+        'values_util.h',
       ],
     },
     {
@@ -88,6 +90,7 @@
         'property_unittest.cc',
         'test_service.cc',
         'test_service.h',
+        'values_util_unittest.cc',
       ],
       'include_dirs': [
         '..',
