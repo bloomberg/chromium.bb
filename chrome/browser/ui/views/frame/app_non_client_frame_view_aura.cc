@@ -143,9 +143,6 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 }
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
-  if (control_widget_) {
-    control_widget_->Close();
-  }
 }
 
 gfx::Rect AppNonClientFrameViewAura::GetBoundsForClientView() const {
@@ -237,14 +234,16 @@ gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
 }
 
 void AppNonClientFrameViewAura::Close() {
-  control_widget_->Close();
+  if (control_widget_)
+    control_widget_->Close();
   control_widget_ = NULL;
   mouse_watcher_.Stop();
   frame()->Close();
 }
 
 void AppNonClientFrameViewAura::Restore() {
-  control_widget_->Close();
+  if (control_widget_)
+    control_widget_->Close();
   control_widget_ = NULL;
   mouse_watcher_.Stop();
   frame()->Restore();
