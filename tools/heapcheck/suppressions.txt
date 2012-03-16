@@ -1878,3 +1878,9 @@
    ...
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
 }
+{
+   bug_118575
+   Heapcheck:Leak
+   ...
+   fun:ModuleSystemTest*
+}

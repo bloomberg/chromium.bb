@@ -5815,6 +5815,12 @@
    fun:_ZN7WebCore8DocumentD2Ev
    fun:_ZN7WebCore11SVGDocumentD0Ev
 }
+{
+   bug_118575
+   Memcheck:Leak
+   ...
+   fun:*ModuleSystemTest*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
