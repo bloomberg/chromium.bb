@@ -338,7 +338,9 @@ class Cgroup(object):
       self.parent.Instantiate()
     cros_lib.SafeMakedirs(self.path, sudo=True)
 
-    force_inheritance = (self.parent.GetValue('cgroup.clone_children') != '1')
+    force_inheritance = True
+    if self.parent.GetValue('cgroup.clone_children').strip() == '1':
+      force_inheritance = False
 
     if force_inheritance:
       if self._SUPPORTS_AUTOINHERIT:
