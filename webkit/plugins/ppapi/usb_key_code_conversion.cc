@@ -11,8 +11,7 @@ using WebKit::WebKeyboardEvent;
 namespace webkit {
 namespace ppapi {
 
-// TODO(garykac): Implement for Windows.
-#if !defined(OS_LINUX) && !defined(OS_MACOSX)
+#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_WIN)
 
 uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   return 0;
