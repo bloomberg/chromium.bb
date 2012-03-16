@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "base/message_loop.h"
@@ -97,10 +96,6 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
         return true;
       }
       break;
-    case ui::ET_MOUSE_MOVED:
-      return HandleMouseMoved(target, event);
-    case ui::ET_MOUSE_EXITED:
-      return HandleMouseExited(target, event);
     default:
       break;
   }
@@ -213,33 +208,6 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
     return false;
   window_resizer_->Drag(ConvertPointToParent(target, event->location()));
   return true;
-}
-
-bool ToplevelWindowEventFilter::HandleMouseMoved(aura::Window* target,
-                                                 aura::LocatedEvent* event) {
-  // TODO(jamescook): Move the resize cursor update code into here from
-  // RootWindowEventFilter?
-  internal::ResizeShadowController* controller =
-      Shell::GetInstance()->resize_shadow_controller();
-  if (controller) {
-    if (event->flags() & ui::EF_IS_NON_CLIENT) {
-      int component =
-          target->delegate()->GetNonClientComponent(event->location());
-        controller->ShowShadow(target, component);
-    } else {
-      controller->HideShadow(target);
-    }
-  }
-  return false;
-}
-
-bool ToplevelWindowEventFilter::HandleMouseExited(aura::Window* target,
-                                                  aura::LocatedEvent* event) {
-  internal::ResizeShadowController* controller =
-      Shell::GetInstance()->resize_shadow_controller();
-  if (controller)
-    controller->HideShadow(target);
-  return false;
 }
 
 }  // namespace ash

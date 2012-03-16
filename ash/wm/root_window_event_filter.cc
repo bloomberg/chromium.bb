@@ -4,6 +4,8 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
+#include "ash/wm/activation_controller.h"
+#include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"

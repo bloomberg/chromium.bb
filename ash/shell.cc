@@ -39,7 +39,6 @@
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/shadow_controller.h"
@@ -444,7 +443,6 @@ Shell::~Shell() {
   // Alphabetical.
   activation_controller_.reset();
   drag_drop_controller_.reset();
-  resize_shadow_controller_.reset();
   shadow_controller_.reset();
   window_cycle_controller_.reset();
 
@@ -582,10 +580,8 @@ void Shell::Init() {
 
   InitLayoutManagers();
 
-  if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
-    resize_shadow_controller_.reset(new internal::ResizeShadowController());
+  if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
-  }
 
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_widget_);

@@ -73,14 +73,6 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // The return value is returned by OnMouseEvent() above.
   bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
 
-  // Called during mouse moves to update window resize shadows.
-  // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseMoved(aura::Window* target, aura::LocatedEvent* event);
-
-  // Called for mouse exits to hide window resize shadows.
-  // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseExited(aura::Window* target, aura::LocatedEvent* event);
-
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
 

@@ -62,7 +62,6 @@ class DragDropController;
 class FocusCycler;
 class InputMethodEventFilter;
 class PartialScreenshotEventFilter;
-class ResizeShadowController;
 class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ShadowController;
@@ -209,10 +208,6 @@ class ASH_EXPORT Shell : public aura::MonitorObserver {
     initially_hide_cursor_ = hide;
   }
 
-  internal::ResizeShadowController* resize_shadow_controller() {
-    return resize_shadow_controller_.get();
-  }
-
   // Made available for tests.
   internal::ShadowController* shadow_controller() {
     return shadow_controller_.get();
@@ -266,7 +261,6 @@ class ASH_EXPORT Shell : public aura::MonitorObserver {
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
-  scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
   scoped_ptr<internal::VisibilityController> visibility_controller_;
