@@ -25,6 +25,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
@@ -240,8 +241,8 @@ class PrinterWatcherCUPS
   PrinterWatcherCUPS(PrintSystemCUPS* print_system,
                      const std::string& printer_name)
       : printer_name_(printer_name),
-    delegate_(NULL),
-    print_system_(print_system) {
+        delegate_(NULL),
+        print_system_(print_system) {
   }
 
   ~PrinterWatcherCUPS() {
@@ -251,6 +252,10 @@ class PrinterWatcherCUPS
   // PrintSystem::PrinterWatcher implementation.
   virtual bool StartWatching(
       PrintSystem::PrinterWatcher::Delegate* delegate) OVERRIDE{
+    scoped_refptr<printing::PrintBackend> print_backend(
+        printing::PrintBackend::CreateInstance(NULL));
+    child_process_logging::ScopedPrinterInfoSetter prn_info(
+        print_backend->GetPrinterDriverInfo(printer_name_));
     if (delegate_ != NULL)
       StopWatching();
     delegate_ = delegate;
@@ -340,7 +345,6 @@ class PrinterWatcherCUPS
 
     return base::MD5String(to_hash);
   }
-
   std::string printer_name_;
   PrintSystem::PrinterWatcher::Delegate* delegate_;
   scoped_refptr<PrintSystemCUPS> print_system_;
@@ -512,8 +516,9 @@ bool PrintSystemCUPS::ValidatePrintTicket(const std::string& printer_name,
 }
 
 // Print ticket on linux is a JSON string containing only one dictionary.
-bool PrintSystemCUPS::ParsePrintTicket(const std::string& print_ticket,
-                                  std::map<std::string, std::string>* options) {
+bool PrintSystemCUPS::ParsePrintTicket(
+    const std::string& print_ticket,
+    std::map<std::string, std::string>* options) {
   DCHECK(options);
   scoped_ptr<Value> ticket_value(base::JSONReader::Read(print_ticket, false));
   if (ticket_value == NULL || !ticket_value->IsType(Value::TYPE_DICTIONARY))
@@ -552,6 +557,8 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
   }
 
   // TODO(gene): Retry multiple times in case of error.
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      server_info->backend->GetPrinterDriverInfo(short_printer_name));
   if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
                                                        printer_info) ) {
     return false;
@@ -573,6 +580,8 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   if (!server_info)
     return false;
 
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      server_info->backend->GetPrinterDriverInfo(short_printer_name));
   cups_job_t* jobs = NULL;
   int num_jobs = GetJobs(&jobs, server_info->url,
                          short_printer_name.c_str(), 1, -1);
@@ -737,6 +746,9 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
       FindServerByFullName(printer_name, &short_printer_name);
   if (!server_info)
     return false;
+
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      server_info->backend->GetPrinterDriverInfo(printer_name));
 
   // We need to store options as char* string for the duration of the
   // cupsPrintFile2 call. We'll use map here to store options, since

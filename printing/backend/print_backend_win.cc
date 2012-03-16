@@ -50,8 +50,7 @@ class PrintBackendWin : public PrintBackend {
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
 
-  virtual bool GetPrinterDriverInfo(const std::string& printer_name,
-                                    std::string* driver_info);
+  virtual std::string GetPrinterDriverInfo(const std::string& printer_name);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 };
@@ -178,9 +177,9 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 }
 
 // Gets the information about driver for a specific printer.
-bool PrintBackendWin::GetPrinterDriverInfo(const std::string& printer_name,
-                                           std::string* driver_info) {
-  DCHECK(driver_info);
+std::string PrintBackendWin::GetPrinterDriverInfo(
+    const std::string& printer_name) {
+  std::string driver_info;
   ScopedPrinterHandle printer_handle;
   if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
                      printer_handle.Receive(), NULL)) {
@@ -217,11 +216,11 @@ bool PrintBackendWin::GetPrinterDriverInfo(const std::string& printer_name,
 
   for (size_t i = 0; i < arraysize(info); ++i) {
     std::replace(info[i].begin(), info[i].end(), ';', ',');
-    driver_info->append(info[i]);
-    driver_info->append(";");
+    driver_info.append(info[i]);
+    driver_info.append(";");
   }
 
-  return true;
+  return driver_info;
 }
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {

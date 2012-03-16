@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/external_process_importer_bridge.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
@@ -372,6 +373,10 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
   scoped_refptr<printing::PrintBackend> print_backend =
       printing::PrintBackend::CreateInstance(NULL);
   printing::PrinterCapsAndDefaults printer_info;
+
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      print_backend->GetPrinterDriverInfo(printer_name));
+
   if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(
         printer_name, printer_info));

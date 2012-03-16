@@ -67,9 +67,8 @@ class PRINTING_EXPORT PrintBackend
       PrinterCapsAndDefaults* printer_info) = 0;
 
   // Gets the information about driver for a specific printer.
-  virtual bool GetPrinterDriverInfo(
-      const std::string& printer_name,
-      std::string* driver_info) = 0;
+  virtual std::string GetPrinterDriverInfo(
+      const std::string& printer_name) = 0;
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;

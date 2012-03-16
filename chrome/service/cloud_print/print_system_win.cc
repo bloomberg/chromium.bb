@@ -17,6 +17,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "grit/generated_resources.h"
@@ -162,6 +163,11 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   };
 
   bool Start(const std::string& printer_name, Delegate* delegate) {
+    scoped_refptr<printing::PrintBackend> print_backend(
+        printing::PrintBackend::CreateInstance(NULL));
+    printer_info_ = print_backend->GetPrinterDriverInfo(printer_name);
+    child_process_logging::ScopedPrinterInfoSetter prn_info(printer_info_);
+
     delegate_ = delegate;
     // An empty printer name means watch the current server, we need to pass
     // NULL to OpenPrinter.
@@ -194,6 +200,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   // base::ObjectWatcher::Delegate method
   virtual void OnObjectSignaled(HANDLE object) {
+    child_process_logging::ScopedPrinterInfoSetter prn_info(printer_info_);
     DWORD change = 0;
     FindNextPrinterChangeNotification(object, &change, NULL, NULL);
 
@@ -254,6 +261,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   ScopedPrinterChangeHandle printer_change_;
   Delegate* delegate_;           // Delegate to notify
   bool did_signal_;              // DoneWaiting was called
+  std::string printer_info_;     // For crash reporting.
 };
 
 // This typedef is to workaround the issue with certain versions of
@@ -377,6 +385,10 @@ class PrintSystemWin : public PrintSystem {
                        const std::vector<std::string>& tags,
                        JobSpooler::Delegate* delegate) OVERRIDE {
       // TODO(gene): add tags handling.
+      scoped_refptr<printing::PrintBackend> print_backend(
+          printing::PrintBackend::CreateInstance(NULL));
+      child_process_logging::ScopedPrinterInfoSetter prn_info(
+          print_backend->GetPrinterDriverInfo(printer_name));
       return core_->Spool(print_ticket, print_data_file_path,
                           print_data_mime_type, printer_name, job_title,
                           delegate);
@@ -404,6 +416,10 @@ class PrintSystemWin : public PrintSystem {
                  const std::string& printer_name,
                  const std::string& job_title,
                  JobSpooler::Delegate* delegate) {
+        scoped_refptr<printing::PrintBackend> print_backend(
+            printing::PrintBackend::CreateInstance(NULL));
+        child_process_logging::ScopedPrinterInfoSetter prn_info(
+            print_backend->GetPrinterDriverInfo(printer_name));
         if (delegate_) {
           // We are already in the process of printing.
           NOTREACHED();
@@ -780,6 +796,8 @@ bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
 bool PrintSystemWin::ValidatePrintTicket(
     const std::string& printer_name,
     const std::string& print_ticket_data) {
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      print_backend_->GetPrinterDriverInfo(printer_name));
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
@@ -819,6 +837,8 @@ bool PrintSystemWin::ValidatePrintTicket(
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
                                    PlatformJobId job_id,
                                    PrintJobDetails *job_details) {
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);

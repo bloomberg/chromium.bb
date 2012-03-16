@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
+#include "chrome/common/child_process_logging.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -518,6 +519,8 @@ void PrintSystemTaskProxy::GetPrinterCapabilitiesWin(
 void PrintSystemTaskProxy::GetPrinterCapabilities(
     const std::string& printer_name) {
   VLOG(1) << "Get printer capabilities start for " << printer_name;
+  child_process_logging::ScopedPrinterInfoSetter prn_info(
+      print_backend_->GetPrinterDriverInfo(printer_name));
   printing::PrinterCapsAndDefaults printer_info;
   if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
                                                  &printer_info)) {
