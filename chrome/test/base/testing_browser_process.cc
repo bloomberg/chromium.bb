@@ -134,10 +134,15 @@ TestingBrowserProcess::extension_event_router_forwarder() {
 }
 
 NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
+#if defined(ENABLE_NOTIFICATIONS)
   if (!notification_ui_manager_.get())
     notification_ui_manager_.reset(
         NotificationUIManager::Create(local_state()));
   return notification_ui_manager_.get();
+#else
+  NOTIMPLEMENTED();
+  return NULL;
+#endif
 }
 
 GoogleURLTracker* TestingBrowserProcess::google_url_tracker() {

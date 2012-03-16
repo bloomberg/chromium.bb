@@ -170,7 +170,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettings::Factory::GetInstance();
+#if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationServiceFactory::GetInstance();
+#endif
   DownloadServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GlobalErrorServiceFactory::GetInstance();
