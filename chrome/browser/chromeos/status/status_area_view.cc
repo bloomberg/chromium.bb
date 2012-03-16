@@ -107,10 +107,12 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 bool StatusAreaView::CanActivate() const {
 #if defined(USE_ASH)
   // We don't want mouse clicks to activate us, but we need to allow
-  // activation when the user is using the keyboard (FocusCycler).
+  // activation when the user is using the keyboard, such as by the FocusCycler
+  // or on the Login screen.
   ash::internal::FocusCycler* focus_cycler =
       ash::Shell::GetInstance()->focus_cycler();
-  return focus_cycler->widget_activating() == GetWidget();
+  return focus_cycler->widget_activating() == GetWidget() ||
+      need_return_focus_;
 #else
   return false;
 #endif
