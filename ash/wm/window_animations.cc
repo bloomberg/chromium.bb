@@ -18,8 +18,10 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
@@ -72,7 +74,7 @@ const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
 const float kWindowAnimation_TranslateFactor = -0.025f;
 const float kWindowAnimation_ScaleFactor = 1.05f;
-const float kWindowAnimation_MinimizeRotate = -90.f;
+const float kWindowAnimation_MinimizeRotate = -5.f;
 
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
 
@@ -344,18 +346,59 @@ gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
   return target_bounds;
 }
 
-void AnimateShowWindow_Minimize(aura::Window* window) {
+void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
   // moved while the window was minimized.
+  gfx::Rect bounds = window->bounds();
   gfx::Rect target_bounds = GetMinimizeRectForWindow(window);
-  ui::Transform transform;
-  transform.ConcatScale(
-      static_cast<float>(target_bounds.height()) / window->bounds().width(),
-      static_cast<float>(target_bounds.width()) / window->bounds().height());
-  transform.ConcatTranslate(target_bounds.x() - window->bounds().x(),
-                            target_bounds.y() - window->bounds().y());
+  float scale_x = static_cast<float>(target_bounds.height()) / bounds.width();
+  float scale_y = static_cast<float>(target_bounds.width()) / bounds.height();
 
-  AnimateShowWindowCommon(window, transform, ui::Transform());
+  scoped_ptr<ui::InterpolatedTransform> scale(
+      new ui::InterpolatedScale(gfx::Point3f(1, 1, 1),
+                                gfx::Point3f(scale_x, scale_y, 1)));
+
+  scoped_ptr<ui::InterpolatedTransform> translation(
+      new ui::InterpolatedTranslation(
+          gfx::Point(),
+          gfx::Point(target_bounds.x() - bounds.x(),
+                     target_bounds.y() - bounds.y())));
+
+  scoped_ptr<ui::InterpolatedTransform> rotation(
+      new ui::InterpolatedRotation(0, kWindowAnimation_MinimizeRotate));
+
+  scoped_ptr<ui::InterpolatedTransform> rotation_about_pivot(
+      new ui::InterpolatedTransformAboutPivot(
+          gfx::Point(bounds.width() * 0.5, bounds.height() * 0.5),
+          rotation.release()));
+
+  scale->SetChild(translation.release());
+  rotation_about_pivot->SetChild(scale.release());
+
+  rotation_about_pivot->SetReversed(show);
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(350);
+
+  scoped_ptr<ui::LayerAnimationElement> transition(
+      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
+          rotation_about_pivot.release(), duration));
+
+  transition->set_tween_type(
+      show ? ui::Tween::EASE_IN : ui::Tween::EASE_IN_OUT);
+
+  window->layer()->GetAnimator()->ScheduleAnimation(
+      new ui::LayerAnimationSequence(transition.release()));
+
+  bool opacity = show ? 1.0f : 0.0f;
+  window->layer()->GetAnimator()->ScheduleAnimation(
+      new ui::LayerAnimationSequence(
+          ui::LayerAnimationElement::CreateOpacityElement(opacity, duration)));
+}
+
+void AnimateShowWindow_Minimize(aura::Window* window) {
+  window->layer()->set_delegate(window);
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  AddLayerAnimationsForMinimize(window, true);
 
   // Now that the window has been restored, we need to clear its animation style
   // to default so that normal animation applies.
@@ -364,14 +407,13 @@ void AnimateShowWindow_Minimize(aura::Window* window) {
 }
 
 void AnimateHideWindow_Minimize(aura::Window* window) {
-  gfx::Rect target_bounds = GetMinimizeRectForWindow(window);
-  ui::Transform transform;
-  transform.ConcatScale(
-      static_cast<float>(target_bounds.height()) / window->bounds().width(),
-      static_cast<float>(target_bounds.width()) / window->bounds().height());
-  transform.ConcatTranslate(target_bounds.x() - window->bounds().x(),
-                            target_bounds.y() - window->bounds().y());
-  AnimateHideWindowCommon(window, transform);
+  window->layer()->set_delegate(NULL);
+
+  // Property sets within this scope will be implicitly animated.
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.AddObserver(new HidingWindowAnimationObserver(window));
+
+  AddLayerAnimationsForMinimize(window, false);
 }
 
 bool AnimateShowWindow(aura::Window* window) {

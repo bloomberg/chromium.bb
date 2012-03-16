@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,13 @@ void Transform::SetRotate(float degree) {
   matrix_.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
 }
 
+void Transform::SetRotateAbout(const gfx::Point3f& axis, float degree) {
+  matrix_.setRotateDegreesAbout(axis.x(),
+                                axis.y(),
+                                axis.z(),
+                                SkFloatToScalar(degree));
+}
+
 void Transform::SetScaleX(float x) {
   matrix_.set(0, 0, SkFloatToScalar(x));
 }
@@ -47,10 +54,9 @@ void Transform::SetScaleY(float y) {
 }
 
 void Transform::SetScale(float x, float y) {
-  matrix_.setScale(
-    SkFloatToScalar(x),
-    SkFloatToScalar(y),
-    matrix_.get(2, 2));
+  matrix_.setScale(SkFloatToScalar(x),
+                   SkFloatToScalar(y),
+                   matrix_.get(2, 2));
 }
 
 void Transform::SetTranslateX(float x) {
@@ -62,15 +68,23 @@ void Transform::SetTranslateY(float y) {
 }
 
 void Transform::SetTranslate(float x, float y) {
-  matrix_.setTranslate(
-    SkFloatToScalar(x),
-    SkFloatToScalar(y),
-    matrix_.get(2, 3));
+  matrix_.setTranslate(SkFloatToScalar(x),
+                       SkFloatToScalar(y),
+                       matrix_.get(2, 3));
 }
 
 void Transform::ConcatRotate(float degree) {
   SkMatrix44 rot;
   rot.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
+  matrix_.postConcat(rot);
+}
+
+void Transform::ConcatRotateAbout(const gfx::Point3f& axis, float degree) {
+  SkMatrix44 rot;
+  rot.setRotateDegreesAbout(axis.x(),
+                            axis.y(),
+                            axis.z(),
+                            SkFloatToScalar(degree));
   matrix_.postConcat(rot);
 }
 

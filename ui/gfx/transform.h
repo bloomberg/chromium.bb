@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,9 @@ class UI_EXPORT Transform {
   // Sets the rotation of the transformation.
   void SetRotate(float degree);
 
+  // Sets the rotation of the transform (about a vector).
+  void SetRotateAbout(const gfx::Point3f& point, float degree);
+
   // Sets the scaling parameters.
   void SetScaleX(float x);
   void SetScaleY(float y);
@@ -49,8 +52,11 @@ class UI_EXPORT Transform {
   void SetTranslateY(float y);
   void SetTranslate(float x, float y);
 
-  // Applies rotation on the current transformation.
+  // Applies a rotation on the current transformation.
   void ConcatRotate(float degree);
+
+  // Applies an axis-angle rotation on the current transformation.
+  void ConcatRotateAbout(const gfx::Point3f& point, float degree);
 
   // Applies scaling on current transform.
   void ConcatScale(float x, float y);

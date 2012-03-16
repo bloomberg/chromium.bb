@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
+#include "ui/gfx/interpolated_transform.h"
 
 namespace ui {
 
@@ -70,6 +71,45 @@ class TransformTransition : public LayerAnimationElement {
   const Transform target_;
 
   DISALLOW_COPY_AND_ASSIGN(TransformTransition);
+};
+
+// InterpolatedTransformTransition ---------------------------------------------
+
+class InterpolatedTransformTransition : public LayerAnimationElement {
+ public:
+  InterpolatedTransformTransition(InterpolatedTransform* interpolated_transform,
+                                  base::TimeDelta duration)
+      : LayerAnimationElement(GetProperties(), duration),
+        interpolated_transform_(interpolated_transform) {
+  }
+  virtual ~InterpolatedTransformTransition() {}
+
+ protected:
+  virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
+  }
+
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+    delegate->SetTransformFromAnimation(
+        interpolated_transform_->Interpolate(static_cast<float>(t)));
+    return true;
+  }
+
+  virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
+    target->transform = interpolated_transform_->Interpolate(1.0f);
+  }
+
+  virtual void OnAbort() OVERRIDE {}
+
+ private:
+  static AnimatableProperties GetProperties() {
+    AnimatableProperties properties;
+    properties.insert(LayerAnimationElement::TRANSFORM);
+    return properties;
+  }
+
+  scoped_ptr<InterpolatedTransform> interpolated_transform_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterpolatedTransformTransition);
 };
 
 // BoundsTransition ------------------------------------------------------------
@@ -244,6 +284,13 @@ void LayerAnimationElement::Abort() {
 LayerAnimationElement* LayerAnimationElement::CreateTransformElement(
     const Transform& transform, base::TimeDelta duration) {
   return new TransformTransition(transform, duration);
+}
+
+// static
+LayerAnimationElement*
+LayerAnimationElement::CreateInterpolatedTransformElement(
+    InterpolatedTransform* interpolated_transform, base::TimeDelta duration) {
+  return new InterpolatedTransformTransition(interpolated_transform, duration);
 }
 
 // static

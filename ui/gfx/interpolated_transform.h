@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,11 @@ class UI_EXPORT InterpolatedTransform {
   // This function takes ownership of the passed InterpolatedTransform.
   void SetChild(InterpolatedTransform* child);
 
+  // If the interpolated transform is reversed, Interpolate(t) will return
+  // Interpolate(1 - t)
+  void SetReversed(bool reversed) { reversed_ = reversed; }
+  bool Reversed() const { return reversed_; }
+
   static bool FactorTRS(const ui::Transform& transform,
                         gfx::Point* translation,
                         float* rotation,
@@ -72,6 +77,8 @@ class UI_EXPORT InterpolatedTransform {
   // transform, we can chain collections of transforms together.
   scoped_ptr<InterpolatedTransform> child_;
 
+  bool reversed_;
+
   DISALLOW_COPY_AND_ASSIGN(InterpolatedTransform);
 };
 
@@ -98,6 +105,35 @@ class UI_EXPORT InterpolatedRotation : public InterpolatedTransform {
   const float end_degrees_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedRotation);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// class InterpolatedAxisAngleRotation
+//
+// Represents an animated rotation.
+//
+///////////////////////////////////////////////////////////////////////////////
+class UI_EXPORT InterpolatedAxisAngleRotation : public InterpolatedTransform {
+ public:
+  InterpolatedAxisAngleRotation(gfx::Point3f axis,
+                                float start_degrees,
+                                float end_degrees);
+  InterpolatedAxisAngleRotation(gfx::Point3f axis,
+                                float start_degrees,
+                                float end_degrees,
+                                float start_time,
+                                float end_time);
+  virtual ~InterpolatedAxisAngleRotation();
+
+ protected:
+  virtual ui::Transform InterpolateButDoNotCompose(float t) const OVERRIDE;
+
+ private:
+  gfx::Point3f axis_;
+  const float start_degrees_;
+  const float end_degrees_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterpolatedAxisAngleRotation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
