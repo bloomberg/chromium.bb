@@ -68,7 +68,7 @@ std::string GetJobString(const ChromeToMobileService::RequestData& data) {
 }
 
 // Get the URL for cloud print job submission; appends query params if needed.
-GURL GetSubmitURL(GURL service_url,
+GURL GetSubmitURL(const GURL& service_url,
                   const ChromeToMobileService::RequestData& data) {
   GURL submit_url = cloud_print::GetUrlForSubmit(service_url);
   if (data.type == ChromeToMobileService::SNAPSHOT)
