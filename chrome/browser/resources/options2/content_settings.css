@@ -6,6 +6,10 @@
   min-width: 600px;
 }
 
+#content-settings-exceptions-area {
+  min-width: 540px;
+}
+
 .exception-pattern {
   -webkit-box-flex: 1;
   -webkit-margin-end: 10px;
