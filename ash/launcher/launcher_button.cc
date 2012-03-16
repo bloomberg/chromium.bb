@@ -14,8 +14,8 @@
 #include "ui/views/controls/image_view.h"
 
 namespace {
-const int kBarHeight = 4;
-const int kBarSpacing = 6;
+const int kBarHeight = 3;
+const int kBarSpacing = 5;
 const int kIconHeight = 32;
 const int kIconWidth = 48;
 const int kHopSpacing = 2;
