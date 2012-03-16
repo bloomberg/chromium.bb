@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -79,6 +79,7 @@ class ChromeTests(object):
     # Recognise the original abbreviations as well as full executable names.
     self._test_list = {
       "ash": self.TestAsh,              "aura_shell_unittests": self.TestAsh,
+      "aura": self.TestAura,            "aura_unittests": self.TestAura,
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
@@ -245,6 +246,9 @@ class ChromeTests(object):
 
   def TestAsh(self):
     return self.SimpleTest("ash", "aura_shell_unittests")
+
+  def TestAura(self):
+    return self.SimpleTest("aura", "aura_unittests")
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")

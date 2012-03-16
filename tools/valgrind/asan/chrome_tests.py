@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -78,6 +78,8 @@ class ChromeTests(object):
     # The known list of tests.
     # Recognise the original abbreviations as well as full executable names.
     self._test_list = {
+      "ash": TestAsh,                   "aura_shell_unittests": TestAsh,
+      "aura": TestAura,                 "aura_unittests": TestAura,
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "crypto": self.TestCrypto,        "crypto_unittests": self.TestCrypto,
@@ -240,6 +242,12 @@ class ChromeTests(object):
     else:
       os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return asan_test.RunTool(cmd, supp, module)
+
+  def TestAsh(self):
+    return self.SimpleTest("ash", "aura_shell_unittests")
+
+  def TestAura(self):
+    return self.SimpleTest("aura", "aura_unittests")
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
