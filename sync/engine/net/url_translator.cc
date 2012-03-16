@@ -17,8 +17,14 @@ namespace browser_sync {
 
 namespace {
 // Parameters that the server understands. (here, a-Z)
-const char kParameterAuthToken[] = "auth";
+const char kParameterClient[] = "client";
 const char kParameterClientID[] = "client_id";
+
+#if defined(GOOGLE_CHROME_BUILD)
+const char kClientName[] = "Google Chrome";
+#else
+const char kClientName[] = "Chromium";
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 // Convenience wrappers around CgiEscapePath().
@@ -40,6 +46,9 @@ string MakeSyncServerPath(const string& path, const string& query_string) {
 
 string MakeSyncQueryString(const string& client_id) {
   string query;
+  query += kParameterClient;
+  query += "=" + CgiEscapeString(kClientName);
+  query += "&";
   query += kParameterClientID;
   query += "=" + CgiEscapeString(client_id);
   return query;
