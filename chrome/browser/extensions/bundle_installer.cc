@@ -46,8 +46,6 @@ scoped_refptr<Extension> CreateDummyExtension(const BundleInstaller::Item& item,
   // parse an extension manifest.
   CHECK(!item.localized_name.empty());
 
-  manifest->SetString(extension_manifest_keys::kName, item.localized_name);
-
   std::string error;
   return Extension::Create(FilePath(),
                            Extension::INTERNAL,

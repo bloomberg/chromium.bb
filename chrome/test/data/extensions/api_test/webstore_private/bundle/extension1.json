@@ -1,5 +1,5 @@
 {
-  "name": "extension.1",
+  "name": "__MSG__name",
   "version": "1",
   "manifest_version": 2,
   "permissions": [ "tabs" ]
