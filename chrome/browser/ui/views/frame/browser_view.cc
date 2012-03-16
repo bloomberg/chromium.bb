@@ -2014,8 +2014,13 @@ BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
 void BrowserView::LayoutStatusBubble() {
   // In restored mode, the client area has a client edge between it and the
   // frame.
-  int overlap = StatusBubbleViews::kShadowThickness +
-      (IsMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness);
+  int overlap = StatusBubbleViews::kShadowThickness;
+  // The extra pixels defined by kClientEdgeThickness is only drawn in frame
+  // content border on windows for non-aura build.
+#if !defined(USE_ASH)
+  overlap +=
+      IsMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness;
+#endif
   int height = status_bubble_->GetPreferredSize().height();
   int contents_height = status_bubble_->base_view()->bounds().height();
   gfx::Point origin(-overlap, contents_height - height + overlap);
