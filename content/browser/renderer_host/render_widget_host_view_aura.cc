@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
@@ -528,9 +529,31 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 bool RenderWidgetHostViewAura::CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  return false;
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor)
+    return false;
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  WebKit::WebGraphicsContext3D* context = factory->GetSharedContext(compositor);
+  if (!context)
+    return false;
+
+  ImageTransportClient* container = image_transport_clients_[current_surface_];
+  if (!container)
+    return false;
+
+  if (!output->initialize(size.width(), size.height(), true))
+    return false;
+
+  if (!gl_helper_.get())
+    gl_helper_.reset(new content::GLHelper(context));
+
+  unsigned char* addr = static_cast<unsigned char*>(
+      output->getTopDevice()->accessBitmap(true).getPixels());
+  return gl_helper_->CopyTextureTo(container->texture_id(),
+                                   container->size(),
+                                   size,
+                                   addr);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
@@ -1029,6 +1052,11 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
   shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
   host_->CompositingSurfaceUpdated();
   host_->ScheduleComposite();
+
+  if (gl_helper_.get()) {
+    gl_helper_.reset(
+        new content::GLHelper(factory->GetSharedContext(compositor)));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

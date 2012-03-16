@@ -165,6 +165,8 @@
     'common/gpu/client/command_buffer_proxy.h',
     'common/gpu/client/content_gl_context.cc',
     'common/gpu/client/content_gl_context.h',
+    'common/gpu/client/gl_helper.cc',
+    'common/gpu/client/gl_helper.h',
     'common/gpu/client/gpu_channel_host.cc',
     'common/gpu/client/gpu_channel_host.h',
     'common/gpu/client/gpu_video_decode_accelerator_host.cc',

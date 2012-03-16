@@ -23,6 +23,7 @@
 #include "webkit/glue/webcursor.h"
 
 namespace content {
+class GLHelper;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 }
@@ -218,6 +219,8 @@ class RenderWidgetHostViewAura
 
   // The model object.
   content::RenderWidgetHostImpl* host_;
+
+  scoped_ptr<content::GLHelper> gl_helper_;
 
   aura::Window* window_;
 

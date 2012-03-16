@@ -18,6 +18,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/compositor_setup.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -52,6 +53,11 @@ class DefaultTransportFactory
 
   virtual void DestroySharedSurfaceHandle(
       gfx::GLSurfaceHandle surface) OVERRIDE {
+  }
+
+  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
+      ui::Compositor* compositor) OVERRIDE {
+    return NULL;
   }
 
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
@@ -129,6 +135,12 @@ class InProcessTransportFactory : public DefaultTransportFactory {
   virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle(
       ui::Compositor* compositor) OVERRIDE {
     return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
+  }
+
+  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
+      ui::Compositor* compositor) OVERRIDE {
+    // TODO(mazda): Implement this (http://crbug.com/118546).
+    return NULL;
   }
 
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
@@ -298,6 +310,15 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
         break;
       }
     }
+  }
+
+  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
+      ui::Compositor* compositor) OVERRIDE {
+    PerCompositorDataMap::const_iterator itr =
+        per_compositor_data_.find(compositor);
+    if (itr == per_compositor_data_.end())
+      return NULL;
+    return itr->second->shared_context.get();
   }
 
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(

@@ -20,6 +20,10 @@ class ContextFactory;
 class Texture;
 }
 
+namespace WebKit {
+class WebGraphicsContext3D;
+}
+
 class ImageTransportClient;
 
 // This class provides a way to get notified when surface handles get lost.
@@ -62,6 +66,13 @@ class ImageTransportFactory {
 
   // Destroys a shared surface handle.
   virtual void DestroySharedSurfaceHandle(gfx::GLSurfaceHandle surface) = 0;
+
+  // Returns a shared context associated with the compositor. Returns NULL if
+  // no context is associated with the compositor.
+  // Note: the context may get lost at any time, a state that an
+  // ImageTransportFactoryObserver gets notified of.
+  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
+      ui::Compositor* compositor) = 0;
 
   // Creates a transport client of a given size, and using the opaque handle
   // sent by the GPU process.
