@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
@@ -365,7 +366,6 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_DestroyTransferBuffer(
   ppapi_proxy::PPBGraphics3DTrustedInterface()->DestroyTransferBuffer(
       resource_id, id);
   rpc->result = NACL_SRPC_RESULT_OK;
-
 }
 
 void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetTransferBuffer(
@@ -377,22 +377,28 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetTransferBuffer(
     int32_t* shm_size) {
   DebugPrintf("PPB_Graphics3DTrusted_GetTransferBuffer\n");
   nacl::DescWrapperFactory factory;
-  nacl::scoped_ptr<nacl::DescWrapper> desc_wrapper;
+  nacl::scoped_ptr<nacl::DescWrapper> desc_wrapper(factory.MakeInvalid());
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-
-  int native_handle = 0;
+  *shm_desc = desc_wrapper->desc();
+  *shm_size = 0;
+  const int kInvalidIntHandle = int(nacl::kInvalidHandle);
+  int native_handle = kInvalidIntHandle;
   uint32_t native_size = 0;
-  ppapi_proxy::PPBGraphics3DTrustedInterface()->
+  bool transfer_buffer_aquired = ppapi_proxy::PPBGraphics3DTrustedInterface()->
       GetTransferBuffer(resource_id, id, &native_handle, &native_size);
-  desc_wrapper.reset(factory.ImportShmHandle(
-      (NaClHandle)native_handle, native_size));
-  // todo(nfullagar): Dup the handle instead of leak caused by bumping the ref.
-  // bug: https://chromiumcodereview.appspot.com/9610008
-  *shm_desc = NaClDescRef(desc_wrapper->desc());
+  if (!transfer_buffer_aquired || kInvalidIntHandle == native_handle) {
+    return;
+  }
+  NaClHandle nacl_handle = NaClHandle(native_handle);
+  NaClHandle nacl_dup_handle = NaClDuplicateNaClHandle(nacl_handle);
+  if (nacl::kInvalidHandle == nacl_dup_handle) {
+    return;
+  }
+  desc_wrapper.reset(factory.ImportShmHandle(nacl_dup_handle, native_size));
+  *shm_desc = desc_wrapper->desc();
   *shm_size = native_size;
   rpc->result = NACL_SRPC_RESULT_OK;
-
 }
 
 //@}

@@ -7,6 +7,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -118,47 +119,37 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
     return;
   }
   *shm = desc_wrapper->desc();
-  *shm_size = -1;
+  *shm_size = 0;
   *success = PP_FALSE;
   PP_Bool pp_success =
       ppapi_proxy::PPBImageDataInterface()->Describe(
           resource, reinterpret_cast<struct PP_ImageDataDesc*>(desc));
   if (pp_success == PP_TRUE) {
-    int native_handle = 0;
+    const int kInvalidIntHandle = int(nacl::kInvalidHandle);
+    int native_handle = kInvalidIntHandle;
     uint32_t native_size = 0;
     if (ppapi_proxy::PPBImageDataTrustedInterface()->GetSharedMemory(
         static_cast<PP_Resource>(resource),
         &native_handle,
         &native_size) == PP_OK) {
-
+      if (kInvalidIntHandle != native_handle) {
 #if NACL_LINUX
-      desc_wrapper.reset(factory.ImportSysvShm(native_handle, native_size));
-      *shm = desc_wrapper->desc();
-      *shm_size = native_size;
-      *success = PP_TRUE;
-#elif NACL_WINDOWS
-      HANDLE dup_handle;
-      if (DuplicateHandle(GetCurrentProcess(),
-                          reinterpret_cast<NaClHandle>(native_handle),
-                          GetCurrentProcess(),
-                          &dup_handle,
-                          0,
-                          FALSE,
-                          DUPLICATE_SAME_ACCESS)) {
-        desc_wrapper.reset(factory.ImportShmHandle(dup_handle, native_size));
+        desc_wrapper.reset(factory.ImportSysvShm(native_handle, native_size));
         *shm = desc_wrapper->desc();
         *shm_size = native_size;
         *success = PP_TRUE;
-      }
 #else
-      int dup_handle = dup(static_cast<int>(native_handle));
-      if (dup_handle >= 0) {
-        desc_wrapper.reset(factory.ImportShmHandle(dup_handle, native_size));
-        *shm = desc_wrapper->desc();
-        *shm_size = native_size;
-        *success = PP_TRUE;
-      }
+        NaClHandle nacl_handle = NaClHandle(native_handle);
+        NaClHandle nacl_dup_handle = NaClDuplicateNaClHandle(nacl_handle);
+        if (nacl::kInvalidHandle != nacl_dup_handle) {
+          desc_wrapper.reset(
+              factory.ImportShmHandle(nacl_dup_handle, native_size));
+          *shm = desc_wrapper->desc();
+          *shm_size = native_size;
+          *success = PP_TRUE;
+        }
 #endif
+      }
     }
   }
   DebugPrintf("PPB_ImageData::Describe: resource=%"NACL_PRId32", "
