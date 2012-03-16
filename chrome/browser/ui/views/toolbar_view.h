@@ -93,6 +93,16 @@ class ToolbarView : public views::AccessiblePaneView,
   // Overridden from LocationBarView::Delegate:
   virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
+  virtual views::Widget* CreateViewsBubble(
+      views::BubbleDelegateView* bubble_delegate) OVERRIDE;
+  virtual PageActionImageView* CreatePageActionImageView(
+      LocationBarView* owner, ExtensionAction* action) OVERRIDE;
+  virtual ContentSettingBubbleModelDelegate*
+      GetContentSettingBubbleModelDelegate() OVERRIDE;
+  virtual void ShowPageInfo(content::WebContents* web_contents,
+                            const GURL& url,
+                            const content::SSLStatus& ssl,
+                            bool show_history) OVERRIDE;
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandObserver:

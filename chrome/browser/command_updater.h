@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "webkit/glue/window_open_disposition.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -23,8 +24,11 @@ class CommandUpdater {
   // when needed.
   class CommandUpdaterDelegate {
    public:
-    // Perform the action associated with the command with the specified ID.
-    virtual void ExecuteCommand(int id) = 0;
+    // Performs the action associated with the command with the specified ID and
+    // using the given disposition.
+    virtual void ExecuteCommandWithDisposition(
+        int id,
+        WindowOpenDisposition disposition) = 0;
 
    protected:
     virtual ~CommandUpdaterDelegate();
@@ -42,10 +46,18 @@ class CommandUpdater {
   // supported by this updater.
   bool IsCommandEnabled(int id) const;
 
-  // Performs the action associated with this command ID.
+  // Performs the action associated with this command ID using CURRENT_TAB
+  // disposition.
   // TODO(beng): get rid of this since it's effectively just a pass-thru and the
   // call sites would be better off using more well defined delegate interfaces.
   void ExecuteCommand(int id);
+
+  // Performs the action associated with this command ID using the given
+  // disposition.
+  // TODO(altimofeev): refactor the interface to provide more flexible and
+  // explicit way for passing command specific arguments. See
+  // NotificationDetails class for the possible implementation ideas.
+  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition disposition);
 
   // An Observer interface implemented by objects that want to be informed when
   // the state of a particular command ID is modified.

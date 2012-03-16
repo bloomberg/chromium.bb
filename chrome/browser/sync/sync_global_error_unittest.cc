@@ -17,9 +17,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::NiceMock;
+using ::testing::_;
 using content::BrowserThread;
 
 namespace {
@@ -28,7 +29,8 @@ class BrowserMock: public Browser {
  public:
   explicit BrowserMock(Type type, Profile* profile) : Browser(type, profile) {}
 
-  MOCK_METHOD1(ExecuteCommand, void(int command_id));
+  MOCK_METHOD2(ExecuteCommandWithDisposition,
+               void(int command_id, WindowOpenDisposition));
 };
 
 // Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to
@@ -87,7 +89,8 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 #if defined(OS_CHROMEOS)
   if (error_state != GoogleServiceAuthError::NONE) {
     // In CrOS sign-in/sign-out is made to fix the error.
-    EXPECT_CALL(*static_cast<BrowserMock*>(browser), ExecuteCommand(IDC_EXIT));
+    EXPECT_CALL(*static_cast<BrowserMock*>(browser),
+                ExecuteCommandWithDisposition(IDC_EXIT, _));
     error->ExecuteMenuItem(browser);
   }
 #else

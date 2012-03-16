@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -169,11 +171,15 @@ void ToolbarView::Init() {
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
-  location_bar_ = new LocationBarView(browser_, model_, this,
+  location_bar_ = new LocationBarView(
+      browser_->profile(),
+      browser_->command_updater(),
+      model_,
+      this,
       (display_mode_ == DISPLAYMODE_LOCATION) ?
           LocationBarView::POPUP : LocationBarView::NORMAL);
 
-  reload_ = new ReloadButton(location_bar_, browser_);
+  reload_ = new ReloadButton(location_bar_, browser_->command_updater());
   reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                        ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);
@@ -364,6 +370,28 @@ TabContentsWrapper* ToolbarView::GetTabContentsWrapper() const {
 
 InstantController* ToolbarView::GetInstant() {
   return browser_->instant();
+}
+
+ContentSettingBubbleModelDelegate*
+ToolbarView::GetContentSettingBubbleModelDelegate() {
+  return browser_->content_setting_bubble_model_delegate();
+}
+
+void ToolbarView::ShowPageInfo(content::WebContents* web_contents,
+                          const GURL& url,
+                          const content::SSLStatus& ssl,
+                          bool show_history) {
+  browser_->ShowPageInfo(web_contents, url, ssl, show_history);
+}
+
+views::Widget* ToolbarView::CreateViewsBubble(
+    views::BubbleDelegateView* bubble_delegate) {
+  return browser::CreateViewsBubble(bubble_delegate);
+}
+
+PageActionImageView* ToolbarView::CreatePageActionImageView(
+    LocationBarView* owner, ExtensionAction* action) {
+  return new PageActionImageView(owner, action, browser_);
 }
 
 void ToolbarView::OnInputInProgress(bool in_progress) {

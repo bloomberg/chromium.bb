@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -278,7 +279,8 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Open bubble.
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          browser, tabContents, profile_,
+          browser->content_setting_bubble_model_delegate(),
+          tabContents, profile_,
           content_setting_image_model_->get_content_settings_type());
   [ContentSettingBubbleController showForModel:model
                                   parentWindow:[field window]

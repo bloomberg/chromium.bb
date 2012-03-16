@@ -52,7 +52,9 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
+class BrowserContentSettingBubbleModelDelegate;
 class BrowserSyncedWindowDelegate;
+class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
@@ -234,10 +236,14 @@ class Browser : public TabHandlerDelegate,
   // |window()| will return NULL if called before |CreateBrowserWindow()|
   // is done.
   BrowserWindow* window() const { return window_; }
-  ToolbarModel* toolbar_model() { return &toolbar_model_; }
+  ToolbarModel* toolbar_model() { return toolbar_model_.get(); }
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   bool block_command_execution() const { return block_command_execution_; }
+  BrowserContentSettingBubbleModelDelegate*
+      content_setting_bubble_model_delegate() {
+    return content_setting_bubble_model_delegate_.get();
+  }
   BrowserTabRestoreServiceDelegate* tab_restore_service_delegate() {
     return tab_restore_service_delegate_.get();
   }
@@ -749,8 +755,8 @@ class Browser : public TabHandlerDelegate,
   static void UpdateTargetURLHelper(content::WebContents* tab, int32 page_id,
                                     const GURL& url);
 
-  // Calls ExecuteCommandWithDisposition with the given disposition.
-  void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
+  // Calls ExecuteCommandWithDisposition with CURRENT_TAB disposition.
+  void ExecuteCommand(int id);
 
   // Calls ExecuteCommandWithDisposition with the given event flags.
   void ExecuteCommand(int id, int event_flags);
@@ -793,7 +799,9 @@ class Browser : public TabHandlerDelegate,
       const content::OpenURLParams& params) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
-  virtual void ExecuteCommand(int id) OVERRIDE;
+  virtual void ExecuteCommandWithDisposition(
+      int id,
+      WindowOpenDisposition disposition) OVERRIDE;
 
   // Overridden from TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
@@ -1362,7 +1370,7 @@ class Browser : public TabHandlerDelegate,
   const SessionID session_id_;
 
   // The model for the toolbar view.
-  ToolbarModel toolbar_model_;
+  scoped_ptr<ToolbarModel> toolbar_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 
@@ -1455,6 +1463,13 @@ class Browser : public TabHandlerDelegate,
   // The profile's tab restore service. The service is owned by the profile,
   // and we install ourselves as an observer.
   TabRestoreService* tab_restore_service_;
+
+  // Helper which implements the ContentSettingBubbleModel interface.
+  scoped_ptr<BrowserContentSettingBubbleModelDelegate>
+      content_setting_bubble_model_delegate_;
+
+  // Helper which implements the ToolbarModelDelegate interface.
+  scoped_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
 
   // Helper which implements the TabRestoreServiceDelegate interface.
   scoped_ptr<BrowserTabRestoreServiceDelegate> tab_restore_service_delegate_;
