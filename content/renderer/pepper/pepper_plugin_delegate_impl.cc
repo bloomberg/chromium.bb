@@ -1616,7 +1616,7 @@ ContentGLContext*
 PepperPluginDelegateImpl::GetParentContextForPlatformContext3D() {
   WebGraphicsContext3DCommandBufferImpl* context =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          render_view_->webview()->graphicsContext3D());
+          render_view_->webview()->sharedGraphicsContext3D());
   if (!context)
     return NULL;
   if (!context->makeContextCurrent() || context->isContextLost())
