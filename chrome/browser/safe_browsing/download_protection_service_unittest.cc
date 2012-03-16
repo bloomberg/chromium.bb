@@ -386,7 +386,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 
   EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _)).Times(3);
+  EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _)).Times(4);
 
   download_service_->CheckClientDownload(
       info,
@@ -423,6 +423,24 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   msg_loop_.Run();
 #if defined(OS_WIN)
   ExpectResult(DownloadProtectionService::DANGEROUS);
+#else
+  ExpectResult(DownloadProtectionService::SAFE);
+#endif
+
+  // If the response is uncommon the result should also be marked as uncommon.
+  response.set_verdict(ClientDownloadResponse::UNCOMMON);
+  factory.SetFakeResponse(
+      DownloadProtectionService::kDownloadRequestUrl,
+      response.SerializeAsString(),
+      true);
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+#if defined(OS_WIN)
+  ExpectResult(DownloadProtectionService::UNCOMMON);
 #else
   ExpectResult(DownloadProtectionService::SAFE);
 #endif

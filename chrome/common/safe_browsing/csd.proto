@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -166,6 +166,8 @@ message ClientDownloadResponse {
     // Download is considered dangerous.  Chrome should show a warning to the
     // user.
     DANGEROUS = 1;
+    // Download is unknown.  Chrome should display a less severe warning.
+    UNCOMMON = 2;
   }
   required Verdict verdict = 1;
 }

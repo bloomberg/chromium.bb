@@ -329,7 +329,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
 
   VLOG(2) << __FUNCTION__ << "() download = " << download->DebugString(false)
           << " verdict = " << result;
-  if (result == DownloadProtectionService::DANGEROUS)
+  if (result != DownloadProtectionService::SAFE)
     download->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
 
   download_history_->CheckVisitedReferrerBefore(
@@ -349,9 +349,19 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
           << " verdict = " << result;
   // We only mark the content as being dangerous if the download's safety state
   // has not been set to DANGEROUS yet.  We don't want to show two warnings.
-  if (result == DownloadProtectionService::DANGEROUS &&
-      item->GetSafetyState() == DownloadItem::SAFE)
-    item->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+  if (item->GetSafetyState() == DownloadItem::SAFE) {
+    switch (result) {
+      case DownloadProtectionService::SAFE:
+        // Do nothing.
+        break;
+      case DownloadProtectionService::DANGEROUS:
+        item->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+        break;
+      case DownloadProtectionService::UNCOMMON:
+        item->SetDangerType(content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
+        break;
+    }
+  }
 
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetExternalData(&safe_browsing_id));

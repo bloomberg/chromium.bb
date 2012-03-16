@@ -449,6 +449,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
         reason = REASON_DOWNLOAD_DANGEROUS;
         result = DANGEROUS;
+      } else if (response.verdict() == ClientDownloadResponse::UNCOMMON) {
+        reason = REASON_DOWNLOAD_UNCOMMON;
+        result = UNCOMMON;
       } else {
         reason = REASON_DOWNLOAD_SAFE;
       }

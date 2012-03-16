@@ -59,8 +59,7 @@ class DownloadProtectionService {
   enum DownloadCheckResult {
     SAFE,
     DANGEROUS,
-    // In the future we may introduce a third category which corresponds to
-    // suspicious downloads that are not known to be malicious.
+    UNCOMMON,
   };
 
   // Callback type which is invoked once the download request is done.
@@ -135,6 +134,7 @@ class DownloadProtectionService {
     REASON_PING_DISABLED,
     REASON_TRUSTED_EXECUTABLE,
     REASON_OS_NOT_SUPPORTED,
+    REASON_DOWNLOAD_UNCOMMON,
     REASON_MAX  // Always add new values before this one.
   };
 
