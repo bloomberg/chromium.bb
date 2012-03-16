@@ -20,7 +20,14 @@ class ChromeDriverFactory(object):
   when no longer using the factory.
   """
 
-  def __init__(self):
+  def __init__(self, port=0):
+    """Initialize ChromeDriverFactory.
+
+    Args:
+      port: The port for WebDriver to use; by default the service will select a
+            free port.
+    """
+    self._chromedriver_port = port
     self._chromedriver_server = None
 
   def NewChromeDriver(self, pyauto):
@@ -52,7 +59,7 @@ class ChromeDriverFactory(object):
     if self._chromedriver_server is None:
       exe = pyauto_paths.GetChromeDriverExe()
       assert exe, 'Cannot find chromedriver exe. Did you build it?'
-      self._chromedriver_server = service.Service(exe)
+      self._chromedriver_server = service.Service(exe, self._chromedriver_port)
       self._chromedriver_server.start()
 
   def Stop(self):
@@ -60,6 +67,16 @@ class ChromeDriverFactory(object):
     if self._chromedriver_server is not None:
       self._chromedriver_server.stop()
       self._chromedriver_server = None
+
+  def GetPort(self):
+    """Gets the port ChromeDriver is set to use.
+
+    Returns:
+      The port all ChromeDriver instances returned from NewChromeDriver() will
+      be listening on. A return value of 0 indicates the ChromeDriver service
+      will select a free port.
+    """
+    return self._chromedriver_port
 
   def __del__(self):
     self.Stop()

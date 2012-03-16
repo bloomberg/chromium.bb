@@ -3530,8 +3530,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
-  def NewWebDriver(self):
+  def NewWebDriver(self, port=0):
     """Returns a new remote WebDriver instance.
+
+    Args:
+      port: The port to start WebDriver on; by default the service selects an
+            open port. It is an error to request a port number and request a
+            different port later.
 
     Returns:
       selenium.webdriver.remote.webdriver.WebDriver instance
@@ -3539,7 +3544,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     from chrome_driver_factory import ChromeDriverFactory
     global _CHROME_DRIVER_FACTORY
     if _CHROME_DRIVER_FACTORY is None:
-      _CHROME_DRIVER_FACTORY = ChromeDriverFactory()
+      _CHROME_DRIVER_FACTORY = ChromeDriverFactory(port=port)
+    self.assertTrue(_CHROME_DRIVER_FACTORY.GetPort() == port or port == 0,
+                    msg='Requested a WebDriver on a specific port while already'
+                        ' running on a different port.')
     return _CHROME_DRIVER_FACTORY.NewChromeDriver(self)
 
   def CreateNewAutomationProvider(self, channel_id):
