@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var chrome = chrome || {};
-(function() {
-  native function GetChromeHidden();
-  native function GetIsInstalled();
-  native function Install();
-  native function GetDetails();
-  native function GetDetailsForFrame();
-  native function GetAppNotifyChannel();
+  var natives = requireNative('app');
+  var GetIsInstalled = natives.GetIsInstalled;
+  var Install = natives.Install;
+  var GetDetails = natives.GetDetails;
+  var GetDetailsForFrame = natives.GetDetailsForFrame;
+  var GetAppNotifyChannel = natives.GetAppNotifyChannel;
 
-  var chromeHidden = GetChromeHidden();
+  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var callbacks = {};
   var nextCallbackId = 1;
 
@@ -41,4 +39,3 @@ var chrome = chrome || {};
       delete callbacks[callbackId];
     }
   };
-})();

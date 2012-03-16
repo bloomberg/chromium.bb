@@ -51,13 +51,6 @@ using WebKit::WebSecurityOrigin;
 
 namespace {
 
-const char* kExtensionDeps[] = {
-  "extensions/event.js",
-  "extensions/json_schema.js",
-  "extensions/miscellaneous_bindings.js",
-  "extensions/apitest.js"
-};
-
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
@@ -77,11 +70,12 @@ base::LazyInstance<PendingRequestMap> g_pending_requests =
 class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* extension_dispatcher)
-      : ChromeV8Extension("extensions/schema_generated_bindings.js",
-                          IDR_SCHEMA_GENERATED_BINDINGS_JS,
-                          arraysize(kExtensionDeps),
-                          kExtensionDeps,
-                          extension_dispatcher) {
+      : ChromeV8Extension(extension_dispatcher) {
+    RouteStaticFunction("GetExtensionAPIDefinition",
+                        &GetExtensionAPIDefinition);
+    RouteStaticFunction("GetNextRequestId", &GetNextRequestId);
+    RouteStaticFunction("StartRequest", &StartRequest);
+    RouteStaticFunction("SetIconCommon", &SetIconCommon);
   }
 
   ~ExtensionImpl() {
@@ -92,24 +86,6 @@ class ExtensionImpl : public ChromeV8Extension {
       if (!it->second.IsEmpty())
         it->second.Dispose();
     }
-  }
-
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("GetExtensionAPIDefinition"))) {
-      return v8::FunctionTemplate::New(GetExtensionAPIDefinition,
-                                       v8::External::New(this));
-    } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
-      return v8::FunctionTemplate::New(GetNextRequestId);
-    } else if (name->Equals(v8::String::New("StartRequest"))) {
-      return v8::FunctionTemplate::New(StartRequest,
-                                       v8::External::New(this));
-    } else if (name->Equals(v8::String::New("SetIconCommon"))) {
-      return v8::FunctionTemplate::New(SetIconCommon,
-                                       v8::External::New(this));
-    }
-
-    return ChromeV8Extension::GetNativeFunction(name);
   }
 
  private:
@@ -347,12 +323,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
 namespace extensions {
 
-v8::Extension* SchemaGeneratedBindings::Get(
+ChromeV8Extension* SchemaGeneratedBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
-  static v8::Extension* extension = new ExtensionImpl(extension_dispatcher);
-  CHECK_EQ(extension_dispatcher,
-           static_cast<ExtensionImpl*>(extension)->extension_dispatcher());
-  return extension;
+  return new ExtensionImpl(extension_dispatcher);
 }
 
 // static

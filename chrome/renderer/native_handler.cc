@@ -28,9 +28,18 @@ v8::Handle<v8::Value> NativeHandler::Router(const v8::Arguments& args) {
 void NativeHandler::RouteFunction(const std::string& name,
     const HandlerFunction& handler_function) {
   linked_ptr<HandlerFunction> function(new HandlerFunction(handler_function));
+  // TODO(koz): Investigate using v8's MakeWeak() function instead of holding
+  // on to these pointers here.
   handler_functions_.push_back(function);
   v8::Handle<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(Router,
           v8::External::New(function.get()));
+  object_template_->Set(name.c_str(), function_template);
+}
+
+void NativeHandler::RouteStaticFunction(const std::string& name,
+                                        const HandlerFunc handler_func) {
+  v8::Handle<v8::FunctionTemplate> function_template =
+      v8::FunctionTemplate::New(handler_func, v8::External::New(this));
   object_template_->Set(name.c_str(), function_template);
 }

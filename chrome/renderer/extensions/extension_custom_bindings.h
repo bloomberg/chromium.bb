@@ -15,13 +15,7 @@ namespace extensions {
 // Implements custom bindings for the extension API.
 class ExtensionCustomBindings : public ChromeV8Extension {
  public:
-  ExtensionCustomBindings(
-      int dependency_count,
-      const char** dependencies,
-      ExtensionDispatcher* extension_dispatcher);
-
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) OVERRIDE;
+  explicit ExtensionCustomBindings(ExtensionDispatcher* extension_dispatcher);
 
  private:
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args);

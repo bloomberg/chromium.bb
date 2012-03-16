@@ -38,9 +38,7 @@
 //   additional properties will be validated.
 //==============================================================================
 
-(function() {
-native function GetChromeHidden();
-var chromeHidden = GetChromeHidden();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 function isInstanceOfClass(instance, className) {
   if (!instance)
@@ -498,5 +496,3 @@ chromeHidden.JSONSchemaValidator.prototype.addError =
 chromeHidden.JSONSchemaValidator.prototype.resetErrors = function() {
   this.errors = [];
 };
-
-})();

@@ -15,11 +15,10 @@
 class ChromeV8Context;
 
 // Base class for context-scoped handlers used with ChromeV8Extension.
+// TODO(koz): Rename/refactor this somehow. Maybe just pull it into
+// ChromeV8Extension.
 class ChromeV8ExtensionHandler : public IPC::Channel::Listener {
  public:
-  virtual v8::Handle<v8::Value> HandleNativeFunction(
-      const std::string& name,
-      const v8::Arguments& arguments) = 0;
   virtual ~ChromeV8ExtensionHandler();
 
   // IPC::Channel::Listener

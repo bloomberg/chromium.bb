@@ -27,48 +27,75 @@
 //
 // Each module in a ModuleSystem is executed at most once and its exports
 // object cached.
+//
+// Note that a ModuleSystem must be used only in conjunction with a single
+// v8::Context.
+// TODO(koz): Rename this to JavaScriptModuleSystem.
 class ModuleSystem : public NativeHandler {
  public:
+  class SourceMap {
+   public:
+    virtual v8::Handle<v8::Value> GetSource(const std::string& name) = 0;
+    virtual bool Contains(const std::string& name) = 0;
+  };
+
   // |source_map| is a weak pointer.
-  explicit ModuleSystem(const std::map<std::string, std::string>* source_map);
+  explicit ModuleSystem(SourceMap* source_map);
   virtual ~ModuleSystem();
 
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
   void Require(const std::string& module_name);
+  v8::Handle<v8::Value> Require(const v8::Arguments& args);
+  v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
+  v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
   // |native_handler|.
   void RegisterNativeHandler(const std::string& name,
-      scoped_ptr<NativeHandler> native_handler);
+                             scoped_ptr<NativeHandler> native_handler);
+
+  // Executes |code| in the current context with |name| as the filename.
+  void RunString(const std::string& code, const std::string& name);
+
+  // When false |natives_enabled_| causes calls to GetNative() (the basis of
+  // requireNative() in JS) to throw an exception.
+  void set_natives_enabled(bool natives_enabled) {
+    natives_enabled_ = natives_enabled;
+  }
 
  private:
+  typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
+
   // Ensure that require_ has been evaluated from require.js.
   void EnsureRequireLoaded();
 
-  // Run |code| in the current context.
-  v8::Handle<v8::Value> RunString(v8::Handle<v8::String> code);
-
-  // Run the given code in the current context.
-  // |args[0]| - the code to execute.
-  v8::Handle<v8::Value> Run(const v8::Arguments& args);
+  // Run |code| in the current context with the name |name| used for stack
+  // traces.
+  v8::Handle<v8::Value> RunString(v8::Handle<v8::String> code,
+                                  v8::Handle<v8::String> name);
 
   // Return the named source file stored in the source map.
   // |args[0]| - the name of a source file in source_map_.
-  v8::Handle<v8::Value> GetSource(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetSource(v8::Handle<v8::String> source_name);
 
   // Return an object that contains the native methods defined by the named
   // NativeHandler.
   // |args[0]| - the name of a native handler object.
   v8::Handle<v8::Value> GetNative(const v8::Arguments& args);
 
+  // Wraps |source| in a (function(require, requireNative, exports) {...}).
+  v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);
+
+  // Throws an exception in the calling JS context.
+  v8::Handle<v8::Value> ThrowException(const std::string& message);
+
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
-  const std::map<std::string, std::string>* source_map_;
-  typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
+  SourceMap* source_map_;
   NativeHandlerMap native_handler_map_;
-  v8::Handle<v8::Function> require_;
+  bool natives_enabled_;
 };
 
 #endif  // CHROME_RENDERER_MODULE_SYSTEM_H_

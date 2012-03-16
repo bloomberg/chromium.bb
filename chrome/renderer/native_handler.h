@@ -16,6 +16,12 @@
 // A NativeHandler is a factory for JS objects with functions on them that map
 // to native C++ functions. Subclasses should call RouteFunction() in their
 // constructor to define functions on the created JS objects.
+//
+// NativeHandlers are intended to be used with a ModuleSystem. The ModuleSystem
+// will assume ownership of the NativeHandler, and as a ModuleSystem is tied to
+// a single v8::Context, this implies that NativeHandlers will also be tied to
+// a single v8::context.
+// TODO(koz): Rename this to NativeJavaScriptModule.
 class NativeHandler {
  public:
   explicit NativeHandler();
@@ -26,6 +32,7 @@ class NativeHandler {
   v8::Handle<v8::Object> NewInstance();
 
  protected:
+  typedef v8::Handle<v8::Value> (*HandlerFunc)(const v8::Arguments&);
   typedef base::Callback<v8::Handle<v8::Value>(const v8::Arguments&)>
       HandlerFunction;
 
@@ -34,6 +41,9 @@ class NativeHandler {
   // will be handled by |handler_function|.
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
+
+  void RouteStaticFunction(const std::string& name,
+                           const HandlerFunc handler_func);
 
  private:
   static v8::Handle<v8::Value> Router(const v8::Arguments& args);

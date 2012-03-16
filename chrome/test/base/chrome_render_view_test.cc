@@ -63,21 +63,6 @@ void ChromeRenderViewTest::SetUp() {
   render_thread_.reset(chrome_render_thread_);
   content::RenderViewTest::SetUp();
 
-  WebScriptController::registerExtension(new ChromeV8Extension(
-      "extensions/json_schema.js", IDR_JSON_SCHEMA_JS, NULL));
-  WebScriptController::registerExtension(EventBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(MiscellaneousBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(SchemaGeneratedBindings::Get(
-      extension_dispatcher_));
-  WebScriptController::registerExtension(new ChromeV8Extension(
-      "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL));
-
-  // HACK: register only the custom bindings that we need for the test.
-  WebScriptController::registerExtension(new ExtensionCustomBindings(
-      0, NULL, extension_dispatcher_));
-
   // RenderView doesn't expose it's PasswordAutofillManager or
   // AutofillAgent objects, because it has no need to store them directly
   // (they're stored as RenderViewObserver*).  So just create another set.

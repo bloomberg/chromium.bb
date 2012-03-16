@@ -4,12 +4,10 @@
 
 // Custom bindings for the tabs API.
 
-(function() {
+var tabsNatives = requireNative('tabs');
+var OpenChannelToTab = tabsNatives.OpenChannelToTab;
 
-native function GetChromeHidden();
-native function OpenChannelToTab();
-
-var chromeHidden = GetChromeHidden();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -44,5 +42,3 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
     });
   });
 });
-
-})();

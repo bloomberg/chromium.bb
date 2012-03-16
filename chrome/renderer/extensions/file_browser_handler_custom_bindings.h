@@ -14,13 +14,9 @@ namespace extensions {
 // Custom bindings for the fileBrowserHandler API.
 class FileBrowserHandlerCustomBindings : public ChromeV8Extension {
  public:
-  FileBrowserHandlerCustomBindings(
-      int dependency_count, const char** dependencies);
+  FileBrowserHandlerCustomBindings();
 
  private:
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerCustomBindings);
 };
 

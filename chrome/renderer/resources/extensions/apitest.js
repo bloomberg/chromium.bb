@@ -5,8 +5,6 @@
 // extension_apitest.js
 // mini-framework for ExtensionApiTest browser tests
 
-var chrome = chrome || {};
-(function() {
   chrome.test = chrome.test || {};
 
   chrome.test.tests = chrome.test.tests || [];
@@ -275,4 +273,3 @@ var chrome = chrome || {};
     chrome.test.tests = tests;
     chrome.test.runNextTest();
   };
-})();
