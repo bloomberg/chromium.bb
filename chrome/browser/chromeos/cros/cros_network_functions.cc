@@ -82,7 +82,7 @@ void CrosDisconnectDataPlanUpdateMonitor(DataPlanUpdateMonitor monitor) {
 SMSMonitor CrosMonitorSMS(const char* modem_device_path,
                           MonitorSMSCallback callback,
                           void* object) {
-  return chromeos::CrosMonitorSMS(modem_device_path, callback, object);
+  return chromeos::MonitorSMS(modem_device_path, callback, object);
 }
 
 void CrosDisconnectSMSMonitor(SMSMonitor monitor) {
