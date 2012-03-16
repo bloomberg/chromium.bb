@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,13 @@
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/glue/webdropdata.h"
+
+namespace {
+NSString* const kCrCorePasteboardFlavorType_url =
+    @"CorePasteboardFlavorType 0x75726C20"; // 'url '  url
+NSString* const kCrCorePasteboardFlavorType_urln =
+    @"CorePasteboardFlavorType 0x75726C6E"; // 'urln'  title
+}  // namespace
 
 class WebDragDestTest : public RenderViewHostTestHarness {
  public:
@@ -33,14 +40,14 @@ class WebDragDestTest : public RenderViewHostTestHarness {
   void PutCoreURLAndTitleOnPasteboard(NSString* urlString, NSString* title,
                                       NSPasteboard* pboard) {
     [pboard
-        declareTypes:[NSArray arrayWithObjects:kCorePasteboardFlavorType_url,
-                                               kCorePasteboardFlavorType_urln,
+        declareTypes:[NSArray arrayWithObjects:kCrCorePasteboardFlavorType_url,
+                                               kCrCorePasteboardFlavorType_urln,
                                                nil]
                owner:nil];
     [pboard setString:urlString
-              forType:kCorePasteboardFlavorType_url];
+              forType:kCrCorePasteboardFlavorType_url];
     [pboard setString:title
-              forType:kCorePasteboardFlavorType_urln];
+              forType:kCrCorePasteboardFlavorType_urln];
   }
 
   base::mac::ScopedNSAutoreleasePool pool_;

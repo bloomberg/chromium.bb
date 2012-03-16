@@ -348,6 +348,11 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
+        ['OS=="mac"', {
+          # These flags are needed to run the test on Mac.
+          # Search for comments about "xcode_settings" in chrome_tests.gypi.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
