@@ -296,9 +296,8 @@ class MetricsService : public content::NotificationObserver,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details);
 
-  // Logs keywords specific metrics. Keyword metrics are recorded in the
-  // profile specific metrics.
-  void LogKeywords(const TemplateURLService* url_model);
+  // Logs the number of keywords.
+  void LogKeywordCount(size_t keyword_count);
 
   // Saves plugin-related updates from the in-object buffer to Local State
   // for retrieval next time we send a Profile log (generally next launch).

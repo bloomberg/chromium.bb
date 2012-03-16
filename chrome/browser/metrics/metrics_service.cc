@@ -575,7 +575,8 @@ void MetricsService::Observe(int type,
       break;
 
     case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
-      LogKeywords(content::Source<TemplateURLService>(source).ptr());
+      LogKeywordCount(content::Source<TemplateURLService>(
+          source)->GetTemplateURLs().size());
       break;
 
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
@@ -1532,13 +1533,10 @@ void MetricsService::LogBookmarks(BookmarkModel* model) {
   ScheduleNextStateSave();
 }
 
-void MetricsService::LogKeywords(const TemplateURLService* url_model) {
-  DCHECK(url_model);
-
+void MetricsService::LogKeywordCount(size_t keyword_count) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
-  pref->SetInteger(prefs::kNumKeywords,
-                   static_cast<int>(url_model->GetTemplateURLs().size()));
+  pref->SetInteger(prefs::kNumKeywords, static_cast<int>(keyword_count));
   ScheduleNextStateSave();
 }
 
