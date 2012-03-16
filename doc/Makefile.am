@@ -154,17 +154,17 @@ if CROSS_COMPILING
 .fncs.sgml:
 	@echo Warning: cannot rebuild $@ when cross-compiling
 else
-.fncs.sgml: edit-sgml$(EXEEXT) $(srcdir)/func.sgml
+.fncs.sgml:
 	$(AM_V_GEN) $(RM) $@; \
 	$(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$*.fncs' > $*.sgml
 endif
-.sgml.txt: $(DOCS_DEPS)
+.sgml.txt:
 	$(AM_V_GEN) $(RM) $@; \
 	$(DOC2TXT) $*.sgml
-.sgml.pdf: $(DOCS_DEPS)
+.sgml.pdf:
 	$(AM_V_GEN) $(RM) $@; \
 	$(DOC2PDF) $*.sgml
-.sgml.html: $(DOCS_DEPS)
+.sgml.html:
 	$(AM_V_GEN) $(RM) $@; \
 	$(DOC2HTML) -u $*.sgml > $@
 ##
@@ -189,6 +189,10 @@ func.refs: local-fontconfig-devel.sgml $(DOCS_DEPS)
 confdir.sgml: $(srcdir)/confdir.sgml.in
 	$(AM_V_GEN) sed -e 's,@CONFDIR\@,${CONFDIR},' $(srcdir)/$@.in | awk '{if (NR > 1) printf("\n"); printf("%s", $$0);}' > $@
 ##
+$(DOC_FUNCS_SGML): $(DOC_FUNCS_FNCS) edit-sgml$(EXEEXT) $(srcdir)/func.sgml
+$(TXT_FILES): $(DOCS_DEPS)
+$(PDF_FILES): $(DOCS_DEPS)
+$(HTML_FILES): $(DOCS_DEPS)
 $(HTML_DIR)/*: $(HTML_DIR)
 $(HTML_DIR): local-fontconfig-devel.sgml $(DOCS_DEPS)
 	$(AM_V_GEN) $(RM) -r $@; \
