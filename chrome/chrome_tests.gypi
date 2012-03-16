@@ -45,7 +45,6 @@
         'common',
         'plugin',
         'renderer',
-        'service',
         'utility',
         '../base/base.gyp:test_support_base',
         '../content/content.gyp:content_app',
@@ -305,6 +304,11 @@
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
+          ],
+        }],
+        ['OS!="android"', {
+          'dependencies': [
+            'service',
           ],
         }],
         ['OS=="win"', {
@@ -2409,7 +2413,6 @@
 
             # No service process (which also requires multiprocess lock).
             'common/multi_process_lock_unittest.cc',
-            'common/service_process_util_unittest.cc',
 
             # Sync setup uses native ui.
             'browser/sync/sync_setup_wizard_unittest.cc',
@@ -2425,6 +2428,9 @@
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/options/'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+            # No service process on Android.
+            ['exclude', '^common/service_'],
+            ['exclude', '^service/'],
           ],
         }],
         ['enable_themes==0', {

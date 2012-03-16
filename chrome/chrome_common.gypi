@@ -260,6 +260,11 @@
         'common/zip_reader.h',
       ],
       'conditions': [
+        ['OS=="android"', {
+          'sources/': [
+            ['exclude', '^common/service_'],
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

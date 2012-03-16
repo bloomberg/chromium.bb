@@ -28,7 +28,6 @@
       'renderer',
       'syncapi_core',
       'utility',
-      'service',
       '../content/content.gyp:content_app',
       '../content/content.gyp:content_gpu',
       '../content/content.gyp:content_ppapi_plugin',
@@ -52,6 +51,12 @@
         'platform_locale_settings_grd':
             'app/resources/locale_settings_win.grd',
       },],
+      ['OS!="android"', {
+        'chromium_dependencies': [
+          # Android doesn't use the service process (only needed for print).
+          'service',
+        ],
+      }],
       ['OS=="linux"', {
         'nacl_defines': [
           'NACL_WINDOWS=0',
