@@ -108,6 +108,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
+  virtual void FlashFrame(bool flash_frame) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,

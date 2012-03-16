@@ -402,6 +402,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // frame" - slightly transparent and without the standard window controls.
   void SetUseDragFrame(bool use_drag_frame);
 
+  // Flashes the frame of the window to draw attention to it. Currently only
+  // implemented on Windows for non-Aura.
+  void FlashFrame(bool flash);
+
   // Returns the View at the root of the View hierarchy contained by this
   // Widget.
   View* GetRootView();

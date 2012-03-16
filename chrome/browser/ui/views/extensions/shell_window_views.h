@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class ExtensionHost;
@@ -18,8 +19,23 @@ class ShellWindowViews : public ShellWindow,
  public:
   explicit ShellWindowViews(ExtensionHost* host);
 
-  // ShellWindow implementation.
+  // BaseWindow implementation.
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
+  virtual bool IsAlwaysOnTop() const OVERRIDE;
 
   // WidgetDelegate implementation.
   virtual views::View* GetContentsView() OVERRIDE;

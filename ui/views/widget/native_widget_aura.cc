@@ -562,6 +562,10 @@ void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }
 
+void NativeWidgetAura::FlashFrame(bool flash) {
+  NOTIMPLEMENTED();
+}
+
 bool NativeWidgetAura::IsAccessibleWidget() const {
   // http://crbug.com/102570
   //NOTIMPLEMENTED();

@@ -1201,6 +1201,10 @@ void NativeWidgetGtk::SetUseDragFrame(bool use_drag_frame) {
   NOTIMPLEMENTED();
 }
 
+void NativeWidgetGtk::FlashFrame(bool flash) {
+  gtk_window_set_urgency_hint(GTK_WINDOW(GetNativeView()), flash);
+}
+
 bool NativeWidgetGtk::IsAccessibleWidget() const {
   return false;
 }

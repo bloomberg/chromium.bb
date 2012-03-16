@@ -239,6 +239,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool IsFullscreen() const OVERRIDE;
   virtual void SetOpacity(unsigned char opacity) OVERRIDE;
   virtual void SetUseDragFrame(bool use_drag_frame) OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAccessibleWidget() const OVERRIDE;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,

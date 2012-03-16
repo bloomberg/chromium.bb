@@ -11,6 +11,7 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "ui/gfx/rect.h"
 
 class ExtensionHost;
 class ShellWindowCocoa;
@@ -31,8 +32,23 @@ class ShellWindowCocoa : public ShellWindow {
  public:
   explicit ShellWindowCocoa(ExtensionHost* host);
 
-  // ShellWindow implementation.
+  // BaseWindow implementation.
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsMaximized() const OVERRIDE;
+  virtual bool IsMinimized() const OVERRIDE;
+  virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void Activate() OVERRIDE;
+  virtual void Deactivate() OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual void FlashFrame(bool flash) OVERRIDE;
+  virtual bool IsAlwaysOnTop() const OVERRIDE;
 
   // Called when the window is about to be closed.
   void WindowWillClose();
@@ -40,7 +56,10 @@ class ShellWindowCocoa : public ShellWindow {
  private:
   virtual ~ShellWindowCocoa();
 
+  NSWindow* window() const;
+
   scoped_nsobject<ShellWindowController> window_controller_;
+  NSInteger attention_request_id_;  // identifier from requestUserAttention
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowCocoa);
 };

@@ -134,8 +134,75 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
 ShellWindowViews::~ShellWindowViews() {
 }
 
+bool ShellWindowViews::IsActive() const {
+  return window_->IsActive();
+}
+
+bool ShellWindowViews::IsMaximized() const {
+  return window_->IsMaximized();
+}
+
+bool ShellWindowViews::IsMinimized() const {
+  return window_->IsMinimized();
+}
+
+gfx::Rect ShellWindowViews::GetRestoredBounds() const {
+  return window_->GetRestoredBounds();
+}
+
+gfx::Rect ShellWindowViews::GetBounds() const {
+  return window_->GetWindowScreenBounds();
+}
+
+void ShellWindowViews::Show() {
+  if (window_->IsVisible()) {
+    window_->Activate();
+    return;
+  }
+
+  window_->Show();
+}
+
+void ShellWindowViews::ShowInactive() {
+  if (window_->IsVisible())
+    return;
+  window_->ShowInactive();
+}
+
 void ShellWindowViews::Close() {
   window_->Close();
+}
+
+void ShellWindowViews::Activate() {
+  window_->Activate();
+}
+
+void ShellWindowViews::Deactivate() {
+  window_->Deactivate();
+}
+
+void ShellWindowViews::Maximize() {
+  window_->Maximize();
+}
+
+void ShellWindowViews::Minimize() {
+  window_->Minimize();
+}
+
+void ShellWindowViews::Restore() {
+  window_->Restore();
+}
+
+void ShellWindowViews::SetBounds(const gfx::Rect& bounds) {
+  GetWidget()->SetBounds(bounds);
+}
+
+void ShellWindowViews::FlashFrame(bool flash) {
+  window_->FlashFrame(flash);
+}
+
+bool ShellWindowViews::IsAlwaysOnTop() const {
+  return false;
 }
 
 void ShellWindowViews::DeleteDelegate() {

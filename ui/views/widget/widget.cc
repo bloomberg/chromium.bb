@@ -617,6 +617,10 @@ void Widget::SetUseDragFrame(bool use_drag_frame) {
   native_widget_->SetUseDragFrame(use_drag_frame);
 }
 
+void Widget::FlashFrame(bool flash) {
+  native_widget_->FlashFrame(flash);
+}
+
 View* Widget::GetRootView() {
   if (!root_view_.get()) {
     // First time the root view is being asked for, create it now.

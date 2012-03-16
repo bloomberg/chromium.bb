@@ -646,21 +646,7 @@ bool BrowserView::IsActive() const {
 }
 
 void BrowserView::FlashFrame(bool flash) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  FLASHWINFO fwi;
-  fwi.cbSize = sizeof(fwi);
-  fwi.hwnd = frame_->GetNativeWindow();
-  if (flash) {
-    fwi.dwFlags = FLASHW_ALL;
-    fwi.uCount = 4;
-    fwi.dwTimeout = 0;
-  } else {
-    fwi.dwFlags = FLASHW_STOP;
-  }
-  FlashWindowEx(&fwi);
-#else
-  // Doesn't matter for chrome os.
-#endif
+  frame_->FlashFrame(flash);
 }
 
 bool BrowserView::IsAlwaysOnTop() const {
