@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "ui/views/controls/image_view.h"
 
-class Browser;
 class LocationBarView;
 
 namespace content {
@@ -34,8 +33,7 @@ class PageActionImageView : public views::ImageView,
                             public content::NotificationObserver {
  public:
   PageActionImageView(LocationBarView* owner,
-                      ExtensionAction* page_action,
-                      Browser* browser);
+                      ExtensionAction* page_action);
   virtual ~PageActionImageView();
 
   ExtensionAction* page_action() { return page_action_; }
@@ -92,9 +90,6 @@ class PageActionImageView : public views::ImageView,
   // The PageAction that this view represents. The PageAction is not owned by
   // us, it resides in the extension of this particular profile.
   ExtensionAction* page_action_;
-
-  // The corresponding browser.
-  Browser* browser_;
 
   // A cache of bitmaps the page actions might need to show, mapped by path.
   typedef std::map<std::string, SkBitmap> PageActionMap;

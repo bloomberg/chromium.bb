@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,14 +41,8 @@ bool CommandUpdater::SupportsCommand(int id) const {
 }
 
 void CommandUpdater::ExecuteCommand(int id) {
-  ExecuteCommandWithDisposition(id, CURRENT_TAB);
-}
-
-void CommandUpdater::ExecuteCommandWithDisposition(
-    int id,
-    WindowOpenDisposition disposition) {
   if (IsCommandEnabled(id))
-    delegate_->ExecuteCommandWithDisposition(id, disposition);
+    delegate_->ExecuteCommand(id);
 }
 
 CommandUpdater::CommandObserver::~CommandObserver() {

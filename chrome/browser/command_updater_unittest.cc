@@ -1,16 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
 #include "chrome/browser/command_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingCommandHandlerMock
     : public CommandUpdater::CommandUpdaterDelegate {
  public:
-  virtual void ExecuteCommandWithDisposition(int id,
-                                             WindowOpenDisposition) OVERRIDE {
+  virtual void ExecuteCommand(int id) {
     EXPECT_EQ(1, id);
   }
 };

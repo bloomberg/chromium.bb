@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/click_handler.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/navigation_controller.h"
@@ -38,6 +39,6 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
     return;
   }
 
-  location_bar_->delegate()->ShowPageInfo(
-      tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
+  Browser* browser = Browser::GetBrowserForController(&controller, NULL);
+  browser->ShowPageInfo(tab, nav_entry->GetURL(), nav_entry->GetSSL(), true);
 }

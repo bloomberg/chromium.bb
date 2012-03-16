@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -177,10 +178,10 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
     pause_animation_ = true;
   }
 
-  Profile* profile = parent_->profile();
+  Profile* profile = parent_->browser()->profile();
   ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          parent_->delegate()->GetContentSettingBubbleModelDelegate(),
+          parent_->browser(),
           tab_contents,
           profile,
           content_setting_image_model_->get_content_settings_type()),
@@ -188,7 +189,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
       tab_contents->web_contents(),
       this,
       views::BubbleBorder::TOP_RIGHT);
-  bubble_widget_ = parent_->delegate()->CreateViewsBubble(bubble);
+  bubble_widget_ = browser::CreateViewsBubble(bubble);
   bubble_widget_->AddObserver(this);
   bubble->Show();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
@@ -19,11 +19,10 @@ const char ReloadButton::kViewClassName[] = "browser/ui/views/ReloadButton";
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, public:
 
-ReloadButton::ReloadButton(LocationBarView* location_bar,
-                           CommandUpdater* command_updater)
+ReloadButton::ReloadButton(LocationBarView* location_bar, Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ToggleImageButton(this)),
       location_bar_(location_bar),
-      command_updater_(command_updater),
+      browser_(browser),
       intended_mode_(MODE_RELOAD),
       visible_mode_(MODE_RELOAD),
       double_click_timer_delay_(
@@ -73,14 +72,16 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 void ReloadButton::ButtonPressed(views::Button* /* button */,
                                  const views::Event& event) {
   if (visible_mode_ == MODE_STOP) {
-    if (command_updater_)
-      command_updater_->ExecuteCommandWithDisposition(IDC_STOP, CURRENT_TAB);
+    if (browser_)
+      browser_->Stop();
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);
   } else if (!double_click_timer_.IsRunning()) {
     // Shift-clicking or ctrl-clicking the reload button means we should ignore
     // any cached content.
+    // TODO(avayvod): eliminate duplication of this logic in
+    // CompactLocationBarView.
     int command;
     int flags = mouse_event_flags();
     if (event.IsShiftDown() || event.IsControlDown()) {
@@ -108,8 +109,8 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
                               &ReloadButton::OnDoubleClickTimer);
 
-    if (command_updater_)
-      command_updater_->ExecuteCommandWithDisposition(command, disposition);
+    if (browser_)
+      browser_->ExecuteCommandWithDisposition(command, disposition);
     ++testing_reload_count_;
   }
 }
