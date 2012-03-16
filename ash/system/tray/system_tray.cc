@@ -45,6 +45,9 @@ const int kArrowPaddingFromRight = 20;
 const int kShadowOffset = 3;
 const int kShadowHeight = 3;
 
+const int kLeftPadding = 4;
+const int kBottomLineHeight = 1;
+
 const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
 const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
@@ -149,14 +152,12 @@ class SystemTrayBubbleBorder : public views::Border {
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE {
     // Draw a line first.
-    int x = 4;
     int y = owner_->height() + 1;
-    canvas->DrawLine(gfx::Point(x, y),
-                     gfx::Point(owner_->width() + x, y),
-                     kDarkColor);
+    canvas->FillRect(gfx::Rect(kLeftPadding, y, owner_->width(),
+                               kBottomLineHeight), kDarkColor);
 
     // Now, draw a shadow.
-    canvas->FillRect(gfx::Rect(x + kShadowOffset, y,
+    canvas->FillRect(gfx::Rect(kLeftPadding + kShadowOffset, y,
                                owner_->width() - kShadowOffset, kShadowHeight),
                      kShadowColor);
 
