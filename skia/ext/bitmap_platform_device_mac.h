@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ namespace skia {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
+class SK_API BitmapPlatformDevice : public PlatformDevice, public SkDevice {
  public:
   // |context| may be NULL.
   static BitmapPlatformDevice* Create(CGContextRef context,
