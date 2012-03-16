@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,17 +57,5 @@
 - (int)indexOfSelectedItem;
 
 @end  // @interface WebMenuRunner
-
-namespace webkit_glue {
-// Helper function for users of WebMenuRunner, for manufacturing input events to
-// send to WebKit. If |item_chosen| is YES, we manufacture a mouse click event
-// that corresponds to the menu item that was selected, |selected_index|, based
-// on the position of the mouse click. Of |item_chosen| is NO, we create a
-// keyboard event that simulates an ESC (menu dismissal) action. The event is
-// designed to be sent to WebKit for processing by the PopupMenu class.
-NSEvent* EventWithMenuAction(BOOL item_chosen, int window_num,
-                             int item_height, int selected_index,
-                             NSRect menu_bounds, NSRect view_bounds);
-}  // namespace webkit_glue
 
 #endif // WEBKIT_GLUE_WEBMENURUNNER_MAC_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,61 +166,3 @@ static NSString* NSWritingDirectionAttributeName = @"NSWritingDirection";
 }
 
 @end  // WebMenuRunner
-
-namespace webkit_glue {
-
-// Helper function for manufacturing input events to send to WebKit.
-NSEvent* EventWithMenuAction(BOOL item_chosen, int window_num,
-                             int item_height, int selected_index,
-                             NSRect menu_bounds, NSRect view_bounds) {
-  NSEvent* event = nil;
-  double event_time = (double)(AbsoluteToDuration(UpTime())) / 1000.0;
-
-  if (item_chosen) {
-    // Construct a mouse up event to simulate the selection of an appropriate
-    // menu item.
-    NSPoint click_pos;
-    click_pos.x = menu_bounds.size.width / 2;
-
-    // This is going to be hard to calculate since the button is painted by
-    // WebKit, the menu by Cocoa, and we have to translate the selected_item
-    // index to a coordinate that WebKit's PopupMenu expects which uses a
-    // different font *and* expects to draw the menu below the button like we do
-    // on Windows.
-    // The WebKit popup menu thinks it will draw just below the button, so
-    // create the click at the offset based on the selected item's index and
-    // account for the different coordinate system used by NSView.
-    int item_offset = selected_index * item_height + item_height / 2;
-    click_pos.y = view_bounds.size.height - item_offset;
-    event = [NSEvent mouseEventWithType:NSLeftMouseUp
-                               location:click_pos
-                          modifierFlags:0
-                              timestamp:event_time
-                           windowNumber:window_num
-                                context:nil
-                            eventNumber:0
-                             clickCount:1
-                               pressure:1.0];
-  } else {
-    // Fake an ESC key event (keyCode = 0x1B, from webinputevent_mac.mm) and
-    // forward that to WebKit.
-    NSPoint key_pos;
-    key_pos.x = 0;
-    key_pos.y = 0;
-    NSString* escape_str = [NSString stringWithFormat:@"%c", 0x1B];
-    event = [NSEvent keyEventWithType:NSKeyDown
-                             location:key_pos
-                        modifierFlags:0
-                            timestamp:event_time
-                         windowNumber:window_num
-                              context:nil
-                           characters:@""
-          charactersIgnoringModifiers:escape_str
-                            isARepeat:NO
-                              keyCode:0x1B];
-  }
-
-  return event;
-}
-
-}  // namespace webkit_glue
