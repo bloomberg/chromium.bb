@@ -43,3 +43,11 @@ BUGCR117799 : fast/backgrounds/repeat/negative-offset-repeat-transformed.html = 
 // rebaseline when skia 3398 lands
 BUGEPOGER : platform/chromium/virtual/gpu/fast/canvas/quadraticCurveTo.xml = IMAGE
 
+BUGCR118411 : fast/repaint/focus-ring.html = IMAGE
+BUGCR118411 : fast/repaint/list-marker.html = IMAGE
+BUGCR118411 : svg/as-background-image/background-image-preserveaspectRatio-support.html = IMAGE
+BUGCR118411 : svg/as-image/img-preserveAspectRatio-support-1.html = IMAGE
+BUGCR118411 : svg/hixie/perf/001.xml = IMAGE
+BUGCR118411 : svg/hixie/perf/002.xml = IMAGE
+BUGCR118411 : svg/hixie/perf/007.xml = IMAGE
+

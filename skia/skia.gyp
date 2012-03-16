@@ -755,11 +755,6 @@
         'SK_DISABLE_FAST_AA_STROKE_RECT',
         'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
 
-        # Disable hairline-clipping fix (skia rev. 3366) as it causes 100+ layouttests
-        # to need to be rebaselined (tiny change in scroll-bar thumb). Remove this
-        # when we can perform the rebaseline.
-        'SK_IGNORE_HAIRLINE_CLIP_FIX',
-
         # temporary for landing Skia rev 3077 with minimal layout test breakage
         'SK_SIMPLE_TWOCOLOR_VERTICAL_GRADIENTS',
 
