@@ -6,8 +6,7 @@
 #define REMOTING_HOST_EVENT_EXECUTOR_H_
 
 #include "base/memory/scoped_ptr.h"
-
-#include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/host_event_stub.h"
 
 class MessageLoop;
 
@@ -15,12 +14,12 @@ namespace remoting {
 
 class Capturer;
 
-class EventExecutor : public protocol::InputStub {
+class EventExecutor : public protocol::HostEventStub {
  public:
   // Creates default event executor for the current platform.
   // Does not take ownership of |message_loop| or |capturer|.
-  static scoped_ptr<protocol::InputStub> Create(MessageLoop* message_loop,
-                                                Capturer* capturer);
+  static scoped_ptr<protocol::HostEventStub> Create(MessageLoop* message_loop,
+                                                    Capturer* capturer);
 };
 
 }  // namespace remoting

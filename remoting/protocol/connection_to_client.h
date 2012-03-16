@@ -23,6 +23,7 @@ namespace remoting {
 namespace protocol {
 
 class ClientStub;
+class ClipboardStub;
 class HostStub;
 class InputStub;
 class HostControlDispatcher;
@@ -84,7 +85,8 @@ class ConnectionToClient : public base::NonThreadSafe {
   // Return pointer to ClientStub.
   virtual ClientStub* client_stub();
 
-  // These two setters should be called before Init().
+  // These three setters should be called before Init().
+  virtual void set_clipboard_stub(ClipboardStub* clipboard_stub);
   virtual void set_host_stub(HostStub* host_stub);
   virtual void set_input_stub(InputStub* input_stub);
 
@@ -110,6 +112,7 @@ class ConnectionToClient : public base::NonThreadSafe {
   EventHandler* handler_;
 
   // Stubs that are called for incoming messages.
+  ClipboardStub* clipboard_stub_;
   HostStub* host_stub_;
   InputStub* input_stub_;
 

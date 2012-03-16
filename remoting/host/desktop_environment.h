@@ -20,7 +20,7 @@ class ChromotingHost;
 class ChromotingHostContext;
 
 namespace protocol {
-class InputStub;
+class HostEventStub;
 };
 
 class DesktopEnvironment {
@@ -29,19 +29,21 @@ class DesktopEnvironment {
   static scoped_ptr<DesktopEnvironment> CreateFake(
       ChromotingHostContext* context,
       scoped_ptr<Capturer> capturer,
-      scoped_ptr<protocol::InputStub> event_executor);
+      scoped_ptr<protocol::HostEventStub> event_executor);
 
   virtual ~DesktopEnvironment();
 
   void set_host(ChromotingHost* host) { host_ = host; }
 
   Capturer* capturer() const { return capturer_.get(); }
-  protocol::InputStub* event_executor() const { return event_executor_.get(); }
+  protocol::HostEventStub* event_executor() const {
+    return event_executor_.get();
+  }
 
  private:
   DesktopEnvironment(ChromotingHostContext* context,
                      scoped_ptr<Capturer> capturer,
-                     scoped_ptr<protocol::InputStub> event_executor);
+                     scoped_ptr<protocol::HostEventStub> event_executor);
 
   // The host that owns this DesktopEnvironment.
   ChromotingHost* host_;
@@ -53,8 +55,8 @@ class DesktopEnvironment {
   // Capturer to be used by ScreenRecorder.
   scoped_ptr<Capturer> capturer_;
 
-  // Executes input events received from the client.
-  scoped_ptr<protocol::InputStub> event_executor_;
+  // Executes input and clipboard events received from the client.
+  scoped_ptr<protocol::HostEventStub> event_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };

@@ -28,12 +28,12 @@ using protocol::MouseEvent;
 ClientSession::ClientSession(
     EventHandler* event_handler,
     protocol::ConnectionToClient* connection,
-    protocol::InputStub* input_stub,
+    protocol::HostEventStub* host_event_stub,
     Capturer* capturer)
     : event_handler_(event_handler),
       connection_(connection),
       client_jid_(connection->session()->jid()),
-      input_stub_(input_stub),
+      host_event_stub_(host_event_stub),
       capturer_(capturer),
       authenticated_(false),
       awaiting_continue_approval_(false),
@@ -43,6 +43,7 @@ ClientSession::ClientSession(
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
   // set before channels are connected. Make it possible to set stubs
   // later and set them only when connection is authenticated.
+  connection_->set_clipboard_stub(this);
   connection_->set_host_stub(this);
   connection_->set_input_stub(this);
 }
@@ -50,12 +51,21 @@ ClientSession::ClientSession(
 ClientSession::~ClientSession() {
 }
 
+void ClientSession::InjectClipboardEvent(
+    const protocol::ClipboardEvent& event) {
+  DCHECK(CalledOnValidThread());
+
+  if (authenticated_) {
+    host_event_stub_->InjectClipboardEvent(event);
+  }
+}
+
 void ClientSession::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(CalledOnValidThread());
 
   if (authenticated_ && !ShouldIgnoreRemoteKeyboardInput(event)) {
     RecordKeyEvent(event);
-    input_stub_->InjectKeyEvent(event);
+    host_event_stub_->InjectKeyEvent(event);
   }
 }
 
@@ -88,7 +98,7 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
         injected_mouse_positions_.pop_front();
       }
     }
-    input_stub_->InjectMouseEvent(event_to_inject);
+    host_event_stub_->InjectMouseEvent(event_to_inject);
   }
 }
 
@@ -242,7 +252,7 @@ void ClientSession::RestoreEventState() {
     KeyEvent key;
     key.set_keycode(*i);
     key.set_pressed(false);
-    input_stub_->InjectKeyEvent(key);
+    host_event_stub_->InjectKeyEvent(key);
   }
   pressed_keys_.clear();
 
@@ -255,7 +265,7 @@ void ClientSession::RestoreEventState() {
       mouse.set_y(remote_mouse_pos_.y());
       mouse.set_button((MouseEvent::MouseButton)i);
       mouse.set_button_down(false);
-      input_stub_->InjectMouseEvent(mouse);
+      host_event_stub_->InjectMouseEvent(mouse);
     }
   }
   remote_mouse_button_state_ = 0;

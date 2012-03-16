@@ -15,8 +15,9 @@
 
 namespace remoting {
 
-using protocol::MouseEvent;
+using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::MouseEvent;
 
 namespace {
 
@@ -32,6 +33,10 @@ class EventExecutorWin : public EventExecutor {
   EventExecutorWin(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorWin() {}
 
+  // ClipboardStub interface.
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
+  // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
@@ -49,6 +54,10 @@ EventExecutorWin::EventExecutorWin(MessageLoop* message_loop,
                                    Capturer* capturer)
     : message_loop_(message_loop),
       capturer_(capturer) {
+}
+
+void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
+  // TODO(simonmorris): Implement clipboard injection.
 }
 
 void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
@@ -194,9 +203,9 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
 
 }  // namespace
 
-scoped_ptr<protocol::InputStub> EventExecutor::Create(MessageLoop* message_loop,
-                                                      Capturer* capturer) {
-  return scoped_ptr<protocol::InputStub>(
+scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
+    MessageLoop* message_loop, Capturer* capturer) {
+  return scoped_ptr<protocol::HostEventStub>(
       new EventExecutorWin(message_loop, capturer));
 }
 

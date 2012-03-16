@@ -10,9 +10,10 @@
 
 #include "base/time.h"
 #include "base/threading/non_thread_safe.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/host_event_stub.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/input_stub.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -21,8 +22,8 @@ class Capturer;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
-class ClientSession : public protocol::HostStub,
-                      public protocol::InputStub,
+class ClientSession : public protocol::HostEventStub,
+                      public protocol::HostStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public base::NonThreadSafe {
  public:
@@ -57,12 +58,16 @@ class ClientSession : public protocol::HostStub,
   };
 
   // Takes ownership of |connection|. Does not take ownership of
-  // |event_handler|, |input_stub| or |capturer|.
+  // |event_handler|, |host_event_stub|, or |capturer|.
   ClientSession(EventHandler* event_handler,
                 protocol::ConnectionToClient* connection,
-                protocol::InputStub* input_stub,
+                protocol::HostEventStub* host_event_stub,
                 Capturer* capturer);
   virtual ~ClientSession();
+
+  // protocol::ClipboardStub interface.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
 
   // protocol::InputStub interface.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
@@ -130,8 +135,8 @@ class ClientSession : public protocol::HostStub,
 
   std::string client_jid_;
 
-  // The input stub to which this object delegates.
-  protocol::InputStub* input_stub_;
+  // The host event stub to which this object delegates.
+  protocol::HostEventStub* host_event_stub_;
 
   // Capturer, used to determine current screen size for ensuring injected
   // mouse events fall within the screen area.

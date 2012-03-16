@@ -216,7 +216,7 @@ class SimpleHost {
 
     if (fake_) {
       scoped_ptr<Capturer> capturer(new CapturerFake());
-      scoped_ptr<protocol::InputStub> event_executor =
+      scoped_ptr<protocol::HostEventStub> event_executor =
           EventExecutor::Create(
               context_.desktop_message_loop(), capturer.get());
       desktop_environment_ = DesktopEnvironment::CreateFake(

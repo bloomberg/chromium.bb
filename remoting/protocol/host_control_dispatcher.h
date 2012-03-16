@@ -18,17 +18,25 @@ namespace remoting {
 namespace protocol {
 
 class BufferedSocketWriter;
+class ClipboardStub;
 class ControlMessage;
 class HostStub;
 class Session;
 
 // HostControlDispatcher dispatches incoming messages on the control
-// channel to HostStub, and also implements ClientStub for outgoing
-// messages.
+// channel to HostStub or ClipboardStub, and also implements ClientStub for
+// outgoing messages.
 class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
  public:
   HostControlDispatcher();
   virtual ~HostControlDispatcher();
+
+  // Sets the ClipboardStub that will be called for each incoming clipboard
+  // message. Doesn't take ownership of |clipboard_stub|, which must outlive
+  // the dispatcher.
+  void set_clipboard_stub(ClipboardStub* clipboard_stub) {
+    clipboard_stub_ = clipboard_stub;
+  }
 
   // Sets HostStub that will be called for each incoming control
   // message. Doesn't take ownership of |host_stub|. It must outlive
@@ -43,6 +51,7 @@ class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
   void OnMessageReceived(ControlMessage* message,
                          const base::Closure& done_task);
 
+  ClipboardStub* clipboard_stub_;
   HostStub* host_stub_;
 
   ProtobufMessageReader<ControlMessage> reader_;

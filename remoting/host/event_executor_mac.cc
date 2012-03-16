@@ -24,8 +24,9 @@ namespace {
 #include "remoting/host/usb_keycode_map.h"
 #define INVALID_KEYCODE 0xffff
 
-using protocol::MouseEvent;
+using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::MouseEvent;
 
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
@@ -33,6 +34,10 @@ class EventExecutorMac : public EventExecutor {
   EventExecutorMac(MessageLoop* message_loop, Capturer* capturer);
   virtual ~EventExecutorMac() {}
 
+  // ClipboardStub interface.
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
+
+  // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
@@ -245,6 +250,10 @@ uint16_t UsbKeycodeToMacKeycode(uint32_t usb_keycode) {
   return INVALID_KEYCODE;
 }
 
+void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
+  // TODO(simonmorris): Implement clipboard injection.
+}
+
 void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
   int keycode = 0;
   if (event.has_usb_keycode() && event.usb_keycode() != INVALID_KEYCODE) {
@@ -331,9 +340,9 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
 
 }  // namespace
 
-scoped_ptr<protocol::InputStub> EventExecutor::Create(MessageLoop* message_loop,
-                                                      Capturer* capturer) {
-  return scoped_ptr<protocol::InputStub>(
+scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
+    MessageLoop* message_loop, Capturer* capturer) {
+  return scoped_ptr<protocol::HostEventStub>(
       new EventExecutorMac(message_loop, capturer));
 }
 

@@ -120,6 +120,8 @@ class MockEventExecutor : public EventExecutor {
   MockEventExecutor();
   virtual ~MockEventExecutor();
 
+  MOCK_METHOD1(InjectClipboardEvent,
+               void(const protocol::ClipboardEvent& event));
   MOCK_METHOD1(InjectKeyEvent, void(const protocol::KeyEvent& event));
   MOCK_METHOD1(InjectMouseEvent, void(const protocol::MouseEvent& event));
 

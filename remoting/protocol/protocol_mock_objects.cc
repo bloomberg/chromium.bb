@@ -25,9 +25,17 @@ MockConnectionToClientEventHandler::MockConnectionToClientEventHandler() {}
 
 MockConnectionToClientEventHandler::~MockConnectionToClientEventHandler() {}
 
+MockClipboardStub::MockClipboardStub() {}
+
+MockClipboardStub::~MockClipboardStub() {}
+
 MockInputStub::MockInputStub() {}
 
 MockInputStub::~MockInputStub() {}
+
+MockHostEventStub::MockHostEventStub() {}
+
+MockHostEventStub::~MockHostEventStub() {}
 
 MockHostStub::MockHostStub() {}
 

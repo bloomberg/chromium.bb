@@ -1,7 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/base/constants.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -12,7 +13,7 @@ namespace remoting {
 using protocol::MockConnectionToClient;
 using protocol::MockConnectionToClientEventHandler;
 using protocol::MockHostStub;
-using protocol::MockInputStub;
+using protocol::MockHostEventStub;
 using protocol::MockSession;
 
 using testing::_;
@@ -40,7 +41,7 @@ class ClientSessionTest : public testing::Test {
     client_session_.reset(new ClientSession(
         &session_event_handler_,
         new protocol::ConnectionToClient(session),
-        &input_stub_, &capturer_));
+        &host_event_stub_, &capturer_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -55,11 +56,46 @@ class ClientSessionTest : public testing::Test {
   MessageLoop message_loop_;
   std::string client_jid_;
   MockHostStub host_stub_;
-  MockInputStub input_stub_;
+  MockHostEventStub host_event_stub_;
   MockCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
   scoped_ptr<ClientSession> client_session_;
 };
+
+MATCHER_P2(EqualsClipboardEvent, m, d, "") {
+  return (strcmp(arg.mime_type().c_str(), m) == 0 &&
+      memcmp(arg.data().data(), d, arg.data().size()) == 0);
+}
+
+TEST_F(ClientSessionTest, ClipboardStubFilter) {
+  protocol::ClipboardEvent clipboard_event1;
+  clipboard_event1.set_mime_type(kMimeTypeText);
+  clipboard_event1.set_data("a");
+
+  protocol::ClipboardEvent clipboard_event2;
+  clipboard_event2.set_mime_type(kMimeTypeText);
+  clipboard_event2.set_data("b");
+
+  protocol::ClipboardEvent clipboard_event3;
+  clipboard_event3.set_mime_type(kMimeTypeText);
+  clipboard_event3.set_data("c");
+
+  InSequence s;
+  EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
+  EXPECT_CALL(host_event_stub_, InjectClipboardEvent(EqualsClipboardEvent(
+      kMimeTypeText, "b")));
+
+  // This event should not get through to the clipboard stub,
+  // because the client isn't authenticated yet.
+  client_session_->InjectClipboardEvent(clipboard_event1);
+  client_session_->OnConnectionOpened(client_session_->connection());
+  // This event should get through to the clipboard stub.
+  client_session_->InjectClipboardEvent(clipboard_event2);
+  client_session_->Disconnect();
+  // This event should not get through to the clipboard stub,
+  // because the client has disconnected.
+  client_session_->InjectClipboardEvent(clipboard_event3);
+}
 
 MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {
   return arg.keycode() == keycode && arg.pressed() == pressed;
@@ -104,9 +140,9 @@ TEST_F(ClientSessionTest, InputStubFilter) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
 
   // These events should not get through to the input stub,
   // because the client isn't authenticated yet.
@@ -138,8 +174,8 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   InSequence s;
   EXPECT_CALL(session_event_handler_,
               OnSessionAuthenticated(client_session_.get()));
-  EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
-  EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
 
   client_session_->OnConnectionOpened(client_session_->connection());
   // This event should get through to the input stub.
@@ -174,9 +210,9 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   client_session_->RecordKeyEvent(key2);
   client_session_->RecordMouseButtonState(mousedown);
 
-  EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
-  EXPECT_CALL(input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseUpEvent(
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
+  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseUpEvent(
       protocol::MouseEvent::BUTTON_LEFT)));
 
   client_session_->RestoreEventState();
@@ -201,7 +237,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
     for (int i = 0; i < 3; i++) {
       event.set_x(input_x[i]);
       event.set_y(input_y[j]);
-      EXPECT_CALL(input_stub_, InjectMouseEvent(EqualsMouseEvent(
+      EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(
           expected_x[i], expected_y[j])));
       client_session_->InjectMouseEvent(event);
     }

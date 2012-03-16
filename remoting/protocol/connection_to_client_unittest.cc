@@ -31,6 +31,7 @@ class ConnectionToClientTest : public testing::Test {
 
     // Allocate a ClientConnection object with the mock objects.
     viewer_.reset(new ConnectionToClient(session_));
+    viewer_->set_clipboard_stub(&clipboard_stub_);
     viewer_->set_host_stub(&host_stub_);
     viewer_->set_input_stub(&input_stub_);
     viewer_->SetEventHandler(&handler_);
@@ -49,6 +50,7 @@ class ConnectionToClientTest : public testing::Test {
 
   MessageLoop message_loop_;
   MockConnectionToClientEventHandler handler_;
+  MockClipboardStub clipboard_stub_;
   MockHostStub host_stub_;
   MockInputStub input_stub_;
   scoped_ptr<ConnectionToClient> viewer_;

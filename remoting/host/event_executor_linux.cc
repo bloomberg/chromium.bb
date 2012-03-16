@@ -20,8 +20,9 @@
 
 namespace remoting {
 
-using protocol::MouseEvent;
+using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::MouseEvent;
 
 namespace {
 
@@ -37,6 +38,11 @@ class EventExecutorLinux : public EventExecutor {
 
   bool Init();
 
+  // Clipboard stub interface.
+  virtual void InjectClipboardEvent(const ClipboardEvent& event)
+      OVERRIDE;
+
+  // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
@@ -314,6 +320,10 @@ bool EventExecutorLinux::Init() {
   return true;
 }
 
+void EventExecutorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
+  // TODO(simonmorris): Implement clipboard injection.
+}
+
 void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
@@ -453,14 +463,14 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
 
 }  // namespace
 
-scoped_ptr<protocol::InputStub> EventExecutor::Create(MessageLoop* message_loop,
-                                                      Capturer* capturer) {
+scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
+    MessageLoop* message_loop, Capturer* capturer) {
   scoped_ptr<EventExecutorLinux> executor(
       new EventExecutorLinux(message_loop, capturer));
   if (!executor->Init()) {
     executor.reset(NULL);
   }
-  return executor.PassAs<protocol::InputStub>();
+  return executor.PassAs<protocol::HostEventStub>();
 }
 
 }  // namespace remoting

@@ -10,7 +10,9 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/host_event_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/session.h"
@@ -59,6 +61,17 @@ class MockConnectionToClientEventHandler :
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);
 };
 
+class MockClipboardStub : public ClipboardStub {
+ public:
+  MockClipboardStub();
+  virtual ~MockClipboardStub();
+
+  MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClipboardStub);
+};
+
 class MockInputStub : public InputStub {
  public:
   MockInputStub();
@@ -69,6 +82,19 @@ class MockInputStub : public InputStub {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputStub);
+};
+
+class MockHostEventStub : public HostEventStub {
+ public:
+  MockHostEventStub();
+  virtual ~MockHostEventStub();
+
+  MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));
+  MOCK_METHOD1(InjectKeyEvent, void(const KeyEvent& event));
+  MOCK_METHOD1(InjectMouseEvent, void(const MouseEvent& event));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockHostEventStub);
 };
 
 class MockHostStub : public HostStub {

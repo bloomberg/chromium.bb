@@ -9,6 +9,7 @@
 #include "base/message_loop_proxy.h"
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
 #include "remoting/protocol/host_event_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
@@ -19,6 +20,7 @@ namespace protocol {
 
 ConnectionToClient::ConnectionToClient(protocol::Session* session)
     : handler_(NULL),
+      clipboard_stub_(NULL),
       host_stub_(NULL),
       input_stub_(NULL),
       session_(session) {
@@ -72,6 +74,12 @@ ClientStub* ConnectionToClient::client_stub() {
   return control_dispatcher_.get();
 }
 
+void ConnectionToClient::set_clipboard_stub(
+    protocol::ClipboardStub* clipboard_stub) {
+  DCHECK(CalledOnValidThread());
+  clipboard_stub_ = clipboard_stub;
+}
+
 void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
   DCHECK(CalledOnValidThread());
   host_stub_ = host_stub;
@@ -98,6 +106,7 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       control_dispatcher_.reset(new HostControlDispatcher());
       control_dispatcher_->Init(session_.get(), base::Bind(
           &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
       control_dispatcher_->set_host_stub(host_stub_);
 
       event_dispatcher_.reset(new HostEventDispatcher());

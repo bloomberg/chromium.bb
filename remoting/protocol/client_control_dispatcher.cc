@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {
@@ -32,6 +33,13 @@ void ClientControlDispatcher::OnInitialized() {
   writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
   reader_.Init(channel(), base::Bind(
       &ClientControlDispatcher::OnMessageReceived, base::Unretained(this)));
+}
+
+void ClientControlDispatcher::InjectClipboardEvent(
+    const ClipboardEvent& event) {
+  ControlMessage message;
+  message.mutable_clipboard_event()->CopyFrom(event);
+  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientControlDispatcher::OnMessageReceived(

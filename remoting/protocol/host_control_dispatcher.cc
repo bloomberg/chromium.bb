@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/util.h"
 
@@ -18,6 +19,7 @@ namespace protocol {
 
 HostControlDispatcher::HostControlDispatcher()
     : ChannelDispatcherBase(kControlChannelName),
+      clipboard_stub_(NULL),
       host_stub_(NULL),
       writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
 }
@@ -34,9 +36,16 @@ void HostControlDispatcher::OnInitialized() {
 
 void HostControlDispatcher::OnMessageReceived(
     ControlMessage* message, const base::Closure& done_task) {
+  DCHECK(clipboard_stub_);
   DCHECK(host_stub_);
-  LOG(WARNING) << "Unknown control message received.";
-  done_task.Run();
+
+  base::ScopedClosureRunner done_runner(done_task);
+
+  if (message->has_clipboard_event()) {
+    clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
+  } else {
+    LOG(WARNING) << "Unknown control message received.";
+  }
 }
 
 }  // namespace protocol

@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
+#include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/message_reader.h"
 
@@ -19,12 +20,17 @@ class BufferedSocketWriter;
 class Session;
 
 // ClientControlDispatcher dispatches incoming messages on the control
-// channel to ClientStub, and also implements HostStub for outgoing
-// messages.
-class ClientControlDispatcher : public ChannelDispatcherBase, public HostStub {
+// channel to ClientStub, and also implements ClipboardStub and HostStub for
+// outgoing messages.
+class ClientControlDispatcher : public ChannelDispatcherBase,
+                                public ClipboardStub,
+                                public HostStub {
  public:
   ClientControlDispatcher();
   virtual ~ClientControlDispatcher();
+
+  // ClipboardStub implementation.
+  virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;
 
   // Sets ClientStub that will be called for each incoming control
   // message. Doesn't take ownership of |client_stub|. It must outlive

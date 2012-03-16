@@ -48,3 +48,13 @@ message MouseEvent {
   optional MouseButton button = 5;
   optional bool button_down = 6;
 }
+
+// Defines an event that sends clipboard data between peers.
+message ClipboardEvent {
+
+  // The MIME type of the data being sent.
+  optional string mime_type = 1;
+
+  // The data being sent.
+  optional bytes data = 2;
+}

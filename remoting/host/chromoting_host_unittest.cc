@@ -93,7 +93,7 @@ class ChromotingHostTest : public testing::Test {
     desktop_environment_ = DesktopEnvironment::CreateFake(
         &context_,
         capturer.Pass(),
-        scoped_ptr<protocol::InputStub>(event_executor_));
+        scoped_ptr<protocol::HostEventStub>(event_executor_));
 
     host_ = new ChromotingHost(
         &context_, &signal_strategy_, desktop_environment_.get(),
