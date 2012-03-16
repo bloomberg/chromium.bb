@@ -14,8 +14,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_VarArrayBuffer>() {
-  return PPB_VAR_ARRAY_BUFFER_INTERFACE;
+template <> const char* interface_name<PPB_VarArrayBuffer_1_0>() {
+  return PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -28,8 +28,8 @@ VarArrayBuffer::VarArrayBuffer(const Var& var) : Var(var) {
 }
 
 VarArrayBuffer::VarArrayBuffer(uint32_t size_in_bytes) {
-  if (has_interface<PPB_VarArrayBuffer>()) {
-    var_ = get_interface<PPB_VarArrayBuffer>()->Create(size_in_bytes);
+  if (has_interface<PPB_VarArrayBuffer_1_0>()) {
+    var_ = get_interface<PPB_VarArrayBuffer_1_0>()->Create(size_in_bytes);
     needs_release_ = true;
   } else {
     PP_NOTREACHED();
@@ -53,23 +53,23 @@ pp::Var& VarArrayBuffer::operator=(const Var& other) {
 
 uint32_t VarArrayBuffer::ByteLength() const {
   uint32_t byte_length = std::numeric_limits<uint32_t>::max();
-  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer>())
-    get_interface<PPB_VarArrayBuffer>()->ByteLength(var_, &byte_length);
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_1_0>())
+    get_interface<PPB_VarArrayBuffer_1_0>()->ByteLength(var_, &byte_length);
   else
     PP_NOTREACHED();
   return byte_length;
 }
 
 void* VarArrayBuffer::Map() {
-  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer>())
-    return get_interface<PPB_VarArrayBuffer>()->Map(var_);
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_1_0>())
+    return get_interface<PPB_VarArrayBuffer_1_0>()->Map(var_);
   PP_NOTREACHED();
   return NULL;
 }
 
 void VarArrayBuffer::Unmap() {
-  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer>())
-    get_interface<PPB_VarArrayBuffer>()->Unmap(var_);
+  if (is_array_buffer() && has_interface<PPB_VarArrayBuffer_1_0>())
+    get_interface<PPB_VarArrayBuffer_1_0>()->Unmap(var_);
   else
     PP_NOTREACHED();
 }
