@@ -7,6 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -46,6 +47,9 @@ const CGFloat kVerticalSpacing = 10;
 
 // Square size of the image.
 const CGFloat kImageSize = 32;
+
+// Square size of the close button.
+const CGFloat kCloseButtonSize = 16;
 
 // Spacing between the image and the text.
 const CGFloat kImageSpacing = 10;
@@ -88,8 +92,23 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   if ((self = [super initWithWindow:window.get()])) {
     picker_ = picker;
     [self performLayoutWithModel:NULL];
+    [[self window] makeFirstResponder:self];
   }
   return self;
+}
+
+// Handle default OSX dialog cancel mechanisms. (Cmd-.)
+- (void)cancelOperation:(id)sender {
+  [self closeSheet];
+}
+
+// Handle keyDown events, specifically ESC.
+- (void)keyDown:(NSEvent*)event {
+  // Check for escape key.
+  if ([[event charactersIgnoringModifiers] isEqualToString:@"\e"])
+    [self cancelOperation:self];
+  else
+    [super keyDown:event];
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet
@@ -112,6 +131,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false);
   browser->OpenURL(params);
+}
+
+// Cancels the current selection - no intent is selected.
+- (IBAction)cancelSelection:(id)sender {
+  [self closeSheet];
 }
 
 // A picker button has been pressed - invoke corresponding service.
@@ -180,17 +204,26 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
             textField];
 
+  NSRect buttonFrame = NSMakeRect(kFramePadding+kImageSize+kTextWidth,
+      offset, kCloseButtonSize, kCloseButtonSize);
+  scoped_nsobject<HoverCloseButton> closeButton(
+      [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
+  [closeButton setTarget:self];
+  [closeButton setAction:@selector(cancelSelection:)];
+
   // Adjust view height to fit elements, center-align elements.
-  CGFloat maxHeight = std::max(imageFrame.size.height,textFrame.size.height);
-  if (maxHeight > textFrame.size.height)
-    textFrame.origin.y += (maxHeight - textFrame.size.height) / 2;
-  else
-    imageFrame.origin.y += maxHeight / 2;
+  CGFloat maxHeight = std::max(buttonFrame.size.height,
+      std::max(imageFrame.size.height,textFrame.size.height));
+  textFrame.origin.y += (maxHeight - textFrame.size.height) / 2;
+  imageFrame.origin.y += (maxHeight - imageFrame.size.height) / 2;
+
   [textField setFrame:textFrame];
   [imageView setFrame:imageFrame];
 
   [subviews addObject:textField.get()];
   [subviews addObject:imageView.get()];
+  [subviews addObject:closeButton.get()];
+
   return NSHeight([imageView frame]);
 }
 

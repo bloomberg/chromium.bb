@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
@@ -74,21 +75,30 @@ class WebIntentPickerSheetControllerTest
   void CheckWindow(size_t icon_count) {
     NSArray* flip_views = [[window_ contentView] subviews];
 
+    // Check for proper firstResponder.
+    ASSERT_EQ(controller_, [window_ firstResponder]);
+
     // Expect 1 subview - the flip view.
     ASSERT_EQ(1U, [flip_views count]);
 
     NSArray* views = [[flip_views objectAtIndex:0] subviews];
 
-    // 3 + |icon_count| subviews - Icon, Header text, |icon_count| buttons,
-    // and a CWS link.
-    ASSERT_EQ(3U + icon_count, [views count]);
+    // 4 + |icon_count| subviews - icon, header text, close button,
+    // |icon_count| buttons, and a CWS link.
+    ASSERT_EQ(4U + icon_count, [views count]);
 
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
     ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSImageView class]]);
+    ASSERT_TRUE([[views objectAtIndex:2] isKindOfClass:
+        [HoverCloseButton class]]);
     for(NSUInteger i = 0; i < icon_count; ++i) {
-      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:
+      ASSERT_TRUE([[views objectAtIndex:3 + i] isKindOfClass:
           [NSButton class]]);
     }
+
+    // Verify the close button
+    NSButton* close_button = static_cast<NSButton*>([views objectAtIndex:2]);
+    CheckButton(close_button, @selector(cancelSelection:));
 
     // Verify the Chrome Web Store button.
     NSButton* button = static_cast<NSButton*>([views lastObject]);
@@ -98,7 +108,7 @@ class WebIntentPickerSheetControllerTest
 
     // Verify buttons pointing to services.
     for(NSUInteger i = 0; i < icon_count; ++i) {
-      NSButton* button = [views objectAtIndex:2 + i];
+      NSButton* button = [views objectAtIndex:3 + i];
       CheckServiceButton(button, i);
     }
   }
@@ -108,6 +118,7 @@ class WebIntentPickerSheetControllerTest
     CheckButton(button, @selector(invokeService:));
     EXPECT_EQ(NSInteger(service_index), [button tag]);
   }
+
   // Checks that a button is hooked up correctly.
   void CheckButton(id button, SEL action) {
     EXPECT_TRUE([button isKindOfClass:[NSButton class]] ||
