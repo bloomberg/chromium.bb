@@ -245,11 +245,9 @@ cr.define('options.network', function() {
       this.subtitle = null;
       if (this.data.iconType)
         this.iconType = this.data.iconType;
-      if (!this.connecting) {
-        this.addEventListener('click', function() {
-          this.showMenu();
-        });
-      }
+      this.addEventListener('click', function() {
+        this.showMenu();
+      });
     },
 
     /**
@@ -292,10 +290,14 @@ cr.define('options.network', function() {
      * Displays a popup menu.
      */
     showMenu: function() {
+      var rebuild = false;
       if (!this.menu_) {
+        rebuild = true;
+        var existing = $(this.getMenuName_());
+        if (existing)
+          closeMenu_();
         this.menu_ = this.createMenu();
         var parent = $('network-menus');
-        var existing = $(this.menu_.id);
         if (existing)
           parent.replaceChild(this.menu_, existing);
         else
@@ -303,7 +305,7 @@ cr.define('options.network', function() {
       }
       var top = this.offsetTop + this.clientHeight;
       var menuId = this.getMenuName_();
-      if (menuId != activeMenu_) {
+      if (menuId != activeMenu_ || rebuild) {
         closeMenu_();
         activeMenu_ = menuId;
         this.menu_.style.setProperty('top', top + 'px');
@@ -315,7 +317,6 @@ cr.define('options.network', function() {
     },
 
   };
-
 
   /**
    * Creates a control for selecting or configuring a network connection based
@@ -362,11 +363,19 @@ cr.define('options.network', function() {
       else
         this.iconType = this.data.key;
 
-      if (!this.connecting)
-        this.showSelector();
+      this.showSelector();
 
       // TODO(kevers): Add default icon for VPN when disconnected or in the
       // process of connecting.
+
+      if (activeMenu_ == this.getMenuName_()) {
+        // Menu is already showing and needs to be updated. Explicitly calling
+        // show menu will force the existing menu to be replaced.  The call
+        // is deferred in order to ensure that position of this element has
+        // beem properly updated.
+        var self = this;
+        setTimeout(function() {self.showMenu();}, 0);
+      }
     },
 
     /**
