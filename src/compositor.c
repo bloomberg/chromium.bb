@@ -1831,10 +1831,9 @@ input_device_attach(struct wl_client *client,
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
 
-	if (!buffer_resource && device->sprite->output) {
-		wl_list_remove(&device->sprite->link);
-		wl_list_remove(&device->sprite->layer_link);
-		device->sprite->output = NULL;
+	if (!buffer_resource) {
+		if (device->sprite->output)
+			weston_surface_unmap(device->sprite);
 		return;
 	}
 
