@@ -160,6 +160,10 @@
 #include "base/mach_ipc_mac.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#endif
+
 using automation::Error;
 using automation::ErrorCode;
 using automation_util::SendErrorIfModalDialogActive;
@@ -2415,6 +2419,10 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::TriggerPageActionById;
   handler_map["TriggerBrowserActionById"] =
       &TestingAutomationProvider::TriggerBrowserActionById;
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  handler_map["HeapProfilerDump"] =
+      &TestingAutomationProvider::HeapProfilerDump;
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -4800,6 +4808,31 @@ void TestingAutomationProvider::TriggerBrowserActionById(
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 }
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Refer to HeapProfilerDump() in chrome/test/pyautolib/pyauto.py for
+// sample json input.
+void TestingAutomationProvider::HeapProfilerDump(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!::IsHeapProfilerRunning()) {
+    reply.SendError("The heap profiler is not running");
+    return;
+  }
+
+  std::string reason_string;
+  if (args->GetString("reason", &reason_string))
+    reason_string += " (via PyAuto testing)";
+  else
+    reason_string = "By PyAuto testing";
+
+  ::HeapProfilerDump(reason_string.c_str());
+
+  reply.SendSuccess(NULL);
+}
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // Sample json input:
 //    { "command": "GetAutofillProfile" }
