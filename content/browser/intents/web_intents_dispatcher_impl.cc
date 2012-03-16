@@ -52,7 +52,7 @@ void WebIntentsDispatcherImpl::SendReplyMessage(
 }
 
 void WebIntentsDispatcherImpl::RegisterReplyNotification(
-    const base::Callback<void(webkit_glue::WebIntentReplyType)>& closure) {
+    const content::WebIntentsDispatcher::ReplyNotification& closure) {
   reply_notifiers_.push_back(closure);
 }
 

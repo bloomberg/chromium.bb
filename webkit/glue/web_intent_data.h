@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,22 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // SerializedScriptObject.
   string16 data;
 
+  // String payload data.
+  string16 unserialized_data;
+
+  // These enum values indicate which payload data type should be used.
+  enum DataType {
+    SERIALIZED = 0,   // The payload is serialized in |data|.
+    UNSERIALIZED = 1  // The payload is unseriazed in |unserialized_data|.
+  };
+  // Which data payload to use when delivering the intent.
+  DataType data_type;
+
   WebIntentData();
   WebIntentData(const WebKit::WebIntent& intent);
+  WebIntentData(const string16& action_in,
+                const string16& type_in,
+                const string16& unserialized_data_in);
   ~WebIntentData();
 };
 

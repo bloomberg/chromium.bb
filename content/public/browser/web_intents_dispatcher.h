@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_INTENTS_DISPATCHER_H_
 
 #include "base/callback.h"
+#include "content/common/content_export.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
 namespace webkit_glue {
@@ -24,32 +25,38 @@ class WebContents;
 // code can then read the intent data, create UI to pick the service, and
 // create a new context for that service.
 //
-// At that point, it should call DispatchIntent, which will connect the object
-// to the new context. If anything goes wrong, the client should call
-// SendReplyMessage with an error. That will self-delete the object.
+// At that point, it should call DispatchIntent, which will deliver the intent
+// to the new context. If anything goes wrong during setup, the client
+// should call SendReplyMessage with an error. The dispatcher lives until the
+// SendReplyMessage method is called, which will self-delete the object.
 //
-// At that point, before the client may use the object again, it must register a
-// reply notification, so it can avoid referencing the dispatcher after other
-// code calls SendReplyMessage.
+// The client should also register a reply notification, so it can avoid
+// referencing the dispatcher after other code calls SendReplyMessage, which can
+// happen if, for example, the user closes the delivery context.
 class CONTENT_EXPORT WebIntentsDispatcher {
  public:
+  // This callback type is registered for notification of |SendReplyMessage|.
+  typedef base::Callback<void(webkit_glue::WebIntentReplyType)>
+      ReplyNotification;
+
   virtual ~WebIntentsDispatcher() {}
 
   // Get the intent data being dispatched.
   virtual const webkit_glue::WebIntentData& GetIntent() = 0;
 
   // Attach the intent to a new context in which the service page is loaded.
+  // |web_contents| must not be NULL.
   virtual void DispatchIntent(WebContents* web_contents) = 0;
 
   // Return a success or failure message to the source context which invoked
   // the intent. Deletes the object; it should not be used after this call
-  // returns. Calls the reply notification, if registered.
+  // returns. Calls the reply notifications, if any are registered.
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) = 0;
 
   // Register a callback to be notified when SendReplyMessage is called.
-  virtual void RegisterReplyNotification(
-      const base::Callback<void(webkit_glue::WebIntentReplyType)>& closure) = 0;
+  // Multiple callbacks may be registered.
+  virtual void RegisterReplyNotification(const ReplyNotification& closure) = 0;
 };
 
 }  // namespace content

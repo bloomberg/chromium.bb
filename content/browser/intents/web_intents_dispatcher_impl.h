@@ -37,8 +37,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(
-      const base::Callback<void(webkit_glue::WebIntentReplyType)>&
-          closure) OVERRIDE;
+      const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
@@ -54,7 +53,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   IntentInjector* intent_injector_;
 
   // Callbacks to be notified when SendReplyMessage is called.
-  std::vector<base::Callback<void(webkit_glue::WebIntentReplyType)> >
+  std::vector<content::WebIntentsDispatcher::ReplyNotification>
       reply_notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsDispatcherImpl);

@@ -31,26 +31,29 @@ using WebKit::WebSerializedScriptValue;
 // browser-provided Javascript API objects on |window|.
 class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
  public:
-  BoundDeliveredIntent(const string16& action,
-                       const string16& type,
-                       const string16& data,
+  BoundDeliveredIntent(const webkit_glue::WebIntentData& intent,
                        WebIntentsHost* parent,
                        WebFrame* frame) {
-    action_ = WebString(action).utf8();
-    type_ = WebString(type).utf8();
+    action_ = WebString(intent.action).utf8();
+    type_ = WebString(intent.type).utf8();
     parent_ = parent;
 
     v8::HandleScope scope;
     v8::Local<v8::Context> ctx = frame->mainWorldScriptContext();
     v8::Context::Scope cscope(ctx);
-    WebSerializedScriptValue ssv =
-        WebSerializedScriptValue::fromString(WebString(data));
-    // TODO(gbillock): use an exception handler instead? Need to
-    // pass back error state to caller? This is a pretty unexpected
-    // internal error...
-    CHECK(!ssv.isNull());
-    v8::Local<v8::Value> data_obj =
-        v8::Local<v8::Value>::New(ssv.deserialize());
+    v8::Local<v8::Value> data_obj;
+
+    if (intent.data_type == webkit_glue::WebIntentData::SERIALIZED) {
+      WebSerializedScriptValue ssv =
+          WebSerializedScriptValue::fromString(WebString(intent.data));
+      DCHECK(!ssv.isNull());
+      data_obj = v8::Local<v8::Value>::New(ssv.deserialize());
+    } else {
+      DCHECK(intent.data_type == webkit_glue::WebIntentData::UNSERIALIZED);
+      data_obj = v8::String::New(
+          reinterpret_cast<const uint16_t*>(intent.unserialized_data.data()),
+          static_cast<int>(intent.unserialized_data.length()));
+    }
 
     data_val_.reset(new CppVariant);
     WebBindings::toNPVariant(data_obj, frame->windowObject(), data_val_.get());
@@ -195,7 +198,7 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
   if (intent_.get() == NULL || frame->top() != frame)
     return;
 
-  delivered_intent_.reset(new BoundDeliveredIntent(
-      intent_->action, intent_->type, intent_->data, this, frame));
+  delivered_intent_.reset(
+      new BoundDeliveredIntent(*(intent_.get()), this, frame));
   delivered_intent_->BindToJavascript(frame, "intent");
 }

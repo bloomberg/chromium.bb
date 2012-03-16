@@ -16,11 +16,14 @@
 #define IPC_MESSAGE_START IntentsMsgStart
 
 IPC_ENUM_TRAITS(webkit_glue::WebIntentReplyType)
+IPC_ENUM_TRAITS(webkit_glue::WebIntentData::DataType)
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebIntentData)
   IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(data)
+  IPC_STRUCT_TRAITS_MEMBER(unserialized_data)
+  IPC_STRUCT_TRAITS_MEMBER(data_type)
 IPC_STRUCT_TRAITS_END()
 
 // Set the intent data to be set on the service page.
