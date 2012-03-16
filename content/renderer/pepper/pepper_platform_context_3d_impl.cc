@@ -124,6 +124,9 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   command_buffer_->SetChannelErrorCallback(
       base::Bind(&PlatformContext3DImpl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
+  command_buffer_->SetOnConsoleMessageCallback(
+      base::Bind(&PlatformContext3DImpl::OnConsoleMessage,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Fetch the parent context now, after any potential shutdown of the
   // channel due to GPU switching, and creation of the Pepper 3D
@@ -174,6 +177,11 @@ void PlatformContext3DImpl::SetContextLostCallback(const base::Closure& task) {
   context_lost_callback_ = task;
 }
 
+void PlatformContext3DImpl::SetOnConsoleMessageCallback(
+    const ConsoleMessageCallback& task) {
+  console_message_callback_ = task;
+}
+
 bool PlatformContext3DImpl::Echo(const base::Closure& task) {
   return command_buffer_->Echo(task);
 }
@@ -183,6 +191,13 @@ void PlatformContext3DImpl::OnContextLost() {
 
   if (!context_lost_callback_.is_null())
     context_lost_callback_.Run();
+}
+
+void PlatformContext3DImpl::OnConsoleMessage(const std::string& msg, int id) {
+  DCHECK(command_buffer_);
+
+  if (!console_message_callback_.is_null())
+    console_message_callback_.Run(msg, id);
 }
 
 #endif  // ENABLE_GPU

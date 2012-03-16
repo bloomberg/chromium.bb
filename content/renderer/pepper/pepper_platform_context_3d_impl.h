@@ -37,11 +37,14 @@ class PlatformContext3DImpl
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int GetCommandBufferRouteId() OVERRIDE;
   virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
+  virtual void SetOnConsoleMessageCallback(
+      const ConsoleMessageCallback& callback) OVERRIDE;
   virtual bool Echo(const base::Closure& task) OVERRIDE;
 
  private:
   bool InitRaw();
   void OnContextLost();
+  void OnConsoleMessage(const std::string& msg, int id);
 
   // Implicitly weak pointer; must outlive this instance.
   PepperParentContextProvider* parent_context_provider_;
@@ -51,6 +54,7 @@ class PlatformContext3DImpl
   bool has_alpha_;
   CommandBufferProxy* command_buffer_;
   base::Closure context_lost_callback_;
+  ConsoleMessageCallback console_message_callback_;
   base::WeakPtrFactory<PlatformContext3DImpl> weak_ptr_factory_;
 };
 

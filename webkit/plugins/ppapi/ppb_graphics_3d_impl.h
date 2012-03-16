@@ -75,6 +75,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   // Notifications received from the GPU process.
   void OnSwapBuffers();
   void OnContextLost();
+  void OnConsoleMessage(const std::string& msg, int id);
   // Notifications sent to plugin.
   void SendContextLost();
 

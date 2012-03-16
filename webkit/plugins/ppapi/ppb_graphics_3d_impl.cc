@@ -6,13 +6,24 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/ppp_graphics_3d.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::PPB_Graphics3D_API;
+using WebKit::WebConsoleMessage;
+using WebKit::WebFrame;
+using WebKit::WebPluginContainer;
+using WebKit::WebString;
 
 namespace webkit {
 namespace ppapi {
@@ -221,7 +232,27 @@ bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
   platform_context_->SetContextLostCallback(
       base::Bind(&PPB_Graphics3D_Impl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  platform_context_->SetOnConsoleMessageCallback(
+      base::Bind(&PPB_Graphics3D_Impl::OnConsoleMessage,
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
+}
+
+void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message,
+                                           int id) {
+  if (!bound_to_instance_)
+    return;
+  WebPluginContainer* container =
+      ResourceHelper::GetPluginInstance(this)->container();
+  if (!container)
+    return;
+  WebFrame* frame = container->element().document().frame();
+  if (!frame)
+    return;
+  WebConsoleMessage console_message = WebConsoleMessage(
+      WebConsoleMessage::LevelError, WebString(UTF8ToUTF16(message)));
+  frame->addMessageToConsole(console_message);
 }
 
 void PPB_Graphics3D_Impl::OnSwapBuffers() {

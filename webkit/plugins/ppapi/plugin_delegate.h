@@ -192,6 +192,13 @@ class PluginDelegate {
     virtual void SetContextLostCallback(
         const base::Callback<void()>& callback) = 0;
 
+    // Set an optional callback that will be invoked when the GPU process
+    // sends a console message.
+    typedef base::Callback<void(const std::string&, int)>
+        ConsoleMessageCallback;
+    virtual void SetOnConsoleMessageCallback(
+        const ConsoleMessageCallback& callback) = 0;
+
     // Run the callback once the channel has been flushed.
     virtual bool Echo(const base::Callback<void()>& callback) = 0;
   };
