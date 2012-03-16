@@ -3854,41 +3854,51 @@ FileManager.prototype = {
   };
 
   /**
-   * Selects a file. Starts getting a gdata file if needed.
+   * Resolves selected file urls returned from an Open dialog.
+   *
+   * For gdata files this involves some special treatment.
+   * Starts getting gdata files if needed.
+   *
+   * @param {Array.<string>} fileUrls
+   * @param {function(Array.<string>)}
+   */
+  FileManager.prototype.resolveSelectResults_ = function(fileUrls, callback) {
+    if (this.isOnGData()) {
+      chrome.fileBrowserPrivate.getGDataFiles(
+        fileUrls,
+        function(localPaths) {
+          fileUrls = [].concat(fileUrls);  // Clone the array.
+          // localPath can be empty if the file is not present, which
+          // can happen if the user specifies a new file name to save a
+          // file on gdata.
+          for (var i = 0; i != localPaths.length; i++) {
+            if (localPaths[i]) {
+              // Add "localPath" parameter to the gdata file URL.
+              fileUrls[i] += '?localPath=' + encodeURIComponent(localPaths[i]);
+            }
+          }
+          callback(fileUrls);
+        });
+    } else {
+      callback(fileUrls);
+    }
+  },
+
+  /**
+   * Selects a file.
    *
    * @param {string} fileUrl The filename as a URL.
    * @param {number} filterIndex The integer file filter index.
    */
   FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
-    var self = this;
-    // First check the file location.
-    chrome.fileBrowserPrivate.getFileLocations(
+    this.resolveSelectResults_(
         [fileUrl],
-        function(locations) {
-          var location = locations[0];
-          if (location == 'gdata') {
-            // Initiate getting the GData file.
-            chrome.fileBrowserPrivate.getGDataFiles(
-              [fileUrl],
-              function(localPaths) {
-                // localPath can be empty if the file is not present, which
-                // can happen if the user specifies a new file name to save a
-                // file on gdata.
-                if (localPaths[0]) {
-                  // Add "localPath" parameter to the gdata file URL.
-                  fileUrl += '?localPath=' + encodeURIComponent(localPaths[0]);
-                }
-                // Call doSelectFile_ on a timeout, as it's unsafe to
-                // close a window from a callback.
-                setTimeout(self.doSelectFile_.bind(
-                    self, fileUrl, filterIndex), 0);
-              });
-          } else if (location == 'local') {
-            setTimeout(self.doSelectFile_.bind(self, fileUrl, filterIndex), 0);
-          } else {
-            // Not reached.
-          }
-        });
+        function(resolvedUrls) {
+          // Call doSelectFiles_ on a timeout, as it's unsafe to
+          // close a window from a callback.
+          setTimeout(
+              this.doSelectFile_.bind(this, resolvedUrls[0], filterIndex), 0);
+        }.bind(this));
   };
 
   /**
@@ -3911,42 +3921,13 @@ FileManager.prototype = {
    * @param {Array.<string>} fileUrls Array of filename URLs.
    */
   FileManager.prototype.selectFiles_ = function(fileUrls) {
-    var self = this;
-    // First check the file locations.
-    chrome.fileBrowserPrivate.getFileLocations(
+    this.resolveSelectResults_(
         fileUrls,
-        function(locations) {
-          // Collect gdata file locations, and indxes.
-          var gdataFileUrls = [];
-          var gdataFileIndexes = [];
-          for (var i = 0; i < locations.length; ++i) {
-            var location = locations[i];
-            if (location == 'gdata') {
-              gdataFileUrls.push(fileUrls[i]);
-              gdataFileIndexes.push(i);
-            }
-          }
-          if (gdataFileUrls.length > 0) {
-            // Initiate getting the GData files.
-            chrome.fileBrowserPrivate.getGDataFiles(
-              gdataFileUrls,
-              function(localPaths) {
-                // Add "localPath" parameter to the gdata file URLs.
-                for (var i = 0; i < gdataFileIndexes.length; ++i) {
-                  var gdataIndex = gdataFileIndexes[i];
-                  if (localPaths[i]) {
-                    fileUrls[gdataIndex] += '?localPath=' +
-                        encodeURIComponent(localPaths[i]);
-                  }
-                }
-                // Call doSelectFiles_ on a timeout, as it's unsafe to close a
-                // window from a callback.
-                setTimeout(self.doSelectFiles_.bind(self, fileUrls), 0);
-              });
-          } else {  // All files are local.
-            setTimeout(self.doSelectFiles_.bind(self, fileUrls), 0);
-          }
-        });
+        function(resolvedUrls) {
+          // Call doSelectFiles_ on a timeout, as it's unsafe to
+          // close a window from a callback.
+          setTimeout(this.doSelectFiles_.bind(this, resolvedUrls), 0);
+        }.bind(this));
   };
 
   /**
