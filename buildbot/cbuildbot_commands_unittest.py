@@ -241,7 +241,7 @@ class CBuildBotTest(mox.MoxTestBase):
   def testBuildMinimal(self):
     """Base case where Build is called with minimal options."""
     buildroot = '/bob/'
-    cmd = ['./build_packages', '--fast', '--nowithautotest',
+    cmd = ['./build_packages', '--nowithautotest',
            '--board=x86-generic'] + commands._LOCAL_BUILD_FLAGS
     cros_lib.RunCommand(mox.SameElementsAs(cmd),
                         cwd=mox.StrContains(buildroot),
@@ -252,7 +252,6 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.Build(buildroot=buildroot,
                    board='x86-generic',
                    build_autotest=False,
-                   fast=True,
                    usepkg=False,
                    skip_toolchain_update=False,
                    nowithdebug=False,
@@ -263,7 +262,6 @@ class CBuildBotTest(mox.MoxTestBase):
     """Base case where Build is called with all options (except extra_evn)."""
     buildroot = '/bob/'
     arg_test = mox.SameElementsAs(['./build_packages',
-                                   '--fast',
                                    '--board=x86-generic',
                                    '--skip_toolchain_update',
                                    '--nowithdebug'])
@@ -275,7 +273,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
                    board='x86-generic',
-                   fast=True,
                    build_autotest=True,
                    usepkg=True,
                    skip_toolchain_update=True,
@@ -298,7 +295,6 @@ class CBuildBotTest(mox.MoxTestBase):
     commands.Build(buildroot=buildroot,
                    board='x86-generic',
                    build_autotest=False,
-                   fast=False,
                    usepkg=False,
                    skip_toolchain_update=False,
                    nowithdebug=False,

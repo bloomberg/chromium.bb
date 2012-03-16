@@ -567,7 +567,6 @@ class BuildBoardStage(bs.BuilderStage):
 
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
-                          fast=self._build_config['fast'],
                           usepkg=self._build_config['usepkg_setup_board'],
                           latest_toolchain=latest_toolchain,
                           extra_env=env,
@@ -684,7 +683,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                    self._current_board,
                    build_autotest=build_autotest,
                    skip_toolchain_update=skip_toolchain_update,
-                   fast=self._build_config['fast'],
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
                    extra_env=self._env)

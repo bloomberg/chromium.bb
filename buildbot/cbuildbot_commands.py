@@ -203,8 +203,8 @@ def RefreshPackageStatus(buildroot, boards, debug):
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
-def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
-               extra_env=None, profile=None):
+def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
+               profile=None):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./setup_board', '--board=%s' % board]
@@ -215,18 +215,13 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
 
-  if fast:
-    cmd.append('--fast')
-  else:
-    cmd.append('--nofast')
-
   if latest_toolchain:
     cmd.append('--latest_toolchain')
 
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True, extra_env=extra_env)
 
 
-def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
+def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
           nowithdebug, extra_env=None, chrome_root=None):
   """Wrapper around build_packages."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
@@ -235,11 +230,6 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
     env = {}
   else:
     env = extra_env.copy()
-
-  if fast:
-    cmd.append('--fast')
-  else:
-    cmd.append('--nofast')
 
   if not build_autotest: cmd.append('--nowithautotest')
 

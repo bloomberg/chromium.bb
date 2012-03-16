@@ -311,7 +311,6 @@ class BuildBoardTest(AbstractStageTest):
                                self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
                         board=self._current_board,
-                        fast=True,
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
@@ -340,7 +339,6 @@ class BuildBoardTest(AbstractStageTest):
                                self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
                         board=self._current_board,
-                        fast=True,
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
@@ -370,7 +368,6 @@ class BuildBoardTest(AbstractStageTest):
                                self._current_board)).AndReturn(False)
     commands.SetupBoard(self.build_root,
                         board=self._current_board,
-                        fast=True,
                         usepkg=False,
                         latest_toolchain=False,
                         extra_env={},
@@ -415,7 +412,6 @@ class BuildBoardTest(AbstractStageTest):
 
     commands.SetupBoard(self.build_root,
                         board=self._current_board,
-                        fast=self.build_config['fast'],
                         usepkg=self.build_config['usepkg_setup_board'],
                         latest_toolchain=self.build_config['latest_toolchain'],
                         extra_env={},
@@ -696,7 +692,6 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = None
     self.build_config['build_type'] = constants.PFQ_TYPE
     self.build_config['usepkg_chroot'] = False
-    self.build_config['fast'] = False
 
     self.options.prebuilts = True
     self.options.tests = False
@@ -734,7 +729,6 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['usepkg_build_packages'] = True
     self.build_config['images'] = ['base', 'dev', 'test', 'factory_test',
                                    'factory_install']
-    self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     self.build_config['skip_toolchain_update'] = False
     self.build_config['nowithdebug'] = False
@@ -756,7 +750,6 @@ class BuildTargetStageTest(AbstractStageTest):
                    self._current_board,
                    build_autotest=True,
                    usepkg=True,
-                   fast=True,
                    skip_toolchain_update=False,
                    nowithdebug=False,
                    extra_env=proper_env)
@@ -786,7 +779,6 @@ class BuildTargetStageTest(AbstractStageTest):
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=mox.IgnoreArg(),
-                   fast=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
                    skip_toolchain_update=mox.IgnoreArg(),
                    nowithdebug=mox.IgnoreArg(),
@@ -810,7 +802,6 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['usepkg_chroot'] = True
     self.build_config['usepkg_setup_board'] = True
     self.build_config['usepkg_build_packages'] = True
-    self.build_config['fast'] = True
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     self.build_config['nowithdebug'] = True
     self.build_config['skip_toolchain_update'] = False
@@ -821,7 +812,6 @@ class BuildTargetStageTest(AbstractStageTest):
                    self._current_board,
                    build_autotest=True,
                    usepkg=True,
-                   fast=True,
                    skip_toolchain_update=False,
                    nowithdebug=True,
                    extra_env=proper_env)

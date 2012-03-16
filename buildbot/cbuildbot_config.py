@@ -132,9 +132,6 @@ _settings = dict(
 #                      and chromeos_version.sh. See bug chromium-os:14649
   chromeos_official=False,
 
-# fast -- Use parallel_emerge for faster (but slightly more risky) builds.
-  fast=True,
-
 # usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
   usepkg_setup_board=True,
 
