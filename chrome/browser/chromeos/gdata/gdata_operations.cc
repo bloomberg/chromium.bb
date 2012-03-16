@@ -19,6 +19,11 @@ using content::URLFetcher;
 
 namespace {
 
+// Template for optional OAuth2 authorization HTTP header.
+const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
+// Template for GData API version HTTP header.
+const char kGDataVersionHeader[] = "GData-Version: 3.0";
+
 // etag matching header.
 const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
@@ -48,6 +53,9 @@ const int kMaxDocumentsPerFeed = 1000;
 #else
 const int kMaxDocumentsPerFeed = 1000;
 #endif
+
+// Maximum number of attempts for re-authentication per operation.
+const int kMaxReAuthenticateAttemptsPerOperation = 1;
 
 const char kFeedField[] = "feed";
 
@@ -136,19 +144,151 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
 }
 
+//============================ UrlFetchOperationBase ===========================
+
+UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
+                                             Profile* profile)
+    : GDataOperationRegistry::Operation(registry),
+      profile_(profile),
+      // MessageLoopProxy is used to run |callback| on the origin thread.
+      relay_proxy_(base::MessageLoopProxy::current()),
+      re_authenticate_count_(0),
+      save_temp_file_(false) {
+}
+
+UrlFetchOperationBase::~UrlFetchOperationBase() {}
+
+void UrlFetchOperationBase::Start(const std::string& auth_token) {
+  DCHECK(!auth_token.empty());
+
+  GURL url = GetURL();
+  DCHECK(!url.is_empty());
+  DVLOG(1) << "URL: " << url.spec();
+
+  url_fetcher_.reset(URLFetcher::Create(url, GetRequestType(), this));
+  url_fetcher_->SetRequestContext(profile_->GetRequestContext());
+  // Always set flags to neither send nor save cookies.
+  url_fetcher_->SetLoadFlags(
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+  if (save_temp_file_) {
+    url_fetcher_->SaveResponseToTemporaryFile(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  }
+
+  // Add request headers.
+  // Note that SetExtraRequestHeaders clears the current headers and sets it
+  // to the passed-in headers, so calling it for each header will result in
+  // only the last header being set in request headers.
+  url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
+  url_fetcher_->AddExtraRequestHeader(
+        base::StringPrintf(kAuthorizationHeaderFormat, auth_token.data()));
+  std::vector<std::string> headers = GetExtraRequestHeaders();
+  for (size_t i = 0; i < headers.size(); ++i) {
+    url_fetcher_->AddExtraRequestHeader(headers[i]);
+    DVLOG(1) << "Extra header: " << headers[i];
+  }
+
+  // Set upload data if available.
+  std::string upload_content_type;
+  std::string upload_content;
+  if (GetContentData(&upload_content_type, &upload_content)) {
+    url_fetcher_->SetUploadData(upload_content_type, upload_content);
+  }
+
+  // Register to operation registry.
+  NotifyStart();
+
+  url_fetcher_->Start();
+}
+
+void UrlFetchOperationBase::SetReAuthenticateCallback(
+    const ReAuthenticateCallback& callback) {
+  DCHECK(re_authenticate_callback_.is_null());
+
+  re_authenticate_callback_ = callback;
+}
+
+URLFetcher::RequestType UrlFetchOperationBase::GetRequestType() const {
+  return URLFetcher::GET;
+}
+
+std::vector<std::string> UrlFetchOperationBase::GetExtraRequestHeaders() const {
+  return std::vector<std::string>();
+}
+
+bool UrlFetchOperationBase::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
+  return false;
+}
+
+void UrlFetchOperationBase::DoCancel() {
+  url_fetcher_.reset(NULL);
+}
+
+void UrlFetchOperationBase::OnURLFetchDownloadProgress(const URLFetcher* source,
+                                                       int64 current,
+                                                       int64 total) {
+  NotifyProgress(current, total);
+}
+
+void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
+  GDataErrorCode code =
+      static_cast<GDataErrorCode>(source->GetResponseCode());
+  DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
+
+  if (code == HTTP_UNAUTHORIZED) {
+    if (!re_authenticate_callback_.is_null() &&
+        ++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
+      re_authenticate_callback_.Run(this);
+      return;
+    }
+
+    OnAuthFailed(code);
+    return;
+  }
+
+  // Overridden by each specialization
+  ProcessURLFetchResults(source);
+  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+}
+
+void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
+  RunCallbackOnAuthFailed(code);
+  NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+}
+
+std::string UrlFetchOperationBase::GetResponseHeadersAsString(
+    const URLFetcher* url_fetcher) {
+  // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
+  // all headers in their raw format, i.e each header is null-terminated.
+  // So logging raw_headers() only shows the first header, which is probably
+  // the status line.  GetNormalizedHeaders, on the other hand, will show all
+  // the headers, one per line, which is probably what we want.
+  std::string headers;
+  // Check that response code indicates response headers are valid (i.e. not
+  // malformed) before we retrieve the headers.
+  if (url_fetcher->GetResponseCode() == URLFetcher::RESPONSE_CODE_INVALID) {
+    headers.assign("Response headers are malformed!!");
+  } else {
+    url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
+  }
+  return headers;
+}
+
 //============================ EntryActionOperation ============================
 
 EntryActionOperation::EntryActionOperation(GDataOperationRegistry* registry,
                                            Profile* profile,
                                            const EntryActionCallback& callback,
                                            const GURL& document_url)
-    : UrlFetchOperation<EntryActionCallback>(registry, profile, callback),
+    : UrlFetchOperationBase(registry, profile),
+      callback_(callback),
       document_url_(document_url) {
 }
 
 EntryActionOperation::~EntryActionOperation() {}
 
-// Overridden from UrlFetchOperation.
+// Overridden from UrlFetchOperationBase.
 GURL EntryActionOperation::GetURL() const {
   return AddStandardUrlParams(document_url_);
 }
@@ -174,7 +314,7 @@ void EntryActionOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
 GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
                                    Profile* profile,
                                    const GetDataCallback& callback)
-    : UrlFetchOperation<GetDataCallback>(registry, profile, callback) {
+    : UrlFetchOperationBase(registry, profile), callback_(callback) {
 }
 
 GetDataOperation::~GetDataOperation() {}
@@ -275,7 +415,8 @@ DownloadFileOperation::DownloadFileOperation(
     Profile* profile,
     const DownloadActionCallback& callback,
     const GURL& document_url)
-    : UrlFetchOperation<DownloadActionCallback>(registry, profile, callback),
+    : UrlFetchOperationBase(registry, profile),
+      callback_(callback),
       document_url_(document_url) {
   // Make sure we download the content into a temp file.
   save_temp_file_ = true;
@@ -283,7 +424,7 @@ DownloadFileOperation::DownloadFileOperation(
 
 DownloadFileOperation::~DownloadFileOperation() {}
 
-// Overridden from UrlFetchOperation.
+// Overridden from UrlFetchOperationBase.
 GURL DownloadFileOperation::GetURL() const {
   return document_url_;
 }
@@ -562,7 +703,8 @@ InitiateUploadOperation::InitiateUploadOperation(
     Profile* profile,
     const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
-    : UrlFetchOperation<InitiateUploadCallback>(registry, profile, callback),
+    : UrlFetchOperationBase(registry, profile),
+      callback_(callback),
       params_(params),
       initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
           params.resumable_create_media_link,
@@ -642,7 +784,8 @@ ResumeUploadOperation::ResumeUploadOperation(
     Profile* profile,
     const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
-    : UrlFetchOperation<ResumeUploadCallback>(registry, profile, callback),
+    : UrlFetchOperationBase(registry, profile),
+      callback_(callback),
       params_(params) {
 }
 

@@ -24,13 +24,6 @@
 
 namespace gdata {
 
-// Template for optional OAuth2 authorization HTTP header.
-const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
-// Template for GData API version HTTP header.
-const char kGDataVersionHeader[] = "GData-Version: 3.0";
-// Maximum number of attempts for re-authentication per operation.
-const int kMaxReAuthenticateAttemptsPerOperation = 1;
-
 //================================ AuthOperation ===============================
 
 // OAuth2 authorization token retrieval operation.
@@ -84,105 +77,37 @@ class GDataOperationInterface {
       const ReAuthenticateCallback& callback) = 0;
 };
 
-//============================== UrlFetchOperation =============================
+//============================ UrlFetchOperationBase ===========================
 
 // Base class for operations that are fetching URLs.
-template <typename T>
-class UrlFetchOperation : public GDataOperationInterface,
-                          public GDataOperationRegistry::Operation,
-                          public content::URLFetcherDelegate {
+class UrlFetchOperationBase : public GDataOperationInterface,
+                              public GDataOperationRegistry::Operation,
+                              public content::URLFetcherDelegate {
  public:
-  typedef T CompletionCallback;
-
-  UrlFetchOperation(GDataOperationRegistry* registry,
-                    Profile* profile,
-                    const CompletionCallback& callback)
-      : GDataOperationRegistry::Operation(registry),
-        profile_(profile),
-        // Completion callback runs on the origin thread that creates
-        // this operation object.
-        callback_(callback),
-        // MessageLoopProxy is used to run |callback| on the origin thread.
-        relay_proxy_(base::MessageLoopProxy::current()),
-        re_authenticate_count_(0),
-        save_temp_file_(false) {
-  }
-
   // Overridden from GDataOperationInterface.
-  virtual void Start(const std::string& auth_token) OVERRIDE {
-    DCHECK(!auth_token.empty());
-
-    GURL url = GetURL();
-    DCHECK(!url.is_empty());
-    DVLOG(1) << "URL: " << url.spec();
-
-    url_fetcher_.reset(content::URLFetcher::Create(url, GetRequestType(),
-                                                   this));
-    url_fetcher_->SetRequestContext(profile_->GetRequestContext());
-    // Always set flags to neither send nor save cookies.
-    url_fetcher_->SetLoadFlags(
-        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-    if (save_temp_file_) {
-      url_fetcher_->SaveResponseToTemporaryFile(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::FILE));
-    }
-
-    // Add request headers.
-    // Note that SetExtraRequestHeaders clears the current headers and sets it
-    // to the passed-in headers, so calling it for each header will result in
-    // only the last header being set in request headers.
-    url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
-    url_fetcher_->AddExtraRequestHeader(
-          base::StringPrintf(kAuthorizationHeaderFormat, auth_token.data()));
-    std::vector<std::string> headers = GetExtraRequestHeaders();
-    for (size_t i = 0; i < headers.size(); ++i) {
-      url_fetcher_->AddExtraRequestHeader(headers[i]);
-      DVLOG(1) << "Extra header: " << headers[i];
-    }
-
-    // Set upload data if available.
-    std::string upload_content_type;
-    std::string upload_content;
-    if (GetContentData(&upload_content_type, &upload_content)) {
-      url_fetcher_->SetUploadData(upload_content_type, upload_content);
-    }
-
-    // Register to operation registry.
-    NotifyStart();
-
-    url_fetcher_->Start();
-  }
+  virtual void Start(const std::string& auth_token) OVERRIDE;
 
   // Overridden from GDataOperationInterface.
   virtual void SetReAuthenticateCallback(
-      const ReAuthenticateCallback& callback) OVERRIDE {
-    DCHECK(re_authenticate_callback_.is_null());
-
-    re_authenticate_callback_ = callback;
-  }
+      const ReAuthenticateCallback& callback) OVERRIDE;
 
  protected:
-  virtual ~UrlFetchOperation() {}
+  UrlFetchOperationBase(GDataOperationRegistry* registry, Profile* profile);
+  virtual ~UrlFetchOperationBase();
+
   // Gets URL for the request.
   virtual GURL GetURL() const = 0;
   // Returns the request type. A derived class should override this method
   // for a request type other than HTTP GET.
-  virtual content::URLFetcher::RequestType GetRequestType() const {
-    return content::URLFetcher::GET;
-  }
+  virtual content::URLFetcher::RequestType GetRequestType() const;
   // Returns the extra HTTP headers for the request. A derived class should
   // override this method to specify any extra headers needed for the request.
-  virtual std::vector<std::string> GetExtraRequestHeaders() const {
-    return std::vector<std::string>();
-  }
+  virtual std::vector<std::string> GetExtraRequestHeaders() const;
   // Used by a derived class to add any content data to the request.
   // Returns true if |upload_content_type| and |upload_content| are updated
   // with the content type and data for the request.
   virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) {
-    return false;
-  }
+                              std::string* upload_content);
 
   // Invoked by OnURLFetchComplete when the operation completes without an
   // authentication error. Must be implemented by a derived class.
@@ -193,9 +118,7 @@ class UrlFetchOperation : public GDataOperationInterface,
   virtual void RunCallbackOnAuthFailed(GDataErrorCode code) = 0;
 
   // Implement GDataOperationRegistry::Operation
-  virtual void DoCancel() OVERRIDE {
-    url_fetcher_.reset(NULL);
-  }
+  virtual void DoCancel() OVERRIDE;
 
   // Implement URLFetcherDelegate.
   // TODO(kinaba): http://crosbug.com/27370
@@ -204,59 +127,18 @@ class UrlFetchOperation : public GDataOperationInterface,
   // For some GData operations, however, progress of uploading transfer makes
   // more sense. We need to add a way to track upload status.
   virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
-                                          int64 current, int64 total) OVERRIDE {
-    NotifyProgress(current, total);
-  }
+                                          int64 current, int64 total) OVERRIDE;
 
   // Overridden from URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
-    GDataErrorCode code =
-        static_cast<GDataErrorCode>(source->GetResponseCode());
-    DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
-
-    if (code == HTTP_UNAUTHORIZED) {
-      if (!re_authenticate_callback_.is_null() &&
-          ++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
-        re_authenticate_callback_.Run(this);
-        return;
-      }
-
-      OnAuthFailed(code);
-      return;
-    }
-
-    // Overridden by each specialization
-    ProcessURLFetchResults(source);
-    NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
-  }
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Overridden from GDataOperationInterface.
-  virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE {
-    RunCallbackOnAuthFailed(code);
-    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
-  }
+  virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
   std::string GetResponseHeadersAsString(
-      const content::URLFetcher* url_fetcher) {
-    // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
-    // all headers in their raw format, i.e each header is null-terminated.
-    // So logging raw_headers() only shows the first header, which is probably
-    // the status line.  GetNormalizedHeaders, on the other hand, will show all
-    // the headers, one per line, which is probably what we want.
-    std::string headers;
-    // Check that response code indicates response headers are valid (i.e. not
-    // malformed) before we retrieve the headers.
-    if (url_fetcher->GetResponseCode() ==
-        content::URLFetcher::RESPONSE_CODE_INVALID) {
-      headers.assign("Response headers are malformed!!");
-    } else {
-      url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
-    }
-    return headers;
-  }
+      const content::URLFetcher* url_fetcher);
 
   Profile* profile_;
-  CompletionCallback callback_;
   ReAuthenticateCallback re_authenticate_callback_;
   scoped_refptr<base::MessageLoopProxy> relay_proxy_;
   int re_authenticate_count_;
@@ -268,7 +150,7 @@ class UrlFetchOperation : public GDataOperationInterface,
 
 // This class performs a simple action over a given entry (document/file).
 // It is meant to be used for operations that return no JSON blobs.
-class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
+class EntryActionOperation : public UrlFetchOperationBase {
  public:
   EntryActionOperation(GDataOperationRegistry* registry,
                        Profile* profile,
@@ -277,7 +159,7 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
   virtual ~EntryActionOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
@@ -286,6 +168,7 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
   const GURL& document_url() const { return document_url_; }
 
  private:
+  EntryActionCallback callback_;
   GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(EntryActionOperation);
@@ -294,7 +177,7 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
 //============================== GetDataOperation ==============================
 
 // This class performs the operation for fetching and parsing JSON data content.
-class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
+class GetDataOperation : public UrlFetchOperationBase {
  public:
   GetDataOperation(GDataOperationRegistry* registry,
                    Profile* profile,
@@ -302,7 +185,7 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
   virtual ~GetDataOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
@@ -311,6 +194,7 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
   static base::Value* ParseResponse(const std::string& data);
 
  private:
+  GetDataCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
 };
 
@@ -359,7 +243,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
 //============================ DownloadFileOperation ===========================
 
 // This class performs the operation for downloading of a given document/file.
-class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
+class DownloadFileOperation : public UrlFetchOperationBase {
  public:
   DownloadFileOperation(GDataOperationRegistry* registry,
                         Profile* profile,
@@ -368,13 +252,14 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
   virtual ~DownloadFileOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
 
  private:
+  DownloadActionCallback callback_;
   GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
@@ -414,11 +299,11 @@ class CreateDirectoryOperation : public GetDataOperation {
   virtual ~CreateDirectoryOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
@@ -445,7 +330,7 @@ class CopyDocumentOperation : public GetDataOperation {
   // Overridden from GetDataOperation.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
@@ -474,7 +359,7 @@ class RenameResourceOperation : public EntryActionOperation {
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
@@ -501,7 +386,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
   // Overridden from EntryActionOperation.
   virtual GURL GetURL() const OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
@@ -530,7 +415,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
   // Overridden from EntryActionOperation.
   virtual GURL GetURL() const OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
@@ -544,8 +429,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 //=========================== InitiateUploadOperation ==========================
 
 // This class performs the operation for initiating the upload of a file.
-class InitiateUploadOperation
-    : public UrlFetchOperation<InitiateUploadCallback> {
+class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
   InitiateUploadOperation(GDataOperationRegistry* registry,
                           Profile* profile,
@@ -554,19 +438,20 @@ class InitiateUploadOperation
   virtual ~InitiateUploadOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
+  InitiateUploadCallback callback_;
   InitiateUploadParams params_;
   GURL initiate_upload_url_;
 
@@ -576,7 +461,7 @@ class InitiateUploadOperation
 //============================ ResumeUploadOperation ===========================
 
 // This class performs the operation for resuming the upload of a file.
-class ResumeUploadOperation : public UrlFetchOperation<ResumeUploadCallback> {
+class ResumeUploadOperation : public UrlFetchOperationBase {
  public:
   ResumeUploadOperation(GDataOperationRegistry* registry,
                         Profile* profile,
@@ -585,19 +470,20 @@ class ResumeUploadOperation : public UrlFetchOperation<ResumeUploadCallback> {
   virtual ~ResumeUploadOperation();
 
  protected:
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
 
-  // Overridden from UrlFetchOperation.
+  // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
  private:
+  ResumeUploadCallback callback_;
   ResumeUploadParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
