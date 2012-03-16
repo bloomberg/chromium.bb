@@ -65,7 +65,7 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
   scoped_ptr<SpellCheckHost> returning_from_create_;
 };
 
-ProfileKeyedBase* BuildTestingSpellCheckProfile(Profile* profile) {
+ProfileKeyedService* BuildTestingSpellCheckProfile(Profile* profile) {
   return new TestingSpellCheckProfile(profile);
 }
 

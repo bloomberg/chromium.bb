@@ -146,7 +146,7 @@ bool BrowsingDataExtensionFunction::RunImpl() {
         base::Bind(
             &BrowsingDataExtensionFunction::CheckRemovingPluginDataSupported,
             this,
-            make_scoped_refptr(PluginPrefs::GetForProfile(profile))));
+            PluginPrefs::GetForProfile(profile)));
   } else {
     StartRemoving();
   }

@@ -57,7 +57,7 @@ class MockTokenService : public TokenService {
   MOCK_CONST_METHOD0(HasOAuthLoginToken, bool());
 };
 
-ProfileKeyedBase* BuildMockTokenService(Profile* profile) {
+ProfileKeyedService* BuildMockTokenService(Profile* profile) {
   return new MockTokenService;
 }
 

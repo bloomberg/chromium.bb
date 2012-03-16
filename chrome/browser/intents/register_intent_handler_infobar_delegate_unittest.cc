@@ -25,7 +25,7 @@ class MockWebIntentsRegistry : public WebIntentsRegistry {
                void(const webkit_glue::WebIntentServiceData&));
 };
 
-ProfileKeyedBase* BuildMockWebIntentsRegistry(Profile* profile) {
+ProfileKeyedService* BuildMockWebIntentsRegistry(Profile* profile) {
   return new MockWebIntentsRegistry;
 }
 

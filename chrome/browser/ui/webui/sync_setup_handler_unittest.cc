@@ -120,7 +120,7 @@ class SigninManagerMock : public FakeSigninManager {
   std::string captcha_;
 };
 
-static ProfileKeyedBase* BuildSigninManagerMock(Profile* profile) {
+static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
   return new SigninManagerMock();
 }
 

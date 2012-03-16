@@ -5778,26 +5778,6 @@
    fun:_ZN3net16HostResolverImpl3Job18OnProcTaskCompleteEiRKNS_11AddressListE
 }
 {
-   bug_118196_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   ...
-   fun:_ZN*13LoginDatabase*
-   ...
-   fun:_ZN*PasswordStore*
-}
-{
-   bug_118196_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNK20PasswordStoreFactory23BuildServiceInstanceForEP7Profile
-   fun:_ZN23ProfileKeyedBaseFactory17GetBaseForProfileEP7Profileb
-   fun:_ZN20PasswordStoreFactory13GetForProfileEP7ProfileNS0_17ServiceAccessTypeE
-}
-{
    bug_118203
    Memcheck:Leak
    fun:_Znw*

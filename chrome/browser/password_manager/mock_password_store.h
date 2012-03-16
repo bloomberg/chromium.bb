@@ -16,7 +16,7 @@ class MockPasswordStore : public PasswordStore {
   MockPasswordStore();
   virtual ~MockPasswordStore();
 
-  static ProfileKeyedBase* Build(Profile* profile);
+  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile);
 
   MOCK_METHOD1(RemoveLogin, void(const webkit::forms::PasswordForm&));
   MOCK_METHOD2(GetLogins, int(const webkit::forms::PasswordForm&,

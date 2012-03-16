@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/profiles/profile_keyed_base.h"
 #include "content/public/browser/browser_thread.h"
 
 class RefcountedProfileKeyedService;
@@ -32,8 +31,7 @@ struct RefcountedProfileKeyedServiceTraits {
 // content::DeleteOnThread<> directly because RefcountedProfileKeyedService
 // must be one type that RefcountedProfileKeyedServiceFactory can use.
 class RefcountedProfileKeyedService
-    : public ProfileKeyedBase,
-      public base::RefCountedThreadSafe<
+    : public base::RefCountedThreadSafe<
           RefcountedProfileKeyedService,
           impl::RefcountedProfileKeyedServiceTraits> {
  public:

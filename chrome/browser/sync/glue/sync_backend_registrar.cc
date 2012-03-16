@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
@@ -87,9 +88,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     routing_info_.erase(syncable::TYPED_URLS);
   }
 
-  PasswordStore* password_store =
+  scoped_refptr<PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
-  if (password_store) {
+  if (password_store.get()) {
     workers_[GROUP_PASSWORD] = new PasswordModelWorker(password_store);
   } else {
     LOG_IF(WARNING, initial_types.Has(syncable::PASSWORDS))

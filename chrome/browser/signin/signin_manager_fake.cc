@@ -20,6 +20,6 @@ void FakeSigninManager::SignOut() {
 }
 
 // static
-ProfileKeyedBase* FakeSigninManager::Build(Profile* profile) {
+ProfileKeyedService* FakeSigninManager::Build(Profile* profile) {
   return new FakeSigninManager();
 }

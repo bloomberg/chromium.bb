@@ -17,20 +17,23 @@ class ProfileKeyedService;
 
 class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
  public:
+  static scoped_refptr<PluginPrefs> GetPrefsForProfile(Profile* profile);
+
   static PluginPrefsFactory* GetInstance();
 
-  PluginPrefs* GetPrefsForProfile(Profile* profile);
-
-  static ProfileKeyedBase* CreatePrefsForProfile(Profile* profile);
-
  private:
+  friend class PluginPrefs;
   friend struct DefaultSingletonTraits<PluginPrefsFactory>;
+
+  // Helper method for PluginPrefs::GetForTestingProfile.
+  static scoped_refptr<RefcountedProfileKeyedService> CreateForTestingProfile(
+      Profile* profile);
 
   PluginPrefsFactory();
   virtual ~PluginPrefsFactory();
 
   // RefcountedProfileKeyedServiceFactory methods:
-  virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
+  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 
   // ProfileKeyedServiceFactory methods:

@@ -59,7 +59,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   bool CreateRoot(syncable::ModelType model_type);
 
-  static ProfileKeyedBase* BuildTokenService(Profile* profile);
+  static ProfileKeyedService* BuildTokenService(Profile* profile);
  protected:
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;

@@ -68,7 +68,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   }
 
   // Factory method for keyed service.  PersonalDataManager is NULL for testing.
-  static ProfileKeyedBase* Build(Profile* profile) {
+  static ProfileKeyedService* Build(Profile* profile) {
     return NULL;
   }
 

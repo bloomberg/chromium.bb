@@ -9,7 +9,8 @@ MockPasswordStore::MockPasswordStore() {}
 MockPasswordStore::~MockPasswordStore() {}
 
 // static
-ProfileKeyedBase* MockPasswordStore::Build(Profile* profile) {
+scoped_refptr<RefcountedProfileKeyedService> MockPasswordStore::Build(
+    Profile* profile) {
   return new MockPasswordStore;
 }
 

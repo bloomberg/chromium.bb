@@ -1809,7 +1809,6 @@
         'browser/profiles/profile_info_util.h',
         'browser/profiles/profile_io_data.cc',
         'browser/profiles/profile_io_data.h',
-        'browser/profiles/profile_keyed_base.h',
         'browser/profiles/profile_keyed_base_factory.h',
         'browser/profiles/profile_keyed_base_factory.cc',
         'browser/profiles/profile_keyed_service.h',

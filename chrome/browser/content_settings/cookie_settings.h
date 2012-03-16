@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -117,7 +118,7 @@ class CookieSettings
     // Returns the |CookieSettings| associated with the |profile|.
     //
     // This should only be called on the UI thread.
-    static CookieSettings* GetForProfile(Profile* profile);
+    static scoped_refptr<CookieSettings> GetForProfile(Profile* profile);
 
     static Factory* GetInstance();
 
@@ -130,8 +131,8 @@ class CookieSettings
     // |ProfileKeyedBaseFactory| methods:
     virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
     virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-    virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
-        Profile* profile) const OVERRIDE;
+    virtual scoped_refptr<RefcountedProfileKeyedService>
+        BuildServiceInstanceFor(Profile* profile) const OVERRIDE;
   };
 
  private:

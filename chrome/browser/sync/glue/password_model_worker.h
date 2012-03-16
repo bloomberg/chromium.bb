@@ -26,7 +26,8 @@ namespace browser_sync {
 // which is the DB thread on Linux and Windows.
 class PasswordModelWorker : public browser_sync::ModelSafeWorker {
  public:
-  explicit PasswordModelWorker(PasswordStore* password_store);
+  explicit PasswordModelWorker(
+      const scoped_refptr<PasswordStore>& password_store);
   virtual ~PasswordModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.

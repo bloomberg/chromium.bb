@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ void PluginDataRemoverHelper::Observe(
 void PluginDataRemoverHelper::StartUpdate() {
   PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginDataRemoverHelper::GotPlugins, factory_.GetWeakPtr(),
-                 make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
+                 PluginPrefs::GetForProfile(profile_)));
 }
 
 void PluginDataRemoverHelper::GotPlugins(

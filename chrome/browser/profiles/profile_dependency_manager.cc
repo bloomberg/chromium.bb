@@ -102,10 +102,10 @@ void ProfileDependencyManager::CreateProfileServices(Profile* profile,
     }
 
     if (is_testing_profile && (*rit)->ServiceIsNULLWhileTesting()) {
-      (*rit)->SetTestingFactory(profile, NULL);
+      (*rit)->SetEmptyTestingFactory(profile);
     } else if ((*rit)->ServiceIsCreatedWithProfile()) {
       // Create the service.
-      (*rit)->GetBaseForProfile(profile, true);
+      (*rit)->CreateServiceNow(profile);
     }
   }
 }

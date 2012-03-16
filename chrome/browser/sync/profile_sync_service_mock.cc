@@ -43,7 +43,7 @@ TestingProfile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
 }
 
 // static
-ProfileKeyedBase* ProfileSyncServiceMock::BuildMockProfileSyncService(
+ProfileKeyedService* ProfileSyncServiceMock::BuildMockProfileSyncService(
     Profile* profile) {
   return new ProfileSyncServiceMock(profile);
 }

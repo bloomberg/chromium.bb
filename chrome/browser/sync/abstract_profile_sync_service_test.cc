@@ -123,7 +123,7 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
 }
 
 // static
-ProfileKeyedBase* AbstractProfileSyncServiceTest::BuildTokenService(
+ProfileKeyedService* AbstractProfileSyncServiceTest::BuildTokenService(
     Profile* profile) {
   return new TokenService;
 }

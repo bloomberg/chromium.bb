@@ -44,10 +44,11 @@ bool IsAllowed(ContentSetting setting) {
 }  // namespace
 
 // static
-CookieSettings* CookieSettings::Factory::GetForProfile(Profile* profile) {
+scoped_refptr<CookieSettings> CookieSettings::Factory::GetForProfile(
+    Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return static_cast<CookieSettings*>(
-      GetInstance()->GetBaseForProfile(profile, true));
+      GetInstance()->GetServiceForProfile(profile, true).get());
 }
 
 // static
@@ -73,7 +74,7 @@ bool CookieSettings::Factory::ServiceRedirectedInIncognito() {
   return true;
 }
 
-RefcountedProfileKeyedService*
+scoped_refptr<RefcountedProfileKeyedService>
 CookieSettings::Factory::BuildServiceInstanceFor(Profile* profile) const {
   return new CookieSettings(profile->GetHostContentSettingsMap(),
                             profile->GetPrefs());

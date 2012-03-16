@@ -27,8 +27,8 @@ typedef int LocalProfileId;
 // the associated PasswordStore.
 class PasswordStoreFactory : public RefcountedProfileKeyedServiceFactory {
  public:
-  static PasswordStore* GetForProfile(Profile* profile,
-                                      Profile::ServiceAccessType set);
+  static scoped_refptr<PasswordStore> GetForProfile(
+      Profile* profile, Profile::ServiceAccessType set);
 
   static PasswordStoreFactory* GetInstance();
 
@@ -43,7 +43,7 @@ class PasswordStoreFactory : public RefcountedProfileKeyedServiceFactory {
 #endif
 
   // ProfileKeyedServiceFactory:
-  virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
+  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE;

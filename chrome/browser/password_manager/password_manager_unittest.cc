@@ -57,7 +57,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     TestingProfile* testing_profile = new TestingProfile;
     store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            testing_profile, MockPasswordStore::Build));
+            testing_profile, MockPasswordStore::Build).get());
     browser_context_.reset(testing_profile);
     ChromeRenderViewHostTestHarness::SetUp();
 

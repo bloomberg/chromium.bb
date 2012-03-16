@@ -450,7 +450,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   ShutdownAndWaitForExitWithTimeout(handle);
 }
 
-ProfileKeyedBase* CloudPrintProxyServiceFactoryForPolicyTest(
+ProfileKeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
     Profile* profile) {
   CloudPrintProxyService* service = new CloudPrintProxyService(profile);
   service->Initialize();

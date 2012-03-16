@@ -28,7 +28,7 @@ class FakeSigninManager : public SigninManager {
   virtual void SignOut() OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
-  static ProfileKeyedBase* Build(Profile* profile);
+  static ProfileKeyedService* Build(Profile* profile);
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_FAKE_H_

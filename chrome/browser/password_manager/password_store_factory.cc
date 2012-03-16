@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "chrome/browser/password_manager/login_database.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -41,7 +42,7 @@ const LocalProfileId kInvalidLocalProfileId =
 }  // namespace
 #endif
 
-PasswordStore* PasswordStoreFactory::GetForProfile(
+scoped_refptr<PasswordStore> PasswordStoreFactory::GetForProfile(
     Profile* profile,
     Profile::ServiceAccessType sat) {
   if (sat == Profile::IMPLICIT_ACCESS && profile->IsOffTheRecord()) {
@@ -49,8 +50,8 @@ PasswordStore* PasswordStoreFactory::GetForProfile(
     return NULL;
   }
 
-  return static_cast<PasswordStore*>(GetInstance()->GetBaseForProfile(
-      profile, true));
+  return static_cast<PasswordStore*>(
+      GetInstance()->GetServiceForProfile(profile, true).get());
 }
 
 // static
@@ -93,8 +94,8 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 }
 #endif
 
-RefcountedProfileKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+scoped_refptr<RefcountedProfileKeyedService>
+PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
   scoped_refptr<PasswordStore> ps;
   FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
@@ -186,7 +187,7 @@ RefcountedProfileKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     return NULL;
   }
 
-  return ps.release();
+  return ps;
 }
 
 void PasswordStoreFactory::RegisterUserPrefs(PrefService* prefs) {

@@ -326,7 +326,7 @@ class AutofillProfileFactory : public AbstractAutofillFactory {
 
 class PersonalDataManagerMock: public PersonalDataManager {
  public:
-  static ProfileKeyedBase* Build(Profile* profile) {
+  static ProfileKeyedService* Build(Profile* profile) {
     return new PersonalDataManagerMock;
   }
 

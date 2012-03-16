@@ -96,12 +96,12 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   virtual ~ProfileSyncServiceForWizardTest() {}
 
-  static ProfileKeyedBase* BuildManual(Profile* profile) {
+  static ProfileKeyedService* BuildManual(Profile* profile) {
     return new ProfileSyncServiceForWizardTest(profile,
         ProfileSyncService::MANUAL_START);
   }
 
-  static ProfileKeyedBase* BuildAuto(Profile* profile) {
+  static ProfileKeyedService* BuildAuto(Profile* profile) {
     return new ProfileSyncServiceForWizardTest(profile,
         ProfileSyncService::AUTO_START);
   }

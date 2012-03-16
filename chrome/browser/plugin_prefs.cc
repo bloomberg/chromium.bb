@@ -52,16 +52,16 @@ base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state =
 #define kPluginUpdateDelayMs (60 * 1000)
 
 // static
-PluginPrefs* PluginPrefs::GetForProfile(Profile* profile) {
-  return PluginPrefsFactory::GetInstance()->GetPrefsForProfile(profile);
+scoped_refptr<PluginPrefs> PluginPrefs::GetForProfile(Profile* profile) {
+  return PluginPrefsFactory::GetPrefsForProfile(profile);
 }
 
 // static
-PluginPrefs* PluginPrefs::GetForTestingProfile(Profile* profile) {
-  ProfileKeyedBase* prefs =
+scoped_refptr<PluginPrefs> PluginPrefs::GetForTestingProfile(
+    Profile* profile) {
+  return static_cast<PluginPrefs*>(
       PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile, &PluginPrefsFactory::CreatePrefsForProfile);
-  return static_cast<PluginPrefs*>(prefs);
+          profile, &PluginPrefsFactory::CreateForTestingProfile).get());
 }
 
 void PluginPrefs::SetPluginListForTesting(

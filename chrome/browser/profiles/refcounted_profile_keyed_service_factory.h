@@ -24,22 +24,48 @@ class RefcountedProfileKeyedService;
 // that ShutdownOnUIThread() is called on the UI thread, but actual object
 // destruction can happen anywhere.
 class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
+ public:
+  // A function that supplies the instance of a ProfileKeyedService for a given
+  // Profile. This is used primarily for testing, where we want to feed a
+  // specific mock into the PKSF system.
+  typedef scoped_refptr<RefcountedProfileKeyedService>
+      (*FactoryFunction)(Profile* profile);
+
+  // Associates |factory| with |profile| so that |factory| is used to create
+  // the ProfileKeyedService when requested.  |factory| can be NULL to signal
+  // that ProfileKeyedService should be NULL. Multiple calls to
+  // SetTestingFactory() are allowed; previous services will be shut down.
+  void SetTestingFactory(Profile* profile, FactoryFunction factory);
+
+  // Associates |factory| with |profile| and immediately returns the created
+  // ProfileKeyedService. Since the factory will be used immediately, it may
+  // not be NULL.
+  scoped_refptr<RefcountedProfileKeyedService> SetTestingFactoryAndUse(
+      Profile* profile,
+      FactoryFunction factory);
+
  protected:
   RefcountedProfileKeyedServiceFactory(const char* name,
                                        ProfileDependencyManager* manager);
   virtual ~RefcountedProfileKeyedServiceFactory();
 
+  scoped_refptr<RefcountedProfileKeyedService> GetServiceForProfile(
+      Profile* profile,
+      bool create);
+
+  // Maps |profile| to |service| with debug checks to prevent duplication.
+  void Associate(Profile* profile,
+                 const scoped_refptr<RefcountedProfileKeyedService>& service);
+
   // All subclasses of RefcountedProfileKeyedServiceFactory must return a
   // RefcountedProfileKeyedService instead of just a ProfileKeyedBase.
-  virtual RefcountedProfileKeyedService* BuildServiceInstanceFor(
+  virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const = 0;
 
-  virtual void Associate(Profile* profile,
-                         ProfileKeyedBase* base) OVERRIDE;
-  virtual bool GetAssociation(Profile* profile,
-                              ProfileKeyedBase** out) const OVERRIDE;
   virtual void ProfileShutdown(Profile* profile) OVERRIDE;
   virtual void ProfileDestroyed(Profile* profile) OVERRIDE;
+  virtual void SetEmptyTestingFactory(Profile* profile) OVERRIDE;
+  virtual void CreateServiceNow(Profile* profile) OVERRIDE;
 
  private:
   typedef std::map<Profile*, scoped_refptr<RefcountedProfileKeyedService> >
@@ -47,6 +73,9 @@ class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
 
   // The mapping between a Profile and its refcounted service.
   RefCountedStorage mapping_;
+
+  // The mapping between a Profile and its overridden FactoryFunction.
+  std::map<Profile*, FactoryFunction> factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RefcountedProfileKeyedServiceFactory);
 };

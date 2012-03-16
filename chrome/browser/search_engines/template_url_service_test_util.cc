@@ -75,7 +75,7 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
  public:
-  static ProfileKeyedBase* Build(Profile* profile) {
+  static ProfileKeyedService* Build(Profile* profile) {
     return new TestingTemplateURLService(profile);
   }
 

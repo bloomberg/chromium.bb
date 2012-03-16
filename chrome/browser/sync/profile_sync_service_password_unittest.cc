@@ -159,7 +159,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     profile_.CreateRequestContext();
     password_store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, MockPasswordStore::Build));
+            &profile_, MockPasswordStore::Build).get());
 
     registrar_.Add(&observer_,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,

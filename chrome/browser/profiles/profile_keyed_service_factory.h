@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_keyed_base_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -24,6 +25,24 @@ class ProfileKeyedService;
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state which services are depended on.
 class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
+ public:
+  // A function that supplies the instance of a ProfileKeyedService for a given
+  // Profile. This is used primarily for testing, where we want to feed a
+  // specific mock into the PKSF system.
+  typedef ProfileKeyedService* (*FactoryFunction)(Profile* profile);
+
+  // Associates |factory| with |profile| so that |factory| is used to create
+  // the ProfileKeyedService when requested.  |factory| can be NULL to signal
+  // that ProfileKeyedService should be NULL. Multiple calls to
+  // SetTestingFactory() are allowed; previous services will be shut down.
+  void SetTestingFactory(Profile* profile, FactoryFunction factory);
+
+  // Associates |factory| with |profile| and immediately returns the created
+  // ProfileKeyedService. Since the factory will be used immediately, it may
+  // not be NULL.
+  ProfileKeyedService* SetTestingFactoryAndUse(Profile* profile,
+                                               FactoryFunction factory);
+
  protected:
   // ProfileKeyedServiceFactories must communicate with a
   // ProfileDependencyManager. For all non-test code, write your subclass
@@ -40,22 +59,19 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
 
   // Common implementation that maps |profile| to some service object. Deals
   // with incognito profiles per subclass instructions with
-  // ServiceRedirectedInIncognito() and ServiceHasOwnInstanceInIncognito().
-  // If |create| is true, the service will be created using
-  // BuildServiceInstanceFor() if it doesn't already exist.
+  // ServiceRedirectedInIncognito() and ServiceHasOwnInstanceInIncognito()
+  // through the GetProfileToUse() method on the base.  If |create| is true,
+  // the service will be created using BuildServiceInstanceFor() if it doesn't
+  // already exist.
   ProfileKeyedService* GetServiceForProfile(Profile* profile, bool create);
+
+  // Maps |profile| to |service| with debug checks to prevent duplication.
+  void Associate(Profile* profile, ProfileKeyedService* service);
 
   // All subclasses of ProfileKeyedServiceFactory must return a
   // ProfileKeyedService instead of just a ProfileKeyedBase.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const = 0;
-
-  // Maps |profile| to |provider| with debug checks to prevent duplication.
-  virtual void Associate(Profile* profile, ProfileKeyedBase* base) OVERRIDE;
-
-  // Returns the previously associated |base| for |profile|, or NULL.
-  virtual bool GetAssociation(Profile* profile,
-                              ProfileKeyedBase** out) const OVERRIDE;
 
   // A helper object actually listens for notifications about Profile
   // destruction, calculates the order in which things are destroyed and then
@@ -71,12 +87,20 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   virtual void ProfileShutdown(Profile* profile) OVERRIDE;
   virtual void ProfileDestroyed(Profile* profile) OVERRIDE;
 
+  virtual void SetEmptyTestingFactory(Profile* profile) OVERRIDE;
+  virtual void CreateServiceNow(Profile* profile) OVERRIDE;
+
  private:
   friend class ProfileDependencyManager;
   friend class ProfileDependencyManagerUnittests;
 
   // The mapping between a Profile and its service.
   std::map<Profile*, ProfileKeyedService*> mapping_;
+
+  // The mapping between a Profile and its overridden FactoryFunction.
+  std::map<Profile*, FactoryFunction> factories_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileKeyedServiceFactory);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_KEYED_SERVICE_FACTORY_H_

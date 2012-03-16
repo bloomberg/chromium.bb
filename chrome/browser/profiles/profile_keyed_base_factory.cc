@@ -7,35 +7,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
-void ProfileKeyedBaseFactory::SetTestingFactory(Profile* profile,
-                                                FactoryFunction factory) {
-  // Destroying the profile may cause us to lose data about whether |profile|
-  // has our preferences registered on it (since the profile object itself
-  // isn't dead). See if we need to readd it once we've gone through normal
-  // destruction.
-  bool add_profile = registered_preferences_.find(profile) !=
-                     registered_preferences_.end();
-
-  // We have to go through the shutdown and destroy mechanisms because there
-  // are unit tests that create a service on a profile and then change the
-  // testing service mid-test.
-  ProfileShutdown(profile);
-  ProfileDestroyed(profile);
-
-  if (add_profile)
-    registered_preferences_.insert(profile);
-
-  factories_[profile] = factory;
-}
-
-ProfileKeyedBase* ProfileKeyedBaseFactory::SetTestingFactoryAndUse(
-    Profile* profile,
-    FactoryFunction factory) {
-  DCHECK(factory);
-  SetTestingFactory(profile, factory);
-  return GetBaseForProfile(profile, true);
-}
-
 ProfileKeyedBaseFactory::ProfileKeyedBaseFactory(
     const char* name, ProfileDependencyManager* manager)
     : dependency_manager_(manager)
@@ -52,6 +23,31 @@ ProfileKeyedBaseFactory::~ProfileKeyedBaseFactory() {
 
 void ProfileKeyedBaseFactory::DependsOn(ProfileKeyedBaseFactory* rhs) {
   dependency_manager_->AddEdge(rhs, this);
+}
+
+Profile* ProfileKeyedBaseFactory::GetProfileToUse(Profile* profile) {
+  DCHECK(CalledOnValidThread());
+
+#ifndef NDEBUG
+  dependency_manager_->AssertProfileWasntDestroyed(profile);
+#endif
+
+  // Possibly handle Incognito mode.
+  if (profile->IsOffTheRecord()) {
+    if (ServiceRedirectedInIncognito()) {
+      profile = profile->GetOriginalProfile();
+
+#ifndef NDEBUG
+      dependency_manager_->AssertProfileWasntDestroyed(profile);
+#endif
+    } else if (ServiceHasOwnInstanceInIncognito()) {
+      // No-op; the pointers are already set correctly.
+    } else {
+      return NULL;
+    }
+  }
+
+  return profile;
 }
 
 void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(Profile* profile) {
@@ -105,67 +101,20 @@ bool ProfileKeyedBaseFactory::ServiceIsNULLWhileTesting() {
   return false;
 }
 
-ProfileKeyedBase* ProfileKeyedBaseFactory::GetBaseForProfile(
-    Profile* profile,
-    bool create) {
-  DCHECK(CalledOnValidThread());
-
-#ifndef NDEBUG
-  dependency_manager_->AssertProfileWasntDestroyed(profile);
-#endif
-
-  // Possibly handle Incognito mode.
-  if (profile->IsOffTheRecord()) {
-    if (ServiceRedirectedInIncognito()) {
-      profile = profile->GetOriginalProfile();
-
-#ifndef NDEBUG
-      dependency_manager_->AssertProfileWasntDestroyed(profile);
-#endif
-    } else if (ServiceHasOwnInstanceInIncognito()) {
-      // No-op; the pointers are already set correctly.
-    } else {
-      return NULL;
-    }
-  }
-
-  ProfileKeyedBase* service = NULL;
-  if (GetAssociation(profile, &service)) {
-    return service;
-  } else if (create) {
-    // not found but creation allowed
-
-    // Check to see if we have a per-Profile factory
-    std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
-    if (jt != factories_.end()) {
-      if (jt->second) {
-        if (!profile->IsOffTheRecord())
-          RegisterUserPrefsOnProfile(profile);
-        service = jt->second(profile);
-      } else {
-        service = NULL;
-      }
-    } else {
-      service = BuildServiceInstanceFor(profile);
-    }
-  } else {
-    // not found, creation forbidden
-    return NULL;
-  }
-
-  Associate(profile, service);
-  return service;
-}
-
 void ProfileKeyedBaseFactory::ProfileDestroyed(Profile* profile) {
   // While object destruction can be customized in ways where the object is
   // only dereferenced, this still must run on the UI thread.
   DCHECK(CalledOnValidThread());
 
-  // For unit tests, we also remove the factory function both so we don't
-  // maintain a big map of dead pointers, but also since we may have a second
-  // object that lives at the same address (see other comments about unit tests
-  // in this file).
-  factories_.erase(profile);
   registered_preferences_.erase(profile);
+}
+
+bool ProfileKeyedBaseFactory::ArePreferencesSetOn(Profile* profile) {
+  return registered_preferences_.find(profile) !=
+      registered_preferences_.end();
+}
+
+void ProfileKeyedBaseFactory::MarkPreferencesSetOn(Profile* profile) {
+  DCHECK(!ArePreferencesSetOn(profile));
+  registered_preferences_.insert(profile);
 }

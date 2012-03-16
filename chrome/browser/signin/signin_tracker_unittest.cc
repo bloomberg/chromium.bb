@@ -35,7 +35,7 @@ class MockTokenService : public TokenService {
   MOCK_CONST_METHOD1(HasTokenForService, bool(const char*));
 };
 
-ProfileKeyedBase* BuildMockTokenService(Profile* profile) {
+ProfileKeyedService* BuildMockTokenService(Profile* profile) {
   return new MockTokenService;
 }
 

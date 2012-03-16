@@ -44,12 +44,12 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   };
 
   // Returns the instance associated with |profile|, creating it if necessary.
-  static PluginPrefs* GetForProfile(Profile* profile);
+  static scoped_refptr<PluginPrefs> GetForProfile(Profile* profile);
 
   // Usually the PluginPrefs associated with a TestingProfile is NULL.
   // This method overrides that for a given TestingProfile, returning the newly
   // created PluginPrefs object.
-  static PluginPrefs* GetForTestingProfile(Profile* profile);
+  static scoped_refptr<PluginPrefs> GetForTestingProfile(Profile* profile);
 
   // Sets the plug-in list for tests.
   void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);

@@ -30,7 +30,7 @@ class MockThemeService : public ThemeService {
   MOCK_CONST_METHOD0(GetThemeID, std::string());
 };
 
-ProfileKeyedBase* BuildMockThemeService(Profile* profile) {
+ProfileKeyedService* BuildMockThemeService(Profile* profile) {
   return new MockThemeService;
 }
 

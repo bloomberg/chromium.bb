@@ -19,13 +19,17 @@ PluginPrefsFactory* PluginPrefsFactory::GetInstance() {
 }
 
 // static
-ProfileKeyedBase* PluginPrefsFactory::CreatePrefsForProfile(
+scoped_refptr<PluginPrefs> PluginPrefsFactory::GetPrefsForProfile(
     Profile* profile) {
-  return GetInstance()->BuildServiceInstanceFor(profile);
+  return static_cast<PluginPrefs*>(
+      GetInstance()->GetServiceForProfile(profile, true).get());
 }
 
-PluginPrefs* PluginPrefsFactory::GetPrefsForProfile(Profile* profile) {
-  return static_cast<PluginPrefs*>(GetBaseForProfile(profile, true));
+// static
+scoped_refptr<RefcountedProfileKeyedService>
+PluginPrefsFactory::CreateForTestingProfile(Profile* profile) {
+  return static_cast<PluginPrefs*>(
+      GetInstance()->BuildServiceInstanceFor(profile).get());
 }
 
 PluginPrefsFactory::PluginPrefsFactory()
@@ -35,9 +39,9 @@ PluginPrefsFactory::PluginPrefsFactory()
 
 PluginPrefsFactory::~PluginPrefsFactory() {}
 
-RefcountedProfileKeyedService* PluginPrefsFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  PluginPrefs* plugin_prefs = new PluginPrefs();
+scoped_refptr<RefcountedProfileKeyedService>
+PluginPrefsFactory::BuildServiceInstanceFor(Profile* profile) const {
+  scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
   plugin_prefs->set_profile(profile->GetOriginalProfile());
   plugin_prefs->SetPrefs(profile->GetPrefs());
   return plugin_prefs;
