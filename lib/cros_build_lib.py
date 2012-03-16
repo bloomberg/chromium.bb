@@ -853,8 +853,12 @@ def GetProjectManifestBranch(buildroot, project):
 
 def GetProjectUserEmail(cwd):
   """Get the email configured for the project ."""
-  return RunCommand(['git', 'config', 'user.email'], redirect_stdout=True,
-                     cwd=cwd).output.strip()
+  output = RunCommand(['git', 'var', 'GIT_COMMITTER_IDENT'],
+                      redirect_stdout=True,
+                      cwd=cwd).output.strip()
+  m = re.search('<([^>]*)>', output)
+  return m.group(1) if m else None
+
 
 
 def GetManifestDefaultBranch(cwd):
