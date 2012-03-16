@@ -314,8 +314,21 @@ class RequestHandler(object):
     if field.label == field.LABEL_REPEATED:
       assert type(field_value) == list
       entries = group_message.__getattribute__(field.name)
-      for list_item in field_value:
-        entries.append(list_item)
+      if field.message_type is None:
+        for list_item in field_value:
+          entries.append(list_item)
+      else:
+        # This field is itself a protobuf.
+        sub_type = field.message_type
+        for sub_value in field_value:
+          assert type(sub_value) == dict
+          # Add a new sub-protobuf per list entry.
+          sub_message = entries.add()
+          # Now iterate over its fields and recursively add them.
+          for sub_field in sub_message.DESCRIPTOR.fields:
+            if sub_field.name in sub_value:
+              value = sub_value[sub_field.name]
+              self.SetProtobufMessageField(sub_message, sub_field, value)
       return
     elif field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
