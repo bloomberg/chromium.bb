@@ -246,6 +246,8 @@ TEST_F(TemplateURLFetcherTest, BasicExplicitTest) {
   ASSERT_TRUE(last_callback_template_url_.get());
   EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
             last_callback_template_url_->url()->DisplayURL());
+  EXPECT_EQ(ASCIIToUTF16("example.com"),
+            last_callback_template_url_->keyword());
   EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
 }
 
@@ -267,9 +269,19 @@ TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::EXPLICIT_PROVIDER, true);
+  ASSERT_EQ(0, add_provider_called_);
+  ASSERT_EQ(0, callbacks_destroyed_);
+
   WaitForDownloadToFinish();
   ASSERT_EQ(1, add_provider_called_);
   ASSERT_EQ(1, callbacks_destroyed_);
+
+  ASSERT_TRUE(last_callback_template_url_.get());
+  EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
+            last_callback_template_url_->url()->DisplayURL());
+  EXPECT_EQ(ASCIIToUTF16("example.com"),
+            last_callback_template_url_->keyword());
+  EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {

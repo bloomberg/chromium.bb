@@ -155,17 +155,6 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     return;
   }
 
-  // Wait for the model to be loaded before adding the provider.
-  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
-      fetcher_->profile());
-  if (!model->loaded())
-    return;
-  AddSearchProvider();
-  // WARNING: AddSearchProvider deletes us.
-}
-
-void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
-  DCHECK(template_url_.get());
   if (provider_type_ != AUTODETECTED_PROVIDER || keyword_.empty()) {
     // Generate new keyword from URL in OSDD for non-autodetected case.
     // Previous keyword was generated from URL where OSDD was placed and
@@ -177,14 +166,28 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
     if (!new_keyword.empty())
       keyword_ = new_keyword;
   }
+
+  // Wait for the model to be loaded before adding the provider.
   TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
       fetcher_->profile());
-  const TemplateURL* existing_url;
-  if (keyword_.empty() ||
-      !model || !model->loaded() ||
-      !model->CanReplaceKeyword(keyword_, GURL(template_url_->url()->url()),
-                                &existing_url)) {
-    if (provider_type_ == AUTODETECTED_PROVIDER || !model || !model->loaded()) {
+  if (!model->loaded())
+    return;
+  AddSearchProvider();
+  // WARNING: AddSearchProvider deletes us.
+}
+
+void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
+  DCHECK(template_url_.get());
+  DCHECK(!keyword_.empty());
+  TemplateURLService* model = TemplateURLServiceFactory::GetForProfile(
+      fetcher_->profile());
+  DCHECK(model);
+  DCHECK(model->loaded());
+
+  const TemplateURL* existing_url = NULL;
+  GURL gurl(template_url_->url()->url());
+  if (!model->CanReplaceKeyword(keyword_, gurl, &existing_url)) {
+    if (provider_type_ == AUTODETECTED_PROVIDER) {
       fetcher_->RequestCompleted(this);
       // WARNING: RequestCompleted deletes us.
       return;
@@ -273,22 +276,21 @@ void TemplateURLFetcher::ScheduleDownload(
   // we need a valid keyword up front.
   if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) {
     if (!url_model->loaded()) {
+      // We could try to set up a callback to this function again once the model
+      // is loaded but since this is an auto-add case anyway, meh.
       url_model->Load();
       return;
     }
+
     const TemplateURL* template_url =
         url_model->GetTemplateURLForKeyword(keyword);
     if (template_url && (!template_url->safe_for_autoreplace() ||
-                         template_url->originating_url() == osdd_url)) {
-      // Either there is a user created TemplateURL for this keyword, or the
-      // keyword has the same OSDD url and we've parsed it.
+                         template_url->originating_url() == osdd_url))
       return;
-    }
   }
 
   // Make sure we aren't already downloading this request.
-  for (std::vector<RequestDelegate*>::iterator i = requests_->begin();
-       i != requests_->end(); ++i) {
+  for (Requests::iterator i = requests_->begin(); i != requests_->end(); ++i) {
     if ((*i)->url() == osdd_url || (*i)->keyword() == keyword)
       return;
   }
@@ -299,8 +301,9 @@ void TemplateURLFetcher::ScheduleDownload(
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {
-  DCHECK(std::find(requests_->begin(), requests_->end(), request) !=
-         requests_->end());
-  requests_->erase(std::find(requests_->begin(), requests_->end(), request));
+  Requests::iterator i =
+      std::find(requests_->begin(), requests_->end(), request);
+  DCHECK(i != requests_->end());
+  requests_->erase(i);
   delete request;
 }

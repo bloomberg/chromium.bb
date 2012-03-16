@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
-#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "googleurl/src/gurl.h"
 
@@ -19,7 +18,11 @@ class PrefService;
 class Profile;
 class SearchTermsData;
 class TemplateURL;
+class TemplateURLParsingContext;
 class WebDataService;
+namespace IPC {
+template<typename T> struct ParamTraits;
+}
 
 // TemplateURL represents the relevant portions of the Open Search Description
 // Document (http://www.opensearch.org/Specifications/OpenSearch).
@@ -145,14 +148,9 @@ class TemplateURLRef {
   // Collects metrics whether searches through Google are sent with RLZ string.
   void CollectRLZMetrics() const;
 
-  // Sets whether this URL is pre-populated or not.
-  void set_prepopulated(bool prepopulated) { prepopulated_ = prepopulated; }
-
  private:
-  friend class SearchHostToURLsMapTest;
   friend class TemplateURL;
-  friend class TemplateURLServiceTestUtil;
-  friend class TemplateURLTest;
+  template<typename T> friend struct IPC::ParamTraits;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterKnown);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, ParseParameterUnknown);
@@ -232,10 +230,6 @@ class TemplateURLRef {
   void ParseHostAndSearchTermKey(
       const SearchTermsData& search_terms_data) const;
 
-  // Used by tests to set the value for the Google base url. This takes
-  // ownership of the given std::string.
-  static void SetGoogleBaseURL(std::string* google_base_url);
-
   // The raw URL. Where as this contains all the terms (such as {searchTerms}),
   // parsed_url_ has them all stripped out.
   std::string url_;
@@ -271,6 +265,8 @@ class TemplateURLRef {
 
   // Whether the contained URL is a pre-populated URL.
   bool prepopulated_;
+
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLRef);
 };
 
 // Describes the relevant portions of a single OSD document.
@@ -282,6 +278,8 @@ class TemplateURL {
   // If a TemplateURL has no images, the favicon for the generated URL
   // should be used.
   struct ImageRef {
+    ImageRef() : width(0), height(0) {}  // Needed by STL.
+
     ImageRef(const std::string& type, int width, int height)
         : type(type), width(width), height(height) {
     }
@@ -315,6 +313,10 @@ class TemplateURL {
       const SearchTermsData& search_terms_data);
 
   TemplateURL();
+
+  TemplateURL(const TemplateURL& other);
+  TemplateURL& operator=(const TemplateURL& other);
+
   ~TemplateURL();
 
   // A short description of the template. This is the name we show to the user
@@ -339,7 +341,7 @@ class TemplateURL {
   // as your type. If NULL, this url does not support suggestions.
   // Be sure and check the resulting TemplateURLRef for SupportsReplacement
   // before using.
-  void SetSuggestionsURL(const std::string& suggestions_url,
+  void SetSuggestionsURL(const std::string& url,
                          int index_offset,
                          int page_offset);
   const TemplateURLRef* suggestions_url() const {
@@ -421,7 +423,6 @@ class TemplateURL {
   bool safe_for_autoreplace() const { return safe_for_autoreplace_; }
 
   // Images for this URL. May be empty.
-  void add_image_ref(const ImageRef& ref) { image_refs_.push_back(ref); }
   const std::vector<ImageRef>& image_refs() const { return image_refs_; }
 
   // Convenience methods for getting/setting an ImageRef that points to a
@@ -478,16 +479,12 @@ class TemplateURL {
     return input_encodings_;
   }
 
-  void set_search_engine_type(SearchEngineType search_engine_type) {
-    search_engine_type_ = search_engine_type;
-  }
-  SearchEngineType search_engine_type() const {
-    return search_engine_type_;
-  }
-
   // Returns the unique identifier of this TemplateURL. The unique ID is set
   // by the TemplateURLService when the TemplateURL is added to it.
   TemplateURLID id() const { return id_; }
+
+  // Copies the data from |other|'s TemplateURLRef members into |this|.
+  void CopyURLRefs(const TemplateURL& other);
 
   // If this TemplateURL comes from prepopulated data the prepopulate_id is > 0.
   // SetPrepopulateId also sets any TemplateURLRef's prepopulated flag to true
@@ -507,18 +504,17 @@ class TemplateURL {
       WebDataService* service,
       std::vector<TemplateURL*>* template_urls,
       const TemplateURL** default_search_provider);
+  template<typename T> friend struct IPC::ParamTraits;
   friend class KeywordTable;
   friend class KeywordTableTest;
   friend class SearchHostToURLsMap;
+  friend class TemplateURLParsingContext;
   friend class TemplateURLService;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            ResolveSyncKeywordConflict);
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues() const;
-
-  // Sets all TemplateURLRefs prepopulated flags.
-  void SetTemplateURLRefsPrepopulated(bool prepopulated);
 
   // Unique identifier, used when archived to the database.
   void set_id(TemplateURLID id) { id_ = id; }
@@ -546,7 +542,6 @@ class TemplateURL {
   base::Time last_modified_;
   bool created_by_policy_;
   int usage_count_;
-  SearchEngineType search_engine_type_;
   int prepopulate_id_;
   // The primary unique identifier for Sync. This is only set on TemplateURLs
   // that have been associated with Sync.

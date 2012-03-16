@@ -105,7 +105,6 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetString("suggest_url", "");
   entry->SetString("instant_url", "");
   entry->SetString("encoding", "UTF-8");
-  entry->SetInteger("search_engine_type", 1);
   entry->SetInteger("id", 1001);
   overrides->Append(entry);
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);

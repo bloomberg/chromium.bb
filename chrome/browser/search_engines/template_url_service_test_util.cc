@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -157,7 +157,7 @@ void TemplateURLServiceTestUtil::TearDown() {
     profile_->TearDown();
     profile_.reset();
   }
-  TemplateURLRef::SetGoogleBaseURL(NULL);
+  UIThreadSearchTermsData::SetGoogleBaseURL(NULL);
 
   // Flush the message loop to make application verifiers happy.
   message_loop_.RunAllPending();
@@ -219,7 +219,7 @@ string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
 
 void TemplateURLServiceTestUtil::SetGoogleBaseURL(
     const std::string& base_url) const {
-  TemplateURLRef::SetGoogleBaseURL(new std::string(base_url));
+  UIThreadSearchTermsData::SetGoogleBaseURL(new std::string(base_url));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::NotificationService::AllSources(),

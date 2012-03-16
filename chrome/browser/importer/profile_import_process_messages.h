@@ -199,15 +199,9 @@ struct ParamTraits<TemplateURLRef> {
     WriteParam(m, p.page_offset());
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    std::string url;
-    int index_offset;
-    int page_offset;
-    if (!ReadParam(m, iter, &url) ||
-        !ReadParam(m, iter, &index_offset) ||
-        !ReadParam(m, iter, &page_offset))
-      return false;
-    *p = TemplateURLRef(url, index_offset, page_offset);
-    return true;
+    return ReadParam(m, iter, &p->url_) &&
+        ReadParam(m, iter, &p->index_offset_) &&
+        ReadParam(m, iter, &p->page_offset_);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("<TemplateURLRef>");
@@ -225,17 +219,10 @@ struct ParamTraits<TemplateURL::ImageRef> {
     WriteParam(m, p.url);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
-    std::string type;
-    int width;
-    int height;
-    GURL url;
-    if (!ReadParam(m, iter, &type) ||
-        !ReadParam(m, iter, &width) ||
-        !ReadParam(m, iter, &height) ||
-        !ReadParam(m, iter, &url))
-      return false;
-    *p = TemplateURL::ImageRef(type, width, height, url);  // here in
-    return true;
+    return ReadParam(m, iter, &p->type) &&
+        ReadParam(m, iter, &p->width) &&
+        ReadParam(m, iter, &p->height) &&
+        ReadParam(m, iter, &p->url);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("<TemplateURL::ImageRef>");
@@ -261,16 +248,7 @@ struct ParamTraits<TemplateURL> {
     WriteParam(m, p.autogenerate_keyword());
     WriteParam(m, p.show_in_default_list());
     WriteParam(m, p.safe_for_autoreplace());
-    WriteParam(m, p.image_refs().size());
-
-    std::vector<TemplateURL::ImageRef>::const_iterator iter;
-    for (iter = p.image_refs().begin(); iter != p.image_refs().end(); ++iter) {
-      WriteParam(m, iter->type);
-      WriteParam(m, iter->width);
-      WriteParam(m, iter->height);
-      WriteParam(m, iter->url);
-    }
-
+    WriteParam(m, p.image_refs());
     WriteParam(m, p.languages());
     WriteParam(m, p.input_encodings());
     WriteParam(m, p.date_created());
@@ -307,31 +285,17 @@ struct ParamTraits<TemplateURL> {
           return false;
     }
 
-    size_t image_refs_size = 0;
     if (!ReadParam(m, iter, &url) ||
         !ReadParam(m, iter, &originating_url) ||
         !ReadParam(m, iter, &keyword) ||
         !ReadParam(m, iter, &autogenerate_keyword) ||
         !ReadParam(m, iter, &show_in_default_list) ||
-        !ReadParam(m, iter, &safe_for_autoreplace) ||
-        !ReadParam(m, iter, &image_refs_size))
+        !ReadParam(m, iter, &safe_for_autoreplace))
       return false;
 
     *p = TemplateURL();
-    for (size_t i = 0; i < image_refs_size; ++i) {
-      std::string type;
-      int width;
-      int height;
-      GURL url;
-      if (!ReadParam(m, iter, &type) ||
-          !ReadParam(m, iter, &width) ||
-          !ReadParam(m, iter, &height) ||
-          !ReadParam(m, iter, &url))
-        return false;
-      p->add_image_ref(TemplateURL::ImageRef(type, width, height, url));
-    }
-
-    if (!ReadParam(m, iter, &languages) ||
+    if (!ReadParam(m, iter, &p->image_refs_) ||
+        !ReadParam(m, iter, &languages) ||
         !ReadParam(m, iter, &input_encodings) ||
         !ReadParam(m, iter, &date_created) ||
         !ReadParam(m, iter, &last_modified) ||

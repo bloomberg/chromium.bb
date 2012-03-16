@@ -3157,7 +3157,6 @@ TemplateURL* MakePrepopulatedTemplateURL(const string16& name,
                                          const base::StringPiece& suggest_url,
                                          const base::StringPiece& instant_url,
                                          const base::StringPiece& encoding,
-                                         SearchEngineType search_engine_type,
                                          int id) {
   TemplateURL* new_turl = new TemplateURL();
   new_turl->SetURL(search_url.as_string(), 0, 0);
@@ -3176,7 +3175,6 @@ TemplateURL* MakePrepopulatedTemplateURL(const string16& name,
   std::vector<std::string> turl_encodings;
   turl_encodings.push_back(encoding.as_string());
   new_turl->set_input_encodings(turl_encodings);
-  new_turl->set_search_engine_type(search_engine_type);
   new_turl->SetPrepopulateId(id);
   return new_turl;
 }
@@ -3198,7 +3196,6 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
   std::string instant_url;
   std::string favicon_url;
   std::string encoding;
-  int search_engine_type;
   int id;
 
   size_t num_engines = list->GetSize();
@@ -3213,8 +3210,6 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
         engine->Get("instant_url", &val) && val->GetAsString(&instant_url) &&
         engine->Get("favicon_url", &val) && val->GetAsString(&favicon_url) &&
         engine->Get("encoding", &val) && val->GetAsString(&encoding) &&
-        engine->Get("search_engine_type", &val) && val->GetAsInteger(
-            &search_engine_type) &&
         engine->Get("id", &val) && val->GetAsInteger(&id)) {
       // These next fields are not allowed to be empty.
       if (name.empty() || search_url.empty() || favicon_url.empty() ||
@@ -3225,8 +3220,7 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
       continue;
     }
     t_urls->push_back(MakePrepopulatedTemplateURL(name, keyword, search_url,
-        favicon_url, suggest_url, instant_url, encoding,
-        static_cast<SearchEngineType>(search_engine_type), id));
+        favicon_url, suggest_url, instant_url, encoding, id));
   }
 }
 
@@ -3235,8 +3229,7 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
     const PrepopulatedEngine& engine) {
   return MakePrepopulatedTemplateURL(WideToUTF16(engine.name),
       WideToUTF16(engine.keyword), engine.search_url, engine.favicon_url,
-      engine.suggest_url, engine.instant_url, engine.encoding, engine.type,
-      engine.id);
+      engine.suggest_url, engine.instant_url, engine.encoding, engine.id);
 }
 
 void GetPrepopulatedEngines(PrefService* prefs,

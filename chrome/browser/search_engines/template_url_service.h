@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -137,8 +138,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // or NULL if there are no such TemplateURLs
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
 
-  // Adds a new TemplateURL to this model. TemplateURLService will own the
-  // reference, and delete it when the TemplateURL is removed.
+  // Takes ownership of |template_url| and adds it to this model.
   void Add(TemplateURL* template_url);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
@@ -340,6 +340,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   typedef std::map<string16, const TemplateURL*> KeywordToTemplateMap;
   typedef std::map<std::string, const TemplateURL*> GUIDToTemplateMap;
+  typedef std::list<std::string> PendingExtensionIDs;
 
   // Helper functor for FindMatchingKeywords(), for finding the range of
   // keywords which begin with a prefix.
@@ -567,7 +568,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURLID next_id_;
 
   // List of extension IDs waiting for Load to have keywords registered.
-  std::vector<std::string> pending_extension_ids_;
+  PendingExtensionIDs pending_extension_ids_;
 
   // Function returning current time in base::Time units.
   TimeProvider* time_provider_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,60 +19,10 @@
 #include "libxml/parser.h"
 #include "libxml/xmlwriter.h"
 
-namespace {
-
-//
-// NOTE: libxml uses the UTF-8 encoding. As 0-127 of UTF-8 corresponds
-// to that of char, the following names are all in terms of char. This avoids
-// having to convert to wide, then do comparisons
-
-// Defines for element names of the OSD document:
-static const char kURLElement[] = "Url";
-static const char kParamElement[] = "Param";
-static const char kShortNameElement[] = "ShortName";
-static const char kDescriptionElement[] = "Description";
-static const char kImageElement[] = "Image";
-static const char kOpenSearchDescriptionElement[] = "OpenSearchDescription";
-static const char kFirefoxSearchDescriptionElement[] = "SearchPlugin";
-static const char kLanguageElement[] = "Language";
-static const char kInputEncodingElement[] = "InputEncoding";
-
-// Various XML attributes used.
-static const char kURLTypeAttribute[] = "type";
-static const char kURLTemplateAttribute[] = "template";
-static const char kImageTypeAttribute[] = "type";
-static const char kImageWidthAttribute[] = "width";
-static const char kImageHeightAttribute[] = "height";
-static const char kURLIndexOffsetAttribute[] = "indexOffset";
-static const char kURLPageOffsetAttribute[] = "pageOffset";
-static const char kParamNameAttribute[] = "name";
-static const char kParamValueAttribute[] = "value";
-static const char kParamMethodAttribute[] = "method";
-
-// Mime type for search results.
-static const char kHTMLType[] = "text/html";
-
-// Mime type for as you type suggestions.
-static const char kSuggestionType[] = "application/x-suggestions+json";
-
-// Namespace identifier.
-static const char kOSDNS[] = "xmlns";
-
-// The namespace for documents we understand.
-static const char kNameSpace[] = "http://a9.com/-/spec/opensearch/1.1/";
-
-// Removes the namespace from the specified |name|, ex: os:Url -> Url.
-static void PruneNamespace(std::string* name) {
-  size_t index = name->find_first_of(":");
-  if (index != std::string::npos)
-    name->erase(0, index + 1);
-}
-
-//
 // To minimize memory overhead while parsing, a SAX style parser is used.
-// ParsingContext is used to maintain the state we're in the document
+// TemplateURLParsingContext is used to maintain the state we're in the document
 // while parsing.
-class ParsingContext {
+class TemplateURLParsingContext {
  public:
   // Enum of the known element types.
   enum ElementType {
@@ -95,8 +45,9 @@ class ParsingContext {
   // Key/value of a Param node.
   typedef std::pair<std::string, std::string> Param;
 
-  ParsingContext(TemplateURLParser::ParameterFilter* parameter_filter,
-                 TemplateURL* url)
+  TemplateURLParsingContext(
+      TemplateURLParser::ParameterFilter* parameter_filter,
+      TemplateURL* url)
       : url_(url),
         parameter_filter_(parameter_filter),
         method_(GET),
@@ -150,7 +101,7 @@ class ParsingContext {
   void SetImageURL(const GURL& url) {
     if (current_image_.get()) {
       current_image_->url = url;
-      url_->add_image_ref(*current_image_);
+      url_->image_refs_.push_back(*current_image_);
       current_image_.reset();
     }
   }
@@ -207,22 +158,7 @@ class ParsingContext {
   }
 
  private:
-  static void InitMapping() {
-    kElementNameToElementTypeMap = new std::map<std::string, ElementType>;
-    (*kElementNameToElementTypeMap)[kURLElement] = URL;
-    (*kElementNameToElementTypeMap)[kParamElement] = PARAM;
-    (*kElementNameToElementTypeMap)[kShortNameElement] = SHORT_NAME;
-    (*kElementNameToElementTypeMap)[kDescriptionElement] = DESCRIPTION;
-    (*kElementNameToElementTypeMap)[kImageElement] = IMAGE;
-    (*kElementNameToElementTypeMap)[kOpenSearchDescriptionElement] =
-        OPEN_SEARCH_DESCRIPTION;
-    (*kElementNameToElementTypeMap)[kFirefoxSearchDescriptionElement] =
-        OPEN_SEARCH_DESCRIPTION;
-    (*kElementNameToElementTypeMap)[kLanguageElement] =
-        LANGUAGE;
-    (*kElementNameToElementTypeMap)[kInputEncodingElement] =
-        INPUT_ENCODING;
-  }
+  static void InitMapping();
 
   // Key is UTF8 encoded.
   static std::map<std::string, ElementType>* kElementNameToElementTypeMap;
@@ -252,12 +188,57 @@ class ParsingContext {
   // URLs).
   bool derive_image_from_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(ParsingContext);
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLParsingContext);
 };
 
-// static
-std::map<std::string, ParsingContext::ElementType>*
-    ParsingContext::kElementNameToElementTypeMap = NULL;
+namespace {
+
+//
+// NOTE: libxml uses the UTF-8 encoding. As 0-127 of UTF-8 corresponds
+// to that of char, the following names are all in terms of char. This avoids
+// having to convert to wide, then do comparisons
+
+// Defines for element names of the OSD document:
+const char kURLElement[] = "Url";
+const char kParamElement[] = "Param";
+const char kShortNameElement[] = "ShortName";
+const char kDescriptionElement[] = "Description";
+const char kImageElement[] = "Image";
+const char kOpenSearchDescriptionElement[] = "OpenSearchDescription";
+const char kFirefoxSearchDescriptionElement[] = "SearchPlugin";
+const char kLanguageElement[] = "Language";
+const char kInputEncodingElement[] = "InputEncoding";
+
+// Various XML attributes used.
+const char kURLTypeAttribute[] = "type";
+const char kURLTemplateAttribute[] = "template";
+const char kImageTypeAttribute[] = "type";
+const char kImageWidthAttribute[] = "width";
+const char kImageHeightAttribute[] = "height";
+const char kURLIndexOffsetAttribute[] = "indexOffset";
+const char kURLPageOffsetAttribute[] = "pageOffset";
+const char kParamNameAttribute[] = "name";
+const char kParamValueAttribute[] = "value";
+const char kParamMethodAttribute[] = "method";
+
+// Mime type for search results.
+const char kHTMLType[] = "text/html";
+
+// Mime type for as you type suggestions.
+const char kSuggestionType[] = "application/x-suggestions+json";
+
+// Namespace identifier.
+const char kOSDNS[] = "xmlns";
+
+// The namespace for documents we understand.
+const char kNameSpace[] = "http://a9.com/-/spec/opensearch/1.1/";
+
+// Removes the namespace from the specified |name|, ex: os:Url -> Url.
+void PruneNamespace(std::string* name) {
+  size_t index = name->find_first_of(":");
+  if (index != std::string::npos)
+    name->erase(0, index + 1);
+}
 
 string16 XMLCharToUTF16(const xmlChar* value, int length) {
   return UTF8ToUTF16(std::string((const char*)value, length));
@@ -287,7 +268,7 @@ bool IsValidEncodingString(const std::string& input_encoding) {
   return true;
 }
 
-void ParseURL(const xmlChar** atts, ParsingContext* context) {
+void ParseURL(const xmlChar** atts, TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -324,16 +305,16 @@ void ParseURL(const xmlChar** atts, ParsingContext* context) {
     turl->SetURL(template_url, index_offset, page_offset);
     context->set_is_suggestion(false);
     if (is_post)
-      context->set_method(ParsingContext::POST);
+      context->set_method(TemplateURLParsingContext::POST);
   } else if (is_suggest_url) {
     turl->SetSuggestionsURL(template_url, index_offset, page_offset);
     context->set_is_suggestion(true);
     if (is_post)
-      context->set_suggestion_method(ParsingContext::POST);
+      context->set_suggestion_method(TemplateURLParsingContext::POST);
   }
 }
 
-void ParseImage(const xmlChar** atts, ParsingContext* context) {
+void ParseImage(const xmlChar** atts, TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -359,7 +340,7 @@ void ParseImage(const xmlChar** atts, ParsingContext* context) {
   }
 }
 
-void ParseParam(const xmlChar** atts, ParsingContext* context) {
+void ParseParam(const xmlChar** atts, TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -391,7 +372,7 @@ static void AppendParamToQuery(const std::string& key,
   query->append(value);
 }
 
-void ProcessURLParams(ParsingContext* context) {
+void ProcessURLParams(TemplateURLParsingContext* context) {
   TemplateURL* t_url = context->template_url();
   const TemplateURLRef* t_url_ref =
       context->is_suggestion() ? t_url->suggestions_url() :
@@ -426,10 +407,11 @@ void ProcessURLParams(ParsingContext* context) {
     new_query = url.query();
 
   // Add the extra parameters if any.
-  const std::vector<ParsingContext::Param>& params = context->extra_params();
+  const std::vector<TemplateURLParsingContext::Param>& params =
+      context->extra_params();
   if (!params.empty()) {
     modified = true;
-    std::vector<ParsingContext::Param>::const_iterator iter;
+    std::vector<TemplateURLParsingContext::Param>::const_iterator iter;
     for (iter = params.begin(); iter != params.end(); ++iter)
       AppendParamToQuery(iter->first, iter->second, &new_query);
   }
@@ -451,19 +433,20 @@ void ProcessURLParams(ParsingContext* context) {
 }
 
 void StartElementImpl(void *ctx, const xmlChar *name, const xmlChar **atts) {
-  ParsingContext* context = reinterpret_cast<ParsingContext*>(ctx);
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
   std::string node_name((const char*)name);
   PruneNamespace(&node_name);
   context->PushElement(node_name);
   switch (context->GetKnownType()) {
-    case ParsingContext::URL:
+    case TemplateURLParsingContext::URL:
       context->ResetExtraParams();
       ParseURL(atts, context);
       break;
-    case ParsingContext::IMAGE:
+    case TemplateURLParsingContext::IMAGE:
       ParseImage(atts, context);
       break;
-    case ParsingContext::PARAM:
+    case TemplateURLParsingContext::PARAM:
       ParseParam(atts, context);
       break;
     default:
@@ -473,15 +456,16 @@ void StartElementImpl(void *ctx, const xmlChar *name, const xmlChar **atts) {
 }
 
 void EndElementImpl(void *ctx, const xmlChar *name) {
-  ParsingContext* context = reinterpret_cast<ParsingContext*>(ctx);
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
   switch (context->GetKnownType()) {
-    case ParsingContext::SHORT_NAME:
+    case TemplateURLParsingContext::SHORT_NAME:
       context->template_url()->set_short_name(context->GetString());
       break;
-    case ParsingContext::DESCRIPTION:
+    case TemplateURLParsingContext::DESCRIPTION:
       context->template_url()->set_description(context->GetString());
       break;
-    case ParsingContext::IMAGE: {
+    case TemplateURLParsingContext::IMAGE: {
       GURL image_url(UTF16ToUTF8(context->GetString()));
       if (image_url.SchemeIs(chrome::kDataScheme)) {
         // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
@@ -494,16 +478,16 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
       context->EndImage();
       break;
     }
-    case ParsingContext::LANGUAGE:
+    case TemplateURLParsingContext::LANGUAGE:
       context->template_url()->add_language(context->GetString());
       break;
-    case ParsingContext::INPUT_ENCODING: {
+    case TemplateURLParsingContext::INPUT_ENCODING: {
       std::string input_encoding = UTF16ToASCII(context->GetString());
       if (IsValidEncodingString(input_encoding))
         context->template_url()->add_input_encoding(input_encoding);
       break;
     }
-    case ParsingContext::URL:
+    case TemplateURLParsingContext::URL:
       ProcessURLParams(context);
       break;
     default:
@@ -514,7 +498,8 @@ void EndElementImpl(void *ctx, const xmlChar *name) {
 }
 
 void CharactersImpl(void *ctx, const xmlChar *ch, int len) {
-  ParsingContext* context = reinterpret_cast<ParsingContext*>(ctx);
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
   context->AppendString(XMLCharToUTF16(ch, len));
 }
 
@@ -548,6 +533,32 @@ bool IsLegal(TemplateURL* url) {
 
 }  // namespace
 
+
+// TemplateURLParsingContext --------------------------------------------------
+
+// static
+std::map<std::string, TemplateURLParsingContext::ElementType>*
+    TemplateURLParsingContext::kElementNameToElementTypeMap = NULL;
+
+// static
+void TemplateURLParsingContext::InitMapping() {
+  kElementNameToElementTypeMap = new std::map<std::string, ElementType>;
+  (*kElementNameToElementTypeMap)[kURLElement] = URL;
+  (*kElementNameToElementTypeMap)[kParamElement] = PARAM;
+  (*kElementNameToElementTypeMap)[kShortNameElement] = SHORT_NAME;
+  (*kElementNameToElementTypeMap)[kDescriptionElement] = DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kImageElement] = IMAGE;
+  (*kElementNameToElementTypeMap)[kOpenSearchDescriptionElement] =
+      OPEN_SEARCH_DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kFirefoxSearchDescriptionElement] =
+      OPEN_SEARCH_DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kLanguageElement] = LANGUAGE;
+  (*kElementNameToElementTypeMap)[kInputEncodingElement] = INPUT_ENCODING;
+}
+
+
+// TemplateURLParser ----------------------------------------------------------
+
 // static
 bool TemplateURLParser::Parse(const unsigned char* data, size_t length,
                               TemplateURLParser::ParameterFilter* param_filter,
@@ -558,7 +569,7 @@ bool TemplateURLParser::Parse(const unsigned char* data, size_t length,
   // If this becomes problematic we'll need to provide our own entity
   // type for &amp;, or strip out &#34; by hand after parsing.
   int last_sub_entities_value = xmlSubstituteEntitiesDefault(1);
-  ParsingContext context(param_filter, url);
+  TemplateURLParsingContext context(param_filter, url);
   xmlSAXHandler sax_handler;
   memset(&sax_handler, 0, sizeof(sax_handler));
   sax_handler.startElement = &StartElementImpl;
@@ -574,9 +585,9 @@ bool TemplateURLParser::Parse(const unsigned char* data, size_t length,
 
   // TODO(jcampan): http://b/issue?id=1196285 we do not support search engines
   //                that use POST yet.
-  if (context.method() == ParsingContext::POST)
+  if (context.method() == TemplateURLParsingContext::POST)
     return false;
-  if (context.suggestion_method() == ParsingContext::POST)
+  if (context.suggestion_method() == TemplateURLParsingContext::POST)
     url->SetSuggestionsURL("", 0, 0);
 
   if (!url->short_name().empty() && !url->description().empty()) {

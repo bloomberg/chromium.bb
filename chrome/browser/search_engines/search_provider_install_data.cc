@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,14 +38,7 @@ class IOThreadSearchTermsData : public SearchTermsData {
   explicit IOThreadSearchTermsData(const std::string& google_base_url);
 
   // Implementation of SearchTermsData.
-  virtual std::string GoogleBaseURLValue() const;
-  virtual std::string GetApplicationLocale() const;
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  virtual string16 GetRlzParameterValue() const {
-    // This value doesn't matter for our purposes.
-    return string16();
-  }
-#endif
+  virtual std::string GoogleBaseURLValue() const OVERRIDE;
 
  private:
   std::string google_base_url_;
@@ -59,11 +52,6 @@ IOThreadSearchTermsData::IOThreadSearchTermsData(
 
 std::string IOThreadSearchTermsData::GoogleBaseURLValue() const {
   return google_base_url_;
-}
-
-std::string IOThreadSearchTermsData::GetApplicationLocale() const {
-  // This value doesn't matter for our purposes.
-  return "yy";
 }
 
 // Handles telling SearchProviderInstallData about changes to the google base
@@ -106,10 +94,9 @@ void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
 // to the SearchProviderInstallData on the I/O thread.
 class GoogleURLObserver : public content::NotificationObserver {
  public:
-  GoogleURLObserver(
-      GoogleURLChangeNotifier* change_notifier,
-      int ui_death_notification,
-      const content::NotificationSource& ui_death_source);
+  GoogleURLObserver(GoogleURLChangeNotifier* change_notifier,
+                    int ui_death_notification,
+                    const content::NotificationSource& ui_death_source);
 
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
@@ -224,8 +211,7 @@ SearchProviderInstallData::State SearchProviderInstallData::GetInstallState(
   IOThreadSearchTermsData search_terms_data(google_base_url_);
   for (TemplateURLSet::const_iterator i = urls->begin();
        i != urls->end(); ++i) {
-    const TemplateURL* template_url = *i;
-    if (IsSameOrigin(requested_origin, template_url, search_terms_data))
+    if (IsSameOrigin(requested_origin, *i, search_terms_data))
       return INSTALLED_BUT_NOT_DEFAULT;
   }
   return NOT_INSTALLED;

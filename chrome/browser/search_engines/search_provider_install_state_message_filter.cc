@@ -17,15 +17,14 @@
 using content::BrowserThread;
 
 SearchProviderInstallStateMessageFilter::
-SearchProviderInstallStateMessageFilter(
+    SearchProviderInstallStateMessageFilter(
     int render_process_id,
     Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       provider_data_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS),
-                     content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                     content::Source<content::RenderProcessHost>(
-                         content::RenderProcessHost::FromID(
-                            render_process_id))),
+          content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+          content::Source<content::RenderProcessHost>(
+              content::RenderProcessHost::FromID(render_process_id))),
       is_off_the_record_(profile->IsOffTheRecord()) {
   // This is initialized by RenderProcessHostImpl. Do not add any non-trivial
   // initialization here. Instead do it lazily when required.

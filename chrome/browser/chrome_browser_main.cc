@@ -72,6 +72,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -1882,11 +1883,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
     // The default engine can be NULL if the administrator has disabled
     // default search.
     SearchEngineType search_engine_type =
-        default_search_engine ? default_search_engine->search_engine_type() :
-                                SEARCH_ENGINE_OTHER;
+        TemplateURLPrepopulateData::GetEngineType(
+            (default_search_engine && default_search_engine->url()) ?
+            default_search_engine->url()->url() : std::string());
     // Record the search engine chosen.
-    UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt",
-                              search_engine_type,
+    UMA_HISTOGRAM_ENUMERATION("Chrome.SearchSelectExempt", search_engine_type,
                               SEARCH_ENGINE_MAX);
   }
 #endif

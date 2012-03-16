@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,25 +24,15 @@
 
 using content::BrowserThread;
 
-// Create a TemplateURL. The caller owns the returned TemplateURL*.
-static TemplateURL* CreateTemplateURL(const std::string& url,
-                                      const std::string& keyword) {
-  TemplateURL* t_url = new TemplateURL();
-  t_url->SetURL(url, 0, 0);
-  t_url->set_keyword(UTF8ToUTF16(keyword));
-  t_url->set_short_name(UTF8ToUTF16(keyword));
-  return t_url;
-}
+namespace {
+
+// TestGetInstallState --------------------------------------------------------
 
 // Test the SearchProviderInstallData::GetInstallState.
 class TestGetInstallState :
     public base::RefCountedThreadSafe<TestGetInstallState> {
  public:
-  explicit TestGetInstallState(SearchProviderInstallData* install_data)
-      : install_data_(install_data),
-        main_loop_(NULL),
-        passed_(false) {
-  }
+  explicit TestGetInstallState(SearchProviderInstallData* install_data);
 
   void set_search_provider_host(
       const std::string& search_provider_host) {
@@ -86,6 +76,13 @@ class TestGetInstallState :
 
   DISALLOW_COPY_AND_ASSIGN(TestGetInstallState);
 };
+
+TestGetInstallState::TestGetInstallState(
+    SearchProviderInstallData* install_data)
+    : install_data_(install_data),
+      main_loop_(NULL),
+      passed_(false) {
+}
 
 bool TestGetInstallState::RunTests() {
   passed_ = true;
@@ -155,62 +152,26 @@ void TestGetInstallState::VerifyInstallState(
       expected_state << ".  Actual " << actual_state << ".";
 }
 
+};  // namespace
+
+
+// SearchProviderInstallDataTest ----------------------------------------------
+
 // Provides basic test set-up/tear-down functionality needed by all tests
 // that use TemplateURLServiceTestUtil.
 class SearchProviderInstallDataTest : public testing::Test {
  public:
-  SearchProviderInstallDataTest()
-      : install_data_(NULL) {}
+  SearchProviderInstallDataTest();
 
-  virtual void SetUp() {
-    testing::Test::SetUp();
-    util_.SetUp();
-    util_.StartIOThread();
-    install_data_ = new SearchProviderInstallData(
-        util_.GetWebDataService(),
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<SearchProviderInstallDataTest>(this));
-  }
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  virtual void TearDown() {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, install_data_);
-    install_data_ = NULL;
-
-    // Make sure that the install data class on the UI thread gets cleaned up.
-    // It doesn't matter that this happens after install_data_ is deleted.
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<SearchProviderInstallDataTest>(this),
-        content::NotificationService::NoDetails());
-
-    util_.TearDown();
-    testing::Test::TearDown();
-  }
-
-  void SimulateDefaultSearchIsManaged(const std::string& url) {
-    ASSERT_FALSE(url.empty());
-    TestingPrefService* service = util_.profile()->GetTestingPrefService();
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderEnabled,
-        Value::CreateBooleanValue(true));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderSearchURL,
-        Value::CreateStringValue(url));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderName,
-        Value::CreateStringValue("managed"));
-    // Clear the IDs that are not specified via policy.
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderID, new StringValue(""));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
-    util_.model()->Observe(
-        chrome::NOTIFICATION_PREF_CHANGED,
-        content::Source<PrefService>(util_.profile()->GetTestingPrefService()),
-        content::Details<std::string>(NULL));
-  }
+  void SimulateDefaultSearchIsManaged(const std::string& url);
 
  protected:
+  TemplateURL* AddNewTemplateURL(const std::string& url,
+                                 const string16& keyword);
+
   TemplateURLServiceTestUtil util_;
 
   // Provides the search provider install state on the I/O thread. It must be
@@ -220,13 +181,73 @@ class SearchProviderInstallDataTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallDataTest);
 };
 
+SearchProviderInstallDataTest::SearchProviderInstallDataTest()
+    : install_data_(NULL) {
+}
+
+void SearchProviderInstallDataTest::SetUp() {
+  testing::Test::SetUp();
+  util_.SetUp();
+  util_.StartIOThread();
+  install_data_ = new SearchProviderInstallData(util_.GetWebDataService(),
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::Source<SearchProviderInstallDataTest>(this));
+}
+
+void SearchProviderInstallDataTest::TearDown() {
+  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, install_data_);
+  install_data_ = NULL;
+
+  // Make sure that the install data class on the UI thread gets cleaned up.
+  // It doesn't matter that this happens after install_data_ is deleted.
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+      content::Source<SearchProviderInstallDataTest>(this),
+      content::NotificationService::NoDetails());
+
+  util_.TearDown();
+  testing::Test::TearDown();
+}
+
+void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
+    const std::string& url) {
+  ASSERT_FALSE(url.empty());
+  TestingPrefService* service = util_.profile()->GetTestingPrefService();
+  service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
+                          Value::CreateBooleanValue(true));
+  service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
+                          Value::CreateStringValue(url));
+  service->SetManagedPref(prefs::kDefaultSearchProviderName,
+                          Value::CreateStringValue("managed"));
+  // Clear the IDs that are not specified via policy.
+  service->SetManagedPref(prefs::kDefaultSearchProviderID,
+                          new StringValue(std::string()));
+  service->SetManagedPref(prefs::kDefaultSearchProviderPrepopulateID,
+                          new StringValue(std::string()));
+  util_.model()->Observe(chrome::NOTIFICATION_PREF_CHANGED,
+      content::Source<PrefService>(util_.profile()->GetTestingPrefService()),
+      content::Details<std::string>(NULL));
+}
+
+TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
+    const std::string& url,
+    const string16& keyword) {
+  TemplateURL* t_url = new TemplateURL();
+  t_url->set_short_name(keyword);
+  t_url->set_keyword(keyword);
+  t_url->SetURL(url, 0, 0);
+  util_.model()->Add(t_url);
+  return t_url;
+}
+
+
+// Actual tests ---------------------------------------------------------------
+
 TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
-  TemplateURL* t_url = CreateTemplateURL("http://" + host + "/path",
-                                         "unittest");
-  util_.model()->Add(t_url);
+  AddNewTemplateURL("http://" + host + "/path", ASCIIToUTF16("unittest"));
 
   // Wait for the changes to be saved.
   TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
@@ -239,9 +260,8 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
 
   // Set-up a default and try it all one more time.
   std::string default_host = "www.mmm.com";
-  TemplateURL* default_url = CreateTemplateURL("http://" + default_host + "/",
-                                               "mmm");
-  util_.model()->Add(default_url);
+  TemplateURL* default_url =
+      AddNewTemplateURL("http://" + default_host + "/", ASCIIToUTF16("mmm"));
   util_.model()->SetDefaultSearchProvider(default_url);
   test_get_install_state->set_default_search_provider_host(default_host);
   EXPECT_TRUE(test_get_install_state->RunTests());
@@ -252,9 +272,7 @@ TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
-  TemplateURL* t_url = CreateTemplateURL("http://" + host + "/path",
-                                         "unittest");
-  util_.model()->Add(t_url);
+  AddNewTemplateURL("http://" + host + "/path", ASCIIToUTF16("unittest"));
 
   // Set a managed preference that establishes a default search provider.
   std::string host2 = "www.managedtest.com";
@@ -286,12 +304,9 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   // Wait for the I/O thread to process the update notification.
   TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
 
-  TemplateURL* t_url = CreateTemplateURL("{google:baseURL}?q={searchTerms}",
-                                         "t");
-  util_.model()->Add(t_url);
-  TemplateURL* default_url = CreateTemplateURL("http://d.com/",
-                                               "d");
-  util_.model()->Add(default_url);
+  AddNewTemplateURL("{google:baseURL}?q={searchTerms}", ASCIIToUTF16("t"));
+  TemplateURL* default_url =
+      AddNewTemplateURL("http://d.com/", ASCIIToUTF16("d"));
   util_.model()->SetDefaultSearchProvider(default_url);
 
   // Wait for the changes to be saved.

@@ -1155,9 +1155,10 @@ void TemplateURLService::NotifyLoaded() {
       content::Source<TemplateURLService>(this),
       content::NotificationService::NoDetails());
 
-  for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
-    const Extension* extension = profile_->GetExtensionService()->
-        GetExtensionById(pending_extension_ids_[i], true);
+  for (PendingExtensionIDs::const_iterator i(pending_extension_ids_.begin());
+       i != pending_extension_ids_.end(); ++i) {
+    const Extension* extension =
+        profile_->GetExtensionService()->GetExtensionById(*i, true);
     if (extension)
       RegisterExtensionKeyword(extension);
   }

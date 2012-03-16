@@ -21,18 +21,22 @@ class SearchTermsData {
   SearchTermsData();
   virtual ~SearchTermsData();
 
-  // Returns the value for the GOOGLE_BASE_SUGGEST_URL term.
+  // Returns the value to use for replacements of type GOOGLE_BASE_URL.  This
+  // implementation simply returns the default value.
+  virtual std::string GoogleBaseURLValue() const;
+
+  // Returns the value for the GOOGLE_BASE_SUGGEST_URL term.  This
+  // implementation simply returns the default value.
   std::string GoogleBaseSuggestURLValue() const;
 
-  // Returns the value to use for replacements of type GOOGLE_BASE_URL.
-  virtual std::string GoogleBaseURLValue() const = 0;
-
-  // Returns the locale used by the application.
-  virtual std::string GetApplicationLocale() const = 0;
+  // Returns the locale used by the application.  This implementation returns
+  // "en" and thus should be overridden where the result is actually meaningful.
+  virtual std::string GetApplicationLocale() const;
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // Returns the value for the Chrome Omnibox rlz.
-  virtual string16 GetRlzParameterValue() const = 0;
+  // Returns the value for the Chrome Omnibox rlz.  This implementation returns
+  // the empty string.
+  virtual string16 GetRlzParameterValue() const;
 #endif
 
   // Returns a string indicating whether Instant (in the visible-preview mode)

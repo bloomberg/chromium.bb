@@ -35,27 +35,6 @@ namespace {
 
 // Helper classes --------------------------------------------------------------
 
-// Implementation of SearchTermsData just for validation.
-class SearchTermsDataForValidation : public SearchTermsData {
- public:
-  SearchTermsDataForValidation() {}
-
-  // Implementation of SearchTermsData.
-  virtual std::string GoogleBaseURLValue() const {
-    return "http://www.google.com/";
-  }
-  virtual std::string GetApplicationLocale() const {
-    return "en";
-  }
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  virtual string16 GetRlzParameterValue() const {
-    return string16();
-  }
-#endif
- private:
-  DISALLOW_COPY_AND_ASSIGN(SearchTermsDataForValidation);
-};
-
 // This is used to check whether for a given ProxyMode value, the ProxyPacUrl,
 // the ProxyBypassList and the ProxyServer policies are allowed to be specified.
 // |error_message_id| is the message id of the localized error message to show
@@ -613,10 +592,10 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
 
   std::string search_url_string;
   if (search_url->GetAsString(&search_url_string)) {
-    SearchTermsDataForValidation search_terms_data;
-    const TemplateURLRef search_url_ref(search_url_string, 0, 0);
     // It must support replacement (which implies it is valid).
-    return search_url_ref.SupportsReplacementUsingTermsData(search_terms_data);
+    SearchTermsData search_terms_data;
+    return TemplateURLRef(search_url_string, 0, 0).
+        SupportsReplacementUsingTermsData(search_terms_data);
   }
   return false;
 }
