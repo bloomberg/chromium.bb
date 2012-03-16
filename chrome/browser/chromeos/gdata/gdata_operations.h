@@ -113,9 +113,9 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   // authentication error. Must be implemented by a derived class.
   virtual void ProcessURLFetchResults(const content::URLFetcher* source) = 0;
 
-  // Invoked by this base class upon an authentication error.
-  // Must be implemented by a derived class.
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) = 0;
+  // Invoked by this base class upon an authentication error or cancel by
+  // an user operation. Must be implemented by a derived class.
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
 
   // Implement GDataOperationRegistry::Operation
   virtual void DoCancel() OVERRIDE;
@@ -163,7 +163,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   const GURL& document_url() const { return document_url_; }
 
@@ -188,7 +188,7 @@ class GetDataOperation : public UrlFetchOperationBase {
   // Overridden from UrlFetchOperationBase.
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Parse GData JSON response.
   static base::Value* ParseResponse(const std::string& data);
@@ -256,7 +256,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
  private:
   DownloadActionCallback callback_;
@@ -442,7 +442,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
@@ -474,7 +474,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
-  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // Overridden from UrlFetchOperationBase.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;

@@ -126,6 +126,7 @@ void AuthOperation::Start() {
 
 void AuthOperation::DoCancel() {
   oauth2_access_token_fetcher_->CancelRequest();
+  callback_.Run(GDATA_CANCELLED, std::string());
 }
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
@@ -223,6 +224,7 @@ bool UrlFetchOperationBase::GetContentData(std::string* upload_content_type,
 
 void UrlFetchOperationBase::DoCancel() {
   url_fetcher_.reset(NULL);
+  RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
 void UrlFetchOperationBase::OnURLFetchDownloadProgress(const URLFetcher* source,
@@ -253,7 +255,7 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
-  RunCallbackOnAuthFailed(code);
+  RunCallbackOnPrematureFailure(code);
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
 }
 
@@ -302,7 +304,7 @@ void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void EntryActionOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(FROM_HERE,
                            base::Bind(callback_, code, document_url_));
@@ -345,7 +347,7 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void GetDataOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     scoped_ptr<base::Value> root_value;
     relay_proxy_->PostTask(
@@ -447,7 +449,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void DownloadFileOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(
         FROM_HERE,
@@ -739,7 +741,8 @@ void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void InitiateUploadOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+void InitiateUploadOperation::RunCallbackOnPrematureFailure(
+    GDataErrorCode code) {
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(FROM_HERE,
                            base::Bind(callback_, code, GURL()));
@@ -842,7 +845,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 }
 
-void ResumeUploadOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(FROM_HERE, base::Bind(callback_,
         ResumeUploadResponse(code, 0, 0, "", "")));
