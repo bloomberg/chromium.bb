@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -136,7 +137,7 @@ void ConfirmBubbleView::Show() {
   }
 
   // Show a bubble consisting of the above widgets under the anchor point.
-  gfx::Rect rect = gtk_util::GetWidgetScreenBounds(anchor_);
+  gfx::Rect rect = ui::GetWidgetScreenBounds(anchor_);
   rect.set_x(anchor_point_.x() - rect.x());
   rect.set_y(anchor_point_.y() - rect.y());
   rect.set_width(0);

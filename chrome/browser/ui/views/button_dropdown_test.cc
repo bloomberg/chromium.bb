@@ -1,12 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/view_event_test_base.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/button/button_dropdown.h"
 
 class ButtonDropDownDragTest : public ViewEventTestBase,
@@ -70,7 +71,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
   // ViewEventTestBase implementation.
   virtual void DoTestOnMessageLoop() OVERRIDE {
     // Click on the ButtonDropDown.
-    ui_controls::MoveMouseToCenterAndPress(
+    ui_test_utils::MoveMouseToCenterAndPress(
         button_,
         ui_controls::LEFT,
         ui_controls::DOWN,
@@ -101,7 +102,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
   void Step3() {
     // Click mouse to dismiss menu.  The views menu does not dismiss the
     // menu on click-drag-release unless an item is selected.
-    ui_controls::MoveMouseToCenterAndPress(
+    ui_test_utils::MoveMouseToCenterAndPress(
         button_,
         ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,

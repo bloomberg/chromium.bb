@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/ui_controls.h"
+#include "ui/ui_controls/ui_controls.h"
 
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>
@@ -11,11 +11,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
-#include "chrome/browser/automation/ui_controls_internal.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
-using content::BrowserThread;
 
 // Implementation details: We use [NSApplication sendEvent:] instead
 // of [NSApplication postEvent:atStart:] so that the event gets sent
@@ -236,7 +233,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
   std::vector<NSEvent*> events;
   SynthesizeKeyEventsSequence(
@@ -360,28 +357,4 @@ bool SendMouseClick(MouseButton type) {
  return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
 }
 
-void MoveMouseToCenterAndPress(
-    NSView* view,
-    MouseButton button,
-    int state,
-    const base::Closure& task) {
-  DCHECK(view);
-  NSWindow* window = [view window];
-  DCHECK(window);
-  NSScreen* screen = [window screen];
-  DCHECK(screen);
-
-  // Converts the center position of the view into the coordinates accepted
-  // by SendMouseMoveNotifyWhenDone() method.
-  NSRect bounds = [view bounds];
-  NSPoint center = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
-  center = [view convertPoint:center toView:nil];
-  center = [window convertBaseToScreen:center];
-  center = NSMakePoint(center.x, [screen frame].size.height - center.y);
-
-  SendMouseMoveNotifyWhenDone(
-      center.x, center.y,
-      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
-}
-
-}  // ui_controls
+}  // namespace ui_controls

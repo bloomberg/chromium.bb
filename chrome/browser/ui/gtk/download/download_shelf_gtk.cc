@@ -24,6 +24,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources_standard.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
@@ -372,7 +373,7 @@ bool DownloadShelfGtk::IsCursorInShelfZone(
   GtkAllocation allocation;
   gtk_widget_get_allocation(shelf_.get(), &allocation);
 
-  gfx::Rect bounds(gtk_util::GetWidgetScreenPosition(shelf_.get()),
+  gfx::Rect bounds(ui::GetWidgetScreenPosition(shelf_.get()),
                    gfx::Size(allocation.width, allocation.height));
 
   // Negative insets expand the rectangle. We only expand the top.

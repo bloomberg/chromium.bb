@@ -8,7 +8,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -28,6 +27,7 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -303,7 +303,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest1::Step2));
   }
@@ -324,7 +324,7 @@ class BookmarkBarViewTest1 : public BookmarkBarViewEventTestBase {
 
     views::MenuItemView* menu_to_select =
         menu->GetSubmenu()->GetMenuItemAt(0);
-    ui_controls::MoveMouseToCenterAndPress(menu_to_select, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(menu_to_select, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest1::Step3));
   }
@@ -356,7 +356,7 @@ class BookmarkBarViewTest2 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest2::Step2));
   }
@@ -406,7 +406,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::MenuButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest3::Step2));
   }
@@ -423,7 +423,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Click on second child, which has a submenu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest3::Step3));
   }
@@ -440,7 +440,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
     // Click on third child, which has a submenu too.
     child_menu = menu->GetSubmenu()->GetMenuItemAt(2);
     ASSERT_TRUE(child_menu != NULL);
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest3::Step4));
   }
@@ -513,7 +513,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest4::Step2));
   }
@@ -530,7 +530,7 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Right click on the first child to get its context menu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
@@ -543,7 +543,8 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Select the first menu item (open).
-    ui_controls::MoveMouseToCenterAndPress(menu->GetSubmenu()->GetMenuItemAt(0),
+    ui_test_utils::MoveMouseToCenterAndPress(
+        menu->GetSubmenu()->GetMenuItemAt(0),
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest4::Step4));
   }
@@ -568,7 +569,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest5::Step2));
   }
@@ -585,7 +586,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Move mouse to center of menu and press button.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN,
         CreateEventTask(this, &BookmarkBarViewTest5::Step3));
   }
@@ -635,7 +636,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
   virtual void DoTestOnMessageLoop() {
     // Press the mouse button on the overflow button. Don't release it though.
     views::TextButton* button = bb_view_->overflow_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN, CreateEventTask(this, &BookmarkBarViewTest6::Step2));
   }
 
@@ -651,7 +652,7 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Move mouse to center of menu and release mouse.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::UP, CreateEventTask(this, &BookmarkBarViewTest6::Step3));
   }
 
@@ -676,7 +677,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest7::Step2));
   }
@@ -693,7 +694,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Move mouse to center of menu and press button.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN,
         CreateEventTask(this, &BookmarkBarViewTest7::Step3));
   }
@@ -749,7 +750,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest8::Step2));
   }
@@ -766,7 +767,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Move mouse to center of menu and press button.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN,
         CreateEventTask(this, &BookmarkBarViewTest8::Step3));
   }
@@ -807,7 +808,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
 
     views::MenuItemView* target_menu =
         drop_menu->GetSubmenu()->GetMenuItemAt(1);
-    ui_controls::MoveMouseToCenterAndPress(
+    ui_test_utils::MoveMouseToCenterAndPress(
         target_menu, ui_controls::LEFT, ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest8::Step6));
   }
@@ -834,7 +835,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest9::Step2));
   }
@@ -902,7 +903,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest10::Step2));
     MessageLoop::current()->RunAllPending();
@@ -1017,7 +1018,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest11::Step2));
   }
@@ -1034,7 +1035,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Right click on the first child to get its context menu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1084,7 +1085,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   virtual void DoTestOnMessageLoop() {
     // Open up the other folder.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest12::Step2));
     bookmark_utils::num_urls_before_prompting = 1;
@@ -1106,7 +1107,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Right click on the second child (a folder) to get its context menu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest12::Step3));
   }
@@ -1120,7 +1121,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     views::MenuItemView* child_menu =
         menu->GetSubmenu()->GetMenuItemAt(0);
     ASSERT_TRUE(child_menu != NULL);
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
 
     // Delay until we send tab, otherwise the message box doesn't appear
@@ -1172,7 +1173,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest13::Step2));
   }
@@ -1189,7 +1190,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Right click on the first child to get its context menu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1214,7 +1215,7 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
 
     // Click on the separator. Clicking on the separator shouldn't visually
     // change anything.
-    ui_controls::MoveMouseToCenterAndPress(separator_view,
+    ui_test_utils::MoveMouseToCenterAndPress(separator_view,
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest13::Step4));
   }
@@ -1227,8 +1228,10 @@ class BookmarkBarViewTest13 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Select the first context menu item.
-    ui_controls::MoveMouseToCenterAndPress(menu->GetSubmenu()->GetMenuItemAt(0),
-        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+    ui_test_utils::MoveMouseToCenterAndPress(
+        menu->GetSubmenu()->GetMenuItemAt(0),
+        ui_controls::LEFT,
+        ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest13::Step5));
   }
 
@@ -1255,7 +1258,7 @@ class BookmarkBarViewTest14 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // right mouse button.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step2 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1295,7 +1298,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
   virtual void DoTestOnMessageLoop() {
     // Show the other bookmarks.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest15::Step2));
   }
@@ -1314,7 +1317,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     deleted_menu_id_ = child_menu->GetCommand();
 
     // Right click on the second child to get its context menu.
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1331,7 +1334,7 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(delete_menu);
 
     // Click on the delete button.
-    ui_controls::MoveMouseToCenterAndPress(delete_menu,
+    ui_test_utils::MoveMouseToCenterAndPress(delete_menu,
         ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest15::Step4));
   }
@@ -1369,7 +1372,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the first folder on the bookmark bar and press the
     // mouse.
     views::TextButton* button = GetBookmarkButton(0);
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest16::Step2));
   }
@@ -1408,7 +1411,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest17::Step2));
   }
@@ -1423,7 +1426,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     // Right click on the second item to show its context menu.
     views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(2);
     ASSERT_TRUE(child_menu != NULL);
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step3 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1443,7 +1446,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     observer_.set_task(CreateEventTask(this, &BookmarkBarViewTest17::Step4));
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step4 will be invoked by ContextMenuNotificationObserver.
   }
@@ -1484,7 +1487,7 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest18::Step2));
   }
@@ -1527,7 +1530,7 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     // Move the mouse to the other folder on the bookmark bar and press the
     // left mouse button.
     views::TextButton* button = bb_view_->other_bookmarked_button();
-    ui_controls::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest19::Step2));
   }
@@ -1542,7 +1545,7 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     // Click on the first folder.
     views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
     ASSERT_TRUE(child_menu != NULL);
-    ui_controls::MoveMouseToCenterAndPress(
+    ui_test_utils::MoveMouseToCenterAndPress(
         child_menu, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest19::Step3));
@@ -1572,7 +1575,9 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     // Click on the first folder.
     views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
     ASSERT_TRUE(child_menu != NULL);
-    ui_controls::MoveMouseToCenterAndPress(child_menu, ui_controls::LEFT,
+    ui_test_utils::MoveMouseToCenterAndPress(
+        child_menu,
+        ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest19::Step5));
   }

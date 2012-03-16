@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 
 void TestingAutomationProvider::ActivateWindow(int handle) {
   NOTIMPLEMENTED();
@@ -49,7 +49,7 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
     *bounds = gfx::Rect(allocation.width, allocation.height);
     gint x, y;
     if (screen_coordinates) {
-      gfx::Point point = gtk_util::GetWidgetScreenPosition(widget);
+      gfx::Point point = ui::GetWidgetScreenPosition(widget);
       x = point.x();
       y = point.y();
     } else {

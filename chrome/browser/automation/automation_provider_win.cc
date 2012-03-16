@@ -12,7 +12,6 @@
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/external_tab_container_win.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/widget/root_view.h"
 

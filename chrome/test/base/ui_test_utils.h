@@ -17,7 +17,6 @@
 #include "base/process.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,10 +27,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/view.h"
 #endif
 
 class AppModalDialog;
@@ -268,8 +272,8 @@ bool SendKeyPressAndWait(const Browser* browser,
                              WARN_UNUSED_RESULT;
 
 // Sends a move event blocking until received. Returns true if the event was
-// successfully received. This uses ui_controls::SendMouse***NotifyWhenDone, see
-// it for details.
+// successfully received. This uses ui_controls::SendMouse***NotifyWhenDone,
+// see it for details.
 bool SendMouseMoveSync(const gfx::Point& location) WARN_UNUSED_RESULT;
 bool SendMouseEventsSync(ui_controls::MouseButton type,
                          int state) WARN_UNUSED_RESULT;
@@ -586,6 +590,30 @@ bool TakeRenderWidgetSnapshot(content::RenderWidgetHost* rwh,
 // must be enabled.
 bool TakeEntirePageSnapshot(content::RenderViewHost* rvh,
                             SkBitmap* bitmap) WARN_UNUSED_RESULT;
+
+// A combination of SendMouseMove to the middle of the view followed by
+// SendMouseEvents.
+void MoveMouseToCenterAndPress(
+#if defined(TOOLKIT_VIEWS)
+    views::View* view,
+#elif defined(TOOLKIT_GTK)
+    GtkWidget* widget,
+#elif defined(OS_MACOSX)
+    NSView* view,
+#endif
+    ui_controls::MouseButton button,
+    int state,
+    const base::Closure& task);
+
+namespace internal {
+
+// A utility function to send a mouse click event in a closure. It's shared by
+// ui_controls_linux.cc and ui_controls_mac.cc
+void ClickTask(ui_controls::MouseButton button,
+               int state,
+               const base::Closure& followup);
+
+}  // namespace internal
 
 }  // namespace ui_test_utils
 

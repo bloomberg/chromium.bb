@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
-#define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
+#ifndef UI_UI_CONTROLS_UI_CONTROLS_H_
+#define UI_UI_CONTROLS_UI_CONTROLS_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -15,13 +15,7 @@
 #include "base/callback_forward.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
-
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class View;
-}
-#endif
+#include "ui/base/ui_export.h"
 
 namespace ui_controls {
 
@@ -44,23 +38,25 @@ namespace ui_controls {
 //
 // If you're writing a test chances are you want the variant in ui_test_utils.
 // See it for details.
-bool SendKeyPress(gfx::NativeWindow window,
-                  ui::KeyboardCode key,
-                  bool control,
-                  bool shift,
-                  bool alt,
-                  bool command);
-bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                ui::KeyboardCode key,
-                                bool control,
-                                bool shift,
-                                bool alt,
-                                bool command,
-                                const base::Closure& task);
+UI_EXPORT bool SendKeyPress(gfx::NativeWindow window,
+                            ui::KeyboardCode key,
+                            bool control,
+                            bool shift,
+                            bool alt,
+                            bool command);
+UI_EXPORT bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
+                                          ui::KeyboardCode key,
+                                          bool control,
+                                          bool shift,
+                                          bool alt,
+                                          bool command,
+                                          const base::Closure& task);
 
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
-bool SendMouseMove(long x, long y);
-bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task);
+UI_EXPORT bool SendMouseMove(long x, long y);
+UI_EXPORT bool SendMouseMoveNotifyWhenDone(long x,
+                                           long y,
+                                           const base::Closure& task);
 
 enum MouseButton {
   LEFT = 0,
@@ -77,31 +73,24 @@ enum MouseButtonState {
 // Sends a mouse down and/or up message. The click will be sent to wherever
 // the cursor currently is, so be sure to move the cursor before calling this
 // (and be sure the cursor has arrived!).
-bool SendMouseEvents(MouseButton type, int state);
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
-                                   const base::Closure& task);
-// Same as SendMouseEvents with UP | DOWN.
-bool SendMouseClick(MouseButton type);
-
-// A combination of SendMouseMove to the middle of the view followed by
-// SendMouseEvents.
-void MoveMouseToCenterAndPress(
-#if defined(TOOLKIT_VIEWS)
-    views::View* view,
-#elif defined(TOOLKIT_GTK)
-    GtkWidget* widget,
-#elif defined(OS_MACOSX)
-    NSView* view,
-#endif
-    MouseButton button,
-    int state,
+UI_EXPORT bool SendMouseEvents(MouseButton type, int state);
+UI_EXPORT bool SendMouseEventsNotifyWhenDone(
+    MouseButton type, int state,
     const base::Closure& task);
+// Same as SendMouseEvents with UP | DOWN.
+UI_EXPORT bool SendMouseClick(MouseButton type);
 
 #if defined(TOOLKIT_VIEWS)
 // Runs |closure| after processing all pending ui events.
-void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
+UI_EXPORT void RunClosureAfterAllPendingUIEvents(
+    const base::Closure& closure);
 #endif
 
-}  // ui_controls
+#if defined(USE_AURA)
+class UIControlsAura;
+UI_EXPORT void InstallUIControlsAura(UIControlsAura* instance);
+#endif
 
-#endif  // CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
+}  // namespace ui_controls
+
+#endif  // UI_UI_CONTROLS_UI_CONTROLS_H_

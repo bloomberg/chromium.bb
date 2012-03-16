@@ -110,12 +110,6 @@ void ForceFontSizePixels(GtkWidget* widget, double size_pixels);
 // even if ForceFontSizePixels() was never called.
 void UndoForceFontSize(GtkWidget* widget);
 
-// Gets the position of a gtk widget in screen coordinates.
-gfx::Point GetWidgetScreenPosition(GtkWidget* widget);
-
-// Returns the bounds of the specified widget in screen coordinates.
-gfx::Rect GetWidgetScreenBounds(GtkWidget* widget);
-
 // Retuns size of the |widget| without window manager decorations.
 gfx::Size GetWidgetSize(GtkWidget* widget);
 

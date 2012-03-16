@@ -30,6 +30,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -372,7 +373,7 @@ gfx::Rect OmniboxPopupViewGtk::GetTargetBounds() {
   if (!gtk_widget_get_realized(window_))
     return gfx::Rect();
 
-  gfx::Rect retval = gtk_util::GetWidgetScreenBounds(window_);
+  gfx::Rect retval = ui::GetWidgetScreenBounds(window_);
 
   // The widget bounds don't update synchronously so may be out of sync with
   // our last size request.

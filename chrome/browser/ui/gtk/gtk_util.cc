@@ -36,6 +36,7 @@
 #include "ui/base/events.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -544,37 +545,6 @@ void UndoForceFontSize(GtkWidget* widget) {
   gtk_widget_modify_font(widget, NULL);
 }
 
-gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
-  GdkWindow* window = gtk_widget_get_window(widget);
-
-  if (!window) {
-    NOTREACHED() << "Must only be called on realized widgets.";
-    return gfx::Point(0, 0);
-  }
-
-  gint x, y;
-  gdk_window_get_origin(window, &x, &y);
-
-  if (!gtk_widget_get_has_window(widget)) {
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget, &allocation);
-    x += allocation.x;
-    y += allocation.y;
-  }
-
-  return gfx::Point(x, y);
-}
-
-gfx::Rect GetWidgetScreenBounds(GtkWidget* widget) {
-  gfx::Point position = GetWidgetScreenPosition(widget);
-
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-
-  return gfx::Rect(position.x(), position.y(),
-                   allocation.width, allocation.height);
-}
-
 gfx::Size GetWidgetSize(GtkWidget* widget) {
   GtkRequisition size;
   gtk_widget_size_request(widget, &size);
@@ -585,7 +555,7 @@ void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
   DCHECK(widget);
   DCHECK(p);
 
-  gfx::Point position = GetWidgetScreenPosition(widget);
+  gfx::Point position = ui::GetWidgetScreenPosition(widget);
   p->SetPoint(p->x() + position.x(), p->y() + position.y());
 }
 

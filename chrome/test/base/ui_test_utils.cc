@@ -24,7 +24,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,6 +60,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
+#include "ui/ui_controls/ui_controls.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/focus/accelerator_handler.h"
@@ -1147,4 +1147,16 @@ bool TakeEntirePageSnapshot(RenderViewHost* rvh, SkBitmap* bitmap) {
   return taker.TakeEntirePageSnapshot(rvh, bitmap);
 }
 
+namespace internal {
+
+void ClickTask(ui_controls::MouseButton button,
+               int state,
+               const base::Closure& followup) {
+  if (!followup.is_null())
+    ui_controls::SendMouseEventsNotifyWhenDone(button, state, followup);
+  else
+    ui_controls::SendMouseEvents(button, state);
+}
+
+}  // namespace internal
 }  // namespace ui_test_utils

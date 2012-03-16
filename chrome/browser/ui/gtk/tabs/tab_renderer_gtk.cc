@@ -31,6 +31,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -96,8 +97,8 @@ const int kCloseButtonHorzFuzz = 5;
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
-  gfx::Point parent_pos = gtk_util::GetWidgetScreenPosition(parent);
-  gfx::Point widget_pos = gtk_util::GetWidgetScreenPosition(widget);
+  gfx::Point parent_pos = ui::GetWidgetScreenPosition(parent);
+  gfx::Point widget_pos = ui::GetWidgetScreenPosition(widget);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);

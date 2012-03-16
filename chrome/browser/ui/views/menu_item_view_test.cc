@@ -4,8 +4,9 @@
 
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/view_event_test_base.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -85,7 +86,7 @@ class MenuItemViewTestBase : public ViewEventTestBase,
  protected:
   // Generate a mouse click on the specified view and post a new task.
   virtual void Click(views::View* view, const base::Closure& next) {
-    ui_controls::MoveMouseToCenterAndPress(
+    ui_test_utils::MoveMouseToCenterAndPress(
         view,
         ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,

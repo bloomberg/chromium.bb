@@ -18,7 +18,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
-#include "ui/base/gtk/gtk_screen_utils.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 
 using content::RenderViewHostImpl;
 using WebKit::WebDragOperation;

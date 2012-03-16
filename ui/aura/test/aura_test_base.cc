@@ -9,6 +9,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
+#include "ui/aura/ui_controls_aura.h"
+#include "ui/ui_controls/ui_controls.h"
 
 namespace aura {
 namespace test {
@@ -25,6 +27,7 @@ void AuraTestBase::SetUp() {
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   Env::GetInstance()->SetMonitorManager(
       CreateSingleMonitorManager(root_window_.get()));
+  ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
   helper_.InitRootWindow(root_window());
   helper_.SetUp();
   stacking_client_.reset(new TestStackingClient(root_window()));

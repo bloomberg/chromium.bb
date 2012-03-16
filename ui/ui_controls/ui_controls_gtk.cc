@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/ui_controls.h"
+#include "ui/ui_controls/ui_controls.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/automation/ui_controls_internal.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/common/automation_constants.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #include "ui/gfx/rect.h"
 
@@ -252,63 +250,6 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
 bool SendMouseClick(MouseButton type) {
   return SendMouseEvents(type, UP | DOWN);
 }
-
-#if defined(TOOLKIT_VIEWS)
-
-#if defined(OS_LINUX) && !defined(USE_AURA)
-void OnConfigure(GtkWidget* gtk_widget, GdkEvent* event, gpointer data) {
-  views::Widget* widget = static_cast<views::Widget*>(data);
-  gfx::Rect actual = widget->GetWindowScreenBounds();
-  gfx::Rect desired = widget->GetRootView()->bounds();
-  if (actual.size() == desired.size())
-    MessageLoop::current()->Quit();
-}
-
-void SynchronizeWidgetSize(views::Widget* widget) {
-  // If the actual window size and desired window size
-  // are different, wait until the window is resized
-  // to desired size.
-  gfx::Rect actual = widget->GetWindowScreenBounds();
-  gfx::Rect desired = widget->GetRootView()->bounds();
-  if (actual.size() != desired.size()) {
-    // Listen to configure-event that is emitted when an window gets
-    // resized.
-    GtkWidget* gtk_widget = widget->GetNativeView();
-    g_signal_connect(gtk_widget, "configure-event",
-                     G_CALLBACK(&OnConfigure), widget);
-    MessageLoop::current()->Run();
-  }
-}
-#endif
-
-void MoveMouseToCenterAndPress(views::View* view,
-                               MouseButton button,
-                               int state,
-                               const base::Closure& task) {
-#if defined(OS_LINUX)
-  // X is asynchronous and we need to wait until the window gets
-  // resized to desired size.
-  SynchronizeWidgetSize(view->GetWidget());
-#endif
-
-  gfx::Point view_center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &view_center);
-  SendMouseMoveNotifyWhenDone(
-      view_center.x(), view_center.y(),
-      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
-}
-#else
-void MoveMouseToCenterAndPress(GtkWidget* widget,
-                               MouseButton button,
-                               int state,
-                               const base::Closure& task) {
-  gfx::Rect bounds = gtk_util::GetWidgetScreenBounds(widget);
-  SendMouseMoveNotifyWhenDone(
-      bounds.x() + bounds.width() / 2,
-      bounds.y() + bounds.height() / 2,
-      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
-}
-#endif
 
 #if defined(TOOLKIT_VIEWS)
 void RunClosureAfterAllPendingUIEvents(const base::Closure& task) {

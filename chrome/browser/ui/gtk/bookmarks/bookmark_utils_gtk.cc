@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
-#include "ui/base/gtk/gtk_screen_utils.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia_paint.h"

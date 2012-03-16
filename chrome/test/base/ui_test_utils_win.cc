@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/win/foreground_helper.h"
+#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {
@@ -34,7 +34,7 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   views::View* view =
       reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid);
   DCHECK(view);
-  ui_controls::MoveMouseToCenterAndPress(
+  MoveMouseToCenterAndPress(
       view,
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
@@ -62,6 +62,18 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   // window from another app is the foreground window then the request to
   // activate the window fails. See SetForegroundWindow for details.
   return GetForegroundWindow() == window;
+}
+
+void MoveMouseToCenterAndPress(views::View* view,
+                               ui_controls::MouseButton button,
+                               int state,
+                               const base::Closure& task) {
+  DCHECK(view);
+  DCHECK(view->GetWidget());
+  gfx::Point view_center(view->width() / 2, view->height() / 2);
+  views::View::ConvertPointToScreen(view, &view_center);
+  ui_controls::SendMouseMove(view_center.x(), view_center.y());
+  ui_controls::SendMouseEventsNotifyWhenDone(button, state, task);
 }
 
 }  // namespace ui_test_utils

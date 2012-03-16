@@ -31,6 +31,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "ui/ui_controls/ui_controls.h"
 
 using content::BrowserThread;
 

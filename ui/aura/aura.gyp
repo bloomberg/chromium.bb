@@ -90,6 +90,8 @@
         'root_window_view_mac.mm',
         'root_window.cc',
         'root_window.h',
+        'ui_controls_win.cc',
+        'ui_controls_x11.cc',
         'window.cc',
         'window.h',
         'window_delegate.h',

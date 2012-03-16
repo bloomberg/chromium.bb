@@ -92,6 +92,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1240,7 +1241,7 @@ void BrowserWindowGtk::HideInstant() {
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
-  return gtk_util::GetWidgetScreenBounds(contents_container_->widget());
+  return ui::GetWidgetScreenBounds(contents_container_->widget());
 }
 
 WindowOpenDisposition BrowserWindowGtk::GetDispositionForPopupBounds(

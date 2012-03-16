@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/ui_controls_internal.h"
+#include "ui/ui_controls/ui_controls_internal_win.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -171,7 +171,7 @@ bool SendKeyEvent(ui::KeyboardCode key, bool up) {
 namespace ui_controls {
 namespace internal {
 
-bool SendKeyPressImpl(gfx::NativeWindow native_window,
+bool SendKeyPressImpl(HWND window,
                       ui::KeyboardCode key,
                       bool control,
                       bool shift,
@@ -179,11 +179,6 @@ bool SendKeyPressImpl(gfx::NativeWindow native_window,
                       const base::Closure& task) {
   // SendInput only works as we expect it if one of our windows is the
   // foreground window already.
-#if defined(USE_AURA)
-  HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
-#else
-  HWND window = native_window;
-#endif
   HWND target_window = (::GetActiveWindow() &&
                         ::GetWindow(::GetActiveWindow(), GW_OWNER) == window) ?
                        ::GetActiveWindow() :
