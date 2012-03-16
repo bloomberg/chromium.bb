@@ -81,7 +81,10 @@ void InputMethodMenuButton::OnMenuButtonClicked(views::View* source,
   menu_->OnMenuButtonClicked(source, point);
 }
 
-bool InputMethodMenuButton::WindowIsActive() {
+bool InputMethodMenuButton::StatusAreaIsVisible() {
+#if defined(USE_ASH)
+  return true;
+#else
   Browser* active_browser = BrowserList::GetLastActive();
   if (!active_browser) {
     // Can't get an active browser. Just return true, which is safer.
@@ -94,6 +97,7 @@ bool InputMethodMenuButton::WindowIsActive() {
     return true;
   }
   return active_window->GetNativeHandle() == current_window->GetNativeWindow();
+#endif
 }
 
 void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
@@ -113,7 +117,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   SetTooltipText(tooltip);
   SetAccessibleName(tooltip);
 
-  if (WindowIsActive()) {
+  if (StatusAreaIsVisible()) {
     // We don't call these functions if the |current_window| is not active since
     // the calls are relatively expensive (crosbug.com/9206). Please note that
     // PrepareMenuModel() is necessary for fixing crosbug.com/7522 when the

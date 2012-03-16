@@ -42,8 +42,9 @@ class InputMethodMenuButton : public StatusAreaButton,
   void UpdateUIFromCurrentInputMethod();
 
  private:
-  // Returns true if the Chrome window where the button lives is active.
-  bool WindowIsActive();
+  // Returns true if the Chrome window where the button lives is active. When
+  // Ash is in use, the function always returns true.
+  bool StatusAreaIsVisible();
 
   scoped_ptr<InputMethodMenu> menu_;
 
