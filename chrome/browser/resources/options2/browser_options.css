@@ -222,6 +222,15 @@ input[type='range'] {
   width: 19px;
 }
 
+.network-menu-item > .controlled-setting-indicator {
+  -webkit-box-flex: 0;
+  -webkit-margin-end: 5px;
+  display: block;
+  height: 16px;
+  margin-top: 9px;
+  width: 16px;
+}
+
 .network-options-button:hover {
   /* TODO(kevers): Update once proper assets received for the options
      button. */
@@ -264,7 +273,6 @@ input[type='range'] {
       0 5px 12px 1px rgba(0,0,0,0.5);
   background: #fff;
   display: block;
-  overflow-y: auto;
   position: absolute;
   width: 320px;
   z-index: 1;
@@ -277,7 +285,6 @@ input[type='range'] {
   height: 32px;
   margin-left: 4px;
   margin-right: 4px;
-  overflow-x: hidden;
   vertical-align: middle;
 }
 

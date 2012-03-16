@@ -9,6 +9,7 @@ cr.define('options.network', function() {
   var ListItem = cr.ui.ListItem;
   var Menu = cr.ui.Menu;
   var MenuItem = cr.ui.MenuItem;
+  var ControlledSettingIndicator = options.ControlledSettingIndicator;
 
   /**
    * Network settings constants. These enums usually match their C++
@@ -535,6 +536,10 @@ cr.define('options.network', function() {
                                           data.networkName,
                                           cmd);
       menuItem.style.backgroundImage = url(data.iconURL);
+
+      if (data.policyManaged)
+        menuItem.appendChild(new ManagedNetworkIndicator());
+
       var optionsButton = this.ownerDocument.createElement('div');
       optionsButton.className = 'network-options-button';
       var type = String(data.networkType);
@@ -810,6 +815,39 @@ cr.define('options.network', function() {
 
     networkList.invalidate();
     networkList.redraw();
+  };
+
+  /**
+   * Element for indicating a policy managed network.
+   * @constructor
+   */
+  function ManagedNetworkIndicator() {
+    var el = cr.doc.createElement('div');
+    el.__proto__ = ManagedNetworkIndicator.prototype;
+    el.decorate();
+    return el;
+  }
+
+  ManagedNetworkIndicator.prototype = {
+    __proto__: ControlledSettingIndicator.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      ControlledSettingIndicator.prototype.decorate.call(this);
+      this.controlledBy = 'policy';
+      var policyLabel = localStrings.getString('managedNetwork');
+      this.setAttribute('textPolicy', policyLabel);
+      this.className = 'controlled-setting-indicator';
+      // The default popup clips to the bounds of the list of networks in the
+      // drop-down because it has enforced size constraints with auto-
+      // scrolling. Use a tooltip in place of the bubble popup until the
+      // clipping issues are resolved.
+      this.setAttribute('title', policyLabel);
+      this.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
   };
 
   /**
