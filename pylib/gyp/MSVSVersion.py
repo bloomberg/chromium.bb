@@ -261,7 +261,7 @@ def SelectVisualStudioVersion(version='auto'):
     '2008': ('9.0',),
     '2010': ('10.0',),
   }
-  versions = _DetectVisualStudioVersions(version_map[version])
+  versions = _DetectVisualStudioVersions(version_map[str(version)])
   if not versions:
     raise
   return versions[0]
