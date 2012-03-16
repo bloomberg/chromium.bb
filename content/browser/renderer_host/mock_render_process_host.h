@@ -53,18 +53,19 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual bool HasConnection() const OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual bool IgnoreInputEvents() const OVERRIDE;
-  virtual void Attach(IPC::Channel::Listener* listener,
+  virtual void Attach(content::RenderWidgetHost* host,
                       int routing_id) OVERRIDE;
-  virtual void Release(int listener_id) OVERRIDE;
+  virtual void Release(int routing_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
-  virtual IPC::Channel::Listener* GetListenerByID(int routing_id) OVERRIDE;
+  virtual content::RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
+        OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
-  virtual listeners_iterator ListenersIterator() OVERRIDE;
+  virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
@@ -91,7 +92,7 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   int id_;
   content::BrowserContext* browser_context_;
 
-  IDMap<IPC::Channel::Listener> listeners_;
+  IDMap<content::RenderWidgetHost> render_widget_hosts_;
   bool fast_shutdown_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

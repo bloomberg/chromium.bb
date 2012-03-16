@@ -111,12 +111,6 @@ class RenderWidgetHostView;
 // the RenderWidgetHost's IPC message map.
 class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
  public:
-  // Gets a RenderVidgetHost pointer from an IPC::Channel::Listener pointer.
-  static RenderWidgetHost* FromIPCChannelListener(
-      IPC::Channel::Listener* listener);
-  static const RenderWidgetHost* FromIPCChannelListener(
-      const IPC::Channel::Listener* listener);
-
   // Free all backing stores used for rendering to drop memory usage.
   static void RemoveAllBackingStores();
 

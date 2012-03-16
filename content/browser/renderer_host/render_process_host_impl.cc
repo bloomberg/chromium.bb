@@ -124,6 +124,8 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::ChildProcessHostImpl;
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 using content::UserMetricsAction;
 using content::WebUIControllerFactory;
 
@@ -913,8 +915,8 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   }
 
   // Dispatch incoming messages to the appropriate RenderView/WidgetHost.
-  IPC::Channel::Listener* listener = GetListenerByID(msg.routing_id());
-  if (!listener) {
+  RenderWidgetHost* rwh = render_widget_hosts_.Lookup(msg.routing_id());
+  if (!rwh) {
     if (msg.is_sync()) {
       // The listener has gone away, so we must respond or else the caller will
       // hang waiting for a reply.
@@ -924,7 +926,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     }
     return true;
   }
-  return listener->OnMessageReceived(msg);
+  return RenderWidgetHostImpl::From(rwh)->OnMessageReceived(msg);
 }
 
 void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
@@ -991,9 +993,9 @@ bool RenderProcessHostImpl::HasConnection() const {
   return channel_.get() != NULL;
 }
 
-IPC::Channel::Listener* RenderProcessHostImpl::GetListenerByID(
+RenderWidgetHost* RenderProcessHostImpl::GetRenderWidgetHostByID(
     int routing_id) {
-  return listeners_.Lookup(routing_id);
+  return render_widget_hosts_.Lookup(routing_id);
 }
 
 void RenderProcessHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
@@ -1004,17 +1006,17 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
   return ignore_input_events_;
 }
 
-void RenderProcessHostImpl::Attach(IPC::Channel::Listener* listener,
-                               int routing_id) {
-  listeners_.AddWithID(listener, routing_id);
+void RenderProcessHostImpl::Attach(RenderWidgetHost* host,
+                                   int routing_id) {
+  render_widget_hosts_.AddWithID(host, routing_id);
 }
 
-void RenderProcessHostImpl::Release(int listener_id) {
-  DCHECK(listeners_.Lookup(listener_id) != NULL);
-  listeners_.Remove(listener_id);
+void RenderProcessHostImpl::Release(int routing_id) {
+  DCHECK(render_widget_hosts_.Lookup(routing_id) != NULL);
+  render_widget_hosts_.Remove(routing_id);
 
   // Make sure that all associated resource requests are stopped.
-  CancelResourceRequests(listener_id);
+  CancelResourceRequests(routing_id);
 
 #if defined(OS_WIN)
   // Dump the handle table if handle auditing is enabled.
@@ -1034,7 +1036,7 @@ void RenderProcessHostImpl::Release(int listener_id) {
 
 void RenderProcessHostImpl::Cleanup() {
   // When no other owners of this object, we can delete ourselves
-  if (listeners_.IsEmpty()) {
+  if (render_widget_hosts_.IsEmpty()) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<RenderProcessHost>(this),
@@ -1089,13 +1091,13 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }
 
-content::RenderProcessHost::listeners_iterator
-    RenderProcessHostImpl::ListenersIterator() {
-  return listeners_iterator(&listeners_);
+content::RenderProcessHost::RenderWidgetHostsIterator
+    RenderProcessHostImpl::GetRenderWidgetHostsIterator() {
+  return RenderWidgetHostsIterator(&render_widget_hosts_);
 }
 
 bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {
-  if (listeners_.size() == count)
+  if (render_widget_hosts_.size() == count)
     return FastShutdownIfPossible();
   return false;
 }
@@ -1229,9 +1231,9 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
   channel_.reset();
   gpu_message_filter_ = NULL;
 
-  IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
+  IDMap<RenderWidgetHost>::iterator iter(&render_widget_hosts_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->OnMessageReceived(
+    RenderWidgetHostImpl::From(iter.GetCurrentValue())->OnMessageReceived(
         ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
                                    static_cast<int>(status),
                                    exit_code));

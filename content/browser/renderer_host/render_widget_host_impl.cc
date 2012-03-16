@@ -86,20 +86,6 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 namespace content {
 
 // static
-RenderWidgetHost* RenderWidgetHost::FromIPCChannelListener(
-    IPC::Channel::Listener* listener) {
-  return static_cast<RenderWidgetHost*>(
-      static_cast<RenderWidgetHostImpl*>(listener));
-}
-
-// static
-const RenderWidgetHost* RenderWidgetHost::FromIPCChannelListener(
-    const IPC::Channel::Listener* listener) {
-  return static_cast<const RenderWidgetHost*>(
-      static_cast<const RenderWidgetHostImpl*>(listener));
-}
-
-// static
 void RenderWidgetHost::RemoveAllBackingStores() {
   BackingStoreManager::RemoveAllBackingStores();
 }

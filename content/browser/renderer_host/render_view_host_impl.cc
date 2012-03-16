@@ -103,8 +103,7 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   if (!process)
     return NULL;
-  RenderWidgetHost* widget = RenderWidgetHost::FromIPCChannelListener(
-      process->GetListenerByID(render_view_id));
+  RenderWidgetHost* widget = process->GetRenderWidgetHostByID(render_view_id);
   if (!widget || !widget->IsRenderView())
     return NULL;
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
@@ -670,8 +669,8 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
           GetProcess()->GetID())) {
     // This process has no bindings yet. Make sure it does not have more
     // than this single view.
-    RenderProcessHost::listeners_iterator iter(
-        GetProcess()->ListenersIterator());
+    RenderProcessHostImpl::RenderWidgetHostsIterator iter(
+        GetProcess()->GetRenderWidgetHostsIterator());
     iter.Advance();
     if (!iter.IsAtEnd())
       return;

@@ -194,15 +194,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // The RenderProcessHost may host multiple TabContents.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
-      //
-      // NOTE: This is a bit dangerous.  We know that for now, listeners
-      //       are always RenderWidgetHosts.  But in theory, they don't
-      //       have to be.
-      content::RenderProcessHost::listeners_iterator iter(
-          render_process_host->ListenersIterator());
+      content::RenderProcessHost::RenderWidgetHostsIterator iter(
+          render_process_host->GetRenderWidgetHostsIterator());
       for (; !iter.IsAtEnd(); iter.Advance()) {
-        const RenderWidgetHost* widget =
-            RenderWidgetHost::FromIPCChannelListener(iter.GetCurrentValue());
+        const RenderWidgetHost* widget = iter.GetCurrentValue();
         DCHECK(widget);
         if (!widget || !widget->IsRenderView())
           continue;

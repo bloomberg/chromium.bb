@@ -27,11 +27,10 @@ RenderViewHost* FindFirstDevToolsHost() {
     DCHECK(render_process_host);
     if (!render_process_host->HasConnection())
       continue;
-    content::RenderProcessHost::listeners_iterator iter(
-        render_process_host->ListenersIterator());
+    content::RenderProcessHost::RenderWidgetHostsIterator iter(
+        render_process_host->GetRenderWidgetHostsIterator());
     for (; !iter.IsAtEnd(); iter.Advance()) {
-      const RenderWidgetHost* widget =
-          RenderWidgetHost::FromIPCChannelListener(iter.GetCurrentValue());
+      const RenderWidgetHost* widget = iter.GetCurrentValue();
       DCHECK(widget);
       if (!widget || !widget->IsRenderView())
         continue;

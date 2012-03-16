@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::ChildProcessHostImpl;
+using content::RenderWidgetHost;
 
 MockRenderProcessHost::MockRenderProcessHost(
     content::BrowserContext* browser_context)
@@ -143,18 +144,18 @@ bool MockRenderProcessHost::IgnoreInputEvents() const {
   return false;
 }
 
-void MockRenderProcessHost::Attach(IPC::Channel::Listener* listener,
+void MockRenderProcessHost::Attach(RenderWidgetHost* host,
                                    int routing_id) {
-  listeners_.AddWithID(listener, routing_id);
+  render_widget_hosts_.AddWithID(host, routing_id);
 }
 
-void MockRenderProcessHost::Release(int listener_id) {
-  listeners_.Remove(listener_id);
+void MockRenderProcessHost::Release(int routing_id) {
+  render_widget_hosts_.Remove(routing_id);
   Cleanup();
 }
 
 void MockRenderProcessHost::Cleanup() {
-  if (listeners_.IsEmpty()) {
+  if (render_widget_hosts_.IsEmpty()) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::Source<RenderProcessHost>(this),
@@ -177,9 +178,9 @@ bool MockRenderProcessHost::SuddenTerminationAllowed() const {
   return true;
 }
 
-IPC::Channel::Listener* MockRenderProcessHost::GetListenerByID(
+content::RenderWidgetHost* MockRenderProcessHost::GetRenderWidgetHostByID(
     int routing_id) {
-  return listeners_.Lookup(routing_id);
+  return render_widget_hosts_.Lookup(routing_id);
 }
 
 content::BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
@@ -191,7 +192,7 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 }
 
 bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
-  if (listeners_.size() == count)
+  if (render_widget_hosts_.size() == count)
     return FastShutdownIfPossible();
   return false;
 }
@@ -203,9 +204,9 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 }
 
-content::RenderProcessHost::listeners_iterator
-    MockRenderProcessHost::ListenersIterator() {
-  return listeners_iterator(&listeners_);
+content::RenderProcessHost::RenderWidgetHostsIterator
+    MockRenderProcessHost::GetRenderWidgetHostsIterator() {
+  return RenderWidgetHostsIterator(&render_widget_hosts_);
 }
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {

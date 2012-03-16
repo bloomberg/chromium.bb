@@ -123,15 +123,14 @@ void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
   content::RenderWidgetHostView* view = NULL;
   if (params.custom_context.render_widget_id !=
       content::CustomContextMenuContext::kCurrentRenderWidget) {
-    IPC::Channel::Listener* listener =
-        web_contents_->GetRenderProcessHost()->GetListenerByID(
+    content::RenderWidgetHost* host =
+        web_contents_->GetRenderProcessHost()->GetRenderWidgetHostByID(
             params.custom_context.render_widget_id);
-    if (!listener) {
+    if (!host) {
       NOTREACHED();
       return;
     }
-    view =
-        content::RenderWidgetHost::FromIPCChannelListener(listener)->GetView();
+    view = host->GetView();
   } else {
     view = web_contents_->GetRenderWidgetHostView();
   }
