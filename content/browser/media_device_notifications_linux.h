@@ -29,7 +29,10 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
   // Must be called for MediaDeviceNotificationsLinux to work.
   void Init();
 
-  void OnFilePathChanged(const FilePath& path);
+ protected:
+  virtual ~MediaDeviceNotificationsLinux();
+
+  virtual void OnFilePathChanged(const FilePath& path);
 
  private:
   friend class base::RefCountedThreadSafe<MediaDeviceNotificationsLinux>;
@@ -57,8 +60,6 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
 
     DISALLOW_COPY_AND_ASSIGN(WatcherDelegate);
   };
-
-  virtual ~MediaDeviceNotificationsLinux();
 
   void InitOnFileThread();
 

@@ -1,2 +1,0 @@
-# Flaky, see http://crbug.com/118581
-MediaDeviceNotificationsLinuxTest.MultiDevicesOneMountPoint

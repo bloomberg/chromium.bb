@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fcntl.h>
 #include <mntent.h>
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <string>
+#include <string.h>
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -40,6 +36,29 @@ const char* kMountPointB = "mnt_b";
 }  // namespace
 
 namespace content {
+
+class MediaDeviceNotificationsLinuxTestWrapper
+    : public MediaDeviceNotificationsLinux {
+ public:
+  MediaDeviceNotificationsLinuxTestWrapper(const FilePath& path,
+                                           MessageLoop* message_loop)
+      : MediaDeviceNotificationsLinux(path),
+        message_loop_(message_loop) {
+  }
+
+ protected:
+  ~MediaDeviceNotificationsLinuxTestWrapper() {}
+
+  virtual void OnFilePathChanged(const FilePath& path) {
+    MediaDeviceNotificationsLinux::OnFilePathChanged(path);
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  }
+
+ private:
+  MessageLoop* message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinuxTestWrapper);
+};
 
 class MediaDeviceNotificationsLinuxTest : public testing::Test {
  public:
@@ -81,7 +100,9 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     WriteToMtab(initial_test_data, arraysize(initial_test_data), true);
 
     // Initialize the test subject.
-    notifications_ = new MediaDeviceNotificationsLinux(mtab_file_);
+    notifications_ =
+        new MediaDeviceNotificationsLinuxTestWrapper(mtab_file_,
+                                                     &message_loop_);
     notifications_->Init();
     message_loop_.RunAllPending();
   }
@@ -100,7 +121,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
                              size_t data_size,
                              bool overwrite) {
     WriteToMtab(data, data_size, overwrite);
-    message_loop_.RunAllPending();
+    message_loop_.Run();
   }
 
   // Create a directory named |dir| relative to the test directory.
@@ -120,7 +141,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   }
 
   base::MockDevicesChangedObserver& observer() {
-    return *mock_devices_changed_observer_.get();
+    return *mock_devices_changed_observer_;
   }
 
  private:
@@ -151,17 +172,6 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     free(entry.mnt_opts);
     int end_result = endmntent(file);
     ASSERT_EQ(1, end_result);
-
-    // Need to ensure data reaches disk so the FilePathWatcher fires in time.
-    // Otherwise this will cause MediaDeviceNotificationsLinuxTest to be flaky.
-    int fd = open(mtab_file_.value().c_str(), O_RDONLY);
-    ASSERT_GE(fd, 0);
-
-    int fsync_result = fsync(fd);
-    ASSERT_EQ(0, fsync_result);
-
-    int close_result = close(fd);
-    ASSERT_EQ(0, close_result);
   }
 
   // The message loop and file thread to run tests on.
@@ -177,7 +187,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   // Path to the test mtab file.
   FilePath mtab_file_;
 
-  scoped_refptr<MediaDeviceNotificationsLinux> notifications_;
+  scoped_refptr<MediaDeviceNotificationsLinuxTestWrapper> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinuxTest);
 };
