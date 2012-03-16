@@ -679,14 +679,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void TriggerBrowserActionById(base::DictionaryValue* args,
                                 IPC::Message* reply_message);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  // Dumps a heap profile.
-  // It also checks whether the heap profiler is running, or not.
-  // Uses the JSON interface for input/output.
-  void HeapProfilerDump(base::DictionaryValue* args,
-                        IPC::Message* reply_message);
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
-
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
                   base::DictionaryValue* args,
