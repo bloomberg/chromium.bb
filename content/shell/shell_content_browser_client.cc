@@ -40,10 +40,6 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 WebContentsView* ShellContentBrowserClient::OverrideCreateWebContentsView(
     WebContents* web_contents) {
-  ShellDevToolsDelegate* devtools_delegate =
-      shell_browser_main_parts_->devtools_delegate();
-  if (devtools_delegate)
-    devtools_delegate->AddWebContents(web_contents);
   return NULL;
 }
 

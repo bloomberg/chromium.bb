@@ -25,6 +25,7 @@ class URLRequestContext;
 namespace content {
 
 class DevToolsClientHost;
+class RenderViewHost;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
@@ -32,8 +33,13 @@ class DevToolsHttpHandlerImpl
       public net::HttpServer::Delegate,
       public net::URLRequest::Delegate {
  private:
+  struct PageInfo;
+  typedef std::vector<PageInfo> PageList;
   friend class base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>;
   friend class DevToolsHttpHandler;
+
+  static bool SortPageListByTime(const PageInfo& info1, const PageInfo& info2);
+
   DevToolsHttpHandlerImpl(const std::string& ip,
                           int port,
                           const std::string& frontend_url,
@@ -53,6 +59,8 @@ class DevToolsHttpHandlerImpl
   virtual void OnWebSocketMessage(int connection_id,
                                   const std::string& data) OVERRIDE;
   virtual void OnClose(int connection_id) OVERRIDE;
+
+  PageList GeneratePageList();
 
   virtual void OnJsonRequestUI(int connection_id,
                                const net::HttpServerRequestInfo& info);
@@ -80,6 +88,9 @@ class DevToolsHttpHandlerImpl
                const std::string& message);
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
+  size_t BindRenderViewHost(RenderViewHost* rvh);
+  RenderViewHost* GetBoundRenderViewHost(size_t id);
+  void ResetRenderViewHostBinding();
 
   std::string ip_;
   int port_;
@@ -98,6 +109,8 @@ class DevToolsHttpHandlerImpl
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
+  typedef std::pair<int, int> Target;
+  std::vector<Target> targets_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 

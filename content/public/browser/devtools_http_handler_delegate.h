@@ -22,9 +22,6 @@ class DevToolsHttpHandlerDelegate {
   typedef std::vector<WebContents*> InspectableTabs;
   virtual ~DevToolsHttpHandlerDelegate() {}
 
-  // Should return the list of inspectable tabs. Called on the UI thread.
-  virtual InspectableTabs GetInspectableTabs() = 0;
-
   // Should return discovery page HTML that should list available tabs
   // and provide attach links. Called on the IO thread.
   virtual std::string GetDiscoveryPageHTML() = 0;
