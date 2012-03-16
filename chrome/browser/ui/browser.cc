@@ -808,6 +808,10 @@ WebContents* Browser::OpenApplicationWindow(
   WebContents* contents = wrapper->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
+  // TODO(stevenjb): Find the right centralized place to do this. Currently it
+  // is only done for app tabs in normal browsers through SetExtensionAppById.
+  if (extension && type == TYPE_PANEL)
+    wrapper->extension_tab_helper()->SetExtensionAppIconById(extension->id());
   browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
