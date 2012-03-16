@@ -115,6 +115,8 @@ class LauncherUpdater : public TabStripModelObserver,
   virtual void FaviconUpdated() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LauncherUpdaterTest, PanelItem);
+
   // AppTabDetails is used to identify a launcher item that corresponds to an
   // app tab.
   struct AppTabDetails {

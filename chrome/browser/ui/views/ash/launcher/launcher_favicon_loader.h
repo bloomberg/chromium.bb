@@ -40,6 +40,10 @@ class LauncherFaviconLoader : public content::WebContentsObserver {
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  content::WebContents* web_contents() {
+    return content::WebContentsObserver::web_contents();
+  }
+
   // Returns an appropriately sized favicon for the Launcher. If none are
   // available will return an isNull bitmap.
   SkBitmap GetFavicon() const;

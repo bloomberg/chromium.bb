@@ -384,6 +384,23 @@ TEST_F(LauncherUpdaterTest, SetAppImage) {
   EXPECT_EQ(3, launcher_model_->items()[initial_size].image.height());
 }
 
+// Verifies Panels items work.
+TEST_F(LauncherUpdaterTest, PanelItem) {
+  size_t initial_size = launcher_model_->items().size();
+  aura::Window window(NULL);
+  TestTabStripModelDelegate tab_strip_delegate;
+  TabStripModel tab_strip(&tab_strip_delegate, profile());
+  TabContentsWrapper panel_tab(CreateTestTabContents());
+  app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
+  tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+  LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                          LauncherUpdater::TYPE_PANEL, std::string());
+  updater.Init();
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+  EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
+}
+
 // Verifies app tabs are added right after the existing tabbed item.
 TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   size_t initial_size = launcher_model_->items().size();
