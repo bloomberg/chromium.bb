@@ -49,7 +49,7 @@ void FilePathWatcherWrapper::Cancel() {
   DCHECK(CalledOnValidThread());
   if (delegate_) {
     delegate_->Cancel();
-    delegate_.release();
+    delegate_ = NULL;
   }
   watcher_.reset(NULL);
   // All state is gone so it's okay to detach from thread.
