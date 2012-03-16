@@ -1,9 +1,16 @@
-# compile failure, syntax error
+# compile failure, syntax error (this appears to tests a gcc  extension)
+# so not a biggy
 spec5.C
-# bad exit code
+# runtime failure: the problem here is that we are throwing an exception
+# during the contruction of an object on the stack, llvm does not seem
+# to call the destructor
 init-temp1.C
-# terminate called after throwing an instance of 'int*'
+# runtime failure: terminate called after throwing an instance of 'int*'
+# changing the signature from "throw (IntArray)" => "throw (int*)"
+# fixes the problem
 spec9.C
+# runtime failure: base class destructor does not seem to be called
+# at the right time
 dtor1.C
 # additional failures at -O3 (x8664 only)
 registers1.C x86-64,O3
