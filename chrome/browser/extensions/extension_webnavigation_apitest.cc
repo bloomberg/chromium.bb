@@ -21,6 +21,26 @@
 
 using content::WebContents;
 
+#if defined(OS_WIN)
+// http://crbug.com/118478
+#define MAYBE_WebNavigationIFrame DISABLED_WebNavigationIFrame
+#define MAYBE_WebNavigationFailures DISABLED_WebNavigationFailures
+#define MAYBE_WebNavigationForwardBack DISABLED_WebNavigationForwardBack
+#define MAYBE_WebNavigationClientRedirect DISABLED_WebNavigationClientRedirect
+#define MAYBE_WebNavigationSimpleLoad DISABLED_WebNavigationSimpleLoad
+#define MAYBE_WebNavigationReferenceFragment \
+    DISABLED_WebNavigationReferenceFragment
+#define MAYBE_WebNavigationOpenTab DISABLED_WebNavigationOpenTab
+#else
+#define MAYBE_WebNavigationIFrame WebNavigationIFrame
+#define MAYBE_WebNavigationFailures WebNavigationFailures
+#define MAYBE_WebNavigationForwardBack WebNavigationForwardBack
+#define MAYBE_WebNavigationClientRedirect WebNavigationClientRedirect
+#define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
+#define MAYBE_WebNavigationReferenceFragment WebNavigationReferenceFragment
+#define MAYBE_WebNavigationOpenTab WebNavigationOpenTab
+#endif
+
 namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
@@ -62,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationGetFrame) {
       RunExtensionSubtest("webnavigation", "test_getFrame.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationClientRedirect) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationClientRedirect) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -86,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationServerRedirect) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationForwardBack) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -97,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationForwardBack) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationIFrame) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -107,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationIFrame) {
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationOpenTab) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -117,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationOpenTab) {
       RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationReferenceFragment) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -127,13 +147,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
       RunExtensionSubtest("webnavigation", "test_referenceFragment.html"))
           << message_;
 }
-
-#if defined(OS_WIN)
-// Marking this test flaky on Windows: http://crbug.com/116842
-#define MAYBE_WebNavigationSimpleLoad FLAKY_WebNavigationSimpleLoad
-#else
-#define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
-#endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationSimpleLoad) {
   FrameNavigationState::set_allow_extension_scheme(true);
@@ -145,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationSimpleLoad) {
       RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationFailures) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
