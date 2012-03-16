@@ -12,7 +12,9 @@
 #include "base/location.h"
 #include "base/string_split.h"
 #include "base/time.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -214,6 +216,8 @@ class TooltipController::Tooltip {
 
 TooltipController::TooltipController()
     : tooltip_window_(NULL),
+      tooltip_window_at_mouse_press_(NULL),
+      mouse_pressed_(false),
       tooltip_(new Tooltip),
       tooltips_enabled_(true) {
   tooltip_timer_.Start(FROM_HERE,
@@ -249,6 +253,7 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
                                             aura::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_DRAGGED:
       if (tooltip_window_ != target) {
         if (tooltip_window_)
           tooltip_window_->RemoveObserver(this);
@@ -259,14 +264,25 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
 
-      if (tooltip_->IsVisible())
+      // We update the tooltip if it is visible, or if we force-hid it due to a
+      // mouse press.
+      if (tooltip_->IsVisible() || tooltip_window_at_mouse_press_)
         UpdateIfRequired();
       break;
     case ui::ET_MOUSE_PRESSED:
+      mouse_pressed_ = true;
+      tooltip_window_at_mouse_press_ = target;
+      if (target)
+        tooltip_text_at_mouse_press_ = aura::client::GetTooltipText(target);
+      tooltip_->Hide();
+      break;
     case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSEWHEEL:
+      mouse_pressed_ = false;
+      break;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
+      // We will not received a mouse release, so reset mouse pressed state.
+      mouse_pressed_ = false;
+    case ui::ET_MOUSEWHEEL:
       // Hide the tooltip for click, release, drag, wheel events.
       if (tooltip_->IsVisible())
         tooltip_->Hide();
@@ -309,13 +325,25 @@ void TooltipController::TooltipTimerFired() {
 }
 
 void TooltipController::UpdateIfRequired() {
-  if (!tooltips_enabled_) {
+  if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress()) {
     tooltip_->Hide();
     return;
   }
+
   string16 tooltip_text;
   if (tooltip_window_)
     tooltip_text = aura::client::GetTooltipText(tooltip_window_);
+
+  // If the user pressed a mouse button. We will hide the tooltip and not show
+  // it until there is a change in the tooltip.
+  if (tooltip_window_at_mouse_press_) {
+    if (tooltip_window_ == tooltip_window_at_mouse_press_ &&
+        tooltip_text == tooltip_text_at_mouse_press_) {
+      tooltip_->Hide();
+      return;
+    }
+    tooltip_window_at_mouse_press_ = NULL;
+  }
 
   // We add the !tooltip_->IsVisible() below because when we come here from
   // TooltipTimerFired(), the tooltip_text may not have changed but we still
@@ -338,6 +366,14 @@ void TooltipController::UpdateIfRequired() {
 
 bool TooltipController::IsTooltipVisible() {
   return tooltip_->IsVisible();
+}
+
+bool TooltipController::IsDragDropInProgress() {
+  aura::client::DragDropClient* client = aura::client::GetDragDropClient(
+      Shell::GetRootWindow());
+  if (client)
+    return client->IsDragDropInProgress();
+  return false;
 }
 
 }  // namespace internal

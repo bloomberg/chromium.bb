@@ -69,8 +69,16 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
   // Only used in tests.
   bool IsTooltipVisible();
 
+  bool IsDragDropInProgress();
+
   aura::Window* tooltip_window_;
   string16 tooltip_text_;
+
+  // These fields are for tracking state when the user presses a mouse button.
+  aura::Window* tooltip_window_at_mouse_press_;
+  string16 tooltip_text_at_mouse_press_;
+  bool mouse_pressed_;
+
   scoped_ptr<Tooltip> tooltip_;
 
   base::RepeatingTimer<TooltipController> tooltip_timer_;
