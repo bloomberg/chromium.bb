@@ -16,13 +16,7 @@ int NaClCheckDEP() {
   /*
    * We require DEP, so forward this call to the OS-specific check routine.
    */
-  /* TODO(cbiffle) or (jvoung): enable this when ARM HW test bots have
-   * an upgraded kernel that does not have "the" signal handler bug.
-   * http://code.google.com/p/nativeclient/issues/detail?id=969
-   *
-   return NaClAttemptToExecuteData();
-   */
-  return 1;
+  return NaClAttemptToExecuteData();
 }
 
 nacl_void_thunk NaClGenerateThunk(char *buf, size_t size_in_bytes) {
