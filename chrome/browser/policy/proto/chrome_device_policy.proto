@@ -139,6 +139,27 @@ message ScreenSaverProto {
   optional int64 screen_saver_timeout = 2;
 }
 
+// Enterprise controls for auto-update behavior of Chrome OS.
+message AutoUpdateSettingsProto {
+  // True if we don't want the device to auto-update (target_version_prefix is
+  // ignored in this case).
+  optional bool update_disabled = 1;
+
+  // Specifies the prefix of the target version we want the device to
+  // update to, if it's on a older version. If the device is already on
+  // a version with the given prefix, then there's no effect. If the device is
+  // on a higher version, it will remain on the higher version as we
+  // don't support rollback yet. The format of this version can be one
+  // of the following:
+  // ---------------------------------------------------------------------
+  // "" (or not set at all): update to latest version available.
+  // 1412.: update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
+  // 1412.2.: update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
+  // 1412.24.34: update to this specific version only
+  // ---------------------------------------------------------------------
+  optional string target_version_prefix = 2;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -156,4 +177,5 @@ message ChromeDeviceSettingsProto {
   optional AppPackProto app_pack = 14;
   optional ForcedLogoutTimeoutsProto forced_logout_timeouts = 15;
   optional ScreenSaverProto login_screen_saver = 16;
+  optional AutoUpdateSettingsProto auto_update_settings = 17;
 }
