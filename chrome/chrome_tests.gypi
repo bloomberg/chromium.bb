@@ -2510,9 +2510,10 @@
       'dependencies': [
         'browser',
         '../sync/protocol/sync_proto.gyp:sync_proto',
-        'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:packed_extra_resources',
+        'chrome_resources.gyp:packed_resources',
         'common/extensions/api/api.gyp:api',
         'renderer',
         'test_support_common',
@@ -3141,6 +3142,12 @@
               '-Wl,-ObjC',
             ],
           },
+          # Other platforms only need
+          # chrome_resources.gyp:{packed_extra_resources,packed_resources},
+          # and can build this target standalone much faster.
+          'dependencies': [
+            'chrome'
+          ],
           'sources': [
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
             '../content/renderer/external_popup_menu_browsertest.cc',
@@ -3217,9 +3224,10 @@
       'dependencies': [
         'browser',
         '../sync/protocol/sync_proto.gyp:sync_proto',
-        'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
+        'chrome_resources.gyp:packed_extra_resources',
+        'chrome_resources.gyp:packed_resources',
         'renderer',
         'test_support_common',
         '../base/base.gyp:base',
@@ -3368,6 +3376,12 @@
               '-Wl,-ObjC',
             ],
           },
+          # Other platforms only need
+          # chrome_resources.gyp:{packed_extra_resources,packed_resources},
+          # and can build this target standalone much faster.
+          'dependencies': [
+            'chrome'
+          ],
         }, { # else: OS != "mac"
           'sources!': [
             'browser/extensions/browser_action_test_util_mac.mm',
