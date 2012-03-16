@@ -573,8 +573,10 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_id,
     const base::Callback<void(bool)>& completion_task) {
-  if (!surface_id)
+  if (!surface_id) {
+    completion_task.Run(true);
     return;
+  }
 
   presenter_->AsyncPresentAndAcknowledge(window,
                                          size,
