@@ -2095,6 +2095,13 @@ libelf-host() {
     # There is a common symbol that must be treated as a definition.
     # In particular "__libelf_fill_byte".
     ranlib="${RANLIB} -c"
+  elif ${BUILD_PLATFORM_WIN}; then
+    # This might be overkill. We really only need to stub-out libintl.h
+    # to avoid a dependency on libintl when linking LLVM with libelf.
+    # Note: this is (a) disable language translation of error messages, and
+    # (b) was only due to --disable-nls not working.
+    # Anyway, including consistent headers hopefully does not harm.
+    extra_headers=true
   fi
 
   RunWithLog "libelf-host" \
