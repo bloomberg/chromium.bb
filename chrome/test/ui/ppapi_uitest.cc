@@ -155,6 +155,15 @@ class PPAPITestBase : public InProcessBrowserTest {
     RunTestURL(url);
   }
 
+  // Run the test and reload. This can test for clean shutdown, including leaked
+  // instance object vars.
+  void RunTestAndReload(const std::string& test_case) {
+    GURL url = GetTestFileUrl(test_case);
+    RunTestURL(url);
+    // If that passed, we simply run the test again, which navigates again.
+    RunTestURL(url);
+  }
+
   void RunTestViaHTTP(const std::string& test_case) {
     // For HTTP tests, we use the output DIR to grab the generated files such
     // as the NEXEs.
@@ -442,10 +451,25 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
 
-TEST_PPAPI_IN_PROCESS(Instance)
-TEST_PPAPI_OUT_OF_PROCESS(Instance)
-// The Instance test is actually InstanceDeprecated which isn't supported
-// by NaCl.
+TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
+TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
+// ExecuteScript isn't supported by NaCl.
+
+// We run and reload the RecursiveObjects test to ensure that the InstanceObject
+// (and others) are properly cleaned up after the first run.
+IN_PROC_BROWSER_TEST_F(PPAPITest, Instance_RecursiveObjects) {
+  RunTestAndReload("Instance_RecursiveObjects");
+}
+// TODO(dmichael): Make it work out-of-process (or at least see whether we
+//                 care).
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
+                       DISABLED_Instance_RecursiveObjects) {
+  RunTestAndReload("Instance_RecursiveObjects");
+}
+TEST_PPAPI_IN_PROCESS(Instance_TestLeakedObjectDestructors);
+TEST_PPAPI_OUT_OF_PROCESS(Instance_TestLeakedObjectDestructors);
+// ScriptableObjects aren't supported in NaCl, so Instance_RecursiveObjects and
+// Instance_TestLeakedObjectDestructors don't make sense for NaCl.
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)

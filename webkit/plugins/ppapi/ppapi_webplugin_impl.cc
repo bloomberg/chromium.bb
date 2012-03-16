@@ -8,7 +8,8 @@
 
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
-#include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -51,7 +52,8 @@ WebPluginImpl::WebPluginImpl(
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
     : init_data_(new InitData()),
-      full_frame_(params.loadManually) {
+      full_frame_(params.loadManually),
+      instance_object_(PP_MakeUndefined()) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->delegate = plugin_delegate;
@@ -91,6 +93,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
 void WebPluginImpl::destroy() {
   if (instance_) {
+    ::ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
+    instance_object_ = PP_MakeUndefined();
     instance_->Delete();
     instance_ = NULL;
   }
@@ -99,17 +103,16 @@ void WebPluginImpl::destroy() {
 }
 
 NPObject* WebPluginImpl::scriptableObject() {
-  // Call through the plugin to get its instance object. Note that we "leak" a
-  // reference here. But we want to keep the instance object alive so long as
-  // the instance is alive, so it's okay. It will get cleaned up when all
-  // NPObjectVars are "force freed" at instance shutdown.
-  scoped_refptr<NPObjectVar> object(
-      NPObjectVar::FromPPVar(instance_->GetInstanceObject()));
+  // Call through the plugin to get its instance object. The plugin should pass
+  // us a reference which we release in destroy().
+  if (instance_object_.type == PP_VARTYPE_UNDEFINED)
+    instance_object_ = instance_->GetInstanceObject();
   // GetInstanceObject talked to the plugin which may have removed the instance
   // from the DOM, in which case instance_ would be NULL now.
   if (!instance_)
     return NULL;
 
+  scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(instance_object_));
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
   if (object) {

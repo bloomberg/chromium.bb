@@ -10,6 +10,11 @@ function AdjustHeight(frameWin) {
 }
 
 function DidExecuteTests() {
+  var plugin = document.getElementById("plugin");
+  plugin.parentNode.removeChild(plugin);
+  plugin = undefined;
+  CheckPostConditions();
+
   if (window == top)
     return;
 
@@ -83,9 +88,10 @@ function ExtractSearchParameter(name) {
 //  - LogHTML
 //  - SetCookie
 //  - EvalScript
+//  - AddPostCondition
 // The second item is the verbatim message_contents.
 function ParseTestingMessage(message_data) {
-  if (typeof(message_data)!='string')
+  if (typeof(message_data) != "string")
     return undefined;
   var testing_message_prefix = "TESTING_MESSAGE";
   var delim_str = ":";
@@ -119,6 +125,46 @@ function EvalScript(script) {
   }
 }
 
+var conditions = [];
+// Add a "PostCondition". These are bits of script that are run after the plugin
+// is destroyed. If they evaluate to false or throw an exception, it's
+// considered a failure.
+function AddPostCondition(script) {
+  conditions.push(script);
+}
+// Update the HTML to show the failure and update cookies so that ui_tests
+// doesn't count this as a pass.
+function ConditionFailed(error) {
+  error_string = "Post condition check failed: " + error;
+  var i = 0;
+  // If the plugin thinks the test passed but a post-condition failed, we want
+  // to clear the PASS cookie so that ui_tests doesn't count it is a passed
+  // test.
+  if (window.document.cookie.indexOf("PASS") != -1) {
+    while (window.document.cookie.indexOf("PPAPI_PROGRESS_" + i) != -1) {
+      window.document.cookie = "PPAPI_PROGRESS_" + i + "=; max-age=0";
+      ++i;
+    }
+    window.document.cookie = "PPAPI_PROGRESS_0=" + error_string
+  }
+  LogHTML("<p>" + error_string);
+}
+// Iterate through the post conditions defined in |conditions| and check that
+// they all pass.
+function CheckPostConditions() {
+  for (var i = 0; i < conditions.length; ++i) {
+    var script = conditions[i];
+    try {
+      if (!eval(script)) {
+        ConditionFailed("\"" + script + "\"");
+      }
+    } catch (ex) {
+      ConditionFailed("\"" + script + "\"" + " failed with exception: " +
+                      "\"" + ex.toString() + "\"");
+    }
+  }
+}
+
 function IsTestingMessage(message_data) {
   return (ParseTestingMessage(message_data) != undefined);
 }
@@ -138,6 +184,8 @@ function handleTestingMessage(message_event) {
       SetCookie(contents);
     else if (type === "EvalScript")
       EvalScript(contents);
+    else if (type == "AddPostCondition")
+      AddPostCondition(contents);
   }
 }
 
@@ -191,6 +239,9 @@ onload = function() {
 // particular, we replace document.createEvent, MessageEvent.initMessageEvent,
 // and the MessageEvent constructor. Previous versions of the PostMessage
 // implementation made use of these and would fail (http://crbug.com/82604).
+// TODO(dmichael): These should clear the PASS cookie so that ui_tests sees
+//                 these as a failure (see ConditionFailed for how to do this).
+//                 crbug.com/109775
 document.createEvent = function() {
   LogHTML("<p>Bad document.createEvent called!");
 }

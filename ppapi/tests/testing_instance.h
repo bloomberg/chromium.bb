@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,11 @@ pp::InstancePrivate {
 
   void ReportProgress(const std::string& progress_value);
 
+  // Add a post-condition to the JavaScript on the test_case.html page. This
+  // JavaScript code will be run after the instance is shut down and must
+  // evaluate to |true| or the test will fail.
+  void AddPostCondition(const std::string& script);
+
  private:
   void ExecuteTests(int32_t unused);
 
@@ -108,6 +113,10 @@ pp::InstancePrivate {
   //  http://testserver/test_case.html?testcase=PostMessage_SendingData
   // Runs 'PostMessage_SendingData.
   std::string FilterForTestName(const std::string& name);
+
+  // Sends a test command to the page using PostMessage.
+  void SendTestCommand(const std::string& command);
+  void SendTestCommand(const std::string& command, const std::string& params);
 
   // Appends a list of available tests to the console in the document.
   void LogAvailableTests();

@@ -358,6 +358,11 @@ PluginInstance::~PluginInstance() {
 void PluginInstance::Delete() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
+  // Force the MessageChannel to release its "passthrough object" which should
+  // release our last reference to the "InstanceObject" and will probably
+  // destroy it. We want to do this prior to calling DidDestroy in case the
+  // destructor of the instance object tries to use the instance.
+  message_channel_->SetPassthroughObject(NULL);
   instance_interface_->DidDestroy(pp_instance());
 
   if (fullscreen_container_) {

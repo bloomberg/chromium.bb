@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <limits>
+#include <set>
 #include <string>
 
 #include "ppapi/c/pp_resource.h"
@@ -70,10 +71,16 @@ class TestCase {
   // that want to handle view changes should override this method.
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 
+  void IgnoreLeakedVar(int64_t id);
+
+  TestingInstance* instance() { return instance_; }
+
+  const PPB_Testing_Dev* testing_interface() { return testing_interface_; }
+
  protected:
 #if !(defined __native_client__)
   // Overridden by each test to supply a ScriptableObject corresponding to the
-  // test. There can only be one object created for all test in a given class
+  // test. There can only be one object created for all tests in a given class,
   // so be sure your object is designed to be re-used.
   //
   // This object should be created on the heap. Ownership will be passed to the
@@ -108,6 +115,9 @@ class TestCase {
   bool force_async_;
 
  private:
+  // Var ids that should be ignored when checking for leaks on shutdown.
+  std::set<int64_t> ignored_leaked_vars_;
+
 #if !(defined __native_client__)
   // Holds the test object, if any was retrieved from CreateTestObject.
   pp::VarPrivate test_object_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,19 @@ class TestInstance : public TestCase {
 
   void set_string(const std::string& s) { string_ = s; }
 
+  // Leak a reference to the given var, but ignore the leak in the leak checking
+  // that happens at shutdown. This allows us to test the "ForceFree" that
+  // happens on instance shutdown.
+  void LeakReferenceAndIgnore(const pp::Var& leaked);
+
  protected:
   // Test case protected overrides.
   virtual pp::deprecated::ScriptableObject* CreateTestObject();
 
  private:
   std::string TestExecuteScript();
+  std::string TestRecursiveObjects();
+  std::string TestLeakedObjectDestructors();
 
   // Value written by set_string which is called by the ScriptableObject. This
   // allows us to keep track of what was called.
