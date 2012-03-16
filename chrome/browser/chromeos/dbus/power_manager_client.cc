@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -16,7 +17,6 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/dbus/power_supply_properties.pb.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -537,7 +537,7 @@ PowerManagerClient::~PowerManagerClient() {
 }
 
 PowerManagerClient* PowerManagerClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new PowerManagerClientImpl(bus);
   } else {
     return new PowerManagerClientStubImpl();

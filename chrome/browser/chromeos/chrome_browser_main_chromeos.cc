@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -306,7 +306,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // detector starts to monitor changes from the update engine.
   UpgradeDetectorChromeos::GetInstance()->Init();
 
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     // Enable Num Lock on X start up for http://crosbug.com/p/5795 and
     // http://crosbug.com/p/6245. We don't do this for Chromium OS since many
     // netbooks do not work as intended when Num Lock is on (e.g. On a netbook
@@ -336,7 +336,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // volume on the login screen, if Chrome is running on Chrome OS
   // (i.e. not Linux desktop), and in non-test mode.
   // Note: SystemKeyEventListener depends on the DBus thread.
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() &&
+  if (base::chromeos::IsRunningOnChromeOS() &&
       !parameters().ui_task) {  // ui_task is non-NULL when running tests.
     chromeos::SystemKeyEventListener::Initialize();
   }

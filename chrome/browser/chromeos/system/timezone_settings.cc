@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -13,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -203,7 +203,7 @@ class TimezoneSettingsStubImpl : public TimezoneSettings {
 };
 
 TimezoneSettings* TimezoneSettings::GetInstance() {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return TimezoneSettingsImpl::GetInstance();
   } else {
     return TimezoneSettingsStubImpl::GetInstance();

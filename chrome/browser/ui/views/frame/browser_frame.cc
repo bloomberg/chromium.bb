@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
 #include "base/i18n/rtl.h"
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -101,7 +102,7 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 
 bool BrowserFrame::IsMaximized() const {
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return !IsFullscreen() &&
         (browser_view_->IsBrowserTypeNormal() || Widget::IsMaximized());
   }

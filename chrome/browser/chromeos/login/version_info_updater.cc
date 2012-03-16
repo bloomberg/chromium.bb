@@ -9,13 +9,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
@@ -44,7 +44,7 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 }
 
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     version_loader_.GetVersion(
         &version_consumer_,
         base::Bind(&VersionInfoUpdater::OnVersion, base::Unretained(this)),
@@ -84,7 +84,7 @@ void VersionInfoUpdater::UpdateVersionLabel() {
   const char *kAuraSuffix = " Aura";
 #endif
 
-  if (!system::runtime_environment::IsRunningOnChromeOS()) {
+  if (!base::chromeos::IsRunningOnChromeOS()) {
     if (delegate_) {
       delegate_->OnOSVersionLabelTextUpdated(
           CrosLibrary::Get()->load_error_string());

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/frame/layout_mode_button.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -427,7 +427,7 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
 bool BrowserView::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  if (system::runtime_environment::IsRunningOnChromeOS() ||
+  if (base::chromeos::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized)) {
     // Typically we don't request a full screen size. This means we'll request a
     // non-full screen size, layout/paint at that size, then the window manager

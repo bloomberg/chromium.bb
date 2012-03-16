@@ -10,6 +10,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -301,7 +301,7 @@ UserManagerImpl::UserManagerImpl()
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
   // Use stub as the logged-in user for test paths without login.
-  if (!system::runtime_environment::IsRunningOnChromeOS())
+  if (!base::chromeos::IsRunningOnChromeOS())
     StubUserLoggedIn();
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       content::NotificationService::AllSources());

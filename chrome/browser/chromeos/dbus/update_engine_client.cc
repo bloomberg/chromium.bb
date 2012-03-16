@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -280,7 +280,7 @@ UpdateEngineClient::EmptyUpdateCheckCallback() {
 
 // static
 UpdateEngineClient* UpdateEngineClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new UpdateEngineClientImpl(bus);
   } else {
     return new UpdateEngineClientStubImpl();

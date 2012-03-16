@@ -9,9 +9,9 @@
 
 // TODO(yusukes): Support Ash on Windows.
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #endif
@@ -19,8 +19,7 @@
 #if defined(OS_CHROMEOS)
 CapsLockHandler::CapsLockHandler(chromeos::input_method::XKeyboard* xkeyboard)
     : xkeyboard_(xkeyboard),
-      is_running_on_chromeos_(
-          chromeos::system::runtime_environment::IsRunningOnChromeOS()),
+      is_running_on_chromeos_(base::chromeos::IsRunningOnChromeOS()),
       caps_lock_is_on_(xkeyboard_->CapsLockIsEnabled()) {
   chromeos::SystemKeyEventListener* system_event_listener =
       chromeos::SystemKeyEventListener::GetInstance();

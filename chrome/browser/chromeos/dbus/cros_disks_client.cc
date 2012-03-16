@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -557,7 +557,7 @@ CrosDisksClient::~CrosDisksClient() {}
 
 // static
 CrosDisksClient* CrosDisksClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS())
+  if (base::chromeos::IsRunningOnChromeOS())
     return new CrosDisksClientImpl(bus);
   else
     return new CrosDisksClientStubImpl();

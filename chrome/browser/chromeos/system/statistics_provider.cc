@@ -5,14 +5,15 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -209,7 +210,7 @@ class StatisticsProviderStubImpl : public StatisticsProvider {
 };
 
 StatisticsProvider* StatisticsProvider::GetInstance() {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return StatisticsProviderImpl::GetInstance();
   } else {
     return StatisticsProviderStubImpl::GetInstance();

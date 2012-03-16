@@ -6,13 +6,13 @@
 
 #include <string>
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,7 +79,7 @@ CapsLockMenuButton::CapsLockMenuButton(StatusAreaButton::Delegate* delegate)
   // device. SystemKeyEventListener is never initialized on chrome for cros
   // running on linux.
   DCHECK(SystemKeyEventListener::GetInstance() ||
-         !system::runtime_environment::IsRunningOnChromeOS());
+         !base::chromeos::IsRunningOnChromeOS());
   if (SystemKeyEventListener::GetInstance())
     SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 
@@ -268,7 +268,7 @@ void CapsLockMenuButton::HideBubble() {
 
 bool CapsLockMenuButton::HasCapsLock() const {
   // A keyboard for Linux usually has Caps Lock.
-  if (!system::runtime_environment::IsRunningOnChromeOS())
+  if (!base::chromeos::IsRunningOnChromeOS())
     return true;
   // On the login screen, Caps Lock is not available.
   if (!initialized_prefs_)

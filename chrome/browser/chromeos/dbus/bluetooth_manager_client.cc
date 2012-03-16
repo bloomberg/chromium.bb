@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_property.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -306,7 +306,7 @@ BluetoothManagerClient::~BluetoothManagerClient() {
 }
 
 BluetoothManagerClient* BluetoothManagerClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new BluetoothManagerClientImpl(bus);
   } else {
     return new BluetoothManagerClientStubImpl();

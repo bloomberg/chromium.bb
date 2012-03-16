@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/process_proxy/process_proxy_registry.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -24,7 +24,7 @@ const char kCroshCommand[] = "/usr/bin/crosh";
 const char kStubbedCroshCommand[] = "cat";
 
 const char* GetCroshPath() {
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS())
+  if (base::chromeos::IsRunningOnChromeOS())
     return kCroshCommand;
   else
     return kStubbedCroshCommand;

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -657,7 +657,7 @@ CryptohomeClient::~CryptohomeClient() {}
 
 // static
 CryptohomeClient* CryptohomeClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS())
+  if (base::chromeos::IsRunningOnChromeOS())
     return new CryptohomeClientImpl(bus);
   else
     return new CryptohomeClientStubImpl();

@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -126,7 +126,7 @@ SpeechSynthesizerClient::~SpeechSynthesizerClient() {
 
 // static
 SpeechSynthesizerClient* SpeechSynthesizerClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new SpeechSynthesizerClientImpl(bus);
   } else {
     return new SpeechSynthesizerClientStubImpl();

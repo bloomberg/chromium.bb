@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -157,7 +157,7 @@ ImageBurnerClient::~ImageBurnerClient() {
 
 // static
 ImageBurnerClient* ImageBurnerClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new ImageBurnerClientImpl(bus);
   } else {
     return new ImageBurnerClientStubImpl();

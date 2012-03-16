@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"

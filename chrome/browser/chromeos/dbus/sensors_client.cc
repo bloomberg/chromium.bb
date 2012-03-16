@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "base/chromeos/chromeos_version.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/sensors_provider.h"
 #include "dbus/bus.h"
@@ -94,7 +94,7 @@ SensorsClient::~SensorsClient() {
 }
 
 SensorsClient* SensorsClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new SensorsClientImpl(bus);
   } else {
     return new SensorsClientStubImpl();

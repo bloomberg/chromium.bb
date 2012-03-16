@@ -20,12 +20,12 @@
 #include "ui/gfx/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/ui/views/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/views/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/views/ash/volume_controller_chromeos.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #endif
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
@@ -34,7 +34,7 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS() ||
+  if (base::chromeos::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraHostWindowUseFullscreen)) {
     aura::RootWindow::set_use_fullscreen_host_window(true);

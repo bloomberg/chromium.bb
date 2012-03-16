@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_piece.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +66,6 @@ const char kUndefinedValue[] = "undefined";
 // If there's no interface that's connected, interface that's in connecting
 // state is considered as the active one.
 // Otherwise |kUndefinedValue| is returned.
-#if defined(OS_CHROMEOS)
 static std::string GetConnectionType() {
   chromeos::NetworkLibrary* network_lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -86,7 +85,6 @@ static std::string GetConnectionType() {
   else
     return kUndefinedValue;
 }
-#endif
 
 }  // namespace
 
@@ -124,10 +122,8 @@ class RegisterPageHandler : public WebUIMessageHandler,
   void HandleGetRegistrationUrl(const ListValue* args);
   void HandleGetUserInfo(const ListValue* args);
 
-#if defined(OS_CHROMEOS)
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(chromeos::VersionLoader::Handle handle, std::string version);
-#endif
 
   // Skips registration logging |error_msg| with log type ERROR.
   void SkipRegistration(const std::string& error_msg);
@@ -135,10 +131,8 @@ class RegisterPageHandler : public WebUIMessageHandler,
   // Sends message to host registration page with system/user info data.
   void SendUserInfo();
 
-#if defined(OS_CHROMEOS)
   // Handles asynchronously loading the version.
   chromeos::VersionLoader version_loader_;
-#endif
 
   // Used to request the version.
   CancelableRequestConsumer version_consumer_;
@@ -163,7 +157,6 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
                                                 int request_id) {
   // Make sure that chrome://register is available only during
   // OOBE wizard lifetime and when device has not been registered yet.
-#if defined(OS_CHROMEOS)
   if (!chromeos::WizardController::default_controller() ||
       chromeos::WizardController::IsDeviceRegistered()) {
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
@@ -176,10 +169,6 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
           IDR_HOST_REGISTRATION_PAGE_HTML));
 
   SendResponse(request_id, html_bytes);
-#else
-  scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
-  SendResponse(request_id, empty_bytes);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,18 +183,15 @@ RegisterPageHandler::~RegisterPageHandler() {
 }
 
 void RegisterPageHandler::RegisterMessages() {
-#if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(kJsCallbackGetRegistrationUrl,
       base::Bind(&RegisterPageHandler::HandleGetRegistrationUrl,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsCallbackUserInfo,
       base::Bind(&RegisterPageHandler::HandleGetUserInfo,
                  base::Unretained(this)));
-#endif
 }
 
 void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
-#if defined(OS_CHROMEOS)
   chromeos::StartupCustomizationDocument* customization =
     chromeos::StartupCustomizationDocument::GetInstance();
   if (chromeos::WizardController::default_controller() &&
@@ -222,12 +208,10 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
   } else {
     SkipRegistration("Startup manifest not defined.");
   }
-#endif
 }
 
 void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
-#if defined(OS_CHROMEOS)
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
      version_loader_.GetVersion(
          &version_consumer_,
          base::Bind(&RegisterPageHandler::OnVersion, base::Unretained(this)),
@@ -235,29 +219,23 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
   } else {
     SkipRegistration("Not running on ChromeOS.");
   }
-#endif
 }
 
-#if defined(OS_CHROMEOS)
 void RegisterPageHandler::OnVersion(chromeos::VersionLoader::Handle handle,
                                     std::string version) {
   version_ = version;
   SendUserInfo();
 }
-#endif
 
 void RegisterPageHandler::SkipRegistration(const std::string& error_msg) {
-#if defined(OS_CHROMEOS)
   LOG(ERROR) << error_msg;
   if (chromeos::WizardController::default_controller())
     chromeos::WizardController::default_controller()->SkipRegistration();
   else
     web_ui()->CallJavascriptFunction(kJsApiSkipRegistration);
-#endif
 }
 
 void RegisterPageHandler::SendUserInfo() {
-#if defined(OS_CHROMEOS)
   DictionaryValue value;
 
   chromeos::system::StatisticsProvider * provider =
@@ -286,7 +264,6 @@ void RegisterPageHandler::SendUserInfo() {
   value.SetString("user_last_name", "");
 
   web_ui()->CallJavascriptFunction(kJsApiSetUserInfo, value);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

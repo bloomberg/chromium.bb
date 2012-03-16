@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -558,7 +558,7 @@ BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
     Delegate* delegate) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new BluetoothAgentServiceProviderStubImpl(delegate);

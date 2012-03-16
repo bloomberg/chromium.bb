@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
@@ -20,6 +19,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
 
 #if defined(OS_CHROMEOS)
   ASSERT_FALSE(chromeos::UserManager::Get()->IsUserLoggedIn());
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT,
               host->GetStatusAreaTextStyle());
   } else {

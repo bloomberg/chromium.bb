@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -99,7 +99,7 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 
 // static
 CrosDBusService* CrosDBusService::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
     return service;

@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,7 +21,7 @@ const char kLockOnIdleSuspendPath[] =
 void EnableScreenLockOnFileThread(bool enable) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     std::string config = base::StringPrintf("%d", enable);
     file_util::WriteFile(FilePath(kLockOnIdleSuspendPath),
                          config.c_str(),

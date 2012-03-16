@@ -7,12 +7,12 @@
 #include <fcntl.h>
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -115,8 +115,7 @@ void LowMemoryObserverImpl::StartObservingOnFileThread() {
   file_descriptor_ = ::open(kLowMemFile, O_RDONLY);
   // Don't report this error unless we're really running on ChromeOS
   // to avoid testing spam.
-  if (file_descriptor_ < 0 &&
-      chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (file_descriptor_ < 0 && base::chromeos::IsRunningOnChromeOS()) {
     PLOG(ERROR) << "Unable to open " << kLowMemFile;
     return;
   }

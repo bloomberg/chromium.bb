@@ -22,13 +22,13 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/clock_updater.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "ui/gfx/native_widget_types.h"
 #endif
 
@@ -213,7 +213,7 @@ void StatusAreaHostAura::Observe(int type,
 bool StatusAreaHostAura::IsLoginOrLockScreenDisplayed() const {
 #if defined(OS_CHROMEOS)
   if (!chromeos::UserManager::Get()->IsUserLoggedIn() &&
-      chromeos::system::runtime_environment::IsRunningOnChromeOS())
+      base::chromeos::IsRunningOnChromeOS())
     return true;
 
   const chromeos::ScreenLocker* locker =

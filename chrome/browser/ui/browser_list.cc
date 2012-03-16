@@ -35,11 +35,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
@@ -338,7 +338,7 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 
 #if defined(OS_CHROMEOS)
   NotifyWindowManagerAboutSignout();
-  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     // If we're on a ChromeOS device, reboot if an update has been applied,
     // or else signal the session manager to log out.
     chromeos::UpdateEngineClient* update_engine_client

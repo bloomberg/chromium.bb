@@ -13,11 +13,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/extension_tts_api_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -151,7 +151,7 @@ void AudioMixerAlsa::Connect() {
     return;
 
   // Do not attempt to connect if we're not on the device.
-  if (!system::runtime_environment::IsRunningOnChromeOS())
+  if (!base::chromeos::IsRunningOnChromeOS())
     return;
 
   if (!ConnectInternal()) {

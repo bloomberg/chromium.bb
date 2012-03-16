@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -590,7 +590,7 @@ void Preferences::UpdateModifierKeyMapping() {
 
 void Preferences::UpdateAutoRepeatRate() {
   // Avoid setting repeat rate on desktop dev environment.
-  if (!system::runtime_environment::IsRunningOnChromeOS())
+  if (!base::chromeos::IsRunningOnChromeOS())
     return;
 
   input_method::AutoRepeatRate rate;

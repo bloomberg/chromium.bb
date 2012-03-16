@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
@@ -17,7 +18,6 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard_data.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 
@@ -127,8 +127,7 @@ class XKeyboardImpl : public XKeyboard {
 };
 
 XKeyboardImpl::XKeyboardImpl(const InputMethodUtil& util)
-    : is_running_on_chrome_os_(
-        system::runtime_environment::IsRunningOnChromeOS()) {
+    : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()) {
   num_lock_mask_ = GetNumLockMask();
 
 #if defined(USE_AURA)

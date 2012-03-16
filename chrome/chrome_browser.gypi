@@ -869,8 +869,6 @@
         'browser/chromeos/system/input_device_settings.h',
         'browser/chromeos/system/name_value_pairs_parser.cc',
         'browser/chromeos/system/name_value_pairs_parser.h',
-        'browser/chromeos/system/runtime_environment.cc',
-        'browser/chromeos/system/runtime_environment.h',
         'browser/chromeos/system/screen_locker_settings.cc',
         'browser/chromeos/system/screen_locker_settings.h',
         'browser/chromeos/system/statistics_provider.cc',

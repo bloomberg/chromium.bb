@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "base/chromeos/chromeos_version.h"
 #include "chrome/common/libxml_utils.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -144,7 +144,7 @@ std::vector<std::string> IntrospectableClient::GetInterfacesFromXmlData(
 
 // static
 IntrospectableClient* IntrospectableClient::Create(dbus::Bus* bus) {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
+  if (base::chromeos::IsRunningOnChromeOS()) {
     return new IntrospectableClientImpl(bus);
   } else {
     return new IntrospectableClientStubImpl();
