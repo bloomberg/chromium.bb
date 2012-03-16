@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_process_host_browsertest.h"
-
 #include "base/command_line.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -18,6 +17,18 @@ using content::RenderViewHost;
 using content::RenderWidgetHost;
 
 namespace {
+
+int RenderProcessHostCount() {
+  content::RenderProcessHost::iterator hosts =
+      content::RenderProcessHost::AllHostsIterator();
+  int count = 0;
+  while (!hosts.IsAtEnd()) {
+    if (hosts.GetCurrentValue()->HasConnection())
+      count++;
+    hosts.Advance();
+  }
+  return count;
+}
 
 RenderViewHost* FindFirstDevToolsHost() {
   content::RenderProcessHost::iterator hosts =
@@ -48,9 +59,12 @@ RenderViewHost* FindFirstDevToolsHost() {
 
 }  // namespace
 
+typedef InProcessBrowserTest ChromeRenderProcessHostTest;
+
 // Ensure that DevTools opened to debug DevTools is launched in a separate
 // process when --process-per-tab is set. See crbug.com/69873.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
+                       DevToolsOnSelfInOwnProcessPPT) {
   CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   parsed_command_line.AppendSwitch(switches::kProcessPerTab);
 
@@ -89,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
 
 // Ensure that DevTools opened to debug DevTools is launched in a separate
 // process. See crbug.com/69873.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
+                       DevToolsOnSelfInOwnProcess) {
   int tab_count = 1;
   int host_count = 1;
 

@@ -33,13 +33,13 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/download/download_state_info.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/renderer_host/render_process_host_browsertest.h",
-  "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",
   "+content/browser/renderer_host/resource_request_details.h",
   "+content/browser/renderer_host/resource_request_info_impl.h",
-  "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/test_tab_contents.h",
+  # TODO(ben): http://crbug.com/118410 will fix the following:
+  "+content/browser/renderer_host/render_view_host_factory.h",
+  "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/web_contents_drag_win.h",
   "+content/browser/tab_contents/web_drag_dest_gtk.h",
   "+content/browser/tab_contents/web_drag_dest_win.h",

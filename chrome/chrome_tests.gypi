@@ -2910,7 +2910,6 @@
         '../content/browser/plugin_data_remover_impl_browsertest.cc',
         '../content/browser/plugin_service_impl_browsertest.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',
-        '../content/browser/renderer_host/render_process_host_browsertest.h',
         '../content/browser/renderer_host/render_view_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
