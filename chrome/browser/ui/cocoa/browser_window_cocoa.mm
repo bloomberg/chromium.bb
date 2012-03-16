@@ -188,6 +188,10 @@ void BrowserWindowCocoa::FlashFrame(bool flash) {
   }
 }
 
+bool BrowserWindowCocoa::IsAlwaysOnTop() const {
+  return false;
+}
+
 bool BrowserWindowCocoa::IsActive() const {
   return [window() isKeyWindow];
 }

@@ -145,6 +145,7 @@ chrome.test.runTests([
       for (var x = 0; x < tabs.length; x++) {
         chrome.windows.get(tabs[x].windowId, pass(function(win) {
           assertTrue(win.type == "normal");
+          assertEq(false, win.alwaysOnTop);
         }));
       }
     }));

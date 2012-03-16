@@ -8,6 +8,7 @@ namespace extension_tabs_module_constants {
 
 const char kActiveKey[] = "active";
 const char kAllFramesKey[] = "allFrames";
+const char kAlwaysOnTopKey[] = "alwaysOnTop";
 const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";
 const char kCurrentWindowKey[] = "currentWindow";

@@ -781,6 +781,10 @@ void BrowserWindowGtk::FlashFrame(bool flash) {
   gtk_window_set_urgency_hint(window_, flash);
 }
 
+bool BrowserWindowGtk::IsAlwaysOnTop() const {
+  return false;
+}
+
 gfx::NativeWindow BrowserWindowGtk::GetNativeHandle() {
   return window_;
 }

@@ -14,6 +14,10 @@ bool TestBrowserWindow::IsActive() const {
   return false;
 }
 
+bool TestBrowserWindow::IsAlwaysOnTop() const {
+  return false;
+}
+
 gfx::NativeWindow TestBrowserWindow::GetNativeHandle() {
   return NULL;
 }

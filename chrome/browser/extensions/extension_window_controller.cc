@@ -43,6 +43,7 @@ base::DictionaryValue* ExtensionWindowController::CreateWindowValue() const {
   result->SetInteger(keys::kIdKey, GetSessionId().id());
   result->SetBoolean(keys::kFocusedKey, window()->IsActive());
   result->SetBoolean(keys::kIncognitoKey, profile_->IsOffTheRecord());
+  result->SetBoolean(keys::kAlwaysOnTopKey, window()->IsAlwaysOnTop());
 
   gfx::Rect bounds;
   if (window()->IsMinimized())

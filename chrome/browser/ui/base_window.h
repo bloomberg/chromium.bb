@@ -65,6 +65,9 @@ class BaseWindow {
   // Flashes the taskbar item associated with this window.
   // Set |flash| to true to initiate flashing, false to stop flashing.
   virtual void FlashFrame(bool flash) = 0;
+
+  // Returns true if a window is set to be always on top.
+  virtual bool IsAlwaysOnTop() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_BASE_WINDOW_H_

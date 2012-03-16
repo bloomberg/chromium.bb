@@ -13,6 +13,7 @@ namespace extension_tabs_module_constants {
 // Keys used in serializing tab data & events.
 extern const char kActiveKey[];
 extern const char kAllFramesKey[];
+extern const char kAlwaysOnTopKey[];
 extern const char kBypassCache[];
 extern const char kCodeKey[];
 extern const char kCurrentWindowKey[];

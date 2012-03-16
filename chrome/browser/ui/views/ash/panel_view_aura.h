@@ -88,6 +88,7 @@ class PanelViewAura : public views::NativeViewHost,
   virtual void Restore() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
+  virtual bool IsAlwaysOnTop() const OVERRIDE;
 
  private:
   const SessionID session_id_;

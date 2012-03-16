@@ -663,6 +663,10 @@ void BrowserView::FlashFrame(bool flash) {
 #endif
 }
 
+bool BrowserView::IsAlwaysOnTop() const {
+  return false;
+}
+
 gfx::NativeWindow BrowserView::GetNativeHandle() {
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }

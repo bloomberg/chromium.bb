@@ -258,6 +258,10 @@ void Panel::FlashFrame(bool flash) {
   panel_strip_->OnPanelAttentionStateChanged(this);
 }
 
+bool Panel::IsAlwaysOnTop() const {
+  return always_on_top_;
+}
+
 gfx::NativeWindow Panel::GetNativeHandle() {
   return native_panel_->GetNativePanelHandle();
 }

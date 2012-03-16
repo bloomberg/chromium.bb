@@ -28,7 +28,8 @@
             "type": "string",
             "description": "The state of this browser window.",
             "enum": ["normal", "minimized", "maximized", "fullscreen"]
-            }
+          },
+          "alwaysOnTop": {"type": "boolean", "description": "Whether the window is set to be always on top."}
         }
       }
     ],

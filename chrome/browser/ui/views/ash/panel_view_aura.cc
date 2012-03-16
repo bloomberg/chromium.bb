@@ -411,3 +411,7 @@ void PanelViewAura::FlashFrame(bool flash) {
   // TODO(stevenjb): Implement
   NOTIMPLEMENTED();
 }
+
+bool PanelViewAura::IsAlwaysOnTop() const {
+  return true;
+}
