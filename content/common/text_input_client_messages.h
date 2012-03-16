@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,8 @@
 #endif
 
 #define IPC_MESSAGE_START TextInputClientMsgStart
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 // Browser -> Renderer Messages ////////////////////////////////////////////////
 // These messages are sent from the browser to the renderer. Each one has a

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/shared_memory.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/common_param_traits.h"
@@ -46,6 +47,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
 #endif
 IPC_STRUCT_END()
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
@@ -56,6 +59,8 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
 IPC_STRUCT_END()
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
