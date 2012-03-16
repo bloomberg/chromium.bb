@@ -67,10 +67,12 @@ class SelectFileDialog
 
     // Similar to FileSelected() but takes SelectedFileInfo instead of
     // FilePath. Used for passing extra information (ex. display name).
+    //
+    // If not overridden, calls FileSelected() with path from |file|.
     virtual void FileSelectedWithExtraInfo(
         const content::SelectedFileInfo& file,
         int index,
-        void* params) {}
+        void* params);
 
     // Notifies the Listener that many files have been selected. The
     // files are in |files|. |params| is contextual passed to SelectFile.
@@ -79,9 +81,11 @@ class SelectFileDialog
 
     // Similar to MultiFilesSelected() but takes SelectedFileInfo instead of
     // FilePath. Used for passing extra information (ex. display name).
+    //
+    // If not overridden, calls MultiFilesSelected() with paths from |files|.
     virtual void MultiFilesSelectedWithExtraInfo(
       const std::vector<content::SelectedFileInfo>& files,
-      void* params) {}
+      void* params);
 
     // Notifies the Listener that the file/folder selection was aborted (via
     // the  user canceling or closing the selection dialog box, for example).
