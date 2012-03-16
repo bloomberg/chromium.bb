@@ -373,14 +373,12 @@ void FindBarGtk::SetFindText(const string16& find_text) {
 
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
-  if (!result.selection_rect().IsEmpty()) {
-    selection_rect_ = result.selection_rect();
-    int xposition = GetDialogPosition(result.selection_rect()).x();
-    GtkAllocation allocation;
-    gtk_widget_get_allocation(widget(), &allocation);
-    if (xposition != allocation.x)
-      Reposition();
-  }
+  selection_rect_ = result.selection_rect();
+  int xposition = GetDialogPosition(result.selection_rect()).x();
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget(), &allocation);
+  if (xposition != allocation.x)
+    Reposition();
 
   // Once we find a match we no longer want to keep track of what had
   // focus. EndFindSession will then set the focus to the page content.

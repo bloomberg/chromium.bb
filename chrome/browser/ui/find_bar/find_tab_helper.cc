@@ -140,7 +140,9 @@ void FindTabHelper::HandleFindReply(int request_id,
       active_match_ordinal = last_search_result_.active_match_ordinal();
 
     gfx::Rect selection = selection_rect;
-    if (selection.IsEmpty())
+    if (final_update && active_match_ordinal == 0)
+      selection = gfx::Rect();
+    else if (selection_rect.IsEmpty())
       selection = last_search_result_.selection_rect();
 
     // Notify the UI, automation and any other observers that a find result was

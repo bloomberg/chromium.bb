@@ -129,19 +129,45 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   void EnsureFindBoxOpen() {
     EnsureFindBoxOpenForBrowser(browser());
   }
-};
 
-// Platform independent FindInPage that takes |const wchar_t*|
-// as an input.
-int FindInPageWchar(TabContentsWrapper* tab,
-                    const wchar_t* search_str,
-                    bool forward,
-                    bool case_sensitive,
-                    int* ordinal) {
-  return ui_test_utils::FindInPage(
-      tab, WideToUTF16(std::wstring(search_str)),
-      forward, case_sensitive, ordinal);
-}
+  // Platform independent FindInPage that takes |const wchar_t*|
+  // as an input.
+  int FindInPageWchar(TabContentsWrapper* tab,
+                      const wchar_t* search_str,
+                      bool forward,
+                      bool case_sensitive,
+                      int* ordinal) {
+    return ui_test_utils::FindInPage(
+        tab, WideToUTF16(std::wstring(search_str)),
+        forward, case_sensitive, ordinal);
+  }
+
+  // Calls FindInPageWchar till the find box's x position != |start_x_position|.
+  // Return |start_x_position| if the find box has not moved after iterating
+  // through all matches of |search_str|.
+  int FindInPageTillBoxMoves(TabContentsWrapper* tab,
+                             int start_x_position,
+                             const wchar_t* search_str,
+                             int expected_matches) {
+    // Search for |search_str| which the Find box is obscuring.
+    for (int index = 0; index < expected_matches; ++index) {
+      int ordinal = 0;
+      EXPECT_EQ(expected_matches, FindInPageWchar(tab, search_str, kFwd,
+                                                  kIgnoreCase, &ordinal));
+
+      // Check the position.
+      bool fully_visible;
+      gfx::Point position;
+      EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+      EXPECT_TRUE(fully_visible);
+
+      // If the Find box has moved then we are done.
+      if (position.x() != start_x_position)
+        return position.x();
+    }
+    return start_x_position;
+  }
+};
 
 // This test loads a page with frames and starts FindInPage requests.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
@@ -668,34 +694,38 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   gfx::Point start_position;
   gfx::Point position;
   bool fully_visible = false;
+  int ordinal = 0;
 
   // Make sure it is open.
   EXPECT_TRUE(GetFindBarWindowInfo(&start_position, &fully_visible));
   EXPECT_TRUE(fully_visible);
 
-  // Search for 'Chromium' which the Find box is obscuring.
-  int ordinal = 0;
   TabContentsWrapper* tab = browser()->GetSelectedTabContentsWrapper();
-  int index = 0;
-  for (; index < kMoveIterations; ++index) {
-    EXPECT_EQ(kMoveIterations, FindInPageWchar(tab, L"Chromium",
-                                               kFwd, kIgnoreCase, &ordinal));
 
-    // Check the position.
-    EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
-    EXPECT_TRUE(fully_visible);
-
-    // If the Find box has moved then we are done.
-    if (position.x() != start_position.x())
-      break;
-  }
-
-  // We should not have reached the end.
-  ASSERT_GT(kMoveIterations, index);
+  int moved_x_coord = FindInPageTillBoxMoves(tab, start_position.x(),
+      L"Chromium", kMoveIterations);
+  // The find box should have moved.
+  EXPECT_TRUE(moved_x_coord != start_position.x());
 
   // Search for something guaranteed not to be obscured by the Find box.
   EXPECT_EQ(1, FindInPageWchar(tab, L"Done",
                                kFwd, kIgnoreCase, &ordinal));
+  // Check the position.
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(fully_visible);
+
+  // Make sure Find box has moved back to its original location.
+  EXPECT_EQ(position.x(), start_position.x());
+
+  // Move the find box again.
+  moved_x_coord = FindInPageTillBoxMoves(tab, start_position.x(),
+      L"Chromium", kMoveIterations);
+  EXPECT_TRUE(moved_x_coord != start_position.x());
+
+  // Search for an invalid string.
+  EXPECT_EQ(0, FindInPageWchar(tab, L"WeirdSearchString",
+                               kFwd, kIgnoreCase, &ordinal));
+
   // Check the position.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_TRUE(fully_visible);

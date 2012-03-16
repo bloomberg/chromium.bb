@@ -142,8 +142,7 @@ void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
     find_bar_view()->UpdateForResult(result, find_text);
 
   // We now need to check if the window is obscuring the search results.
-  if (!result.selection_rect().IsEmpty())
-    MoveWindowIfNecessary(result.selection_rect(), false);
+  MoveWindowIfNecessary(result.selection_rect(), false);
 
   // Once we find a match we no longer want to keep track of what had
   // focus. EndFindSession will then set the focus to the page content.
