@@ -43,6 +43,7 @@ TESTS_TO_RUN = [
      ('setlongjmp.c', '55', None, True),
      ('intrinsics.cc', '55', None, True),
      ('float2.c', '0', True, True),
+     ('frame_addresses.c', '0', None, True),
      # NOTE: this test uses bitcode asm's
      ('llvm_math_intrinsics.c', '0', True, env.Bit('bitcode')),
      # NOTE: this test uses bitcode asm's
