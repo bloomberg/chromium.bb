@@ -659,14 +659,6 @@
   'CHROMEOS_PERF': {
     'chromeos': [
       'perf',
-
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      # Netflix tests currently failing:
-      # https://code.google.com/p/chrome-os-partner/issues/detail?id=7129
-      # https://code.google.com/p/chrome-os-partner/issues/detail?id=7315
-      '-perf.NetflixPerfTest',
     ],
   },
 
