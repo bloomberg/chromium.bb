@@ -346,42 +346,36 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
   EXPECT_EQ("400,200 100x200", window2_->bounds().ToString());
 }
 
-// Makes sure we remember the size of an attached window across drags when
-// compressing.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2_REMEMBER) {
-  window_->SetBounds(gfx::Rect(0, 300, 400, 300));
+// Assertions around collapsing and expanding.
+TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
+  window_->SetBounds(gfx::Rect(   0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTRIGHT, 0, windows));
+  ASSERT_TRUE(resizer.get());
+  // Move it 100 to the left, which should expand w2 and collapse w1.
+  resizer->Drag(CalculateDragPoint(*resizer, -100, 10));
+  EXPECT_EQ("0,300 300x300", window_->bounds().ToString());
+  EXPECT_EQ("300,200 200x200", window2_->bounds().ToString());
 
-  {
-    delegate2_.set_min_size(gfx::Size(20, 20));
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, 0, windows));
-    ASSERT_TRUE(resizer.get());
-    // Resize enough to slightly compress w2.
-    resizer->Drag(CalculateDragPoint(*resizer, 350, 10));
-    EXPECT_EQ("0,300 750x300", window_->bounds().ToString());
-    EXPECT_EQ("750,200 50x200", window2_->bounds().ToString());
+  // Collapse all the way to w1's min.
+  delegate_.set_min_size(gfx::Size(20, 20));
+  resizer->Drag(CalculateDragPoint(*resizer, -800, 20));
+  EXPECT_EQ("0,300 20x300", window_->bounds().ToString());
+  EXPECT_EQ("20,200 480x200", window2_->bounds().ToString());
 
-    // Compress w2 a bit more.
-    resizer->Drag(CalculateDragPoint(*resizer, 400, 10));
-    EXPECT_EQ("0,300 780x300", window_->bounds().ToString());
-    EXPECT_EQ("780,200 20x200", window2_->bounds().ToString());
+  // Move 100 to the left.
+  resizer->Drag(CalculateDragPoint(*resizer, 100, 10));
+  EXPECT_EQ("0,300 500x300", window_->bounds().ToString());
+  EXPECT_EQ("500,200 100x200", window2_->bounds().ToString());
 
-    resizer->CompleteDrag();
-  }
-
-  // Restart drag and drag back 200, making sure window2 goes back to 200.
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, 0, windows));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, -200, 10));
-    EXPECT_EQ("0,300 580x300", window_->bounds().ToString());
-    EXPECT_EQ("580,200 100x200", window2_->bounds().ToString());
-  }
+  // Back to -100.
+  resizer->Drag(CalculateDragPoint(*resizer, -100, 20));
+  EXPECT_EQ("0,300 300x300", window_->bounds().ToString());
+  EXPECT_EQ("300,200 200x200", window2_->bounds().ToString());
 }
 
 // Assertions around attached window resize dragging from the right with 3
@@ -424,9 +418,11 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
   EXPECT_EQ("450,300 100x200", window3_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_RememberWidth) {
+// Assertions around attached window resizing (collapsing and expanding) with
+// 3 windows.
+TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3_Compress) {
   window_->SetBounds(gfx::Rect( 100, 300, 200, 300));
-  window2_->SetBounds(gfx::Rect(300, 300, 150, 200));
+  window2_->SetBounds(gfx::Rect(300, 300, 200, 200));
   window3_->SetBounds(gfx::Rect(450, 300, 100, 200));
   delegate2_.set_min_size(gfx::Size(52, 50));
   delegate3_.set_min_size(gfx::Size(38, 50));
@@ -434,41 +430,58 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_RememberWidth) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTRIGHT, 10, windows));
+  ASSERT_TRUE(resizer.get());
+  // Move it -100 to the right, which should collapse w1 and expand w2 and w3.
+  resizer->Drag(CalculateDragPoint(*resizer, -100, -10));
+  EXPECT_EQ("100,300 100x300", window_->bounds().ToString());
+  EXPECT_EQ("200,300 270x200", window2_->bounds().ToString());
+  EXPECT_EQ("470,300 130x200", window3_->bounds().ToString());
 
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, 10, windows));
-    ASSERT_TRUE(resizer.get());
-    // Move it 100 to the right, which should expand w1 and push w2 and w3.
-    resizer->Drag(CalculateDragPoint(*resizer, 100, -10));
-    EXPECT_EQ("100,300 300x300", window_->bounds().ToString());
-    EXPECT_EQ("400,300 150x200", window2_->bounds().ToString());
-    EXPECT_EQ("550,300 100x200", window3_->bounds().ToString());
+  // Move it 100 to the right.
+  resizer->Drag(CalculateDragPoint(*resizer, 100, -10));
+  EXPECT_EQ("100,300 300x300", window_->bounds().ToString());
+  EXPECT_EQ("400,300 200x200", window2_->bounds().ToString());
+  EXPECT_EQ("600,300 100x200", window3_->bounds().ToString());
 
-    // Move it so much everything ends up at it's min.
-    resizer->Drag(CalculateDragPoint(*resizer, 798, 50));
-    EXPECT_EQ("100,300 600x300", window_->bounds().ToString());
-    EXPECT_EQ("700,300 60x200", window2_->bounds().ToString());
-    EXPECT_EQ("760,300 40x200", window3_->bounds().ToString());
-  }
+  // 100 to the left again.
+  resizer->Drag(CalculateDragPoint(*resizer, -100, -10));
+  EXPECT_EQ("100,300 100x300", window_->bounds().ToString());
+  EXPECT_EQ("200,300 270x200", window2_->bounds().ToString());
+  EXPECT_EQ("470,300 130x200", window3_->bounds().ToString());
+}
 
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTRIGHT, 10, windows));
-    ASSERT_TRUE(resizer.get());
+// Assertions around collapsing and expanding from the bottom.
+TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_Compress) {
+  window_->SetBounds(gfx::Rect(   0, 100, 400, 300));
+  window2_->SetBounds(gfx::Rect(400, 400, 100, 200));
 
-    resizer->Drag(CalculateDragPoint(*resizer, -100, 50));
-    EXPECT_EQ("100,300 500x300", window_->bounds().ToString());
-    EXPECT_EQ("600,300 120x200", window2_->bounds().ToString());
-    EXPECT_EQ("720,300 80x200", window3_->bounds().ToString());
+  std::vector<aura::Window*> windows;
+  windows.push_back(window2_.get());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTBOTTOM, 0, windows));
+  ASSERT_TRUE(resizer.get());
+  // Move it up 100, which should expand w2 and collapse w1.
+  resizer->Drag(CalculateDragPoint(*resizer, 10, -100));
+  EXPECT_EQ("0,100 400x200", window_->bounds().ToString());
+  EXPECT_EQ("400,300 100x300", window2_->bounds().ToString());
 
-    // Move it 300 to the left.
-    resizer->Drag(CalculateDragPoint(*resizer, -300, 50));
-    EXPECT_EQ("100,300 300x300", window_->bounds().ToString());
-    EXPECT_EQ("400,300 150x200", window2_->bounds().ToString());
-    EXPECT_EQ("550,300 100x200", window3_->bounds().ToString());
-  }
+  // Collapse all the way to w1's min.
+  delegate_.set_min_size(gfx::Size(20, 20));
+  resizer->Drag(CalculateDragPoint(*resizer, 20, -800));
+  EXPECT_EQ("0,100 400x20", window_->bounds().ToString());
+  EXPECT_EQ("400,120 100x480", window2_->bounds().ToString());
 
+  // Move 100 down.
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 100));
+  EXPECT_EQ("0,100 400x400", window_->bounds().ToString());
+  EXPECT_EQ("400,500 100x100", window2_->bounds().ToString());
+
+  // Back to -100.
+  resizer->Drag(CalculateDragPoint(*resizer, 20, -100));
+  EXPECT_EQ("0,100 400x200", window_->bounds().ToString());
+  EXPECT_EQ("400,300 100x300", window2_->bounds().ToString());
 }
 
 // Assertions around attached window resize dragging from the bottom with 2
@@ -503,44 +516,6 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
   resizer->RevertDrag();
   EXPECT_EQ("0,50 400x200", window_->bounds().ToString());
   EXPECT_EQ("0,250 200x100", window2_->bounds().ToString());
-}
-
-// Makes sure we remember the size of an attached window across drags when
-// compressing.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2_REMEMBER) {
-  window_->SetBounds(gfx::Rect(  0,   0, 400, 300));
-  window2_->SetBounds(gfx::Rect(40, 300, 100, 200));
-
-  std::vector<aura::Window*> windows;
-  windows.push_back(window2_.get());
-
-  {
-    delegate2_.set_min_size(gfx::Size(20, 20));
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTBOTTOM, 0, windows));
-    ASSERT_TRUE(resizer.get());
-    // Resize enough to slightly compress w2.
-    resizer->Drag(CalculateDragPoint(*resizer, 10, 150));
-    EXPECT_EQ("0,0 400x450", window_->bounds().ToString());
-    EXPECT_EQ("40,450 100x150", window2_->bounds().ToString());
-
-    // Compress w2 a bit more.
-    resizer->Drag(CalculateDragPoint(*resizer, 5, 400));
-    EXPECT_EQ("0,0 400x580", window_->bounds().ToString());
-    EXPECT_EQ("40,580 100x20", window2_->bounds().ToString());
-
-    resizer->CompleteDrag();
-  }
-
-  // Restart drag and drag back 200, making sure window2 goes back to 200.
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTBOTTOM, 0, windows));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, -10, -200));
-    EXPECT_EQ("0,0 400x380", window_->bounds().ToString());
-    EXPECT_EQ("40,380 100x200", window2_->bounds().ToString());
-  }
 }
 
 // Assertions around attached window resize dragging from the bottom with 3
@@ -587,54 +562,38 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   EXPECT_EQ("300,450 200x100", window3_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_RememberHeight) {
-  aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
-  root->SetBounds(gfx::Rect(0, 0, 600, 800));
-  Shell::GetInstance()->SetMonitorWorkAreaInsets(root, gfx::Insets());
-
-  window_->SetBounds(gfx::Rect( 300, 100, 300, 200));
-  window2_->SetBounds(gfx::Rect(300, 300, 200, 150));
-  window3_->SetBounds(gfx::Rect(300, 450, 200, 100));
-  delegate2_.set_min_size(gfx::Size(50, 52));
-  delegate3_.set_min_size(gfx::Size(50, 38));
+// Assertions around attached window resizing (collapsing and expanding) with
+// 3 windows.
+TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
+  window_->SetBounds(gfx::Rect(  0,   0, 200, 200));
+  window2_->SetBounds(gfx::Rect(10, 200, 200, 200));
+  window3_->SetBounds(gfx::Rect(20, 400, 100, 100));
+  delegate2_.set_min_size(gfx::Size(52, 50));
+  delegate3_.set_min_size(gfx::Size(38, 50));
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTBOTTOM, 10, windows));
+  ASSERT_TRUE(resizer.get());
+  // Move it 100 up, which should collapse w1 and expand w2 and w3.
+  resizer->Drag(CalculateDragPoint(*resizer, -10, -100));
+  EXPECT_EQ("0,0 200x100", window_->bounds().ToString());
+  EXPECT_EQ("10,100 200x270", window2_->bounds().ToString());
+  EXPECT_EQ("20,370 100x130", window3_->bounds().ToString());
 
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTBOTTOM, 10, windows));
-    ASSERT_TRUE(resizer.get());
-    // Move it 100 to the bottom, which should expand w1 and push w2 and w3.
-    resizer->Drag(CalculateDragPoint(*resizer, -10, 100));
-    EXPECT_EQ("300,100 300x300", window_->bounds().ToString());
-    EXPECT_EQ("300,400 200x150", window2_->bounds().ToString());
-    EXPECT_EQ("300,550 200x100", window3_->bounds().ToString());
+  // Move it 100 down.
+  resizer->Drag(CalculateDragPoint(*resizer, 10, 100));
+  EXPECT_EQ("0,0 200x300", window_->bounds().ToString());
+  EXPECT_EQ("10,300 200x200", window2_->bounds().ToString());
+  EXPECT_EQ("20,500 100x100", window3_->bounds().ToString());
 
-    // Move it so much everything ends up at it's min.
-    resizer->Drag(CalculateDragPoint(*resizer, 50, 798));
-    EXPECT_EQ("300,100 300x600", window_->bounds().ToString());
-    EXPECT_EQ("300,700 200x60", window2_->bounds().ToString());
-    EXPECT_EQ("300,760 200x40", window3_->bounds().ToString());
-  }
-
-  {
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-        window_.get(), gfx::Point(), HTBOTTOM, 10, windows));
-    ASSERT_TRUE(resizer.get());
-
-    resizer->Drag(CalculateDragPoint(*resizer, 50, -100));
-    EXPECT_EQ("300,100 300x500", window_->bounds().ToString());
-    EXPECT_EQ("300,600 200x120", window2_->bounds().ToString());
-    EXPECT_EQ("300,720 200x80", window3_->bounds().ToString());
-
-    // Move it 300 up.
-    resizer->Drag(CalculateDragPoint(*resizer, 50, -300));
-    EXPECT_EQ("300,100 300x300", window_->bounds().ToString());
-    EXPECT_EQ("300,400 200x150", window2_->bounds().ToString());
-    EXPECT_EQ("300,550 200x100", window3_->bounds().ToString());
-  }
+  // 100 up again.
+  resizer->Drag(CalculateDragPoint(*resizer, -10, -100));
+  EXPECT_EQ("0,0 200x100", window_->bounds().ToString());
+  EXPECT_EQ("10,100 200x270", window2_->bounds().ToString());
+  EXPECT_EQ("20,370 100x130", window3_->bounds().ToString());
 }
 
 // Assertions around dragging to the left/right edge of the screen.

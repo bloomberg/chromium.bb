@@ -75,8 +75,18 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   gfx::Rect GetFinalBounds() const;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
-  void LayoutAttachedWindowsHorizontally(const gfx::Rect& bounds);
-  void LayoutAttachedWindowsVertically(const gfx::Rect& bounds);
+  void LayoutAttachedWindows(const gfx::Rect& bounds);
+
+  // Calculates the size (along the primary axis) of the attached windows.
+  // |initial_size| is the initial size of the main window, |current_size| the
+  // new size of the main window, |start| the position to layout the attached
+  // windows from and |end| the coordinate to position to.
+  void CalculateAttachedSizes(
+      int initial_size,
+      int current_size,
+      int start,
+      int end,
+      std::vector<int>* sizes) const;
 
   // Adjusts the bounds to enforce that windows are vertically contained in the
   // work area.
@@ -85,13 +95,11 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                              aura::Window* window,
                              gfx::Rect* bounds) const;
 
-  // Clears the cached width/height of the window being dragged.
+  // Clears the cached height of the window being dragged.
   void ClearCachedHeights();
-  void ClearCachedWidths();
 
-  // Returns true if the window touches the bottom/right edge of the work area.
+  // Returns true if the window touches the bottom edge of the work area.
   bool TouchesBottomOfScreen() const;
-  bool TouchesRightSideOfScreen() const;
 
   // Returns a coordinate along the primary axis. Used to share code for
   // left/right multi window resize and top/bottom resize.
@@ -131,6 +139,11 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // This is a fraction of the amount a window can be compressed over the total
   // space the windows can be compressed.
   std::vector<float> compress_fraction_;
+
+  // The amount each of the windows in |attached_windows_| should be expanded
+  // by. This is used when the user drags to the left/up. In this case the main
+  // window shrinks and the attached windows expand.
+  std::vector<float> expand_fraction_;
 
   // Sum of sizes in |min_size_|.
   int total_min_;
