@@ -57,7 +57,7 @@ var expectedVolume3 = {
 //       and values sorted by mountPath.
 var expectedMountPoints = [
   {
-    sourcePath: 'Downloads/archive_path',
+    sourcePath: 'removable/archive_path',
     mountPath: 'archive/archive_mount_path',
     mountType: 'file',
     mountCondition: ''

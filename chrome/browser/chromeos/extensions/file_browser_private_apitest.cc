@@ -116,7 +116,7 @@ TestMountPoint kTestMountPoints[] = {
     2
   },
   {
-    "/home/chronos/user/Downloads/archive_path",
+    "/media/removable/archive_path",
     "/media/archive/archive_mount_path",
     chromeos::MOUNT_TYPE_ARCHIVE,
     chromeos::disks::MOUNT_CONDITION_NONE,
