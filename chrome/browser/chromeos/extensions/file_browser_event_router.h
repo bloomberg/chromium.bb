@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,10 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class FileBrowserNotifications;
 class Profile;
@@ -23,7 +27,9 @@ class Profile;
 // Used to monitor disk mount changes and signal when new mounted usb device is
 // found.
 class ExtensionFileBrowserEventRouter
-    : public chromeos::disks::DiskMountManager::Observer {
+    : public chromeos::disks::DiskMountManager::Observer,
+      public gdata::GDataOperationRegistry::Observer,
+      public content::NotificationObserver {
  public:
   explicit ExtensionFileBrowserEventRouter(Profile* profile);
   virtual ~ExtensionFileBrowserEventRouter();
@@ -49,6 +55,11 @@ class ExtensionFileBrowserEventRouter
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
       OVERRIDE;
+
+  // GDataOperationRegistry::Observer overrides.
+  virtual void OnProgressUpdate(
+      const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list)
+          OVERRIDE;
 
  private:
   // Helper class for passing through file watch notification events.
@@ -112,6 +123,11 @@ class ExtensionFileBrowserEventRouter
   void HandleFileWatchNotification(const FilePath& path,
                                    bool got_error);
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Sends folder change event.
   void DispatchFolderChangeEvent(const FilePath& path, bool error,
                                  const ExtensionUsageRegistry& extensions);
@@ -138,6 +154,7 @@ class ExtensionFileBrowserEventRouter
   scoped_ptr<FileBrowserNotifications> notifications_;
   Profile* profile_;
   base::Lock lock_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFileBrowserEventRouter);
 };

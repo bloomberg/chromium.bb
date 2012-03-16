@@ -145,6 +145,9 @@ class DocumentsServiceInterface {
   // Initializes the documents service tied with |profile|.
   virtual void Initialize(Profile* profile) = 0;
 
+  // Retrieves the operation registry.
+  virtual GDataOperationRegistry* operation_registry() const = 0;
+
   // Cancels all in-flight operations.
   virtual void CancelAll() = 0;
 
@@ -270,6 +273,7 @@ class DocumentsService
 
   // DocumentsServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual GDataOperationRegistry* operation_registry() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
+#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -60,6 +61,7 @@ using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
 using file_handler_util::FileTaskExecutor;
+using gdata::GDataOperationRegistry;
 
 namespace {
 
@@ -1713,5 +1715,33 @@ void GetGDataFilesFunction::OnFileReady(
 
   // Start getting the next file.
   GetFileOrSendResponse();
+}
+
+GetFileTransfersFunction::GetFileTransfersFunction() {}
+
+GetFileTransfersFunction::~GetFileTransfersFunction() {}
+
+ListValue* GetFileTransfersFunction::GetFileTransfersList() {
+  gdata::GDataFileSystem* file_system =
+      gdata::GDataFileSystemFactory::GetForProfile(profile_);
+  if (!file_system)
+    return NULL;
+
+  std::vector<gdata::GDataOperationRegistry::ProgressStatus>
+      list = file_system->GetProgressStatusList();
+  return file_manager_util::ProgressStatusVectorToListValue(
+      profile_, source_url_.GetOrigin(), list);
+}
+
+bool GetFileTransfersFunction::RunImpl() {
+  scoped_ptr<ListValue> progress_status_list(GetFileTransfersList());
+  if (!progress_status_list.get()) {
+    SendResponse(false);
+    return false;
+  }
+
+  result_.reset(progress_status_list.release());
+  SendResponse(true);
+  return true;
 }
 

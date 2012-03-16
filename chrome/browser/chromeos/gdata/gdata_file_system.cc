@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1222,6 +1221,22 @@ void GDataFileSystem::OnGetAvailableSpace(
                feed->quota_bytes_total(),
                feed->quota_bytes_used());
 }
+
+std::vector<GDataOperationRegistry::ProgressStatus>
+    GDataFileSystem::GetProgressStatusList() {
+  return documents_service_->operation_registry()->GetProgressStatusList();
+}
+
+void GDataFileSystem::AddOperationObserver(
+    GDataOperationRegistry::Observer* observer) {
+  return documents_service_->operation_registry()->AddObserver(observer);
+}
+
+void GDataFileSystem::RemoveOperationObserver(
+    GDataOperationRegistry::Observer* observer) {
+  return documents_service_->operation_registry()->RemoveObserver(observer);
+}
+
 
 void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,
