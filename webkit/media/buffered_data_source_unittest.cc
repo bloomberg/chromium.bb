@@ -198,6 +198,19 @@ TEST_F(BufferedDataSourceTest, Range_Supported) {
   Respond(response_generator_.Generate206(0));
 
   EXPECT_TRUE(data_source_->loading());
+  EXPECT_FALSE(data_source_->IsStreaming());
+  Stop();
+}
+
+TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
+  Initialize(media::PIPELINE_OK);
+
+  EXPECT_CALL(host_, SetBufferedBytes(0));
+  Respond(response_generator_.Generate206(
+      0, TestResponseGenerator::kNoContentRangeInstanceSize));
+
+  EXPECT_TRUE(data_source_->loading());
+  EXPECT_TRUE(data_source_->IsStreaming());
   Stop();
 }
 
@@ -255,6 +268,7 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
       0, TestResponseGenerator::kNoContentLength));
 
   EXPECT_TRUE(data_source_->loading());
+  EXPECT_FALSE(data_source_->IsStreaming());
   Stop();
 }
 

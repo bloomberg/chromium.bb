@@ -5,17 +5,18 @@
 #include "webkit/media/buffered_resource_loader.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
-#include "webkit/glue/multipart_response_delegate.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
@@ -24,7 +25,6 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
-using webkit_glue::MultipartResponseDelegate;
 
 namespace webkit_media {
 
@@ -705,14 +705,53 @@ void BufferedResourceLoader::ReadInternal() {
   DoneRead(read);
 }
 
+// static
+bool BufferedResourceLoader::ParseContentRange(
+    const std::string& content_range_str, int64* first_byte_position,
+    int64* last_byte_position, int64* instance_size) {
+  const std::string kUpThroughBytesUnit = "bytes ";
+  if (content_range_str.find(kUpThroughBytesUnit) != 0)
+    return false;
+  std::string range_spec =
+      content_range_str.substr(kUpThroughBytesUnit.length());
+  size_t dash_offset = range_spec.find("-");
+  size_t slash_offset = range_spec.find("/");
+
+  if (dash_offset == std::string::npos || slash_offset == std::string::npos ||
+      slash_offset < dash_offset || slash_offset + 1 == range_spec.length()) {
+    return false;
+  }
+  if (!base::StringToInt64(range_spec.substr(0, dash_offset),
+                           first_byte_position) ||
+      !base::StringToInt64(range_spec.substr(dash_offset + 1,
+                                             slash_offset - dash_offset - 1),
+                           last_byte_position)) {
+    return false;
+  }
+  if (slash_offset == range_spec.length() - 2 &&
+      range_spec[slash_offset + 1] == '*') {
+    *instance_size = kPositionNotSpecified;
+  } else {
+    if (!base::StringToInt64(range_spec.substr(slash_offset + 1),
+                             instance_size)) {
+      return false;
+    }
+  }
+  if (*last_byte_position < *first_byte_position ||
+      (*instance_size != kPositionNotSpecified &&
+       *last_byte_position >= *instance_size)) {
+    return false;
+  }
+
+  return true;
+}
+
 bool BufferedResourceLoader::VerifyPartialResponse(
     const WebURLResponse& response) {
   int64 first_byte_position, last_byte_position, instance_size;
-
-  if (!MultipartResponseDelegate::ReadContentRanges(response,
-                                                    &first_byte_position,
-                                                    &last_byte_position,
-                                                    &instance_size)) {
+  if (!ParseContentRange(response.httpHeaderField("Content-Range").utf8(),
+                         &first_byte_position, &last_byte_position,
+                         &instance_size)) {
     return false;
   }
 

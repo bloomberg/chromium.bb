@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class TestResponseGenerator {
     kNoAcceptRanges = 1 << 0,   // Don't include Accept-Ranges in 206 response.
     kNoContentRange = 1 << 1,   // Don't include Content-Range in 206 response.
     kNoContentLength = 1 << 2,  // Don't include Content-Length in 206 response.
+    kNoContentRangeInstanceSize = 1 << 3,  // Content-Range: N-M/* in 206.
   };
 
   // Build an HTTP response generator for the given URL. |content_length| is

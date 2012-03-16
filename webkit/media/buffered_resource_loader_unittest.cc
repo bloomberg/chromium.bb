@@ -442,7 +442,7 @@ TEST_F(BufferedResourceLoaderTest, ReadExtendBuffer) {
   Initialize(kHttpUrl, 10, 0x014FFFFFF);
   SetLoaderBuffer(10, 20);
   Start();
-  PartialResponse(10, 0x014FFFFFF, 0x01500000);
+  PartialResponse(10, 0x014FFFFFF, 0x015000000);
 
   // Don't test for network callbacks (covered by *Strategy tests).
   EXPECT_CALL(*this, NetworkCallback())
@@ -1110,6 +1110,47 @@ TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_AboveUpperBound) {
   loader_->SetPlaybackRate(100);
   CheckBufferWindowBounds();
   StopWhenLoad();
+}
+
+static void ExpectContentRange(
+    const std::string& str, bool expect_success,
+    int64 expected_first, int64 expected_last, int64 expected_size) {
+  int64 first, last, size;
+  ASSERT_EQ(expect_success, BufferedResourceLoader::ParseContentRange(
+      str, &first, &last, &size)) << str;
+  if (!expect_success)
+    return;
+  EXPECT_EQ(first, expected_first);
+  EXPECT_EQ(last, expected_last);
+  EXPECT_EQ(size, expected_size);
+}
+
+static void ExpectContentRangeFailure(const std::string& str) {
+  ExpectContentRange(str, false, 0, 0, 0);
+}
+
+static void ExpectContentRangeSuccess(
+    const std::string& str,
+    int64 expected_first, int64 expected_last, int64 expected_size) {
+  ExpectContentRange(str, true, expected_first, expected_last, expected_size);
+}
+
+TEST(BufferedResourceLoaderStandaloneTest, ParseContentRange) {
+  ExpectContentRangeFailure("cytes 0-499/500");
+  ExpectContentRangeFailure("bytes 0499/500");
+  ExpectContentRangeFailure("bytes 0-499500");
+  ExpectContentRangeFailure("bytes 0-499/500-blorg");
+  ExpectContentRangeFailure("bytes 0-499/500-1");
+  ExpectContentRangeFailure("bytes 0-499/400");
+  ExpectContentRangeFailure("bytes 0-/400");
+  ExpectContentRangeFailure("bytes -300/400");
+  ExpectContentRangeFailure("bytes 20-10/400");
+
+  ExpectContentRangeSuccess("bytes 0-499/500", 0, 499, 500);
+  ExpectContentRangeSuccess("bytes 0-0/500", 0, 0, 500);
+  ExpectContentRangeSuccess("bytes 10-11/50", 10, 11, 50);
+  ExpectContentRangeSuccess("bytes 10-11/*", 10, 11,
+                            kPositionNotSpecified);
 }
 
 }  // namespace webkit_media

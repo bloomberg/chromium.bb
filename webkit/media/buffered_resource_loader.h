@@ -172,6 +172,16 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // accordingly.
   void SetBitrate(int bitrate);
 
+  // Parse a Content-Range header into its component pieces and return true if
+  // each of the expected elements was found & parsed correctly.
+  // |*instance_size| may be set to kPositionNotSpecified if the range ends in
+  // "/*".
+  // NOTE: only public for testing!  This is an implementation detail of
+  // VerifyPartialResponse (a private method).
+  static bool ParseContentRange(
+      const std::string& content_range_str, int64* first_byte_position,
+      int64* last_byte_position, int64* instance_size);
+
  private:
   friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;

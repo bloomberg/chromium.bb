@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,8 +60,12 @@ WebURLResponse TestResponseGenerator::Generate206(int64 first_byte_offset,
 
   if ((flags & kNoContentRange) == 0) {
     std::string content_range = base::StringPrintf(
-        "bytes %" PRId64 "-%" PRId64 "/%" PRId64,
-        first_byte_offset, last_byte_offset, content_length_);
+        "bytes %" PRId64 "-%" PRId64 "/",
+        first_byte_offset, last_byte_offset);
+    if (flags & kNoContentRangeInstanceSize)
+      content_range += "*";
+    else
+      content_range += base::StringPrintf("%" PRId64, content_length_);
     response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
                                 WebString::fromUTF8(content_range));
   }
