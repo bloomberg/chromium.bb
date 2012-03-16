@@ -348,10 +348,8 @@ cr.define('options', function() {
           $('passwords-and-autofill-section').hidden = true;
       }
 
-      if (cr.isMac) {
-        $('mac-passwords-warning').hidden =
-            !(localStrings.getString('macPasswordsWarning'));
-      }
+      if (cr.isMac)
+        $('mac-passwords-warning').hidden = !templateData.multiple_profiles;
 
       // Network section.
       if (!cr.isChromeOS) {

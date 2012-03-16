@@ -42,7 +42,7 @@ class BrowserOptionsHandler
   virtual ~BrowserOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(DictionaryValue* values) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
@@ -189,8 +189,8 @@ class BrowserOptionsHandler
   // tab pointed at the management URL.
   void ShowCloudPrintManagePage(const ListValue* args);
 
-  // Register localized strings used by Cloud Print
-  void RegisterCloudPrintStrings(DictionaryValue* localized_strings);
+  // Register localized values used by Cloud Print
+  void RegisterCloudPrintValues(DictionaryValue* values);
 
 #if !defined(OS_CHROMEOS)
   // Callback for the Sign in to Cloud Print button. This will start

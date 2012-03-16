@@ -144,9 +144,8 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
     select_folder_dialog_->ListenerDestroyed();
 }
 
-void BrowserOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
-  DCHECK(localized_strings);
+void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
+  DCHECK(values);
 
   static OptionsStringResource resources[] = {
     { "advancedSectionTitleCloudPrint", IDS_GOOGLE_CLOUD_PRINT },
@@ -309,109 +308,105 @@ void BrowserOptionsHandler::GetLocalizedValues(
 #endif
   };
 
-  RegisterStrings(localized_strings, resources, arraysize(resources));
-  RegisterCloudPrintStrings(localized_strings);
+  RegisterStrings(values, resources, arraysize(resources));
+  RegisterCloudPrintValues(values);
 
-  localized_strings->SetString(
+  values->SetString(
       "syncOverview",
       l10n_util::GetStringFUTF16(IDS_SYNC_OVERVIEW,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
+  values->SetString(
       "syncButtonTextStart",
       l10n_util::GetStringFUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
-  localized_strings->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
-  localized_strings->SetString(
+  values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
+  values->SetString(
       "profilesSingleUser",
       l10n_util::GetStringFUTF16(IDS_PROFILES_SINGLE_USER_MESSAGE,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
-  localized_strings->SetString(
+  values->SetString(
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
 
   string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
-  localized_strings->SetString(
+  values->SetString(
       "instantPrefAndWarning",
       l10n_util::GetStringFUTF16(IDS_INSTANT_PREF_WITH_WARNING,
                                  instant_learn_more_url));
-  localized_strings->SetString("instantLearnMoreLink", instant_learn_more_url);
+  values->SetString("instantLearnMoreLink", instant_learn_more_url);
 
-  localized_strings->SetString(
+  values->SetString(
       "defaultBrowserUnknown",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
+  values->SetString(
       "defaultBrowserUseAsDefault",
       l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(
+  values->SetString(
       "autoLaunchText",
       l10n_util::GetStringFUTF16(IDS_AUTOLAUNCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
   if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
-    localized_strings->SetString("username",
+    values->SetString("username",
         chromeos::UserManager::Get()->GetLoggedInUser().email());
   }
 #endif
 
   // Pass along sync status early so it will be available during page init.
-  localized_strings->Set("syncData", GetSyncStateDictionary());
+  values->Set("syncData", GetSyncStateDictionary());
 
-  localized_strings->SetString("privacyLearnMoreURL",
-                               chrome::kPrivacyLearnMoreURL);
+  values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
 
-  localized_strings->SetString(
+  values->SetString(
       "languageSectionLabel",
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
-  localized_strings->SetString("cloudPrintLearnMoreURL",
-                               chrome::kCloudPrintLearnMoreURL);
+  values->SetString("cloudPrintLearnMoreURL", chrome::kCloudPrintLearnMoreURL);
 
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
-  localized_strings->Set("timezoneList",
+  values->Set("timezoneList",
       static_cast<chromeos::options2::SystemSettingsProvider*>(
           chromeos::CrosSettings::Get()->GetProvider(
               chromeos::kSystemTimezone))->GetTimezoneList());
 #endif
 #if defined(OS_MACOSX)
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile_manager->GetNumberOfProfiles() > 1) {
-    localized_strings->SetString("macPasswordsWarning",
-        l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MAC_WARNING));
-  }
+  values->SetString("macPasswordsWarning",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MAC_WARNING));
+  values->SetBoolean("multiple_profiles",
+      g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
 }
 
-void BrowserOptionsHandler::RegisterCloudPrintStrings(
-    DictionaryValue* localized_strings) {
+void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
-  localized_strings->SetString("cloudPrintChromeosOptionLabel",
+  values->SetString("cloudPrintChromeosOptionLabel",
       l10n_util::GetStringFUTF16(
       IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  localized_strings->SetString("cloudPrintChromeosOptionButton",
+  values->SetString("cloudPrintChromeosOptionButton",
       l10n_util::GetStringFUTF16(
       IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #else
-  localized_strings->SetString("cloudPrintConnectorDisabledLabel",
+  values->SetString("cloudPrintConnectorDisabledLabel",
       l10n_util::GetStringFUTF16(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  localized_strings->SetString("cloudPrintConnectorDisabledButton",
+  values->SetString("cloudPrintConnectorDisabledButton",
       l10n_util::GetStringFUTF16(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
-  localized_strings->SetString("cloudPrintConnectorEnabledButton",
+  values->SetString("cloudPrintConnectorEnabledButton",
       l10n_util::GetStringFUTF16(
       IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
