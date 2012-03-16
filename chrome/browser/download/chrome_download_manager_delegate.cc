@@ -447,12 +447,15 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     DownloadProtectionService* service = GetDownloadProtectionService();
     // Return false if this type of files is handled by the enhanced
     // SafeBrowsing download protection.
-    if (service && service->enabled() &&
-        service->IsSupportedFileType(state.suggested_path.BaseName())) {
+    if (service && service->enabled()) {
+      DownloadProtectionService::DownloadInfo info =
+          DownloadProtectionService::DownloadInfo::FromDownloadItem(*download);
+      info.target_file = state.suggested_path;
       // TODO(noelutz): if the user changes the extension name in the UI to
       // something like .exe SafeBrowsing will currently *not* check if the
       // download is malicious.
-      state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
+      if (service->IsSupportedDownload(info))
+        state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
     }
 #endif
   }

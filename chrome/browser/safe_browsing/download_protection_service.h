@@ -91,10 +91,9 @@ class DownloadProtectionService {
   virtual void CheckDownloadUrl(const DownloadInfo& info,
                                 const CheckDownloadCallback& callback);
 
-  // Returns true iff the given filename has an extension that is supported
-  // by this service.  In other words: this method returns true if it can
-  // protect users against files with that particular extension.
-  bool IsSupportedFileType(const FilePath& filename) const;
+  // Returns true iff the download specified by |info| should be scanned by
+  // CheckClientDownload() for malicious content.
+  bool IsSupportedDownload(const DownloadInfo& info) const;
 
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information

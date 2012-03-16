@@ -51,6 +51,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -60,6 +61,8 @@
 #include "content/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/blob/blob_data.h"
+#include "webkit/blob/blob_storage_controller.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -366,7 +369,7 @@ class DownloadTest : public InProcessBrowserTest {
   // Create a DownloadTestObserverTerminal that will wait for the
   // specified number of downloads to finish, or for
   // a dangerous download warning to be shown.
-  DownloadTestObserver* DangerousInstallWaiter(
+  DownloadTestObserver* DangerousDownloadWaiter(
       Browser* browser,
       int num_downloads,
       DownloadTestObserver::DangerousDownloadAction dangerous_download_action) {
@@ -1697,7 +1700,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   scoped_ptr<DownloadTestObserver> observer(
-      DangerousInstallWaiter(
+      DangerousDownloadWaiter(
           browser(), 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY));
   ui_test_utils::NavigateToURL(browser(), extension_url);
@@ -1727,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
       new MockAbortExtensionInstallUI());
 
   scoped_ptr<DownloadTestObserver> observer(
-      DangerousInstallWaiter(
+      DangerousDownloadWaiter(
           browser(), 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
@@ -1758,7 +1761,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
       new MockAutoConfirmExtensionInstallUI(browser()->profile()));
 
   scoped_ptr<DownloadTestObserver> observer(
-      DangerousInstallWaiter(
+      DangerousDownloadWaiter(
           browser(), 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
@@ -1790,7 +1793,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
       new MockAutoConfirmExtensionInstallUI(browser()->profile()));
 
   scoped_ptr<DownloadTestObserver> observer(
-      DangerousInstallWaiter(
+      DangerousDownloadWaiter(
           browser(), 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
@@ -1816,7 +1819,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
       new MockAutoConfirmExtensionInstallUI(browser()->profile()));
 
   scoped_ptr<DownloadTestObserver> observer(
-      DangerousInstallWaiter(
+      DangerousDownloadWaiter(
           browser(), 1,
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
@@ -2423,4 +2426,44 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
   };
 
   DownloadFilesToReadonlyFolder(ARRAYSIZE_UNSAFE(download_info), download_info);
+}
+
+// Test that we show a dangerous downloads warning for a dangerous file
+// downloaded through a blob: URL.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
+  ASSERT_TRUE(InitialSetup(false));
+  const char kBlobUrl[] = "blob:test-download-url";
+  GURL blob_url(kBlobUrl);
+#if defined(OS_WIN)
+  // On Windows, if SafeBrowsing is enabled, certain file types (.exe, .cab,
+  // .msi) will be handled by the DownloadProtectionService. However, if the URL
+  // is non-standard (e.g. blob:) then those files won't be handled by the
+  // DPS. We should be showing the dangerous download warning for any file
+  // considered dangerous and isn't handled by the DPS.
+  const char kFilename[] = "foo.exe";
+#else
+  const char kFilename[] = "foo.jar";
+#endif
+  std::string content_disposition = "attachment; filename=";
+  content_disposition += kFilename;
+
+  webkit_blob::BlobStorageController* blob_controller =
+      content::ResourceContext::GetBlobStorageController(
+          DownloadManagerForBrowser(browser())->GetBrowserContext()->
+          GetResourceContext());
+  scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
+  blob_data->AppendData("foo");
+  blob_controller->AddFinishedBlob(blob_url, blob_data.get());
+  blob_data = blob_controller->GetBlobDataFromUrl(blob_url);
+  blob_data->set_content_type("application/octet-stream");
+  blob_data->set_content_disposition(content_disposition);
+
+  DownloadTestObserver* observer(DangerousDownloadWaiter(
+      browser(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+  ui_test_utils::NavigateToURL(browser(), blob_url);
+  observer->WaitForFinished();
+  blob_controller->RemoveBlob(blob_url);
+
+  EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 }

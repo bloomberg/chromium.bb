@@ -363,30 +363,32 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // TODO(noelutz): implement some cache to make sure we don't issue the same
     // request over and over again if a user downloads the same binary multiple
     // times.
-    if (info_.download_url_chain.empty()) {
-      RecordImprovedProtectionStats(REASON_EMPTY_URL_CHAIN);
-      PostFinishTask(SAFE);
-      return;
+    DownloadCheckResultReason reason = REASON_MAX;
+    if (!IsSupportedDownload(info_, &reason)) {
+      switch (reason) {
+        case REASON_EMPTY_URL_CHAIN:
+        case REASON_INVALID_URL:
+          RecordImprovedProtectionStats(reason);
+          PostFinishTask(SAFE);
+          return;
+
+        case REASON_NOT_BINARY_FILE:
+        case REASON_HTTPS_URL:
+          RecordFileExtensionType(info_.target_file);
+          RecordImprovedProtectionStats(reason);
+          BrowserThread::PostTask(
+              BrowserThread::IO,
+              FROM_HERE,
+              base::Bind(&CheckClientDownloadRequest::CheckDigestList, this));
+          return;
+
+        default:
+          // We only expect the reasons explicitly handled above.
+          NOTREACHED();
+      }
     }
-    const GURL& final_url = info_.download_url_chain.back();
-    if (!final_url.is_valid() || final_url.is_empty() ||
-        !final_url.IsStandard() || final_url.SchemeIsFile()) {
-      RecordImprovedProtectionStats(REASON_INVALID_URL);
-      PostFinishTask(SAFE);
-      return;
-    }
+
     RecordFileExtensionType(info_.target_file);
-
-    if (final_url.SchemeIs("https") || !IsBinaryFile(info_.target_file)) {
-      RecordImprovedProtectionStats(!IsBinaryFile(info_.target_file) ?
-                  REASON_NOT_BINARY_FILE : REASON_HTTPS_URL);
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&CheckClientDownloadRequest::CheckDigestList, this));
-      return;
-    }
-
     // Compute features from the file contents. Note that we record histograms
     // based on the result, so this runs regardless of whether the pingbacks
     // are enabled.  Since we do blocking I/O, this happens on the file thread.
@@ -457,6 +459,29 @@ class DownloadProtectionService::CheckClientDownloadRequest
     UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
                         base::TimeTicks::Now() - start_time_);
     FinishRequest(result);
+  }
+
+  static bool IsSupportedDownload(const DownloadInfo& info,
+                                  DownloadCheckResultReason* reason) {
+    if (info.download_url_chain.empty()) {
+      *reason = REASON_EMPTY_URL_CHAIN;
+      return false;
+    }
+    const GURL& final_url = info.download_url_chain.back();
+    if (!final_url.is_valid() || final_url.is_empty() ||
+        !final_url.IsStandard() || final_url.SchemeIsFile()) {
+      *reason = REASON_INVALID_URL;
+      return false;
+    }
+    if (!IsBinaryFile(info.target_file)) {
+      *reason = REASON_NOT_BINARY_FILE;
+      return false;
+    }
+    if (final_url.SchemeIs("https")) {
+      *reason = REASON_HTTPS_URL;
+      return false;
+    }
+    return true;
   }
 
  private:
@@ -744,13 +769,14 @@ void DownloadProtectionService::CheckDownloadUrl(
         base::Bind(&DownloadUrlSBClient::StartCheck, client));
 }
 
-bool DownloadProtectionService::IsSupportedFileType(
-    const FilePath& filename) const {
+bool DownloadProtectionService::IsSupportedDownload(
+    const DownloadInfo& info) const {
   // Currently, the UI only works on Windows.  On Linux and Mac we still
   // want to show the dangerous file type warning if the file is possibly
   // dangerous which means we have to always return false here.
 #if defined(OS_WIN)
-  return IsBinaryFile(filename);
+  DownloadCheckResultReason reason = REASON_MAX;
+  return CheckClientDownloadRequest::IsSupportedDownload(info, &reason);
 #else
   return false;
 #endif
