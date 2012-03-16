@@ -132,6 +132,7 @@ class CapturerLinux : public Capturer {
   Damage damage_handle_;
   int damage_event_base_;
   int damage_error_base_;
+  XserverRegion damage_region_;
 
   // Access to the X Server's pixel buffer.
   XServerPixelBuffer x_server_pixel_buffer_;
@@ -166,9 +167,10 @@ CapturerLinux::CapturerLinux()
       gc_(NULL),
       root_window_(BadValue),
       use_damage_(false),
-      damage_handle_(BadValue),
+      damage_handle_(0),
       damage_event_base_(-1),
       damage_error_base_(-1),
+      damage_region_(0),
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
       last_buffer_(NULL) {
@@ -215,25 +217,43 @@ bool CapturerLinux::Init() {
 }
 
 void CapturerLinux::InitXDamage() {
-  // Setup XDamage to report changes in the damage window.  Mark the whole
-  // window as invalid.
-  if (XDamageQueryExtension(display_, &damage_event_base_,
-                            &damage_error_base_)) {
-    damage_handle_ = XDamageCreate(display_, root_window_,
-                                   XDamageReportDeltaRectangles);
-    if (damage_handle_ == BadValue) {
-      LOG(ERROR) << "Unable to create damage handle.";
-    } else {
-      // TODO(lambroslambrou): Disable DAMAGE in situations where it is known
-      // to fail, such as when Desktop Effects are enabled, with graphics
-      // drivers (nVidia, ATI) that fail to report DAMAGE notifications
-      // properly.
-      use_damage_ = true;
-      LOG(INFO) << "Using XDamage extension.";
-    }
-  } else {
-    LOG(INFO) << "Server does not support XDamage.";
+  // Check for XFixes and XDamage extensions.  If both are found then use
+  // XDamage to get explicit notifications of on-screen changes.
+  int xfixes_event_base;
+  int xfixes_error_base;
+  if (!XFixesQueryExtension(display_, &xfixes_event_base, &xfixes_error_base)) {
+    LOG(INFO) << "X server does not support XFixes.";
+    return;
   }
+  if (!XDamageQueryExtension(display_, &damage_event_base_,
+                             &damage_error_base_)) {
+    LOG(INFO) << "X server does not support XDamage.";
+    return;
+  }
+
+  // TODO(lambroslambrou): Disable DAMAGE in situations where it is known
+  // to fail, such as when Desktop Effects are enabled, with graphics
+  // drivers (nVidia, ATI) that fail to report DAMAGE notifications
+  // properly.
+
+  // Request notifications every time the screen becomes damaged.
+  damage_handle_ = XDamageCreate(display_, root_window_,
+                                 XDamageReportNonEmpty);
+  if (!damage_handle_) {
+    LOG(ERROR) << "Unable to initialize XDamage.";
+    return;
+  }
+
+  // Create an XFixes server-side region to collate damage into.
+  damage_region_ = XFixesCreateRegion(display_, 0, 0);
+  if (!damage_region_) {
+    XDamageDestroy(display_, damage_handle_);
+    LOG(ERROR) << "Unable to create XFixes region.";
+    return;
+  }
+
+  use_damage_ = true;
+  LOG(INFO) << "Using XDamage extension.";
 }
 
 void CapturerLinux::ScreenConfigurationChanged() {
@@ -294,34 +314,18 @@ void CapturerLinux::ProcessPendingXEvents() {
   // on XPending because we want to guarantee this terminates.
   int events_to_process = XPending(display_);
   XEvent e;
-  SkRegion invalid_region;
 
   for (int i = 0; i < events_to_process; i++) {
     XNextEvent(display_, &e);
     if (use_damage_ && (e.type == damage_event_base_ + XDamageNotify)) {
       XDamageNotifyEvent *event = reinterpret_cast<XDamageNotifyEvent*>(&e);
-
-      // TODO(hclam): Perform more checks on the rect.
-      if (event->area.width <= 0 || event->area.height <= 0)
-        continue;
-
-      SkIRect damage_rect = SkIRect::MakeXYWH(event->area.x,
-                                              event->area.y,
-                                              event->area.width,
-                                              event->area.height);
-      invalid_region.op(damage_rect, SkRegion::kUnion_Op);
-      DVLOG(3) << "Damage received for rect at ("
-               << damage_rect.fLeft << "," << damage_rect.fTop << ") size ("
-               << damage_rect.width() << "," << damage_rect.height() << ")";
+      DCHECK(event->level == XDamageReportNonEmpty);
     } else if (e.type == ConfigureNotify) {
       ScreenConfigurationChanged();
-      invalid_region.setEmpty();
     } else {
       LOG(WARNING) << "Got unknown event type: " << e.type;
     }
   }
-
-  helper_.InvalidateRegion(invalid_region);
 }
 
 CaptureData* CapturerLinux::CaptureFrame() {
@@ -348,12 +352,25 @@ CaptureData* CapturerLinux::CaptureFrame() {
 
   x_server_pixel_buffer_.Synchronize();
   if (use_damage_ && last_buffer_) {
+    // Atomically fetch and clear the damage region.
+    XDamageSubtract(display_, damage_handle_, None, damage_region_);
+    int nRects = 0;
+    XRectangle bounds;
+    XRectangle* rects = XFixesFetchRegionAndBounds(display_, damage_region_,
+                                                   &nRects, &bounds);
+    for (int i=0; i<nRects; ++i) {
+      invalid_region.op(SkIRect::MakeXYWH(rects[i].x, rects[i].y,
+                                          rects[i].width, rects[i].height),
+                        SkRegion::kUnion_Op);
+    }
+    XFree(rects);
+    helper_.InvalidateRegion(invalid_region);
+
+    // Capture the damaged portions of the desktop.
     helper_.SwapInvalidRegion(&invalid_region);
     for (SkRegion::Iterator it(invalid_region); !it.done(); it.next()) {
       CaptureRect(it.rect(), capture_data);
     }
-    // TODO(ajwong): We should only repair the rects that were copied!
-    XDamageSubtract(display_, damage_handle_, None, None);
   } else {
     // Doing full-screen polling, or this is the first capture after a
     // screen-resolution change.  In either case, need a full-screen capture.
@@ -410,8 +427,14 @@ void CapturerLinux::DeinitXlib() {
   }
 
   if (display_) {
+    if (damage_handle_)
+      XDamageDestroy(display_, damage_handle_);
+    if (damage_region_)
+      XFixesDestroyRegion(display_, damage_region_);
     XCloseDisplay(display_);
     display_ = NULL;
+    damage_handle_ = 0;
+    damage_region_ = 0;
   }
 }
 
