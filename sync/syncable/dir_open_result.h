@@ -7,7 +7,8 @@
 #pragma once
 
 namespace syncable {
-enum DirOpenResult { OPENED,   // success.
+enum DirOpenResult { NOT_INITIALIZED,
+                     OPENED,   // success.
                      FAILED_NEWER_VERSION,  // DB version is too new.
                      FAILED_MAKE_REPOSITORY,  // Couldn't create subdir.
                      FAILED_OPEN_DATABASE,  // sqlite_open() failed.

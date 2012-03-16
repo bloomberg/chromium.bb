@@ -33,11 +33,13 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     const base::WeakPtr<SyncPrefs>& sync_prefs,
     bool set_initial_sync_ended_on_init,
     bool synchronous_init,
-    bool fail_initial_download)
+    bool fail_initial_download,
+    bool use_real_database)
     : browser_sync::SyncBackendHost(
         profile->GetDebugName(), profile, sync_prefs),
       synchronous_init_(synchronous_init),
-      fail_initial_download_(fail_initial_download) {}
+      fail_initial_download_(fail_initial_download),
+      use_real_database_(use_real_database) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
@@ -70,7 +72,9 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   test_options.credentials.email = "testuser@gmail.com";
   test_options.credentials.sync_token = "token";
   test_options.restored_key_for_bootstrapping = "";
-  test_options.setup_for_test_mode = true;
+  test_options.testing_mode =
+      use_real_database_ ? sync_api::SyncManager::TEST_ON_DISK
+                         : sync_api::SyncManager::TEST_IN_MEMORY;
   SyncBackendHost::InitCore(test_options);
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_init_) {
@@ -130,7 +134,8 @@ TestProfileSyncService::TestProfileSyncService(
       synchronous_sync_configuration_(false),
       callback_(callback),
       set_initial_sync_ended_on_init_(true),
-      fail_initial_download_(false) {
+      fail_initial_download_(false),
+      use_real_database_(false) {
   SetSyncSetupCompleted();
 }
 
@@ -212,6 +217,9 @@ void TestProfileSyncService::set_synchronous_sync_configuration() {
 void TestProfileSyncService::fail_initial_download() {
   fail_initial_download_ = true;
 }
+void TestProfileSyncService::set_use_real_database() {
+  use_real_database_ = true;
+}
 
 void TestProfileSyncService::CreateBackend() {
   backend_.reset(new browser_sync::SyncBackendHostForProfileSyncTest(
@@ -219,5 +227,6 @@ void TestProfileSyncService::CreateBackend() {
       sync_prefs_.AsWeakPtr(),
       set_initial_sync_ended_on_init_,
       synchronous_backend_initialization_,
-      fail_initial_download_));
+      fail_initial_download_,
+      use_real_database_));
 }

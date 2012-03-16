@@ -763,7 +763,7 @@ class SyncManagerTest : public testing::Test,
                        credentials,
                        false /* enable_sync_tabs_for_other_clients */,
                        sync_notifier_mock_, "",
-                       true /* setup_for_test_mode */,
+                       sync_api::SyncManager::TEST_IN_MEMORY,
                        &encryptor_,
                        &handler_,
                        NULL);

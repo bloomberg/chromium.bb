@@ -326,7 +326,7 @@ bool DirectoryBackingStore::InitializeTables() {
   // crbug.com/105018.
   if (version_on_disk != kCurrentDBVersion) {
     if (version_on_disk > kCurrentDBVersion)
-      return FAILED_NEWER_VERSION;
+      return false;
 
     // Fallback (re-sync everything) migration path.
     DVLOG(1) << "Old/null sync database, version " << version_on_disk;

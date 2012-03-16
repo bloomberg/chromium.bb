@@ -366,7 +366,7 @@ void SyncBackendHost::Initialize(
       &sync_notifier_factory_,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
-      false,
+      sync_api::SyncManager::NON_TEST,
       unrecoverable_error_handler,
       report_unrecoverable_error_function));
 }
@@ -771,7 +771,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     sync_notifier::SyncNotifierFactory* sync_notifier_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode,
+    sync_api::SyncManager::TestingMode testing_mode,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
     : sync_loop(sync_loop),
@@ -785,7 +785,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       sync_notifier_factory(sync_notifier_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
-      setup_for_test_mode(setup_for_test_mode),
+      testing_mode(testing_mode),
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
           report_unrecoverable_error_function) {
@@ -1026,7 +1026,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier()),
       options.restored_key_for_bootstrapping,
-      options.setup_for_test_mode,
+      options.testing_mode,
       &encryptor_,
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);

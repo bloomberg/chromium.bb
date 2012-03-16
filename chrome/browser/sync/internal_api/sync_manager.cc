@@ -135,7 +135,7 @@ class SyncManager::SyncInternal
         registrar_(NULL),
         change_delegate_(NULL),
         initialized_(false),
-        setup_for_test_mode_(false),
+        testing_mode_(NON_TEST),
         observing_ip_address_changes_(false),
         encryptor_(NULL),
         unrecoverable_error_handler_(NULL),
@@ -192,7 +192,7 @@ class SyncManager::SyncInternal
             bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
-            bool setup_for_test_mode,
+            TestingMode testing_mode,
             Encryptor* encryptor,
             UnrecoverableErrorHandler* unrecoverable_error_handler,
             ReportUnrecoverableErrorFunction
@@ -579,11 +579,12 @@ class SyncManager::SyncInternal
   // Set to true once Init has been called.
   bool initialized_;
 
-  // True if the SyncManager should be running in test mode (no sync
-  // scheduler actually communicating with the server).
-  bool setup_for_test_mode_;
+  // Controls the disabling of certain SyncManager features.
+  // Can be used to disable communication with the server and the use of an
+  // on-disk file for maintaining syncer state.
+  // TODO(117836): Clean up implementation of SyncManager unit tests.
+  TestingMode testing_mode_;
 
-  // Whether we should respond to an IP address change notification.
   bool observing_ip_address_changes_;
 
   // Map used to store the notification info to be displayed in
@@ -738,7 +739,7 @@ bool SyncManager::Init(
     bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode,
+    TestingMode testing_mode,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
@@ -761,7 +762,7 @@ bool SyncManager::Init(
                      enable_sync_tabs_for_other_clients,
                      sync_notifier,
                      restored_key_for_bootstrapping,
-                     setup_for_test_mode,
+                     testing_mode,
                      encryptor,
                      unrecoverable_error_handler,
                      report_unrecoverable_error_function);
@@ -886,7 +887,7 @@ bool SyncManager::SyncInternal::Init(
     bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
-    bool setup_for_test_mode,
+    TestingMode testing_mode,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
@@ -902,7 +903,7 @@ bool SyncManager::SyncInternal::Init(
 
   registrar_ = model_safe_worker_registrar;
   change_delegate_ = change_delegate;
-  setup_for_test_mode_ = setup_for_test_mode;
+  testing_mode_ = testing_mode;
 
   enable_sync_tabs_for_other_clients_ = enable_sync_tabs_for_other_clients;
 
@@ -933,7 +934,7 @@ bool SyncManager::SyncInternal::Init(
 
 
   // Test mode does not use a syncer context or syncer thread.
-  if (!setup_for_test_mode_) {
+  if (testing_mode_ == NON_TEST) {
     // Build a SyncSessionContext and store the worker in it.
     DVLOG(1) << "Sync is bringing up SyncSessionContext.";
     std::vector<SyncEngineEventListener*> listeners;
@@ -980,7 +981,7 @@ bool SyncManager::SyncInternal::Init(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                         signed_in));
 
-  if (!signed_in && !setup_for_test_mode_)
+  if (!signed_in && testing_mode_ == NON_TEST)
     return false;
 
   sync_notifier_->AddObserver(this);
@@ -1104,14 +1105,17 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   // Set before Open().
   change_observer_ =
       browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
+  WeakHandle<syncable::TransactionObserver> transaction_observer(
+      browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
-  syncable::DirOpenResult open_result =
-      directory()->Open(
-          database_path_,
-          username_for_share(),
-          this,
-          browser_sync::MakeWeakHandle(
-              js_mutation_event_observer_.AsWeakPtr()));
+  syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
+  if (testing_mode_ == TEST_IN_MEMORY) {
+    open_result = directory()->OpenInMemoryForTest(
+        username_for_share(), this, transaction_observer);
+  } else {
+    open_result = directory()->Open(
+        database_path_, username_for_share(), this, transaction_observer);
+  }
   if (open_result != syncable::OPENED) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -1160,7 +1164,7 @@ void SyncManager::SyncInternal::UpdateCredentials(
   if (connection_manager()->set_auth_token(credentials.sync_token)) {
     sync_notifier_->UpdateCredentials(
         credentials.email, credentials.sync_token);
-    if (!setup_for_test_mode_ && initialized_) {
+    if (testing_mode_ == NON_TEST && initialized_) {
       if (scheduler())
         scheduler()->OnCredentialsUpdated();
     }
@@ -1702,7 +1706,6 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
 
   share_.directory.reset();
 
-  setup_for_test_mode_ = false;
   change_delegate_ = NULL;
   registrar_ = NULL;
 

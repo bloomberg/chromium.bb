@@ -36,7 +36,8 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
       const base::WeakPtr<SyncPrefs>& sync_prefs,
       bool set_initial_sync_ended_on_init,
       bool synchronous_init,
-      bool fail_initial_download);
+      bool fail_initial_download,
+      bool use_real_database);
   virtual ~SyncBackendHostForProfileSyncTest();
 
   MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
@@ -55,6 +56,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
  private:
   bool synchronous_init_;
   bool fail_initial_download_;
+  bool use_real_database_;
 };
 
 }  // namespace browser_sync
@@ -90,6 +92,7 @@ class TestProfileSyncService : public ProfileSyncService {
   void set_synchronous_sync_configuration();
 
   void fail_initial_download();
+  void set_use_real_database();
 
   browser_sync::TestIdFactory* id_factory();
 
@@ -116,6 +119,7 @@ class TestProfileSyncService : public ProfileSyncService {
   bool set_initial_sync_ended_on_init_;
 
   bool fail_initial_download_;
+  bool use_real_database_;
 };
 
 

@@ -445,6 +445,12 @@ class SyncManager {
     virtual ~Observer();
   };
 
+  enum TestingMode {
+    NON_TEST,
+    TEST_ON_DISK,
+    TEST_IN_MEMORY,
+  };
+
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   explicit SyncManager(const std::string& name);
   virtual ~SyncManager();
@@ -484,7 +490,7 @@ class SyncManager {
             bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
-            bool setup_for_test_mode,
+            TestingMode testing_mode,
             browser_sync::Encryptor* encryptor,
             browser_sync::UnrecoverableErrorHandler*
                 unrecoverable_error_handler,

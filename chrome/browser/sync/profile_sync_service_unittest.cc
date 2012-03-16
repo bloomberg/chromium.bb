@@ -83,7 +83,8 @@ class ProfileSyncServiceTest : public testing::Test {
   // TODO(akalin): Refactor the StartSyncService*() functions below.
 
   void StartSyncService() {
-    StartSyncServiceAndSetInitialSyncEnded(true, true, false, true, true);
+    StartSyncServiceAndSetInitialSyncEnded(
+        true, true, false, true, true, false);
   }
 
   void StartSyncServiceAndSetInitialSyncEnded(
@@ -91,7 +92,8 @@ class ProfileSyncServiceTest : public testing::Test {
       bool issue_auth_token,
       bool synchronous_sync_configuration,
       bool sync_setup_completed,
-      bool expect_create_dtm) {
+      bool expect_create_dtm,
+      bool use_real_database) {
     if (!service_.get()) {
       SigninManager* signin =
           SigninManagerFactory::GetForProfile(profile_.get());
@@ -109,6 +111,8 @@ class ProfileSyncServiceTest : public testing::Test {
         service_->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
         service_->set_synchronous_sync_configuration();
+      if (use_real_database)
+        service_->set_use_real_database();
       if (!sync_setup_completed)
         profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
@@ -250,7 +254,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerHandlersDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
 
   StrictMock<MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
@@ -291,7 +295,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true);
+  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true, true, false);
 
   StrictMock<MockJsReplyHandler> reply_handler;
 
@@ -333,7 +337,7 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
 
-  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false, true);
+  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false, true, true);
   EXPECT_FALSE(service_->HasSyncSetupCompleted());
   EXPECT_FALSE(service_->sync_initialized());
 
@@ -370,7 +374,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_CorruptDatabase) {
   // Initialize with HasSyncSetupCompleted() set to true and InitialSyncEnded
   // false.  This is to model the scenario that would result when opening the
   // sync database fails.
-  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false);
+  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false, true);
 
   // The backend is not ready.  Ensure the PSS knows this.
   EXPECT_FALSE(service_->sync_initialized());
