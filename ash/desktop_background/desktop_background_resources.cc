@@ -21,6 +21,12 @@ struct WallpaperInfo {
 
 const WallpaperInfo kDefaultWallpapers[] = {
     {
+        IDR_AURA_WALLPAPERS_ROMAINGUY_0,
+        IDR_AURA_WALLPAPERS_ROMAINGUY_0_THUMB,
+        "Romain Guy",
+        "http://www.curious-creature.org"
+    },
+    {
         IDR_AURA_WALLPAPERS_WALLPAPER_0,
         IDR_AURA_WALLPAPERS_WALLPAPER_0_THUMB,
         "Test Gradient 0",
@@ -97,12 +103,6 @@ const WallpaperInfo kDefaultWallpapers[] = {
         IDR_AURA_WALLPAPERS_WALLPAPER_12_THUMB,
         "Test Gradient 0",
         "http//www.chromium.org"
-    },
-    {
-        IDR_AURA_WALLPAPERS_ROMAINGUY_0,
-        IDR_AURA_WALLPAPERS_ROMAINGUY_0_THUMB,
-        "Romain Guy",
-        "http://www.curious-creature.org"
     },
 #if defined(GOOGLE_CHROME_BUILD)
     {
