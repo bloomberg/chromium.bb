@@ -392,9 +392,9 @@ void BufferedResourceLoader::didReceiveResponse(
         range_supported_ = true;
       } else if (ok_response && first_byte_position_ == 0 &&
                  last_byte_position_ == kPositionNotSpecified) {
-        // We accept a 200 response for a Range:0- request and down-grade the
-        // data source to streaming.
-        range_supported_ = false;
+        // We accept a 200 response for a Range:0- request, trusting the
+        // Accept-Ranges header, because Apache thinks that's a reasonable thing
+        // to return.
       } else {
         error = net::ERR_INVALID_RESPONSE;
       }
