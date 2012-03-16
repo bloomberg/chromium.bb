@@ -16,7 +16,6 @@
 
 namespace ui {
 
-class InterpolatedTransform;
 class LayerAnimationDelegate;
 class Transform;
 
@@ -53,17 +52,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // the return value.
   static LayerAnimationElement* CreateTransformElement(
       const Transform& transform,
-      base::TimeDelta duration);
-
-  // Creates an element that transitions to another in a way determined by an
-  // interpolated transform. The element accepts ownership of the interpolated
-  // transform. NB: at every step, the interpolated transform clobbers the
-  // existing transform. That is, it does not interpolate between the existing
-  // transform and the last value the interpolated transform will assume. It is
-  // therefore important that the value of the interpolated at time 0 matches
-  // the current transform.
-  static LayerAnimationElement* CreateInterpolatedTransformElement(
-      InterpolatedTransform* interpolated_transform,
       base::TimeDelta duration);
 
   // Creates an element that transitions to the given bounds. The caller owns

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,22 +27,18 @@ namespace ui {
 
 InterpolatedTransform::InterpolatedTransform()
     : start_time_(0.0f),
-      end_time_(1.0f),
-      reversed_(false) {
+      end_time_(1.0f) {
 }
 
 InterpolatedTransform::InterpolatedTransform(float start_time,
                                              float end_time)
     : start_time_(start_time),
-      end_time_(end_time),
-      reversed_(false) {
+      end_time_(end_time) {
 }
 
 InterpolatedTransform::~InterpolatedTransform() {}
 
 ui::Transform InterpolatedTransform::Interpolate(float t) const {
-  if (reversed_)
-    t = 1.0f - t;
   ui::Transform result = InterpolateButDoNotCompose(t);
   if (child_.get()) {
     result.ConcatTransform(child_->Interpolate(t));
@@ -158,41 +154,6 @@ InterpolatedRotation::~InterpolatedRotation() {}
 ui::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
   ui::Transform result;
   result.SetRotate(ValueBetween(t, start_degrees_, end_degrees_));
-  return result;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// InterpolatedAxisAngleRotation
-//
-
-InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
-    gfx::Point3f axis,
-    float start_degrees,
-    float end_degrees)
-    : InterpolatedTransform(),
-      axis_(axis),
-      start_degrees_(start_degrees),
-      end_degrees_(end_degrees) {
-}
-
-InterpolatedAxisAngleRotation::InterpolatedAxisAngleRotation(
-    gfx::Point3f axis,
-    float start_degrees,
-    float end_degrees,
-    float start_time,
-    float end_time)
-    : InterpolatedTransform(start_time, end_time),
-      axis_(axis),
-      start_degrees_(start_degrees),
-      end_degrees_(end_degrees) {
-}
-
-InterpolatedAxisAngleRotation::~InterpolatedAxisAngleRotation() {}
-
-ui::Transform
-InterpolatedAxisAngleRotation::InterpolateButDoNotCompose(float t) const {
-  ui::Transform result;
-  result.SetRotateAbout(axis_, ValueBetween(t, start_degrees_, end_degrees_));
   return result;
 }
 
