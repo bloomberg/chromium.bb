@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Chromium settings and storage represent user-selected preferences and
+// information and MUST not be extracted, overwritten or modified except
+// through Chromium defined APIs.
+
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 #define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 #pragma once

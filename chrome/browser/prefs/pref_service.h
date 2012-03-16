@@ -4,6 +4,10 @@
 
 // This provides a way to access the application's current preferences.
 
+// Chromium settings and storage represent user-selected preferences and
+// information and MUST not be extracted, overwritten or modified except
+// through Chromium defined APIs.
+
 #ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_H_
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_H_
 #pragma once
