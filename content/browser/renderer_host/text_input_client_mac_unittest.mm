@@ -18,6 +18,7 @@
 #include "testing/gtest_mac.h"
 
 using content::MockRenderProcessHost;
+using content::MockRenderProcessHostFactory;
 using content::RenderWidgetHostImpl;
 
 namespace {
