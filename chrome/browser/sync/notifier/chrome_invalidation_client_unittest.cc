@@ -59,15 +59,6 @@ class MockStateWriter : public StateWriter {
   MOCK_METHOD1(WriteState, void(const std::string&));
 };
 
-class MockCallback {
- public:
-  MOCK_METHOD0(Run, void());
-
-  invalidation::Closure* MakeClosure() {
-    return invalidation::NewPermanentCallback(this, &MockCallback::Run);
-  }
-};
-
 }  // namespace
 
 class ChromeInvalidationClientTest : public testing::Test {
@@ -82,8 +73,13 @@ class ChromeInvalidationClientTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    client_.Stop();
+    // client_.Stop() stops the invalidation scheduler, which deletes any
+    // pending tasks without running them.  Some tasks "run and delete" another
+    // task, so they must be run in order to avoid leaking the inner task.
+    // client_.Stop() does not schedule any tasks, so it's both necessary and
+    // sufficient to drain the task queue before calling it.
     message_loop_.RunAllPending();
+    client_.Stop();
   }
 
   // |payload| can be NULL, but not |type_name|.

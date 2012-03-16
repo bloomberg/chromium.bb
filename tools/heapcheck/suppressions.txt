@@ -1873,15 +1873,6 @@
    fun:net::HostResolverImpl::Job::OnProcTaskComplete
 }
 {
-   bug_118203
-   Heapcheck:Leak
-   ...
-   fun:invalidation::NewPermanentCallback
-   fun:invalidation::InvalidationClientImpl::ScheduleStartAfterReadingStateBlob
-   fun:invalidation::InvalidationClientImpl::Start
-   fun:sync_notifier::ChromeInvalidationClient::Start
-}
-{
    bug_118336
    Heapcheck:Leak
    ...

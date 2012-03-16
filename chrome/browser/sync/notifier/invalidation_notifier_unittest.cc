@@ -45,8 +45,13 @@ class InvalidationNotifierTest : public testing::Test {
 
   virtual void TearDown() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
-    invalidation_notifier_.reset();
+    // Stopping the invalidation notifier stops its scheduler, which deletes any
+    // pending tasks without running them.  Some tasks "run and delete" another
+    // task, so they must be run in order to avoid leaking the inner task.
+    // Stopping does not schedule any tasks, so it's both necessary and
+    // sufficient to drain the task queue before stopping the notifier.
     message_loop_.RunAllPending();
+    invalidation_notifier_.reset();
   }
 
   MessageLoop message_loop_;
