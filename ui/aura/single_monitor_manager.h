@@ -26,7 +26,7 @@ class SingleMonitorManager : public MonitorManager,
   virtual ~SingleMonitorManager();
 
   // MonitorManager overrides:
-  virtual void OnNativeMonitorResized(const gfx::Size& size);
+  virtual void OnNativeMonitorResized(const gfx::Size& size) OVERRIDE;
   virtual RootWindow* CreateRootWindowForMonitor(
       const Monitor* monitor) OVERRIDE;
   virtual const Monitor* GetMonitorNearestWindow(
