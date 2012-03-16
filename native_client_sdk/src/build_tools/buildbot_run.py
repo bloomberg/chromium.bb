@@ -22,9 +22,9 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SDK_BUILDER_MAP = {
     'linux-sdk-mono32':
-        [sys.executable, 'nacl-mono-builder.py', '--arch', 'x86-32'],
+        [sys.executable, 'nacl-mono-buildbot.py'],
     'linux-sdk-mono64':
-        [sys.executable, 'nacl-mono-builder.py', '--arch', 'x86-64'],
+        ['/bin/true'],
     'DEFAULT':
         [sys.executable, 'build_sdk.py'],
 }

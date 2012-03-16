@@ -29,12 +29,14 @@ if [ $TARGET_BITSIZE == "32" ]; then
   readonly CONFIG_OPTS="--host=i686-pc-linux-gnu \
                         --build=i686-pc-linux-gnu \
                         --target=i686-pc-linux-gnu"
+  readonly LIBDIR=lib32
 else
   readonly NACL_CROSS_PREFIX_DASH=x86_64-nacl-
   readonly CONFIG_OPTS="--host=x86_64-pc-linux-gnu \
                         --build=x86_64-pc-linux-gnu \
                         --target=x86_64-pc-linux-gnu"
-  fi
+  readonly LIBDIR=lib
+fi
 
 # UGLY hack to allow dynamic linking
 sed -i -e s/elf_i386/elf_nacl/ -e s/elf_x86_64/elf64_nacl/ \
@@ -48,7 +50,6 @@ rm -rf ${BUILD_DIR}
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
-rm -rf ${INSTALL_DIR}
 mkdir -p ${INSTALL_DIR}
 
 readonly NACL_BIN_PATH=${NACL_SDK_ROOT}/toolchain/linux_x86_glibc/bin
@@ -65,9 +66,9 @@ LIBS="-lnacl_dyncode -lc -lg -lnosys -lnacl" \
 CFLAGS="-g -O2 -D_POSIX_PATH_MAX=256 -DPATH_MAX=256" \
 ${MONO_DIR}/configure ${CONFIG_OPTS} \
   --exec-prefix=${INSTALL_DIR} \
-  --libdir=${INSTALL_DIR}/lib \
+  --libdir=${INSTALL_DIR}/${LIBDIR} \
   --prefix=${INSTALL_DIR} \
-  --program-prefix="" \
+  --program-prefix=${NACL_CROSS_PREFIX_DASH} \
   --oldincludedir=${INSTALL_DIR}/include \
   --with-glib=embedded \
   --with-tls=pthread \
