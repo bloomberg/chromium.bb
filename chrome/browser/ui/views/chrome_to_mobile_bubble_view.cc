@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +26,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/events/event.h"
 #include "ui/views/layout/grid_layout.h"
@@ -44,7 +45,7 @@ const size_t kProgressThrobDurationMS = 2400;
 // The seconds to delay before automatically closing the bubble after sending.
 const int kAutoCloseDelay = 3;
 
-// A custom TextButtonNativeThemeBorder with no left or right insets.
+// A custom TextButtonNativeThemeBorder with no left (leading) inset.
 class CheckboxNativeThemeBorder : public views::TextButtonNativeThemeBorder {
  public:
   explicit CheckboxNativeThemeBorder(views::NativeThemeDelegate* delegate);
@@ -65,7 +66,14 @@ CheckboxNativeThemeBorder::~CheckboxNativeThemeBorder() {}
 
 void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
   views::TextButtonNativeThemeBorder::GetInsets(insets);
-  insets->Set(insets->top(), 0, insets->bottom(), 0);
+  insets->Set(insets->top(), 0, insets->bottom(), insets->right());
+}
+
+// Downcast the View to an ImageView and set the image with the resource id.
+void SetImageViewToId(views::View* image_view, int id) {
+  views::ImageView* image = static_cast<views::ImageView*>(image_view);
+  if (image)
+    image->SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
 }
 
 }  // namespace
@@ -100,6 +108,8 @@ void ChromeToMobileBubbleView::ShowBubble(views::View* anchor_view,
   if (IsShowing())
     return;
 
+  // Show the lit mobile device icon during the bubble's lifetime.
+  SetImageViewToId(anchor_view, IDR_MOBILE_LIT);
   bubble_ = new ChromeToMobileBubbleView(anchor_view, profile);
   browser::CreateViewsBubble(bubble_);
   bubble_->Show();
@@ -131,6 +141,9 @@ void ChromeToMobileBubbleView::WindowClosing() {
   // destroyed asynchronously and the shown state will be checked before then.
   DCHECK(bubble_ == this);
   bubble_ = NULL;
+
+  // Restore the resting state mobile device icon.
+  SetImageViewToId(anchor_view(), IDR_MOBILE);
 }
 
 bool ChromeToMobileBubbleView::AcceleratorPressed(
@@ -258,6 +271,7 @@ void ChromeToMobileBubbleView::Init() {
       radio = new views::RadioButton(name, 0);
       radio->set_listener(this);
       radio->SetEnabledColor(SK_ColorBLACK);
+      radio->SetHoverColor(SK_ColorBLACK);
       mobile_map_[radio] = *it;
       layout->StartRow(0, single_column_set_id);
       layout->AddView(radio);
@@ -273,6 +287,7 @@ void ChromeToMobileBubbleView::Init() {
   // Use CheckboxNativeThemeBorder to align the checkbox with the title label.
   send_copy_->set_border(new CheckboxNativeThemeBorder(send_copy_));
   send_copy_->SetEnabledColor(SK_ColorBLACK);
+  send_copy_->SetHoverColor(SK_ColorBLACK);
   send_copy_->SetEnabled(false);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(send_copy_);
