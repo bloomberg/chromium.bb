@@ -2318,7 +2318,11 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
 }
 
 WebPreferences TabContents::GetWebkitPrefs() {
-  return GetWebkitPrefs(GetRenderViewHost(), GetURL());
+  // We want to base the page config off of the real URL, rather than the
+  // display URL.
+  GURL url = controller_.GetActiveEntry()
+      ? controller_.GetActiveEntry()->GetURL() : GURL::EmptyGURL();
+  return GetWebkitPrefs(GetRenderViewHost(), url);
 }
 
 void TabContents::OnUserGesture() {

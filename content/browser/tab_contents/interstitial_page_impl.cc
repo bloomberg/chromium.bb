@@ -466,7 +466,7 @@ content::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
 }
 
 WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
-  return tab_->GetWebkitPrefs(render_view_host_, url_);
+  return TabContents::GetWebkitPrefs(render_view_host_, url_);
 }
 
 bool InterstitialPageImpl::PreHandleKeyboardEvent(
