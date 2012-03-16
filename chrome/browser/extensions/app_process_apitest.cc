@@ -634,7 +634,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   EXPECT_EQ(process, popup_process);
 }
 
-IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
+// http://crbug.com/118502
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_ReloadAppAfterCrash DISABLED_ReloadAppAfterCrash
+#else
+#define MAYBE_ReloadAppAfterCrash ReloadAppAfterCrash
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
   extensions::ProcessMap* process_map =
       browser()->profile()->GetExtensionService()->process_map();
 
