@@ -63,7 +63,7 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
           pp::MouseInputEvent mouse_event(event);
           if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
               !mouse_locked_) {
-            LockMouse(callback_factory_.NewRequiredCallback(
+            LockMouse(callback_factory_.NewCallback(
                 &MouseLockInstance::DidLockMouse));
           }
         }
@@ -85,7 +85,7 @@ bool MouseLockInstance::HandleInputEvent(const pp::InputEvent& event) {
         if (mouse_locked_) {
           UnlockMouse();
         } else {
-          LockMouse(callback_factory_.NewRequiredCallback(
+          LockMouse(callback_factory_.NewCallback(
               &MouseLockInstance::DidLockMouse));
         }
       }
@@ -173,7 +173,7 @@ void MouseLockInstance::Paint() {
   device_context_.ReplaceContents(&image);
   waiting_for_flush_completion_ = true;
   device_context_.Flush(
-      callback_factory_.NewRequiredCallback(&MouseLockInstance::DidFlush));
+      callback_factory_.NewCallback(&MouseLockInstance::DidFlush));
 }
 
 pp::ImageData MouseLockInstance::PaintImage(int width, int height) {

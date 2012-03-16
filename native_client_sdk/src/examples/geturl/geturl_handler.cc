@@ -42,7 +42,7 @@ GetURLHandler::~GetURLHandler() {
 
 void GetURLHandler::Start() {
   pp::CompletionCallback cc =
-      cc_factory_.NewRequiredCallback(&GetURLHandler::OnOpen);
+      cc_factory_.NewCallback(&GetURLHandler::OnOpen);
   url_loader_.Open(url_request_, cc);
 }
 
