@@ -31,7 +31,7 @@
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {
-class DictionaryBase;
+class DictionaryValue;
 }  // namespace base
 
 namespace pp {

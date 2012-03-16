@@ -20,12 +20,15 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-class ListValue;
 class PepperTCPServerSocket;
 class PepperTCPSocket;
 class PepperUDPSocket;
 struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
+
+namespace base {
+class ListValue;
+}
 
 namespace content {
 class ResourceContext;

@@ -8,6 +8,7 @@
 
 #include <deque>
 #include <list>
+#include <map>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

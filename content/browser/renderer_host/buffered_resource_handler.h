@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "content/browser/renderer_host/layered_resource_handler.h"
 

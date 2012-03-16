@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DISPATCHER_HOST_H_
 #pragma once
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "content/public/browser/browser_message_filter.h"

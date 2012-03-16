@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 #include "media/base/media.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"

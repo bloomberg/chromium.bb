@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "content/public/browser/browser_accessibility_state.h"
 

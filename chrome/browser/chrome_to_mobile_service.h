@@ -26,6 +26,10 @@ class OAuth2AccessTokenFetcher;
 class CloudPrintURL;
 class Profile;
 
+namespace base {
+class DictionaryValue;
+}
+
 // ChromeToMobileService connects to the cloud print service to enumerate
 // compatible mobiles owned by its profile and send URLs and MHTML snapshots.
 // The mobile list updates regularly, and explicitly by RequestMobileListUpdate.

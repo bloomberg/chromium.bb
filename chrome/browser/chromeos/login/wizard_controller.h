@@ -20,6 +20,10 @@
 
 class PrefService;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
 class EnterpriseEnrollmentScreen;
@@ -78,7 +82,7 @@ class WizardController : public ScreenObserver {
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. Takes ownership of |screen_parameters|.
   void Init(const std::string& first_screen_name,
-            DictionaryValue* screen_parameters);
+            base::DictionaryValue* screen_parameters);
 
   // Advances to screen defined by |screen_name| and shows it.
   void AdvanceToScreen(const std::string& screen_name);
@@ -201,7 +205,7 @@ class WizardController : public ScreenObserver {
   static WizardController* default_controller_;
 
   // Parameters for the first screen. May be NULL.
-  scoped_ptr<DictionaryValue> screen_parameters_;
+  scoped_ptr<base::DictionaryValue> screen_parameters_;
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 

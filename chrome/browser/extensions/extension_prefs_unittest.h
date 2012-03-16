@@ -11,6 +11,10 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class Value;
+}
+
 // Base class for extension preference-related unit tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
@@ -55,16 +59,16 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
 
   void InstallExtControlledPref(Extension *ext,
                                 const std::string& key,
-                                Value* val);
+                                base::Value* val);
 
   void InstallExtControlledPrefIncognito(Extension *ext,
                                          const std::string& key,
-                                         Value* val);
+                                         base::Value* val);
 
   void InstallExtControlledPrefIncognitoSessionOnly(
       Extension *ext,
       const std::string& key,
-      Value* val);
+      base::Value* val);
 
   void InstallExtension(Extension *ext);
 

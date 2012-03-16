@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"

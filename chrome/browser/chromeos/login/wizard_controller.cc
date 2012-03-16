@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -148,7 +149,7 @@ WizardController::~WizardController() {
 }
 
 void WizardController::Init(const std::string& first_screen_name,
-                            DictionaryValue* screen_parameters) {
+                            base::DictionaryValue* screen_parameters) {
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen_name;
   first_screen_name_ = first_screen_name;
   screen_parameters_.reset(screen_parameters);

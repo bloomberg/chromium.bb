@@ -13,6 +13,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/signin/token_service.h"

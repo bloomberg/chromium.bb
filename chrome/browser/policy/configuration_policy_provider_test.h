@@ -18,6 +18,7 @@
 
 namespace base {
 class ListValue;
+class Value;
 }
 
 namespace policy {
@@ -64,7 +65,7 @@ class PolicyProviderTestHarness {
   virtual void InstallBooleanPolicy(const std::string& policy_name,
                                     bool policy_value) = 0;
   virtual void InstallStringListPolicy(const std::string& policy_name,
-                                       const ListValue* policy_value) = 0;
+                                       const base::ListValue* policy_value) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyProviderTestHarness);
