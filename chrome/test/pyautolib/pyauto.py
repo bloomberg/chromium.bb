@@ -3163,6 +3163,34 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
 
+  def HeapProfilerDump(self, reason):
+    """Dumps a heap profile.  It works only on Linux and ChromeOS.
+
+       We need an environment variable "HEAPPROFILE" set to a directory and a
+       filename prefix, for example, "/tmp/prof".  In a case of this example,
+       heap profiles will be dumped into "/tmp/prof.(pid).0002.heap",
+       "/tmp/prof.(pid).0003.heap", and so on.  Nothing happens when this
+       function is called without the env.
+
+    Args:
+      reason: A string which describes the reason for dumping a heap profile.
+              The reason will be included in the logged message.
+              Examples:
+                'To check memory leaking'
+                'For PyAuto tests'
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if self.IsLinux():  # IsLinux() also implies IsChromeOS().
+      cmd_dict = {
+        'command': 'HeapProfilerDump',
+        'reason': reason,
+      }
+      self._GetResultFromJSONRequest(cmd_dict)
+    else:
+      logging.warn('Heap-profiling is not supported in this OS.')
+
   def GetNTPThumbnails(self):
     """Return a list of info about the sites in the NTP most visited section.
     SAMPLE:
