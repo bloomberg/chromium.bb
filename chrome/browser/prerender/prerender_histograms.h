@@ -36,6 +36,16 @@ class PrerenderHistograms {
                                    bool was_complete_prerender,
                                    const GURL& url);
 
+  // Records, in a histogram, the percentage of the page load time that had
+  // elapsed by the time it is swapped in.  Values outside of [0, 1.0] are
+  // invalid and ignored.
+  void RecordPercentLoadDoneAtSwapin(double fraction) const;
+
+  // Records the actual pageload time of a prerender that has not been swapped
+  // in yet, but finished loading.
+  void RecordPageLoadTimeNotSwappedIn(base::TimeDelta page_load_time,
+                                      const GURL& url) const;
+
   // Records the time from when a page starts prerendering to when the user
   // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used,

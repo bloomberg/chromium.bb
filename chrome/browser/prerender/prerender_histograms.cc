@@ -258,6 +258,26 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   }
 }
 
+void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
+    base::TimeDelta page_load_time, const GURL& url) const {
+  // If the URL to be prerendered is not a http[s] URL, or is a Google URL,
+  // do not record.
+  if (!IsWebURL(url) || IsGoogleDomain(url))
+    return;
+  RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
+}
+
+void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
+    const {
+  if (fraction < 0.0 || fraction > 1.0)
+    return;
+  int percentage = static_cast<int>(fraction * 100);
+  if (percentage < 0 || percentage > 100)
+    return;
+  PREFIXED_HISTOGRAM("PercentLoadDoneAtSwapin",
+                     HISTOGRAM_PERCENTAGE(name, percentage));
+}
+
 base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
   return base::TimeTicks::Now() - last_prerender_seen_time_;
 }

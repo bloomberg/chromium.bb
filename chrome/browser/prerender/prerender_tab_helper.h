@@ -64,6 +64,11 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // the perceived page load time (PPLT).
   base::TimeTicks pplt_load_start_;
 
+  // System time at which the actual pageload started (pre-swapin), if
+  // a applicable (in cases when a prerender that was still loading was
+  // swapped in).
+  base::TimeTicks actual_load_start_;
+
   // Information about the last hover for each hover threshold.
   scoped_array<HoverData> last_hovers_;
 

@@ -140,8 +140,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // when the user navigates to a page to when it finishes loading. The actual
   // load may have started prior to navigation due to prerender hints.
   // This must be called on the UI thread.
+  // |fraction_plt_elapsed_at_swap_in| must either be in [0.0, 1.0], or a value
+  // outside that range indicating that it doesn't apply.
   static void RecordPerceivedPageLoadTime(
       base::TimeDelta perceived_page_load_time,
+      double fraction_plt_elapsed_at_swap_in,
       content::WebContents* web_contents,
       const GURL& url);
 

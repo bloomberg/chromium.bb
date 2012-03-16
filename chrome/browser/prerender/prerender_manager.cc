@@ -542,6 +542,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
 // static
 void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
+    double fraction_plt_elapsed_at_swap_in,
     WebContents* web_contents,
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -556,8 +557,15 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
       prerender_manager->IsWebContentsPrerendered(web_contents);
   bool was_complete_prerender = was_prerender ||
       prerender_manager->WouldWebContentsBePrerendered(web_contents);
-  prerender_manager->histograms_->RecordPerceivedPageLoadTime(
-      perceived_page_load_time, was_prerender, was_complete_prerender, url);
+  if (prerender_manager->IsWebContentsPrerendering(web_contents)) {
+    prerender_manager->histograms_->RecordPageLoadTimeNotSwappedIn(
+        perceived_page_load_time, url);
+  } else {
+    prerender_manager->histograms_->RecordPerceivedPageLoadTime(
+        perceived_page_load_time, was_prerender, was_complete_prerender, url);
+    prerender_manager->histograms_->RecordPercentLoadDoneAtSwapin(
+        fraction_plt_elapsed_at_swap_in);
+  }
 }
 
 bool PrerenderManager::is_enabled() const {
