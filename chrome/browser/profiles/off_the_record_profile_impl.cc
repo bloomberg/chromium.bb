@@ -230,6 +230,10 @@ ExtensionSpecialStoragePolicy*
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
 }
 
+LazyBackgroundTaskQueue* OffTheRecordProfileImpl::GetLazyBackgroundTaskQueue() {
+  return GetOriginalProfile()->GetLazyBackgroundTaskQueue();
+}
+
 GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
   return NULL;
 }

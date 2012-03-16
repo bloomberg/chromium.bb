@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -14,7 +15,7 @@
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
+#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -104,8 +105,6 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
@@ -393,15 +392,11 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
   if (!CanDispatchEventToProfile(profile, extension, event, &event_args))
     return;
 
-  ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
-
   if (!CanDispatchEventNow(profile, extension)) {
-    AppendEvent(profile, extension->id(), event);
-    if (!pm->GetBackgroundHostForExtension(extension->id())) {
-      // Balanced in DispatchPendingEvents, after the page has loaded.
-      pm->IncrementLazyKeepaliveCount(extension);
-      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
-    }
+    profile->GetLazyBackgroundTaskQueue()->AddPendingTask(
+        profile, extension->id(),
+        base::Bind(&ExtensionEventRouter::DispatchPendingEvent,
+                   base::Unretained(this), event));
   }
 }
 
@@ -438,48 +433,12 @@ void ExtensionEventRouter::OnExtensionEventAck(
   }
 }
 
-void ExtensionEventRouter::AppendEvent(
-    Profile* profile,
-    const std::string& extension_id,
-    const linked_ptr<ExtensionEvent>& event) {
-  PendingEventsList* events_list = NULL;
-  PendingEventsKey key(extension_id, profile);
-  PendingEventsPerExtMap::iterator it = pending_events_.find(key);
-  if (it == pending_events_.end()) {
-    events_list = new PendingEventsList();
-    pending_events_[key] = linked_ptr<PendingEventsList>(events_list);
-  } else {
-    events_list = it->second.get();
-  }
-
-  events_list->push_back(event);
-}
-
-void ExtensionEventRouter::DispatchPendingEvents(
-    content::RenderProcessHost* process, const Extension* extension) {
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  DCHECK(profile);
-
-  PendingEventsPerExtMap::iterator map_it =
-      pending_events_.find(PendingEventsKey(extension->id(), profile));
-  if (map_it == pending_events_.end()) {
-    NOTREACHED();  // lazy page should not load without any pending events
-    return;
-  }
-
-  ListenerProcess listener(process, extension->id());
-  PendingEventsList* events_list = map_it->second.get();
-  for (PendingEventsList::const_iterator it = events_list->begin();
-       it != events_list->end(); ++it) {
-    if (listeners_[(*it)->event_name].count(listener) > 0u)
-      DispatchEventToListener(listener, *it);
-  }
-
-  events_list->clear();
-  pending_events_.erase(map_it);
-
-  // Balance the keepalive addref in LoadLazyBackgroundPagesForEvent.
-  profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(extension);
+void ExtensionEventRouter::DispatchPendingEvent(
+    const linked_ptr<ExtensionEvent>& event, ExtensionHost* host) {
+  ListenerProcess listener(host->render_process_host(),
+                           host->extension()->id());
+  if (listeners_[event->event_name].count(listener) > 0u)
+    DispatchEventToListener(listener, event);
 }
 
 void ExtensionEventRouter::Observe(
@@ -508,19 +467,6 @@ void ExtensionEventRouter::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-      // If an on-demand background page finished loading, dispatch queued up
-      // events for it.
-      ExtensionHost* eh = content::Details<ExtensionHost>(details).ptr();
-      if (profile_->IsSameProfile(eh->profile()) &&
-          eh->extension_host_type() ==
-              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-          !eh->extension()->background_page_persists()) {
-        CHECK(eh->did_stop_loading());
-        DispatchPendingEvents(eh->render_process_host(), eh->extension());
-      }
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add all registered lazy listeners to our cache.
       const Extension* extension =
@@ -544,14 +490,6 @@ void ExtensionEventRouter::Observe(
            it != lazy_listeners_.end(); ++it) {
         it->second.erase(lazy_listener);
       }
-
-      // Clear pending events as well.
-      pending_events_.erase(PendingEventsKey(
-          unloaded->extension->id(), profile_));
-      if (profile_->HasOffTheRecordProfile())
-        pending_events_.erase(PendingEventsKey(
-            unloaded->extension->id(), profile_->GetOffTheRecordProfile()));
-
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {

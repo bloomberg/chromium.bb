@@ -42,6 +42,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -422,8 +423,10 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
   // ExtensionProcessManager.
   extension_info_map_ = new ExtensionInfoMap();
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
+  lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(this));
   extension_event_router_.reset(new ExtensionEventRouter(this));
-  extension_message_service_.reset(new ExtensionMessageService(this));
+  extension_message_service_.reset(new ExtensionMessageService(
+      lazy_background_task_queue_.get()));
   extension_navigation_observer_.reset(new ExtensionNavigationObserver(this));
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -695,6 +698,10 @@ ExtensionSpecialStoragePolicy*
         CookieSettings::Factory::GetForProfile(this));
   }
   return extension_special_storage_policy_.get();
+}
+
+LazyBackgroundTaskQueue* ProfileImpl::GetLazyBackgroundTaskQueue() {
+  return lazy_background_task_queue_.get();
 }
 
 void ProfileImpl::OnPrefsLoaded(bool success) {

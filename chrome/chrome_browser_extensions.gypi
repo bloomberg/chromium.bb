@@ -378,6 +378,8 @@
         'browser/extensions/installed_loader.h',
         'browser/extensions/key_identifier_conversion_views.cc',
         'browser/extensions/key_identifier_conversion_views.h',
+        'browser/extensions/lazy_background_task_queue.cc',
+        'browser/extensions/lazy_background_task_queue.h',
         'browser/extensions/pack_extension_job.cc',
         'browser/extensions/pack_extension_job.h',
         'browser/extensions/pending_extension_info.cc',

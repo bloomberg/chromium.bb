@@ -19,6 +19,7 @@
 
 class GURL;
 class Extension;
+class ExtensionHost;
 class ExtensionDevToolsManager;
 class Profile;
 
@@ -189,13 +190,8 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // ACK from the renderer.
   void IncrementInFlightEvents(Profile* profile, const Extension* extension);
 
-  // Store the event so that it can be dispatched (in order received)
-  // when the background page is done loading.
-  void AppendEvent(Profile* profile,
-                   const std::string& extension_id,
-                   const linked_ptr<ExtensionEvent>& event);
-  void DispatchPendingEvents(content::RenderProcessHost* process,
-                             const Extension* extension);
+  void DispatchPendingEvent(const linked_ptr<ExtensionEvent>& event,
+                            ExtensionHost* host);
 
   Profile* profile_;
 
@@ -210,14 +206,6 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // listening to events. This is just a cache of the real list, which is
   // stored on disk in the extension prefs.
   ListenerMap lazy_listeners_;
-
-  // A map between an extension_id,Profile pair and the queue of events pending
-  // the load of its background page.
-  typedef std::pair<std::string, Profile*> PendingEventsKey;
-  typedef std::vector<linked_ptr<ExtensionEvent> > PendingEventsList;
-  typedef std::map<PendingEventsKey,
-                   linked_ptr<PendingEventsList> > PendingEventsPerExtMap;
-  PendingEventsPerExtMap pending_events_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouter);
 };

@@ -34,6 +34,7 @@ class FaviconService;
 class GAIAInfoUpdateService;
 class HistoryService;
 class HostContentSettingsMap;
+class LazyBackgroundTaskQueue;
 class PasswordStore;
 class PrefService;
 class PromoCounter;
@@ -238,6 +239,10 @@ class Profile : public content::BrowserContext {
   // Accessor. The instance is created upon first access.
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;
+
+  // Accessor. The instance is created at startup.
+  // TODO(yoz): this belongs with the ExtensionSystem.
+  virtual LazyBackgroundTaskQueue* GetLazyBackgroundTaskQueue() = 0;
 
   // Retrieves a pointer to the FaviconService associated with this
   // profile.  The FaviconService is lazily created the first time

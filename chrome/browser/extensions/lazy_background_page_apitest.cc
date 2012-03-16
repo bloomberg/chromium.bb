@@ -47,6 +47,13 @@ class LazyBackgroundObserver {
     page_closed_.Wait();
   }
 
+  void WaitUntilLoaded() {
+    page_created_.Wait();
+  }
+  void WaitUntilClosed() {
+    page_closed_.Wait();
+  }
+
  private:
   ui_test_utils::WindowedNotificationObserver page_created_;
   ui_test_utils::WindowedNotificationObserver page_closed_;
@@ -325,6 +332,38 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {
     EXPECT_TRUE(listener.was_satisfied());
     EXPECT_TRUE(listener_incognito.was_satisfied());
   }
+}
+
+// Tests that messages from the content script activate the lazy background
+// page, and keep it alive until all channels are closed.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(LoadExtensionAndWait("messaging"));
+
+  // Lazy Background Page doesn't exist yet.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+  EXPECT_EQ(1, browser()->tab_count());
+
+  // Navigate to a page that opens a message channel to the background page.
+  ResultCatcher catcher;
+  LazyBackgroundObserver lazybg;
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.html"));
+  lazybg.WaitUntilLoaded();
+
+  // Background page got the content script's message and is still loaded
+  // until we close the channel.
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Navigate away, closing the message channel and therefore the background
+  // page.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  lazybg.WaitUntilClosed();
+
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
 
 // TODO: background page with timer.

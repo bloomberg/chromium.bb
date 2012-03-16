@@ -83,6 +83,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionEventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
+  virtual LazyBackgroundTaskQueue* GetLazyBackgroundTaskQueue() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
@@ -213,6 +214,8 @@ class ProfileImpl : public Profile,
   // resource requests from extension processes and those require access
   // to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
+  // This is a dependency of ExtensionMessageService and ExtensionEventRouter.
+  scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
   scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;

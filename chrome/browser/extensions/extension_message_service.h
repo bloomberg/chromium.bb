@@ -11,9 +11,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class ExtensionHost;
+class LazyBackgroundTaskQueue;
 class Profile;
 
 namespace content {
@@ -58,7 +61,7 @@ class ExtensionMessageService : public content::NotificationObserver {
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
 
-  explicit ExtensionMessageService(Profile* profile);
+  explicit ExtensionMessageService(LazyBackgroundTaskQueue* queue);
   virtual ~ExtensionMessageService();
 
   // Given an extension's ID, opens a channel between the given renderer "port"
@@ -87,20 +90,22 @@ class ExtensionMessageService : public content::NotificationObserver {
 
  private:
   friend class MockExtensionMessageService;
+  struct OpenChannelParams;
 
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
 
-  // Common among Open(Special)Channel* variants.
-  bool OpenChannelImpl(
-      content::RenderProcessHost* source,
-      const std::string& tab_json,
-      const MessagePort& receiver, int receiver_port_id,
-      const std::string& source_extension_id,
-      const std::string& target_extension_id,
-      const std::string& channel_name);
+  // A map of channel ID to information about the extension that is waiting
+  // for that channel to open. Used for lazy background pages.
+  typedef std::string ExtensionID;
+  typedef std::pair<Profile*, ExtensionID> PendingChannel;
+  typedef std::map<int, PendingChannel> PendingChannelMap;
 
-  void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
+  // Common among OpenChannel* variants.
+  bool OpenChannelImpl(const OpenChannelParams& params);
+
+  void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
+                        int port_id,
                         bool notify_other_port);
 
   // content::NotificationObserver interface.
@@ -111,9 +116,32 @@ class ExtensionMessageService : public content::NotificationObserver {
   // A process that might be in our list of channels has closed.
   void OnProcessClosed(content::RenderProcessHost* process);
 
-  content::NotificationRegistrar registrar_;
+  // Potentially registers a pending task with the LazyBackgroundTaskQueue
+  // to open a channel. Returns true if a task was queued.
+  bool MaybeAddPendingOpenChannelTask(Profile* profile,
+                                      const OpenChannelParams& params);
 
+  // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
+  // ExtensionHost to its task callbacks, though some of our callbacks don't
+  // use that argument.
+  void PendingOpenChannel(const OpenChannelParams& params,
+                          int source_process_id,
+                          ExtensionHost* host);
+  void PendingCloseChannel(int port_id, ExtensionHost*) {
+    CloseChannel(port_id);
+  }
+  void PendingPostMessage(int port_id,
+                          const std::string& message,
+                          ExtensionHost*) {
+    PostMessageFromRenderer(port_id, message);
+  }
+
+  content::NotificationRegistrar registrar_;
   MessageChannelMap channels_;
+  PendingChannelMap pending_channels_;
+
+  // Weak pointer. Guaranteed to outlive this class.
+  LazyBackgroundTaskQueue* lazy_background_task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };

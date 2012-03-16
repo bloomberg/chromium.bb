@@ -502,6 +502,10 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
   return extension_special_storage_policy_.get();
 }
 
+LazyBackgroundTaskQueue* TestingProfile::GetLazyBackgroundTaskQueue() {
+  return NULL;
+}
+
 FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
   return favicon_service_.get();
 }
