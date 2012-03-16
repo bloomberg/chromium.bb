@@ -1,0 +1,7 @@
+# Time out, see http://crbug.com/118578
+PrintPreviewWebUITest.TestPrinterList
+PrintPreviewWebUITest.TestPrinterListCloudEmpty
+PrintPreviewWebUITest.TestPrinterListCloud
+PrintPreviewWebUITest.TestSectionsDisabled
+PrintPreviewWebUITest.TestColorSettings
+PrintPreviewWebUITest.TestDuplexSettings
