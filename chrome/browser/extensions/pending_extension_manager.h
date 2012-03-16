@@ -14,6 +14,14 @@
 
 class ExtensionServiceInterface;
 class GURL;
+class PendingExtensionManager;
+
+namespace extensions {
+class ExtensionUpdaterTest;
+void SetupPendingExtensionManagerForTest(
+    int count, const GURL& update_url,
+    PendingExtensionManager* pending_extension_manager);
+}
 
 // Class PendingExtensionManager manages the set of extensions which are
 // being installed or updated. In general, installation and updates take
@@ -110,8 +118,8 @@ class PendingExtensionManager {
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
-  friend class ExtensionUpdaterTest;
-  friend void SetupPendingExtensionManagerForTest(
+  friend class extensions::ExtensionUpdaterTest;
+  friend void extensions::SetupPendingExtensionManagerForTest(
       int count, const GURL& update_url,
       PendingExtensionManager* pending_extension_manager);
 

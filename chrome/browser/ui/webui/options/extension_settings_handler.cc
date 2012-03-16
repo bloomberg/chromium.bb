@@ -18,9 +18,9 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -453,7 +453,7 @@ void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
 }
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {
-  ExtensionUpdater* updater = extension_service_->updater();
+  extensions::ExtensionUpdater* updater = extension_service_->updater();
   if (updater)
     updater->CheckNow();
 }

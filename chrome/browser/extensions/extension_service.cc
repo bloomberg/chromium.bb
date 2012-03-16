@@ -52,7 +52,6 @@
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -417,11 +417,11 @@ ExtensionService::ExtensionService(Profile* profile,
           switches::kExtensionsUpdateFrequency),
           &update_frequency);
     }
-    updater_.reset(new ExtensionUpdater(this,
-                                        extension_prefs,
-                                        profile->GetPrefs(),
-                                        profile,
-                                        update_frequency));
+    updater_.reset(new extensions::ExtensionUpdater(this,
+                                                    extension_prefs,
+                                                    profile->GetPrefs(),
+                                                    profile,
+                                                    update_frequency));
   }
 
   component_loader_.reset(
@@ -1223,7 +1223,7 @@ bool ExtensionService::is_ready() {
   return ready_;
 }
 
-ExtensionUpdater* ExtensionService::updater() {
+extensions::ExtensionUpdater* ExtensionService::updater() {
   return updater_.get();
 }
 

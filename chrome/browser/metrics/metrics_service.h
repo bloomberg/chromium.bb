@@ -32,7 +32,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class ManifestFetchesBuilder;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
@@ -45,6 +44,10 @@ class MessageLoopProxy;
 
 namespace content {
 class RenderProcessHost;
+}
+
+namespace extensions {
+class ExtensionDownloader;
 }
 
 namespace prerender {
@@ -434,7 +437,7 @@ class MetricsServiceHelper {
  private:
   friend class InstantFieldTrial;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
-  friend class ManifestFetchesBuilder;
+  friend class extensions::ExtensionDownloader;
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();

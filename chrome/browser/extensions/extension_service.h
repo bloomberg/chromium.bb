@@ -59,7 +59,6 @@ class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
 class ExtensionToolbarModel;
-class ExtensionUpdater;
 class ExtensionWebNavigationEventRouter;
 class HistoryExtensionEventRouter;
 class GURL;
@@ -75,6 +74,7 @@ class ExtensionInputMethodEventRouter;
 namespace extensions {
 class APIResourceController;
 class ComponentLoader;
+class ExtensionUpdater;
 class RulesRegistryService;
 class SettingsFrontend;
 }
@@ -460,7 +460,7 @@ class ExtensionService
   }
 
   // Note that this may return NULL if autoupdate is not turned on.
-  ExtensionUpdater* updater();
+  extensions::ExtensionUpdater* updater();
 
   ExtensionToolbarModel* toolbar_model() { return &toolbar_model_; }
 
@@ -753,7 +753,7 @@ class ExtensionService
   bool ready_;
 
   // Our extension updater, if updates are turned on.
-  scoped_ptr<ExtensionUpdater> updater_;
+  scoped_ptr<extensions::ExtensionUpdater> updater_;
 
   // The model that tracks extensions with BrowserAction buttons.
   ExtensionToolbarModel toolbar_model_;

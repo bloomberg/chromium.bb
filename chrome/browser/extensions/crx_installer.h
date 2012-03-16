@@ -22,6 +22,10 @@
 class ExtensionService;
 class SkBitmap;
 
+namespace extensions {
+class ExtensionUpdaterTest;
+}
+
 // This class installs a crx file into a profile.
 //
 // Installing a CRX is a multi-step process, including unpacking the crx,
@@ -185,7 +189,7 @@ class CrxInstaller
   Profile* profile() { return profile_; }
 
  private:
-  friend class ExtensionUpdaterTest;
+  friend class extensions::ExtensionUpdaterTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
                ExtensionInstallUI* client);

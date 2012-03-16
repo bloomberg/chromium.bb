@@ -55,8 +55,8 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -6825,7 +6825,7 @@ void TestingAutomationProvider::UpdateExtensionsNow(
     return;
   }
 
-  ExtensionUpdater* updater = service->updater();
+  extensions::ExtensionUpdater* updater = service->updater();
   if (!updater) {
     AutomationJSONReply(this, reply_message).SendError(
         "No updater for extensions service.");

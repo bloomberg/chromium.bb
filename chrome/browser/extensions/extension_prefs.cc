@@ -1770,7 +1770,7 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(kExtensionToolbar, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize,
-                             -1,
+                             -1,  // default value
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate,
                                 PrefService::UNSYNCABLE_PREF);
@@ -1781,6 +1781,15 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kExtensionInstallForceList,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(kWebStoreLogin,
-                            std::string() /* default_value */,
+                            std::string(),  // default value
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion,
+                            "0",  // default value
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kLastExtensionsUpdateCheck,
+                           0,  // default value
+                           PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kNextExtensionsUpdateCheck,
+                           0,  // default value
+                           PrefService::UNSYNCABLE_PREF);
 }
