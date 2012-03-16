@@ -221,12 +221,8 @@ class ExtensionLoadedNotificationObserver
   return arrowPoint;
 }
 
-// We want this to be a child of a browser window.  addChildWindow:
-// (called from this function) will bring the window on-screen;
-// unfortunately, [NSWindowController showWindow:] will also bring it
-// on-screen (but will cause unexpected changes to the window's
-// position).  We cannot have an addChildWindow: and a subsequent
-// showWindow:. Thus, we have our own version.
+// Override -[BaseBubbleController showWindow:] to tweak bubble location and
+// set up UI elements.
 - (void)showWindow:(id)sender {
   // Generic extensions get an infobar rather than a bubble.
   DCHECK(type_ != extension_installed_bubble::kGeneric);

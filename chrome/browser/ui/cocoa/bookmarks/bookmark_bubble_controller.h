@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,23 +6,21 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
 class BookmarkBubbleNotificationBridge;
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBubbleController;
-@class InfoBubbleView;
 
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
 // add or remove it as a bookmark.  This bubble allows for editing of
 // the bookmark in various ways (name, folder, etc.)
-@interface BookmarkBubbleController : NSWindowController<NSWindowDelegate> {
+@interface BookmarkBubbleController : BaseBubbleController {
  @private
-  NSWindow* parentWindow_;  // weak
-
   // Both weak; owned by the current browser's profile
   BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
@@ -41,7 +39,6 @@ class BookmarkNode;
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
   IBOutlet NSPopUpButton* folderPopUpButton_;
-  IBOutlet InfoBubbleView* bubble_;  // to set arrow position
 }
 
 @property(readonly, nonatomic) const BookmarkNode* node;
@@ -70,7 +67,7 @@ class BookmarkNode;
 
 
 // Exposed only for unit testing.
-@interface BookmarkBubbleController(ExposedForUnitTesting)
+@interface BookmarkBubbleController (ExposedForUnitTesting)
 - (void)addFolderNodes:(const BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation;
