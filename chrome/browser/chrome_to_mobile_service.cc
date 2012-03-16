@@ -287,10 +287,12 @@ void ChromeToMobileService::HandleSearchResponse() {
       }
     }
     mobiles_ = mobiles;
-  }
 
-  BrowserList::GetLastActiveWithProfile(profile_)->command_updater()->
-      UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    if (browser && browser->command_updater())
+      browser->command_updater()->UpdateCommandEnabled(
+          IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());
+  }
 
   if (!request_timer_.IsRunning())
     request_timer_.Start(FROM_HERE,
