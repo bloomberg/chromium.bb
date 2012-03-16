@@ -4,6 +4,7 @@
 
 #include "ppapi/tests/test_websocket.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <algorithm>
 #include <string>
@@ -31,14 +32,12 @@
 // These servers are provided by pywebsocket server side handlers in
 // LayoutTests/http/tests/websocket/tests/hybi/*_wsh.
 // pywebsocket server itself is launched in ppapi_ui_test.cc.
-const char kEchoServerURL[] =
-    "ws://localhost:8880/websocket/tests/hybi/echo-with-no-extension";
+const char kEchoServerURL[] = "websocket/tests/hybi/echo-with-no-extension";
 
-const char kCloseServerURL[] =
-    "ws://localhost:8880/websocket/tests/hybi/close";
+const char kCloseServerURL[] = "websocket/tests/hybi/close";
 
 const char kProtocolTestServerURL[] =
-    "ws://localhost:8880/websocket/tests/hybi/protocol-test?protocol=";
+    "websocket/tests/hybi/protocol-test?protocol=";
 
 const char* const kInvalidURLs[] = {
   "http://www.google.com/invalid_scheme",
@@ -213,6 +212,19 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(UtilityBufferedAmount, filter);
 }
 
+std::string TestWebSocket::GetFullURL(const char* url) {
+  std::string rv = "ws://localhost";
+  // Some WebSocket tests don't start the server so there'll be no port.
+  if (instance_->websocket_port() != -1) {
+    char buffer[10];
+    sprintf(buffer, ":%d", instance_->websocket_port());
+    rv += std::string(buffer);
+  }
+  rv += "/";
+  rv += url;
+  return rv;
+}
+
 PP_Var TestWebSocket::CreateVarString(const std::string& string) {
   return var_interface_->VarFromUtf8(string.c_str(), string.size());
 }
@@ -365,7 +377,7 @@ std::string TestWebSocket::TestInvalidConnect() {
 }
 
 std::string TestWebSocket::TestProtocols() {
-  PP_Var url = CreateVarString(kEchoServerURL);
+  PP_Var url = CreateVarString(GetFullURL(kEchoServerURL).c_str());
   PP_Var bad_protocols[] = {
     CreateVarString("x-test"),
     CreateVarString("x-test")
@@ -421,7 +433,7 @@ std::string TestWebSocket::TestGetURL() {
 
 std::string TestWebSocket::TestValidConnect() {
   int32_t result;
-  PP_Resource ws = Connect(kEchoServerURL, &result, "");
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   PP_Var extensions = websocket_interface_->GetExtensions(ws);
@@ -444,7 +456,7 @@ std::string TestWebSocket::TestInvalidClose() {
   core_interface_->ReleaseResource(ws);
 
   // Close with bad arguments.
-  ws = Connect(kEchoServerURL, &result, "");
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws, 1U, reason,
@@ -459,14 +471,14 @@ std::string TestWebSocket::TestInvalidClose() {
 
 std::string TestWebSocket::TestValidClose() {
   PP_Var reason = CreateVarString("close for test");
-  PP_Var url = CreateVarString(kEchoServerURL);
+  PP_Var url = CreateVarString(GetFullURL(kEchoServerURL).c_str());
   PP_Var protocols[] = { PP_MakeUndefined() };
   TestCompletionCallback callback(instance_->pp_instance());
   TestCompletionCallback another_callback(instance_->pp_instance());
 
   // Close.
   int32_t result;
-  PP_Resource ws = Connect(kEchoServerURL, &result, "");
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws,
@@ -498,7 +510,7 @@ std::string TestWebSocket::TestValidClose() {
   // Close in closing.
   // The first close will be done successfully, then the second one failed with
   // with PP_ERROR_INPROGRESS immediately.
-  ws = Connect(kEchoServerURL, &result, "");
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws,
@@ -515,7 +527,7 @@ std::string TestWebSocket::TestValidClose() {
   core_interface_->ReleaseResource(ws);
 
   // Close with ongoing receive message.
-  ws = Connect(kEchoServerURL, &result, "");
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
   PP_Var receive_message_var;
@@ -546,7 +558,7 @@ std::string TestWebSocket::TestGetProtocol() {
     NULL
   };
   for (int i = 0; expected_protocols[i]; ++i) {
-    std::string url(kProtocolTestServerURL);
+    std::string url(GetFullURL(kProtocolTestServerURL));
     url += expected_protocols[i];
     int32_t result;
     PP_Resource ws = Connect(url.c_str(), &result, expected_protocols[i]);
@@ -566,7 +578,7 @@ std::string TestWebSocket::TestGetProtocol() {
 std::string TestWebSocket::TestTextSendReceive() {
   // Connect to test echo server.
   int32_t connect_result;
-  PP_Resource ws = Connect(kEchoServerURL, &connect_result, "");
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &connect_result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, connect_result);
 
@@ -596,7 +608,7 @@ std::string TestWebSocket::TestTextSendReceive() {
 std::string TestWebSocket::TestBinarySendReceive() {
   // Connect to test echo server.
   int32_t connect_result;
-  PP_Resource ws = Connect(kEchoServerURL, &connect_result, "");
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &connect_result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, connect_result);
 
@@ -628,7 +640,7 @@ std::string TestWebSocket::TestBinarySendReceive() {
 std::string TestWebSocket::TestBufferedAmount() {
   // Connect to test echo server.
   int32_t connect_result;
-  PP_Resource ws = Connect(kEchoServerURL, &connect_result, "");
+  PP_Resource ws = Connect(GetFullURL(kEchoServerURL), &connect_result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, connect_result);
 
@@ -706,7 +718,7 @@ std::string TestWebSocket::TestCcInterfaces() {
 
   // Check communication interfaces (connect, send, receive, and close).
   TestCompletionCallback connect_callback(instance_->pp_instance());
-  int32_t result = ws.Connect(pp::Var(std::string(kCloseServerURL)), NULL, 0U,
+  int32_t result = ws.Connect(pp::Var(GetFullURL(kCloseServerURL)), NULL, 0U,
       connect_callback);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = connect_callback.WaitForResult();
@@ -755,7 +767,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_EQ(true, ws.GetCloseWasClean());
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), ""));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED, ws.GetReadyState());
-  ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), kCloseServerURL));
+  ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), GetFullURL(kCloseServerURL).c_str()));
 
   PASS();
 }
@@ -791,7 +803,7 @@ std::string TestWebSocket::TestUtilityProtocols() {
   {
     TestWebSocketAPI websocket(instance_);
     int32_t result = websocket.Connect(
-        pp::Var(std::string(kEchoServerURL)), bad_protocols, 2U);
+        pp::Var(GetFullURL(kEchoServerURL)), bad_protocols, 2U);
     ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
     ASSERT_EQ(0U, websocket.GetSeenEvents().size());
   }
@@ -799,7 +811,7 @@ std::string TestWebSocket::TestUtilityProtocols() {
   {
     TestWebSocketAPI websocket(instance_);
     int32_t result = websocket.Connect(
-        pp::Var(std::string(kEchoServerURL)), good_protocols, 2U);
+        pp::Var(GetFullURL(kEchoServerURL)), good_protocols, 2U);
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
     websocket.WaitForConnected();
     const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
@@ -835,7 +847,7 @@ std::string TestWebSocket::TestUtilityValidConnect() {
   const pp::Var protocols[] = { pp::Var() };
   TestWebSocketAPI websocket(instance_);
   int32_t result = websocket.Connect(
-      pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+      pp::Var(GetFullURL(kEchoServerURL)), protocols, 0U);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   websocket.WaitForConnected();
   const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
@@ -861,7 +873,7 @@ std::string TestWebSocket::TestUtilityInvalidClose() {
   // Close with bad arguments.
   {
     TestWebSocketAPI websocket(instance_);
-    int32_t result = websocket.Connect(pp::Var(std::string(kEchoServerURL)),
+    int32_t result = websocket.Connect(pp::Var(GetFullURL(kEchoServerURL)),
         NULL, 0);
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
     websocket.WaitForConnected();
@@ -877,7 +889,7 @@ std::string TestWebSocket::TestUtilityInvalidClose() {
 
 std::string TestWebSocket::TestUtilityValidClose() {
   std::string reason("close for test");
-  pp::Var url = pp::Var(std::string(kCloseServerURL));
+  pp::Var url = pp::Var(GetFullURL(kCloseServerURL));
 
   // Close.
   {
@@ -948,7 +960,7 @@ std::string TestWebSocket::TestUtilityValidClose() {
 std::string TestWebSocket::TestUtilityGetProtocol() {
   const std::string protocol("x-chat");
   const pp::Var protocols[] = { pp::Var(protocol) };
-  std::string url(kProtocolTestServerURL);
+  std::string url(GetFullURL(kProtocolTestServerURL));
   url += protocol;
   TestWebSocketAPI websocket(instance_);
   int32_t result = websocket.Connect(pp::Var(url), protocols, 1U);
@@ -973,7 +985,7 @@ std::string TestWebSocket::TestUtilityTextSendReceive() {
   const pp::Var protocols[] = { pp::Var() };
   TestWebSocketAPI websocket(instance_);
   int32_t result =
-      websocket.Connect(pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+      websocket.Connect(pp::Var(GetFullURL(kEchoServerURL)), protocols, 0U);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   websocket.WaitForConnected();
 
@@ -1007,7 +1019,7 @@ std::string TestWebSocket::TestUtilityBinarySendReceive() {
   const pp::Var protocols[] = { pp::Var() };
   TestWebSocketAPI websocket(instance_);
   int32_t result =
-      websocket.Connect(pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+      websocket.Connect(pp::Var(GetFullURL(kEchoServerURL)), protocols, 0U);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   websocket.WaitForConnected();
 
@@ -1039,7 +1051,7 @@ std::string TestWebSocket::TestUtilityBufferedAmount() {
   const pp::Var protocols[] = { pp::Var() };
   TestWebSocketAPI websocket(instance_);
   int32_t result =
-      websocket.Connect(pp::Var(std::string(kEchoServerURL)), protocols, 0U);
+      websocket.Connect(pp::Var(GetFullURL(kEchoServerURL)), protocols, 0U);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   websocket.WaitForConnected();
 

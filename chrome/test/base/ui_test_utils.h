@@ -328,6 +328,9 @@ class TestWebSocketServer {
   // Stops the python websocket server if it was already started.
   ~TestWebSocketServer();
 
+  // Use a random port, useful for tests that are sharded. Returns the port.
+  int UseRandomPort();
+
   // Starts the python websocket server using |root_directory|. Returns whether
   // the server was successfully started.
   bool Start(const FilePath& root_directory);
@@ -359,6 +362,8 @@ class TestWebSocketServer {
   // JobObject used to clean up orphaned child process.
   base::win::ScopedHandle job_handle_;
 #endif
+
+  int port_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };

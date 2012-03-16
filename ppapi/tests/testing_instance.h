@@ -82,6 +82,8 @@ pp::InstancePrivate {
     return protocol_;
   }
 
+  int websocket_port() { return websocket_port_; }
+
   // Posts a message to the test page to eval() the script.
   void EvalScript(const std::string& script);
 
@@ -137,6 +139,9 @@ pp::InstancePrivate {
   // String representing the protocol.  Used for detecting whether we're running
   // with http.
   std::string protocol_;
+
+  // WebSocket port.
+  int websocket_port_;
 };
 
 #endif  // PPAPI_TESTS_TESTING_INSTANCE_H_

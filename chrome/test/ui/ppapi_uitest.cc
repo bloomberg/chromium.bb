@@ -206,12 +206,16 @@ class PPAPITestBase : public InProcessBrowserTest {
         PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
 
     ui_test_utils::TestWebSocketServer server;
+    int port = server.UseRandomPort();
     ASSERT_TRUE(server.Start(websocket_root_dir));
-    RunTestViaHTTP(test_case);
+    std::string url = StringPrintf("%s&websocket_port=%d",
+                                   test_case.c_str(), port);
+    RunTestViaHTTP(url);
   }
 
   std::string StripPrefixes(const std::string& test_name) {
-    const char* const prefixes[] = { "FAILS_", "FLAKY_", "DISABLED_" };
+    const char* const prefixes[] = {
+        "FAILS_", "FLAKY_", "DISABLED_", "SLOW_" };
     for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
       if (test_name.find(prefixes[i]) == 0)
         return test_name.substr(strlen(prefixes[i]));
@@ -274,8 +278,7 @@ class PPAPITest : public PPAPITestBase {
 // codepaths.
 class OutOfProcessPPAPITest : public PPAPITest {
  public:
-  OutOfProcessPPAPITest() {
-
+  OutOfProcessPPAPITest() {  
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

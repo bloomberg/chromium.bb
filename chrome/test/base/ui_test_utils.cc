@@ -20,6 +20,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
@@ -790,10 +791,15 @@ void AppendToPythonPath(const FilePath& dir) {
 }  // anonymous namespace
 
 TestWebSocketServer::TestWebSocketServer()
-    : started_(false) {
+    : started_(false), port_(kDefaultWsPort) {
 #if defined(OS_POSIX)
   process_group_id_ = base::kNullProcessHandle;
 #endif
+}
+
+int TestWebSocketServer::UseRandomPort() {
+  port_ = base::RandInt(1024, 65535);
+  return port_;
 }
 
 bool TestWebSocketServer::Start(const FilePath& root_directory) {
@@ -806,7 +812,7 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   cmd_line->AppendArg("--register_cygwin");
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
                             root_directory.value());
-  cmd_line->AppendArg("--port=" + base::IntToString(kDefaultWsPort));
+  cmd_line->AppendArg("--port=" + base::IntToString(port_));
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;

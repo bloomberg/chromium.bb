@@ -22,6 +22,7 @@ class TestWebSocket : public TestCase {
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
 
+  std::string GetFullURL(const char* url);
   PP_Var CreateVarString(const std::string& string);
   PP_Var CreateVarBinary(const std::vector<uint8_t>& binary);
   void ReleaseVar(const PP_Var& var);

@@ -30,7 +30,8 @@ TestingInstance::TestingInstance(PP_Instance instance)
 #endif
       current_case_(NULL),
       executed_tests_(false),
-      nacl_mode_(false) {
+      nacl_mode_(false),
+      websocket_port_(-1) {
   callback_factory_.Initialize(this);
 }
 
@@ -46,9 +47,11 @@ bool TestingInstance::Init(uint32_t argc,
     if (std::strcmp(argn[i], "mode") == 0) {
       if (std::strcmp(argv[i], "nacl") == 0)
         nacl_mode_ = true;
-    }
-    else if (std::strcmp(argn[i], "protocol") == 0)
+    } else if (std::strcmp(argn[i], "protocol") == 0) {
       protocol_ = argv[i];
+    } else if (std::strcmp(argn[i], "websocket_port") == 0) {
+      websocket_port_ = atoi(argv[i]);
+    }
   }
   // Create the proper test case from the argument.
   for (uint32_t i = 0; i < argc; i++) {
@@ -172,10 +175,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 }
 
 TestCase* TestingInstance::CaseForTestName(const std::string& name) {
-  std::string case_name = name;
-  if (case_name.find("SLOW_") == 0)
-    case_name = case_name.substr(5);
-  case_name = case_name.substr(0, case_name.find_first_of('_'));
+  std::string case_name = name.substr(0, name.find_first_of('_'));
   TestCaseFactory* iter = TestCaseFactory::head_;
   while (iter != NULL) {
     if (case_name == iter->name_)
