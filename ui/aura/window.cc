@@ -428,12 +428,12 @@ Window* Window::GetToplevelWindow() {
 
 void Window::Focus() {
   DCHECK(GetFocusManager());
-  GetFocusManager()->SetFocusedWindow(this);
+  GetFocusManager()->SetFocusedWindow(this, NULL);
 }
 
 void Window::Blur() {
   DCHECK(GetFocusManager());
-  GetFocusManager()->SetFocusedWindow(NULL);
+  GetFocusManager()->SetFocusedWindow(NULL, NULL);
 }
 
 bool Window::HasFocus() const {

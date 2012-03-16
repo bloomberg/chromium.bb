@@ -10,7 +10,10 @@
 #include "ui/aura/window.h"
 
 namespace aura {
+
+class Event;
 class RootWindow;
+
 namespace client {
 
 // An interface implemented by an object that manages window activation.
@@ -26,9 +29,9 @@ class AURA_EXPORT ActivationClient {
   // Retrieves the active window, or NULL if there is none.
   virtual aura::Window* GetActiveWindow() = 0;
 
-  // Returns true if |window| can be focused. To be focusable, |window| must
-  // exist inside an activatable window.
-  virtual bool CanFocusWindow(Window* window) const = 0;
+  // Invoked prior to |window| getting focus as a result of the |event|. |event|
+  // may be NULL. Returning false blocks |window| from getting focus.
+  virtual bool OnWillFocusWindow(Window* window, const Event* event) = 0;
 
  protected:
   virtual ~ActivationClient() {}

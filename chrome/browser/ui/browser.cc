@@ -4572,6 +4572,11 @@ gfx::Rect Browser::GetInstantBounds() {
   return window()->GetInstantBounds();
 }
 
+void Browser::InstantPreviewFocused() {
+  // NOTE: This is only invoked on aura.
+  window_->WebContentsFocused(instant_->GetPreviewContents()->web_contents());
+}
+
 void Browser::OnWindowDidShow() {
   if (window_has_shown_)
     return;

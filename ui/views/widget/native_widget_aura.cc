@@ -594,12 +594,12 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 void NativeWidgetAura::ClearNativeFocus() {
   if (window_ && window_->GetFocusManager() &&
       window_->Contains(window_->GetFocusManager()->GetFocusedWindow())) {
-    window_->GetFocusManager()->SetFocusedWindow(window_);
+    window_->GetFocusManager()->SetFocusedWindow(window_, NULL);
   }
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
-  window_->GetFocusManager()->SetFocusedWindow(native_view);
+  window_->GetFocusManager()->SetFocusedWindow(native_view, NULL);
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
@@ -768,7 +768,7 @@ void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::ActivationDelegate implementation:
 
-bool NativeWidgetAura::ShouldActivate(aura::Event* event) {
+bool NativeWidgetAura::ShouldActivate(const aura::Event* event) {
   return can_activate_ && delegate_->CanActivate();
 }
 

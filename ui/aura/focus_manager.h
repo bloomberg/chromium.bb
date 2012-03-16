@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "ui/aura/aura_export.h"
 
 namespace aura {
+
+class Event;
 class Window;
 
 namespace internal {
@@ -23,7 +25,7 @@ class AURA_EXPORT FocusManager {
   // notification, and after it is changed the new focused window is sent a
   // focused notification. Nothing happens if |window| and GetFocusedWindow()
   // match.
-  virtual void SetFocusedWindow(Window* window) = 0;
+  virtual void SetFocusedWindow(Window* window, const Event* event) = 0;
 
   // Returns the currently focused window or NULL if there is none.
   virtual Window* GetFocusedWindow() = 0;

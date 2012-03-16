@@ -29,14 +29,17 @@ class ASH_EXPORT ActivationController
   virtual ~ActivationController();
 
   // Returns true if |window| exists within a container that supports
-  // activation.
-  static aura::Window* GetActivatableWindow(aura::Window* window);
+  // activation. |event| is the revent responsible for initiating the change, or
+  // NULL if there is no event.
+  static aura::Window* GetActivatableWindow(aura::Window* window,
+                                            const aura::Event* event);
 
   // Overridden from aura::client::ActivationClient:
   virtual void ActivateWindow(aura::Window* window) OVERRIDE;
   virtual void DeactivateWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetActiveWindow() OVERRIDE;
-  virtual bool CanFocusWindow(aura::Window* window) const OVERRIDE;
+  virtual bool OnWillFocusWindow(aura::Window* window,
+                                 const aura::Event* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowVisibilityChanged(aura::Window* window,
@@ -50,6 +53,10 @@ class ASH_EXPORT ActivationController
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
  private:
+  // Implementation of ActivateWindow() with an Event.
+  void ActivateWindowWithEvent(aura::Window* window,
+                               const aura::Event* event);
+
   // Shifts activation to the next window, ignoring |window|.
   void ActivateNextWindow(aura::Window* window);
 

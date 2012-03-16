@@ -690,10 +690,11 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     if (focus_to &&
         (!focus_to->IsVisible() ||
          (client::GetActivationClient(this) &&
-          !client::GetActivationClient(this)->CanFocusWindow(focus_to)))) {
+          !client::GetActivationClient(this)->OnWillFocusWindow(focus_to,
+                                                                NULL)))) {
       focus_to = NULL;
     }
-    SetFocusedWindow(focus_to);
+    SetFocusedWindow(focus_to, NULL);
   }
   // If the ancestor of the capture window is hidden,
   // release the capture.
@@ -746,7 +747,8 @@ void RootWindow::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* animation) {
 }
 
-void RootWindow::SetFocusedWindow(Window* focused_window) {
+void RootWindow::SetFocusedWindow(Window* focused_window,
+                                  const aura::Event* event) {
   if (focused_window == focused_window_)
     return;
   if (focused_window && !focused_window->CanFocus())
@@ -755,7 +757,8 @@ void RootWindow::SetFocusedWindow(Window* focused_window) {
   // activation client, since it is valid to clear the focus by calling
   // SetFocusedWindow() to NULL.
   if (focused_window && client::GetActivationClient(this) &&
-      !client::GetActivationClient(this)->CanFocusWindow(focused_window)) {
+      !client::GetActivationClient(this)->OnWillFocusWindow(focused_window,
+                                                            event)) {
     return;
   }
 

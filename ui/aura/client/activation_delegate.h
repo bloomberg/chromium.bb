@@ -21,7 +21,7 @@ class AURA_EXPORT ActivationDelegate {
   // event supplied if the activation is the result of a mouse, or the touch
   // event if the activation is the result of a touch, or NULL if activation is
   // attempted for another reason.
-  virtual bool ShouldActivate(Event* event) = 0;
+  virtual bool ShouldActivate(const Event* event) = 0;
 
   // Sent when the window is activated.
   virtual void OnActivated() = 0;

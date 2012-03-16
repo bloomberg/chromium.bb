@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,9 @@ class InstantLoaderDelegate {
 
   // Invoked if the loader swaps to a different TabContents.
   virtual void SwappedTabContents(InstantLoader* loader) = 0;
+
+  // Invoked when the webcontents created by the loader is focused.
+  virtual void InstantLoaderContentsFocused() = 0;
 
  protected:
   virtual ~InstantLoaderDelegate() {}

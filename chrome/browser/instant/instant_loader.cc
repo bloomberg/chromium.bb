@@ -227,6 +227,7 @@ class InstantLoader::TabContentsDelegateImpl
                                  bool* proceed_to_fire_unload) OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
+  virtual void WebContentsFocused(WebContents* contents) OVERRIDE;
   virtual void LostCapture() OVERRIDE;
   // If the user drags, we won't get a mouse up (at least on Linux). Commit the
   // instant result when the drag ends, so that during the drag the page won't
@@ -475,6 +476,11 @@ void InstantLoader::TabContentsDelegateImpl::SetFocusToLocationBar(
 
 bool InstantLoader::TabContentsDelegateImpl::ShouldFocusPageAfterCrash() {
   return false;
+}
+
+void InstantLoader::TabContentsDelegateImpl::WebContentsFocused(
+    WebContents* contents) {
+  loader_->delegate_->InstantLoaderContentsFocused();
 }
 
 void InstantLoader::TabContentsDelegateImpl::LostCapture() {

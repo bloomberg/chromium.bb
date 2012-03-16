@@ -166,7 +166,7 @@ class RenderWidgetHostViewAura
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:
-  virtual bool ShouldActivate(aura::Event* event) OVERRIDE;
+  virtual bool ShouldActivate(const aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 

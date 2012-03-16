@@ -125,7 +125,8 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     return true;
 
   if (event->type() == ui::ET_MOUSE_PRESSED && wm::GetActiveWindow() != target)
-    target->GetFocusManager()->SetFocusedWindow(FindFocusableWindowFor(target));
+    target->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(target), event);
 
   return false;
 }
@@ -141,7 +142,8 @@ ui::TouchStatus RootWindowEventFilter::PreHandleTouchEvent(
     if (update_cursor_visibility_)
       SetCursorVisible(target, event, false);
 
-    target->GetFocusManager()->SetFocusedWindow(FindFocusableWindowFor(target));
+    target->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(target), event);
   }
   return ui::TOUCH_STATUS_UNKNOWN;
 }

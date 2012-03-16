@@ -133,11 +133,13 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
     }
 
     // aura::client::ActivationDelegate overrides.
-    virtual bool ShouldActivate(aura::Event* event) { return true; }
-    virtual void OnActivated() {
+    virtual bool ShouldActivate(const aura::Event* event) OVERRIDE {
+      return true;
+    }
+    virtual void OnActivated() OVERRIDE {
       updater.BrowserActivationStateChanged();
     }
-    virtual void OnLostActive() {
+    virtual void OnLostActive() OVERRIDE {
       updater.BrowserActivationStateChanged();
     }
 

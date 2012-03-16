@@ -72,6 +72,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool cursor_shown() const { return cursor_shown_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
+  Window* focused_window() { return focused_window_; }
 
   // Shows the root window host.
   void ShowRootWindow();
@@ -245,7 +246,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
       ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Overridden from FocusManager:
-  virtual void SetFocusedWindow(Window* window) OVERRIDE;
+  virtual void SetFocusedWindow(Window* window,
+                                const aura::Event* event) OVERRIDE;
   virtual Window* GetFocusedWindow() OVERRIDE;
   virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
 

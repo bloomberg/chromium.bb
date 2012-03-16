@@ -1020,7 +1020,9 @@ void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::client::ActivationDelegate implementation:
 
-bool RenderWidgetHostViewAura::ShouldActivate(aura::Event* event) {
+bool RenderWidgetHostViewAura::ShouldActivate(const aura::Event* event) {
+  if (event && event->type() == ui::ET_MOUSE_PRESSED)
+    host_->OnMouseActivate();
   return is_fullscreen_;
 }
 

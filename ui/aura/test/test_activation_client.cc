@@ -54,7 +54,8 @@ Window* TestActivationClient::GetActiveWindow() {
   return active_windows_.back();
 }
 
-bool TestActivationClient::CanFocusWindow(Window* window) const {
+bool TestActivationClient::OnWillFocusWindow(Window* window,
+                                             const Event* event) {
   return true;
 }
 

@@ -41,6 +41,10 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/views_delegate.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
@@ -318,9 +322,16 @@ void OmniboxViewViews::HandleFocusIn() {
 }
 
 void OmniboxViewViews::HandleFocusOut() {
-  // TODO(oshima): we don't have native view. This requires
-  // further refactoring.
-  model_->OnWillKillFocus(NULL);
+  gfx::NativeView native_view = NULL;
+#if defined(USE_AURA)
+  views::Widget* widget = GetWidget();
+  if (widget) {
+    aura::RootWindow* root = widget->GetNativeView()->GetRootWindow();
+    if (root)
+      native_view = root->focused_window();
+  }
+#endif
+  model_->OnWillKillFocus(native_view);
   // Close the popup.
   ClosePopup();
   // Tell the model to reset itself.

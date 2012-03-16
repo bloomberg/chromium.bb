@@ -1121,6 +1121,7 @@ class Browser : public TabHandlerDelegate,
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
+  virtual void InstantPreviewFocused() OVERRIDE;
 
   // Command and state updating ///////////////////////////////////////////////
 

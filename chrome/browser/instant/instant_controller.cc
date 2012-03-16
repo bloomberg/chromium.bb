@@ -324,17 +324,15 @@ void InstantController::OnAutocompleteLostFocus(
   // For views the top level widget is always focused. If the focus change
   // originated in views determine the child Widget from the view that is being
   // focused.
-  if (view_gaining_focus) {
-    views::Widget* widget =
-        views::Widget::GetWidgetForNativeView(view_gaining_focus);
-    if (widget) {
-      views::FocusManager* focus_manager = widget->GetFocusManager();
-      if (focus_manager && focus_manager->is_changing_focus() &&
-          focus_manager->GetFocusedView() &&
-          focus_manager->GetFocusedView()->GetWidget()) {
-        view_gaining_focus =
-            focus_manager->GetFocusedView()->GetWidget()->GetNativeView();
-      }
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeView(view_gaining_focus);
+  if (widget) {
+    views::FocusManager* focus_manager = widget->GetFocusManager();
+    if (focus_manager && focus_manager->is_changing_focus() &&
+        focus_manager->GetFocusedView() &&
+        focus_manager->GetFocusedView()->GetWidget()) {
+      view_gaining_focus =
+          focus_manager->GetFocusedView()->GetWidget()->GetNativeView();
     }
   }
 #endif
@@ -474,6 +472,15 @@ void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
 void InstantController::SwappedTabContents(InstantLoader* loader) {
   if (is_displayable_)
     delegate_->ShowInstant(loader->preview_contents());
+}
+
+void InstantController::InstantLoaderContentsFocused() {
+#if defined(USE_AURA)
+  // On aura the omnibox only receives a focus lost if we initiate the focus
+  // change. This does that.
+  if (!InstantFieldTrial::IsSilentExperiment(tab_contents_->profile()))
+    delegate_->InstantPreviewFocused();
+#endif
 }
 
 void InstantController::UpdateIsDisplayable() {

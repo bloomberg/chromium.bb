@@ -50,7 +50,7 @@ aura::Window* GetActiveWindow() {
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
-  return internal::ActivationController::GetActivatableWindow(window);
+  return internal::ActivationController::GetActivatableWindow(window, NULL);
 }
 
 bool IsWindowNormal(aura::Window* window) {

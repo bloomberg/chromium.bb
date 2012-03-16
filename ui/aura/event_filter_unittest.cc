@@ -99,7 +99,7 @@ TEST_F(EventFilterTest, Basic) {
   w1->SetEventFilter(w1_filter);
   w111->SetEventFilter(w111_filter);
 
-  w1111->GetFocusManager()->SetFocusedWindow(w1111.get());
+  w1111->GetFocusManager()->SetFocusedWindow(w1111.get(), NULL);
 
   // To start with, no one is going to consume any events. All three filters
   // and the w1111's delegate should receive the event.
