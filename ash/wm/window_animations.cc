@@ -389,7 +389,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(transition.release()));
 
-  bool opacity = show ? 1.0f : 0.0f;
+  float opacity = show ? 1.0f : 0.0f;
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateOpacityElement(opacity, duration)));
