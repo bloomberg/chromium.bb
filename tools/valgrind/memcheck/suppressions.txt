@@ -5850,10 +5850,3 @@
    obj:/bin/grep
    obj:/bin/grep
 }
-{
-   bug_117789
-   Memcheck:Uninitialized
-   fun:_ZN2v88internal4Heap14CollectGarbageENS0_15AllocationSpaceENS0_16GarbageCollectorEPKcS5_
-   fun:_ZN2v88internal4Heap14CollectGarbageENS0_15AllocationSpaceEPKc
-   ...
-}
