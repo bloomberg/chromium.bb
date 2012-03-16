@@ -64,6 +64,12 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const gdata::CacheOperationCallback& callback)>
     CacheStatusModificationCallback;
 
+// Internal callback for GetCacheState on IO thread pool.
+typedef base::Callback<void(const std::string& resource_id,
+                            const std::string& md5,
+                            const gdata::GetCacheStateCallback& callback)>
+    GetCacheStateSafelyCallback;
+
 // Parameters to pass from StoreToCache on calling thread to
 // StoreToCacheOnIOThreadPool task on IO thread pool.
 struct StoreToCacheParams {
@@ -372,7 +378,7 @@ void StoreToCacheOnIOThreadPool(const StoreToCacheParams& params) {
 // This is just a pass through to invoke the actual |safe_callback|, posted
 // solely to force synchronization of all tasks on io thread pool, specifically
 // to make sure that this task executes after InitializeCacheOnIOThreadPool.
-// It simply invokes OnGottenFromCache i.e. |safe_callback|) on the thread where
+// It simply invokes OnGetFromCache i.e. |safe_callback|) on the thread where
 // GetFromCache was called.
 void GetFromCacheOnIOThreadPool(
     const std::string& resource_id,
@@ -429,6 +435,26 @@ void ModifyCacheStatusOnIOThreadPool(const ModifyCacheStatusParams& params) {
                                           params.md5,
                                           mode_bits,
                                           params.operation_callback));
+}
+
+// Task posted from GetCacheState to run on IO thread pool.
+// This is just a pass through to invoke the actual |safe_callback|, posted
+// solely to force synchronization of all tasks on io thread pool, specifically
+// to make sure that this task executes after InitializeCacheOnIOThreadPool.
+// It simply invokes OnGetCacheState i.e. |safe_callback|) on the thread
+// where GetCacheState was called.
+void GetCacheStateOnIOThreadPool(
+    const std::string& resource_id,
+    const std::string& md5,
+    const gdata::GetCacheStateCallback& operation_callback,
+    const GetCacheStateSafelyCallback& safe_callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
+  // Invoke |_callback|.
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(safe_callback,
+                                   resource_id,
+                                   md5,
+                                   operation_callback));
 }
 
 }  // namespace
@@ -581,7 +607,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
         DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager() :
         NULL;
   gdata_download_observer_->Initialize(gdata_uploader_.get(), download_manager);
-  root_.reset(new GDataRootDirectory());
+  root_.reset(new GDataRootDirectory(this));
   root_->set_file_name(kGDataRootDirectory);
 
   // Should be created from the file browser extension API on UI thread.
@@ -595,8 +621,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheBlobsDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheMetaDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDir));
-  DVLOG(1) << "GCache dirs: blobs=" << cache_paths_[CACHE_TYPE_BLOBS].value()
-           << ", meta=" << cache_paths_[CACHE_TYPE_META].value();
+  DVLOG(1) << "GCache dir: " << gdata_cache_path_.value();
 }
 
 GDataFileSystem::~GDataFileSystem() {
@@ -1187,6 +1212,23 @@ void GDataFileSystem::GetFromCacheForPath(
   }
 
   GetFromCacheInternal(resource_id, md5, gdata_file_path, callback);
+}
+
+void GDataFileSystem::GetCacheState(const std::string& resource_id,
+                                    const std::string& md5,
+                                    const GetCacheStateCallback& callback) {
+  InitializeCacheIfNecessary();
+
+  BrowserThread::PostBlockingPoolSequencedTask(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(GetCacheStateOnIOThreadPool,
+                 resource_id,
+                 md5,
+                 callback,
+                 base::Bind(&GDataFileSystem::OnGetCacheState,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 base::MessageLoopProxy::current()));
 }
 
 void GDataFileSystem::GetAvailableSpace(
@@ -2161,11 +2203,11 @@ void GDataFileSystem::OnStoredToCache(base::PlatformFileError error,
     callback.Run(error, resource_id, md5);
 }
 
-void GDataFileSystem::OnGottenFromCache(const std::string& resource_id,
-                                        const std::string& md5,
-                                        const FilePath& gdata_file_path,
-                                        const GetFromCacheCallback& callback) {
-  DVLOG(1) << "OnGottenFromCache: ";
+void GDataFileSystem::OnGetFromCache(const std::string& resource_id,
+                                     const std::string& md5,
+                                     const FilePath& gdata_file_path,
+                                     const GetFromCacheCallback& callback) {
+  DVLOG(1) << "OnGetFromCache: ";
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FilePath path;
@@ -2208,6 +2250,32 @@ void GDataFileSystem::OnCacheStatusModified(
     callback.Run(error, resource_id, md5);
 }
 
+void GDataFileSystem::OnGetCacheState(const std::string& resource_id,
+                                      const std::string& md5,
+                                      const GetCacheStateCallback& callback) {
+  DVLOG(1) << "OnGetCacheState: ";
+
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  int cache_state = GDataFile::CACHE_STATE_NONE;
+
+  // Lock to access resource and cache maps.
+  base::AutoLock lock(lock_);
+  // Get file object for |resource_id|.
+  GDataFileBase* file_base = root_->GetFileByResource(resource_id);
+  GDataFile* file = NULL;
+  if (!file_base || !file_base->AsGDataFile()) {
+    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  } else {
+    file = file_base->AsGDataFile();
+    // Get cache state of file corresponding to |resource_id| and |md5|.
+    cache_state = root_->GetCacheState(resource_id, md5);
+  }
+
+  // Invoke callback.
+  if (!callback.is_null())
+    callback.Run(error, file, cache_state);
+}
+
 //============= GDataFileSystem: internal helper functions =====================
 
 void GDataFileSystem::GetFromCacheInternal(
@@ -2225,7 +2293,7 @@ void GDataFileSystem::GetFromCacheInternal(
                  md5,
                  gdata_file_path,
                  callback,
-                 base::Bind(&GDataFileSystem::OnGottenFromCache,
+                 base::Bind(&GDataFileSystem::OnGetFromCache,
                             weak_ptr_factory_.GetWeakPtr()),
                  base::MessageLoopProxy::current()));
 }

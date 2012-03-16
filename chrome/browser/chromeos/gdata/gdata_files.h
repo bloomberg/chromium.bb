@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -26,7 +27,13 @@ namespace gdata {
 
 class GDataDirectory;
 class GDataFile;
+class GDataFileSystem;
 class GDataRootDirectory;
+
+// Callback for GetCacheState operation.
+typedef base::Callback<void(base::PlatformFileError error,
+                            GDataFile* file,
+                            int cache_state)> GetCacheStateCallback;
 
 // Directory content origin.
 enum ContentOrigin {
@@ -148,8 +155,8 @@ class GDataFile : public GDataFileBase {
   const std::string& etag() const { return etag_; }
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
-  // Returns a bitmask of CacheState enum values.
-  int GetCacheState();
+  // The |callback| is invoked with a bitmask of CacheState enum values.
+  void GetCacheState(const GetCacheStateCallback& callback);
   const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
 
@@ -284,7 +291,7 @@ class GDataRootDirectory : public GDataDirectory {
   // A map table of file's resource string to its GDataFile* entry.
   typedef std::map<std::string, GDataFileBase*> ResourceMap;
 
-  GDataRootDirectory();
+  explicit GDataRootDirectory(GDataFileSystem* file_system);
   virtual ~GDataRootDirectory();
 
   // GDataFileBase implementation.
@@ -319,13 +326,23 @@ class GDataRootDirectory : public GDataDirectory {
   bool CacheFileExists(const std::string& res_id,
                        const std::string& md5);
 
-  // Gets the state of the cache file corresponding to |res_id| and |md5|.
+  // Gets the state of the cache file corresponding to |res_id| and |md5|
+  // synchronously.
   int GetCacheState(const std::string& res_id,
                     const std::string& md5);
+
+  // Gets the state of the cache file corresponding to |res_id| and |md5|
+  // asynchronously where |callback| will be invoked with the cache state.
+  void GetCacheStateAsync(const std::string& resource_id,
+                          const std::string& md5,
+                          const GetCacheStateCallback& callback);
 
  private:
   ResourceMap resource_map_;
   CacheMap cache_map_;
+
+  // Weak pointer to GDataFileSystem that owns us.
+  GDataFileSystem* file_system_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
 };

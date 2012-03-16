@@ -233,6 +233,16 @@ class GDataFileSystem : public ProfileKeyedService {
   void GetFromCacheForPath(const FilePath& gdata_file_path,
                            const GetFromCacheCallback& callback);
 
+  // Gets the cache state of file corresponding to |resource_id| and |md5| if it
+  // exists on disk.
+  // Initializes cache if it has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called with the cache state if file exists in cache or CACHE_STATE_NONE
+  // otherwise.
+  void GetCacheState(const std::string& resource_id,
+                     const std::string& md5,
+                     const GetCacheStateCallback& callback);
+
   // Finds file object by |file_path| and returns its |file_info|.
   // Returns true if file was found.
   bool GetFileInfoFromPath(const FilePath& gdata_file_path,
@@ -251,7 +261,7 @@ class GDataFileSystem : public ProfileKeyedService {
  private:
   friend class GDataUploader;
   friend class GDataFileSystemFactory;
-  friend class GDataFileSystemTestBase;
+  friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
@@ -554,7 +564,7 @@ class GDataFileSystem : public ProfileKeyedService {
   // opposed to only temporary file currently), remove |source_path| parameter.
   void StoreToCache(const std::string& resource_id,
                     const std::string& md5,
-                    const FilePath& temp_file,
+                    const FilePath& source_path,
                     const CacheOperationCallback& callback);
 
   // Checks if file corresponding to |resource_id| and |md5| exist on disk and
@@ -620,10 +630,10 @@ class GDataFileSystem : public ProfileKeyedService {
 
   // Callback for GetFromCache that checks if file corresponding to
   // |resource_id| and |md5| exist in cache map.
-  void OnGottenFromCache(const std::string& resource_id,
-                         const std::string& md5,
-                         const FilePath& gdata_file_path,
-                         const GetFromCacheCallback& callback);
+  void OnGetFromCache(const std::string& resource_id,
+                      const std::string& md5,
+                      const FilePath& gdata_file_path,
+                      const GetFromCacheCallback& callback);
 
   // Default dummy callback for RemoveFromCache.
   void OnRemovedFromCache(base::PlatformFileError error,
@@ -637,6 +647,12 @@ class GDataFileSystem : public ProfileKeyedService {
                              const std::string& md5,
                              mode_t mode_bits,
                              const CacheOperationCallback& callback);
+
+  // Callback for GetCacheState that gets cache state of file corresponding to
+  // |resource_id| and |md5|.
+  void OnGetCacheState(const std::string& resource_id,
+                       const std::string& md5,
+                       const GetCacheStateCallback& callback);
 
   // Cache internal helper functions.
 

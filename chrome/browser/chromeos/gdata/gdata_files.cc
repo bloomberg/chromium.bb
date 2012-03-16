@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
 namespace {
@@ -174,8 +175,8 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   return file;
 }
 
-int GDataFile::GetCacheState() {
-  return root_->GetCacheState(resource_id(), file_md5());
+void GDataFile::GetCacheState(const GetCacheStateCallback& callback) {
+  root_->GetCacheStateAsync(resource_id(), file_md5(), callback);
 }
 
 // GDataDirectory class implementation.
@@ -312,8 +313,10 @@ bool GDataDirectory::RemoveFileFromChildrenList(GDataFileBase* file) {
 
 // GDataRootDirectory class implementation.
 
-GDataRootDirectory::GDataRootDirectory()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)) {
+GDataRootDirectory::GDataRootDirectory(GDataFileSystem* file_system)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
+      file_system_(file_system) {
+  DCHECK(file_system_);
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
@@ -455,6 +458,13 @@ int GDataRootDirectory::GetCacheState(const std::string& res_id,
             << ": " << cache_state;
 
   return cache_state;
+}
+
+void GDataRootDirectory::GetCacheStateAsync(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheStateCallback& callback) {
+  file_system_->GetCacheState(resource_id, md5, callback);
 }
 
 }  // namespace gdata

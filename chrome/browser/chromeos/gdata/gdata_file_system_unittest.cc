@@ -40,21 +40,48 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
-namespace gdata {
+namespace {
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
 
-class GDataFileSystemTestBase : public testing::Test {
+struct InitCacheRec {
+  const char* source;
+  const char* resource;
+  const char* md5;
+  mode_t mode_bits_to_enable;
+  int cache_status;
+} const init_cache_table[] = {
+  { "root_feed.json", "file_1_resource", "file_1_md5",
+    S_IROTH, gdata::GDataFile::CACHE_STATE_PRESENT },
+  { "subdir_feed.json", "file_2_resource", "file_2_md5",
+    S_IROTH | S_IWOTH,
+    gdata::GDataFile::CACHE_STATE_PRESENT |
+    gdata::GDataFile::CACHE_STATE_DIRTY },
+  { "directory_entry_atom.json", "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
+    "abcdef0123456789", S_IROTH | S_IXOTH,
+    gdata::GDataFile::CACHE_STATE_PRESENT |
+    gdata::GDataFile::CACHE_STATE_PINNED },
+};
+
+}  // anonymous namespace
+
+namespace gdata {
+
+class GDataFileSystemTest : public testing::Test {
  protected:
-  GDataFileSystemTestBase()
+  GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_system_(NULL),
         num_callback_invocations_(0),
-        expected_error_(base::PLATFORM_FILE_OK) {
+        expected_error_(base::PLATFORM_FILE_OK),
+        expected_cache_state_(0),
+        expected_file_(NULL) {
   }
 
-  virtual void Init(Profile* profile) {
+  virtual void SetUp() OVERRIDE {
+    profile_.reset(new TestingProfile);
+
     callback_helper_ = new CallbackHelper;
 
     // Allocate and keep a weak pointer to the mock, and inject it into the
@@ -188,7 +215,7 @@ class GDataFileSystemTestBase : public testing::Test {
     }
 
     file_system_->StoreToCache(res_id, md5, temp_path,
-        base::Bind(&GDataFileSystemTestBase::VerifyStoreToCache,
+        base::Bind(&GDataFileSystemTest::VerifyStoreToCache,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -205,11 +232,11 @@ class GDataFileSystemTestBase : public testing::Test {
   }
 
   void TestGetFromCache(const std::string& res_id, const std::string& md5,
-                        base::PlatformFileError error) {
-    expected_error_ = error;
+                        base::PlatformFileError expected_error) {
+    expected_error_ = expected_error;
 
     file_system_->GetFromCache(res_id, md5,
-        base::Bind(&GDataFileSystemTestBase::VerifyGetFromCache,
+        base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -220,7 +247,7 @@ class GDataFileSystemTestBase : public testing::Test {
     expected_error_ = expected_error;
 
     file_system_->GetFromCacheForPath(gdata_file_path,
-        base::Bind(&GDataFileSystemTestBase::VerifyGetFromCache,
+        base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -238,7 +265,9 @@ class GDataFileSystemTestBase : public testing::Test {
     if (error == base::PLATFORM_FILE_OK) {
       // Verify filename of |cache_file_path|.
       FilePath base_name = cache_file_path.BaseName();
-      EXPECT_EQ(res_id + FilePath::kExtensionSeparator + md5,
+      EXPECT_EQ(GDataFileBase::EscapeUtf8FileName(res_id) +
+                FilePath::kExtensionSeparator +
+                GDataFileBase::EscapeUtf8FileName(md5),
                 base_name.value());
     } else {
       EXPECT_TRUE(cache_file_path.empty());
@@ -246,11 +275,11 @@ class GDataFileSystemTestBase : public testing::Test {
   }
 
   void TestRemoveFromCache(const std::string& res_id,
-                           base::PlatformFileError error) {
-    expected_error_ = error;
+                           base::PlatformFileError expected_error) {
+    expected_error_ = expected_error;
 
     file_system_->RemoveFromCache(res_id,
-        base::Bind(&GDataFileSystemTestBase::VerifyRemoveFromCache,
+        base::Bind(&GDataFileSystemTest::VerifyRemoveFromCache,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -276,11 +305,11 @@ class GDataFileSystemTestBase : public testing::Test {
   }
 
   void TestPin(const std::string& res_id, const std::string& md5,
-               base::PlatformFileError error) {
-    expected_error_ = error;
+               base::PlatformFileError expected_error) {
+    expected_error_ = expected_error;
 
     file_system_->Pin(res_id, md5,
-        base::Bind(&GDataFileSystemTestBase::VerifyPin,
+        base::Bind(&GDataFileSystemTest::VerifyPin,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -300,11 +329,11 @@ class GDataFileSystemTestBase : public testing::Test {
   }
 
   void TestUnpin(const std::string& res_id, const std::string& md5,
-               base::PlatformFileError error) {
-    expected_error_ = error;
+               base::PlatformFileError expected_error) {
+    expected_error_ = expected_error;
 
     file_system_->Unpin(res_id, md5,
-        base::Bind(&GDataFileSystemTestBase::VerifyUnpin,
+        base::Bind(&GDataFileSystemTest::VerifyUnpin,
                    base::Unretained(this)));
 
     RunAllPendingForCache();
@@ -318,6 +347,75 @@ class GDataFileSystemTestBase : public testing::Test {
     if (error == base::PLATFORM_FILE_OK) {
       VerifyCacheFileStatusAndMode(res_id, md5, GDataFile::CACHE_STATE_PRESENT,
                                    S_IROTH);
+    }
+  }
+
+  void TestGetCacheState(const std::string& res_id, const std::string& md5,
+                         base::PlatformFileError expected_error,
+                         int expected_cache_state, GDataFile* expected_file) {
+    expected_error_ = expected_error;
+    expected_cache_state_ = expected_cache_state;
+    expected_file_ = expected_file;
+
+    file_system_->GetCacheState(res_id, md5,
+        base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
+                   base::Unretained(this)));
+
+    RunAllPendingForCache();
+  }
+
+  void VerifyGetCacheState(base::PlatformFileError error, GDataFile* file,
+                           int cache_state) {
+    ++num_callback_invocations_;
+
+    EXPECT_EQ(expected_error_, error);
+
+    if (error == base::PLATFORM_FILE_OK) {
+      EXPECT_EQ(expected_cache_state_, cache_state);
+      EXPECT_EQ(expected_file_, file);
+    }
+  }
+
+  void PrepareForInitCacheTest() {
+    // Create gdata cache blobs directory.
+    ASSERT_TRUE(file_util::CreateDirectory(
+        file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_BLOBS]));
+
+    // Dump some files into cache blob dir so that
+    // GDataFileSystem::InitializeCacheIOThreadPool would scan through them and
+    // populate cache map accordingly.
+
+    // Determine gdata cache blobs absolute path.
+    // Copy files from data dir to cache dir to act as cached files.
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(init_cache_table); ++i) {
+      // Copy file from data dir to cache dir, naming it per cache files
+      // convention.
+      FilePath source_path = GetTestFilePath(init_cache_table[i].source);
+      FilePath dest_path = file_system_->GetCacheFilePath(
+          init_cache_table[i].resource, init_cache_table[i].md5);
+      ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
+
+      // Change mode of cached file.
+      struct stat64 stat_buf;
+      ASSERT_FALSE(stat64(dest_path.value().c_str(), &stat_buf));
+      ASSERT_FALSE(chmod(dest_path.value().c_str(),
+                         stat_buf.st_mode |
+                             init_cache_table[i].mode_bits_to_enable));
+    }
+  }
+
+  void TestInitializeCache() {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(init_cache_table); ++i) {
+      // Check that cached file exists.
+      num_callback_invocations_ = 0;
+      TestGetFromCache(init_cache_table[i].resource, init_cache_table[i].md5,
+                       base::PLATFORM_FILE_OK);
+      EXPECT_EQ(1, num_callback_invocations_);
+
+      // Verify status of cached file.
+      EXPECT_EQ(init_cache_table[i].cache_status,
+                file_system_->root_->GetCacheState(init_cache_table[i].resource,
+                                                   init_cache_table[i].md5));
     }
   }
 
@@ -435,17 +533,8 @@ class GDataFileSystemTestBase : public testing::Test {
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;
-};
-
-class GDataFileSystemTest : public GDataFileSystemTestBase {
- protected:
-  GDataFileSystemTest() {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
-    Init(profile_.get());
-  }
+  int expected_cache_state_;
+  GDataFile* expected_file_;
 };
 
 // Delegate used to find a directory element for file system updates.
@@ -1315,6 +1404,71 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
+TEST_F(GDataFileSystemTest, GetCacheState) {
+  // Populate gdata file system.
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
+
+  {  // Test cache state of an existing normal file.
+    // Retrieve resource id and md5 of a file from file system.
+    FilePath file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+    GDataFileBase* file_base = FindFile(file_path);
+    ASSERT_TRUE(file_base != NULL);
+    GDataFile* file = file_base->AsGDataFile();
+    ASSERT_TRUE(file != NULL);
+    std::string res_id = file->resource_id();
+    std::string md5 = file->file_md5();
+
+    // Store a file corresponding to |res_id| and |md5| to cache.
+    TestStoreToCache(res_id, md5, GetTestFilePath("root_feed.json"),
+                     base::PLATFORM_FILE_OK);
+
+    // Get its cache state.
+    num_callback_invocations_ = 0;
+    TestGetCacheState(res_id, md5, base::PLATFORM_FILE_OK,
+                      GDataFile::CACHE_STATE_PRESENT, file);
+    EXPECT_EQ(1, num_callback_invocations_);
+  }
+
+  {  // Test cache state of an existing pinned file.
+    // Retrieve resource id and md5 of a file from file system.
+    FilePath file_path(
+        FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+    GDataFileBase* file_base = FindFile(file_path);
+    ASSERT_TRUE(file_base != NULL);
+    GDataFile* file = file_base->AsGDataFile();
+    ASSERT_TRUE(file != NULL);
+    std::string res_id = file->resource_id();
+    std::string md5 = file->file_md5();
+
+    // Store a file corresponding to |res_id| and |md5| to cache, and pin
+    // it.
+    TestStoreToCache(res_id, md5, GetTestFilePath("root_feed.json"),
+                     base::PLATFORM_FILE_OK);
+    TestPin(res_id, md5, base::PLATFORM_FILE_OK);
+
+    // Get its cache state.
+    num_callback_invocations_ = 0;
+    TestGetCacheState(res_id, md5, base::PLATFORM_FILE_OK,
+                      GDataFile::CACHE_STATE_PRESENT |
+                      GDataFile::CACHE_STATE_PINNED, file);
+    EXPECT_EQ(1, num_callback_invocations_);
+  }
+
+  {  // Test cache state of a non-existent file.
+    num_callback_invocations_ = 0;
+    TestGetCacheState("pdf:12345", "abcd", base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                      0, NULL);
+    EXPECT_EQ(1, num_callback_invocations_);
+  }
+}
+
+TEST_F(GDataFileSystemTest, InitializeCache) {
+  PrepareForInitCacheTest();
+  TestInitializeCache();
+}
+
 // TODO(satorux): Write a test for GetFile() once DocumentsService is
 // mockable.
 
@@ -1422,19 +1576,5 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   EXPECT_EQ(1234, callback_helper_->quota_bytes_used_);
   EXPECT_EQ(12345, callback_helper_->quota_bytes_total_);
 }
-
-
-class GDataFileSystemInitCacheTest : public GDataFileSystemTestBase {
- protected:
-  GDataFileSystemInitCacheTest() {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
-    // TODO(kuan): Create some cache files to trigger scanning of cache dir,
-    // and write tests to check the cache map.
-    Init(profile_.get());
-  }
-};
 
 }   // namespace gdata
