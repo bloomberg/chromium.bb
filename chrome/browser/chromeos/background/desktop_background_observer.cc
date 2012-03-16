@@ -26,6 +26,9 @@ DesktopBackgroundObserver::~DesktopBackgroundObserver() {
 
 int DesktopBackgroundObserver::GetUserWallpaperIndex() {
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  // Guest/incognito user do not have an email address.
+  if (user_manager->IsLoggedInAsGuest())
+    return ash::GetDefaultWallpaperIndex();
   const chromeos::User& user = user_manager->GetLoggedInUser();
   DCHECK(!user.email().empty());
   int index = user_manager->GetUserWallpaper(user.email());
