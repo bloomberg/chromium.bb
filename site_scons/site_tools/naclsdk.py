@@ -575,6 +575,8 @@ def generate(env):
       # Note: it appears we cannot add this in component_setup.py
       STRIPFLAGS=['--strip-all'],
       STRIPCOM='${STRIP} ${STRIPFLAGS}',
+      TRANSLATEFLAGS=['-Wl,-L${LIB_DIR}'],
+      TRANSLATECOM='${TRANSLATE} ${TRANSLATEFLAGS} ${SOURCES} -o ${TARGET}',
   )
 
   # Windows has a small limit on the command line size.  The linking

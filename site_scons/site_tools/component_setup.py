@@ -207,6 +207,7 @@ def generate(env):
         # Strip doesn't seem to be a first-class citizen in SCons country,
         # so we have to add these *COM, *COMSTR manually.
         STRIPCOMSTR='________Stripping to create $TARGET',
+        TRANSLATECOMSTR='________Translating $TARGET',
     )
 
   # Add other default tools from our toolkit

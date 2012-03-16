@@ -1968,9 +1968,9 @@ DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
 def GetTranslatedNexe(env, pexe):
   pexe_name = pexe.abspath
   nexe_name = pexe_name[:pexe_name.index('.pexe')] + '.nexe'
-  trans_cmd = ('${TRANSLATE} ${TRANSLATEFLAGS} -Wl,-L${LIB_DIR} %s -o %s' %
-               (pexe_name, nexe_name))
-  return env.Command(nexe_name, pexe_name, trans_cmd)
+
+  return env.Command(target=nexe_name, source=[pexe_name],
+                     action=[Action('${TRANSLATECOM}', '${TRANSLATECOMSTR}')])
 
 pre_base_env.AddMethod(GetTranslatedNexe)
 
@@ -2258,7 +2258,7 @@ def StripExecutable(env, name, exe):
   return env.Command(
       target=name,
       source=[exe],
-      action=[Action('${STRIPCOM} ${SOURCES} -o ${TARGET}')])
+      action=[Action('${STRIPCOM} ${SOURCES} -o ${TARGET}', '${STRIPCOMSTR}')])
 
 pre_base_env.AddMethod(StripExecutable)
 
