@@ -169,17 +169,19 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;
 
-  // Initiates a low-security connection to the device, without requiring
-  // pairing. If the request fails, |error_callback| will be called.
-  void Connect(ErrorCallback error_callback);
-
-  // Initiates a high-security connection to the device pairing first if
-  // necessary. Method calls will be made on the supplied object
-  // |pairing_delegate| to indicate what display, and in response should
-  // make method calls back to the device object. If the request fails,
-  // |error_callback| will be called.
-  void PairAndConnect(PairingDelegate* pairing_delegate,
-                      ErrorCallback error_callback);
+  // Initiates a connection to the device, pairing first if necessary.
+  //
+  // Method calls will be made on the supplied object |pairing_delegate|
+  // to indicate what display, and in response should make method calls
+  // back to the device object. Not all devices require pairing, and not
+  // all those that do will require user responses, so it is normal for
+  // |pairing_delegate| to receive no calls. To explicitly force a
+  // low-security connection without pairing, pass NULL, though this is
+  // ignored if the device is already paired.
+  //
+  // If the request fails, |error_callback| will be called.
+  void Connect(PairingDelegate* pairing_delegate,
+               ErrorCallback error_callback);
 
   // Sends the PIN code |pincode| to the remote device during pairing.
   //
@@ -236,9 +238,38 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // CreatePairedDevice() to provide the new object path for the remote
   // device in |device_path| and |success| which indicates whether or not
   // the request succeeded. |error_callback| is the callback provided to
-  // our own Connect() and PairAndConnect() calls.
+  // Connect().
   void ConnectCallback(ErrorCallback error_callback,
                        const dbus::ObjectPath& device_path, bool success);
+
+  // Called by BluetoothProperty when the call to Set() for the Trusted
+  // property completes. |success| indicates whether or not the request
+  // succeed, |error_callback| is the callback provided to Connect().
+  void OnSetTrusted(ErrorCallback error_callback, bool success);
+
+  // Connect application-level protocols of the device to the system, called
+  // on a successful connection or to reconnect to a device that is already
+  // paired or previously connected. |error_callback| is called on failure.
+  void ConnectApplications(ErrorCallback error_callback);
+
+  // Called by IntrospectableClient when a call to Introspect() completes.
+  // |success| indicates whether or not the request succeeded, |error_callback|
+  // is the callback provided to ConnectApplications(), |service_name| and
+  // |device_path| specify the remote object being introspected and
+  // |xml_data| contains the XML-formatted protocol data.
+  void OnIntrospect(ErrorCallback error_callback,
+                    const std::string& service_name,
+                    const dbus::ObjectPath& device_path,
+                    const std::string& xml_data, bool success);
+
+  // Called by BluetoothInputClient when the call to Connect() completes.
+  // |success| indicates whether or not the request succeed, |error_callback|
+  // is the callback provided to ConnectApplications(), |interface_name|
+  // specifies the interface being connect and |device_path| the remote
+  // object path.
+  void OnConnect(ErrorCallback error_callback,
+                 const std::string& interface_name,
+                 const dbus::ObjectPath& device_path, bool success);
 
   // Called by BluetoothDeviceClient when a call to Disconnect() completes,
   // |success| indicates whether or not the request succeeded, |error_callback|

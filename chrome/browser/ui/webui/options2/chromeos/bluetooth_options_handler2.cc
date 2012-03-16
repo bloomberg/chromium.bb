@@ -234,14 +234,9 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
     } else {
       // Connection request.
       DVLOG(1) << "Connect: " << address;
-      if (device->WasDiscovered()) {
-        device->PairAndConnect(
-            this, base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                             weak_ptr_factory_.GetWeakPtr()));
-      } else {
-        device->Connect(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                   weak_ptr_factory_.GetWeakPtr()));
-      }
+      device->Connect(
+          this, base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                           weak_ptr_factory_.GetWeakPtr()));
     }
   } else if (command == kCancelCommand) {
     // Cancel pairing.

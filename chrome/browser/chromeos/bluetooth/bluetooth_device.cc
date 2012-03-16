@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -14,6 +17,8 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_input_client.h"
+#include "chrome/browser/chromeos/dbus/introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
@@ -160,44 +165,50 @@ bool BluetoothDevice::IsConnected() const {
   return connected_;
 }
 
-void BluetoothDevice::Connect(ErrorCallback error_callback) {
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      CreateDevice(adapter_->object_path_,
-                   address_,
-                   base::Bind(&BluetoothDevice::ConnectCallback,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              error_callback));
-}
+void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
+                              ErrorCallback error_callback) {
+  if (paired_ || connected_ || !WasDiscovered()) {
+    // Connection to already known or paired device.
+    ConnectApplications(error_callback);
 
-void BluetoothDevice::PairAndConnect(PairingDelegate* pairing_delegate,
-                                     ErrorCallback error_callback) {
-  DCHECK(!pairing_delegate_);
-  pairing_delegate_ = pairing_delegate;
+  } else if (!pairing_delegate) {
+    // No pairing delegate supplied, initiate low-security connection only.
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        CreateDevice(adapter_->object_path_,
+                     address_,
+                     base::Bind(&BluetoothDevice::ConnectCallback,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                error_callback));
+  } else {
+    // Initiate high-security connection with pairing.
+    DCHECK(!pairing_delegate_);
+    pairing_delegate_ = pairing_delegate;
 
-  // The agent path is relatively meaningless, we use the device address
-  // to generate it as we only support one pairing attempt at a time for
-  // a given bluetooth device.
-  DCHECK(agent_.get() == NULL);
+    // The agent path is relatively meaningless, we use the device address
+    // to generate it as we only support one pairing attempt at a time for
+    // a given bluetooth device.
+    DCHECK(agent_.get() == NULL);
 
-  std::string agent_path_basename;
-  ReplaceChars(address_, ":", "_", &agent_path_basename);
-  dbus::ObjectPath agent_path("/org/chromium/bluetooth_agent/" +
-                              agent_path_basename);
+    std::string agent_path_basename;
+    ReplaceChars(address_, ":", "_", &agent_path_basename);
+    dbus::ObjectPath agent_path("/org/chromium/bluetooth_agent/" +
+                                agent_path_basename);
 
-  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-  agent_.reset(BluetoothAgentServiceProvider::Create(system_bus,
-                                                     agent_path,
-                                                     this));
+    dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
+    agent_.reset(BluetoothAgentServiceProvider::Create(system_bus,
+                                                       agent_path,
+                                                       this));
 
-  DVLOG(1) << "Pairing: " << address_;
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      CreatePairedDevice(adapter_->object_path_,
-                         address_,
-                         agent_path,
-                         bluetooth_agent::kDisplayYesNoCapability,
-                         base::Bind(&BluetoothDevice::ConnectCallback,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    error_callback));
+    DVLOG(1) << "Pairing: " << address_;
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        CreatePairedDevice(adapter_->object_path_,
+                           address_,
+                           agent_path,
+                           bluetooth_agent::kDisplayYesNoCapability,
+                           base::Bind(&BluetoothDevice::ConnectCallback,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      error_callback));
+  }
 }
 
 void BluetoothDevice::ConnectCallback(ErrorCallback error_callback,
@@ -213,8 +224,84 @@ void BluetoothDevice::ConnectCallback(ErrorCallback error_callback,
           << device_path.value() << " but signal gave: "
           << object_path_.value();
     }
+
+    // Mark the device trusted so it can connect to us automatically, and
+    // we can connect after rebooting. This information is part of the
+    // pairing information of the device, and is unique to the combination
+    // of our bluetooth address and the device's bluetooth address. A
+    // different device needs a new pairing, so it's not useful to sync.
+    DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+        GetProperties(object_path_)->trusted.Set(
+            true,
+            base::Bind(&BluetoothDevice::OnSetTrusted,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       error_callback));
+
+    // Connect application-layer protocols.
+    ConnectApplications(error_callback);
   } else {
     LOG(WARNING) << "Connection failed: " << address_;
+    error_callback.Run();
+  }
+}
+
+void BluetoothDevice::OnSetTrusted(ErrorCallback error_callback, bool success) {
+  if (!success) {
+    LOG(WARNING) << "Failed to set device as trusted: " << address_;
+    error_callback.Run();
+  }
+}
+
+void BluetoothDevice::ConnectApplications(ErrorCallback error_callback) {
+  // Introspect the device object to determine supported applications.
+  DBusThreadManager::Get()->GetIntrospectableClient()->
+      Introspect(bluetooth_device::kBluetoothDeviceServiceName,
+                 object_path_,
+                 base::Bind(&BluetoothDevice::OnIntrospect,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            error_callback));
+}
+
+void BluetoothDevice::OnIntrospect(ErrorCallback error_callback,
+                                   const std::string& service_name,
+                                   const dbus::ObjectPath& device_path,
+                                   const std::string& xml_data,
+                                   bool success) {
+  if (!success) {
+    LOG(WARNING) << "Failed to determine supported applications: " << address_;
+    error_callback.Run();
+    return;
+  }
+
+  // The introspection data for the device object may list one or more
+  // additional D-Bus interfaces that BlueZ supports for this particular
+  // device. Send appropraite Connect calls for each of those interfaces
+  // to connect all of the application protocols for this device.
+  std::vector<std::string> interfaces =
+      IntrospectableClient::GetInterfacesFromXmlData(xml_data);
+
+  for (std::vector<std::string>::iterator iter = interfaces.begin();
+       iter != interfaces.end(); ++iter) {
+    if (*iter == bluetooth_input::kBluetoothInputInterface) {
+      // Supports Input interface.
+      DBusThreadManager::Get()->GetBluetoothInputClient()->
+          Connect(object_path_,
+                  base::Bind(&BluetoothDevice::OnConnect,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             error_callback, *iter));
+    }
+  }
+}
+
+void BluetoothDevice::OnConnect(ErrorCallback error_callback,
+                                const std::string& interface_name,
+                                const dbus::ObjectPath& device_path,
+                                bool success) {
+  if (success) {
+    DVLOG(1) << "Application connection successful: " << device_path.value()
+             << ": " << interface_name;
+  } else {
+    LOG(WARNING) << "Connection failed: " << address_ << ": " << interface_name;
     error_callback.Run();
   }
 }
