@@ -54,6 +54,11 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
+  // Set the profile preference to turn off one-click sign in so that it won't
+  // show again in this profile.
+  void DisableOneClickSignIn();
+
+  // Record the specified action in the histogram for one-click sign in.
   void RecordHistogramAction(int action);
 
   Profile* profile_;
@@ -116,6 +121,7 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool OneClickLoginInfoBarDelegate::Accept() {
+  DisableOneClickSignIn();
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   ShowOneClickSigninDialog(profile_, session_index_, email_, password_);
   button_pressed_ = true;
@@ -123,13 +129,17 @@ bool OneClickLoginInfoBarDelegate::Accept() {
 }
 
 bool OneClickLoginInfoBarDelegate::Cancel() {
+  DisableOneClickSignIn();
+  RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
+  button_pressed_ = true;
+  return true;
+}
+
+void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
   PrefService* pref_service =
       TabContentsWrapper::GetCurrentWrapperForContents(
           owner()->web_contents())->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
-  RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
-  button_pressed_ = true;
-  return true;
 }
 
 void OneClickLoginInfoBarDelegate::RecordHistogramAction(int action) {

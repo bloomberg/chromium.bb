@@ -720,7 +720,7 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
           Use this Google Account to sync all your Chromium stuff?
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_HEADING" desc="The heading of the reverse auto-login dialog.">
-          Sign in to Chromium?
+          Sign in to Chromium
         </message>
       </if>
 
