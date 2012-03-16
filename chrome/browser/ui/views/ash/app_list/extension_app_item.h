@@ -28,6 +28,10 @@ class ExtensionAppItem : public ChromeAppListItem,
   // no longer exists.
   const Extension* GetExtension() const;
 
+  const std::string& extension_id() const {
+    return extension_id_;
+  }
+
  private:
   // Loads extension icon.
   void LoadImage(const Extension* extension);

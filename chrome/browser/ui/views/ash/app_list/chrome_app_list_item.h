@@ -13,12 +13,25 @@
 // activated.
 class ChromeAppListItem : public ash::AppListItemModel {
  public:
+  enum Type {
+    TYPE_APP,
+    TYPE_BROWSER_COMMAND,
+  };
+
   // Activates the item. |event_flags| holds flags of a mouse/keyboard event
   // associated with this activation.
   virtual void Activate(int event_flags) = 0;
 
+  Type type() const {
+    return type_;
+  }
+
  protected:
+  explicit ChromeAppListItem(Type type) : type_(type) {}
   virtual ~ChromeAppListItem() {}
+
+ private:
+  Type type_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_

@@ -55,6 +55,7 @@ class AppListItemView : public views::CustomButton,
   // AppListItemModelObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
+  virtual void ItemHighlightedChanged() OVERRIDE;
 
   // views::View overrides:
   virtual std::string GetClassName() const OVERRIDE;

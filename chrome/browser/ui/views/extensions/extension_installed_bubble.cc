@@ -40,10 +40,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#endif
-
 namespace {
 
 const int kIconSize = 43;
@@ -189,15 +185,7 @@ class InstalledBubbleContent : public views::View,
   // Implements the views::LinkListener interface.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
     GetWidget()->Close();
-    if (NewTabUI::ShouldShowApps()) {
-      ExtensionInstallUI::OpenAppInstalledNTP(browser_, extension_id_);
-    } else {
-#if defined(USE_ASH)
-      ash::Shell::GetInstance()->ToggleAppList();
-#else
-      NOTREACHED();
-#endif
-    }
+    ExtensionInstallUI::OpenAppInstalledUI(browser_, extension_id_);
   }
 
  private:

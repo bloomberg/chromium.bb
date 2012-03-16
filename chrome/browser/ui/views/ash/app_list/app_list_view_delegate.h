@@ -9,6 +9,9 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+
+class AppListModelBuilder;
 
 class AppListViewDelegate : public ash::AppListViewDelegate {
  public:
@@ -17,10 +20,12 @@ class AppListViewDelegate : public ash::AppListViewDelegate {
 
  private:
   // Overridden from ash::AppListViewDelegate:
-  virtual void BuildAppListModel(const std::string& query,
-                                 ash::AppListModel* model) OVERRIDE;
+  virtual void SetModel(ash::AppListModel* model) OVERRIDE;
+  virtual void UpdateModel(const std::string& query) OVERRIDE;
   virtual void OnAppListItemActivated(ash::AppListItemModel* item,
                                       int event_flags) OVERRIDE;
+
+  scoped_ptr<AppListModelBuilder> model_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

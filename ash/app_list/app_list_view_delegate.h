@@ -20,9 +20,12 @@ class ASH_EXPORT AppListViewDelegate {
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
 
-  // Invoked to ask the delegate to populate the |model| for given |query|.
-  virtual void BuildAppListModel(const std::string& query,
-                                 AppListModel* model) = 0;
+  // Invoked to set the model that AppListView uses.
+  // Note that AppListView owns the model.
+  virtual void SetModel(AppListModel* model) = 0;
+
+  // Invoked to ask the delegate to populate the model for given |query|.
+  virtual void UpdateModel(const std::string& query) = 0;
 
   // Invoked an AppListeItemModelView is  activated by click or enter key.
   virtual void OnAppListItemActivated(AppListItemModel* item,

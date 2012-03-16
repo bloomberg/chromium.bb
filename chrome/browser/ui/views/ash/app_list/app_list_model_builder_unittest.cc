@@ -22,6 +22,17 @@ class TestAppListItemModel : public ash::AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(TestAppListItemModel);
 };
 
+// Get a string of all items in |model| joined with ','.
+std::string GetModelContent(ash::AppListModel* model) {
+  std::string content;
+  for (int i = 0; i < model->item_count(); ++i) {
+    if (i > 0)
+      content += ',';
+    content += model->GetItem(i)->title();
+  }
+  return content;
+}
+
 }  // namespace
 
 class AppListModelBuilderTest : public ExtensionServiceTestBase {
@@ -47,7 +58,8 @@ TEST_F(AppListModelBuilderTest, Build) {
   ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
   scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
-  AppListModelBuilder builder(profile_.get(), model.get());
+  AppListModelBuilder builder(profile_.get());
+  builder.SetModel(model.get());
   builder.Build(std::string());
 
   // Since we are in unit_tests and there is no browser, the model would have
@@ -62,9 +74,7 @@ TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {
   const char* kInput[] = {
     "CB", "Ca", "B", "a",
   };
-  const char* kExpected[] = {
-    "a", "B", "Ca", "CB",
-  };
+  const char* kExpected = "a,B,Ca,CB";
 
   scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
 
@@ -72,11 +82,26 @@ TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {
   for (size_t i = 0; i < arraysize(kInput); ++i)
     items.push_back(new TestAppListItemModel(kInput[i]));
 
-  AppListModelBuilder builder(profile_.get(), model.get());
+  AppListModelBuilder builder(profile_.get());
+  builder.SetModel(model.get());
   builder.SortAndPopulateModel(items);
 
-  EXPECT_EQ(static_cast<int>(arraysize(kExpected)),
-            model->item_count());
-  for (size_t i = 0; i < arraysize(kExpected); ++i)
-    EXPECT_EQ(kExpected[i], model->GetItem(i)->title());
+  EXPECT_EQ(kExpected, GetModelContent(model.get()));
 }
+
+TEST_F(AppListModelBuilderTest, InsertItemByTitle) {
+  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
+  AppListModelBuilder builder(profile_.get());
+  builder.SetModel(model.get());
+
+  const char* kInput[] = {
+    "CB", "Ca", "B", "a", "z", "D"
+  };
+  const char* kExpected = "a,B,Ca,CB,D,z";
+
+  for (size_t i = 0; i < arraysize(kInput); ++i)
+    builder.InsertItemByTitle(new TestAppListItemModel(kInput[i]));
+
+  EXPECT_EQ(kExpected, GetModelContent(model.get()));
+}
+

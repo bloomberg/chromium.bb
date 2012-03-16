@@ -182,11 +182,20 @@ void AppListModelView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 void AppListModelView::ListItemsAdded(int start, int count) {
-  Update();
+  for (int i = start; i < start + count; ++i) {
+    AddChildViewAt(new AppListItemView(this, model_->GetItem(i), listener_),
+                   i);
+  }
+  Layout();
+  SchedulePaint();
 }
 
 void AppListModelView::ListItemsRemoved(int start, int count) {
-  Update();
+  for (int i = 0; i < count; ++i)
+    delete child_at(start);
+
+  Layout();
+  SchedulePaint();
 }
 
 void AppListModelView::ListItemsChanged(int start, int count) {

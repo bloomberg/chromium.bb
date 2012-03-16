@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/browser_command_item.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,23 +58,34 @@ bool MatchesQuery(const string16& query, const string16& str) {
 
 }  // namespace
 
-AppListModelBuilder::AppListModelBuilder(Profile* profile,
-                                         ash::AppListModel* model)
+AppListModelBuilder::AppListModelBuilder(Profile* profile)
     : profile_(profile),
-      model_(model) {
+      model_(NULL) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+      content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+      content::Source<Profile>(profile_));
 }
 
 AppListModelBuilder::~AppListModelBuilder() {
 }
 
+void AppListModelBuilder::SetModel(ash::AppListModel* model) {
+  model_ = model;
+}
+
 void AppListModelBuilder::Build(const std::string& query) {
-  string16 normalized_query(base::i18n::ToLower(UTF8ToUTF16(query)));
+  DCHECK(model_ && model_->item_count() == 0);
+  query_ = base::i18n::ToLower(UTF8ToUTF16(query));
 
   Items items;
-  GetExtensionApps(normalized_query, &items);
-  GetBrowserCommands(normalized_query, &items);
+  GetExtensionApps(query_, &items);
+  GetBrowserCommands(query_, &items);
 
   SortAndPopulateModel(items);
+  HighlightApp();
 }
 
 void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
@@ -89,6 +102,28 @@ void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
        ++it) {
     model_->AddItem(it->item);
   }
+}
+
+void AppListModelBuilder::InsertItemByTitle(ash::AppListItemModel* item) {
+  DCHECK(model_);
+
+  icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());
+  UErrorCode error = U_ZERO_ERROR;
+  scoped_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(locale, error));
+  if (U_FAILURE(error))
+    collator.reset();
+
+  l10n_util::StringComparator<string16> c(collator.get());
+  ModelItemSortData data(item);
+  for (int i = 0; i < model_->item_count(); ++i) {
+    ModelItemSortData current(model_->GetItem(i));
+    if (!c(current.key, data.key)) {
+      model_->AddItemAt(i, item);
+      return;
+    }
+  }
+  model_->AddItem(item);
 }
 
 void AppListModelBuilder::GetExtensionApps(const string16& query,
@@ -132,5 +167,70 @@ void AppListModelBuilder::GetBrowserCommands(const string16& query,
                                               kBrowserCommands[i].title_id,
                                               kBrowserCommands[i].icon_id));
     }
+  }
+}
+
+int AppListModelBuilder::FindApp(const std::string& app_id) {
+  DCHECK(model_);
+  for (int i = 0; i < model_->item_count(); ++i) {
+    ChromeAppListItem* item =
+        static_cast<ChromeAppListItem*>(model_->GetItem(i));
+    if (item->type() != ChromeAppListItem::TYPE_APP)
+      continue;
+
+    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(item);
+    if (extension_item->extension_id() == app_id)
+      return i;
+  }
+
+  return -1;
+}
+
+void AppListModelBuilder::HighlightApp() {
+  DCHECK(model_);
+  if (highlight_app_id_.empty())
+    return;
+
+  int index = FindApp(highlight_app_id_);
+  if (index == -1)
+    return;
+
+  model_->GetItem(index)->SetHighlighted(true);
+  highlight_app_id_.clear();
+}
+
+void AppListModelBuilder::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (!extension->ShouldDisplayInLauncher() ||
+          !MatchesQuery(query_, UTF8ToUTF16(extension->name())))
+        return;
+
+      if (FindApp(extension->id()) != -1)
+        return;
+
+      InsertItemByTitle(new ExtensionAppItem(profile_, extension));
+      HighlightApp();
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      int index = FindApp(extension->id());
+      if (index >= 0)
+        model_->DeleteItemAt(index);
+      break;
+    }
+    case chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST: {
+      highlight_app_id_ = *content::Details<const std::string>(details).ptr();
+      HighlightApp();
+      break;
+    }
+    default:
+      NOTREACHED();
   }
 }

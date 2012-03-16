@@ -44,6 +44,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using content::WebContents;
 using extensions::BundleInstaller;
 
@@ -299,10 +303,8 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
                          cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-  if (extension->is_app() &&
-      !use_bubble_for_apps &&
-      NewTabUI::ShouldShowApps()) {
-    ExtensionInstallUI::OpenAppInstalledNTP(browser, extension->id());
+  if (extension->is_app() && !use_bubble_for_apps) {
+    ExtensionInstallUI::OpenAppInstalledUI(browser, extension->id());
     return;
   }
 
@@ -365,16 +367,30 @@ void ExtensionInstallUI::OnImageLoaded(const gfx::Image& image,
 }
 
 // static
-void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
-                                             const std::string& app_id) {
-  browser::NavigateParams params =
-      browser->GetSingletonTabNavigateParams(GURL(chrome::kChromeUINewTabURL));
-  browser::Navigate(&params);
+void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
+                                            const std::string& app_id) {
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-      content::Source<WebContents>(params.target_contents->web_contents()),
-      content::Details<const std::string>(&app_id));
+  if (NewTabUI::ShouldShowApps()) {
+    browser::NavigateParams params = browser->GetSingletonTabNavigateParams(
+        GURL(chrome::kChromeUINewTabURL));
+    browser::Navigate(&params);
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+        content::Source<WebContents>(params.target_contents->web_contents()),
+        content::Details<const std::string>(&app_id));
+  } else {
+#if defined(USE_ASH)
+    ash::Shell::GetInstance()->ToggleAppList();
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+        content::Source<Profile>(browser->profile()),
+        content::Details<const std::string>(&app_id));
+#else
+    NOTREACHED();
+#endif
+  }
 }
 
 // static

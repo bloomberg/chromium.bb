@@ -8,7 +8,7 @@
 
 namespace ash {
 
-AppListItemModel::AppListItemModel() {
+AppListItemModel::AppListItemModel() : highlighted_(false) {
 }
 
 AppListItemModel::~AppListItemModel() {
@@ -24,6 +24,15 @@ void AppListItemModel::SetTitle(const std::string& title) {
   title_ = title;
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_,
                     ItemTitleChanged());
+}
+
+void AppListItemModel::SetHighlighted(bool highlighted) {
+  if (highlighted_ == highlighted)
+    return;
+
+  highlighted_ = highlighted;
+  FOR_EACH_OBSERVER(AppListItemModelObserver, observers_,
+                    ItemHighlightedChanged());
 }
 
 void AppListItemModel::AddObserver(AppListItemModelObserver* observer) {

@@ -116,7 +116,8 @@ bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
                                    const Extension* extension)
-    : profile_(profile),
+    : ChromeAppListItem(TYPE_APP),
+      profile_(profile),
       extension_id_(extension->id()) {
   SetTitle(extension->name());
   LoadImage(extension);

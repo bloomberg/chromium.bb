@@ -34,6 +34,8 @@ const SkColor kHoverAndPushedColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF);
 // 0.1 white
 const SkColor kSelectedColor = SkColorSetARGB(0x20, 0xFF, 0xFF, 0xFF);
 
+const SkColor kHighlightedColor = kHoverAndPushedColor;
+
 gfx::Font GetTitleFont() {
   static gfx::Font* font = NULL;
   if (!font) {
@@ -118,6 +120,10 @@ void AppListItemView::ItemTitleChanged() {
   title_->SetText(UTF8ToUTF16(model_->title()));
 }
 
+void AppListItemView::ItemHighlightedChanged() {
+  SchedulePaint();
+}
+
 std::string AppListItemView::GetClassName() const {
   return kViewClassName;
 }
@@ -146,7 +152,9 @@ void AppListItemView::Layout() {
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
 
-  if (hover_animation_->is_animating()) {
+  if (model_->highlighted()) {
+    canvas->FillRect(rect, kHighlightedColor);
+  } else if (hover_animation_->is_animating()) {
     int alpha = SkColorGetA(kHoverAndPushedColor) *
         hover_animation_->GetCurrentValue();
     canvas->FillRect(rect, SkColorSetA(kHoverAndPushedColor, alpha));
@@ -175,10 +183,12 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
-  if (state() == BS_HOT || state() == BS_PUSHED)
+  if (state() == BS_HOT || state() == BS_PUSHED) {
     list_model_view_->SetSelectedItem(this);
-  else
+  } else {
     list_model_view_->ClearSelectedItem(this);
+    model_->SetHighlighted(false);
+  }
 }
 
 }  // namespace ash

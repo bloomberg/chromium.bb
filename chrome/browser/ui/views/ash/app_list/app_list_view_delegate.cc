@@ -14,11 +14,21 @@ AppListViewDelegate::AppListViewDelegate() {
 AppListViewDelegate::~AppListViewDelegate() {
 }
 
-void AppListViewDelegate::BuildAppListModel(const std::string& query,
-                                            ash::AppListModel* model) {
-  AppListModelBuilder builder(ProfileManager::GetDefaultProfile(),
-                              model);
-  builder.Build(query);
+void AppListViewDelegate::SetModel(ash::AppListModel* model) {
+  if (model) {
+    if (!model_builder_.get()) {
+      model_builder_.reset(
+          new AppListModelBuilder(ProfileManager::GetDefaultProfile()));
+    }
+    model_builder_->SetModel(model);
+  } else {
+    model_builder_.reset();
+  }
+}
+
+void AppListViewDelegate::UpdateModel(const std::string& query) {
+  DCHECK(model_builder_.get());
+  model_builder_->Build(query);
 }
 
 void AppListViewDelegate::OnAppListItemActivated(

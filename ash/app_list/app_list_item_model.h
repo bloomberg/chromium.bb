@@ -28,9 +28,20 @@ class ASH_EXPORT AppListItemModel {
   AppListItemModel();
   virtual ~AppListItemModel();
 
-  // Changes icon and title for the model.
   void SetIcon(const SkBitmap& icon);
+  const SkBitmap& icon() const {
+    return icon_;
+  }
+
   void SetTitle(const std::string& title);
+  const std::string& title() const {
+    return title_;
+  }
+
+  void SetHighlighted(bool highlighted);
+  bool highlighted() const {
+    return highlighted_;
+  }
 
   void AddObserver(AppListItemModelObserver* observer);
   void RemoveObserver(AppListItemModelObserver* observer);
@@ -39,17 +50,10 @@ class ASH_EXPORT AppListItemModel {
   // Note the menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
 
-  const SkBitmap& icon() const {
-    return icon_;
-  }
-
-  const std::string& title() const {
-    return title_;
-  }
-
  private:
   SkBitmap icon_;
   std::string title_;
+  bool highlighted_;
 
   ObserverList<AppListItemModelObserver> observers_;
 

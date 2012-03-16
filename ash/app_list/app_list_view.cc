@@ -95,7 +95,8 @@ void AppListView::Init(const gfx::Rect& bounds) {
 void AppListView::UpdateModel() {
   if (delegate_.get()) {
     scoped_ptr<AppListModel> new_model(new AppListModel);
-    delegate_->BuildAppListModel(std::string(), new_model.get());
+    delegate_->SetModel(new_model.get());
+    delegate_->UpdateModel(std::string());
     model_view_->SetModel(new_model.get());
     model_.reset(new_model.release());
   }

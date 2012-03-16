@@ -14,7 +14,8 @@ BrowserCommandItem::BrowserCommandItem(Browser* browser,
                                        int command_id,
                                        int title_id,
                                        int icon_id)
-    : browser_(browser),
+    : ChromeAppListItem(TYPE_BROWSER_COMMAND),
+      browser_(browser),
       command_id_(command_id) {
   SetTitle(l10n_util::GetStringUTF8(title_id));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();

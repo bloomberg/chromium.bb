@@ -106,12 +106,17 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
 
 class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
  public:
-  ExampleAppListViewDelegate() {}
+  ExampleAppListViewDelegate() : model_(NULL) {}
 
  private:
   // Overridden from ash::AppListViewDelegate:
-  virtual void BuildAppListModel(const std::string& query,
-                                 AppListModel* model) OVERRIDE {
+  virtual void SetModel(AppListModel* model) OVERRIDE {
+    model_ = model;
+  }
+
+  virtual void UpdateModel(const std::string& query) OVERRIDE {
+    DCHECK(model_ && model_->item_count() == 0);
+
     for (int i = 0;
          i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
          ++i) {
@@ -120,7 +125,7 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
 
       std::string title = WindowTypeLauncherItem::GetTitle(type);
       if (title.find(query) != std::string::npos)
-        model->AddItem(new WindowTypeLauncherItem(type));
+        model_->AddItem(new WindowTypeLauncherItem(type));
     }
   }
 
@@ -128,6 +133,8 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
                                       int event_flags) OVERRIDE {
     static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);
   }
+
+  AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };

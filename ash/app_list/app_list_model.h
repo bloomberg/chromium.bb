@@ -6,9 +6,9 @@
 #define ASH_APP_LIST_APP_LIST_MODEL_H_
 #pragma once
 
-#include "base/basictypes.h"
 #include "ash/app_list/app_list_item_model.h"
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
 #include "ui/base/models/list_model.h"
 
 namespace ash {
@@ -23,6 +23,9 @@ class ASH_EXPORT AppListModel {
 
   // Adds an item to the model. The model takes ownership of |item|.
   void AddItem(AppListItemModel* item);
+  void AddItemAt(int index, AppListItemModel* item);
+
+  void DeleteItemAt(int index);
 
   AppListItemModel* GetItem(int index);
 

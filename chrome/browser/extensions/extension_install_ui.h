@@ -178,9 +178,8 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // Opens a new tab page and animates the app icon for the app with id
-  // |app_id|.
-  static void OpenAppInstalledNTP(Browser* browser, const std::string& app_id);
+  // Opens apps UI and animates the app icon for the app with id |app_id|.
+  static void OpenAppInstalledUI(Browser* browser, const std::string& app_id);
 
  protected:
   friend class ExtensionWebstorePrivateApiTest;
