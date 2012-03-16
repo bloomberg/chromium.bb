@@ -49,7 +49,7 @@ class ImageData : public ppapi::Resource,
 
   const PP_ImageDataDesc& desc() const { return desc_; }
 
-  static const ImageHandle NullHandle;
+  static ImageHandle NullHandle();
   static ImageHandle HandleFromInt(int32_t i);
 
  private:

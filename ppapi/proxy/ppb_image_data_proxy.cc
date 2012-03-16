@@ -100,13 +100,16 @@ skia::PlatformCanvas* ImageData::GetPlatformCanvas() {
 #endif
 }
 
+// static
+ImageHandle ImageData::NullHandle() {
 #if defined(OS_WIN)
-const ImageHandle ImageData::NullHandle = NULL;
+  return NULL;
 #elif defined(OS_MACOSX) || defined(OS_ANDROID)
-const ImageHandle ImageData::NullHandle = ImageHandle();
+  return ImageHandle();
 #else
-const ImageHandle ImageData::NullHandle = 0;
+  return 0;
 #endif
+}
 
 ImageHandle ImageData::HandleFromInt(int32_t i) {
 #if defined(OS_WIN)
@@ -136,7 +139,7 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
 
   HostResource result;
   std::string image_data_desc;
-  ImageHandle image_handle = ImageData::NullHandle;
+  ImageHandle image_handle = ImageData::NullHandle();
   dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
       kApiID, instance, format, size, init_to_zero,
       &result, &image_data_desc, &image_handle));
@@ -167,7 +170,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
                                           HostResource* result,
                                           std::string* image_data_desc,
                                           ImageHandle* result_image_handle) {
-  *result_image_handle = ImageData::NullHandle;
+  *result_image_handle = ImageData::NullHandle();
 
   thunk::EnterResourceCreation enter(instance);
   if (enter.failed())
