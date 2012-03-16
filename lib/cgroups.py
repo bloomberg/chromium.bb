@@ -332,7 +332,7 @@ class Cgroup(object):
 
     if not self.namespace:
       # If it's the root of the hierarchy, leave it alone.
-      return
+      return True
 
     if self.parent is not None:
       self.parent.Instantiate()
@@ -370,6 +370,8 @@ class Cgroup(object):
         # either way, no reason to leave it alive.
         self.RemoveThisGroup()
         raise
+
+    return True
 
   # Since some of this code needs to check/reset this function to be ran,
   # we use a more developer friendly variable name.
