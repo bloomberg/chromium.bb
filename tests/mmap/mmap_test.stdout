@@ -9,5 +9,6 @@ res = 0xffffffff
 mmap okay
 test4
 mmap gave an error as expected
+test_munmap
 test_mmap_end_of_file
 All tests PASSED

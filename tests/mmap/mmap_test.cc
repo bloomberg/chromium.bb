@@ -196,6 +196,34 @@ bool test4() {
 }
 
 /*
+ *   Verify that munmap() leaves virtual addresses inaccessible.
+ */
+
+bool test_munmap() {
+  printf("test_munmap\n");
+  /*
+   * Note that this test could fail if it were run concurrently with
+   * other tests in the same process, because other threads might
+   * mmap() pages at the address we munmap().
+   *
+   * Note that, on Windows, NaCl's munmap() has different code paths
+   * for anonymous and file-backed mappings.  This test case only
+   * covers the anonymous case.  The file-backed case is covered by
+   * test_mmap_end_of_file().
+   */
+  size_t map_size = 0x20000;
+  char *addr = (char *) mmap(NULL, map_size, PROT_READ | PROT_WRITE,
+                             MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(addr != MAP_FAILED);
+  int rc = munmap(addr, map_size);
+  assert(rc == 0);
+  assert_addr_is_unreadable(addr);
+  assert_addr_is_unreadable(addr + 0x1000);
+  assert_addr_is_unreadable(addr + 0x10000);
+  return true;
+}
+
+/*
  *   Verify that the last page in a file can be mmapped when the file's
  *   size is not a multiple of the page size.
  *   Tests for http://code.google.com/p/nativeclient/issues/detail?id=836
@@ -262,6 +290,10 @@ bool test_mmap_end_of_file() {
     printf("munmap() failed\n");
     return false;
   }
+  /* This is similar to test_munmap(), but it covers the file-backed case. */
+  assert_addr_is_unreadable(alloc);
+  assert_addr_is_unreadable(alloc + 0x1000);
+  assert_addr_is_unreadable(alloc + 0x2000);
   return true;
 }
 
@@ -281,6 +313,7 @@ bool testSuite() {
   ret &= test3();
   ret &= test4();
 
+  ret &= test_munmap();
   ret &= test_mmap_end_of_file();
 
   return ret;
