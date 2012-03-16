@@ -213,8 +213,7 @@ void RLZTracker::DelayedInit() {
   std::string reactivation_brand;
   if (google_util::GetReactivationBrand(&reactivation_brand) &&
       !IsBrandOrganic(reactivation_brand)) {
-    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
-    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
     RecordProductEvents(first_run_, google_default_search_,
                         google_default_homepage_, already_ran_,
                         omnibox_used_, homepage_used_);
@@ -262,8 +261,7 @@ void RLZTracker::PingNowImpl() {
   std::string reactivation_brand;
   if (google_util::GetReactivationBrand(&reactivation_brand) &&
       !IsBrandOrganic(reactivation_brand)) {
-    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
-    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
     SendFinancialPing(reactivation_brand, lang, referral);
   }
 }
@@ -335,8 +333,7 @@ bool RLZTracker::RecordProductEvent(rlz_lib::Product product,
   // If chrome has been reactivated, record the event for this brand as well.
   std::string reactivation_brand;
   if (google_util::GetReactivationBrand(&reactivation_brand)) {
-    string16 reactivation_brand16 = UTF8ToUTF16(reactivation_brand);
-    rlz_lib::SupplementaryBranding branding(reactivation_brand16.c_str());
+    rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
     ret &= rlz_lib::RecordProductEvent(product, point, event_id);
   }
 
