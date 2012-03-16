@@ -39,7 +39,7 @@ string16 WebUI::GetJavascriptCall(
     if (i > 0)
       parameters += char16(',');
 
-    base::JSONWriter::Write(arg_list[i], false, &json);
+    base::JSONWriter::Write(arg_list[i], &json);
     parameters += UTF8ToUTF16(json);
   }
   return ASCIIToUTF16(function_name) +

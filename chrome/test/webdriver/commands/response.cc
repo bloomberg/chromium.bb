@@ -76,8 +76,7 @@ std::string Response::ToJSON() const {
   // option so that the JSONWriter doesn't add '.0' to the end and confuse
   // the WebDriver client.
   base::JSONWriter::WriteWithOptions(
-      &data_, false,
-      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION, &json);
+      &data_, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION, &json);
   return json;
 }
 

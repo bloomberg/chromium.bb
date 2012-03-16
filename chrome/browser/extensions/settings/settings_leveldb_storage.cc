@@ -208,7 +208,7 @@ SettingsStorage::WriteResult SettingsLeveldbStorage::Set(
       changes->push_back(
           SettingChange(
               it.key(), old_value.release(), it.value().DeepCopy()));
-      base::JSONWriter::Write(&it.value(), false, &value_as_json);
+      base::JSONWriter::Write(&it.value(), &value_as_json);
       batch.Put(it.key(), value_as_json);
     }
   }

@@ -121,7 +121,9 @@ std::string SyncData::ToString() const {
   std::string specifics;
   scoped_ptr<DictionaryValue> value(
       browser_sync::EntitySpecificsToValue(GetSpecifics()));
-  base::JSONWriter::Write(value.get(), true, &specifics);
+  base::JSONWriter::WriteWithOptions(value.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &specifics);
 
   if (IsLocal()) {
     return "{ isLocal: true, type: " + type + ", tag: " + GetTag() +

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,7 +135,7 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
     args.Append(processes);
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
 
     // Notify each profile that is interested.
     for (ProfileSet::iterator it = profiles_.begin();

@@ -883,7 +883,10 @@ std::string AboutStats(const std::string& query) {
   std::string data;
   if (query == "json" || query == kStringsJsPath) {
     base::JSONWriter::WriteWithOptions(
-          &root, true, base::JSONWriter::OPTIONS_DO_NOT_ESCAPE, &data);
+          &root,
+          base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
+              base::JSONWriter::OPTIONS_PRETTY_PRINT,
+          &data);
     if (query == kStringsJsPath)
       data = "var templateData = " + data + ";";
   } else if (query == "raw") {

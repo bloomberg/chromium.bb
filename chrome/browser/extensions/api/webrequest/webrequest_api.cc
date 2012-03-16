@@ -970,7 +970,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
 
-    base::JSONWriter::Write(args_filtered.get(), false, &json_args);
+    base::JSONWriter::Write(args_filtered.get(), &json_args);
 
     ExtensionEventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,

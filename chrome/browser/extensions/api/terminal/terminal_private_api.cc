@@ -56,7 +56,7 @@ void NotifyProcessOutput(Profile* profile,
   args.Append(new base::StringValue(output));
 
   std::string args_json;
-  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+  base::JSONWriter::Write(&args, &args_json);
 
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToExtension(

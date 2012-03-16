@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,7 +113,7 @@ void ExtensionInputUiEventRouter::OnHideLookupTable() {
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
     extension_id_, events::kOnUpdateLookupTable, json_args, profile_, GURL());
 }
@@ -134,7 +134,7 @@ void ExtensionInputUiEventRouter::OnSetCursorLocation(
   args.Append(Value::CreateIntegerValue(height));
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
     extension_id_, events::kOnSetCursorLocation, json_args, profile_, GURL());
 }
@@ -149,7 +149,7 @@ void ExtensionInputUiEventRouter::OnUpdateAuxiliaryText(
   args.Append(Value::CreateStringValue(visible ? utf8_text : ""));
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
     extension_id_, events::kOnUpdateAuxiliaryText, json_args, profile_, GURL());
 }
@@ -182,7 +182,7 @@ void ExtensionInputUiEventRouter::OnUpdateLookupTable(
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
     extension_id_, events::kOnUpdateLookupTable, json_args, profile_, GURL());
 }

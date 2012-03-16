@@ -89,7 +89,7 @@ void DispatchOnBeforeNavigate(WebContents* web_contents,
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnBeforeNavigate,
                 json_args);
@@ -125,7 +125,7 @@ void DispatchOnCommitted(const char* event_name,
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(), event_name, json_args);
 }
 
@@ -144,7 +144,7 @@ void DispatchOnDOMContentLoaded(WebContents* web_contents,
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnDOMContentLoaded,
                 json_args);
@@ -165,7 +165,7 @@ void DispatchOnCompleted(WebContents* web_contents,
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnCompleted, json_args);
 }
@@ -198,7 +198,7 @@ void DispatchOnCreatedNavigationTarget(
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(
       browser_context, keys::kOnCreatedNavigationTarget, json_args);
 }
@@ -219,7 +219,7 @@ void DispatchOnErrorOccurred(WebContents* web_contents,
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnErrorOccurred,
                 json_args);

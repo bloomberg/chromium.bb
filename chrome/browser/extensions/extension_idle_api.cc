@@ -175,7 +175,7 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   ListValue args;
   args.Append(CreateIdleValue(state));
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       keys::kOnStateChanged, json_args, profile, GURL());

@@ -24,7 +24,7 @@ NetLogLogger::NetLogLogger(const FilePath &log_path) {
     // between Chrome versions.
     scoped_ptr<Value> value(NetInternalsUI::GetConstants());
     std::string json;
-    base::JSONWriter::Write(value.get(), false, &json);
+    base::JSONWriter::Write(value.get(), &json);
     fprintf(file_.get(), "{\"constants\": %s,\n", json.c_str());
     fprintf(file_.get(), "\"events\": [\n");
   }
@@ -50,7 +50,7 @@ void NetLogLogger::OnAddEntry(net::NetLog::EventType type,
   // instead of integer identifiers allows logs from older versions to be
   // loaded, though a little extra parsing has to be done when loading a log.
   std::string json;
-  base::JSONWriter::Write(value.get(), false, &json);
+  base::JSONWriter::Write(value.get(), &json);
   if (!file_.get()) {
     VLOG(1) << json;
   } else {

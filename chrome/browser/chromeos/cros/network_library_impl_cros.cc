@@ -365,7 +365,9 @@ void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
   if (VLOG_IS_ON(2)) {
     scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
     std::string dict_json;
-    base::JSONWriter::Write(static_cast<Value*>(dict.get()), true, &dict_json);
+    base::JSONWriter::WriteWithOptions(static_cast<Value*>(dict.get()),
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &dict_json);
     VLOG(2) << "ConfigureService will be called on:" << dict_json;
   }
   CrosConfigureService(identifier.c_str(), ghash,

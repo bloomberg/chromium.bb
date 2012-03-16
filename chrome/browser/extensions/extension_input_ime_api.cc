@@ -160,7 +160,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(Value::CreateStringValue(engine_id));
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnActivate, json_args, profile_, GURL());
   }
@@ -173,7 +173,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(Value::CreateStringValue(engine_id));
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnDeactivated, json_args, profile_, GURL());
   }
@@ -190,7 +190,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(dict);
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnFocus, json_args, profile_, GURL());
   }
@@ -203,7 +203,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(Value::CreateIntegerValue(context_id));
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnBlur, json_args, profile_, GURL());
   }
@@ -221,7 +221,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(dict);
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnInputContextUpdate, json_args, profile_,
         GURL());
@@ -250,7 +250,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(dict);
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnKeyEvent, json_args, profile_, GURL());
   }
@@ -282,7 +282,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     }
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnCandidateClicked, json_args, profile_,
         GURL());
@@ -298,7 +298,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     args.Append(Value::CreateStringValue(menu_id));
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, events::kOnMenuItemActivated, json_args, profile_,
         GURL());

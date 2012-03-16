@@ -512,7 +512,7 @@ void ExtensionManagementEventRouter::Observe(
   }
 
   std::string args_json;
-  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+  base::JSONWriter::Write(&args, &args_json);
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name, args_json, NULL, GURL());

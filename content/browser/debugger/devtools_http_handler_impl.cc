@@ -387,7 +387,9 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   }
 
   std::string response;
-  base::JSONWriter::Write(&json_pages_list, true, &response);
+  base::JSONWriter::WriteWithOptions(&json_pages_list,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &response);
   Send200(connection_id, response, "application/json; charset=UTF-8");
 }
 

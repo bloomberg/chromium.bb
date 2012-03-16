@@ -1066,7 +1066,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   ListValue args;
   args.Append(arg);
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name,
       json_args,

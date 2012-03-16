@@ -63,7 +63,7 @@ std::string GetJobString(const ChromeToMobileService::RequestData& data) {
         kRequestTypeSnapshot : kRequestTypeDelayedSnapshot);
   }
   std::string job_string;
-  base::JSONWriter::Write(job.get(), false, &job_string);
+  base::JSONWriter::Write(job.get(), &job_string);
   return job_string;
 }
 

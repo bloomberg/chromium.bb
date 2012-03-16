@@ -25,7 +25,7 @@ void PopulateExtensionSettingSpecifics(
   specifics->set_key(key);
   {
     std::string value_as_json;
-    base::JSONWriter::Write(&value, false, &value_as_json);
+    base::JSONWriter::Write(&value, &value_as_json);
     specifics->set_value(value_as_json);
   }
 }

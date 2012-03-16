@@ -169,7 +169,7 @@ void ExtensionMessageService::OpenChannelToExtension(
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(
         ExtensionTabUtil::CreateTabValue(source_contents));
-    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
+    base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
   OpenChannelImpl(source, tab_json, receiver, receiver_port_id,
@@ -211,7 +211,7 @@ void ExtensionMessageService::OpenChannelToTab(
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(
         ExtensionTabUtil::CreateTabValue(source_contents));
-    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
+    base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
   OpenChannelImpl(source, tab_json, receiver, receiver_port_id,

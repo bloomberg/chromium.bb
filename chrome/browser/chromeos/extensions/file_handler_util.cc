@@ -557,7 +557,7 @@ void FileTaskExecutor::ExecuteFileActionsOnUIThread(
   UpdateFileHandlerUsageStats(profile_, MakeTaskID(extension_id_, action_id_));
 
   std::string json_args;
-  base::JSONWriter::Write(event_args.get(), false, &json_args);
+  base::JSONWriter::Write(event_args.get(), &json_args);
   event_router->DispatchEventToExtension(
       extension_id_, std::string("fileBrowserHandler.onExecute"),
       json_args, profile_,

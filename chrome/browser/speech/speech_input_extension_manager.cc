@@ -278,7 +278,7 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
   }
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   VLOG(1) << "Results: " << json_args;
   DispatchEventToExtension(extension_id, kOnResultEvent, json_args);
 }
@@ -441,7 +441,7 @@ void SpeechInputExtensionManager::DispatchEventToExtension(
     std::string final_args;
     if (json_args.empty()) {
       ListValue args;
-      base::JSONWriter::Write(&args, false, &final_args);
+      base::JSONWriter::Write(&args, &final_args);
     } else {
       final_args = json_args;
     }
@@ -484,7 +484,7 @@ void SpeechInputExtensionManager::DispatchError(
     args.Append(js_error);
     js_error->SetString(kErrorCodeKey, error);
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
     DispatchEventToExtension(extension_id,
         kOnErrorEvent, json_args);
   }

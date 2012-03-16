@@ -247,7 +247,7 @@ const bool GetBooleanValue(const base::Value& value) {
 
 std::string ConvertValueToString(const base::Value& value) {
   std::string value_json;
-  base::JSONWriter::Write(&value, false, &value_json);
+  base::JSONWriter::Write(&value, &value_json);
   return value_json;
 }
 
@@ -459,8 +459,9 @@ Network* OncNetworkParser::ParseNetwork(int n) {
 
   if (VLOG_IS_ON(2)) {
     std::string network_json;
-    base::JSONWriter::Write(static_cast<const base::Value*>(info),
-                            true, &network_json);
+    base::JSONWriter::WriteWithOptions(static_cast<const base::Value*>(info),
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &network_json);
     VLOG(2) << "Parsing network at index " << n
             << ": " << network_json;
   }
@@ -486,8 +487,9 @@ scoped_refptr<net::X509Certificate> OncNetworkParser::ParseCertificate(
 
   if (VLOG_IS_ON(2)) {
     std::string certificate_json;
-    base::JSONWriter::Write(static_cast<base::Value*>(certificate),
-                            true, &certificate_json);
+    base::JSONWriter::WriteWithOptions(static_cast<base::Value*>(certificate),
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &certificate_json);
     VLOG(2) << "Parsing certificate at index " << cert_index
             << ": " << certificate_json;
   }
@@ -563,7 +565,7 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
 
   // Update the UI data property.
   std::string ui_data_json;
-  base::JSONWriter::Write(network->ui_data(), false, &ui_data_json);
+  base::JSONWriter::Write(network->ui_data(), &ui_data_json);
   base::StringValue ui_data_string_value(ui_data_json);
   network->UpdatePropertyMap(PROPERTY_INDEX_UI_DATA, &ui_data_string_value);
 
@@ -632,7 +634,9 @@ bool OncNetworkParser::ParseNestedObject(Network* network,
     }
     if (VLOG_IS_ON(2)) {
       std::string value_json;
-      base::JSONWriter::Write(inner_value, true, &value_json);
+      base::JSONWriter::WriteWithOptions(inner_value,
+                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                         &value_json);
       VLOG(2) << network->name() << ": Successfully parsed [" << key
               << "(" << index << ")] = " << value_json;
     }

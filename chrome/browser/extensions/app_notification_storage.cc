@@ -74,7 +74,7 @@ void AppNotificationListToJSON(const AppNotificationList& list,
     (*i)->ToDictionaryValue(dictionary);
     list_value.Append(dictionary);
   }
-  JSONWriter::Write(&list_value, false /* pretty_print */, result);
+  JSONWriter::Write(&list_value, result);
 }
 
 bool JSONToAppNotificationList(const std::string& json,

@@ -397,7 +397,7 @@ void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,
   }
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   Profile* profile =
       Profile::FromBrowserContext(

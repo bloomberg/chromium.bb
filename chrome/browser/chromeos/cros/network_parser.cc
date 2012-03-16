@@ -46,7 +46,9 @@ bool NetworkDeviceParser::UpdateDeviceFromInfo(const DictionaryValue& info,
   }
   if (VLOG_IS_ON(2)) {
     std::string json;
-    base::JSONWriter::Write(&info, true, &json);
+    base::JSONWriter::WriteWithOptions(&info,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &json);
     VLOG(2) << "Updated device for path "
             << device->device_path() << ": " << json;
   }
@@ -66,7 +68,9 @@ bool NetworkDeviceParser::UpdateStatus(const std::string& key,
   }
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(&value, true, &value_json);
+    base::JSONWriter::WriteWithOptions(&value,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &value_json);
     VLOG(2) << "Updated value on device: "
             << device->device_path() << "[" << key << "] = " << value_json;
   }
@@ -138,7 +142,9 @@ bool NetworkParser::UpdateStatus(const std::string& key,
   }
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(&value, true, &value_json);
+    base::JSONWriter::WriteWithOptions(&value,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &value_json);
     VLOG(2) << "Updated value on network: "
             << network->unique_id() << "[" << key << "] = " << value_json;
   }

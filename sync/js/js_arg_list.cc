@@ -20,7 +20,7 @@ const ListValue& JsArgList::Get() const {
 
 std::string JsArgList::ToString() const {
   std::string str;
-  base::JSONWriter::Write(&Get(), false, &str);
+  base::JSONWriter::Write(&Get(), &str);
   return str;
 }
 

@@ -1125,6 +1125,8 @@ std::string ProfileSyncServiceHarness::GetServiceStatus() {
   DictionaryValue value;
   sync_ui_util::ConstructAboutInformation(service_, &value);
   std::string service_status;
-  base::JSONWriter::Write(&value, true, &service_status);
+  base::JSONWriter::WriteWithOptions(&value,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &service_status);
   return service_status;
 }

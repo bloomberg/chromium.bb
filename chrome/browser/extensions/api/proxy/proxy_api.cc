@@ -45,7 +45,7 @@ void ProxyEventRouter::OnProxyError(
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   if (profile) {
     event_router->DispatchEventToRenderers(
@@ -77,7 +77,7 @@ void ProxyEventRouter::OnPACScriptError(
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   if (profile) {
     event_router->DispatchEventToRenderers(

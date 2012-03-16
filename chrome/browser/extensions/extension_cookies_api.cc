@@ -101,7 +101,7 @@ void ExtensionCookiesEventRouter::CookieChanged(
   args.Append(dict);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   GURL cookie_domain =
       extension_cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
   DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);

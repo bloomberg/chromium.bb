@@ -650,7 +650,9 @@ bool StarredURLDatabase::MigrateBookmarksToFileImpl(const FilePath& path) {
   scoped_ptr<Value> encoded_bookmarks(
       encoder.Encode(&bookmark_bar_node, &other_node, &mobile_node));
   std::string content;
-  base::JSONWriter::Write(encoded_bookmarks.get(), true, &content);
+  base::JSONWriter::WriteWithOptions(encoded_bookmarks.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &content);
 
   return (file_util::WriteFile(path, content.c_str(),
                                static_cast<int>(content.length())) != -1);

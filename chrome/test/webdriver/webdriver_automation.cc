@@ -876,7 +876,7 @@ void Automation::SetLocalStatePreference(const std::string& pref,
     request_dict.SetString("command", "SetLocalStatePrefs");
     request_dict.SetString("path", pref);
     request_dict.Set("value", scoped_value.release());
-    base::JSONWriter::Write(&request_dict, false, &request);
+    base::JSONWriter::Write(&request_dict, &request);
     if (!automation()->GetBrowserWindow(0)->SendJSONRequest(
             request, -1, &response)) {
       *error = new Error(kUnknownError, base::StringPrintf(
@@ -903,7 +903,7 @@ void Automation::SetPreference(const std::string& pref,
     request_dict.SetInteger("windex", 0);
     request_dict.SetString("path", pref);
     request_dict.Set("value", scoped_value.release());
-    base::JSONWriter::Write(&request_dict, false, &request);
+    base::JSONWriter::Write(&request_dict, &request);
     if (!automation()->GetBrowserWindow(0)->SendJSONRequest(
             request, -1, &response)) {
       *error = new Error(kUnknownError, base::StringPrintf(

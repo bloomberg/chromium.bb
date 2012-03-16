@@ -29,7 +29,9 @@ namespace {
 
 std::string ToJson(const Value& value) {
   std::string json;
-  base::JSONWriter::Write(&value, true /* pretty print */, &json);
+  base::JSONWriter::WriteWithOptions(&value,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
   return json;
 }
 

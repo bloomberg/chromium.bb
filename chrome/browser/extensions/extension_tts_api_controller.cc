@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,7 +120,7 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   event->SetBoolean(constants::kIsFinalEventKey, finished_);
   args.Set(0, event);
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       src_extension_id_,

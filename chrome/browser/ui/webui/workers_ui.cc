@@ -107,7 +107,7 @@ void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {
   }
 
   std::string json_string;
-  base::JSONWriter::Write(&workers_list, false, &json_string);
+  base::JSONWriter::Write(&workers_list, &json_string);
 
   SendResponse(request_id, base::RefCountedString::TakeString(&json_string));
 }

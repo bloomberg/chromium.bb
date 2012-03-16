@@ -90,7 +90,7 @@ std::string TabModalConfirmDialogWebUI::GetDialogArgs() const {
   dict.SetString("cancel", delegate_->GetCancelButtonTitle());
   ChromeWebUIDataSource::SetFontAndTextDirection(&dict);
   std::string json;
-  base::JSONWriter::Write(&dict, false, &json);
+  base::JSONWriter::Write(&dict, &json);
   return json;
 }
 

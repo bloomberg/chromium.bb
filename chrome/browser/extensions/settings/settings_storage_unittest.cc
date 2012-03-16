@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,9 @@ const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
 // Gets the pretty-printed JSON for a value.
 std::string GetJSON(const Value& value) {
   std::string json;
-  base::JSONWriter::Write(&value, true, &json);
+  base::JSONWriter::WriteWithOptions(&value,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
   return json;
 }
 

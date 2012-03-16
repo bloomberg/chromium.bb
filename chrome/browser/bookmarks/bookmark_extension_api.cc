@@ -180,7 +180,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeMoved(
   args.Append(object_args);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkMoved, json_args);
 }
 
@@ -195,7 +195,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   args.Append(obj);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkCreated, json_args);
 }
 
@@ -213,7 +213,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
   args.Append(object_args);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, json_args);
 }
 
@@ -234,7 +234,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeChanged(
   args.Append(object_args);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(), keys::kOnBookmarkChanged, json_args);
 }
 
@@ -259,7 +259,7 @@ void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
   args.Append(reorder_info);
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkChildrenReordered,
                 json_args);
@@ -269,7 +269,7 @@ void BookmarkExtensionEventRouter::
     ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
   ListValue args;
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportBegan,
                 json_args);
@@ -279,7 +279,7 @@ void BookmarkExtensionEventRouter::ExtensiveBookmarkChangesEnded(
     BookmarkModel* model) {
   ListValue args;
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportEnded,
                 json_args);

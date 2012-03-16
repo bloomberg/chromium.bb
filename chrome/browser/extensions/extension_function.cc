@@ -94,7 +94,7 @@ const std::string ExtensionFunction::GetResult() {
   std::string json;
   // Some functions might not need to return any results.
   if (result_.get())
-    base::JSONWriter::Write(result_.get(), false, &json);
+    base::JSONWriter::Write(result_.get(), &json);
   return json;
 }
 

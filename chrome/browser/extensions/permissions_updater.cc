@@ -102,7 +102,7 @@ void PermissionsUpdater::DispatchEvent(
     PackPermissionSet(changed_permissions);
   value.Append(permissions->ToValue().release());
   std::string json_value;
-  base::JSONWriter::Write(&value, false, &json_value);
+  base::JSONWriter::Write(&value, &json_value);
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, event_name, json_value, profile_, GURL());
 }

@@ -457,7 +457,7 @@ void ExtensionMenuManager::ExecuteCommand(
   }
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   std::string event_name = "contextMenus";
   event_router->DispatchEventToExtension(
       item->extension_id(), event_name, json_args, profile, GURL(),

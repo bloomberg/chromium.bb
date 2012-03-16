@@ -321,7 +321,7 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
       dict->SetString(keys::kLevelOfControl, level_of_control);
 
       std::string json_args;
-      base::JSONWriter::Write(&args, false, &json_args);
+      base::JSONWriter::Write(&args, &json_args);
 
       DispatchEvent(extension_id, event_name, json_args);
     }

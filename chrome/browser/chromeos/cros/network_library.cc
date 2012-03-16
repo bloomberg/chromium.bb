@@ -230,7 +230,9 @@ void Network::UpdatePropertyMap(PropertyIndex index, const base::Value* value) {
   entry = value->DeepCopy();
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(value, true, &value_json);
+    base::JSONWriter::WriteWithOptions(value,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &value_json);
     VLOG(2) << "Updated property map on network: "
             << unique_id() << "[" << index << "] = " << value_json;
   }

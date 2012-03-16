@@ -34,7 +34,9 @@ const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
 // Gets the pretty-printed JSON for a value.
 static std::string GetJson(const Value& value) {
   std::string json;
-  base::JSONWriter::Write(&value, true, &json);
+  base::JSONWriter::WriteWithOptions(&value,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
   return json;
 }
 

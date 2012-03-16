@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ template <typename T>
 std::string JSONStringify(const T& arg) {
   std::string javascript;
   scoped_ptr<Value> value(ValueConversionTraits<T>::CreateValueFrom(arg));
-  base::JSONWriter::Write(value.get(), false, &javascript);
+  base::JSONWriter::Write(value.get(), &javascript);
   return javascript;
 }
 

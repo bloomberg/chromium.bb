@@ -246,7 +246,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
     protocol_request.Set("params", params->DeepCopy());
 
   std::string json_args;
-  base::JSONWriter::Write(&protocol_request, false, &json_args);
+  base::JSONWriter::Write(&protocol_request, &json_args);
   DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this, json_args);
 }
 
@@ -258,7 +258,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
     args.Append(CreateDebuggeeId(tab_id_));
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
 
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnDetach, json_args, profile, GURL());
@@ -302,7 +302,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
       args.Append(params_value->DeepCopy());
 
     std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
+    base::JSONWriter::Write(&args, &json_args);
 
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
         extension_id_, keys::kOnEvent, json_args, profile, GURL());
@@ -482,7 +482,7 @@ void SendCommandDebuggerFunction::SendResponseBody(
     DictionaryValue* dictionary) {
   Value* error_body;
   if (dictionary->Get("error", &error_body)) {
-    base::JSONWriter::Write(error_body, false, &error_);
+    base::JSONWriter::Write(error_body, &error_);
     SendResponse(false);
     return;
   }

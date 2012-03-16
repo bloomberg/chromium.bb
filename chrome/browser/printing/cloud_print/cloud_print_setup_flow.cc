@@ -76,7 +76,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   args.SetString("pageToShow", setup_done ? "setupdone" : "cloudprintsetup");
 
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   CloudPrintSetupFlow* flow = new CloudPrintSetupFlow(json_args, profile,
                                                       delegate, setup_done);
@@ -280,7 +280,7 @@ void CloudPrintSetupFlow::ShowGaiaLogin(const DictionaryValue& args) {
     web_ui_->CallJavascriptFunction("cloudprint.showSetupLogin");
 
   std::string json;
-  base::JSONWriter::Write(&args, false, &json);
+  base::JSONWriter::Write(&args, &json);
   string16 javascript = UTF8ToUTF16("cloudprint.showGaiaLogin(" + json + ");");
 
   ExecuteJavascriptInIFrame(SetupIframeXPath(), javascript);

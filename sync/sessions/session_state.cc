@@ -176,7 +176,9 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
 std::string SyncSessionSnapshot::ToString() const {
   scoped_ptr<DictionaryValue> value(ToValue());
   std::string json;
-  base::JSONWriter::Write(value.get(), true, &json);
+  base::JSONWriter::WriteWithOptions(value.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
   return json;
 }
 

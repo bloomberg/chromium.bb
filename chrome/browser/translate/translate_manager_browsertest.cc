@@ -631,7 +631,7 @@ std::string GetLanguageListString(
   DictionaryValue language_list_dict;
   language_list_dict.Set("tl", target_languages_dict.release());
   std::string language_list_json_str;
-  base::JSONWriter::Write(&language_list_dict, false, &language_list_json_str);
+  base::JSONWriter::Write(&language_list_dict, &language_list_json_str);
   std::string language_list_str("sl(");
   language_list_str += language_list_json_str;
   language_list_str += ")";

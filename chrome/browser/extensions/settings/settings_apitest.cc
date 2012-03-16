@@ -130,7 +130,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     message->SetString("action", action);
     message->SetBoolean("isFinalAction", is_final_action);
     std::string message_json;
-    base::JSONWriter::Write(message.get(), false, &message_json);
+    base::JSONWriter::Write(message.get(), &message_json);
     return message_json;
   }
 

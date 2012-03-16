@@ -250,7 +250,7 @@ GURL GetFileBrowserUrlWithParams(
   }
 
   std::string json_args;
-  base::JSONWriter::Write(&arg_value, false, &json_args);
+  base::JSONWriter::Write(&arg_value, &json_args);
 
   // kChromeUIFileManagerURL could not be used since query parameters are not
   // supported for it.
@@ -308,7 +308,7 @@ void ViewRemovableDrive(const FilePath& dir) {
   arg_value.SetBoolean("mountTriggered", true);
 
   std::string json_args;
-  base::JSONWriter::Write(&arg_value, false, &json_args);
+  base::JSONWriter::Write(&arg_value, &json_args);
 
   std::string url = chrome::kChromeUIFileManagerURL;
   url += "?" + json_args + "#/" +

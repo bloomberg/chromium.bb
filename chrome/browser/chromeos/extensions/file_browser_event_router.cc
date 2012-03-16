@@ -237,7 +237,7 @@ void ExtensionFileBrowserEventRouter::DispatchFolderChangeEvent(
                           got_error ? kPathWatchError : kPathChanged);
 
     std::string args_json;
-    base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+    base::JSONWriter::Write(&args, &args_json);
 
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
         iter->first, extension_event_names::kOnFileChanged, args_json,
@@ -261,7 +261,7 @@ void ExtensionFileBrowserEventRouter::DispatchDiskEvent(
   mount_info->Set("volumeInfo", disk_info);
 
   std::string args_json;
-  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+  base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extension_event_names::kOnFileBrowserDiskChanged, args_json, NULL,
       GURL());
@@ -318,7 +318,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   }
 
   std::string args_json;
-  base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
+  base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
       GURL());

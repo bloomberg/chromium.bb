@@ -406,7 +406,7 @@ void ChromotingInstance::PostChromotingMessage(
   message->Set("data", data.release());
 
   std::string message_json;
-  base::JSONWriter::Write(message.get(), false, &message_json);
+  base::JSONWriter::Write(message.get(), &message_json);
   PostMessage(pp::Var(message_json));
 }
 

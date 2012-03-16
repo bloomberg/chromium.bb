@@ -110,7 +110,7 @@ TEST(JSONValueSerializerTest, StringEscape) {
   std::string output_js;
   DictionaryValue valueRoot;
   valueRoot.SetString("all_chars", all_chars);
-  base::JSONWriter::Write(&valueRoot, false, &output_js);
+  base::JSONWriter::Write(&valueRoot, &output_js);
   ASSERT_EQ(expected_output, output_js);
 
   // Test JSONValueSerializer interface (uses JSONWriter).

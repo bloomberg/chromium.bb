@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,9 @@ void JsonHostConfig::Save() {
 void JsonHostConfig::DoWrite() {
   std::string file_content;
   base::AutoLock auto_lock(lock_);
-  base::JSONWriter::Write(values_.get(), true, &file_content);
+  base::JSONWriter::WriteWithOptions(values_.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &file_content);
   // TODO(sergeyu): Move ImportantFileWriter to base and use it here.
   file_util::WriteFile(filename_, file_content.c_str(), file_content.size());
 }

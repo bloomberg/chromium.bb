@@ -30,7 +30,7 @@ bool SendAutomationJSONRequest(AutomationMessageSender* sender,
                                DictionaryValue* reply_dict,
                                Error* error) {
   std::string request, reply;
-  base::JSONWriter::Write(&request_dict, false, &request);
+  base::JSONWriter::Write(&request_dict, &request);
   std::string command;
   request_dict.GetString("command", &command);
   LOG(INFO) << "Sending '" << command << "' command.";

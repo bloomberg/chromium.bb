@@ -81,7 +81,7 @@ void APIResourceEventNotifier::DispatchEvent(DictionaryValue* event) {
 
   args.Set(0, event);
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   router_->DispatchEventToExtension(src_extension_id_,
                                     events::kOnAPIResourceEvent,
                                     json_args, profile_, src_url_);

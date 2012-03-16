@@ -50,7 +50,7 @@ std::string ModelTypePayloadMapToString(
   scoped_ptr<DictionaryValue> value(
       ModelTypePayloadMapToValue(type_payloads));
   std::string json;
-  base::JSONWriter::Write(value.get(), false, &json);
+  base::JSONWriter::Write(value.get(), &json);
   return json;
 }
 

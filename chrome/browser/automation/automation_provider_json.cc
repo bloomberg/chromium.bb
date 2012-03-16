@@ -34,7 +34,7 @@ void AutomationJSONReply::SendSuccess(const Value* value) {
   DCHECK(message_) << "Resending reply for JSON automation request";
   std::string json_string = "{}";
   if (value)
-    base::JSONWriter::Write(value, false, &json_string);
+    base::JSONWriter::Write(value, &json_string);
   AutomationMsg_SendJSONRequest::WriteReplyParams(
       message_, json_string, true);
   provider_->Send(message_);
@@ -56,7 +56,7 @@ void AutomationJSONReply::SendError(const Error& error) {
   dict.SetString("error", error.message());
   dict.SetInteger("code", error.code());
   std::string json;
-  base::JSONWriter::Write(&dict, false /* pretty_print */, &json);
+  base::JSONWriter::Write(&dict, &json);
 
   AutomationMsg_SendJSONRequest::WriteReplyParams(message_, json, false);
   provider_->Send(message_);

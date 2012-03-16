@@ -1553,9 +1553,7 @@ void GDataFileSystem::SaveFeedOnIOThreadPool(
 
   FilePath file_name = meta_cache_path.Append(name);
   std::string json;
-  base::JSONWriter::Write(feed.get(),
-                          false,   // pretty_print
-                          &json);
+  base::JSONWriter::Write(feed.get(), &json);
 
   int file_size = static_cast<int>(json.length());
   if (file_util::WriteFile(file_name, json.data(), file_size) != file_size) {

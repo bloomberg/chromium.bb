@@ -392,7 +392,7 @@ bool UnzipSoleFile(const FilePath& unzip_dir,
 
 std::string JsonStringify(const Value* value) {
   std::string json;
-  base::JSONWriter::Write(value, false, &json);
+  base::JSONWriter::Write(value, &json);
   return json;
 }
 
@@ -456,7 +456,9 @@ std::string JsonStringifyForDisplay(const Value* value) {
     TruncateContainedStrings(copy.get());
   }
   std::string json;
-  base::JSONWriter::Write(copy.get(), true /* pretty_print */, &json);
+  base::JSONWriter::WriteWithOptions(copy.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
   return json;
 }
 

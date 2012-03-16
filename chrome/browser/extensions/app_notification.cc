@@ -137,7 +137,9 @@ std::string AppNotification::ToString() const {
   DictionaryValue value;
   ToDictionaryValue(&value);
   std::string result;
-  base::JSONWriter::Write(&value, true, &result);
+  base::JSONWriter::WriteWithOptions(&value,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &result);
   return result;
 }
 

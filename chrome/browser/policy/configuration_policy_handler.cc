@@ -164,7 +164,10 @@ void ConfigurationPolicyHandler::PrepareForDisplaying(
     if (entry.value->GetAsDictionary(&value)) {
       std::string json_string;
       base::JSONWriter::WriteWithOptions(
-          value, true, base::JSONWriter::OPTIONS_DO_NOT_ESCAPE, &json_string);
+          value,
+          base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
+              base::JSONWriter::OPTIONS_PRETTY_PRINT,
+          &json_string);
       StringValue* string_value = Value::CreateStringValue(json_string);
       policies->Set(it->first, entry.level, entry.scope, string_value);
     }

@@ -164,7 +164,6 @@ Error* Session::ExecuteScript(const FrameId& frame_id,
                               Value** value) {
   std::string args_as_json;
   base::JSONWriter::Write(static_cast<const Value* const>(args),
-                          /*pretty_print=*/false,
                           &args_as_json);
 
   // Every injected script is fed through the executeScript atom. This atom
@@ -217,7 +216,6 @@ Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
                                    Value** value) {
   std::string args_as_json;
   base::JSONWriter::Write(static_cast<const Value* const>(args),
-                          /*pretty_print=*/false,
                           &args_as_json);
 
   int timeout_ms = async_script_timeout();

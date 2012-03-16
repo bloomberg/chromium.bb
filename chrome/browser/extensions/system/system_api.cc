@@ -58,7 +58,7 @@ void DispatchEvent(const std::string& event_name, const ListValue& args) {
   if (!extension_event_router)
     return;
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   extension_event_router->DispatchEventToRenderers(
       event_name, json_args, NULL, GURL());
 }

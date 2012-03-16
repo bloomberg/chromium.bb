@@ -104,7 +104,7 @@ std::string P2PNotificationData::ToString() const {
                   P2PNotificationTargetToString(target_));
   dict->Set(kChangedTypesKey, syncable::ModelTypeSetToValue(changed_types_));
   std::string json;
-  base::JSONWriter::Write(dict.get(), false /* pretty_print */, &json);
+  base::JSONWriter::Write(dict.get(), &json);
   return json;
 }
 

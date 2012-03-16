@@ -31,7 +31,7 @@ std::string ControlInfoToJsonString(const AccessibilityEventInfo* info) {
   info->SerializeToDict(dict);
   args.Append(dict);
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
   return json_args;
 }
 

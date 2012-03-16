@@ -82,7 +82,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
   args.Set(0, Value::CreateStringValue(input));
   args.Set(1, Value::CreateIntegerValue(suggest_id));
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputChanged, json_args, profile, GURL());
@@ -96,7 +96,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   ListValue args;
   args.Set(0, Value::CreateStringValue(input));
   std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
+  base::JSONWriter::Write(&args, &json_args);
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());

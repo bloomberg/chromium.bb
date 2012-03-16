@@ -3705,7 +3705,7 @@ void TestingAutomationProvider::GetInitialLoadTimes(
       initial_load_observer_->GetTimingInformation());
 
   std::string json_return;
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  base::JSONWriter::Write(return_value.get(), &json_return);
   AutomationMsg_SendJSONRequest::WriteReplyParams(
       reply_message, json_return, true);
   Send(reply_message);

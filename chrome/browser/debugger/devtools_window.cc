@@ -470,7 +470,7 @@ WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
 void DevToolsWindow::CallClientFunction(const string16& function_name,
                                         const Value& arg) {
   std::string json;
-  base::JSONWriter::Write(&arg, false, &json);
+  base::JSONWriter::Write(&arg, &json);
   string16 javascript = function_name + char16('(') + UTF8ToUTF16(json) +
       ASCIIToUTF16(");");
   tab_contents_->web_contents()->GetRenderViewHost()->

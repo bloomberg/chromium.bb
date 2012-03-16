@@ -130,7 +130,7 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
 
     // Put |settings| in to |args| as a JSON string.
     std::string json_string;
-    base::JSONWriter::Write(&settings, false, &json_string);
+    base::JSONWriter::Write(&settings, &json_string);
     ListValue args;
     args.Append(new base::StringValue(json_string));  // |args| takes ownership.
     preview_ui_->handler_->HandlePrint(&args);
@@ -155,7 +155,7 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
 
     // Put |settings| in to |args| as a JSON string.
     std::string json_string;
-    base::JSONWriter::Write(&settings, false, &json_string);
+    base::JSONWriter::Write(&settings, &json_string);
     ListValue args;
     args.Append(new base::StringValue(json_string));  // |args| takes ownership.
     preview_ui_->handler_->HandlePrint(&args);
