@@ -13,8 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestTabContents;
-class MockRenderProcessHost;
-class MockRenderProcessHostFactory;
 
 #if defined(USE_AURA)
 namespace aura {
@@ -28,6 +26,8 @@ class TestStackingClient;
 namespace content {
 
 class BrowserContext;
+class MockRenderProcessHost;
+class MockRenderProcessHostFactory;
 class NavigationController;
 class RenderProcessHostFactory;
 class RenderViewHostDelegate;

@@ -9,7 +9,6 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_content_browser_client.h"
-#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -20,6 +19,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
@@ -28,6 +28,8 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::MockRenderProcessHost;
+using content::MockRenderProcessHostFactory;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;

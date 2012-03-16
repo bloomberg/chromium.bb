@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/test/mock_render_process_host.h"
 
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -13,11 +13,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 
-using content::ChildProcessHostImpl;
-using content::RenderWidgetHost;
+namespace content {
 
 MockRenderProcessHost::MockRenderProcessHost(
-    content::BrowserContext* browser_context)
+    BrowserContext* browser_context)
         : transport_dib_(NULL),
           bad_msg_count_(0),
           factory_(NULL),
@@ -156,10 +155,10 @@ void MockRenderProcessHost::Release(int routing_id) {
 
 void MockRenderProcessHost::Cleanup() {
   if (render_widget_hosts_.IsEmpty()) {
-    content::NotificationService::current()->Notify(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<RenderProcessHost>(this),
-        content::NotificationService::NoDetails());
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        Source<RenderProcessHost>(this),
+        NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     RenderProcessHostImpl::UnregisterHost(GetID());
   }
@@ -183,7 +182,7 @@ content::RenderWidgetHost* MockRenderProcessHost::GetRenderWidgetHostByID(
   return render_widget_hosts_.Lookup(routing_id);
 }
 
-content::BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
+BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
   return browser_context_;
 }
 
@@ -204,7 +203,7 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 }
 
-content::RenderProcessHost::RenderWidgetHostsIterator
+RenderProcessHost::RenderWidgetHostsIterator
     MockRenderProcessHost::GetRenderWidgetHostsIterator() {
   return RenderWidgetHostsIterator(&render_widget_hosts_);
 }
@@ -227,9 +226,8 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   }
 }
 
-content::RenderProcessHost*
-    MockRenderProcessHostFactory::CreateRenderProcessHost(
-        content::BrowserContext* browser_context) const {
+RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
+    BrowserContext* browser_context) const {
   MockRenderProcessHost* host = new MockRenderProcessHost(browser_context);
   if (host) {
     processes_.push_back(host);
@@ -247,3 +245,5 @@ void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
     }
   }
 }
+
+}  // content

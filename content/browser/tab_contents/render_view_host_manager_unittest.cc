@@ -5,7 +5,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/mock_content_browser_client.h"
-#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
@@ -21,17 +20,19 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
+#include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_notification_tracker.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/url_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/javascript_message_type.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::MockRenderProcessHost;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;

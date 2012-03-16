@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MOCK_RENDER_PROCESS_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MOCK_RENDER_PROCESS_HOST_H_
+#ifndef CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_
+#define CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -12,14 +12,17 @@
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
 
-class MockRenderProcessHostFactory;
 class TransportDIB;
+
+namespace content {
+
+class MockRenderProcessHostFactory;
 
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.
-class MockRenderProcessHost : public content::RenderProcessHost {
+class MockRenderProcessHost : public RenderProcessHost {
  public:
-  explicit MockRenderProcessHost(content::BrowserContext* browser_context);
+  explicit MockRenderProcessHost(BrowserContext* browser_context);
   virtual ~MockRenderProcessHost();
 
   // Provides access to all IPC messages that would have been sent to the
@@ -61,9 +64,9 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
-  virtual content::RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
+  virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
         OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
   virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
@@ -90,7 +93,7 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   int bad_msg_count_;
   const MockRenderProcessHostFactory* factory_;
   int id_;
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
   IDMap<content::RenderWidgetHost> render_widget_hosts_;
   bool fast_shutdown_started_;
@@ -98,13 +101,13 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
 
-class MockRenderProcessHostFactory : public content::RenderProcessHostFactory {
+class MockRenderProcessHostFactory : public RenderProcessHostFactory {
  public:
   MockRenderProcessHostFactory();
   virtual ~MockRenderProcessHostFactory();
 
-  virtual content::RenderProcessHost* CreateRenderProcessHost(
-      content::BrowserContext* browser_context) const OVERRIDE;
+  virtual RenderProcessHost* CreateRenderProcessHost(
+      BrowserContext* browser_context) const OVERRIDE;
 
   // Removes the given MockRenderProcessHost from the MockRenderProcessHost list
   // without deleting it. When a test deletes a MockRenderProcessHost, we need
@@ -120,4 +123,6 @@ class MockRenderProcessHostFactory : public content::RenderProcessHostFactory {
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MOCK_RENDER_PROCESS_HOST_H_
+}  // namespace content
+
+#endif  // CONTENT_TEST_MOCK_RENDER_PROCESS_HOST_H_

@@ -8,7 +8,6 @@
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -29,6 +29,7 @@
 using base::TimeDelta;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::MockRenderProcessHost;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using WebKit::WebInputEvent;

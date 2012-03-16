@@ -4,12 +4,12 @@
 
 #include "content/test/test_renderer_host.h"
 
-#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 
 #if defined(USE_AURA)

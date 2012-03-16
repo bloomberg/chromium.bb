@@ -33,7 +33,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/download/download_state_info.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/renderer_host/mock_render_process_host.h",
   "+content/browser/renderer_host/render_process_host_browsertest.h",
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",

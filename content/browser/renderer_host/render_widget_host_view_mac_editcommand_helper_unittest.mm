@@ -7,14 +7,15 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/message_loop.h"
-#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
+#include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using content::MockRenderProcessHost;
 using content::RenderWidgetHostImpl;
 
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
