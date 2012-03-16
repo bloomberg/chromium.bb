@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_feature_provider.h"
+#include "chrome/common/extensions/simple_feature_provider.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Feature;
-using extensions::ManifestFeatureProvider;
+using extensions::SimpleFeatureProvider;
 
-TEST(ManifestFeatureProvider, DefaultInstance) {
-  ManifestFeatureProvider* provider =
-      ManifestFeatureProvider::GetDefaultInstance();
+TEST(SimpleFeatureProvider, ManifestFeatures) {
+  SimpleFeatureProvider* provider =
+      SimpleFeatureProvider::GetManifestFeatures();
   scoped_ptr<Feature> feature = provider->GetFeature("name");
   ASSERT_TRUE(feature.get());
   EXPECT_EQ(5u, feature->extension_types()->size());
 }
 
-TEST(ManifestFeatureProvider, Validation) {
+TEST(SimpleFeatureProvider, Validation) {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
   DictionaryValue* feature1 = new DictionaryValue();
@@ -32,7 +32,7 @@ TEST(ManifestFeatureProvider, Validation) {
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
-  ManifestFeatureProvider provider(value.Pass());
+  SimpleFeatureProvider provider(value.Pass());
 
   // feature1 won't validate because it lacks an extension type.
   EXPECT_FALSE(provider.GetFeature("feature1").get());

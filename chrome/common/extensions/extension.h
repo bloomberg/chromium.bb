@@ -804,9 +804,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // |override_url|.
   void OverrideLaunchUrl(const GURL& override_url);
 
-  // Returns true if this extension can specify |api|.
-  bool CanSpecifyAPIPermission(const ExtensionAPIPermission* api,
-                               string16* error) const;
+  // Custom checks for the experimental permission that can't be expressed in
+  // _permission_features.json.
   bool CanSpecifyExperimentalPermission() const;
 
   // Checks whether the host |pattern| is allowed for this extension, given API

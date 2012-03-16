@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_feature_provider.h"
+#include "chrome/common/extensions/simple_feature_provider.h"
 
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -14,23 +14,34 @@ namespace {
 const bool kAllowTrailingComma = false;
 
 struct Static {
-  Static() {
+  Static()
+      : manifest_features(
+            LoadProvider("manifest", IDR_EXTENSION_MANIFEST_FEATURES)),
+        permission_features(
+            LoadProvider("permissions", IDR_EXTENSION_PERMISSION_FEATURES)) {
+  }
+
+  scoped_ptr<extensions::SimpleFeatureProvider> manifest_features;
+  scoped_ptr<extensions::SimpleFeatureProvider> permission_features;
+
+ private:
+  scoped_ptr<extensions::SimpleFeatureProvider> LoadProvider(
+      const std::string& debug_string, int resource_id) {
     std::string manifest_features =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_EXTENSION_MANIFEST_FEATURES).as_string();
+            resource_id).as_string();
     int error_code = 0;
     std::string error_message;
     Value* value = base::JSONReader::ReadAndReturnError(
         manifest_features, kAllowTrailingComma, &error_code, &error_message);
-    CHECK(value) << error_message;
-    CHECK(value->IsType(Value::TYPE_DICTIONARY));
+    CHECK(value) << "Could not load features: " << debug_string << " "
+                 << error_message;
+    CHECK(value->IsType(Value::TYPE_DICTIONARY)) << debug_string;
     scoped_ptr<DictionaryValue> dictionary_value(
         static_cast<DictionaryValue*>(value));
-    provider.reset(new extensions::ManifestFeatureProvider(
-        dictionary_value.Pass()));
+    return scoped_ptr<extensions::SimpleFeatureProvider>(
+        new extensions::SimpleFeatureProvider(dictionary_value.Pass()));
   }
-
-  scoped_ptr<extensions::ManifestFeatureProvider> provider;
 };
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
@@ -39,20 +50,25 @@ base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 
 namespace extensions {
 
-ManifestFeatureProvider::ManifestFeatureProvider(
+SimpleFeatureProvider::SimpleFeatureProvider(
     scoped_ptr<DictionaryValue> root)
     : root_(root.release()) {
 }
 
-ManifestFeatureProvider::~ManifestFeatureProvider() {
+SimpleFeatureProvider::~SimpleFeatureProvider() {
 }
 
 // static
-ManifestFeatureProvider* ManifestFeatureProvider::GetDefaultInstance() {
-  return g_static.Get().provider.get();
+SimpleFeatureProvider* SimpleFeatureProvider::GetManifestFeatures() {
+  return g_static.Get().manifest_features.get();
 }
 
-std::set<std::string> ManifestFeatureProvider::GetAllFeatureNames() const {
+// static
+SimpleFeatureProvider* SimpleFeatureProvider::GetPermissionFeatures() {
+  return g_static.Get().permission_features.get();
+}
+
+std::set<std::string> SimpleFeatureProvider::GetAllFeatureNames() const {
   std::set<std::string> result;
   for (DictionaryValue::key_iterator iter = root_->begin_keys();
        iter != root_->end_keys(); ++iter) {
@@ -61,7 +77,7 @@ std::set<std::string> ManifestFeatureProvider::GetAllFeatureNames() const {
   return result;
 }
 
-scoped_ptr<Feature> ManifestFeatureProvider::GetFeature(
+scoped_ptr<Feature> SimpleFeatureProvider::GetFeature(
     const std::string& name) const {
   scoped_ptr<Feature> feature;
 
@@ -77,13 +93,13 @@ scoped_ptr<Feature> ManifestFeatureProvider::GetFeature(
   }
 
   if (feature->extension_types()->empty()) {
-    LOG(ERROR) << name << ": Manifest features must specify atleast one value "
+    LOG(ERROR) << name << ": Simple features must specify atleast one value "
                << "for extension_types.";
     return scoped_ptr<Feature>();
   }
 
   if (!feature->contexts()->empty()) {
-    LOG(ERROR) << name << ": Manifest features do not support contexts.";
+    LOG(ERROR) << name << ": Simple features do not support contexts.";
     return scoped_ptr<Feature>();
   }
 

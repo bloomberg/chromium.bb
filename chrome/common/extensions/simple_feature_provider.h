@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_FEATURE_PROVIDER_H_
-#define CHROME_COMMON_EXTENSIONS_MANIFEST_FEATURE_PROVIDER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_
+#define CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_
 #pragma once
 
 #include <set>
@@ -15,18 +15,21 @@
 
 namespace extensions {
 
-// Wrapper for the _manifest_features.json file, which vends Feature objects
-// describing the features declared there.
-class ManifestFeatureProvider {
+// Reads Features out of a simple JSON file description.
+class SimpleFeatureProvider {
  public:
   // Create an instance for an arbitrary hunk of JSON. This is typically used
   // during tests.
-  explicit ManifestFeatureProvider(scoped_ptr<DictionaryValue> root);
-  ~ManifestFeatureProvider();
+  explicit SimpleFeatureProvider(scoped_ptr<DictionaryValue> root);
+  ~SimpleFeatureProvider();
 
   // Gets an instance for the _manifest_features.json file that is baked into
   // Chrome as a resource.
-  static ManifestFeatureProvider* GetDefaultInstance();
+  static SimpleFeatureProvider* GetManifestFeatures();
+
+  // Gets an instance for the _permission_features.json file that is baked into
+  // Chrome as a resource.
+  static SimpleFeatureProvider* GetPermissionFeatures();
 
   // Returns all features described by this instance.
   std::set<std::string> GetAllFeatureNames() const;
@@ -40,4 +43,4 @@ class ManifestFeatureProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_FEATURE_PROVIDER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_

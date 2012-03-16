@@ -152,35 +152,8 @@ class ExtensionAPIPermission {
     // Indicates if the permission implies full URL access.
     kFlagImpliesFullURLAccess = 1 << 1,
 
-    // Indicates that the permission is private to COMPONENT extensions.
-    // Depcrecated: please use the whitelist.
-    kFlagComponentOnly_Deprecated = 1 << 2,
-
     // Indicates that extensions cannot specify the permission as optional.
     kFlagCannotBeOptional = 1 << 3
-  };
-
-  // Flags for specifying what extension types can use the permission.
-  enum TypeRestriction {
-    kTypeNone = 0,
-
-    // Extension::TYPE_EXTENSION and Extension::TYPE_USER_SCRIPT
-    kTypeExtension = 1 << 0,
-
-    // Extension::TYPE_HOSTED_APP
-    kTypeHostedApp = 1 << 1,
-
-    // Extension::TYPE_PACKAGED_APP
-    kTypePackagedApp = 1 << 2,
-
-    // Extension::TYPE_PLATFORM_APP
-    kTypePlatformApp = 1 << 3,
-
-    // Supports all types.
-    kTypeAll = (1 << 4) - 1,
-
-    // Convenience flag for all types except hosted apps.
-    kTypeDefault = kTypeAll - kTypeHostedApp,
   };
 
   typedef std::set<ID> IDSet;
@@ -191,8 +164,6 @@ class ExtensionAPIPermission {
   ExtensionPermissionMessage GetMessage() const;
 
   int flags() const { return flags_; }
-
-  int type_restrictions() const { return type_restrictions_; }
 
   ID id() const { return id_; }
 
@@ -214,48 +185,10 @@ class ExtensionAPIPermission {
     return (flags_ & kFlagImpliesFullURLAccess) != 0;
   }
 
-  // Returns true if this permission can only be acquired by COMPONENT
-  // extensions.
-  bool is_component_only() const {
-    return (flags_ & kFlagComponentOnly_Deprecated) != 0;
-  }
-
-  // Returns true if access to this permission is restricted by a whitelist.
-  bool HasWhitelist() const;
-
-  // Returns true if |extension_id| is whitelisted. The return value is only
-  // relevant if this permission has a whitelist.
-  bool IsWhitelisted(const std::string& extension_id) const;
-
-  // Returns true if regular extensions can specify this permission.
-  bool supports_extensions() const {
-    return (type_restrictions_ & kTypeExtension) != 0;
-  }
-
-  // Returns true if hosted apps can specify this permission.
-  bool supports_hosted_apps() const {
-    return (type_restrictions_ & kTypeHostedApp) != 0;
-  }
-
-  // Returns true if packaged apps can specify this permission.
-  bool supports_packaged_apps() const {
-    return (type_restrictions_ & kTypePackagedApp) != 0;
-  }
-
-  // Returns true if platform apps can specify this permission.
-  bool supports_platform_apps() const {
-    return (type_restrictions_ & kTypePlatformApp) != 0;
-  }
-
   // Returns true if this permission can be added and removed via the
   // optional permissions extension API.
   bool supports_optional() const {
     return (flags_ & kFlagCannotBeOptional) == 0;
-  }
-
-  // Returns true if this permissions supports the specified |type|.
-  bool supports_type(TypeRestriction type) const {
-    return (type_restrictions_ & type) != 0;
   }
 
  private:
@@ -265,26 +198,18 @@ class ExtensionAPIPermission {
   // Register ALL the permissions!
   static void RegisterAllPermissions(ExtensionPermissionsInfo* info);
 
-  typedef std::set<std::string> ExtensionWhitelist;
-
   explicit ExtensionAPIPermission(
       ID id,
       const char* name,
       int l10n_message_id,
       ExtensionPermissionMessage::ID message_id,
-      int flags,
-      int type_restrictions);
-
-  // Adds |extension_id| to the whitelist for this permission.
-  void AddToWhitelist(const std::string& extension_id);
+      int flags);
 
   ID id_;
   const char* name_;
   int flags_;
-  int type_restrictions_;
   int l10n_message_id_;
   ExtensionPermissionMessage::ID message_id_;
-  ExtensionWhitelist whitelist_;
 };
 
 typedef std::set<ExtensionAPIPermission::ID> ExtensionAPIPermissionSet;
@@ -328,8 +253,7 @@ class ExtensionPermissionsInfo {
       const char* name,
       int l10n_message_id,
       ExtensionPermissionMessage::ID message_id,
-      int flags,
-      int type_restrictions);
+      int flags);
 
   // Maps permission ids to permissions.
   typedef std::map<ExtensionAPIPermission::ID, ExtensionAPIPermission*> IDMap;
@@ -438,10 +362,6 @@ class ExtensionPermissionSet
   // Returns ture if this permission set effectively represents full access
   // (e.g. native code).
   bool HasEffectiveFullAccess() const;
-
-  // Returns true if this permission set includes permissions that are
-  // restricted to internal extensions.
-  bool HasPrivatePermissions() const;
 
   // Returns true if |permissions| has a greater privilege level than this
   // permission set (e.g., this permission set has less permissions).

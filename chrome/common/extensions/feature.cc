@@ -6,8 +6,10 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace {
 
@@ -185,9 +187,24 @@ Feature::Availability Feature::IsAvailable(const std::string& extension_id,
                                            Context context,
                                            Platform platform,
                                            int manifest_version) {
-  if (!whitelist_.empty() &&
-      whitelist_.find(extension_id) == whitelist_.end()) {
-    return NOT_FOUND_IN_WHITELIST;
+  // Component extensions can access any feature.
+  if (location == COMPONENT_LOCATION)
+    return IS_AVAILABLE;
+
+  if (!whitelist_.empty()) {
+    if (whitelist_.find(extension_id) == whitelist_.end()) {
+      // TODO(aa): This is gross. There should be a better way to test the
+      // whitelist.
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (!command_line->HasSwitch(switches::kWhitelistedExtensionID))
+        return NOT_FOUND_IN_WHITELIST;
+
+      std::string whitelist_switch_value =
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kWhitelistedExtensionID);
+      if (extension_id != whitelist_switch_value)
+        return NOT_FOUND_IN_WHITELIST;
+    }
   }
 
   if (!extension_types_.empty() &&

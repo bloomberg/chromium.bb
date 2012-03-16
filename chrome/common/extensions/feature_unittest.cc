@@ -124,12 +124,21 @@ TEST(ExtensionFeatureTest, Context) {
 
 TEST(ExtensionFeatureTest, Location) {
   Feature feature;
+
+  // If the feature specifies "component" as its location, then only component
+  // extensions can access it.
   feature.set_location(Feature::COMPONENT_LOCATION);
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::COMPONENT_LOCATION,
       Feature::UNSPECIFIED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
   EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
+      Feature::UNSPECIFIED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
+
+  // But component extensions can access anything else, whatever their location.
+  feature.set_location(Feature::UNSPECIFIED_LOCATION);
+  EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailable(
+      "", Extension::TYPE_UNKNOWN, Feature::COMPONENT_LOCATION,
       Feature::UNSPECIFIED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
 }
 

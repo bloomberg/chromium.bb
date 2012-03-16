@@ -10,7 +10,7 @@
 #include "base/string_split.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/manifest_feature_provider.h"
+#include "chrome/common/extensions/simple_feature_provider.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
@@ -29,7 +29,7 @@ bool Manifest::ValidateManifest(string16* error) const {
   for (DictionaryValue::key_iterator key = value_->begin_keys();
        key != value_->end_keys(); ++key) {
     scoped_ptr<Feature> feature =
-        ManifestFeatureProvider::GetDefaultInstance()->GetFeature(*key);
+        SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key);
     if (!feature.get()) {
       // When validating the extension manifests, we ignore keys that are not
       // recognized for forward compatibility.
@@ -151,7 +151,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 
 bool Manifest::CanAccessKey(const std::string& key) const {
   scoped_ptr<Feature> feature =
-      ManifestFeatureProvider::GetDefaultInstance()->GetFeature(key);
+      SimpleFeatureProvider::GetManifestFeatures()->GetFeature(key);
   if (!feature.get())
     return false;
 

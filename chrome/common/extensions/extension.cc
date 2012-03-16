@@ -32,8 +32,10 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/feature.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/simple_feature_provider.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
@@ -3093,15 +3095,42 @@ bool Extension::ParsePermissions(const char* key,
         return false;
       }
 
+      // NOTE: We need to get the ExtensionAPIPermission before the Feature
+      // object because the feature system does not know about aliases.
       ExtensionAPIPermission* permission =
           ExtensionPermissionsInfo::GetInstance()->GetByName(permission_str);
+      if (permission) {
+        extensions::SimpleFeatureProvider* permission_features =
+            extensions::SimpleFeatureProvider::GetPermissionFeatures();
+        scoped_ptr<extensions::Feature> feature(
+            permission_features->GetFeature(permission->name()));
 
-      if (permission != NULL) {
-        if (CanSpecifyAPIPermission(permission, error))
-          api_permissions->insert(permission->id());
-        if (!error->empty())
-          return false;
-        continue;
+        // The feature should exist since we just got an ExtensionAPIPermission
+        // for it. The two systems should be updated together whenever a
+        // permission is added.
+        CHECK(feature.get());
+
+        extensions::Feature::Availability availability =
+            feature->IsAvailable(this);
+        if (availability != extensions::Feature::IS_AVAILABLE) {
+          // We special case hosted apps because some old versions of Chrome did
+          // not return errors here and we ended up with extensions in the store
+          // containing bad data: crbug.com/101993.
+          if (availability != extensions::Feature::INVALID_TYPE ||
+              !is_hosted_app()) {
+            *error = ASCIIToUTF16(feature->GetErrorMessage(availability));
+            return false;
+          }
+        }
+
+        if (permission->id() == ExtensionAPIPermission::kExperimental) {
+          if (!CanSpecifyExperimentalPermission()) {
+            *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
+            return false;
+          }
+        }
+
+        api_permissions->insert(permission->id());
       }
 
       // Check if it's a host pattern permission.
@@ -3306,73 +3335,6 @@ bool Extension::ShowConfigureContextMenus() const {
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
   return location() != Extension::COMPONENT;
-}
-
-bool Extension::CanSpecifyAPIPermission(
-    const ExtensionAPIPermission* permission,
-    string16* error) const {
-  if (location() == Extension::COMPONENT)
-    return true;
-  bool access_denied = false;
-  if (permission->HasWhitelist()) {
-    if (permission->IsWhitelisted(id()))
-      return true;
-    else
-      access_denied = true;
-  } else if (permission->is_component_only()) {
-    access_denied = true;
-  }
-
-  if (access_denied) {
-    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-        errors::kPermissionNotAllowed, permission->name());
-    return false;
-  }
-
-  if (permission->id() == ExtensionAPIPermission::kExperimental) {
-    if (!CanSpecifyExperimentalPermission()) {
-      *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
-      return false;
-    }
-  }
-
-  bool supports_type = false;
-  switch (GetType()) {
-    case TYPE_USER_SCRIPT:  // Pass through.
-    case TYPE_EXTENSION:
-      supports_type = permission->supports_extensions();
-      break;
-    case TYPE_HOSTED_APP:
-      supports_type = permission->supports_hosted_apps();
-      break;
-    case TYPE_PACKAGED_APP:
-      supports_type = permission->supports_packaged_apps();
-      break;
-    case TYPE_PLATFORM_APP:
-      supports_type = permission->supports_platform_apps();
-      break;
-    default:
-      supports_type = false;
-      break;
-  }
-
-  if (!supports_type) {
-    // We special case hosted apps because some old versions of Chrome did not
-    // return errors here and we ended up with extensions in the store
-    // containing bad data: crbug.com/101993.
-    //
-    // TODO(aa): Consider just being a lot looser when loading and installing
-    // extensions. We can be strict when packing and in development mode. Then
-    // we won't have to maintain all these tricky backward compat issues:
-    // crbug.com/102328.
-    if (!is_hosted_app() || creation_flags_ & STRICT_ERROR_CHECKS) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kPermissionNotAllowed, permission->name());
-    }
-    return false;
-  }
-
-  return true;
 }
 
 bool Extension::CanSpecifyExperimentalPermission() const {

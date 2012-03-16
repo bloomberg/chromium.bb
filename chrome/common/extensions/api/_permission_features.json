@@ -1,0 +1,190 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{
+  "appNotifications": {
+    "extension_types": ["packaged_app", "hosted_app"]
+  },
+  "background": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "bookmarks": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "browsingData": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "chromeAuthPrivate": {
+    "extension_types": ["extension", "packaged_app"],
+    // CloudPrint
+    "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
+  },
+  "chromePrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "whitelist": [
+      "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
+      "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
+      "fjcibdnjlbfnbfdjneajpipnlcppleek"   // Citrix Receiver Dev
+    ]
+  },
+  "chromeosInfoPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
+  "clipboardRead": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "clipboardWrite": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "contentSettings": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "contextMenus": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "cookies": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "debugger": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "devtools": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "experimental": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "fileBrowserHandler": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "fileBrowserPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
+  "geolocation": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "history": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "idle": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "input": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "inplies_full_url_access": true
+  },
+  "inputMethodPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "whitelist": [
+      "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
+      "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
+      "fjcibdnjlbfnbfdjneajpipnlcppleek",  // Citrix Receiver Dev
+      "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
+      "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
+    ]
+  },
+  "keybinding": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "managedMode": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "management": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "mediaPlayerPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
+  "metricsPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
+  "notifications": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "pageCapture": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "plugin": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "privacy": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "proxy": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "socket": {
+    "extension_types": ["platform_app"]
+  },
+  "storage": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "systemPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
+  "tabs": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "terminalPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "whitelist": [
+      "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
+      "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
+    ]
+  },
+  "tts": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "ttsEngine": {
+    "extension_types": ["extension", "packaged_app", "platform_app"]
+  },
+  "unlimitedStorage": {
+    "extension_types": [
+      "extension", "packaged_app", "hosted_app", "platform_app"
+    ]
+  },
+  "webNavigation": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "webSocketProxyPrivate": {
+    "extension_types": ["extension", "packaged_app"],
+    "whitelist": [
+      "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
+      "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
+      "fjcibdnjlbfnbfdjneajpipnlcppleek",  // Citrix Receiver Dev
+      "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
+      "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
+    ]
+  },
+  "webstorePrivate": {
+    "extension_types": ["extension", "packaged_app"],
+    "whitelist": [
+      "ahfgeienlihckogmohjhadlkjgocpleb",  // Web Store
+      "afchcafgojfnemjkcbhfekplkmjaldaa"   // Enterprise Web Store
+    ]
+  },
+  "webRequest": {
+    "extension_types": ["extension", "packaged_app"]
+  },
+  "webRequestBlocking": {
+    "extension_types": ["extension", "packaged_app"]
+  }
+}
