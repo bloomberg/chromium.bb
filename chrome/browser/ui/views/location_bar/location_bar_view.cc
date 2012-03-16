@@ -1039,7 +1039,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   WebContents* contents = GetWebContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
-    GURL url = browser()->GetSelectedWebContents()->GetURL();
+    GURL url = GURL(model_->GetText());
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {

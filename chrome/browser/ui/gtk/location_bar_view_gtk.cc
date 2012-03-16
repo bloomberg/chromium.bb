@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/first_run_bubble.h"
@@ -62,7 +61,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
-#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -674,7 +672,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   WebContents* contents = GetWebContents();
   if (!page_action_views_.empty() && contents) {
-    GURL url = browser()->GetSelectedWebContents()->GetURL();
+    GURL url = GURL(toolbar_model_->GetText());
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(
@@ -1438,9 +1436,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       page_action_(page_action),
       last_icon_pixbuf_(NULL),
       tracker_(this),
-      current_tab_id_(-1),
-      window_(NULL),
-      accel_group_(NULL),
       preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
@@ -1453,8 +1448,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
                    G_CALLBACK(&OnButtonPressedThunk), this);
   g_signal_connect_after(event_box_.get(), "expose-event",
                          G_CALLBACK(OnExposeEventThunk), this);
-  g_signal_connect(event_box_.get(), "realize",
-                   G_CALLBACK(OnRealizeThunk), this);
 
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
@@ -1484,8 +1477,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
 }
 
 LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
-  DisconnectPageActionAccelerator();
-
   image_.Destroy();
   event_box_.Destroy();
   for (PixbufMap::iterator iter = pixbufs_.begin(); iter != pixbufs_.end();
@@ -1602,14 +1593,6 @@ void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
   OnButtonPressed(widget(), &event);
 }
 
-void LocationBarViewGtk::PageActionViewGtk::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_WINDOW_CLOSED);
-  DisconnectPageActionAccelerator();
-}
-
 void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
     ExtensionAction* action) {
   ShowPopup(true);
@@ -1625,61 +1608,6 @@ bool LocationBarViewGtk::PageActionViewGtk::ShowPopup(bool devtools) {
       event_box_.get(),
       devtools);
   return true;
-}
-
-void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
-  const ExtensionSet* extensions = owner_->browser()->profile()->
-      GetExtensionService()->extensions();
-  const Extension* extension =
-      extensions->GetByID(page_action_->extension_id());
-  window_ = owner_->browser()->window()->GetNativeHandle();
-
-  // Iterate through all the keybindings and see if one is assigned to the
-  // pageAction.
-  const std::vector<Extension::ExtensionKeybinding>& commands =
-      extension->keybindings();
-  for (size_t i = 0; i < commands.size(); ++i) {
-    if (commands[i].command_name() !=
-        extension_manifest_values::kPageActionKeybindingEvent)
-      continue;
-
-    // Found the browser action shortcut command, register it.
-    keybinding_.reset(new ui::AcceleratorGtk(
-        commands[i].accelerator().key_code(),
-        commands[i].accelerator().IsShiftDown(),
-        commands[i].accelerator().IsCtrlDown(),
-        commands[i].accelerator().IsAltDown()));
-
-    accel_group_ = gtk_accel_group_new();
-    gtk_window_add_accel_group(window_, accel_group_);
-
-    gtk_accel_group_connect(
-        accel_group_,
-        keybinding_->GetGdkKeyCode(),
-        keybinding_->gdk_modifier_type(),
-        GtkAccelFlags(0),
-        g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
-
-    // Since we've added an accelerator, we'll need to unregister it before
-    // the window is closed, so we listen for the window being closed.
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_WINDOW_CLOSED,
-                   content::Source<GtkWindow>(window_));
-    break;
-  }
-}
-
-void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
-  if (accel_group_) {
-    gtk_accel_group_disconnect_key(
-        accel_group_,
-        keybinding_.get()->GetGdkKeyCode(),
-        static_cast<GdkModifierType>(keybinding_.get()->modifiers()));
-    gtk_window_remove_accel_group(window_, accel_group_);
-    g_object_unref(accel_group_);
-    accel_group_ = NULL;
-    keybinding_.reset(NULL);
-  }
 }
 
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
@@ -1730,24 +1658,4 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
   gtk_widget_get_allocation(widget, &allocation);
   page_action_->PaintBadge(&canvas, gfx::Rect(allocation), tab_id);
   return FALSE;
-}
-
-void LocationBarViewGtk::PageActionViewGtk::OnRealize(GtkWidget* widget) {
-  ConnectPageActionAccelerator();
-}
-
-// static
-gboolean LocationBarViewGtk::PageActionViewGtk::OnGtkAccelerator(
-    GtkAccelGroup* accel_group,
-    GObject* acceleratable,
-    guint keyval,
-    GdkModifierType modifier,
-    void* user_data) {
-  PageActionViewGtk* view = static_cast<PageActionViewGtk*>(user_data);
-  if (!gtk_widget_get_visible(view->widget()))
-    return FALSE;
-
-  GdkEventButton event = {};
-  event.button = 1;
-  return view->OnButtonPressed(view->widget(), &event);
 }
