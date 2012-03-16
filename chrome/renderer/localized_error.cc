@@ -419,7 +419,7 @@ DictionaryValue* GetStandardMenuItemsText() {
   standard_menu_items_text->SetString("settingsTitle",
       l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   standard_menu_items_text->SetString("advancedTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
+      l10n_util::GetStringUTF16(IDS_SETTINGS_SHOW_ADVANCED_SETTINGS));
   return standard_menu_items_text;
 }
 
