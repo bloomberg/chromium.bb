@@ -180,6 +180,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kForceCompositingMode)
   },
   {
+    "enable-threaded-compositing",
+    IDS_FLAGS_ENABLE_THREADED_COMPOSITING_NAME,
+    IDS_FLAGS_ENABLE_THREADED_COMPOSITING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableThreadedCompositing)
+  },
+  {
+    "enable-threaded-animation",
+    IDS_FLAGS_ENABLE_THREADED_ANIMATION_NAME,
+    IDS_FLAGS_ENABLE_THREADED_ANIMATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableThreadedAnimation)
+  },
+  {
     "composited-layer-borders",
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS,
     IDS_FLAGS_COMPOSITED_LAYER_BORDERS_DESCRIPTION,

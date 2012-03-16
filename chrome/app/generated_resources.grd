@@ -4908,6 +4908,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disables synchronization with the display's vertical refresh rate when GPU rendering. This allows frame rates to exceed
         60 hertz. While useful for benchmarking purposes, this also results in visual tearing during rapid screen updates.
       </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_COMPOSITING_NAME" desc="Name of the 'Enabled threaded compositing' lab.">
+        Enable threaded compositing
+      </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_COMPOSITING_DESCRIPTION" desc="Description of the 'Enable threaded compositing' lab.">
+        Uses a secondary thread to perform web page compositing. This allows smooth scrolling, even when the main thread is unresponsive.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_ANIMATION_NAME" desc="Name of the 'Enabled threaded animation' lab.">
+        Enable threaded animation
+      </message>
+      <message name="IDS_FLAGS_ENABLE_THREADED_ANIMATION_DESCRIPTION" desc="Description of the 'Enable threaded animation' lab.">
+        Uses a secondary thread to execute CSS animations. This allows smoother animations, even when the main thread is unresponsive.
+      </message>
       <message name="IDS_FLAGS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
         WebGL
       </message>
