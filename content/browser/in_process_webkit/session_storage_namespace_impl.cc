@@ -47,3 +47,4 @@ SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {
 }
 
 #endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+
