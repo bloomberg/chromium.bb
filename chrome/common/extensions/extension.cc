@@ -2865,11 +2865,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
   // We don't ned to validate because InitExtensionID already did that.
   manifest_->GetString(keys::kPublicKey, &public_key_);
 
-  // Initialize permissions with an empty, default permission set.
-  runtime_data_.SetActivePermissions(new ExtensionPermissionSet());
-  optional_permission_set_ = new ExtensionPermissionSet();
-  required_permission_set_ = new ExtensionPermissionSet();
-
   extension_url_ = Extension::GetBaseURLFromExtensionId(id());
 
   // Load App settings. LoadExtent at least has to be done before
