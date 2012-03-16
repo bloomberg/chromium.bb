@@ -11,16 +11,17 @@ class CppTypeGenerator(object):
   """Manages the types of properties and provides utilities for getting the
   C++ type out of a model.Property
   """
-  def __init__(self, root_namespace, namespace, cpp_namespace):
+  def __init__(self, root_namespace, namespace=None, cpp_namespace=None):
     """Creates a cpp_type_generator. The given root_namespace should be of the
     format extensions::api::sub. The generator will generate code suitable for
     use in the given namespace.
     """
     self._type_namespaces = {}
-    self._namespace = namespace
     self._root_namespace = root_namespace.split('::')
     self._cpp_namespaces = {}
-    self.AddNamespace(namespace, cpp_namespace)
+    if namespace and cpp_namespace:
+      self._namespace = namespace
+      self.AddNamespace(namespace, cpp_namespace)
 
   def AddNamespace(self, namespace, cpp_namespace):
     """Maps a model.Namespace to its C++ namespace name. All mappings are
