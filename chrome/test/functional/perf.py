@@ -98,7 +98,7 @@ class BasePerfTest(pyauto.PyUITest):
     Args:
       timeout: The longest time in seconds to wait before throwing an error.
       utilization: The CPU usage below which the system should be considered
-                   idle (between 0 and 1.0 independent of cores/hyperthreads).
+          idle (between 0 and 1.0 independent of cores/hyperthreads).
     """
     time_passed = 0.0
     fraction_non_idle_time = 1.0
@@ -180,8 +180,14 @@ class BasePerfTest(pyauto.PyUITest):
         std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
     return avg, std_dev
 
+  # TODO(dennisjeffrey): For all long-running perf results (lists of (x, y)
+  # tuples), make them incremental such that we always add the new tuples to
+  # the previous result, not just completely replace the previous result.  This
+  # change will reduce the total stdio output size of the perf tests.  Once this
+  # change is made, get rid of the |incremental_tuple| parameter in this
+  # function.
   def _OutputDataForStandaloneGraphing(self, graph_name, description, value,
-                                       units, units_x):
+                                       units, units_x, incremental_tuple=False):
     """Outputs perf measurement data to a local folder to be graphed.
 
     This function only applies to Chrome desktop, and assumes that environment
@@ -190,21 +196,27 @@ class BasePerfTest(pyauto.PyUITest):
 
     Args:
       graph_name: A string name for the graph associated with this performance
-                  value.
+          value.
       description: A string description of the performance value.  Should not
-                   include spaces.
+          include spaces.
       value: Either a single numeric value representing a performance
-             measurement, or else a list of (x, y) tuples representing one or
-             more long-running performance measurements, where 'x' is an x-axis
-             value (such as an iteration number) and 'y' is the corresponding
-             performance measurement.  If a list of tuples is given, then the
-             |units_x| argument must also be specified.
+          measurement, or else a list of (x, y) tuples representing one or more
+          long-running performance measurements, where 'x' is an x-axis value
+          (such as an iteration number) and 'y' is the corresponding performance
+          measurement.  If a list of tuples is given, then the |units_x|
+          argument must also be specified.
       units: A string representing the units of the performance measurement(s).
-             Should not include spaces.
+          Should not include spaces.
       units_x: A string representing the units of the x-axis values associated
-               with the performance measurements, such as 'iteration' if the x
-               values are iteration numbers.  If this argument is specified,
-               then the |value| argument must be a list of (x, y) tuples.
+          with the performance measurements, such as 'iteration' if the x values
+          are iteration numbers.  If this argument is specified, then the
+          |value| argument must be a list of (x, y) tuples.
+      incremental_tuple: A boolean indicating whether or not long-running
+          performance measurements in |value| are incremental or not.  If the
+          measurements are incremental, they are appended to existing
+          measurements already stored in data files.  If the measurements are
+          not incremental, they replace any existing measurements in the data
+          files.
     """
     # Update graphs.dat.
     existing_graphs = []
@@ -238,8 +250,16 @@ class BasePerfTest(pyauto.PyUITest):
       with open(data_file, 'r') as f:
         existing_lines = f.readlines()
     existing_lines = map(lambda x: x.strip(), existing_lines)
+
+    seen_key = graph_name + '|' + description
     if units_x:
       points = []
+      if incremental_tuple:
+        if seen_key in self._seen_graph_lines:
+          # We've added points previously for this graph line in the current
+          # test execution, so retrieve the original set of points specified in
+          # the most recent revision in the data file.
+          points = eval(existing_lines[0])['traces'][description]
       for point in value:
         points.append([str(point[0]), str(point[1])])
       new_traces = {
@@ -257,7 +277,6 @@ class BasePerfTest(pyauto.PyUITest):
       'rev': revision
     }
 
-    seen_key = graph_name + '|' + description
     if seen_key in self._seen_graph_lines:
       # Update results for the most recent revision.
       new_line['rev'] = int(eval(existing_lines[0])['rev'])
@@ -272,8 +291,11 @@ class BasePerfTest(pyauto.PyUITest):
       f.write('\n'.join(existing_lines))
     os.chmod(data_file, 0755)
 
+  # TODO(dennisjeffrey): Remove the |standalone_graphing_only| parameter once
+  # its use in perf_endure.py is no longer needed.
   def _OutputPerfGraphValue(self, description, value, units,
-                            graph_name='Default-Graph', units_x=None):
+                            graph_name='Default-Graph', units_x=None,
+                            standalone_graphing_only=False):
     """Outputs a performance value to have it graphed on the performance bots.
 
     The output format differs, depending on whether the current platform is
@@ -289,21 +311,23 @@ class BasePerfTest(pyauto.PyUITest):
 
     Args:
       description: A string description of the performance value.  Should not
-                   include spaces.
+          include spaces.
       value: Either a single numeric value representing a performance
-             measurement, or a list of (x, y) tuples representing one or
-             more long-running performance measurements, where 'x' is an x-axis
-             value (such as an iteration number) and 'y' is the corresponding
-             performance measurement.  If a list of tuples is given, the
-             |units_x| argument must also be specified.
+          measurement, or a list of (x, y) tuples representing one or more
+          long-running performance measurements, where 'x' is an x-axis value
+          (such as an iteration number) and 'y' is the corresponding performance
+          measurement.  If a list of tuples is given, the |units_x| argument
+          must also be specified.
       units: A string representing the units of the performance measurement(s).
-             Should not include spaces.
+          Should not include spaces.
       graph_name: A string name for the graph associated with this performance
-                  value.  Only used on Chrome desktop.
+          value.  Only used on Chrome desktop.
       units_x: A string representing the units of the x-axis values associated
-               with the performance measurements, such as 'iteration' if the x
-               values are iteration numbers.  If this argument is specified,
-               then the |value| argument must be a list of (x, y) tuples.
+          with the performance measurements, such as 'iteration' if the x values
+          are iteration numbers.  If this argument is specified, then the
+          |value| argument must be a list of (x, y) tuples.
+      standalone_graphing_only: A boolean indicating whether or not we should
+          only output data for standalone graphing.
     """
     if isinstance(value, list):
       assert units_x
@@ -329,19 +353,25 @@ class BasePerfTest(pyauto.PyUITest):
                                         self._PERF_OUTPUT_MARKER_POST)
         sys.stdout.flush()
     else:
-      if units_x:
-        # TODO(dennisjeffrey): Once changes to the Chrome graphing
-        # infrastructure are committed to support graphs for long-running perf
-        # tests (crosbug.com/21881), revise the output format in the following
-        # line if necessary.
-        pyauto_utils.PrintPerfResult(graph_name, description, value,
-                                     units + ' ' + units_x)
-      else:
-        pyauto_utils.PrintPerfResult(graph_name, description, value, units)
+      if not standalone_graphing_only:
+        if units_x:
+          # TODO(dennisjeffrey): Once changes to the Chrome graphing
+          # infrastructure are committed to support graphs for long-running perf
+          # tests (crosbug.com/21881), revise the output format in the following
+          # line if necessary.
+          pyauto_utils.PrintPerfResult(graph_name, description, value,
+                                       units + ' ' + units_x)
+        else:
+          pyauto_utils.PrintPerfResult(graph_name, description, value, units)
 
       if self._local_perf_dir:
-        self._OutputDataForStandaloneGraphing(
-            graph_name, description, value, units, units_x)
+        if 'Latency' in description:  # TODO(dennisjeffrey): Remove this hack.
+          self._OutputDataForStandaloneGraphing(
+              graph_name, description, value, units, units_x,
+              incremental_tuple=True)
+        else:
+          self._OutputDataForStandaloneGraphing(
+              graph_name, description, value, units, units_x)
 
   def _PrintSummaryResults(self, description, values, units,
                            graph_name='Default-Graph'):
@@ -357,7 +387,7 @@ class BasePerfTest(pyauto.PyUITest):
       values: A list of numeric value measurements.
       units: A string specifying the units for the specified measurements.
       graph_name: A string name for the graph associated with this performance
-                  value.  Only used on Chrome desktop.
+          value.  Only used on Chrome desktop.
     """
     logging.info('Overall results for: %s', description)
     if values:
@@ -379,7 +409,7 @@ class BasePerfTest(pyauto.PyUITest):
       description: A string description of the associated tab test.
       open_tab_command: A callable that will open a single tab.
       num_tabs: The number of tabs to open, i.e., the number of times to invoke
-                the |open_tab_command|.
+          the |open_tab_command|.
     """
     assert callable(open_tab_command)
 
@@ -410,7 +440,7 @@ class BasePerfTest(pyauto.PyUITest):
 
     Args:
       account_key: The string key associated with the test account login
-                   credentials to use.
+          credentials to use.
     """
     creds = self.GetPrivateInfo()[account_key]
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
@@ -979,10 +1009,10 @@ class WebGLTest(BasePerfTest):
 
     Args:
       url: The string URL that, once loaded, will run the WebGL demo (default
-           WebGL demo settings are used, since this test does not modify any
-           settings in the demo).
+          WebGL demo settings are used, since this test does not modify any
+          settings in the demo).
       description: A string description for this demo, used as a performance
-                   value description.  Should not contain any spaces.
+          value description.  Should not contain any spaces.
     """
     self.assertTrue(self.AppendTab(pyauto.GURL(url)),
                     msg='Failed to append tab for %s.' % description)
@@ -1138,7 +1168,7 @@ class FileUploadDownloadTest(BasePerfTest):
       Args:
         directory: A string directory path.
         orig_files: A list of strings representing the original set of files in
-                    the specified directory.
+            the specified directory.
       """
       downloads_to_remove = []
       if os.path.isdir(directory):
@@ -1394,10 +1424,10 @@ class LiveGamePerfTest(BasePerfTest):
     Args:
       url: The string URL of the gaming webapp to analyze.
       url_title_substring: A string that is expected to be a substring of the
-                           webpage title for the specified gaming webapp.  Used
-                           to verify that the webapp loads correctly.
+          webpage title for the specified gaming webapp.  Used to verify that
+          the webapp loads correctly.
       description: A string description for this game, used in the performance
-                   value description.  Should not contain any spaces.
+          value description.  Should not contain any spaces.
     """
     self.NavigateToURL(url)
     loaded_tab_title = self.GetActiveTabTitle()
@@ -1441,7 +1471,7 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     Args:
       unused_args: A dictionary of arguments for the current GET request.
-                   The arguments are ignored.
+          The arguments are ignored.
     """
     self.send_response(200)
     self.end_headers()
@@ -1451,8 +1481,8 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     Args:
       args: A dictionary of arguments for the current GET request.  Must
-            contain 'filename' and 'mb' keys that refer to the name of the
-            file to create and its desired size, respectively.
+          contain 'filename' and 'mb' keys that refer to the name of the file
+          to create and its desired size, respectively.
     """
     megabytes = None
     filename = None
@@ -1472,8 +1502,8 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     Args:
       args: A dictionary of arguments for the current GET request.  Must
-            contain a 'filename' key that refers to the name of the file
-            to delete, relative to the server's document root.
+          contain a 'filename' key that refers to the name of the file to
+          delete, relative to the server's document root.
     """
     filename = None
     try:
@@ -1496,8 +1526,7 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     Args:
       args: A dictionary of arguments for the current GET request.  Must
-            contain an 'mb' key that refers to the size of the data to
-            upload.
+          contain an 'mb' key that refers to the size of the data to upload.
     """
     megabytes = None
     try:
@@ -1548,7 +1577,7 @@ class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     Args:
       form: A dictionary containing posted form data, as returned by
-            urlparse.parse_qs().
+          urlparse.parse_qs().
     """
     upload_processed = False
     file_size = 0
