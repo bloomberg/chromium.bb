@@ -155,33 +155,33 @@ if CROSS_COMPILING
 	@echo Warning: cannot rebuild $@ when cross-compiling
 else
 .fncs.sgml: edit-sgml$(EXEEXT) $(srcdir)/func.sgml
-	-rm $@
-	$(AM_V_GEN) $(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$<' > $*.sgml
+	$(AM_V_GEN) $(RM) $@; \
+	$(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$*.fncs' > $*.sgml
 endif
 .sgml.txt: $(DOCS_DEPS)
-	-rm $@
-	$(AM_V_GEN) $(DOC2TXT) $<
+	$(AM_V_GEN) $(RM) $@; \
+	$(DOC2TXT) $*.sgml
 .sgml.pdf: $(DOCS_DEPS)
-	-rm $@
-	$(AM_V_GEN) $(DOC2PDF) $<
+	$(AM_V_GEN) $(RM) $@; \
+	$(DOC2PDF) $*.sgml
 .sgml.html: $(DOCS_DEPS)
-	-rm $@
-	$(AM_V_GEN) $(DOC2HTML) -u $< > $@
+	$(AM_V_GEN) $(RM) $@; \
+	$(DOC2HTML) -u $*.sgml > $@
 ##
 fonts-conf.5: local-fontconfig-user.sgml version.sgml confdir.sgml
-	-rm $@
-	$(AM_V_GEN) $(DOC2MAN) $< && \
+	$(AM_V_GEN) $(RM) $@; \
+	$(DOC2MAN) local-fontconfig-user.sgml && \
 	$(RM) manpage.*
 ##
 $(man3_MANS): func.refs
 func.refs: local-fontconfig-devel.sgml $(DOCS_DEPS)
-	-rm $@
+	$(AM_V_GEN) $(RM) $@; \
 	[ "x$(builddir)" != "x$(srcdir)" ] &&		\
 	for f in $(DOC_FUNCS_SGML); do			\
 		$(RM) $(builddir)/$$f || :;		\
 		$(LN_S) $(srcdir)/$$f $(builddir)/$$f;	\
-	done || :
-	$(AM_V_GEN) $(DOC2MAN) -o devel-man local-fontconfig-devel.sgml && \
+	done || :; \
+	$(DOC2MAN) -o devel-man local-fontconfig-devel.sgml && \
 	mv devel-man/manpage.refs func.refs &&	\
 	mv devel-man/*.3 . &&			\
 	$(RM) devel-man/manpage.* &&		\
@@ -191,8 +191,8 @@ confdir.sgml: $(srcdir)/confdir.sgml.in
 ##
 $(HTML_DIR)/*: $(HTML_DIR)
 $(HTML_DIR): local-fontconfig-devel.sgml $(DOCS_DEPS)
-	-rm -r $@
-	$(AM_V_GEN) $(DOC2HTML) -V '%use-id-as-filename%' -o $@ local-fontconfig-devel.sgml
+	$(AM_V_GEN) $(RM) -r $@; \
+	$(DOC2HTML) -V '%use-id-as-filename%' -o $@ local-fontconfig-devel.sgml
 local-fontconfig-user.sgml: $(srcdir)/fontconfig-user.sgml
 	$(AM_V_GEN) $(LN_S) $(srcdir)/fontconfig-user.sgml $@
 local-fontconfig-devel.sgml: $(srcdir)/fontconfig-devel.sgml
@@ -200,7 +200,7 @@ local-fontconfig-devel.sgml: $(srcdir)/fontconfig-devel.sgml
 #
 all-local: $(BUILT_DOCS) $(HTML_DIR)/*
 clean-local:
-	-rm -r $(HTML_DIR) devel-man
+	$(RM) -r $(HTML_DIR) devel-man
 else
 htmldoc_DATA += $(srcdir)/$(HTML_DIR)/*
 all-local:

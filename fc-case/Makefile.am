@@ -33,10 +33,8 @@ noinst_PROGRAMS=fc-case
 
 noinst_HEADERS=$(TARG)
 
-fc_case_SRCS= \
-	fc-case.c \
-	fccaseint.h \
-	fccaseread.c
+fc_case_SOURCES= \
+	fc-case.c
 
 CASEFOLDING=CaseFolding.txt
 SCASEFOLDING=${top_srcdir}/fc-case/CaseFolding.txt

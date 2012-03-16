@@ -120,12 +120,12 @@ uninstall-local:
 	if [ -f $(srcdir)/fonts.conf ]; then \
 	  if cmp -s $(srcdir)/fonts.conf $(DESTDIR)$(configdir)/fonts.conf; then \
 	     echo " uninstall standard $(DESTDIR)$(configdir)/fonts.conf"; \
-	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
+	     $(RM) $(DESTDIR)$(configdir)/fonts.conf; \
 	  fi; \
 	else if [ -f fonts.conf ]; then \
 	  if cmp -s fonts.conf $(DESTDIR)$(configdir)/fonts.conf; then \
 	     echo " uninstall standard $(DESTDIR)$(configdir)/fonts.conf"; \
-	     rm -f $(DESTDIR)$(configdir)/fonts.conf; \
+	     $(RM) $(DESTDIR)$(configdir)/fonts.conf; \
 	  fi; \
 	fi; fi
 
@@ -136,7 +136,7 @@ debuild-unsigned: debuild-dirs
 	(cd $(distdir)/debian && debuild -us -uc)
 
 debuild-dirs: distdir
-	rm -f $(PACKAGE)_$(VERSION).orig.tar.gz
-	rm -rf $(distdir).orig
+	$(RM) $(PACKAGE)_$(VERSION).orig.tar.gz
+	$(RM) -r $(distdir).orig
 	cp -a $(distdir) $(distdir).orig
-	rm -rf $(distdir).orig/debian
+	$(RM) -r $(distdir).orig/debian
