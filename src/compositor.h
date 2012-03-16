@@ -113,6 +113,8 @@ struct weston_input_device {
 	struct wl_list link;
 	uint32_t modifier_state;
 	int hw_cursor;
+	struct wl_surface *saved_kbd_focus;
+	struct wl_listener saved_kbd_focus_listener;
 
 	uint32_t num_tp;
 	struct wl_surface *touch_focus;
