@@ -13,7 +13,8 @@
     <includes>
       <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
            theme_resources_2x.grd. THIS MEANS THAT EACH ICON IN THIS FILE
-           MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.-->
+           MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.
+           YOU MUST ALSO REPLICATE ALL IFDEFS. -->
       <include name="IDR_APP_NOTIFICATION_NUB" file="nub.png" type="BINDATA" />
       <include name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" type="BINDATA" />
       <include name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" type="BINDATA" />
