@@ -1879,6 +1879,32 @@
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
 }
 {
+   bug_118573_a
+   Heapcheck:Leak
+   ...
+   fun:gdata::GDataFileSystem::UpdateRootWithDocumentFeed
+   fun:gdata::GDataFileSystem::UpdateDirectoryWithDocumentFeed
+   fun:gdata::GDataFileSystem::OnLoadRootFeed
+}
+{
+   bug_118573_b
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:std::basic_string::_Rep::_M_clone
+   fun:std::basic_string::reserve
+   fun:base::PrepareForUTF8Output
+   fun:UTF16ToUTF8
+   fun:UTF16ToUTF8
+   fun:StringValue
+   fun:base::Value::CreateStringValue
+   fun:base::JSONReader::DecodeString
+   fun:base::JSONReader::BuildValue
+   ...
+   fun:base::JSONReader::JsonToValue
+   fun:base::JSONReader::ReadAndReturnError
+   fun:gdata::GDataFileSystem::LoadRootFeedOnIOThreadPool
+}
+{
    bug_118575
    Heapcheck:Leak
    ...
