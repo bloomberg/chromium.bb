@@ -1557,12 +1557,6 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
 
 WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
     const WebGraphicsContext3D::Attributes& attributes) {
-  return createGraphicsContext3D(attributes, true);
-}
-
-WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes,
-    bool direct) {
   if (!webview())
     return NULL;
   // The WebGraphicsContext3DInProcessImpl code path is used for
@@ -1570,21 +1564,15 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-        attributes, direct);
+        attributes, true);
   } else {
-    int surface = direct ? surface_id() : 0;
-
     GURL url;
     if (webview()->mainFrame())
       url = GURL(webview()->mainFrame()->document().url());
 
-    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-    if (direct)
-      swap_client = AsWeakPtr();
-
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
-            surface, url, RenderThreadImpl::current(), swap_client));
+            surface_id(), url, RenderThreadImpl::current(), AsWeakPtr()));
 
     if (!context->Initialize(attributes))
       return NULL;
