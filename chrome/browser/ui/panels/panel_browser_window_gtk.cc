@@ -223,11 +223,14 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (!window() || was_active == IsActive())  // State didn't change.
     return;
 
-  if ((IsActive() || window_has_mouse_) &&
-      panel_->panel_strip()->type() != PanelStrip::IN_OVERFLOW) {
-    titlebar()->ShowPanelWrenchButton();
-  } else {
-    titlebar()->HidePanelWrenchButton();
+  PanelStrip* panel_strip = panel_->panel_strip();
+  if (panel_strip) {
+    if ((IsActive() || window_has_mouse_) &&
+        panel_strip->type() != PanelStrip::IN_OVERFLOW) {
+      titlebar()->ShowPanelWrenchButton();
+    } else {
+      titlebar()->HidePanelWrenchButton();
+    }
   }
 
   content::NotificationService::current()->Notify(
@@ -687,7 +690,11 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   CleanupDragDrop();
 
-  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+  PanelStrip* panel_strip = panel_->panel_strip();
+  if (!panel_strip)
+    return TRUE;
+
+  if (panel_strip->type() == PanelStrip::DOCKED &&
       panel_->expansion_state() == Panel::EXPANDED) {
     if (base::Time::Now() < disableMinimizeUntilTime_)
       return TRUE;
@@ -752,7 +759,11 @@ gboolean PanelBrowserWindowGtk::OnEnterNotify(GtkWidget* widget,
   if (event->detail == GDK_NOTIFY_INFERIOR)
     return FALSE;
 
-  if (window() && panel_->panel_strip()->type() != PanelStrip::IN_OVERFLOW)
+  PanelStrip* panel_strip = panel_->panel_strip();
+  if (!panel_strip)
+    return FALSE;
+
+  if (window() && panel_strip->type() != PanelStrip::IN_OVERFLOW)
     titlebar()->ShowPanelWrenchButton();
 
   window_has_mouse_ = true;

@@ -513,14 +513,18 @@ enum {
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
-  playingMinimizeAnimation_ = NO;
-  if (windowShim_->panel()->panel_strip()->type() == PanelStrip::DOCKED &&
-      windowShim_->panel()->expansion_state() == Panel::EXPANDED)
-    [self enableTabContentsViewAutosizing];
+  Panel* panel = windowShim_->panel();
+  PanelStrip* panelStrip = panel->panel_strip();
+  if (panelStrip) {
+    playingMinimizeAnimation_ = NO;
+    if (panelStrip->type() == PanelStrip::DOCKED &&
+        panel->expansion_state() == Panel::EXPANDED)
+      [self enableTabContentsViewAutosizing];
+  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(windowShim_->panel()),
+      content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
 }
 
@@ -539,7 +543,10 @@ enum {
 
 - (void)onTitlebarMouseClicked {
   Panel* panel = windowShim_->panel();
-  if (panel->panel_strip()->type() == PanelStrip::DOCKED &&
+  PanelStrip* panelStrip = panel->panel_strip();
+  if (!panelStrip)
+    return;
+  if (panelStrip->type() == PanelStrip::DOCKED &&
       panel->expansion_state() == Panel::EXPANDED) {
     if ([[self titlebarView] isDrawingAttention]) {
       // Do not minimize if the Panel is drawing attention since user

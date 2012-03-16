@@ -495,13 +495,16 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 }
 
 void PanelBrowserFrameView::Layout() {
+  PanelStrip* panel_strip = panel_browser_view_->panel()->panel_strip();
+  if (!panel_strip)
+    return;
+
   // Check if the width is only enough to show only the icon, or both icon
   // and title. Hide corresponding controls accordingly.
   bool show_close_button = true;
   bool show_settings_button = true;
   bool show_title_label = true;
-  if (panel_browser_view_->panel()->panel_strip()->type() ==
-          PanelStrip::IN_OVERFLOW) {
+  if (panel_strip->type() == PanelStrip::IN_OVERFLOW) {
     if (width() <= IconOnlyWidth()) {
       show_close_button = false;
       show_settings_button = false;
@@ -893,9 +896,12 @@ void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     bool focused, bool cursor_in_view) {
   DCHECK(has_settings_button_);
 
+  PanelStrip* panel_strip = panel_browser_view_->panel()->panel_strip();
+  if (!panel_strip)
+    return;
+
   // The settings button is not shown in the overflow state.
-  if (panel_browser_view_->panel()->panel_strip()->type() ==
-      PanelStrip::IN_OVERFLOW)
+  if (panel_strip->type() == PanelStrip::IN_OVERFLOW)
     return;
 
   bool is_settings_button_visible = focused || cursor_in_view;

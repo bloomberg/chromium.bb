@@ -498,10 +498,14 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
   if (mouse_dragging_state_ != NO_DRAGGING)
     return true;
 
+  PanelStrip* panel_strip = panel_->panel_strip();
+  if (!panel_strip)
+    return true;
+
   // Do not minimize the panel when we just clear the attention state. This is
   // a hack to prevent the panel from being minimized when the user clicks on
   // the title-bar to clear the attention.
-  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+  if (panel_strip->type() == PanelStrip::DOCKED &&
       panel_->expansion_state() == Panel::EXPANDED &&
       base::TimeTicks::Now() - attention_cleared_time_ <
       base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs)) {
@@ -513,7 +517,7 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
       base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
     return true;
 
-  if (panel_->panel_strip()->type() == PanelStrip::DOCKED &&
+  if (panel_strip->type() == PanelStrip::DOCKED &&
       panel_->expansion_state() == Panel::EXPANDED)
     panel_->SetExpansionState(Panel::MINIMIZED);
   else
