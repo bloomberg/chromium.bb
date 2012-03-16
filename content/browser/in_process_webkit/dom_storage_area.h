@@ -14,6 +14,11 @@
 #include "content/common/dom_storage_common.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is no longer applicable.
+#else
 
 class DOMStorageNamespace;
 // Only use on the WebKit thread.  DOMStorageNamespace manages our registration
@@ -77,4 +82,6 @@ struct hash<DOMStorageArea*> {
 }  // namespace __gnu_cxx
 #endif
 
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_AREA_H_
+

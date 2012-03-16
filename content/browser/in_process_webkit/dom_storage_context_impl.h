@@ -15,6 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+#include "content/browser/dom_storage/dom_storage_context_impl_new.h"
+#else
 
 class DOMStorageArea;
 class DOMStorageMessageFilter;
@@ -172,4 +178,6 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextImpl);
 };
 
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_IMPL_H_
+

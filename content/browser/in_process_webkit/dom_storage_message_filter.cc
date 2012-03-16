@@ -4,6 +4,11 @@
 
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+// content/browser/dom_storage/dom_storage_message_filter_new.h
+#else
+
 #include "base/bind.h"
 #include "base/nullable_string16.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
@@ -221,3 +226,6 @@ void DOMStorageMessageFilter::OnStorageEvent(
     ++cur;
   }
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+

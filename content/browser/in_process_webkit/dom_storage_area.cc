@@ -10,7 +10,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is no longer applicable.
+#else
 
 using WebKit::WebSecurityOrigin;
 using WebKit::WebStorageArea;
@@ -77,3 +82,6 @@ void DOMStorageArea::CreateWebStorageAreaIfNecessary() {
   if (!storage_area_.get())
     storage_area_.reset(owner_->CreateWebStorageArea(origin_));
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+

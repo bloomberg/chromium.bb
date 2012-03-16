@@ -130,12 +130,16 @@ void BrowserWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebKit::WebString& key, const WebKit::WebString& old_value,
     const WebKit::WebString& new_value, const WebKit::WebString& origin,
     const WebKit::WebURL& url, bool is_local_storage) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  NOTREACHED();
+#else
   // TODO(jorlow): Implement
   if (!is_local_storage)
     return;
 
   DOMStorageMessageFilter::DispatchStorageEvent(key, old_value, new_value,
                                                 origin, url, is_local_storage);
+#endif
 }
 
 WebKit::WebSharedWorkerRepository*

@@ -4,6 +4,10 @@
 
 #include "content/browser/in_process_webkit/dom_storage_namespace.h"
 
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is no longer applicable.
+#else
+
 #include "base/file_path.h"
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
@@ -108,3 +112,6 @@ void DOMStorageNamespace::CreateWebStorageNamespaceIfNecessary() {
         WebStorageNamespace::m_sessionStorageQuota));
   }
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+

@@ -4,6 +4,11 @@
 
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+// content/browser/dom_storage/dom_storage_context_impl_new.h
+#else
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -345,3 +350,6 @@ FilePath DOMStorageContextImpl::GetFilePath(const string16& origin_id) const {
   FilePath::StringType id = webkit_glue::WebStringToFilePathString(origin_id);
   return storage_dir.Append(id.append(kLocalStorageExtension));
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+

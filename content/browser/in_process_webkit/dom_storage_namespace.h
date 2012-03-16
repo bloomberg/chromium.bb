@@ -11,6 +11,11 @@
 #include "base/string16.h"
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is no longer applicable.
+#else
 
 class DOMStorageArea;
 class DOMStorageContextImpl;
@@ -81,4 +86,6 @@ class DOMStorageNamespace {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageNamespace);
 };
 
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
+

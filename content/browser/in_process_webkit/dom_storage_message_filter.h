@@ -12,6 +12,12 @@
 #include "content/browser/in_process_webkit/dom_storage_area.h"
 #include "content/common/dom_storage_common.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// This class is replaced by a new implementation in
+#include "content/browser/dom_storage/dom_storage_message_filter_new.h"
+#else
 
 class DOMStorageContextImpl;
 class GURL;
@@ -88,4 +94,6 @@ class DOMStorageMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);
 };
 
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_MESSAGE_FILTER_H_
+
