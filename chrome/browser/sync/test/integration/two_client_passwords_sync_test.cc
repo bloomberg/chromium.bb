@@ -226,8 +226,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
 
+// Disabled due to being temporarily obsolete while we change how passphrases
+// are handled. TODO(rsimha): re-enable once refactor complete.
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
+                       DISABLED_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
@@ -249,8 +251,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
+// Disabled due to being temporarily obsolete while we change how passphrases
+// are handled. TODO(rsimha): re-enable once refactor complete.
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetDifferentPassphraseAndThenSetupSync) {
+                       DISABLED_SetDifferentPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());

@@ -854,18 +854,17 @@ void ProfileSyncService::OnPassphraseRequired(
   passphrase_required_reason_ = reason;
 
   // First try supplying gaia password as the passphrase.
-  // TODO(atwilson): This logic seems odd here - we know what kind of passphrase
-  // is required (explicit/gaia) so we should not bother setting the wrong kind
-  // of passphrase - http://crbug.com/95269.
   if (!cached_passphrases_.gaia_passphrase.empty()) {
     std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
     cached_passphrases_.gaia_passphrase.clear();
     DVLOG(1) << "Attempting gaia passphrase.";
-    // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-    SetPassphrase(gaia_passphrase, IMPLICIT,
-                  (cached_passphrases_.user_provided_gaia ?
-                       USER_PROVIDED : INTERNAL));
-    return;
+    if (!backend_->IsUsingExplicitPassphrase()) {
+      // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
+      SetPassphrase(gaia_passphrase, IMPLICIT,
+                    (cached_passphrases_.user_provided_gaia ?
+                         USER_PROVIDED : INTERNAL));
+      return;
+    }
   }
 
   // If the above failed then try the custom passphrase the user might have
@@ -873,10 +872,12 @@ void ProfileSyncService::OnPassphraseRequired(
   if (!cached_passphrases_.explicit_passphrase.empty()) {
     std::string explicit_passphrase = cached_passphrases_.explicit_passphrase;
     cached_passphrases_.explicit_passphrase.clear();
-    DVLOG(1) << "Attempting explicit passphrase.";
-    // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-    SetPassphrase(explicit_passphrase, EXPLICIT, USER_PROVIDED);
-    return;
+    if (backend_->IsUsingExplicitPassphrase()) {
+      DVLOG(1) << "Attempting explicit passphrase.";
+      // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
+      SetPassphrase(explicit_passphrase, EXPLICIT, USER_PROVIDED);
+      return;
+    }
   }
 
   // If no passphrase is required (due to not having any encrypted data types
@@ -1332,6 +1333,13 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        PassphraseSource source) {
   DCHECK(source == USER_PROVIDED || type == IMPLICIT);
   if (ShouldPushChanges() || IsPassphraseRequired()) {
+    if (type == IMPLICIT && backend_->IsUsingExplicitPassphrase()) {
+      // This should only happen when you re-auth (or when you log in on
+      // ChromeOS).
+      DVLOG(1) << "Ignoring implicit passphrase, explicit passphrase already "
+               << "set.";
+      return;
+    }
     DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
              << " passphrase.";
     backend_->SetPassphrase(passphrase,
@@ -1459,8 +1467,8 @@ void ProfileSyncService::Observe(int type,
                !IsEncryptedDatatypeEnabled()));
 
       // Ensure we consume any cached gaia passphrase now that we've finished
-      // setting up. This will update the implicit passphrase if necessary,
-      // and do nothing if there's an explicit passphrase set.
+      // setting up. SetPassphrase will drop any implicit passphrases if an
+      // explicit passphrase has already been set, so this is safe.
       if (!cached_passphrases_.gaia_passphrase.empty()) {
         std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
         cached_passphrases_.gaia_passphrase.clear();
