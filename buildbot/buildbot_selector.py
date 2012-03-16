@@ -98,10 +98,8 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
     'lucid_64-newlib-arm_qemu-pnacl-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
-    'jaunty_32-newlib-arm_hw-pnacl-dbg':
+    'oneiric_32-newlib-arm_hw-pnacl-panda-dbg':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
-    'jaunty_32-newlib-arm_hw-pnacl-opt':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'lucid_64-newlib-x86_32-pnacl':
@@ -185,12 +183,7 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
-    # Pnacl scons trybots
-    'nacl-arm_opt':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
-    'nacl-arm_hw_opt':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
-    # Pnacl scons trybots
+    # Pnacl panda scons trybots
     'nacl-arm_opt_panda':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt_panda':
