@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,9 +71,19 @@ class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   BitmapPlatformDevice(const SkBitmap& other, BitmapPlatformDeviceData* data);
   virtual ~BitmapPlatformDevice();
 
+  // Constructs a device with size |width| * |height| with contents initialized
+  // to zero. |is_opaque| should be set if the caller knows the bitmap will be
+  // completely opaque and allows some optimizations.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
-  // This doesn't take ownership of |data|
+  // Performs the same construction as Create.
+  // Other ports require a separate construction routine because Create does not
+  // initialize the bitmap to 0.
+  static BitmapPlatformDevice* CreateAndClear(int width, int height,
+                                              bool is_opaque);
+
+  // This doesn't take ownership of |data|. If |data| is NULL, the contents
+  // of the device are initialized to 0.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       uint8_t* data);
 

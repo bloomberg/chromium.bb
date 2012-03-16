@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -447,26 +447,6 @@ class VectorCanvasTest : public ImageTest {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Actual tests
-
-TEST_F(VectorCanvasTest, Uninitialized) {
-  // Do a little mubadumba do get uninitialized stuff.
-  VectorCanvasTest::TearDown();
-
-  // The goal is not to verify that have the same uninitialized data.
-  compare_canvas_ = false;
-
-  context_ = new Context();
-  bitmap_ = new Bitmap(*context_, size_, size_);
-  vcanvas_ = new VectorCanvas(VectorPlatformDeviceEmf::CreateDevice(
-      size_, size_, true, context_->context()));
-  pcanvas_ = new PlatformCanvas(size_, size_, false);
-
-  // VectorCanvas default initialization is black.
-  // PlatformCanvas default initialization is almost white 0x01FFFEFD (invalid
-  // Skia color) in both Debug and Release. See magicTransparencyColor in
-  // platform_device.cc
-  EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("empty")));
-}
 
 TEST_F(VectorCanvasTest, BasicDrawing) {
   EXPECT_EQ(Image(*vcanvas_).PercentageDifferent(Image(*pcanvas_)), 0.)

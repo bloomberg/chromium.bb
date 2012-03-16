@@ -95,7 +95,7 @@ bool PlatformCanvas::initialize(int width,
                                int height,
                                bool is_opaque,
                                HANDLE shared_section) {
-  if (initializeWithDevice(BitmapPlatformDevice::create(width,
+  if (initializeWithDevice(BitmapPlatformDevice::Create(width,
                                                         height,
                                                         is_opaque,
                                                         shared_section)))

@@ -551,6 +551,7 @@ void CanvasSkia::DrawFadeTruncatingString(
   // Create a temporary bitmap to draw the gradient to.
   scoped_ptr<SkCanvas> gradient_canvas(skia::CreateBitmapCanvas(
       display_rect.width(), display_rect.height(), false));
+  gradient_canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
   {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas_);

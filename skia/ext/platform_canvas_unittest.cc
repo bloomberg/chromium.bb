@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,7 @@ class LayerSaver {
     bounds.set(SkIntToScalar(x_), SkIntToScalar(y_),
                SkIntToScalar(right()), SkIntToScalar(bottom()));
     canvas_.saveLayer(&bounds, NULL);
+    canvas.clear(SkColorSetARGB(0, 0, 0, 0));
   }
 
   ~LayerSaver() {

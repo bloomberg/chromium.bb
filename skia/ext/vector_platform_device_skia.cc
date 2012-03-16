@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,19 +41,9 @@ PlatformSurface VectorPlatformDeviceSkia::BeginPlatformPaint() {
   // and return the context from it, then layer on the raster data as an
   // image in EndPlatformPaint.
   DCHECK(raster_surface_ == NULL);
-#if defined(OS_WIN)
-  raster_surface_ = BitmapPlatformDevice::create(width(),
-                                                 height(),
-                                                 false, /* not opaque */
-                                                 NULL);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-  raster_surface_ = BitmapPlatformDevice::Create(width(),
-                                                 height(),
-                                                 false /* not opaque */);
-#endif
+  raster_surface_ = BitmapPlatformDevice::CreateAndClear(width(), height(),
+                                                         false);
   raster_surface_->unref();  // SkRefPtr and create both took a reference.
-
-  SkCanvas canvas(raster_surface_.get());
   return raster_surface_->BeginPlatformPaint();
 }
 

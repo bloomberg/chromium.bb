@@ -54,6 +54,12 @@ CanvasSkia::CanvasSkia(const gfx::Size& size, bool is_opaque)
     : owned_canvas_(new skia::PlatformCanvas(size.width(), size.height(),
                                              is_opaque)),
       canvas_(owned_canvas_.get()) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // skia::PlatformCanvas instances are initialized to 0 by Cairo on Linux, but
+  // uninitialized on Win and Mac.
+  if (!is_opaque)
+    owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
+#endif
 }
 
 CanvasSkia::CanvasSkia(const SkBitmap& bitmap, bool is_opaque)

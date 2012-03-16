@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,15 +32,26 @@ class SK_API BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   // be stored beyond this function. is_opaque should be set if the caller
   // knows the bitmap will be completely opaque and allows some optimizations.
   //
-  // The shared_section parameter is optional (pass NULL for default behavior).
-  // If shared_section is non-null, then it must be a handle to a file-mapping
-  // object returned by CreateFileMapping.  See CreateDIBSection for details.
-  static BitmapPlatformDevice* create(HDC screen_dc, int width, int height,
+  // The |shared_section| parameter is optional (pass NULL for default
+  // behavior). If |shared_section| is non-null, then it must be a handle to a
+  // file-mapping object returned by CreateFileMapping.  See CreateDIBSection
+  // for details. If |shared_section| is null, the bitmap backing store is not
+  // initialized.
+  static BitmapPlatformDevice* Create(HDC screen_dc, int width, int height,
                                       bool is_opaque, HANDLE shared_section);
 
   // This version is the same as above but will get the screen DC itself.
-  static BitmapPlatformDevice* create(int width, int height, bool is_opaque,
+  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       HANDLE shared_section);
+
+  // Create a BitmapPlatformDevice with no shared section. The bitmap is not
+  // initialized to 0.
+  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
+
+  // Creates a BitmapPlatformDevice instance respecting the parameters as above.
+  // If |is_opaque| is false, then the bitmap is initialzed to 0.
+  static BitmapPlatformDevice* CreateAndClear(int width, int height,
+                                              bool is_opaque);
 
   virtual ~BitmapPlatformDevice();
 

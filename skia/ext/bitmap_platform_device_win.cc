@@ -87,7 +87,7 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
 // that we can create the pixel data before calling the constructor. This is
 // required so that we can call the base class' constructor with the pixel
 // data.
-BitmapPlatformDevice* BitmapPlatformDevice::create(
+BitmapPlatformDevice* BitmapPlatformDevice::Create(
     HDC screen_dc,
     int width,
     int height,
@@ -128,18 +128,13 @@ BitmapPlatformDevice* BitmapPlatformDevice::create(
   bitmap.setPixels(data);
   bitmap.setIsOpaque(is_opaque);
 
-  // If we were given data, then don't clobber it!
-  if (!shared_section) {
-    if (is_opaque) {
 #ifndef NDEBUG
-      // To aid in finding bugs, we set the background color to something
-      // obviously wrong so it will be noticable when it is not cleared
-      bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green
+  // If we were given data, then don't clobber it!
+  if (!shared_section && is_opaque)
+    // To aid in finding bugs, we set the background color to something
+    // obviously wrong so it will be noticable when it is not cleared
+    bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green
 #endif
-    } else {
-      bitmap.eraseARGB(0, 0, 0, 0);
-    }
-  }
 
   // The device object will take ownership of the HBITMAP. The initial refcount
   // of the data object will be 1, which is what the constructor expects.
@@ -148,14 +143,31 @@ BitmapPlatformDevice* BitmapPlatformDevice::create(
 }
 
 // static
-BitmapPlatformDevice* BitmapPlatformDevice::create(int width,
+BitmapPlatformDevice* BitmapPlatformDevice::Create(int width,
                                                    int height,
                                                    bool is_opaque,
                                                    HANDLE shared_section) {
   HDC screen_dc = GetDC(NULL);
-  BitmapPlatformDevice* device = BitmapPlatformDevice::create(
+  BitmapPlatformDevice* device = BitmapPlatformDevice::Create(
       screen_dc, width, height, is_opaque, shared_section);
   ReleaseDC(NULL, screen_dc);
+  return device;
+}
+
+// static
+BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
+                                                   bool is_opaque) {
+  return Create(width, height, is_opaque, NULL);
+}
+
+// static
+BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
+                                                           int height,
+                                                           bool is_opaque) {
+  BitmapPlatformDevice* device = BitmapPlatformDevice::Create(width, height,
+                                                              is_opaque);
+  if (!is_opaque)
+    device->accessBitmap(true).eraseARGB(0, 0, 0, 0);
   return device;
 }
 
@@ -259,7 +271,9 @@ SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
     SkBitmap::Config config, int width, int height, bool isOpaque,
     Usage /*usage*/) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::create(width, height, isOpaque, NULL);
+  SkDevice* bitmap_device = BitmapPlatformDevice::CreateAndClear(width, height,
+                                                                 isOpaque);
+  return bitmap_device;
 }
 
 }  // namespace skia

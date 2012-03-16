@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,21 +21,25 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   return NULL;
 }
 
+BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
+                                                           int height,
+                                                           bool is_opaque) {
+  BitmapPlatformDevice* device = Create(width, height, is_opaque);
+  if (!is_opaque)
+    device->accessBitmap(true).eraseARGB(0, 0, 0, 0);
+  return device;
+}
+
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque,
                                                    uint8_t* data) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  if (data) {
+  if (data)
     bitmap.setPixels(data);
-  } else {
-    if (!bitmap.allocPixels())
-      return NULL;
-    // Follow the logic in SkCanvas::createDevice(), initialize the bitmap if it
-    // is not opaque.
-    if (!is_opaque)
-      bitmap.eraseARGB(0, 0, 0, 0);
-  }
+  else if (!bitmap.allocPixels())
+    return NULL;
+
   bitmap.setIsOpaque(is_opaque);
   return new BitmapPlatformDevice(bitmap);
 }

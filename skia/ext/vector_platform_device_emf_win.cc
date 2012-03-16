@@ -26,7 +26,7 @@ SkDevice* VectorPlatformDeviceEmf::CreateDevice(
     // EMF-based VectorDevice and have this device registers the drawing. When
     // playing back the device into a bitmap, do it at the printer's dpi instead
     // of the layout's dpi (which is much lower).
-    return BitmapPlatformDevice::create(width, height, is_opaque,
+    return BitmapPlatformDevice::Create(width, height, is_opaque,
                                         shared_section);
   }
 

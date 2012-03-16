@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,18 @@ namespace skia {
 // -----------------------------------------------------------------------------
 class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
  public:
+  // Construct a BitmapPlatformDevice. |is_opaque| should be set if the caller
+  // knows the bitmap will be completely opaque and allows some optimizations.
+  // The bitmap is not initialized.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
-  // This doesn't take ownership of |data|
+  // Construct a BitmapPlatformDevice, as above.
+  // If |is_opaque| is false, the bitmap is initialized to 0.
+  static BitmapPlatformDevice* CreateAndClear(int width, int height,
+                                              bool is_opaque);
+
+  // This doesn't take ownership of |data|. If |data| is null, the bitmap
+  // is not initialized to 0.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       uint8_t* data);
 
