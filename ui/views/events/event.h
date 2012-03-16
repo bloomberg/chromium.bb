@@ -343,6 +343,8 @@ class VIEWS_EXPORT KeyEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(KeyEvent);
 };
 
+class ScrollEvent;
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MouseWheelEvent class
@@ -360,6 +362,7 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
 #if defined(TOOLKIT_USES_GTK)
   explicit MouseWheelEvent(GdkEvent* gdk_event);
 #endif
+  explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
   // The amount to scroll. This is in multiples of kWheelDelta.
   int offset() const { return offset_; }

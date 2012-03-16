@@ -149,6 +149,12 @@ MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
 }
 #endif
 
+MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
+    : MouseEvent(scroll_event.native_event()),
+      offset_(scroll_event.y_offset()) {
+  set_type(ui::ET_MOUSEWHEEL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 

@@ -714,7 +714,12 @@ bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   }
   if (event->type() == ui::ET_SCROLL) {
     ScrollEvent scroll_event(static_cast<aura::ScrollEvent*>(event));
-    return delegate_->OnMouseEvent(scroll_event);
+    if (delegate_->OnMouseEvent(scroll_event))
+      return true;
+
+    // Convert unprocessed scroll events into wheel events.
+    MouseWheelEvent wheel_event(scroll_event);
+    return delegate_->OnMouseEvent(wheel_event);
   }
   MouseEvent mouse_event(event);
   if (tooltip_manager_.get())
