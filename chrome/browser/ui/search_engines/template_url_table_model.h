@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class TemplateURLTableModel : public ui::TableModel,
   void Remove(int index);
 
   // Adds a new entry at the specified index.
-  void Add(int index, TemplateURL* template_url);
+  void Add(int index, TemplateURL* turl);
 
   // Update the entry at the specified index.
   void ModifyTemplateURL(int index,
@@ -66,8 +66,8 @@ class TemplateURLTableModel : public ui::TableModel,
   // Reloads the icon at the specified index.
   void ReloadIcon(int index);
 
-  // Returns The TemplateURL at the specified index.
-  const TemplateURL& GetTemplateURL(int index);
+  // Returns the TemplateURL at the specified index.
+  const TemplateURL* GetTemplateURL(int index);
 
   // Returns the index of the TemplateURL, or -1 if it the TemplateURL is not
   // found.

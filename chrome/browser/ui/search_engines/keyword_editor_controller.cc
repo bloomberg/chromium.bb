@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,13 +67,12 @@ void KeywordEditorController::ModifyTemplateURL(const TemplateURL* template_url,
   }
 
   // Don't do anything if the entry didn't change.
-  if (template_url->short_name() == title &&
-      template_url->keyword() == keyword &&
+  if ((template_url->short_name() == title) &&
+      (template_url->keyword() == keyword) &&
       ((url.empty() && !template_url->url()) ||
        (!url.empty() && template_url->url() &&
-        template_url->url()->url() == url))) {
+        template_url->url()->url() == url)))
     return;
-  }
 
   table_model_->ModifyTemplateURL(index, title, keyword, url);
 
@@ -107,7 +106,7 @@ bool KeywordEditorController::loaded() const {
 }
 
 const TemplateURL* KeywordEditorController::GetTemplateURL(int index) const {
-  return &table_model_->GetTemplateURL(index);
+  return table_model_->GetTemplateURL(index);
 }
 
 TemplateURLService* KeywordEditorController::url_model() const {

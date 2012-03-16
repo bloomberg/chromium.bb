@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,20 +42,17 @@ bool EditSearchEngineController::IsURLValid(
   if (!template_ref.IsValid())
     return false;
 
-  if (!template_ref.SupportsReplacement()) {
-    // If this is the default search engine, there must be a search term
-    // placeholder.
-    if (template_url_ ==
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-        GetDefaultSearchProvider())
-      return false;
-    return GURL(url).is_valid();
-  }
+  // If this is going to be the default search engine, it must support
+  // replacement.
+  if (!template_ref.SupportsReplacement() &&
+      (template_url_ == TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetDefaultSearchProvider()))
+    return false;
 
   // If the url has a search term, replace it with a random string and make
   // sure the resulting URL is valid. We don't check the validity of the url
   // with the search term as that is not necessarily valid.
-  return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), ASCIIToUTF16("a"),
+  return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), ASCIIToUTF16("x"),
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())).is_valid();
 }
 
@@ -79,10 +76,9 @@ void EditSearchEngineController::AcceptAddOrEdit(
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
-  const TemplateURL* existing = template_url_service->GetTemplateURLForKeyword(
-      keyword_input);
-  if (existing &&
-      (!edit_keyword_delegate_ || existing != template_url_)) {
+  const TemplateURL* existing =
+      template_url_service->GetTemplateURLForKeyword(keyword_input);
+  if (existing && (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the
     // user edited the dialog, either automatically or by the user (if we're
     // confirming a JS addition, they could have the Options dialog open at the
@@ -109,10 +105,8 @@ void EditSearchEngineController::AcceptAddOrEdit(
     content::RecordAction(UserMetricsAction("KeywordEditor_AddKeywordJS"));
   } else {
     // Adding or modifying an entry via the Delegate.
-    edit_keyword_delegate_->OnEditedKeyword(template_url_,
-                                            title_input,
-                                            keyword_input,
-                                            url_string);
+    edit_keyword_delegate_->OnEditedKeyword(template_url_, title_input,
+                                            keyword_input, url_string);
   }
 }
 
@@ -138,15 +132,12 @@ std::string EditSearchEngineController::GetFixedUpURL(
   // we need to replace the search terms before testing for the scheme.
   TemplateURL t_url;
   t_url.SetURL(url, 0, 0);
-  std::string expanded_url =
-      t_url.url()->ReplaceSearchTerms(t_url, ASCIIToUTF16("x"), 0, string16());
+  std::string expanded_url(t_url.url()->ReplaceSearchTerms(t_url,
+      ASCIIToUTF16("x"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   url_parse::Parsed parts;
-  std::string scheme(
-      URLFixerUpper::SegmentURL(expanded_url, &parts));
-  if (!parts.scheme.is_valid()) {
-    scheme.append("://");
-    url.insert(0, scheme);
-  }
+  std::string scheme(URLFixerUpper::SegmentURL(expanded_url, &parts));
+  if (!parts.scheme.is_valid())
+    url.insert(0, scheme + "://");
 
   return url;
 }

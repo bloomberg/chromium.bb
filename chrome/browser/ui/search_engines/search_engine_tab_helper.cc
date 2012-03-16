@@ -29,6 +29,25 @@ bool IsFormSubmit(const NavigationEntry* entry) {
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
+string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry,
+                                            bool is_autodetected_provider) {
+  // Don't autogenerate keywords for pages that are the result of form
+  // submissions.
+  if (IsFormSubmit(entry))
+    return string16();
+
+  // We want to use the user typed URL if available since that represents what
+  // the user typed to get here, and fall back on the regular URL if not.
+  GURL url = entry->GetUserTypedURL();
+  if (!url.is_valid()) {
+    url = entry->GetURL();
+    if (!url.is_valid())
+      return string16();
+  }
+
+  return TemplateURLService::GenerateKeyword(url, is_autodetected_provider);
+}
+
 }  // namespace
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
@@ -89,45 +108,25 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       return;
   }
 
+  // If the current page is a form submit, find the last page that was not a
+  // form submit and use its url to generate the keyword from.
   const NavigationController& controller = web_contents()->GetController();
   const NavigationEntry* entry = controller.GetLastCommittedEntry();
-  DCHECK(entry);
-
-  const NavigationEntry* base_entry = entry;
-  if (IsFormSubmit(base_entry)) {
-    // If the current page is a form submit, find the last page that was not
-    // a form submit and use its url to generate the keyword from.
-    int index = controller.GetLastCommittedEntryIndex() - 1;
-    while (index >= 0 && IsFormSubmit(controller.GetEntryAtIndex(index)))
-      index--;
-    if (index >= 0)
-      base_entry = controller.GetEntryAtIndex(index);
-    else
-      base_entry = NULL;
-  }
-
-  // We want to use the user typed URL if available since that represents what
-  // the user typed to get here, and fall back on the regular URL if not.
-  if (!base_entry)
-    return;
-  GURL keyword_url = base_entry->GetUserTypedURL().is_valid() ?
-          base_entry->GetUserTypedURL() : base_entry->GetURL();
-  if (!keyword_url.is_valid())
+  for (int index = controller.GetLastCommittedEntryIndex();
+       (index > 0) && IsFormSubmit(entry);
+       entry = controller.GetEntryAtIndex(index))
+    --index;
+  if (IsFormSubmit(entry))
     return;
 
-  string16 keyword = TemplateURLService::GenerateKeyword(
-      keyword_url,
+  string16 keyword = GenerateKeywordFromNavigationEntry(entry,
       provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER);
 
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
-  profile->GetTemplateURLFetcher()->ScheduleDownload(
-      keyword,
-      doc_url,
-      base_entry->GetFavicon().url,
-      web_contents(),
-      new TemplateURLFetcherUICallbacks(this, web_contents()),
-      provider_type);
+  profile->GetTemplateURLFetcher()->ScheduleDownload(keyword, doc_url,
+      entry->GetFavicon().url, web_contents(),
+      new TemplateURLFetcherUICallbacks(this, web_contents()), provider_type);
 }
 
 void SearchEngineTabHelper::GenerateKeywordIfNecessary(
@@ -148,18 +147,8 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   //              happen in new tabs.
   if (last_index <= 0)
     return;
-  const NavigationEntry* previous_entry =
-      controller.GetEntryAtIndex(last_index - 1);
-  if (IsFormSubmit(previous_entry)) {
-    // Only generate a keyword if the previous page wasn't itself a form
-    // submit.
-    return;
-  }
-
-  GURL keyword_url = previous_entry->GetUserTypedURL().is_valid() ?
-          previous_entry->GetUserTypedURL() : previous_entry->GetURL();
-  string16 keyword =
-      TemplateURLService::GenerateKeyword(keyword_url, true);  // autodetected
+  string16 keyword(GenerateKeywordFromNavigationEntry(
+      controller.GetEntryAtIndex(last_index - 1), true));
   if (keyword.empty())
     return;
 
@@ -186,25 +175,23 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     }
     url_service->Remove(current_url);
   }
+
   TemplateURL* new_url = new TemplateURL();
-  new_url->set_keyword(keyword);
   new_url->set_short_name(keyword);
-  new_url->SetURL(url.spec(), 0, 0);
+  new_url->set_keyword(keyword);
+  new_url->set_safe_for_autoreplace(true);
   new_url->add_input_encoding(params.searchable_form_encoding);
   DCHECK(controller.GetLastCommittedEntry());
-  const GURL& favicon_url =
+  const GURL& current_favicon =
       controller.GetLastCommittedEntry()->GetFavicon().url;
-  if (favicon_url.is_valid()) {
-    new_url->SetFaviconURL(favicon_url);
-  } else {
-    // The favicon url isn't valid. This means there really isn't a favicon,
-    // or the favicon url wasn't obtained before the load started. This assumes
-    // the later.
-    // TODO(sky): Need a way to set the favicon that doesn't involve generating
-    // its url.
-    new_url->SetFaviconURL(
-        TemplateURL::GenerateFaviconURL(params.referrer.url));
-  }
-  new_url->set_safe_for_autoreplace(true);
+  // If the favicon url isn't valid, it means there really isn't a favicon, or
+  // the favicon url wasn't obtained before the load started. This assumes the
+  // latter.
+  // TODO(sky): Need a way to set the favicon that doesn't involve generating
+  // its url.
+  const GURL& favicon_url = current_favicon.is_valid() ?
+      current_favicon : TemplateURL::GenerateFaviconURL(params.referrer.url);
+  new_url->SetURL(url.spec(), 0, 0);
+  new_url->SetFaviconURL(favicon_url);
   url_service->Add(new_url);
 }
