@@ -26,6 +26,7 @@
 #include <linux/input.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <mtdev.h>
 
 #include "compositor.h"
 #include "evdev.h"
@@ -57,6 +58,7 @@ struct evdev_input_device {
 		int32_t x[MAX_SLOTS];
 		int32_t y[MAX_SLOTS];
 	} mt;
+	struct mtdev *mtdev;
 
 	struct {
 		int dx, dy;
@@ -320,13 +322,14 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 		device->type &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
+#define NUM_EVENTS 8
 
 static int
 evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
 	struct weston_compositor *ec;
 	struct evdev_input_device *device = data;
-	struct input_event ev[8], *e, *end;
+	struct input_event ev[NUM_EVENTS], *e, *end;
 	int len;
 	uint32_t time = 0;
 
@@ -334,7 +337,11 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	if (!ec->focus)
 		return 1;
 
-	len = read(fd, &ev, sizeof ev);
+	if (device->mtdev)
+		len = mtdev_get(device->mtdev, fd, ev, NUM_EVENTS) *
+		      sizeof (struct input_event);
+	else
+		len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
 		/* FIXME: call device_removed when errno is ENODEV. */;
 		return 1;
@@ -450,17 +457,25 @@ evdev_input_device_create(struct evdev_input *master,
 	device->master = master;
 	device->is_touchpad = 0;
 	device->is_mt = 0;
+	device->mtdev = NULL;
 	device->devnode = strdup(path);
 	device->mt.slot = -1;
 	device->rel.dx = 0;
 	device->rel.dy = 0;
 
-	device->fd = open(path, O_RDONLY);
+	/* if O_NONBLOCK is not set, mtdev_get() blocks */
+	device->fd = open(path, O_RDONLY | O_NONBLOCK);
 	if (device->fd < 0)
 		goto err0;
 
 	if (evdev_configure_device(device) == -1)
 		goto err1;
+
+	if (device->is_mt) {
+		device->mtdev = mtdev_new_open(device->fd);
+		if (!device->mtdev)
+			fprintf(stderr, "mtdev failed to open for %s\n", path);
+	}
 
 	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
 					      WL_EVENT_READABLE,
@@ -511,6 +526,8 @@ device_removed(struct udev_device *udev_device, struct evdev_input *master)
 		if (!strcmp(device->devnode, devnode)) {
 			wl_event_source_remove(device->source);
 			wl_list_remove(&device->link);
+			if (device->mtdev)
+				mtdev_close_delete(device->mtdev);
 			close(device->fd);
 			free(device->devnode);
 			free(device);
