@@ -397,7 +397,6 @@ IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFaviconsImportGroup,
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyPasswordFormReady,
                      webkit::forms::PasswordForm)
 
-IPC_MESSAGE_CONTROL3(ProfileImportProcessHostMsg_NotifyKeywordsReady,
+IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                      std::vector<TemplateURL>,
-                     int,  /* default keyword index */
                      bool  /* unique on host and path */)

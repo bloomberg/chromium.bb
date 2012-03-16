@@ -61,17 +61,15 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
                             int visit_source);
   void OnHomePageImportReady(const GURL& home_page);
   void OnBookmarksImportStart(const string16& first_folder_name,
-                                      size_t total_bookmarks_count);
+                              size_t total_bookmarks_count);
   void OnBookmarksImportGroup(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks_group);
   void OnFaviconsImportStart(size_t total_favicons_count);
   void OnFaviconsImportGroup(
       const std::vector<history::ImportedFaviconUsage>& favicons_group);
   void OnPasswordFormImportReady(const webkit::forms::PasswordForm& form);
-  void OnKeywordsImportReady(
-      const std::vector<TemplateURL>& template_urls,
-      int default_keyword_index,
-      bool unique_on_host_and_path);
+  void OnKeywordsImportReady(const std::vector<TemplateURL>& template_urls,
+                             bool unique_on_host_and_path);
 
  private:
   // Notifies the importerhost that import has finished, and calls Release().

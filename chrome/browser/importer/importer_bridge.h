@@ -39,7 +39,6 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
                                history::VisitSource visit_source) = 0;
 
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
-                           int default_keyword_index,
                            bool unique_on_host_and_path) = 0;
 
   virtual void SetPasswordForm(const webkit::forms::PasswordForm& form) = 0;

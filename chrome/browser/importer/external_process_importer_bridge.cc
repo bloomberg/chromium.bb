@@ -104,14 +104,13 @@ void ExternalProcessImporterBridge::SetHistoryItems(
 
 void ExternalProcessImporterBridge::SetKeywords(
     const std::vector<TemplateURL*>& template_urls,
-    int default_keyword_index,
     bool unique_on_host_and_path) {
   std::vector<TemplateURL> urls;
   for (size_t i = 0; i < template_urls.size(); ++i) {
     urls.push_back(*template_urls[i]);
   }
   Send(new ProfileImportProcessHostMsg_NotifyKeywordsReady(urls,
-      default_keyword_index, unique_on_host_and_path));
+      unique_on_host_and_path));
 }
 
 void ExternalProcessImporterBridge::SetPasswordForm(

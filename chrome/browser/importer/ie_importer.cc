@@ -551,19 +551,18 @@ void IEImporter::ImportSearchEngines() {
   // Software\Microsoft\Internet Explorer\SearchScopes
   // Each key represents a search engine. The URL value contains the URL and
   // the DisplayName the name.
-  std::map<std::string, TemplateURL*> search_engines_map;
-  base::win::RegistryKeyIterator key_iterator(HKEY_CURRENT_USER,
-                                              kSearchScopePath);
-  while (key_iterator.Valid()) {
+  typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
+  SearchEnginesMap search_engines_map;
+  for (base::win::RegistryKeyIterator key_iter(HKEY_CURRENT_USER,
+       kSearchScopePath); key_iter.Valid(); ++key_iter) {
     string16 sub_key_name = kSearchScopePath;
-    sub_key_name.append(L"\\").append(key_iterator.Name());
+    sub_key_name.append(L"\\").append(key_iter.Name());
     base::win::RegKey sub_key(HKEY_CURRENT_USER, sub_key_name.c_str(),
                               KEY_READ);
     string16 wide_url;
     if ((sub_key.ReadValue(L"URL", &wide_url) != ERROR_SUCCESS) ||
         wide_url.empty()) {
-      VLOG(1) << "No URL for IE search engine at " << key_iterator.Name();
-      ++key_iterator;
+      VLOG(1) << "No URL for IE search engine at " << key_iter.Name();
       continue;
     }
     // For the name, we try the default value first (as Live Search uses a
@@ -574,40 +573,36 @@ void IEImporter::ImportSearchEngines() {
       // Try the displayable name.
       if ((sub_key.ReadValue(L"DisplayName", &name) != ERROR_SUCCESS) ||
           name.empty()) {
-        VLOG(1) << "No name for IE search engine at " << key_iterator.Name();
-        ++key_iterator;
+        VLOG(1) << "No name for IE search engine at " << key_iter.Name();
         continue;
       }
     }
 
     std::string url(WideToUTF8(wide_url));
-    std::map<std::string, TemplateURL*>::iterator t_iter =
-        search_engines_map.find(url);
-    TemplateURL* template_url =
-        (t_iter != search_engines_map.end()) ? t_iter->second : NULL;
-    if (!template_url) {
+    SearchEnginesMap::iterator t_iter = search_engines_map.find(url);
+    if (t_iter == search_engines_map.end()) {
       // First time we see that URL.
-      template_url = new TemplateURL();
-      template_url->set_short_name(name);
-      template_url->SetURL(url, 0, 0);
-      // Give this a keyword to facilitate tab-to-search, if possible.
-      GURL gurl = GURL(url);
-      template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
-                                                                    false));
-      template_url->set_show_in_default_list(true);
-      search_engines_map[url] = template_url;
+      GURL gurl(url);
+      if (gurl.is_valid()) {
+        TemplateURL* template_url = new TemplateURL();
+        template_url->set_short_name(name);
+        template_url->SetURL(url, 0, 0);
+        // Give this a keyword to facilitate tab-to-search, if possible.
+        template_url->set_keyword(TemplateURLService::GenerateKeyword(gurl,
+                                                                      false));
+        template_url->set_show_in_default_list(true);
+        search_engines_map.insert(std::make_pair(url, template_url));
+      }
     }
-    ++key_iterator;
   }
 
   // ProfileWriter::AddKeywords() requires a vector and we have a map.
-  std::map<std::string, TemplateURL*>::iterator i;
   std::vector<TemplateURL*> search_engines;
-  for (i = search_engines_map.begin(); i != search_engines_map.end(); ++i)
+  for (SearchEnginesMap::iterator i = search_engines_map.begin();
+       i != search_engines_map.end(); ++i)
     search_engines.push_back(i->second);
 
-  // Import the list of search engines, but do not override the default.
-  bridge_->SetKeywords(search_engines, -1 /*default_keyword_index*/, true);
+  bridge_->SetKeywords(search_engines, true);
 }
 
 void IEImporter::ImportHomepage() {

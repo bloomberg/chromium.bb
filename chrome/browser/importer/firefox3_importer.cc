@@ -288,11 +288,10 @@ void Firefox3Importer::ImportBookmarks() {
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
-  if (!template_urls.empty() && !cancelled()) {
-    bridge_->SetKeywords(template_urls, -1, false);
-  } else {
+  if (!template_urls.empty() && !cancelled())
+    bridge_->SetKeywords(template_urls, false);
+  else
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
-  }
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFaviconUsage> favicons;
     LoadFavicons(&db, favicon_map, &favicons);
@@ -339,8 +338,7 @@ void Firefox3Importer::ImportSearchEngines() {
   std::vector<TemplateURL*> search_engines;
   ParseSearchEnginesFromXMLFiles(files, &search_engines);
 
-  // Import the list of search engines, but do not override the default.
-  bridge_->SetKeywords(search_engines, -1 /*default_keyword_index*/, true);
+  bridge_->SetKeywords(search_engines, true);
 }
 
 void Firefox3Importer::ImportHomepage() {

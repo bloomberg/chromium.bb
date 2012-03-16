@@ -64,13 +64,10 @@ void InProcessImporterBridge::SetHistoryItems(
 
 void InProcessImporterBridge::SetKeywords(
     const std::vector<TemplateURL*>& template_urls,
-    int default_keyword_index,
     bool unique_on_host_and_path) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &ProfileWriter::AddKeywords, writer_, template_urls,
-          default_keyword_index, unique_on_host_and_path));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ProfileWriter::AddKeywords, writer_, template_urls,
+                 unique_on_host_and_path));
 }
 
 void InProcessImporterBridge::SetPasswordForm(

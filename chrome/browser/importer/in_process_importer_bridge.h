@@ -41,7 +41,6 @@ class InProcessImporterBridge : public ImporterBridge {
                                history::VisitSource visit_source) OVERRIDE;
 
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
-                           int default_keyword_index,
                            bool unique_on_host_and_path) OVERRIDE;
 
   virtual void SetPasswordForm(

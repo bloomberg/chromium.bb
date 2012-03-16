@@ -261,9 +261,8 @@ static std::string BuildHostPathKey(const TemplateURL* t_url,
 
     if (t_url->url()->SupportsReplacement()) {
       return HostPathKeyForURL(GURL(
-          t_url->url()->ReplaceSearchTerms(
-          *t_url, ASCIIToUTF16("random string"),
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
+          t_url->url()->ReplaceSearchTerms(*t_url, ASCIIToUTF16("x"),
+              TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())));
     }
   }
   return std::string();
@@ -271,9 +270,10 @@ static std::string BuildHostPathKey(const TemplateURL* t_url,
 
 // Builds a set that contains an entry of the host+path for each TemplateURL in
 // the TemplateURLService that has a valid search url.
-static void BuildHostPathMap(const TemplateURLService& model,
+static void BuildHostPathMap(TemplateURLService* model,
                              HostPathMap* host_path_map) {
-  std::vector<const TemplateURL*> template_urls = model.GetTemplateURLs();
+  TemplateURLService::TemplateURLVector template_urls =
+      model->GetTemplateURLs();
   for (size_t i = 0; i < template_urls.size(); ++i) {
     const std::string host_path = BuildHostPathKey(template_urls[i], false);
     if (!host_path.empty()) {
@@ -293,31 +293,21 @@ static void BuildHostPathMap(const TemplateURLService& model,
 }
 
 void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
-                                int default_keyword_index,
                                 bool unique_on_host_and_path) {
   TemplateURLService* model =
       TemplateURLServiceFactory::GetForProfile(profile_);
   HostPathMap host_path_map;
   if (unique_on_host_and_path)
-    BuildHostPathMap(*model, &host_path_map);
+    BuildHostPathMap(model, &host_path_map);
 
   for (std::vector<TemplateURL*>::const_iterator i = template_urls.begin();
        i != template_urls.end(); ++i) {
-    TemplateURL* t_url = *i;
-    bool default_keyword =
-        default_keyword_index >= 0 &&
-        (i - template_urls.begin() == default_keyword_index);
+    scoped_ptr<TemplateURL> t_url(*i);
 
     // TemplateURLService requires keywords to be unique. If there is already a
     // TemplateURL with this keyword, don't import it again.
-    const TemplateURL* turl_with_keyword =
-        model->GetTemplateURLForKeyword(t_url->keyword());
-    if (turl_with_keyword != NULL) {
-      if (default_keyword)
-        model->SetDefaultSearchProvider(turl_with_keyword);
-      delete t_url;
+    if (model->GetTemplateURLForKeyword(t_url->keyword()) != NULL)
       continue;
-    }
 
     // For search engines if there is already a keyword with the same
     // host+path, we don't import it. This is done to avoid both duplicate
@@ -325,27 +315,13 @@ void ProfileWriter::AddKeywords(const std::vector<TemplateURL*>& template_urls,
     // sure the search engines we provide aren't replaced by those from the
     // imported browser.
     if (unique_on_host_and_path &&
-        host_path_map.find(
-            BuildHostPathKey(t_url, true)) != host_path_map.end()) {
-      if (default_keyword) {
-        const TemplateURL* turl_with_host_path =
-            host_path_map[BuildHostPathKey(t_url, true)];
-        if (turl_with_host_path)
-          model->SetDefaultSearchProvider(turl_with_host_path);
-        else
-          NOTREACHED();  // BuildHostPathMap should only insert non-null values.
-      }
-      delete t_url;
+        (host_path_map.find(BuildHostPathKey(t_url.get(), true)) !=
+            host_path_map.end()))
       continue;
-    }
-    if (t_url->url() && t_url->url()->IsValid()) {
-      model->Add(t_url);
-      if (default_keyword && TemplateURL::SupportsReplacement(t_url))
-        model->SetDefaultSearchProvider(t_url);
-    } else {
-      // Don't add invalid TemplateURLs to the model.
-      delete t_url;
-    }
+
+    // Only add valid TemplateURLs to the model.
+    if (t_url->url() && t_url->url()->IsValid())
+      model->Add(t_url.release());
   }
 }
 

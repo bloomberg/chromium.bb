@@ -182,7 +182,6 @@ class FirefoxObserver : public ProfileWriter,
   }
 
   virtual void AddKeywords(const std::vector<TemplateURL*>& template_urls,
-                           int default_keyword_index,
                            bool unique_on_host_and_path) {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
@@ -201,7 +200,6 @@ class FirefoxObserver : public ProfileWriter,
       ++keyword_count_;
     }
 
-    EXPECT_EQ(-1, default_keyword_index);
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
@@ -336,7 +334,6 @@ class Firefox3Observer : public ProfileWriter,
   }
 
   void AddKeywords(const std::vector<TemplateURL*>& template_urls,
-                   int default_keyword_index,
                    bool unique_on_host_and_path) {
     for (size_t i = 0; i < template_urls.size(); ++i) {
       // The order might not be deterministic, look in the expected list for
@@ -355,7 +352,6 @@ class Firefox3Observer : public ProfileWriter,
       ++keyword_count_;
     }
 
-    EXPECT_EQ(-1, default_keyword_index);
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
 
@@ -508,7 +504,7 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
   FFUnitTestDecryptorProxy decryptor_proxy;
   ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
+  ASSERT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
   EXPECT_EQ(ASCIIToUTF16("hello"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECBJ"
                               "M63MpT9rtBAjMCm7qo/EhlA=="));
@@ -533,7 +529,7 @@ TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
   FFUnitTestDecryptorProxy decryptor_proxy;
   ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
 
-  EXPECT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
+  ASSERT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
   EXPECT_EQ(ASCIIToUTF16("hello"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECKa"
                               "jtRg4qFSHBAhv9luFkXgDJA=="));

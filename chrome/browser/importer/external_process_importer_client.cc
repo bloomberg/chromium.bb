@@ -291,7 +291,7 @@ void ExternalProcessImporterClient::OnPasswordFormImportReady(
 
 void ExternalProcessImporterClient::OnKeywordsImportReady(
     const std::vector<TemplateURL>& template_urls,
-        int default_keyword_index, bool unique_on_host_and_path) {
+    bool unique_on_host_and_path) {
   if (cancelled_)
     return;
 
@@ -303,6 +303,5 @@ void ExternalProcessImporterClient::OnKeywordsImportReady(
        ++iter) {
     template_url_vec.push_back(new TemplateURL(*iter));
   }
-  bridge_->SetKeywords(template_url_vec, default_keyword_index,
-                       unique_on_host_and_path);
+  bridge_->SetKeywords(template_url_vec, unique_on_host_and_path);
 }
