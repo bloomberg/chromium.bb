@@ -1992,6 +1992,7 @@
         'browser/ui/webui/web_ui_unittest.cc',
         'browser/ui/window_sizer_unittest.cc',
         'browser/ui/window_snapshot/window_snapshot_mac_unittest.mm',
+        'browser/chrome_to_mobile_service_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/visitedlink/visitedlink_unittest.cc',
         'browser/web_applications/web_app_mac_unittest.mm',

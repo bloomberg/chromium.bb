@@ -17,6 +17,8 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -29,6 +31,7 @@ class Profile;
 // The mobile list updates regularly, and explicitly by RequestMobileListUpdate.
 class ChromeToMobileService : public ProfileKeyedService,
                               public content::URLFetcherDelegate,
+                              public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer {
  public:
   class Observer {
@@ -66,13 +69,6 @@ class ChromeToMobileService : public ProfileKeyedService,
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();
 
-  // content::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
-
-  // OAuth2AccessTokenConsumer methods.
-  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
   // Get the list of mobile devices.
   const std::vector<base::DictionaryValue*>& mobiles() { return mobiles_; }
 
@@ -87,6 +83,18 @@ class ChromeToMobileService : public ProfileKeyedService,
                     const FilePath& snapshot,
                     base::WeakPtr<Observer> observer);
 
+  // content::URLFetcherDelegate method.
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+
+  // content::NotificationObserver method.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // OAuth2AccessTokenConsumer methods.
+  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
  private:
   // Utility function to initialize the ScopedTempDir.
   void CreateUniqueTempDir();
@@ -94,7 +102,10 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Utility function to create URLFetcher requests.
   content::URLFetcher* CreateRequest(const RequestData& data);
 
-  void RequestAuth();
+  // Send the OAuth2AccessTokenFetcher request; virtual for unit test mocking.
+  virtual void RefreshAccessToken();
+
+  // Send the cloud print URLFetcher search request.
   void RequestSearch();
 
   void HandleSearchResponse();
@@ -102,8 +113,12 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   Profile* profile_;
 
-  // A utility class for accessing the cloud print service.
+  // Used to recieve TokenService notifications for GaiaOAuth2LoginRefreshToken.
+  content::NotificationRegistrar registrar_;
+
+  // Cloud print helper class and auth token.
   scoped_ptr<CloudPrintURL> cloud_print_url_;
+  std::string access_token_;
 
   // The list of mobile devices retrieved from the cloud print service.
   std::vector<base::DictionaryValue*> mobiles_;
@@ -116,12 +131,8 @@ class ChromeToMobileService : public ProfileKeyedService,
       RequestObserverMap;
   RequestObserverMap request_observer_map_;
 
-  // The OAuth2 token and retry count.
-  std::string oauth2_token_;
-  size_t oauth2_retry_count_;
-
   // The pending URL requests.
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_request_;
+  scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
   scoped_ptr<content::URLFetcher> search_request_;
 
   // A timer for authentication retries and mobile device list updates.

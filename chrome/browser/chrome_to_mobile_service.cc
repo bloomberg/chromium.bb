@@ -16,11 +16,15 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/common/guid.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
@@ -32,14 +36,11 @@ namespace {
 // The maximum number of retries for the URLFetcher requests.
 size_t kMaxRetries = 10;
 
-// Seconds between automatically retrying authentication (on failure).
-int kAuthRetryDelay = 30;
+// The number of seconds between automated URLFetcher requests.
+size_t kRetryDelay = 300;
 
-// Seconds between automatically updating the mobile device list.
-int kAutoSearchRetryDelay = 300;
-
-// The cloud print Oath2 scope and 'printer' type of compatible mobile devices.
-const char kOAuth2Scope[] = "https://www.googleapis.com/auth/cloudprint";
+// The cloud print OAuth2 scope and 'printer' type of compatible mobile devices.
+const char kOAuthScope[] = "https://www.googleapis.com/auth/cloudprint";
 const char kTypeAndroidChromeSnapshot[] = "ANDROID_CHROME_SNAPSHOT";
 
 // The types of Chrome To Mobile requests sent to the cloud print service.
@@ -136,45 +137,26 @@ ChromeToMobileService::RequestData::~RequestData() {}
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
     : profile_(profile),
-      cloud_print_url_(new CloudPrintURL(profile)),
-      oauth2_retry_count_(0) {
-  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&ChromeToMobileService::CreateUniqueTempDir,
-                 base::Unretained(this)));
-  RequestMobileListUpdate();
+      cloud_print_url_(new CloudPrintURL(profile)) {
+  // Skip initialization if constructed without a profile.
+  if (profile_) {
+    content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
+        base::Bind(&ChromeToMobileService::CreateUniqueTempDir,
+                   base::Unretained(this)));
+
+    TokenService* service = TokenServiceFactory::GetForProfile(profile_);
+    registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                   content::Source<TokenService>(service));
+    if (service->HasOAuthLoginToken())
+      RefreshAccessToken();
+  }
 }
 
 ChromeToMobileService::~ChromeToMobileService() {}
 
-void ChromeToMobileService::OnURLFetchComplete(
-    const content::URLFetcher* source) {
-  if (source == search_request_.get())
-    HandleSearchResponse();
-  else
-    HandleSubmitResponse(source);
-}
-
-void ChromeToMobileService::OnGetTokenSuccess(
-    const std::string& access_token) {
-  DCHECK(!access_token.empty());
-  oauth2_request_.reset();
-  request_timer_.Stop();
-  oauth2_token_ = access_token;
-  RequestMobileListUpdate();
-}
-
-void ChromeToMobileService::OnGetTokenFailure(
-    const GoogleServiceAuthError& error) {
-  oauth2_request_.reset();
-  if (request_timer_.IsRunning() || (oauth2_retry_count_++ > kMaxRetries))
-    return;
-  request_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kAuthRetryDelay),
-                       this, &ChromeToMobileService::RequestAuth);
-}
-
 void ChromeToMobileService::RequestMobileListUpdate() {
-  if (oauth2_token_.empty())
-    RequestAuth();
+  if (access_token_.empty())
+    RefreshAccessToken();
   else
     RequestSearch();
 }
@@ -189,7 +171,7 @@ void ChromeToMobileService::GenerateSnapshot(base::WeakPtr<Observer> observer) {
 void ChromeToMobileService::SendToMobile(const string16& mobile_id,
                                          const FilePath& snapshot,
                                          base::WeakPtr<Observer> observer) {
-  DCHECK(!oauth2_token_.empty());
+  DCHECK(!access_token_.empty());
   RequestData data;
   data.mobile_id = mobile_id;
   content::WebContents* web_contents =
@@ -214,6 +196,42 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   }
 }
 
+void ChromeToMobileService::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  if (source == search_request_.get())
+    HandleSearchResponse();
+  else
+    HandleSubmitResponse(source);
+}
+
+void ChromeToMobileService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
+  TokenService::TokenAvailableDetails* token_details =
+      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
+    RefreshAccessToken();
+}
+
+void ChromeToMobileService::OnGetTokenSuccess(
+    const std::string& access_token) {
+  DCHECK(!access_token.empty());
+  access_token_fetcher_.reset();
+  request_timer_.Stop();
+  access_token_ = access_token;
+  RequestMobileListUpdate();
+}
+
+void ChromeToMobileService::OnGetTokenFailure(
+    const GoogleServiceAuthError& error) {
+  access_token_fetcher_.reset();
+  request_timer_.Stop();
+  request_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRetryDelay),
+                       this, &ChromeToMobileService::RefreshAccessToken);
+}
+
 void ChromeToMobileService::CreateUniqueTempDir() {
   bool success = temp_dir_.CreateUniqueTempDir();
   DCHECK(success);
@@ -230,15 +248,15 @@ content::URLFetcher* ChromeToMobileService::CreateRequest(
   request->SetRequestContext(profile_->GetRequestContext());
   request->SetMaxRetries(kMaxRetries);
   request->SetExtraRequestHeaders("Authorization: OAuth " +
-      oauth2_token_ + "\r\n" + cloud_print::kChromeCloudPrintProxyHeader);
+      access_token_ + "\r\n" + cloud_print::kChromeCloudPrintProxyHeader);
   request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
   return request;
 }
 
-void ChromeToMobileService::RequestAuth() {
-  DCHECK(oauth2_token_.empty());
-  if (oauth2_request_.get())
+void ChromeToMobileService::RefreshAccessToken() {
+  DCHECK(access_token_.empty());
+  if (access_token_fetcher_.get())
     return;
 
   std::string token = TokenServiceFactory::GetForProfile(profile_)->
@@ -246,15 +264,17 @@ void ChromeToMobileService::RequestAuth() {
   if (token.empty())
     return;
 
-  oauth2_request_.reset(
+  request_timer_.Stop();
+  access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, profile_->GetRequestContext()));
-  std::vector<std::string> scopes(1, kOAuth2Scope);
-  oauth2_request_->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(), token, scopes);
+  std::vector<std::string> scopes(1, kOAuthScope);
+  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  access_token_fetcher_->Start(gaia_urls->oauth2_chrome_client_id(),
+      gaia_urls->oauth2_chrome_client_secret(), token, scopes);
 }
 
 void ChromeToMobileService::RequestSearch() {
-  DCHECK(!oauth2_token_.empty());
+  DCHECK(!access_token_.empty());
   if (search_request_.get())
     return;
 
@@ -294,10 +314,9 @@ void ChromeToMobileService::HandleSearchResponse() {
           IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());
   }
 
-  if (!request_timer_.IsRunning())
-    request_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(kAutoSearchRetryDelay),
-                         this, &ChromeToMobileService::RequestSearch);
+  request_timer_.Stop();
+  request_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRetryDelay),
+                       this, &ChromeToMobileService::RequestSearch);
 }
 
 void ChromeToMobileService::HandleSubmitResponse(
