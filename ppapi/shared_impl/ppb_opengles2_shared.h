@@ -21,6 +21,7 @@ class PPAPI_SHARED_EXPORT PPB_OpenGLES2_Shared {
   static const PPB_OpenGLES2ChromiumEnableFeature_Dev*
       GetChromiumEnableFeatureInterface();
   static const PPB_OpenGLES2ChromiumMapSub_Dev* GetChromiumMapSubInterface();
+  static const PPB_OpenGLES2Query_Dev* GetQueryInterface();
 };
 
 }  // namespace ppapi

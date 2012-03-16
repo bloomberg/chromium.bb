@@ -645,6 +645,31 @@ void RenderbufferStorageMultisampleEXT(
       context)->RenderbufferStorageMultisampleEXT(
           target, samples, internalformat, width, height);
 }
+void GenQueriesEXT(PP_Resource context, GLsizei n, GLuint* queries) {
+  PluginGraphics3D::implFromResource(context)->GenQueriesEXT(n, queries);
+}
+void DeleteQueriesEXT(PP_Resource context, GLsizei n, const GLuint* queries) {
+  PluginGraphics3D::implFromResource(context)->DeleteQueriesEXT(n, queries);
+}
+GLboolean IsQueryEXT(PP_Resource context, GLuint id) {
+  return PluginGraphics3D::implFromResource(context)->IsQueryEXT(id);
+}
+void BeginQueryEXT(PP_Resource context, GLenum target, GLuint id) {
+  PluginGraphics3D::implFromResource(context)->BeginQueryEXT(target, id);
+}
+void EndQueryEXT(PP_Resource context, GLenum target) {
+  PluginGraphics3D::implFromResource(context)->EndQueryEXT(target);
+}
+void GetQueryivEXT(
+    PP_Resource context, GLenum target, GLenum pname, GLint* params) {
+  PluginGraphics3D::implFromResource(
+      context)->GetQueryivEXT(target, pname, params);
+}
+void GetQueryObjectuivEXT(
+    PP_Resource context, GLuint id, GLenum pname, GLuint* params) {
+  PluginGraphics3D::implFromResource(
+      context)->GetQueryObjectuivEXT(id, pname, params);
+}
 GLboolean EnableFeatureCHROMIUM(PP_Resource context, const char* feature) {
   return PluginGraphics3D::implFromResource(
       context)->EnableFeatureCHROMIUM(feature);
@@ -838,8 +863,7 @@ const PPB_OpenGLES2* PluginGraphics3D::GetOpenGLESInterface() {
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2InstancedArrays_Dev*
-    PluginGraphics3D::GetOpenGLESInstancedArraysInterface() {
+const PPB_OpenGLES2InstancedArrays_Dev* PluginGraphics3D::GetOpenGLESInstancedArraysInterface() {  // NOLINT
   const static struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles = {
     &DrawArraysInstancedANGLE,
     &DrawElementsInstancedANGLE,
@@ -847,34 +871,42 @@ const PPB_OpenGLES2InstancedArrays_Dev*
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2FramebufferBlit_Dev*
-    PluginGraphics3D::GetOpenGLESFramebufferBlitInterface() {
+const PPB_OpenGLES2FramebufferBlit_Dev* PluginGraphics3D::GetOpenGLESFramebufferBlitInterface() {  // NOLINT
   const static struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles = {
     &BlitFramebufferEXT
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2FramebufferMultisample_Dev*
-    PluginGraphics3D::GetOpenGLESFramebufferMultisampleInterface() {
+const PPB_OpenGLES2FramebufferMultisample_Dev* PluginGraphics3D::GetOpenGLESFramebufferMultisampleInterface() {  // NOLINT
   const static struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles = {
     &RenderbufferStorageMultisampleEXT
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2ChromiumEnableFeature_Dev*
-    PluginGraphics3D::GetOpenGLESChromiumEnableFeatureInterface() {
+const PPB_OpenGLES2ChromiumEnableFeature_Dev* PluginGraphics3D::GetOpenGLESChromiumEnableFeatureInterface() {  // NOLINT
   const static struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles = {
     &EnableFeatureCHROMIUM
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2ChromiumMapSub_Dev*
-    PluginGraphics3D::GetOpenGLESChromiumMapSubInterface() {
+const PPB_OpenGLES2ChromiumMapSub_Dev* PluginGraphics3D::GetOpenGLESChromiumMapSubInterface() {  // NOLINT
   const static struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles = {
     &MapBufferSubDataCHROMIUM,
     &UnmapBufferSubDataCHROMIUM,
     &MapTexSubImage2DCHROMIUM,
     &UnmapTexSubImage2DCHROMIUM
+  };
+  return &ppb_opengles;
+}
+const PPB_OpenGLES2Query_Dev* PluginGraphics3D::GetOpenGLESQueryInterface() {
+  const static struct PPB_OpenGLES2Query_Dev ppb_opengles = {
+    &GenQueriesEXT,
+    &DeleteQueriesEXT,
+    &IsQueryEXT,
+    &BeginQueryEXT,
+    &EndQueryEXT,
+    &GetQueryivEXT,
+    &GetQueryObjectuivEXT
   };
   return &ppb_opengles;
 }

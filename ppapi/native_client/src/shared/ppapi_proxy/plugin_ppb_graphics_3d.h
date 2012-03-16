@@ -43,6 +43,8 @@ class PluginGraphics3D : public PluginResource {
       GetOpenGLESChromiumEnableFeatureInterface();
   static const PPB_OpenGLES2ChromiumMapSub_Dev*
       GetOpenGLESChromiumMapSubInterface();
+  static const PPB_OpenGLES2Query_Dev*
+      GetOpenGLESQueryInterface();
 
   virtual bool InitFromBrowserResource(PP_Resource graphics3d_id);
 

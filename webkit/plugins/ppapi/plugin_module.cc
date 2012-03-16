@@ -356,6 +356,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface();
   if (strcmp(name, PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE) == 0)
     return ::ppapi::PPB_OpenGLES2_Shared::GetChromiumMapSubInterface();
+  if (strcmp(name, PPB_OPENGLES2_QUERY_DEV_INTERFACE) == 0)
+    return ::ppapi::PPB_OpenGLES2_Shared::GetQueryInterface();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_UMA_PRIVATE_INTERFACE) == 0)

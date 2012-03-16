@@ -47,6 +47,8 @@ GL_APICALL const struct PPB_OpenGLES2ChromiumEnableFeature_Dev* GL_APIENTRY
     glGetChromiumEnableFeatureInterfacePPAPI();
 GL_APICALL const struct PPB_OpenGLES2ChromiumMapSub_Dev* GL_APIENTRY
     glGetChromiumMapSubInterfacePPAPI();
+GL_APICALL const struct PPB_OpenGLES2Query_Dev* GL_APIENTRY
+    glGetQueryInterfacePPAPI();
 
 #ifdef __cplusplus
 }

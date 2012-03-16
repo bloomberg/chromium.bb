@@ -761,6 +761,37 @@ void RenderbufferStorageMultisampleEXT(
           target, samples, internalformat, width, height);
 }
 
+void GenQueriesEXT(PP_Resource context_id, GLsizei n, GLuint* queries) {
+  GetGLES(context_id)->GenQueriesEXT(n, queries);
+}
+
+void DeleteQueriesEXT(
+    PP_Resource context_id, GLsizei n, const GLuint* queries) {
+  GetGLES(context_id)->DeleteQueriesEXT(n, queries);
+}
+
+GLboolean IsQueryEXT(PP_Resource context_id, GLuint id) {
+  return GetGLES(context_id)->IsQueryEXT(id);
+}
+
+void BeginQueryEXT(PP_Resource context_id, GLenum target, GLuint id) {
+  GetGLES(context_id)->BeginQueryEXT(target, id);
+}
+
+void EndQueryEXT(PP_Resource context_id, GLenum target) {
+  GetGLES(context_id)->EndQueryEXT(target);
+}
+
+void GetQueryivEXT(
+    PP_Resource context_id, GLenum target, GLenum pname, GLint* params) {
+  GetGLES(context_id)->GetQueryivEXT(target, pname, params);
+}
+
+void GetQueryObjectuivEXT(
+    PP_Resource context_id, GLuint id, GLenum pname, GLuint* params) {
+  GetGLES(context_id)->GetQueryObjectuivEXT(id, pname, params);
+}
+
 GLboolean EnableFeatureCHROMIUM(PP_Resource context_id, const char* feature) {
   return GetGLES(context_id)->EnableFeatureCHROMIUM(feature);
 }
@@ -957,8 +988,7 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2InstancedArrays_Dev*
-    PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {
+const PPB_OpenGLES2InstancedArrays_Dev* PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {  // NOLINT
   static const struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles2 = {
     &DrawArraysInstancedANGLE,
     &DrawElementsInstancedANGLE,
@@ -966,34 +996,42 @@ const PPB_OpenGLES2InstancedArrays_Dev*
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2FramebufferBlit_Dev*
-    PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {
+const PPB_OpenGLES2FramebufferBlit_Dev* PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {  // NOLINT
   static const struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles2 = {
     &BlitFramebufferEXT
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2FramebufferMultisample_Dev*
-    PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {
+const PPB_OpenGLES2FramebufferMultisample_Dev* PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {  // NOLINT
   static const struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles2 = {
     &RenderbufferStorageMultisampleEXT
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2ChromiumEnableFeature_Dev*
-    PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {
+const PPB_OpenGLES2ChromiumEnableFeature_Dev* PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {  // NOLINT
   static const struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles2 = {
     &EnableFeatureCHROMIUM
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2ChromiumMapSub_Dev*
-    PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {
+const PPB_OpenGLES2ChromiumMapSub_Dev* PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {  // NOLINT
   static const struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles2 = {
     &MapBufferSubDataCHROMIUM,
     &UnmapBufferSubDataCHROMIUM,
     &MapTexSubImage2DCHROMIUM,
     &UnmapTexSubImage2DCHROMIUM
+  };
+  return &ppb_opengles2;
+}
+const PPB_OpenGLES2Query_Dev* PPB_OpenGLES2_Shared::GetQueryInterface() {
+  static const struct PPB_OpenGLES2Query_Dev ppb_opengles2 = {
+    &GenQueriesEXT,
+    &DeleteQueriesEXT,
+    &IsQueryEXT,
+    &BeginQueryEXT,
+    &EndQueryEXT,
+    &GetQueryivEXT,
+    &GetQueryObjectuivEXT
   };
   return &ppb_opengles2;
 }

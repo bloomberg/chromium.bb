@@ -775,6 +775,50 @@ void GL_APIENTRY glRenderbufferStorageMultisampleEXT(
         height);
 }
 
+void GL_APIENTRY glGenQueriesEXT(GLsizei n, GLuint* queries) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->GenQueriesEXT(glGetCurrentContextPPAPI(), n, queries);
+}
+
+void GL_APIENTRY glDeleteQueriesEXT(GLsizei n, const GLuint* queries) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->DeleteQueriesEXT(glGetCurrentContextPPAPI(), n, queries);
+}
+
+GLboolean GL_APIENTRY glIsQueryEXT(GLuint id) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    return ext->IsQueryEXT(glGetCurrentContextPPAPI(), id);
+  return 0;
+}
+
+void GL_APIENTRY glBeginQueryEXT(GLenum target, GLuint id) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->BeginQueryEXT(glGetCurrentContextPPAPI(), target, id);
+}
+
+void GL_APIENTRY glEndQueryEXT(GLenum target) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->EndQueryEXT(glGetCurrentContextPPAPI(), target);
+}
+
+void GL_APIENTRY glGetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->GetQueryivEXT(glGetCurrentContextPPAPI(), target, pname, params);
+}
+
+void GL_APIENTRY glGetQueryObjectuivEXT(
+    GLuint id, GLenum pname, GLuint* params) {
+  const struct PPB_OpenGLES2Query_Dev* ext = glGetQueryInterfacePPAPI();
+  if (ext)
+    ext->GetQueryObjectuivEXT(glGetCurrentContextPPAPI(), id, pname, params);
+}
+
 GLboolean GL_APIENTRY glEnableFeatureCHROMIUM(const char* feature) {
   const struct PPB_OpenGLES2ChromiumEnableFeature_Dev* ext =
       glGetChromiumEnableFeatureInterfacePPAPI();

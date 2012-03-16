@@ -197,6 +197,8 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface());
   AddPPB(PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
+  AddPPB(PPB_OPENGLES2_QUERY_DEV_INTERFACE_1_0, API_ID_NONE,
+         PPB_OpenGLES2_Shared::GetQueryInterface());
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0());
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,

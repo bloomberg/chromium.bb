@@ -761,6 +761,7 @@ _PEPPER_INTERFACES = [
   {'name': 'FramebufferMultisample', 'dev': True},
   {'name': 'ChromiumEnableFeature', 'dev': True},
   {'name': 'ChromiumMapSub', 'dev': True},
+  {'name': 'Query', 'dev': True},
 ]
 
 # This table specifies types and other special data for the commands that
@@ -1597,6 +1598,7 @@ _FUNCTION_INFO = {
     'resource_type': 'Query',
     'resource_types': 'Queries',
     'unit_test': False,
+    'pepper_interface': 'Query',
   },
   'DeleteQueriesEXT': {
     'type': 'DELn',
@@ -1604,32 +1606,38 @@ _FUNCTION_INFO = {
     'resource_type': 'Query',
     'resource_types': 'Queries',
     'unit_test': False,
+    'pepper_interface': 'Query',
   },
   'IsQueryEXT': {
     'gen_cmd': False,
     'client_test': False,
+    'pepper_interface': 'Query',
   },
   'BeginQueryEXT': {
     'type': 'Manual',
     'cmd_args': 'GLenumQueryTarget target, GLidQuery id, void* sync_data',
     'immediate': False,
     'gl_test_func': 'glBeginQuery',
+    'pepper_interface': 'Query',
   },
   'EndQueryEXT': {
     'type': 'Manual',
     'cmd_args': 'GLenumQueryTarget target, GLuint submit_count',
     'gl_test_func': 'glEndnQuery',
     'client_test': False,
+    'pepper_interface': 'Query',
   },
   'GetQueryivEXT': {
     'gen_cmd': False,
     'client_test': False,
     'gl_test_func': 'glGetQueryiv',
+    'pepper_interface': 'Query',
   },
   'GetQueryObjectuivEXT': {
     'gen_cmd': False,
     'client_test': False,
     'gl_test_func': 'glGetQueryObjectuiv',
+    'pepper_interface': 'Query',
   },
 }
 
@@ -5101,7 +5109,8 @@ class Function(object):
     setattr(self.info, name, value)
 
   def IsCoreGLFunction(self):
-    return not self.GetInfo('extension')
+    return (not self.GetInfo('extension') and
+            not self.GetInfo('pepper_interface'))
 
   def InPepperInterface(self, interface):
     ext = self.GetInfo('pepper_interface')

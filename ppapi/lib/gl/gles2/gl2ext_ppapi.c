@@ -36,6 +36,8 @@ static const struct PPB_OpenGLES2ChromiumEnableFeature_Dev*
     g_gles2_chromium_enable_feature_interface = NULL;
 static const struct PPB_OpenGLES2ChromiumMapSub_Dev*
     g_gles2_chromium_map_sub_interface = NULL;
+static const struct PPB_OpenGLES2Query_Dev*
+    g_gles2_query_interface = NULL;
 
 // TODO(alokp): Make sure PP_TLS works on all supported platforms.
 static PP_TLS PP_Resource g_current_context = 0;
@@ -66,6 +68,10 @@ GLboolean GL_APIENTRY glInitializePPAPI(
   if (!g_gles2_chromium_map_sub_interface) {
     g_gles2_chromium_map_sub_interface =
         get_browser_interface(PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE);
+  }
+  if (!g_gles2_query_interface) {
+    g_gles2_query_interface =
+        get_browser_interface(PPB_OPENGLES2_QUERY_DEV_INTERFACE);
   }
   return g_gles2_interface ? GL_TRUE : GL_FALSE;
 }
@@ -110,4 +116,9 @@ const struct PPB_OpenGLES2ChromiumEnableFeature_Dev* GL_APIENTRY
 const struct PPB_OpenGLES2ChromiumMapSub_Dev* GL_APIENTRY
     glGetChromiumMapSubInterfacePPAPI() {
   return g_gles2_chromium_map_sub_interface;
+}
+
+const struct PPB_OpenGLES2Query_Dev* GL_APIENTRY
+    glGetQueryInterfacePPAPI() {
+  return g_gles2_query_interface;
 }

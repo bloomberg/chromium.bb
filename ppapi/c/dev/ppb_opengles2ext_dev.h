@@ -13,10 +13,8 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_opengles2.h"
 
-#define PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0 \
-    "PPB_OpenGLES2InstancedArrays(Dev);1.0"
-#define PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE \
-    PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0
+#define PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0 "PPB_OpenGLES2InstancedArrays(Dev);1.0"  // NOLINT
+#define PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0  // NOLINT
 
 struct PPB_OpenGLES2InstancedArrays_Dev {
   void (*DrawArraysInstancedANGLE)(
@@ -29,10 +27,8 @@ struct PPB_OpenGLES2InstancedArrays_Dev {
       PP_Resource context, GLuint index, GLuint divisor);
 };
 
-#define PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE_1_0 \
-    "PPB_OpenGLES2FramebufferBlit(Dev);1.0"
-#define PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE \
-    PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE_1_0
+#define PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE_1_0 "PPB_OpenGLES2FramebufferBlit(Dev);1.0"  // NOLINT
+#define PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE_1_0  // NOLINT
 
 struct PPB_OpenGLES2FramebufferBlit_Dev {
   void (*BlitFramebufferEXT)(
@@ -41,10 +37,8 @@ struct PPB_OpenGLES2FramebufferBlit_Dev {
       GLenum filter);
 };
 
-#define PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE_1_0 \
-    "PPB_OpenGLES2FramebufferMultisample(Dev);1.0"
-#define PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE \
-    PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE_1_0
+#define PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE_1_0 "PPB_OpenGLES2FramebufferMultisample(Dev);1.0"  // NOLINT
+#define PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE_1_0  // NOLINT
 
 struct PPB_OpenGLES2FramebufferMultisample_Dev {
   void (*RenderbufferStorageMultisampleEXT)(
@@ -52,19 +46,15 @@ struct PPB_OpenGLES2FramebufferMultisample_Dev {
       GLenum internalformat, GLsizei width, GLsizei height);
 };
 
-#define PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE_1_0 \
-    "PPB_OpenGLES2ChromiumEnableFeature(Dev);1.0"
-#define PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE \
-    PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE_1_0
+#define PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE_1_0 "PPB_OpenGLES2ChromiumEnableFeature(Dev);1.0"  // NOLINT
+#define PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE_1_0  // NOLINT
 
 struct PPB_OpenGLES2ChromiumEnableFeature_Dev {
   GLboolean (*EnableFeatureCHROMIUM)(PP_Resource context, const char* feature);
 };
 
-#define PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0 \
-    "PPB_OpenGLES2ChromiumMapSub(Dev);1.0"
-#define PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE \
-    PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0
+#define PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0 "PPB_OpenGLES2ChromiumMapSub(Dev);1.0"  // NOLINT
+#define PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE_1_0  // NOLINT
 
 struct PPB_OpenGLES2ChromiumMapSub_Dev {
   void* (*MapBufferSubDataCHROMIUM)(
@@ -76,6 +66,22 @@ struct PPB_OpenGLES2ChromiumMapSub_Dev {
       GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type,
       GLenum access);
   void (*UnmapTexSubImage2DCHROMIUM)(PP_Resource context, const void* mem);
+};
+
+#define PPB_OPENGLES2_QUERY_DEV_INTERFACE_1_0 "PPB_OpenGLES2Query(Dev);1.0"
+#define PPB_OPENGLES2_QUERY_DEV_INTERFACE PPB_OPENGLES2_QUERY_DEV_INTERFACE_1_0
+
+struct PPB_OpenGLES2Query_Dev {
+  void (*GenQueriesEXT)(PP_Resource context, GLsizei n, GLuint* queries);
+  void (*DeleteQueriesEXT)(
+      PP_Resource context, GLsizei n, const GLuint* queries);
+  GLboolean (*IsQueryEXT)(PP_Resource context, GLuint id);
+  void (*BeginQueryEXT)(PP_Resource context, GLenum target, GLuint id);
+  void (*EndQueryEXT)(PP_Resource context, GLenum target);
+  void (*GetQueryivEXT)(
+      PP_Resource context, GLenum target, GLenum pname, GLint* params);
+  void (*GetQueryObjectuivEXT)(
+      PP_Resource context, GLuint id, GLenum pname, GLuint* params);
 };
 
 #endif  // C_DEV_PPB_OPENGLES2EXT_DEV_H_
