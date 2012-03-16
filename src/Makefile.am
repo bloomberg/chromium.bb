@@ -74,7 +74,8 @@ endif
 if ENABLE_WAYLAND_COMPOSITOR
 wayland_backend = wayland-backend.la
 wayland_backend_la_LDFLAGS = -module -avoid-version
-wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS)
+wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
+	../shared/libconfig-parser.la
 wayland_backend_la_CFLAGS = $(WAYLAND_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 wayland_backend_la_SOURCES = compositor-wayland.c
 endif

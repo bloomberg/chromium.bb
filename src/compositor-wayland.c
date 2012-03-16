@@ -206,15 +206,16 @@ draw_border(struct wayland_output *output)
 static void
 create_border(struct wayland_compositor *c)
 {
-	uint32_t *pixels, stride;
+	pixman_image_t *image;
 
-	pixels = weston_load_image(DATADIR "/weston/border.png",
-				   &c->border.width,
-				   &c->border.height, &stride);
-	if (!pixels) {
+	image = load_image(DATADIR "/weston/border.png");
+	if (!image) {
 		fprintf(stderr, "could'nt load border image\n");
 		return;
 	}
+
+	c->border.width = pixman_image_get_width(image);
+	c->border.height = pixman_image_get_height(image);
 
 	glGenTextures(1, &c->border.texture);
 	glBindTexture(GL_TEXTURE_2D, c->border.texture);
@@ -226,12 +227,15 @@ create_border(struct wayland_compositor *c)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 		     c->border.width,
 		     c->border.height,
-		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
+		     0, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+		     pixman_image_get_data(image));
 
 	c->border.top = 25;
 	c->border.bottom = 50;
 	c->border.left = 25;
 	c->border.right = 25;
+
+	pixman_image_unref(image);
 }
 
 static int

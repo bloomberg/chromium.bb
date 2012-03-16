@@ -506,11 +506,6 @@ screenshooter_create(struct weston_compositor *ec);
 void
 screenshooter_destroy(struct screenshooter *s);
 
-uint32_t *
-weston_load_image(const char *filename,
-		  int32_t *width_arg, int32_t *height_arg,
-		  uint32_t *stride_arg);
-
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
 					    int status);
