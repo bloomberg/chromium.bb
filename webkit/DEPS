@@ -26,6 +26,7 @@ include_rules = [
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+crypto",
   "+net/base",
+  "+net/cookies",
   "+net/ftp",
   "+net/http",
   "+net/proxy",

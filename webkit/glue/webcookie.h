@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,7 +9,7 @@
 #ifndef WEBKIT_GLUE_WEBCOOKIE_H_
 #define WEBKIT_GLUE_WEBCOOKIE_H_
 
-#include "net/base/cookie_monster.h"
+#include "net/cookies/cookie_monster.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
