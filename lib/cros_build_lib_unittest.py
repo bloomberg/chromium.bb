@@ -11,6 +11,7 @@ import shutil
 import signal
 import subprocess
 import tempfile
+import time
 import unittest
 import cros_build_lib
 import cros_test_lib
@@ -559,6 +560,32 @@ class InputTest(cros_test_lib.MoxTestCase):
              YNInteraction(['n', 'y', 'no'], cros_build_lib.NO),
             ]
     self._TestYesNoPrompt(tests, '(Yes/no)', cros_build_lib.YES, True)
+
+  def testSubCommandTimeout(self):
+    """Tests that we can nest SubCommandTimeout correctly."""
+    with cros_build_lib.SubCommandTimeout(4):
+      with cros_build_lib.SubCommandTimeout(3):
+        with cros_build_lib.SubCommandTimeout(1):
+          self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 5)
+
+        # Should not raise a timeout exception as 3 > 2.
+        time.sleep(1)
+
+      # Should raise a timeout exception.
+      self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 5)
+
+  def testSubCommandTimeoutNested(self):
+    """Tests that we still re-raise an alarm if both are reached."""
+    with cros_build_lib.SubCommandTimeout(1):
+      try:
+        with cros_build_lib.SubCommandTimeout(2):
+          self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 1)
+
+      # Craziness to catch nested timeouts.
+      except cros_build_lib.TimeoutError:
+         pass
+      else:
+        self.assertTrue(False, 'Should have thrown an exception')
 
 
 if __name__ == '__main__':

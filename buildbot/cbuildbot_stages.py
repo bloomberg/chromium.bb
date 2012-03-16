@@ -803,6 +803,8 @@ class VMTestStage(BoardSpecificBuilderStage):
 class HWTestStage(BoardSpecificBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
+  # If the tests take longer than an hour, abort.
+  INSTRASTRUCTURE_TIMEOUT = 3600
   option_name = 'tests'
   config_name = 'hw_tests'
 
@@ -827,8 +829,14 @@ class HWTestStage(BoardSpecificBuilderStage):
       raise Exception('Missing uploads.')
 
     build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
-    commands.RunHWTestSuite(build, self._suite, self._current_board,
-                            self._options.debug)
+
+    try:
+      with cros_lib.SubCommandTimeout(HWTestStage.INSTRASTRUCTURE_TIMEOUT):
+        commands.RunHWTestSuite(build, self._suite, self._current_board,
+                                self._options.debug)
+
+    except cros_lib.TimeoutError as exception:
+      return self._HandleExceptionAsWarning(exception)
 
 
 class SDKTestStage(bs.BuilderStage):

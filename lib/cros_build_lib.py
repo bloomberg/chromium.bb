@@ -1122,6 +1122,56 @@ def AllowDisabling(enabled, functor, *args, **kwds):
   return NoOpContextManager()
 
 
+class TimeoutError(Exception):
+  """Raises when code within SubCommandTimeout has been run too long."""
+
+
+@contextlib.contextmanager
+def SubCommandTimeout(max_run_time):
+  """ContextManager that alarms if code is ran for too long.
+
+  Unlike Timeout, SubCommandTimeout can run nested and raises a TimeoutException
+  if the timeout is reached. SubCommandTimeout can also nest underneath
+  Timeout.
+
+  Args:
+    max_run_time: a positive integer.
+  """
+  max_run_time = int(max_run_time)
+  if max_run_time <= 0:
+    raise ValueError("max_run_time must be greater than zero")
+
+  # pylint: disable=W0613
+  def kill_us(sig_num, frame):
+    raise TimeoutError("Timeout occured- waited %i seconds." % max_run_time)
+
+  original_handler = signal.signal(signal.SIGALRM, kill_us)
+  previous_time = int(time.time())
+
+  # Signal the min in case the leftover time was smaller than this timeout.
+  remaining_timeout = signal.alarm(0)
+  if remaining_timeout:
+    signal.alarm(min(remaining_timeout, max_run_time))
+  else:
+    signal.alarm(max_run_time)
+
+  try:
+    yield
+  finally:
+    # Cancel the alarm request and restore the original handler.
+    signal.alarm(0)
+    signal.signal(signal.SIGALRM, original_handler)
+
+    # Ensure the previous handler will fire if it was meant to.
+    if remaining_timeout > 0:
+      # Signal the previous handler if it would have already passed.
+      time_left = remaining_timeout - (int(time.time()) - previous_time)
+      if time_left <= 0:
+        _RelaySignal(original_handler, signal.SIGALRM, None)
+      else:
+        signal.alarm(time_left)
+
+
 @contextlib.contextmanager
 def Timeout(max_run_time):
   """ContextManager that alarms if code is ran for too long.
@@ -1138,7 +1188,7 @@ def Timeout(max_run_time):
   Args:
     max_run_time: a positive integer.
   """
-  max_run_time = long(max_run_time)
+  max_run_time = int(max_run_time)
   if max_run_time <= 0:
     raise ValueError("max_run_time must be greater than zero")
 
