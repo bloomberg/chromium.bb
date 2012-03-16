@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -30,6 +31,17 @@
 #include "unicode/timezone.h"
 
 namespace chromeos {
+namespace {
+
+// TODO(achuith): Use a cmd-line flag + use flags for this instead.
+bool IsLumpy() {
+  std::string board;
+  system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      "CHROMEOS_RELEASE_BOARD", &board);
+  return StartsWithASCII(board, "lumpy", false);
+}
+
+}  // namespace
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -42,8 +54,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::GetInstance();
 
+  const bool enable_tap_to_click_default = IsLumpy();
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
-                             false,
+                             enable_tap_to_click_default,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
