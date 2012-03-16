@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"

@@ -552,6 +552,8 @@
         'browser/chromeos/gdata/gdata_files.h',
         'browser/chromeos/gdata/gdata_operation_registry.cc',
         'browser/chromeos/gdata/gdata_operation_registry.h',
+        'browser/chromeos/gdata/gdata_operations.cc',
+        'browser/chromeos/gdata/gdata_operations.h',
         'browser/chromeos/gdata/gdata_params.cc',
         'browser/chromeos/gdata/gdata_params.h',
         'browser/chromeos/gdata/gdata_parser.cc',
