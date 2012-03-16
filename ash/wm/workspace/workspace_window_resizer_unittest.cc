@@ -56,15 +56,18 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     Shell::GetInstance()->SetMonitorWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
     window_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    window_->SetParent(Shell::GetInstance()->GetRootWindow());
+    window_->SetParent(root);
+    window_->set_id(1);
 
     window2_.reset(new aura::Window(&delegate2_));
     window2_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    window2_->SetParent(Shell::GetInstance()->GetRootWindow());
+    window2_->SetParent(root);
+    window2_->set_id(2);
 
     window3_.reset(new aura::Window(&delegate3_));
     window3_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    window3_->SetParent(Shell::GetInstance()->GetRootWindow());
+    window3_->SetParent(root);
+    window3_->set_id(3);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -72,6 +75,24 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     window2_.reset();
     window3_.reset();
     AshTestBase::TearDown();
+  }
+
+  // Returns a string identifying the z-order of each of the known windows.
+  // The returned string constains the id of the known windows and is ordered
+  // from topmost to bottomost windows.
+  std::string WindowOrderAsString() const {
+    std::string result;
+    const aura::Window::Windows& windows =
+        Shell::GetInstance()->GetRootWindow()->children();
+    for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
+         i != windows.rend(); ++i) {
+      if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
+        if (!result.empty())
+          result += " ";
+        result += base::IntToString((*i)->id());
+      }
+    }
+    return result;
   }
 
  protected:
@@ -619,6 +640,39 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   EXPECT_EQ("400,0 400x600", window_->bounds().ToString());
   ASSERT_TRUE(GetRestoreBounds(window_.get()));
   EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
+}
+
+// Verifies windows are correctly restacked when reordering multiple windows.
+TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
+  window_->SetBounds(gfx::Rect(   0, 0, 200, 300));
+  window2_->SetBounds(gfx::Rect(200, 0, 100, 200));
+  window3_->SetBounds(gfx::Rect(300, 0, 100, 100));
+
+  {
+    std::vector<aura::Window*> windows;
+    windows.push_back(window2_.get());
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTRIGHT, 10, windows));
+    ASSERT_TRUE(resizer.get());
+    // Move it 100 to the right, which should expand w1 and push w2 and w3.
+    resizer->Drag(CalculateDragPoint(*resizer, 100, -10));
+
+    // 2 should be topmost since it's initially the highest in the stack.
+    EXPECT_EQ("2 1 3", WindowOrderAsString());
+  }
+
+  {
+    std::vector<aura::Window*> windows;
+    windows.push_back(window3_.get());
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window2_.get(), gfx::Point(), HTRIGHT, 10, windows));
+    ASSERT_TRUE(resizer.get());
+    // Move it 100 to the right, which should expand w1 and push w2 and w3.
+    resizer->Drag(CalculateDragPoint(*resizer, 100, -10));
+
+    // 2 should be topmost since it's initially the highest in the stack.
+    EXPECT_EQ("2 3 1", WindowOrderAsString());
+  }
 }
 
 }  // namespace

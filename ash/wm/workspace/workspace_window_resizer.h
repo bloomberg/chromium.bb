@@ -109,6 +109,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Updates the bounds of the phantom window.
   void UpdatePhantomWindow(const gfx::Point& location);
 
+  // Restacks the windows z-order position so that one of the windows is at the
+  // top of the z-order, and the rest directly underneath it.
+  void RestackWindows();
+
   // Returns the SnapType for the specified point. SNAP_NONE is used if no
   // snapping should be used.
   SnapType GetSnapType(const gfx::Point& location) const;

@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
+#include <algorithm>
+
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_event_filter.h"
@@ -74,8 +76,11 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
   gfx::Rect bounds = CalculateBoundsForDrag(details_, location);
   if (constrain_size_)
     AdjustBoundsForMainWindow(&bounds);
-  if (bounds != details_.window->bounds())
+  if (bounds != details_.window->bounds()) {
+    if (!did_move_or_resize_)
+      RestackWindows();
     did_move_or_resize_ = true;
+  }
   UpdatePhantomWindow(location);
   if (!attached_windows_.empty())
     LayoutAttachedWindows(bounds);
@@ -430,6 +435,37 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location) {
   else
     bounds = GetFinalBounds();
   phantom_window_controller_->Show(bounds);
+}
+
+void WorkspaceWindowResizer::RestackWindows() {
+  if (attached_windows_.empty())
+    return;
+  // Build a map from index in children to window, returning if there is a
+  // window with a different parent.
+  typedef std::map<size_t, aura::Window*> IndexToWindowMap;
+  IndexToWindowMap map;
+  aura::Window* parent = details_.window->parent();
+  const aura::Window::Windows& windows(parent->children());
+  map[std::find(windows.begin(), windows.end(), details_.window) -
+      windows.begin()] = details_.window;
+  for (std::vector<aura::Window*>::const_iterator i =
+           attached_windows_.begin(); i != attached_windows_.end(); ++i) {
+    if ((*i)->parent() != parent)
+      return;
+    size_t index =
+        std::find(windows.begin(), windows.end(), *i) - windows.begin();
+    map[index] = *i;
+  }
+
+  // Reorder the windows starting at the topmost.
+  parent->StackChildAtTop(map.rbegin()->second);
+  for (IndexToWindowMap::const_reverse_iterator i = map.rbegin();
+       i != map.rend(); ) {
+    aura::Window* window = i->second;
+    ++i;
+    if (i != map.rend())
+      parent->StackChildBelow(i->second, window);
+  }
 }
 
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
