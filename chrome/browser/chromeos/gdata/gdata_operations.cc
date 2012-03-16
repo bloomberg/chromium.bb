@@ -146,6 +146,8 @@ EntryActionOperation::EntryActionOperation(GDataOperationRegistry* registry,
       document_url_(document_url) {
 }
 
+EntryActionOperation::~EntryActionOperation() {}
+
 // Overridden from UrlFetchOperation.
 GURL EntryActionOperation::GetURL() const {
   return AddStandardUrlParams(document_url_);
@@ -174,6 +176,8 @@ GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
                                    const GetDataCallback& callback)
     : UrlFetchOperation<GetDataCallback>(registry, profile, callback) {
 }
+
+GetDataOperation::~GetDataOperation() {}
 
 void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
@@ -236,6 +240,8 @@ GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
     : GetDataOperation(registry, profile, callback) {
 }
 
+GetDocumentsOperation::~GetDocumentsOperation() {}
+
 void GetDocumentsOperation::SetUrl(const GURL& url) {
   override_url_ = url;
 }
@@ -256,6 +262,8 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
     : GetDataOperation(registry, profile, callback) {
 }
 
+GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
+
 GURL GetAccountMetadataOperation::GetURL() const {
   return AddStandardUrlParams(GURL(kAccountMetadataURL));
 }
@@ -272,6 +280,8 @@ DownloadFileOperation::DownloadFileOperation(
   // Make sure we download the content into a temp file.
   save_temp_file_ = true;
 }
+
+DownloadFileOperation::~DownloadFileOperation() {}
 
 // Overridden from UrlFetchOperation.
 GURL DownloadFileOperation::GetURL() const {
@@ -314,6 +324,8 @@ DeleteDocumentOperation::DeleteDocumentOperation(
     : EntryActionOperation(registry, profile, callback, document_url) {
 }
 
+DeleteDocumentOperation::~DeleteDocumentOperation() {}
+
 URLFetcher::RequestType DeleteDocumentOperation::GetRequestType() const {
   return URLFetcher::DELETE_REQUEST;
 }
@@ -337,6 +349,8 @@ CreateDirectoryOperation::CreateDirectoryOperation(
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
 }
+
+CreateDirectoryOperation::~CreateDirectoryOperation() {}
 
 GURL CreateDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
@@ -388,6 +402,8 @@ CopyDocumentOperation::CopyDocumentOperation(
       new_name_(new_name) {
 }
 
+CopyDocumentOperation::~CopyDocumentOperation() {}
+
 URLFetcher::RequestType CopyDocumentOperation::GetRequestType() const {
   return URLFetcher::POST;
 }
@@ -426,6 +442,8 @@ RenameResourceOperation::RenameResourceOperation(
     : EntryActionOperation(registry, profile, callback, document_url),
       new_name_(new_name) {
 }
+
+RenameResourceOperation::~RenameResourceOperation() {}
 
 URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
   return URLFetcher::PUT;
@@ -467,6 +485,8 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
     : EntryActionOperation(registry, profile, callback, document_url),
       parent_content_url_(parent_content_url) {
 }
+
+AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
 
 GURL AddResourceToDirectoryOperation::GetURL() const {
   if (!parent_content_url_.is_empty())
@@ -512,6 +532,9 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
       parent_content_url_(parent_content_url) {
 }
 
+RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {
+}
+
 GURL RemoveResourceFromDirectoryOperation::GetURL() const {
   std::string escaped_resource_id = net::EscapePath(resource_id_);
   GURL edit_url(base::StringPrintf("%s/%s",
@@ -546,6 +569,8 @@ InitiateUploadOperation::InitiateUploadOperation(
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {
 }
+
+InitiateUploadOperation::~InitiateUploadOperation() {}
 
 GURL InitiateUploadOperation::GetURL() const {
   return initiate_upload_url_;
@@ -620,6 +645,8 @@ ResumeUploadOperation::ResumeUploadOperation(
     : UrlFetchOperation<ResumeUploadCallback>(registry, profile, callback),
       params_(params) {
 }
+
+ResumeUploadOperation::~ResumeUploadOperation() {}
 
 GURL ResumeUploadOperation::GetURL() const {
   return params_.upload_location;

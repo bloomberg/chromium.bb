@@ -274,6 +274,7 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
                        Profile* profile,
                        const EntryActionCallback& callback,
                        const GURL& document_url);
+  virtual ~EntryActionOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
@@ -298,6 +299,7 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
   GetDataOperation(GDataOperationRegistry* registry,
                    Profile* profile,
                    const GetDataCallback& callback);
+  virtual ~GetDataOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
@@ -320,6 +322,7 @@ class GetDocumentsOperation : public GetDataOperation {
   GetDocumentsOperation(GDataOperationRegistry* registry,
                         Profile* profile,
                         const GetDataCallback& callback);
+  virtual ~GetDocumentsOperation();
 
   // Sets |url| for document fetching operation. This URL should be set in use
   // case when additional 'pages' of document lists are being fetched.
@@ -343,6 +346,7 @@ class GetAccountMetadataOperation : public GetDataOperation {
   GetAccountMetadataOperation(GDataOperationRegistry* registry,
                               Profile* profile,
                               const GetDataCallback& callback);
+  virtual ~GetAccountMetadataOperation();
 
  protected:
   // Overridden from GetDataOperation.
@@ -361,6 +365,7 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
                         Profile* profile,
                         const DownloadActionCallback& callback,
                         const GURL& document_url);
+  virtual ~DownloadFileOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
@@ -384,6 +389,7 @@ class DeleteDocumentOperation : public EntryActionOperation {
                           Profile* profile,
                           const EntryActionCallback& callback,
                           const GURL& document_url);
+  virtual ~DeleteDocumentOperation();
 
  protected:
   // Overridden from EntryActionOperation.
@@ -405,6 +411,7 @@ class CreateDirectoryOperation : public GetDataOperation {
                            const GetDataCallback& callback,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
+  virtual ~CreateDirectoryOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
@@ -432,6 +439,7 @@ class CopyDocumentOperation : public GetDataOperation {
                         const GetDataCallback& callback,
                         const GURL& document_url,
                         const FilePath::StringType& new_name);
+  virtual ~CopyDocumentOperation();
 
  protected:
   // Overridden from GetDataOperation.
@@ -459,6 +467,7 @@ class RenameResourceOperation : public EntryActionOperation {
                           const EntryActionCallback& callback,
                           const GURL& document_url,
                           const FilePath::StringType& new_name);
+  virtual ~RenameResourceOperation();
 
  protected:
   // Overridden from EntryActionOperation.
@@ -486,6 +495,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
                                   const EntryActionCallback& callback,
                                   const GURL& parent_content_url,
                                   const GURL& document_url);
+  virtual ~AddResourceToDirectoryOperation();
 
  protected:
   // Overridden from EntryActionOperation.
@@ -514,6 +524,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
                                        const GURL& parent_content_url,
                                        const GURL& document_url,
                                        const std::string& resource_id);
+  virtual ~RemoveResourceFromDirectoryOperation();
 
  protected:
   // Overridden from EntryActionOperation.
@@ -540,6 +551,7 @@ class InitiateUploadOperation
                           Profile* profile,
                           const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
+  virtual ~InitiateUploadOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
@@ -570,6 +582,7 @@ class ResumeUploadOperation : public UrlFetchOperation<ResumeUploadCallback> {
                         Profile* profile,
                         const ResumeUploadCallback& callback,
                         const ResumeUploadParams& params);
+  virtual ~ResumeUploadOperation();
 
  protected:
   // Overridden from UrlFetchOperation.
