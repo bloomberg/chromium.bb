@@ -1535,7 +1535,7 @@ bool FileDialogStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableGData))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGData))
       dict->SetString("ENABLE_GDATA", "1");
 
   return true;
@@ -1755,4 +1755,3 @@ void GetGDataFilesFunction::OnFileReady(
   // Start getting the next file.
   GetFileOrSendResponse();
 }
-
