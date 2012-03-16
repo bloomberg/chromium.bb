@@ -242,11 +242,13 @@ void RenderTextLinux::ResetLayout() {
 
 void RenderTextLinux::EnsureLayout() {
   if (layout_ == NULL) {
-    Canvas canvas(display_rect().size(), false);
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
+    cairo_surface_t* surface =
+        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+    cairo_t* cr = cairo_create(surface);
 
     layout_ = pango_cairo_create_layout(cr);
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
     SetupPangoLayoutWithFontDescription(
         layout_,
         GetDisplayText(),
