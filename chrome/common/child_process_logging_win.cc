@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,10 @@ typedef void (__cdecl *MainSetExtensionID)(size_t, const wchar_t*);
 typedef void (__cdecl *MainSetGpuInfo)(const wchar_t*, const wchar_t*,
                                        const wchar_t*, const wchar_t*,
                                        const wchar_t*);
+
+// exported in breakpad_win.cc:
+//     void __declspec(dllexport) __cdecl SetPrinterInfo.
+typedef void (__cdecl *MainSetPrinterInfo)(const wchar_t*);
 
 // exported in breakpad_win.cc:
 //   void __declspec(dllexport) __cdecl SetNumberOfViews.
@@ -148,6 +152,20 @@ void SetGpuInfo(const content::GPUInfo& gpu_info) {
       UTF8ToUTF16(gpu_info.driver_version).c_str(),
       UTF8ToUTF16(gpu_info.pixel_shader_version).c_str(),
       UTF8ToUTF16(gpu_info.vertex_shader_version).c_str());
+}
+
+void SetPrinterInfo(const char* printer_info) {
+  static MainSetPrinterInfo set_printer_info = NULL;
+  if (!set_printer_info) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_printer_info = reinterpret_cast<MainSetPrinterInfo>(
+        GetProcAddress(exe_module, "SetPrinterInfo"));
+    if (!set_printer_info)
+      return;
+  }
+  (set_printer_info)(UTF8ToWide(printer_info).c_str());
 }
 
 void SetCommandLine(const CommandLine* command_line) {
