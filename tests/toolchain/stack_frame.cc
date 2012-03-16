@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -74,7 +74,6 @@ void* GetReturnAddress(void* frame_end) {
 void recurse(int n, unsigned char* old_cfa) {
   int i;
   int array[16];
-  // NOTE: the cfa points at the top part of the address frame */
   unsigned char* cfa = (unsigned char*) __builtin_dwarf_cfa();
   int* start = &array[0];
   int* end = &array[16];
@@ -90,7 +89,7 @@ void recurse(int n, unsigned char* old_cfa) {
   printf("return %p\n", return_address);
   DumpMemory(cfa, frame_size);
 
-  // NOTE: for arm the alignment should be 16
+  // TODO(sehr): change those to 16
   ASSERT(frame_size % 8 == 0, "ERRRO: bad frame size");
   ASSERT((long) cfa % 8 == 0, "ERRRO: bad frame pointer");
 
@@ -116,6 +115,12 @@ void recurse(int n, unsigned char* old_cfa) {
   printf("array %p %p\n", start, end);
 
   recurse(n - 1, cfa);
+  /* NOTE: this print statement also prevents this function
+   * from tail recursing into itself.
+   * On gcc this behavior can also be controlled using
+   *   -foptimize-sibling-calls
+   */
+  printf("recurse <- %d\n", n);
 }
 
 

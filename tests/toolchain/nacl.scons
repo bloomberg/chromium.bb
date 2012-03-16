@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -111,11 +111,8 @@ if env.IsRunningUnderValgrind():
 
 sloppy_env = env.Clone()
 # return_address test has some casts the compiler does not like
-sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
-sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
-# lto inlining breaks this test
-if env.Bit('bitcode'):
-  sloppy_env.FilterOut(LINKFLAGS=['-O3'])
+sloppy_env.FilterOut(CFLAGS=['-pedantic'])
+sloppy_env.FilterOut(CCFLAGS=['-pedantic'])
 
 nexe = sloppy_env.ComponentProgram('return_address', 'return_address.c',
                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -155,9 +152,7 @@ ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),
 
 for tag, e in ENVIRONMENTS_TO_TRY:
   for src in ['unwind_trace.cc',
-              # TODO(mcgrathr): This test has bad assumptions and needs
-              # to be rewritten.  Disabling it for now.
-              # 'stack_frame.cc',
+              'stack_frame.cc',
               'eh_return.c',
               'eh_virtual_dtor.cc',
               'eh_loop_single.cc',
@@ -166,6 +161,10 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_loop_break.cc',
               ]:
     is_broken = False
+    if not env.Bit('bitcode') and src in ['stack_frame.cc']:
+      # This tests makes pnacl specific assumptions which
+      # may not hold for the nacl-gcc TC
+      is_broken = True
 
     if not env.Bit('bitcode') and src in ['eh_return.c']:
       # for some reason gcc does not allow us to use

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -28,6 +28,12 @@ void recurse(int n, int is_first) {
 
   if (n == 0) return;
   recurse(n - 1, 0);
+   /* NOTE: this print statement also prevents this function
+   * from tail recursing into itself.
+   * On gcc this behavior can also be controlled using
+   *   -foptimize-sibling-calls
+   */
+  printf("recurse <- %d\n", n);
 }
 
 int main(int argc, char* argv[]) {
