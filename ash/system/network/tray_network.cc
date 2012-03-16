@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -97,7 +98,7 @@ class HoverHighlightView : public views::View {
 
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     set_background(views::Background::CreateSolidBackground(
-        SkColorSetARGB(10, 0, 0, 0)));
+        ash::kHoverBackgroundColor));
     SchedulePaint();
   }
 
@@ -247,7 +248,7 @@ class NetworkDetailedView : public views::View,
         proxy_settings_(NULL) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
-    set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     Update();
   }
 

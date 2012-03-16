@@ -87,6 +87,7 @@ class DateView : public views::View {
         actionable_(false) {
     SetLayoutManager(new views::FillLayout());
     label_ = new views::Label;
+    label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     UpdateText();
     AddChildView(label_);
   }
@@ -280,18 +281,23 @@ TrayPowerDate::~TrayPowerDate() {
 }
 
 views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
+  views::View* container = new views::View;
+  container->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
+
+  PowerSupplyStatus power_status =
+      ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+  if (power_status.battery_is_present) {
+    power_tray_.reset(new tray::PowerTrayView());
+    power_tray_->UpdatePowerStatus(power_status);
+    container->AddChildView(power_tray_.get());
+  }
+
   date_tray_.reset(new tray::DateView(tray::DateView::TIME));
   date_tray_->label()->SetFont(
       date_tray_->label()->font().DeriveFont(2, gfx::Font::BOLD));
   date_tray_->label()->SetAutoColorReadabilityEnabled(false);
   date_tray_->label()->SetEnabledColor(SK_ColorWHITE);
-
-  power_tray_.reset(new tray::PowerTrayView());
-
-  views::View* container = new views::View;
-  container->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
-  container->AddChildView(power_tray_.get());
   container->AddChildView(date_tray_.get());
 
   return container;
@@ -302,17 +308,22 @@ views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
   if (status != user::LOGGED_IN_NONE)
     date_->set_actionable(true);
 
-  power_.reset(new tray::PowerPopupView());
-
   views::View* container = new views::View;
   views::BoxLayout* layout = new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 10, 0);
+      views::BoxLayout(views::BoxLayout::kHorizontal, 18, 10, 0);
   layout->set_spread_blank_space(true);
   container->SetLayoutManager(layout);
   container->set_background(views::Background::CreateSolidBackground(
-      SkColorSetARGB(255, 240, 240, 240)));
+      SkColorSetRGB(245, 245, 245)));
   container->AddChildView(date_.get());
-  container->AddChildView(power_.get());
+
+  PowerSupplyStatus power_status =
+      ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+  if (power_status.battery_is_present) {
+    power_.reset(new tray::PowerPopupView());
+    power_->UpdatePowerStatus(power_status);
+    container->AddChildView(power_.get());
+  }
   return container;
 }
 
@@ -334,7 +345,8 @@ void TrayPowerDate::DestroyDetailedView() {
 }
 
 void TrayPowerDate::OnPowerStatusChanged(const PowerSupplyStatus& status) {
-  power_tray_->UpdatePowerStatus(status);
+  if (power_tray_.get())
+    power_tray_->UpdatePowerStatus(status);
   if (power_.get())
     power_->UpdatePowerStatus(status);
 }

@@ -23,6 +23,7 @@
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/power/power_status_observer.h"
+#include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power_date.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -261,6 +262,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return base::k24HourClock;
   }
 
+  virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
+    return PowerSupplyStatus();
+  }
+
   virtual void ShowSettings() OVERRIDE {
   }
 
@@ -296,9 +301,11 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void RequestLockScreen() OVERRIDE {}
+
   virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
     return NetworkIconInfo();
   }
+
   virtual void GetAvailableNetworks(
       std::vector<NetworkIconInfo>* list) OVERRIDE {
   }
@@ -312,7 +319,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleWifi() OVERRIDE {
     wifi_enabled_ = !wifi_enabled_;
     ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_controller();
+        ash::Shell::GetInstance()->tray()->network_observer();
     if (observer) {
       ash::NetworkIconInfo info;
       observer->OnNetworkRefresh(info);
@@ -322,7 +329,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleCellular() OVERRIDE {
     cellular_enabled_ = !cellular_enabled_;
     ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_controller();
+        ash::Shell::GetInstance()->tray()->network_observer();
     if (observer) {
       ash::NetworkIconInfo info;
       observer->OnNetworkRefresh(info);
@@ -544,12 +551,12 @@ void Shell::Init() {
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
     internal::TrayUser* tray_user = new internal::TrayUser;
-    tray_->audio_controller_ = tray_volume;
-    tray_->brightness_controller_ = tray_brightness;
+    tray_->audio_observer_ = tray_volume;
+    tray_->brightness_observer_ = tray_brightness;
     tray_->date_format_observer_ = tray_power_date;
-    tray_->network_controller_ = tray_network;
-    tray_->power_status_controller_ = tray_power_date;
-    tray_->update_controller_ = tray_user;
+    tray_->network_observer_ = tray_network;
+    tray_->power_status_observer_ = tray_power_date;
+    tray_->update_observer_ = tray_user;
 
     tray_->AddTrayItem(tray_user);
     tray_->AddTrayItem(new internal::TrayEmpty());

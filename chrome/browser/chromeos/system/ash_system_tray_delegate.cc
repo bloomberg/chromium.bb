@@ -72,7 +72,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
-        PowerManagerClient::UPDATE_USER);
+        PowerManagerClient::UPDATE_INITIAL);
 
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     crosnet->AddNetworkManagerObserver(this);
@@ -135,6 +135,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     Profile* profile = ProfileManager::GetDefaultProfile();
     return !profile || profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock) ?
         base::k24HourClock : base::k12HourClock;
+  }
+
+  virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
+    // Explicitly query the power status.
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
+        PowerManagerClient::UPDATE_USER);
+    return power_supply_status_;
   }
 
   virtual void ShowSettings() OVERRIDE {
@@ -298,7 +305,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   void NotifyRefreshNetwork() {
     ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_controller();
+        ash::Shell::GetInstance()->tray()->network_observer();
     if (observer) {
       ash::NetworkIconInfo info;
       info.image = network_icon_->GetIconAndText(&info.description);
@@ -329,19 +336,22 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from AudioHandler::VolumeObserver.
   virtual void OnVolumeChanged() OVERRIDE {
     float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
-    ash::Shell::GetInstance()->tray()->audio_controller()->
+    ash::Shell::GetInstance()->tray()->audio_observer()->
         OnVolumeChanged(level);
   }
 
   // Overridden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
-    ash::Shell::GetInstance()->tray()->brightness_controller()->
+    ash::Shell::GetInstance()->tray()->brightness_observer()->
         OnBrightnessChanged(level / 100.f, user_initiated);
   }
 
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
-    ash::Shell::GetInstance()->tray()->power_status_controller()->
-        OnPowerStatusChanged(power_status);
+    power_supply_status_ = power_status;
+    ash::PowerStatusObserver* observer =
+        ash::Shell::GetInstance()->tray()->power_status_observer();
+    if (observer)
+      observer->OnPowerStatusChanged(power_status);
   }
 
   virtual void LockScreen() OVERRIDE {
@@ -415,7 +425,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
         ash::UpdateObserver* observer =
-            ash::Shell::GetInstance()->tray()->update_controller();
+            ash::Shell::GetInstance()->tray()->update_observer();
         if (observer)
           observer->OnUpdateRecommended();
         break;
@@ -443,6 +453,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string cellular_device_path_;
   std::string active_network_path_;
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
+  PowerSupplyStatus power_supply_status_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };

@@ -55,23 +55,23 @@ class ASH_EXPORT SystemTray : public views::View,
 
   const std::vector<SystemTrayItem*>& items() const { return items_; }
 
-  AudioObserver* audio_controller() const {
-    return audio_controller_;
+  AudioObserver* audio_observer() const {
+    return audio_observer_;
   }
-  BrightnessObserver* brightness_controller() const {
-    return brightness_controller_;
+  BrightnessObserver* brightness_observer() const {
+    return brightness_observer_;
   }
   DateFormatObserver* date_format_observer() const {
     return date_format_observer_;
   }
-  NetworkObserver* network_controller() const {
-    return network_controller_;
+  NetworkObserver* network_observer() const {
+    return network_observer_;
   }
-  PowerStatusObserver* power_status_controller() const {
-    return power_status_controller_;
+  PowerStatusObserver* power_status_observer() const {
+    return power_status_observer_;
   }
-  UpdateObserver* update_controller() const {
-    return update_controller_;
+  UpdateObserver* update_observer() const {
+    return update_observer_;
   }
 
  private:
@@ -96,12 +96,12 @@ class ASH_EXPORT SystemTray : public views::View,
   views::View* container_;
 
   // These observers are not owned by the tray.
-  AudioObserver* audio_controller_;
-  BrightnessObserver* brightness_controller_;
+  AudioObserver* audio_observer_;
+  BrightnessObserver* brightness_observer_;
   DateFormatObserver* date_format_observer_;
-  NetworkObserver* network_controller_;
-  PowerStatusObserver* power_status_controller_;
-  UpdateObserver* update_controller_;
+  NetworkObserver* network_observer_;
+  PowerStatusObserver* power_status_observer_;
+  UpdateObserver* update_observer_;
 
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;

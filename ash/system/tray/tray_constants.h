@@ -6,10 +6,15 @@
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 #pragma once
 
+typedef unsigned int SkColor;
+
 namespace ash {
 
 extern const int kTrayPaddingBetweenItems;
 extern const int kTrayPopupAutoCloseDelayInSeconds;
+
+extern const SkColor kBackgroundColor;
+extern const SkColor kHoverBackgroundColor;
 
 }  // namespace ash
 

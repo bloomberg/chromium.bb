@@ -29,6 +29,8 @@ struct ASH_EXPORT NetworkIconInfo {
   std::string unique_id;
 };
 
+struct PowerSupplyStatus;
+
 class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
@@ -47,6 +49,9 @@ class SystemTrayDelegate {
 
   // Returns the desired hour clock type.
   virtual base::HourClockType GetHourClockType() const = 0;
+
+  // Gets the current power supply status.
+  virtual PowerSupplyStatus GetPowerSupplyStatus() const = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;

@@ -47,8 +47,6 @@ const int kShadowHeight = 3;
 
 const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
 const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
-const SkColor kBackgroundColor = SK_ColorWHITE;
-const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 
 const SkColor kTrayBackgroundColor = SkColorSetARGB(100, 0, 0, 0);
@@ -327,12 +325,12 @@ NetworkIconInfo::~NetworkIconInfo() {
 
 SystemTray::SystemTray()
     : items_(),
-      audio_controller_(NULL),
-      brightness_controller_(NULL),
+      audio_observer_(NULL),
+      brightness_observer_(NULL),
       date_format_observer_(NULL),
-      network_controller_(NULL),
-      power_status_controller_(NULL),
-      update_controller_(NULL),
+      network_observer_(NULL),
+      power_status_observer_(NULL),
+      update_observer_(NULL),
       bubble_(NULL),
       popup_(NULL) {
   container_ = new views::View;

@@ -4,9 +4,14 @@
 
 #include "ash/system/tray/tray_constants.h"
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace ash {
 
 const int kTrayPaddingBetweenItems = 8;
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
+
+const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
 
 }  // namespace ash
