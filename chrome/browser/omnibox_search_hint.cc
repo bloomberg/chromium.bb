@@ -190,8 +190,7 @@ void OmniboxSearchHint::Observe(int type,
     if (!default_provider)
       return;
 
-    const TemplateURLRef* const search_url = default_provider->url();
-    if (search_url->GetHost() == entry->GetURL().host())
+    if (default_provider->url()->GetHost() == entry->GetURL().host())
       ShowInfoBar();
   } else if (type == chrome::NOTIFICATION_OMNIBOX_OPENED_URL) {
     AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();

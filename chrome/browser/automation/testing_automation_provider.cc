@@ -3337,8 +3337,9 @@ void TestingAutomationProvider::GetSearchEngineInfo(
       TemplateURLServiceFactory::GetForProfile(browser->profile());
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   ListValue* search_engines = new ListValue;
-  std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
-  for (std::vector<const TemplateURL*>::const_iterator it =
+  TemplateURLService::TemplateURLVector template_urls =
+      url_model->GetTemplateURLs();
+  for (TemplateURLService::TemplateURLVector::const_iterator it =
        template_urls.begin(); it != template_urls.end(); ++it) {
     DictionaryValue* search_engine = new DictionaryValue;
     search_engine->SetString("short_name", UTF16ToUTF8((*it)->short_name()));
@@ -3368,7 +3369,6 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
       TemplateURLServiceFactory::GetForProfile(browser->profile());
-  const TemplateURL* template_url;
   string16 new_title;
   string16 new_keyword;
   std::string new_url;
@@ -3376,8 +3376,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   if (!args->GetString("new_title", &new_title) ||
       !args->GetString("new_keyword", &new_keyword) ||
       !args->GetString("new_url", &new_url)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("One or more inputs invalid");
+    AutomationJSONReply(this, reply_message).SendError(
+        "One or more inputs invalid");
     return;
   }
   std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
@@ -3385,10 +3385,11 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   scoped_ptr<KeywordEditorController> controller(
       new KeywordEditorController(browser->profile()));
   if (args->GetString("keyword", &keyword)) {
-    template_url = url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
+    const TemplateURL* template_url(
+        url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
     if (template_url == NULL) {
-      AutomationJSONReply(this, reply_message)
-          .SendError(StringPrintf("No match for keyword: %s", keyword.c_str()));
+      AutomationJSONReply(this, reply_message).SendError(
+          "No match for keyword: " + keyword);
       return;
     }
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
@@ -3421,8 +3422,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
   const TemplateURL* template_url(
       url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
   if (template_url == NULL) {
-    AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("No match for keyword: %s", keyword.c_str()));
+    AutomationJSONReply(this, reply_message).SendError(
+        "No match for keyword: " + keyword);
     return;
   }
   if (action == "delete") {
@@ -3434,8 +3435,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
       this, reply_message));
     url_model->SetDefaultSearchProvider(template_url);
   } else {
-    AutomationJSONReply(this, reply_message)
-        .SendError(StringPrintf("Invalid action: %s", action.c_str()));
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid action: " + action);
   }
 }
 
