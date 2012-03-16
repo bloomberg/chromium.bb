@@ -85,7 +85,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   scoped_ptr<gpu::CommandBufferService> command_buffer(
       new gpu::CommandBufferService);
   if (!command_buffer->Initialize())
-    return false;
+    return NULL;
 
   gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
 
@@ -129,7 +129,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   scoped_ptr<gpu::gles2::GLES2CmdHelper> cmd_helper(
       new gpu::gles2::GLES2CmdHelper(command_buffer.get()));
   if (!cmd_helper->Initialize(kCommandBufferSize))
-    return false;
+    return NULL;
 
   scoped_ptr<gpu::TransferBuffer> transfer_buffer(new gpu::TransferBuffer(
       cmd_helper.get()));
