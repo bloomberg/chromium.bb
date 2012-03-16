@@ -2,11 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#customHomePageGroup {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-}
-
-#homepageURL {
+#homepage-url-field {
   margin-left: 10px;
 }

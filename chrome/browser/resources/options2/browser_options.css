@@ -2,6 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#change-home-page-section {
+  margin-left: 30px;
+  overflow-y: hidden;
+}
+
+#home-page-url {
+  display: inline-block;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #default-browser-state {
   margin-top: 6px;
 }
@@ -337,7 +349,7 @@ input[type='range'] {
   overflow: hidden;
 }
 
-#advanced-settings.sliding {
+.sliding {
   -webkit-transition: height 200ms;
 }
 

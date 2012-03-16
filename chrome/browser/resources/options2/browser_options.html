@@ -105,14 +105,19 @@
       <button id="themes-reset" i18n-content="themesReset"></button>
 </if>
     </div>
-    <div class="settings-row">
-      <span i18n-content="homePage"></span>
-      <select id="home-page-select">
-        <option value="none" i18n-content="homePageNone"></option>
-        <option value="ntp" i18n-content="homePageNtp"></option>
-        <option dir="ltr" value="url"></option>
-        <option value="choose" i18n-content="homePageChoose"></option>
-      </select>
+    <div class="checkbox"><label>
+      <input id="show-home-button" type="checkbox"
+          pref="browser.show_home_button" metric="Options_Homepage_HomeButton">
+      <span i18n-content="homePageShowHomeButton"></span>
+    </label></div>
+    <div id="change-home-page-section" hidden>
+      <div id="change-home-page-section-container">
+        <span id="home-page-ntp" class="home-page-label"
+            i18n-content="homePageNtp"></span>
+        <span id="home-page-url" class="home-page-label"></span>
+        <button id="change-home-page" class="link-button"
+            i18n-content="changeHomePage"></button>
+      </div>
     </div>
     <div class="checkbox"><label>
         <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"

@@ -8379,15 +8379,8 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
         Manage search engines...
       </message>
-
-      <message name="IDS_OPTIONS2_HOMEPAGE_NONE" desc="The option in the homepage selector indicating no home page">
-        None
-      </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE_NTP" desc="The option in the homepage selector indicating the NTP is the homepage">
+      <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
         New Tab page
-      </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE_CHOOSE" desc="The option in the homepage selector for choosing a different homepage">
-        Choose another...
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
         Home page
@@ -8417,7 +8410,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Show Home button
       </message>
       <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
-        Change page
+        Change
       </message>
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
         Always show the bookmarks bar

@@ -38,7 +38,10 @@ cr.define('options', function() {
       SettingsDialog.prototype.initializePage.call(this);
 
       var self = this;
-      var urlField = $('homepageURL');
+      $('homepage-use-ntp').onchange = this.updateHomePageInput_.bind(this);
+      $('homepage-use-url').onchange = this.updateHomePageInput_.bind(this);
+
+      var urlField = $('homepage-url-field');
       urlField.addEventListener('keydown', function(event) {
         // Focus the 'OK' button when the user hits enter since people expect
         // feedback indicating that they are done editing.
@@ -70,16 +73,28 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     didShowPage: function() {
+      this.updateHomePageInput_();
       this.updateFavicon_();
     },
 
     /**
-     * Update the background of the url field to show the favicon for the
+     * Updates the state of the homepage text input. The input is enabled only
+     * if the |homepage-use-url| radio button is checked.
+     * @private
+     */
+    updateHomePageInput_: function() {
+      var urlField = $('homepage-url-field');
+      var homePageUseURL = $('homepage-use-url');
+      urlField.setDisabled('radio-choice', !homePageUseURL.checked);
+    },
+
+    /**
+     * Updates the background of the url field to show the favicon for the
      * URL that is currently typed in.
      * @private
      */
     updateFavicon_: function() {
-      var urlField = $('homepageURL');
+      var urlField = $('homepage-url-field');
       urlField.style.backgroundImage = url('chrome://favicon/' +
                                            urlField.value);
     },
@@ -117,28 +132,16 @@ cr.define('options', function() {
      */
     handleConfirm: function() {
       // Strip whitespace.
-      var homePageValue = $('homepageURL').value.replace(/\s*/g, '');
-      $('homepageURL').value = homePageValue;
+      var urlField = $('homepage-url-field');
+      var homePageValue = urlField.value.replace(/\s*/g, '');
+      urlField.value = homePageValue;
 
       // Don't save an empty URL for the home page. If the user left the field
-      // empty, act as if they clicked Cancel.
-      if (!homePageValue) {
-        this.handleCancel();
-      } else {
-        SettingsDialog.prototype.handleConfirm.call(this);
-        Preferences.setBooleanPref('browser.show_home_button', true);
-        Preferences.setBooleanPref('homepage_is_newtabpage', false);
-        BrowserOptions.getInstance().updateHomePageSelector();
-      }
-    },
+      // empty, switch to the New Tab page.
+      if (!homePageValue)
+        $('homepage-use-ntp').checked = true;
 
-    /**
-     * Resets the <select> on the browser options page to the appropriate value,
-     * based on the current preferences.
-     */
-    handleCancel: function() {
-      SettingsDialog.prototype.handleCancel.call(this);
-      BrowserOptions.getInstance().updateHomePageSelector();
+      SettingsDialog.prototype.handleConfirm.call(this);
     },
   };
 

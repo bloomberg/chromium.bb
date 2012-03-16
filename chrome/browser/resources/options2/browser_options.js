@@ -24,9 +24,6 @@ cr.define('options', function() {
     // State variables.
     syncSetupCompleted: false,
 
-    showHomeButton_: false,
-    homePageIsNtp_: false,
-
     /**
      * The cached value of the instant.confirm_dialog_shown preference.
      * @type {bool}
@@ -53,6 +50,14 @@ cr.define('options', function() {
     clearCookiesOnExit_: undefined,
 
     /**
+     * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
+     * |onShowHomeButtonChanged_|.
+     * @type {bool}
+     * @private
+     */
+    onShowHomeButtonChangedCalled_: false,
+
+    /**
      * @inheritDoc
      */
     initializePage: function() {
@@ -61,10 +66,16 @@ cr.define('options', function() {
 
       window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
-      $('advanced-settings-expander').onclick =
-          this.toggleAdvancedSettings_.bind(this);
+      $('advanced-settings-expander').onclick = function() {
+        self.toggleSectionWithAnimation_(
+            $('advanced-settings'),
+            $('advanced-settings-container'));
+      }
       $('advanced-settings').addEventListener('webkitTransitionEnd',
-          this.advancedSettingsTransitionEnded_.bind(this));
+          function(event) {
+            self.onTransitionEnd_(event);
+            self.updateAdvancedSettingsExpander_();
+      });
 
       // Sync (Sign in) section.
       this.updateSyncState_(templateData.syncData);
@@ -115,16 +126,19 @@ cr.define('options', function() {
       }
 
       // Appearance section.
-      $('home-page-select').addEventListener(
-          'change', this.onHomePageSelectChange_.bind(this));
+      Preferences.getInstance().addEventListener('browser.show_home_button',
+          this.onShowHomeButtonChanged_.bind(this));
+      $('change-home-page-section').addEventListener('webkitTransitionEnd',
+          this.onTransitionEnd_.bind(this));
 
-      ['browser.show_home_button',
-          'homepage',
-          'homepage_is_newtabpage'].forEach(function(pref) {
-        Preferences.getInstance().addEventListener(
-            pref,
-            self.onHomePagePrefChanged_.bind(self));
-      });
+      Preferences.getInstance().addEventListener('homepage',
+          this.onHomePageChanged_.bind(this));
+      Preferences.getInstance().addEventListener('homepage_is_newtabpage',
+          this.onHomePageIsNtpChanged_.bind(this));
+
+      $('change-home-page').onclick = function(event) {
+        OptionsPage.navigateToPage('homePageOverlay');
+      };
 
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
@@ -470,65 +484,82 @@ cr.define('options', function() {
     },
 
     /**
-     * Toggle the visibility state of the Advanced section.
+     * Show the given section, with animation. The section should have a
+     * onTransitionEnd_ as a listener for the |webkitTransitionEnd| event.
+     * @param {HTMLElement} section The section to be shown.
+     * @param {HTMLElement} container The container for the section. Must be
+     *     inside of |section|.
      * @private
      */
-    toggleAdvancedSettings_: function() {
-      var advancedSettings = $('advanced-settings');
-      var advancedSettingsContainer = $('advanced-settings-container');
+    showSectionWithAnimation_: function(section, container) {
+      // Unhide
+      section.hidden = false;
 
-      if (advancedSettings.style.height == '') {
-        // Unhide the advanced settings section.
-        advancedSettings.hidden = false;
-
-        // Delay starting the transition so that hidden change will be
-        // processed.
-        setTimeout(function() {
-          // Reveal the advanced settings section using a WebKit transition.
-          advancedSettings.classList.add('sliding');
-          advancedSettings.style.height =
-              advancedSettingsContainer.offsetHeight + 'px';
-        }, 0);
-      } else {
-        // Before we start hiding the advanced settings section, we need to set
-        // the height to a pixel value.
-        advancedSettings.style.height =
-            advancedSettingsContainer.offsetHeight + 'px';
-
-        // Delay starting the transition so that the height change will be
-        // processed.
-        setTimeout(function() {
-          // Hide the advanced settings section using a WebKit transition.
-          advancedSettings.classList.add('sliding');
-          advancedSettings.style.height = '';
-        }, 0);
-      }
+      // Delay starting the transition so that hidden change will be
+      // processed.
+      setTimeout(function() {
+        // Reveal the section using a WebKit transition.
+        section.classList.add('sliding');
+        section.style.height =
+            container.offsetHeight + 'px';
+      }, 0);
     },
 
     /**
-     * Called after the advanced settings transition has ended.
+     * See showSectionWithAnimation_.
+     */
+    hideSectionWithAnimation_: function(section, container) {
+      // Before we start hiding the section, we need to set
+      // the height to a pixel value.
+      section.style.height = container.offsetHeight + 'px';
+
+      // Delay starting the transition so that the height change will be
+      // processed.
+      setTimeout(function() {
+        // Hide the section using a WebKit transition.
+        section.classList.add('sliding');
+        section.style.height = '';
+      }, 0);
+    },
+
+    /**
+     * See showSectionWithAnimation_.
+     */
+    toggleSectionWithAnimation_: function(section, container) {
+      if (section.style.height == '')
+        this.showSectionWithAnimation_(section, container);
+      else
+        this.hideSectionWithAnimation_(section, container);
+    },
+
+    /**
+     * Called after an animation transition has ended.
      * @private
      */
-    advancedSettingsTransitionEnded_: function(event) {
+    onTransitionEnd_: function(event) {
       if (event.propertyName != 'height')
         return;
 
-      var expander = $('advanced-settings-expander');
-      var advancedSettings = $('advanced-settings');
+      var section = event.target;
 
       // Disable WebKit transitions.
-      advancedSettings.classList.remove('sliding');
+      section.classList.remove('sliding');
 
-      if (advancedSettings.style.height == '') {
-        // Hide the advanced settings content so it can't get tab focus.
-        advancedSettings.hidden = true;
+      if (section.style.height == '') {
+        // Hide the content so it can't get tab focus.
+        section.hidden = true;
+      } else {
+        // Set the section height to 'auto' to allow for size changes
+        // (due to font change or dynamic content).
+        section.style.height = 'auto';
+      }
+    },
 
+    updateAdvancedSettingsExpander_: function() {
+      var expander = $('advanced-settings-expander');
+      if ($('advanced-settings').style.height == '') {
         expander.textContent = localStrings.getString('showAdvancedSettings');
       } else {
-        // Set the advanced section height to 'auto' to allow for size changes
-        // (due to font change or dynamic content).
-        advancedSettings.style.height = 'auto';
-
         expander.textContent = localStrings.getString('hideAdvancedSettings');
 
         // Items added to the Bluetooth list while hidden are often not properly
@@ -606,88 +637,52 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns the <option> element with the given |value|.
-     * @param {string} value One of 'none', 'ntp', 'url', 'choose'.
-     * @return {HTMLOptionElement} the specified <option> element.
+     * Event listener for the 'show home button' preference. Shows/hides the
+     * UI for changing the home page with animation, unless this is the first
+     * time this function is called, in which case there is no animation.
+     * @param {Event} event The preference change event.
      */
-    getHomePageOption_: function(value) {
-      var select = $('home-page-select');
-      return select.querySelector('option[value=' + value + ']');
-    },
-
-    /**
-     * Selects the <option> element with the given |value|.
-     * @private
-     */
-    selectHomePageOption_: function(value) {
-      var select = $('home-page-select');
-      var option = this.getHomePageOption_(value);
-      if (!option.selected)
-        option.selected = true;
-    },
-
-    /**
-     * Event listener for the |change| event on the homepage <select> element.
-     * @private
-     */
-    onHomePageSelectChange_: function() {
-      var option = $('home-page-select').value;
-      if (option == 'choose') {
-        OptionsPage.navigateToPage('homePageOverlay');
-        return;
-      }
-
-      var showHomeButton = (option != 'none');
-      Preferences.setBooleanPref('browser.show_home_button', showHomeButton);
-
-      if (option == 'ntp')
-        Preferences.setBooleanPref('homepage_is_newtabpage', true);
-      else if (option == 'url')
-        Preferences.setBooleanPref('homepage_is_newtabpage', false);
-    },
-
-    /**
-     * Event listener called when any homepage-related preferences change.
-     * @private
-     */
-    onHomePagePrefChanged_: function(event) {
-      switch (event.type) {
-        case 'homepage':
-          this.getHomePageOption_('url').textContent = event.value['value'];
-          break;
-        case 'browser.show_home_button':
-          this.showHomeButton_ = event.value['value'];
-          break;
-        case 'homepage_is_newtabpage':
-          this.homePageIsNtp_ = event.value['value'];
-          break;
-        default:
-          console.error('Unexpected pref change event:', event.type);
-      }
-      this.updateHomePageSelector();
-    },
-
-    /**
-     * Updates the homepage <select> element to have the appropriate option
-     * selected.
-     */
-    updateHomePageSelector: function() {
-      if (this.showHomeButton_) {
-        if (this.homePageIsNtp_)
-          this.selectHomePageOption_('ntp');
+    onShowHomeButtonChanged_: function(event) {
+      var section = $('change-home-page-section');
+      if (this.onShowHomeButtonChangedCalled_) {
+        var container = $('change-home-page-section-container');
+        if (event.value['value'])
+          this.showSectionWithAnimation_(section, container);
         else
-          this.selectHomePageOption_('url');
+          this.hideSectionWithAnimation_(section, container);
       } else {
-        this.selectHomePageOption_('none');
+        section.hidden = !event.value['value'];
+        this.onShowHomeButtonChangedCalled_ = true;
       }
     },
 
     /**
-     * Sets the home page selector to the 'url' option.Called when user clicks
-     * OK in the "Choose another..." dialog.
+     * Event listener for the 'homepage is NTP' preference. Updates the label
+     * next to the 'Change' button.
+     * @param {Event} event The preference change event.
      */
-    homePageSelectUrl: function() {
-      this.selectHomePageOption_('url');
+    onHomePageIsNtpChanged_: function(event) {
+      $('home-page-url').hidden = event.value['value'];
+      $('home-page-ntp').hidden = !event.value['value'];
+    },
+
+    /**
+     * Event listener for changes to the homepage preference. Updates the label
+     * next to the 'Change' button.
+     * @param {Event} event The preference change event.
+     */
+    onHomePageChanged_: function(event) {
+      $('home-page-url').textContent = this.stripHttp_(event.value['value']);
+    },
+
+    /**
+     * Removes the 'http://' from a URL, like the omnibox does. If the string
+     * doesn't start with 'http://' it is returned unchanged.
+     * @param {string} url The url to be processed
+     * @return {string} The url with the 'http://' removed.
+     */
+    stripHttp_: function(url) {
+      return url.replace(/^http:\/\//, '');
     },
 
    /**
