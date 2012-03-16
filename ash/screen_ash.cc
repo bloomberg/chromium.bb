@@ -12,6 +12,10 @@
 
 namespace ash {
 
+// TODO(oshima): For m19, the origin of work area/monitor bounds for
+// views/aura is (0,0) because it's simple and enough. Fix this when
+// real multi monitor support is implemented.
+
 namespace {
 const aura::MonitorManager* GetMonitorManager() {
   return aura::Env::GetInstance()->monitor_manager();
@@ -37,7 +41,9 @@ gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestWindowImpl(
 
 gfx::Rect ScreenAsh::GetMonitorAreaNearestWindowImpl(
     gfx::NativeWindow window) {
-  return GetMonitorManager()->GetMonitorNearestWindow(window)->bounds();
+  // See the comment at the top.
+  return gfx::Rect(
+      GetMonitorManager()->GetMonitorNearestWindow(window)->size());
 }
 
 gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestPointImpl(
@@ -47,7 +53,8 @@ gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestPointImpl(
 }
 
 gfx::Rect ScreenAsh::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
-  return GetMonitorManager()->GetMonitorNearestPoint(point)->bounds();
+  // See the comment at the top.
+  return gfx::Rect(GetMonitorManager()->GetMonitorNearestPoint(point)->size());
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPointImpl() {

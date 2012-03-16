@@ -4,15 +4,12 @@
 
 #include "ui/aura/root_window.h"
 
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
-#include "base/string_split.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env.h"
@@ -22,6 +19,8 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -29,18 +28,11 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
-using std::string;
 using std::vector;
 
 namespace aura {
 
 namespace {
-
-// Default bounds for the host window.
-static const int kDefaultHostWindowX = 200;
-static const int kDefaultHostWindowY = 200;
-static const int kDefaultHostWindowWidth = 1280;
-static const int kDefaultHostWindowHeight = 1024;
 
 // Returns true if |target| has a non-client (frame) component at |location|,
 // in window coordinates.
@@ -113,7 +105,7 @@ RootWindow::RootWindow()
 
   ui::Compositor::Initialize(false);
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
-      host_->GetSize()));
+      host_->GetBounds().size()));
   DCHECK(compositor_.get());
   compositor_->AddObserver(this);
   Init();
@@ -140,14 +132,17 @@ void RootWindow::ShowRootWindow() {
 }
 
 void RootWindow::SetHostSize(const gfx::Size& size) {
-  host_->SetSize(size);
+  DispatchHeldMouseMove();
+  gfx::Rect bounds = host_->GetBounds();
+  bounds.set_size(size);
+  host_->SetBounds(bounds);
   // Requery the location to constrain it within the new root window size.
   last_mouse_location_ = host_->QueryMouseLocation();
   synthesize_mouse_move_ = false;
 }
 
 gfx::Size RootWindow::GetHostSize() const {
-  gfx::Rect rect(host_->GetSize());
+  gfx::Rect rect(host_->GetBounds().size());
   layer()->transform().TransformRect(&rect);
   return rect.size();
 }
@@ -309,12 +304,6 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
                     OnRootWindowResized(bounds.size()));
 }
 
-void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
-  DispatchHeldMouseMove();
-  if (use_fullscreen_host_window_)
-    SetHostSize(size);
-}
-
 void RootWindow::OnWindowDestroying(Window* window) {
   OnWindowHidden(window, true);
 
@@ -454,7 +443,7 @@ void RootWindow::SetTransform(const ui::Transform& transform) {
   // If the layer is not animating, then we need to update the host size
   // immediately.
   if (!layer()->GetAnimator()->is_animating())
-    OnHostResized(host_->GetSize());
+    OnHostResized(host_->GetBounds().size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -736,7 +725,7 @@ internal::FocusManager* RootWindow::GetFocusManager() {
 
 void RootWindow::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* animation) {
-  OnHostResized(host_->GetSize());
+  OnHostResized(host_->GetBounds().size());
 }
 
 void RootWindow::OnLayerAnimationScheduled(
@@ -784,7 +773,7 @@ bool RootWindow::IsFocusedWindow(const Window* window) const {
 
 void RootWindow::Init() {
   Window::Init(ui::Layer::LAYER_NOT_DRAWN);
-  SetBounds(gfx::Rect(host_->GetSize()));
+  SetBounds(gfx::Rect(host_->GetBounds().size()));
   Show();
   compositor()->SetRootLayer(layer());
   host_->SetRootWindow(this);
@@ -846,23 +835,8 @@ void RootWindow::DispatchHeldMouseMove() {
 }
 
 gfx::Rect RootWindow::GetInitialHostWindowBounds() const {
-  gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
-                   kDefaultHostWindowWidth, kDefaultHostWindowHeight);
-
-  const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kAuraHostWindowSize);
-  vector<string> parts;
-  base::SplitString(size_str, 'x', &parts);
-  int parsed_width = 0, parsed_height = 0;
-  if (parts.size() == 2 &&
-      base::StringToInt(parts[0], &parsed_width) && parsed_width > 0 &&
-      base::StringToInt(parts[1], &parsed_height) && parsed_height > 0) {
-    bounds.set_size(gfx::Size(parsed_width, parsed_height));
-  } else if (use_fullscreen_host_window_) {
-    bounds = gfx::Rect(RootWindowHost::GetNativeScreenSize());
-  }
-
-  return bounds;
+  return Env::GetInstance()->monitor_manager()->
+      GetMonitorNearestWindow(this)->bounds();
 }
 
 void RootWindow::PostMouseMoveEventAfterWindowChange() {

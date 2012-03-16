@@ -48,8 +48,8 @@ class RootWindowHost {
   virtual void ToggleFullScreen() = 0;
 
   // Gets/Sets the size of the RootWindowHost.
-  virtual gfx::Size GetSize() const = 0;
-  virtual void SetSize(const gfx::Size& size) = 0;
+  virtual gfx::Rect GetBounds() const = 0;
+  virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;

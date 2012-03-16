@@ -906,8 +906,8 @@ TEST_F(WindowTest, Transform) {
   gfx::Size transformed_size(size.height(), size.width());
   EXPECT_EQ(transformed_size.ToString(),
             root_window()->GetHostSize().ToString());
-  EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
-            root_window()->bounds().ToString());
+  EXPECT_EQ(transformed_size.ToString(),
+            root_window()->bounds().size().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
 }

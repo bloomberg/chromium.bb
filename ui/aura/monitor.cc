@@ -10,7 +10,10 @@ Monitor::Monitor() {
 }
 
 gfx::Rect Monitor::GetWorkAreaBounds() const {
-  gfx::Rect bounds(bounds_);
+  // TODO(oshima): For m19, work area/monitor bounds has (0,0) origin
+  // because it's simpler and enough. Fix this when real multi monitor
+  // support is implemented.
+  gfx::Rect bounds(bounds_.size());
   bounds.Inset(work_area_insets_);
   return bounds;
 }

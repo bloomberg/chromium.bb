@@ -77,6 +77,8 @@
         'monitor.h',
         'monitor_manager.cc',
         'monitor_manager.h',
+        'single_monitor_manager.h',
+        'single_monitor_manager.cc',
         'root_window_host.h',
         'root_window_host_linux.cc',
         'root_window_host_linux.h',

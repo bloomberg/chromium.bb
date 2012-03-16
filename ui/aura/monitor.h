@@ -19,17 +19,18 @@ class AURA_EXPORT Monitor {
 
   // Sets/gets monitor's bounds in |gfx::screen|'s coordinates,
   // which is relative to the primary screen's origin.
-  void set_bounds(gfx::Rect& bounds) { bounds_ = bounds;}
+  void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds;}
   const gfx::Rect& bounds() const { return bounds_; };
+
+  // Sets/gets monitor's size.
+  void set_size(const gfx::Size& size) { bounds_.set_size(size); }
+  const gfx::Size& size() const { return bounds_.size(); }
 
   // Sets/gets monitor's workarea insets.
   void set_work_area_insets(const gfx::Insets& insets) {
     work_area_insets_ = insets;
   }
   const gfx::Insets& work_area_insets() const { return work_area_insets_; }
-
-  // Returns the monitor's size.
-  const gfx::Size& size() const { return bounds_.size(); }
 
   // Returns the monitor's work area.
   gfx::Rect GetWorkAreaBounds() const;

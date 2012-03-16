@@ -65,6 +65,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
@@ -392,20 +393,21 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 // Shell, public:
 
 Shell::Shell(ShellDelegate* delegate)
-    : root_window_(new aura::RootWindow),
+    : root_window_(aura::Env::GetInstance()->monitor_manager()->
+                   CreateRootWindowForPrimaryMonitor()),
       screen_(new ScreenAsh(root_window_.get())),
       root_filter_(NULL),
       delegate_(delegate),
       shelf_(NULL),
       root_window_layout_(NULL),
       status_widget_(NULL) {
-  aura::Env::GetInstance()->SetMonitorManager(
-      aura::CreateSingleMonitorManager(root_window_.get()));
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
+  aura::Env::GetInstance()->monitor_manager()->AddObserver(this);
 }
 
 Shell::~Shell() {
+  aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
@@ -690,6 +692,14 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 
 int Shell::GetGridSize() const {
   return workspace_controller_->workspace_manager()->grid_size();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Shell, aura::MonitorObserver implementation:
+
+void Shell::OnMonitorBoundsChanged(const aura::Monitor* monitor) {
+  if (aura::RootWindow::use_fullscreen_host_window())
+    root_window_->SetHostSize(monitor->size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

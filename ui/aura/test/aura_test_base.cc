@@ -6,6 +6,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
@@ -23,10 +24,9 @@ AuraTestBase::~AuraTestBase() {
 
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
-  root_window_.reset(new aura::RootWindow);
+  root_window_.reset(Env::GetInstance()->monitor_manager()->
+                     CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-  Env::GetInstance()->SetMonitorManager(
-      CreateSingleMonitorManager(root_window_.get()));
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
   helper_.InitRootWindow(root_window());
   helper_.SetUp();

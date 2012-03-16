@@ -45,9 +45,8 @@ void BrowserWithTestWindowTest::SetUp() {
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
 #if defined(USE_AURA)
-  root_window_.reset(new aura::RootWindow);
-  aura::Env::GetInstance()->SetMonitorManager(
-      aura::CreateSingleMonitorManager(root_window_.get()));
+  root_window_.reset(aura::Env::GetInstance()->monitor_manager()->
+                     CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window_.get()));

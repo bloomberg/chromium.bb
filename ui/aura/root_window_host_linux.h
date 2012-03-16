@@ -31,8 +31,8 @@ class RootWindowHostLinux : public RootWindowHost {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ToggleFullScreen() OVERRIDE;
-  virtual gfx::Size GetSize() const OVERRIDE;
-  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;

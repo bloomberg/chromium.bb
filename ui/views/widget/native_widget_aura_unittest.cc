@@ -36,9 +36,8 @@ class NativeWidgetAuraTest : public testing::Test {
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    root_window_.reset(new aura::RootWindow);
-    aura::Env::GetInstance()->SetMonitorManager(
-        aura::CreateSingleMonitorManager(root_window_.get()));
+    root_window_.reset(aura::Env::GetInstance()->monitor_manager()->
+                       CreateRootWindowForPrimaryMonitor());
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));

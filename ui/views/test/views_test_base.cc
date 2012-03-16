@@ -79,9 +79,8 @@ void ViewsTestBase::SetUp() {
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
 #if defined(USE_AURA)
-  root_window_.reset(new aura::RootWindow);
-  aura::Env::GetInstance()->SetMonitorManager(
-      aura::CreateSingleMonitorManager(root_window_.get()));
+  root_window_.reset(aura::Env::GetInstance()->monitor_manager()->
+                     CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   root_window_->SetProperty(
       aura::client::kRootWindowInputMethodKey,

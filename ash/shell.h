@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/insets.h"
 
@@ -77,7 +78,7 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell {
+class ASH_EXPORT Shell : public aura::MonitorObserver {
  public:
   enum Direction {
     FORWARD,
@@ -199,6 +200,9 @@ class ASH_EXPORT Shell {
 
   // Returns the size of the grid.
   int GetGridSize() const;
+
+  // aura::MonitorObserver overrides:
+  virtual void OnMonitorBoundsChanged(const aura::Monitor* monitor) OVERRIDE;
 
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;

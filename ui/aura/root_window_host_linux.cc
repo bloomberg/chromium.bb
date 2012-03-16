@@ -13,12 +13,12 @@
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/layer.h"
-
 
 using std::max;
 using std::min;
@@ -362,7 +362,7 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       break;
     case ConfigureNotify: {
       if (xev->xconfigure.window == x_root_window_) {
-        root_window_->OnNativeScreenResized(
+        Env::GetInstance()->monitor_manager()->OnNativeMonitorResized(
             gfx::Size(xev->xconfigure.width, xev->xconfigure.height));
         handled = true;
         break;
@@ -502,23 +502,27 @@ void RootWindowHostLinux::ToggleFullScreen() {
   NOTIMPLEMENTED();
 }
 
-gfx::Size RootWindowHostLinux::GetSize() const {
-  return bounds_.size();
+gfx::Rect RootWindowHostLinux::GetBounds() const {
+  return bounds_;
 }
 
-void RootWindowHostLinux::SetSize(const gfx::Size& size) {
-  if (size == bounds_.size())
+void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
+  bool size_changed = bounds_.size() != bounds.size();
+  if (bounds == bounds_)
     return;
-
-  XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
+  if (bounds.size() != bounds_.size())
+    XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
+  if (bounds.origin() != bounds_.origin())
+    XMoveWindow(xdisplay_, xwindow_, bounds.x(), bounds.y());
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
   // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
-  bounds_.set_size(size);
-  root_window_->OnHostResized(size);
+  bounds_ = bounds;
+  if (size_changed)
+    root_window_->OnHostResized(bounds.size());
 }
 
 gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {

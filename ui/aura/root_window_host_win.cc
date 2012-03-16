@@ -171,23 +171,23 @@ void RootWindowHostWin::ToggleFullScreen() {
                SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
-gfx::Size RootWindowHostWin::GetSize() const {
+gfx::Rect RootWindowHostWin::GetBounds() const {
   RECT r;
   GetClientRect(hwnd(), &r);
-  return gfx::Rect(r).size();
+  return gfx::Rect(r);
 }
 
-void RootWindowHostWin::SetSize(const gfx::Size& size) {
+void RootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   if (fullscreen_) {
-    saved_window_rect_.right = saved_window_rect_.left + size.width();
-    saved_window_rect_.bottom = saved_window_rect_.top + size.height();
+    saved_window_rect_.right = saved_window_rect_.left + bounds.width();
+    saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();
     return;
   }
   RECT window_rect;
-  window_rect.left = 0;
-  window_rect.top = 0;
-  window_rect.right = size.width();
-  window_rect.bottom = size.height();
+  window_rect.left = bounds.x();
+  window_rect.top = bounds.y();
+  window_rect.right = bounds.width();
+  window_rect.bottom = bounds.height();
   AdjustWindowRectEx(&window_rect,
                      GetWindowLong(hwnd(), GWL_STYLE),
                      FALSE,
@@ -241,7 +241,7 @@ gfx::Point RootWindowHostWin::QueryMouseLocation() {
   POINT pt;
   GetCursorPos(&pt);
   ScreenToClient(hwnd(), &pt);
-  const gfx::Size size = GetSize();
+  const gfx::Size size = GetBounds().size();
   return gfx::Point(max(0, min(size.width(), static_cast<int>(pt.x))),
                     max(0, min(size.height(), static_cast<int>(pt.y))));
 }

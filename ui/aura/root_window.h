@@ -52,6 +52,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   RootWindow();
   virtual ~RootWindow();
 
+  // TODO(oshima): Move this to monitor manager.
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
     use_fullscreen_host_window_ = use_fullscreen;
   }
@@ -123,9 +124,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);
-
-  // Called when the native screen's resolution changes.
-  void OnNativeScreenResized(const gfx::Size& size);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);

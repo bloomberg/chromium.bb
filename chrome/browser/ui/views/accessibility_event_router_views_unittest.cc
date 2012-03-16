@@ -127,9 +127,8 @@ class AccessibilityEventRouterViewsTest
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
-    root_window_.reset(new aura::RootWindow);
-    aura::Env::GetInstance()->SetMonitorManager(
-        aura::CreateSingleMonitorManager(root_window_.get()));
+    root_window_.reset(aura::Env::GetInstance()->monitor_manager()->
+                       CreateRootWindowForPrimaryMonitor());
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
     test_stacking_client_.reset(
         new aura::test::TestStackingClient(root_window_.get()));
