@@ -68,6 +68,7 @@
 #include "base/spinlock.h"
 #include "base/low_level_alloc.h"
 #include "base/sysinfo.h"      // for GetUniquePathFromEnv()
+#include "deep-heap-profile.h"
 #include "heap-profile-table.h"
 #include "memory_region_map.h"
 
@@ -121,6 +122,9 @@ DEFINE_bool(only_mmap_profile,
             EnvToBool("HEAP_PROFILE_ONLY_MMAP", false),
             "If heap-profiling is on, only profile mmap, mremap, and sbrk; "
             "do not profile malloc/new/etc");
+DEFINE_bool(deep_heap_profile,
+            EnvToBool("DEEP_HEAP_PROFILE", false),
+            "If heap-profiling is on, profile deeper (only on Linux)");
 
 
 //----------------------------------------------------------------------
@@ -179,6 +183,7 @@ static int64 high_water_mark = 0;     // In-use-bytes at last high-water dump
 static int64 last_dump_time = 0;      // The time of the last dump
 
 static HeapProfileTable* heap_profile = NULL;  // the heap profile table
+static DeepHeapProfile* deep_profile = NULL;  // deep memory profiler
 
 //----------------------------------------------------------------------
 // Profile generation
@@ -197,7 +202,11 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
     if (FLAGS_mmap_profile) {
       heap_profile->RefreshMMapData();
     }
-    bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
+    if (deep_profile) {
+      bytes_written = deep_profile->FillOrderedProfile(buf, buflen - 1);
+    } else {
+      bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
+    }
     if (FLAGS_mmap_profile) {
       heap_profile->ClearMMapData();
     }
@@ -466,6 +475,13 @@ extern "C" void HeapProfilerStart(const char* prefix) {
   high_water_mark = 0;
   last_dump_time = 0;
 
+  if (FLAGS_deep_heap_profile) {
+    // Initialize deep memory profiler
+    RAW_VLOG(0, "[%d] Starting a deep memory profiler", getpid());
+    deep_profile = new(ProfilerMalloc(sizeof(DeepHeapProfile)))
+        DeepHeapProfile(heap_profile, prefix);
+  }
+
   // We do not reset dump_count so if the user does a sequence of
   // HeapProfilerStart/HeapProfileStop, we will get a continuous
   // sequence of profiles.
@@ -505,6 +521,13 @@ extern "C" void HeapProfilerStop() {
     RAW_CHECK(MallocHook::RemoveMremapHook(&MremapHook), "");
     RAW_CHECK(MallocHook::RemoveSbrkHook(&SbrkHook), "");
     RAW_CHECK(MallocHook::RemoveMunmapHook(&MunmapHook), "");
+  }
+
+  if (deep_profile) {
+    // free deep memory profiler
+    deep_profile->~DeepHeapProfile();
+    ProfilerFree(deep_profile);
+    deep_profile = NULL;
   }
 
   // free profile
