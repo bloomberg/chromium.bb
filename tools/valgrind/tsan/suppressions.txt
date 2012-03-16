@@ -554,7 +554,14 @@
   fun:frame_thread_free
   ...
   fun:avcodec_close
+}
+{
+  bug_93932_h
+  ThreadSanitizer:Race
   ...
+  fun:render_slice
+  fun:vp3_decode_frame
+  fun:frame_worker_thread
 }
 {
   bug_100020
@@ -769,10 +776,11 @@
 {
   bug_112200
   ThreadSanitizer:Race
-  fun:park_frame_worker_threads
+  ...
   fun:ff_thread_flush
   fun:avcodec_flush_buffers
   fun:avcodec_flush_buffers
+  ...
   fun:media::FFmpegVideoDecoder::Flush
   fun:base::internal::RunnableAdapter::Run
 }

@@ -1864,7 +1864,7 @@
    fun:PKIX_PL_Malloc
    fun:PKIX_PL_NssContext_Create
    fun:CERT_PKIXVerifyCert
-   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertE*
    fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
    fun:_ZN3net18CertVerifierWorker3RunEv
@@ -1877,7 +1877,7 @@
    fun:_ZNSt12_Vector_baseI14CERTValInParamSaIS0_EE11_M_allocateEj
    fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE20_M_allocate_and_copyIPS0_EES4_jT_S5_
    fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE7reserveEj
-   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertE*
    fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
    fun:_ZN3net18CertVerifierWorker3RunEv
@@ -1887,7 +1887,7 @@
    Memcheck:Leak
    ...
    fun:CERT_PKIXVerifyCert
-   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
+   fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertE*
 }
 {
    bug_32624_g
