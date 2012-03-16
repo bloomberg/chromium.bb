@@ -24,6 +24,7 @@ class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   SSH_URL = os.path.join(constants.GERRIT_SSH_URL,
                          'chromiumos/tryjobs')
+  TRYJOB_DESCRIPTION_VERSION = 1
 
   def __init__(self, options, bots):
     """Construct the object.
@@ -55,7 +56,8 @@ class RemoteTryJob(object):
         'email' : [self.user_email],
         'name' : ','.join(self.options.gerrit_patches),
         'bot' : self.bots,
-        'extra_args' : self.extra_args,}
+        'extra_args' : self.extra_args,
+        'version' : self.TRYJOB_DESCRIPTION_VERSION,}
 
   def _Submit(self, dryrun):
     """Internal submission function.  See Submit() for arg description."""
