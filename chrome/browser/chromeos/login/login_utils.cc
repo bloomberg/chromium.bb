@@ -1337,11 +1337,6 @@ void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
 void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
                                       const std::string& token,
                                       const std::string& secret) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDevicePolicy)) {
-    return;
-  }
-
   // Fetch dm service token now, if it hasn't been fetched yet.
   if (!policy_oauth_fetcher_.get() || policy_oauth_fetcher_->failed()) {
     // Get the default system profile to use with the policy fetching. If there

@@ -16,8 +16,6 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -80,9 +78,6 @@ ExtensionFileBrowserEventRouter::ExtensionFileBrowserEventRouter(
     : delegate_(new ExtensionFileBrowserEventRouter::FileWatcherDelegate(this)),
       notifications_(new FileBrowserNotifications(profile)),
       profile_(profile) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile_));
 }
 
 ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
@@ -97,41 +92,17 @@ ExtensionFileBrowserEventRouter::~ExtensionFileBrowserEventRouter() {
   DiskMountManager::GetInstance()->RemoveObserver(this);
 }
 
-void ExtensionFileBrowserEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (chrome::NOTIFICATION_PROFILE_DESTROYED == type) {
-    gdata::GDataFileSystem* file_system =
-        gdata::GDataFileSystemFactory::GetForProfile(profile_);
-    if (!file_system) {
-      NOTREACHED();
-      return;
-    }
-    file_system->RemoveOperationObserver(this);
-  }
-}
-
 void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
   if (!profile_) {
     NOTREACHED();
     return;
   }
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn())
-    return;
-
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  disk_mount_manager->RemoveObserver(this);
-  disk_mount_manager->AddObserver(this);
-  disk_mount_manager->RequestMountInfoRefresh();
-
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  if (!file_system) {
-    NOTREACHED();
-    return;
+  if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
+    DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+    disk_mount_manager->RemoveObserver(this);
+    disk_mount_manager->AddObserver(this);
+    disk_mount_manager->RequestMountInfoRefresh();
   }
-  file_system->AddOperationObserver(this);
 }
 
 // File watch setup routines.
@@ -230,25 +201,6 @@ void ExtensionFileBrowserEventRouter::MountCompleted(
         error_code == chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM);
   }
 }
-
-void ExtensionFileBrowserEventRouter::OnProgressUpdate(
-    const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
-  scoped_ptr<ListValue> event_list(
-      file_manager_util::ProgressStatusVectorToListValue(
-          profile_,
-          file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
-          list));
-
-  std::string args_json;
-  base::JSONWriter::Write(event_list.get(),
-                          &args_json);
-
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      std::string(kFileBrowserDomain),
-      extension_event_names::kOnFileTransfersUpdated, args_json,
-      NULL, GURL());
-}
-
 
 void ExtensionFileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {

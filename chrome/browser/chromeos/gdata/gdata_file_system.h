@@ -19,7 +19,6 @@
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -233,13 +232,6 @@ class GDataFileSystem : public ProfileKeyedService {
   // otherwise.
   void GetFromCacheForPath(const FilePath& gdata_file_path,
                            const GetFromCacheCallback& callback);
-
-  // Obtains the list of currently active operations.
-  std::vector<GDataOperationRegistry::ProgressStatus> GetProgressStatusList();
-  // Add operation observer.
-  void AddOperationObserver(GDataOperationRegistry::Observer* observer);
-  // Remove operation observer.
-  void RemoveOperationObserver(GDataOperationRegistry::Observer* observer);
 
   // Finds file object by |file_path| and returns its |file_info|.
   // Returns true if file was found.

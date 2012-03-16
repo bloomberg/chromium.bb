@@ -26,7 +26,6 @@
 #include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -688,20 +687,6 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
     OnOAuthRevokeTokenFetched(data, status, response_code);
   } else {
     NOTREACHED();
-  }
-
-  // Dump full response header for failed attempts:
-  if (response_code >= 400) {
-    if (source->GetResponseCode() ==
-            content::URLFetcher::RESPONSE_CODE_INVALID) {
-      LOG(WARNING) << "Error " << response_code
-                   << ", Response headers are malformed!!";
-    } else {
-      std::string headers;
-      source->GetResponseHeaders()->GetNormalizedHeaders(&headers);
-      LOG(WARNING) << "Error " << response_code
-                   << ", response header:\n" << headers;
-    }
   }
 }
 

@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -41,17 +40,14 @@
 #include "chrome/browser/chromeos/media/media_player.h"
 #endif
 
-using base::DictionaryValue;
-using base::ListValue;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
 using file_handler_util::FileTaskExecutor;
-using gdata::GDataOperationRegistry;
 
-#define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
-const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
+#define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
+const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
 
 const char kFileBrowserGalleryTaskId[] = "gallery";
 const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
@@ -60,7 +56,7 @@ namespace file_manager_util {
 namespace {
 
 #define FILEBROWSER_URL(PATH) \
-    ("chrome-extension://" FILEBROWSER_EXTENSON_ID "/" PATH)
+    ("chrome-extension://" FILEBROWSER_DOMAIN "/" PATH)
 // This is the "well known" url for the file manager extension from
 // browser/resources/file_manager.  In the future we may provide a way to swap
 // out this file manager for an aftermarket part, but not yet.
@@ -69,7 +65,7 @@ const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kMediaPlayerPlaylistUrl[] = FILEBROWSER_URL("playlist.html");
 #undef FILEBROWSER_URL
-#undef FILEBROWSER_EXTENSON_ID
+#undef FILEBROWSER_DOMAIN
 
 const char kCRXExtension[] = ".crx";
 const char kPdfExtension[] = ".pdf";
@@ -166,29 +162,6 @@ std::string GetDialogTypeAsString(
   }
 
   return type_str;
-}
-
-DictionaryValue* ProgessStatusToDictionaryValue(
-    Profile* profile,
-    const GURL& origin_url,
-    const GDataOperationRegistry::ProgressStatus& status) {
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
-  GURL file_url;
-  if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-          FilePath(status.file_path),
-          origin_url,
-          &file_url)) {
-    result->SetString("fileUrl", file_url.spec());
-  }
-
-  result->SetString("transferState",
-      GDataOperationRegistry::OperationTransferStateToString(
-          status.transfer_state));
-  result->SetString("transferType",
-      GDataOperationRegistry::OperationTypeToString(status.operation_type));
-  result->SetInteger("processed", static_cast<int>(status.progress_current));
-  result->SetInteger("total", static_cast<int>(status.progress_total));
-  return result.release();
 }
 
 }  // namespace
@@ -520,20 +493,6 @@ bool ShouldBeOpenedWithPdfPlugin(const char* file_extension) {
     return false;
 
   return plugin_prefs->IsPluginEnabled(plugin);
-}
-
-ListValue* ProgressStatusVectorToListValue(
-    Profile* profile, const GURL& origin_url,
-    const std::vector<GDataOperationRegistry::ProgressStatus>& list) {
-  scoped_ptr<ListValue> result_list(new ListValue());
-  for (std::vector<
-          GDataOperationRegistry::ProgressStatus>::const_iterator iter =
-              list.begin();
-       iter != list.end(); ++iter) {
-    result_list->Append(
-        ProgessStatusToDictionaryValue(profile, origin_url, *iter));
-  }
-  return result_list.release();
 }
 
 }  // namespace file_manager_util

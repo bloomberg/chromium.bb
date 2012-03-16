@@ -28,7 +28,6 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // DocumentServiceInterface overrides.
   MOCK_METHOD1(Initialize, void(Profile* profile));
-  MOCK_CONST_METHOD0(operation_registry, GDataOperationRegistry*());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD2(GetDocuments, void(const GURL& feed_url,
