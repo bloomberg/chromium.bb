@@ -58,6 +58,7 @@ struct MediaStreamManager::DeviceRequest {
   enum RequestState {
     kNotRequested = 0,
     kRequested,
+    kPendingApproval,
     kOpening,
     kDone,
     kError
@@ -393,6 +394,7 @@ void MediaStreamManager::DevicesEnumerated(
        ++it) {
     if (it->second.state[stream_type] == DeviceRequest::kRequested &&
         Requested(it->second.options, stream_type)) {
+      it->second.state[stream_type] = DeviceRequest::kPendingApproval;
       label_list.push_back(it->first);
     }
   }
@@ -503,6 +505,8 @@ void MediaStreamManager::DevicesAccepted(const std::string& label,
       // Set in_use to false to be able to track if this device has been
       // opened. in_use might be true if the device type can be used in more
       // than one session.
+      DCHECK_EQ(request_it->second.state[device_it->stream_type],
+                DeviceRequest::kPendingApproval);
       device_info.in_use = false;
       device_info.session_id =
           GetDeviceManager(device_info.stream_type)->Open(device_info);
