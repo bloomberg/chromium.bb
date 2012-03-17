@@ -139,9 +139,6 @@ class NetworkMenuButton : public StatusAreaButton,
   // otherwise just ignore it for current session.
   bool check_for_promo_;
 
-  // Cellular device SIM was locked when we last checked
-  bool was_sim_locked_;
-
   // If any network is currently active, this is the service path of the one
   // whose status is displayed in the network menu button.
   std::string active_network_;

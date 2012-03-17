@@ -315,19 +315,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
     VLOG(2) << "UpdateNetworkDeviceStatus: " << device->name() << "." << key;
     PropertyIndex index = PROPERTY_INDEX_UNKNOWN;
     if (device->UpdateStatus(key, value, &index)) {
-      if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
-        if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
-          SetCellularDataRoamingAllowed(true);
-        } else {
-          bool settings_value;
-          if (CrosSettings::Get()->GetBoolean(
-                  kSignedDataRoamingEnabled, &settings_value) &&
-              device->data_roaming_allowed() != settings_value) {
-            // Switch back to signed settings value.
-            SetCellularDataRoamingAllowed(settings_value);
-            return;
-          }
-        }
+      if (device->type() == TYPE_CELLULAR) {
+        if (!UpdateCellularDeviceStatus(device, index))
+          return;  // Update aborted, skip notify.
       }
     } else {
       VLOG(1) << "UpdateNetworkDeviceStatus: Failed to update: "
@@ -336,11 +326,35 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
     // Notify only observers on device property change.
     NotifyNetworkDeviceChanged(device, index);
     // If a device's power state changes, new properties may become defined.
-    if (index == PROPERTY_INDEX_POWERED)
+    if (index == PROPERTY_INDEX_POWERED) {
       CrosRequestNetworkDeviceProperties(path.c_str(),
                                          &NetworkDeviceUpdate,
                                          this);
+    }
   }
+}
+
+bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(
+    NetworkDevice* device, PropertyIndex index) {
+  if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
+    if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
+      SetCellularDataRoamingAllowed(true);
+    } else {
+      bool settings_value;
+      if ((CrosSettings::Get()->GetBoolean(
+              kSignedDataRoamingEnabled, &settings_value)) &&
+          (device->data_roaming_allowed() != settings_value)) {
+        // Switch back to signed settings value.
+        SetCellularDataRoamingAllowed(settings_value);
+        return false;
+      }
+    }
+  } else if (index == PROPERTY_INDEX_SIM_LOCK) {
+    // We only ever request a sim unlock when we wish to enable the device.
+    if (!device->is_sim_locked() && !cellular_enabled())
+      EnableCellularNetworkDevice(true);
+  }
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

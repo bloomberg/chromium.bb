@@ -81,6 +81,9 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       void* object, const char* path, const char* key, const GValue* gvalue);
   void UpdateNetworkDeviceStatus(
       const std::string& path, const std::string& key, const Value& value);
+  // Cellular specific updates. Returns false if update was ignored / reverted
+  // and notification should be skipped.
+  bool UpdateCellularDeviceStatus(NetworkDevice* device, PropertyIndex index);
 
   static void PinOperationCallback(void* object,
                                    const char* path,

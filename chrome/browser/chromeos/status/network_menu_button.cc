@@ -103,7 +103,6 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this),
       mobile_data_bubble_(NULL),
       check_for_promo_(true),
-      was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   set_id(VIEW_ID_STATUS_BUTTON_NETWORK_MENU);
   network_menu_.reset(new NetworkMenu(this));
@@ -117,7 +116,6 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaButton::Delegate* delegate)
   const NetworkDevice* cellular = network_library->FindCellularDevice();
   if (cellular) {
     cellular_device_path_ = cellular->device_path();
-    was_sim_locked_ = cellular->is_sim_locked();
     network_library->AddNetworkDeviceObserver(cellular_device_path_, this);
   }
 }
@@ -147,18 +145,6 @@ void NetworkMenuButton::OnNetworkDeviceChanged(NetworkLibrary* cros,
   // Device status, such as SIMLock may have changed.
   SetNetworkIcon();
   network_menu_->UpdateMenu();
-  const NetworkDevice* cellular = cros->FindCellularDevice();
-  if (cellular) {
-    // We make an assumption (which is valid for now) that the SIM
-    // unlock dialog is put up only when the user is trying to enable
-    // mobile data. So if the SIM is now unlocked, initiate the
-    // enable operation that the user originally requested.
-    if (was_sim_locked_ && !cellular->is_sim_locked() &&
-        !cros->cellular_enabled()) {
-      cros->EnableCellularNetworkDevice(true);
-    }
-    was_sim_locked_ = cellular->is_sim_locked();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -352,7 +338,6 @@ void NetworkMenuButton::RefreshNetworkDeviceObserver(NetworkLibrary* cros) {
       cros->RemoveNetworkDeviceObserver(cellular_device_path_, this);
     }
     if (!new_cellular_device_path.empty()) {
-      was_sim_locked_ = cellular->is_sim_locked();
       cros->AddNetworkDeviceObserver(new_cellular_device_path, this);
     }
     cellular_device_path_ = new_cellular_device_path;
