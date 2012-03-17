@@ -33,12 +33,14 @@ class GlobalErrorBubble : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnAcceptButton);
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnCancelButton);
+  CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnBottomRealize);
 
   virtual void CloseBubbleView() OVERRIDE;
 
   Browser* browser_;
   BubbleGtk* bubble_;
   base::WeakPtr<GlobalError> error_;
+  GtkWidget* message_label_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubble);
 };

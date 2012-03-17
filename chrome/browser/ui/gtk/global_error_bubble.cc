@@ -35,8 +35,8 @@ const int kInterLineSpacing = 5;
 // Text size of the message label. 12.1px = 9pt @ 96dpi.
 const double kMessageTextSize = 12.1;
 
-// Width of the message label.
-const int kMessageLabelWidth = 250;
+// Minimum width of the message label.
+const int kMinMessageLabelWidth = 250;
 
 }  // namespace
 
@@ -63,11 +63,12 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   GtkWidget* title_label = theme_service->BuildLabel(
       UTF16ToUTF8(error_->GetBubbleViewTitle()),
       ui::kGdkBlack);
-  GtkWidget* message_label = theme_service->BuildLabel(
+  message_label_ = theme_service->BuildLabel(
       UTF16ToUTF8(error_->GetBubbleViewMessage()),
       ui::kGdkBlack);
-  gtk_util::ForceFontSizePixels(message_label, kMessageTextSize);
-  gtk_util::SetLabelWidth(message_label, kMessageLabelWidth);
+  gtk_util::ForceFontSizePixels(message_label_, kMessageTextSize);
+  // Message label will be sized later in "realize" callback because we need
+  // to now the width of buttons group.
   GtkWidget* accept_button = gtk_button_new_with_label(
       UTF16ToUTF8(error_->GetBubbleViewAcceptButtonLabel()).c_str());
   string16 cancel_string = error_->GetBubbleViewCancelButtonLabel();
@@ -84,7 +85,7 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   gtk_box_pack_start(GTK_BOX(content), top, FALSE, FALSE, 0);
 
   // Middle, message.
-  gtk_box_pack_start(GTK_BOX(content), message_label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content), message_label_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), gtk_hbox_new(FALSE, 0), FALSE, FALSE, 0);
 
   // Bottom, accept and cancel button.
@@ -105,6 +106,8 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
     g_signal_connect(cancel_button, "clicked",
                      G_CALLBACK(OnCancelButtonThunk), this);
   }
+
+  g_signal_connect(bottom, "realize", G_CALLBACK(OnBottomRealizeThunk), this);
 
   BubbleGtk::ArrowLocationGtk arrow_location =
       base::i18n::IsRTL() ?
@@ -143,6 +146,12 @@ void GlobalErrorBubble::OnCancelButton(GtkWidget* sender) {
   if (error_)
     error_->BubbleViewCancelButtonPressed(browser_);
   bubble_->Close();
+}
+
+void GlobalErrorBubble::OnBottomRealize(GtkWidget* sender) {
+  int bottom_width = gtk_util::GetWidgetSize(sender).width();
+  gtk_util::SetLabelWidth(message_label_,
+                          std::max(kMinMessageLabelWidth, bottom_width));
 }
 
 void GlobalErrorBubble::CloseBubbleView() {
