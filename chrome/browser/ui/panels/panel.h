@@ -262,8 +262,9 @@ class Panel : public BrowserWindow,
   // Sets whether the panel app icon is visible in the taskbar.
   void SetAppIconVisibility(bool visible);
 
-  // Sets whether the panel window is always on top.
+  // Whether the panel window is always on top.
   void SetAlwaysOnTop(bool on_top);
+  bool always_on_top() const { return always_on_top_; }
 
   // Sets whether the panel is shown in preview mode. When the panel is
   // being dragged, it is in preview mode.

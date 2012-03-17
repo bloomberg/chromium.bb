@@ -81,7 +81,6 @@ enum {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
-    alwaysOnTop_ = YES;
   }
   contentsController_.reset(
       [[TabContentsController alloc] initWithContents:nil]);
@@ -656,17 +655,10 @@ enum {
   return canBecomeKeyWindow_;
 }
 
-- (void)setAlwaysOnTop:(bool)onTop {
-  if (alwaysOnTop_ == onTop)
-    return;
-  alwaysOnTop_ = onTop;
-  [self updateWindowLevel];
-}
-
 - (void)updateWindowLevel {
   if (![self isWindowLoaded])
     return;
-  BOOL onTop = alwaysOnTop_ &&
+  BOOL onTop = windowShim_->panel()->always_on_top() &&
                !windowShim_->panel()->manager()->is_full_screen();
   [[self window] setLevel:(onTop ? NSStatusWindowLevel : NSNormalWindowLevel)];
 }

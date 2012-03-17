@@ -265,7 +265,7 @@ void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {
 }
 
 void PanelBrowserWindowCocoa::SetPanelAlwaysOnTop(bool on_top) {
-  [controller_ setAlwaysOnTop:on_top];
+  [controller_ updateWindowLevel];
 }
 
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {

@@ -56,7 +56,6 @@ class PanelBrowserWindowCocoa;
   BOOL playingMinimizeAnimation_;
   float animationStopToShowTitlebarOnly_;
   BOOL canBecomeKeyWindow_;
-  BOOL alwaysOnTop_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -148,8 +147,6 @@ class PanelBrowserWindowCocoa;
 - (int)titlebarIconOnlyWidthInScreenCoordinates;
 
 - (void)ensureFullyVisible;
-
-- (void)setAlwaysOnTop:(bool)onTop;
 
 - (void)updateWindowLevel;
 
