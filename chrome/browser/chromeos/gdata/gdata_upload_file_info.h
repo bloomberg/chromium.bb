@@ -35,10 +35,8 @@ struct UploadFileInfo {
   // Useful for printf debugging.
   std::string DebugString() const;
 
-  // Data to be initialized by caller before initiating upload request.
-  // URL of physical file to be uploaded, used as main identifier in callbacks.
+  int upload_id;  // id of this upload.
   FilePath file_path;  // The path of the file to be uploaded.
-  GURL file_url;  // file: url of the file to the uploaded.
   int64 file_size;  // Last known size of the file.
 
   // TODO(zelirag, achuith): Make this string16.

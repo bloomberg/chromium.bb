@@ -31,14 +31,14 @@ class GDataUploader {
   void UploadFile(UploadFileInfo* upload_file_info);
 
   // Updates file path, size and download_completed status of streaming upload.
-  void UpdateUpload(const GURL& file_url,
+  void UpdateUpload(int upload_id,
                     const FilePath& file_path,
                     int64 file_size,
                     bool download_complete);
 
  private:
   // Lookup UploadFileInfo* in pending_uploads_.
-  UploadFileInfo* GetUploadFileInfo(const GURL& file_url);
+  UploadFileInfo* GetUploadFileInfo(int upload_id);
 
   // Destroys |upload_file_info|.
   void RemovePendingUpload(UploadFileInfo* upload_file_info);
@@ -48,10 +48,10 @@ class GDataUploader {
 
   // net::FileStream::Open completion callback. The result of the file
   // open operation is passed as |result|.
-  void OpenCompletionCallback(const GURL& file_url, int result);
+  void OpenCompletionCallback(int upload_id, int result);
 
   // DocumentsService callback for InitiateUpload.
-  void OnUploadLocationReceived(const GURL& file_url,
+  void OnUploadLocationReceived(int upload_id,
                                 GDataErrorCode code,
                                 const GURL& upload_location);
 
@@ -59,19 +59,20 @@ class GDataUploader {
   void UploadNextChunk(UploadFileInfo* upload_file_info);
 
   // net::FileStream::Read completion callback.
-  void ReadCompletionCallback(const GURL& file_url,
+  void ReadCompletionCallback(int upload_id,
       int bytes_to_read,
       int bytes_read);
 
   // DocumentsService callback for ResumeUpload.
-  void OnResumeUploadResponseReceived(const GURL& file_url,
+  void OnResumeUploadResponseReceived(int upload_id,
                                       const ResumeUploadResponse& response);
 
   // Private data.
 
   GDataFileSystem* file_system_;
 
-  typedef std::map<GURL, UploadFileInfo*> UploadFileInfoMap;
+  int next_upload_id_;  // id counter.
+  typedef std::map<int, UploadFileInfo*> UploadFileInfoMap;
   UploadFileInfoMap pending_uploads_;
 
   // Factory for various callbacks.

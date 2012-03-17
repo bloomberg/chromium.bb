@@ -9,7 +9,8 @@
 namespace gdata {
 
 UploadFileInfo::UploadFileInfo()
-    : file_size(0),
+    : upload_id(-1),
+      file_size(0),
       content_length(0),
       file_stream(NULL),
       buf_len(0),

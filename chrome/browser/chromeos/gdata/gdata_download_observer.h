@@ -63,7 +63,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   bool ShouldUpload(content::DownloadItem* download);
 
   // Creates UploadFileInfo and initializes it using DownloadItem*.
-  UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
+  static UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.

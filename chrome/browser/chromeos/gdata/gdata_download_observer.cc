@@ -26,13 +26,13 @@ const char kGDataPathKey[] = "GDataPath";
 // External Data stored in DownloadItem for ongoing uploads.
 class UploadingExternalData : public DownloadItem::ExternalData {
  public:
-  explicit UploadingExternalData(const GURL& url) : file_url_(url) {}
+  explicit UploadingExternalData(int upload_id) : upload_id_(upload_id) {}
   virtual ~UploadingExternalData() {}
 
-  const GURL& file_url() const { return file_url_; }
+  int upload_id() const { return upload_id_; }
 
  private:
-  GURL file_url_;
+  int upload_id_;
 };
 
 // External Data stored in DownloadItem for gdata path.
@@ -175,7 +175,7 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   UploadFileInfo* upload_file_info = CreateUploadFileInfo(download);
   // Set the UploadingKey in |download|.
   download->SetExternalData(&kUploadingKey,
-      new UploadingExternalData(upload_file_info->file_url));
+      new UploadingExternalData(upload_file_info->upload_id));
 
   gdata_uploader_->UploadFile(upload_file_info);
 }
@@ -187,7 +187,7 @@ void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
   if (!external_data)
     return;
 
-  gdata_uploader_->UpdateUpload(external_data->file_url(),
+  gdata_uploader_->UpdateUpload(external_data->upload_id(),
                                 download->GetFullPath(),
                                 download->GetReceivedBytes(),
                                 download->AllDataSaved());
@@ -205,14 +205,13 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
          GetUploadingExternalData(download) == NULL;
 }
 
+// static
 UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
     DownloadItem* download) {
   UploadFileInfo* upload_file_info = new UploadFileInfo();
 
   // GetFullPath will be a temporary location if we're streaming.
   upload_file_info->file_path = download->GetFullPath();
-  upload_file_info->file_url = net::FilePathToFileURL(
-      upload_file_info->file_path);
   upload_file_info->file_size = download->GetReceivedBytes();
 
   // Extract the final path from DownloadItem.

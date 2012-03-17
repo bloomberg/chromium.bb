@@ -31,6 +31,7 @@ namespace gdata {
 
 GDataUploader::GDataUploader(GDataFileSystem* file_system)
   : file_system_(file_system),
+    next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
 
@@ -40,9 +41,11 @@ GDataUploader::~GDataUploader() {
 void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info);
+  DCHECK_EQ(upload_file_info->upload_id, -1);
 
+  upload_file_info->upload_id = next_upload_id_++;
   // Add upload_file_info to our internal map and take ownership.
-  pending_uploads_[upload_file_info->file_url] = upload_file_info;
+  pending_uploads_[upload_file_info->upload_id] = upload_file_info;
   DVLOG(1) << "Uploading file: " << upload_file_info->DebugString();
 
   // Create a FileStream to make sure the file can be opened successfully.
@@ -56,11 +59,11 @@ void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
   OpenFile(upload_file_info);
 }
 
-void GDataUploader::UpdateUpload(const GURL& file_url,
+void GDataUploader::UpdateUpload(int upload_id,
                                  const FilePath& file_path,
                                  int64 file_size,
                                  bool download_complete) {
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
@@ -96,15 +99,15 @@ void GDataUploader::UpdateUpload(const GURL& file_url,
   }
 }
 
-UploadFileInfo* GDataUploader::GetUploadFileInfo(const GURL& file_url) {
+UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfoMap::iterator it = pending_uploads_.find(file_url);
+  UploadFileInfoMap::iterator it = pending_uploads_.find(upload_id);
   return it != pending_uploads_.end() ? it->second : NULL;
 }
 
 void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
-  pending_uploads_.erase(upload_file_info->file_url);
+  pending_uploads_.erase(upload_file_info->upload_id);
   // The file stream is closed by the destructor asynchronously.
   delete upload_file_info->file_stream;
   delete upload_file_info;
@@ -119,14 +122,14 @@ void GDataUploader::OpenFile(UploadFileInfo* upload_file_info) {
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&GDataUploader::OpenCompletionCallback,
                  uploader_factory_.GetWeakPtr(),
-                 upload_file_info->file_url));
+                 upload_file_info->upload_id));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
 }
 
-void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
+void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
@@ -162,16 +165,16 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
       upload_file_info->gdata_path,
       base::Bind(&GDataUploader::OnUploadLocationReceived,
                  uploader_factory_.GetWeakPtr(),
-                 upload_file_info->file_url));
+                 upload_file_info->upload_id));
 }
 
 void GDataUploader::OnUploadLocationReceived(
-    const GURL& file_url,
+    int upload_id,
     GDataErrorCode code,
     const GURL& upload_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
@@ -194,7 +197,7 @@ void GDataUploader::OnUploadLocationReceived(
 void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check that |upload_file_info| is in pending_uploads_.
-  DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->file_url));
+  DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->upload_id));
   DVLOG(1) << "Number of pending uploads=" << pending_uploads_.size();
 
   // Determine number of bytes to read for this upload iteration, which cannot
@@ -216,12 +219,12 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
       bytes_to_read,
       base::Bind(&GDataUploader::ReadCompletionCallback,
                  uploader_factory_.GetWeakPtr(),
-                 upload_file_info->file_url,
+                 upload_file_info->upload_id,
                  bytes_to_read));
 }
 
 void GDataUploader::ReadCompletionCallback(
-    const GURL& file_url,
+    int upload_id,
     int bytes_to_read,
     int bytes_read) {
   // The Read is asynchronously executed on BrowserThread::UI, where
@@ -229,7 +232,7 @@ void GDataUploader::ReadCompletionCallback(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
@@ -253,15 +256,15 @@ void GDataUploader::ReadCompletionCallback(
                          upload_file_info->gdata_path),
       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
                  uploader_factory_.GetWeakPtr(),
-                 upload_file_info->file_url));
+                 upload_file_info->upload_id));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
-    const GURL& file_url,
+    int upload_id,
     const ResumeUploadResponse& response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
