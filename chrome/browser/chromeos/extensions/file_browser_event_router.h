@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,24 +16,17 @@
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class FileBrowserNotifications;
 class Profile;
 
 // Used to monitor disk mount changes and signal when new mounted usb device is
 // found.
-class FileBrowserEventRouter
-    : public ProfileKeyedService,
-      public chromeos::disks::DiskMountManager::Observer,
-      public gdata::GDataOperationRegistry::Observer {
+class ExtensionFileBrowserEventRouter
+    : public chromeos::disks::DiskMountManager::Observer {
  public:
-  // ProfileKeyedService overrides.
-  virtual void Shutdown() OVERRIDE;
-
+  explicit ExtensionFileBrowserEventRouter(Profile* profile);
+  virtual ~ExtensionFileBrowserEventRouter();
   // Starts observing file system change events. Currently only
   // CrosDisksClient events are being observed.
   void ObserveFileSystemEvents();
@@ -57,18 +50,11 @@ class FileBrowserEventRouter
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
       OVERRIDE;
 
-  // GDataOperationRegistry::Observer overrides.
-  virtual void OnProgressUpdate(
-      const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list)
-          OVERRIDE;
-
  private:
-  friend class FileBrowserEventRouterFactory;
-
   // Helper class for passing through file watch notification events.
   class FileWatcherDelegate : public base::files::FilePathWatcher::Delegate {
    public:
-    explicit FileWatcherDelegate(FileBrowserEventRouter* router);
+    explicit FileWatcherDelegate(ExtensionFileBrowserEventRouter* router);
 
    private:
     // base::files::FilePathWatcher::Delegate overrides.
@@ -77,7 +63,7 @@ class FileBrowserEventRouter
 
     void HandleFileWatchOnUIThread(const FilePath& local_path, bool got_error);
 
-    FileBrowserEventRouter* router_;
+    ExtensionFileBrowserEventRouter* router_;
   };
 
   typedef std::map<std::string, int> ExtensionUsageRegistry;
@@ -110,9 +96,6 @@ class FileBrowserEventRouter
   };
 
   typedef std::map<FilePath, FileWatcherExtensions*> WatcherMap;
-
-  explicit FileBrowserEventRouter(Profile* profile);
-  virtual ~FileBrowserEventRouter();
 
   // USB mount event handlers.
   void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk* disk);
@@ -156,30 +139,7 @@ class FileBrowserEventRouter
   Profile* profile_;
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
-};
-
-// Singleton that owns all FileBrowserEventRouter and associates
-// them with Profiles.
-class FileBrowserEventRouterFactory
-    : public ProfileKeyedServiceFactory {
- public:
-  // Returns the FileBrowserEventRouter for |profile|, creating it if
-  // it is not yet created.
-  static FileBrowserEventRouter* GetForProfile(Profile* profile);
-
-  // Returns the FileBrowserEventRouterFactory instance.
-  static FileBrowserEventRouterFactory* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<FileBrowserEventRouterFactory>;
-
-  FileBrowserEventRouterFactory();
-  virtual ~FileBrowserEventRouterFactory();
-
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionFileBrowserEventRouter);
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_EVENT_ROUTER_H_

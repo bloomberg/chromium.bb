@@ -763,15 +763,11 @@ DirectoryModel.prototype = {
     }
 
     function onGData(entry) {
-      console.log('onGData');
-      console.log(entry);
       groups.gdata = [entry];
       done();
     }
 
     function onGDataError(error) {
-      console.log('onGDataError');
-      console.log(error);
       groups.gdata = [];
       done();
     }
@@ -788,11 +784,8 @@ DirectoryModel.prototype = {
   },
 
   updateRoots: function(opt_callback) {
-    console.log('directoryModel_.updateRoots');
     var self = this;
     this.resolveRoots_(function(rootEntries) {
-      console.log('rootsList_ = ');
-      console.log(self.rootsList_);
       var dm = self.rootsList_;
       var args = [0, dm.length].concat(rootEntries);
       dm.splice.apply(dm, args);

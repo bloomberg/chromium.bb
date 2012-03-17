@@ -541,8 +541,9 @@ void ExtensionService::InitEventRouters() {
   web_navigation_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
-  FileBrowserEventRouterFactory::GetForProfile(
-      profile_)->ObserveFileSystemEvents();
+  file_browser_event_router_.reset(
+      new ExtensionFileBrowserEventRouter(profile_));
+  file_browser_event_router_->ObserveFileSystemEvents();
 
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter);

@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -62,7 +61,6 @@ using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
 using file_handler_util::FileTaskExecutor;
-using gdata::GDataOperationRegistry;
 
 namespace {
 
@@ -565,7 +563,7 @@ bool AddFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& virtual_path,
     const std::string& extension_id) {
 #if defined(OS_CHROMEOS)
-  return FileBrowserEventRouterFactory::GetForProfile(profile_)->
+  return profile_->GetExtensionService()->file_browser_event_router()->
       AddFileWatch(local_path, virtual_path, extension_id);
 #else
   return true;
@@ -576,7 +574,7 @@ bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
     const FilePath& local_path, const FilePath& unused,
     const std::string& extension_id) {
 #if defined(OS_CHROMEOS)
-  FileBrowserEventRouterFactory::GetForProfile(profile_)->
+  profile_->GetExtensionService()->file_browser_event_router()->
       RemoveFileWatch(local_path, extension_id);
 #endif
   return true;
@@ -1047,8 +1045,10 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);
   // Raise mount event
-  FileBrowserEventRouterFactory::GetForProfile(profile_)->
-      MountCompleted(DiskMountManager::MOUNTING, error_code, mount_info);
+  profile_->GetExtensionService()->file_browser_event_router()->MountCompleted(
+      DiskMountManager::MOUNTING,
+      error_code,
+      mount_info);
 }
 
 void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
@@ -1755,32 +1755,3 @@ void GetGDataFilesFunction::OnFileReady(
   // Start getting the next file.
   GetFileOrSendResponse();
 }
-
-GetFileTransfersFunction::GetFileTransfersFunction() {}
-
-GetFileTransfersFunction::~GetFileTransfersFunction() {}
-
-ListValue* GetFileTransfersFunction::GetFileTransfersList() {
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  if (!file_system)
-    return NULL;
-
-  std::vector<gdata::GDataOperationRegistry::ProgressStatus>
-      list = file_system->GetProgressStatusList();
-  return file_manager_util::ProgressStatusVectorToListValue(
-      profile_, source_url_.GetOrigin(), list);
-}
-
-bool GetFileTransfersFunction::RunImpl() {
-  scoped_ptr<ListValue> progress_status_list(GetFileTransfersList());
-  if (!progress_status_list.get()) {
-    SendResponse(false);
-    return false;
-  }
-
-  result_.reset(progress_status_list.release());
-  SendResponse(true);
-  return true;
-}
-

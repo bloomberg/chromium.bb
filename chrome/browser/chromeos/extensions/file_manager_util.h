@@ -7,18 +7,12 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
-
-namespace base {
-class ListValue;
-}
 
 extern const char kFileBrowserDomain[];
 
@@ -73,11 +67,6 @@ bool TryViewingFile(const FilePath& file);
 void InstallCRX(Profile* profile, const FilePath& full_path);
 
 bool ShouldBeOpenedWithPdfPlugin(const char* file_extension);
-
-// Converts the vector of progress status to their JSON (Value) form.
-base::ListValue* ProgressStatusVectorToListValue(
-    Profile* profile, const GURL& origin_url,
-    const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list);
 
 }  // namespace file_manager_util
 

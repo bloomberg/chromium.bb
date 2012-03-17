@@ -196,10 +196,6 @@ void DocumentsService::Initialize(Profile* profile) {
   gdata_auth_service_->Initialize(profile);
 }
 
-GDataOperationRegistry* DocumentsService::operation_registry() const {
-  return operation_registry_.get();
-}
-
 void DocumentsService::CancelAll() {
   operation_registry_->CancelAll();
 }
