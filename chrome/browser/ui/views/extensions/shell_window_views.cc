@@ -221,7 +221,8 @@ views::View* ShellWindowViews::GetContentsView() {
   return host_->view();
 }
 
-views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView() {
+views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
+    views::Widget* widget) {
   ShellWindowFrameView* frame_view = new ShellWindowFrameView();
   gfx::Size min_size(host_->extension()->launch_min_width(),
                      host_->extension()->launch_min_height());

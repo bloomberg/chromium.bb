@@ -138,7 +138,7 @@ ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
   return new ClientView(widget, GetContentsView());
 }
 
-NonClientFrameView* WidgetDelegate::CreateNonClientFrameView() {
+NonClientFrameView* WidgetDelegate::CreateNonClientFrameView(Widget* widget) {
   return NULL;
 }
 

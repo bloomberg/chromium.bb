@@ -10,14 +10,20 @@
 #include "base/basictypes.h"
 #include "ui/aura/aura_export.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/views/controls/button/button.h"  // ButtonListener
+
+namespace views {
+class ImageButton;
+}
 
 namespace ash {
 
-class PanelCaption;
+class FramePainter;
 
-class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
+class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
+                                  public views::ButtonListener {
  public:
-  PanelFrameView();
+  explicit PanelFrameView(views::Widget* frame);
   virtual ~PanelFrameView();
 
  private:
@@ -33,13 +39,17 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Height of panel's caption
-  int CaptionHeight() const;
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Child View class describing the panel's title bar behavior
   // and buttons, owned by the view hierarchy
-  PanelCaption* panel_caption_;
+  scoped_ptr<FramePainter> frame_painter_;
+  views::ImageButton* close_button_;
+  views::ImageButton* minimize_button_;
   gfx::Rect client_view_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelFrameView);

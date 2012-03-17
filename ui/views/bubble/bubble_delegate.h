@@ -43,7 +43,8 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
-  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
 
   // Widget::Observer overrides:
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;

@@ -70,7 +70,8 @@ class PanelViewAura : public views::NativeViewHost,
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE;
 
   // Overridden from BaseWindow:
   virtual bool IsActive() const OVERRIDE;

@@ -3,140 +3,45 @@
 // found in the LICENSE file.
 
 #include "ash/wm/panel_frame_view.h"
-
+#include "ash/wm/frame_painter.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/aura/cursor.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 
-namespace {
+PanelFrameView::PanelFrameView(views::Widget* frame)
+  : frame_painter_(new FramePainter) {
+  close_button_ = new views::ImageButton(this);
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+  AddChildView(close_button_);
 
-const int kClientViewPaddingLeft = 0;
-const int kClientViewPaddingRight = 0;
-const int kClientViewPaddingBottom = 0;
-const int kSeparatorWidth = 1;
-const SkColor kCaptionColor = SK_ColorGRAY;
-const SkColor kCaptionIconSeparatorColor = SkColorSetRGB(0x55, 0x55, 0x55);
+  minimize_button_ = new views::ImageButton(this);
+  minimize_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
+  AddChildView(minimize_button_);
 
-}  // namespace
-
-// Buttons for panel control
-class PanelControlButton : public views::CustomButton {
- public:
-  PanelControlButton(views::ButtonListener* listener,
-                     const SkBitmap& icon)
-      : views::CustomButton(listener),
-        icon_(icon) {
-  }
-  virtual ~PanelControlButton() {}
-
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    SkPaint paint;
-    paint.setAlpha(hover_animation_->CurrentValueBetween(80, 255));
-    canvas->DrawBitmapInt(icon_,
-                          (width() - icon_.width())/2,
-                          (height() - icon_.height())/2, paint);
-  }
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    gfx::Size size(icon_.width(), icon_.height());
-    size.Enlarge(3, 2);
-    return size;
-  }
-
- private:
-  SkBitmap icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(PanelControlButton);
-};
-
-
-class PanelCaption : public views::View,
-                     public views::ButtonListener {
- public:
-  PanelCaption() {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button_ = new PanelControlButton(this,
-        *rb.GetImageNamed(IDR_AURA_WINDOW_CLOSE_ICON).ToSkBitmap());
-    AddChildView(close_button_);
-  }
-  virtual ~PanelCaption() {}
-
-  // point is in parent's coordinates
-  int NonClientHitTest(const gfx::Point& point) {
-    if (!GetLocalBounds().Contains(point))
-      return HTNOWHERE;
-
-    gfx::Point translated_point(point);
-    View::ConvertPointToView(parent(), this, &translated_point);
-    if (close_button_->GetMirroredBounds().Contains(translated_point))
-      return HTCLOSE;
-    return HTCAPTION;
-  }
-
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(0, close_button_->GetPreferredSize().height());
-  }
-
-
- private:
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetLocalBounds(), kCaptionColor);
-    gfx::Rect separator(close_button_->bounds());
-    separator.set_width(kSeparatorWidth);
-    canvas->FillRect(separator, kCaptionIconSeparatorColor);
-  }
-
-  virtual void Layout() OVERRIDE {
-    gfx::Size close_ps = close_button_->GetPreferredSize();
-    close_button_->SetBoundsRect(
-        gfx::Rect(width() - close_ps.width(), 0,
-                  close_ps.width(), close_ps.height()));
-  }
-
-  // Overriden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
-    if (sender == close_button_)
-      GetWidget()->Close();
-  }
-
-  views::Button* close_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(PanelCaption);
-};
-
-PanelFrameView::PanelFrameView()
-    : panel_caption_(new PanelCaption) {
-  AddChildView(panel_caption_);
+  frame_painter_->Init(frame, NULL, minimize_button_, close_button_);
 }
 
 PanelFrameView::~PanelFrameView() {
 }
 
-int PanelFrameView::CaptionHeight() const {
-  return panel_caption_->GetPreferredSize().height();
-}
-
 void PanelFrameView::Layout() {
-  client_view_bounds_ = GetLocalBounds();
-  client_view_bounds_.Inset(kClientViewPaddingLeft,
-                            CaptionHeight(),
-                            kClientViewPaddingRight,
-                            kClientViewPaddingBottom);
-
-  panel_caption_->SetBounds(0, 0, width(), CaptionHeight());
+  frame_painter_->LayoutHeader(this, true);
 }
 
 void PanelFrameView::ResetWindowControls() {
@@ -152,35 +57,34 @@ void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (!GetLocalBounds().Contains(point))
-    return HTNOWHERE;
+  return frame_painter_->NonClientHitTest(this, point);
+}
 
-  gfx::Point translated_point(point);
-  View::ConvertPointToView(parent(), this, &translated_point);
-
-  int client_view_result =
-      GetWidget()->client_view()->NonClientHitTest(translated_point);
-  if (client_view_result != HTNOWHERE)
-    return client_view_result;
-
-  int caption_result = panel_caption_->NonClientHitTest(translated_point);
-  if (caption_result != HTNOWHERE)
-    return caption_result;
-  return HTNOWHERE;
+void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const SkBitmap* theme_bitmap = ShouldPaintAsActive() ?
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_ACTIVE).ToSkBitmap() :
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE).ToSkBitmap();
+  frame_painter_->PaintHeader(this, canvas, theme_bitmap, NULL);
+  frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
-  return client_view_bounds_;
+  return frame_painter_->GetBoundsForClientView(
+      close_button_->bounds().bottom(),
+      bounds());
 }
 
 gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  gfx::Rect window_bounds = client_bounds;
-  window_bounds.Inset(-kClientViewPaddingLeft,
-                      -CaptionHeight(),
-                      -kClientViewPaddingRight,
-                      -kClientViewPaddingBottom);
-  return window_bounds;
+  return frame_painter_->GetWindowBoundsForClientBounds(
+      close_button_->bounds().bottom(), client_bounds);
+}
+
+void PanelFrameView::ButtonPressed(views::Button* sender,
+                                   const views::Event& event) {
+  if (sender == close_button_)
+    GetWidget()->Close();
 }
 
 }  // namespace ash

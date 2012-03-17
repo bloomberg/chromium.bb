@@ -62,8 +62,9 @@ class BubbleBorderDelegate : public WidgetDelegate,
   virtual void DeleteDelegate() OVERRIDE { delete this; }
   virtual Widget* GetWidget() OVERRIDE { return widget_; }
   virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
-  virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE {
-    return bubble_->CreateNonClientFrameView();
+  virtual NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) OVERRIDE {
+    return bubble_->CreateNonClientFrameView(widget);
   }
 
   // Widget::Observer overrides:
@@ -165,7 +166,8 @@ View* BubbleDelegateView::GetContentsView() {
   return this;
 }
 
-NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView() {
+NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
+    Widget* widget) {
   return new BubbleFrameView(arrow_location(), color(), margin());
 }
 

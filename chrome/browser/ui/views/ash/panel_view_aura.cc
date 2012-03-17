@@ -341,8 +341,9 @@ const views::Widget* PanelViewAura::GetWidget() const {
   return View::GetWidget();
 }
 
-views::NonClientFrameView* PanelViewAura::CreateNonClientFrameView() {
-  return new ash::PanelFrameView();
+views::NonClientFrameView* PanelViewAura::CreateNonClientFrameView(
+    views::Widget* widget) {
+  return new ash::PanelFrameView(widget);
 }
 
 // BaseWindow implementation:

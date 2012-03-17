@@ -143,7 +143,7 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Called by the Widget to create the NonClient Frame View for this widget.
   // Return NULL to use the default one.
-  virtual NonClientFrameView* CreateNonClientFrameView();
+  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget);
 
   // Returns true if the window can be notified with the work area change.
   // Otherwise, the work area change for the top window will be processed by
