@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,8 @@ const PPP_MouseLock ppp_mouse_lock = {
   &MouseLockLost
 };
 
-template <> const char* interface_name<PPB_MouseLock>() {
-  return PPB_MOUSELOCK_INTERFACE;
+template <> const char* interface_name<PPB_MouseLock_1_0>() {
+  return PPB_MOUSELOCK_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -48,15 +48,15 @@ MouseLock::~MouseLock() {
 }
 
 int32_t MouseLock::LockMouse(const CompletionCallback& cc) {
-  if (!has_interface<PPB_MouseLock>())
+  if (!has_interface<PPB_MouseLock_1_0>())
     return cc.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_MouseLock>()->LockMouse(
+  return get_interface<PPB_MouseLock_1_0>()->LockMouse(
       associated_instance_.pp_instance(), cc.pp_completion_callback());
 }
 
 void MouseLock::UnlockMouse() {
-  if (has_interface<PPB_MouseLock>()) {
-    get_interface<PPB_MouseLock>()->UnlockMouse(
+  if (has_interface<PPB_MouseLock_1_0>()) {
+    get_interface<PPB_MouseLock_1_0>()->UnlockMouse(
         associated_instance_.pp_instance());
   }
 }
