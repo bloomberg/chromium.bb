@@ -31,6 +31,9 @@
           'nacl/nacl_main_platform_delegate_win.cc',
           'nacl/nacl_listener.cc',
           'nacl/nacl_listener.h',
+          'nacl/nacl_validation_db.h',
+          'nacl/nacl_validation_query.cc',
+          'nacl/nacl_validation_query.h',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [
@@ -133,6 +136,7 @@
                 '..',
               ],
               'dependencies': [
+                '../crypto/crypto.gyp:crypto',
                 'nacl',
               ],
               'sources': [
