@@ -37,7 +37,6 @@ namespace history {
 
 class CommitLaterTask;
 class HistoryPublisher;
-class VisitFilter;
 
 // *See the .cc file for more information on the design.*
 //
@@ -176,13 +175,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       scoped_refptr<QueryMostVisitedURLsRequest> request,
       int result_count,
       int days_back);
-
-  // Request the |result_count| URLs and the chain of redirects
-  // leading to each of these URLs, filterd and sorted based on the |filter|.
-  void QueryFilteredURLs(
-      scoped_refptr<QueryMostVisitedURLsRequest> request,
-      int result_count,
-      const history::VisitFilter& filter);
 
   // QueryMostVisitedURLs without the request.
   void QueryMostVisitedURLsImpl(int result_count,
@@ -391,8 +383,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconForURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            CloneFaviconIsRestrictedToSameDomain);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
-                           QueryFilteredURLs);
 
   friend class ::TestingProfile;
 

@@ -66,10 +66,8 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   // Sets pages_value_ from a format produced by TopSites.
   void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
 
-  // Callback for History.
-  void OnSuggestionsURLsAvailable(
-      CancelableRequestProvider::Handle handle,
-      history::MostVisitedURLList data);
+  // Callback for TopSites.
+  void OnSuggestionsURLsAvailable(const history::MostVisitedURLList& data);
 
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
   void BlacklistURL(const GURL& url);
@@ -82,11 +80,9 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // Our consumer for the history service page data.
+  // Our consumer for the history service.
   CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
-
-  // Consumer for history service general request(s).
-  CancelableRequestConsumer history_consumer_;
+  CancelableRequestConsumer topsites_consumer_;
 
   // We pre-fetch the first set of result pages.  This variable is false until
   // we get the first getSuggestions() call.

@@ -16,8 +16,6 @@ class Statement;
 
 namespace history {
 
-class VisitFilter;
-
 // A visit database is one which stores visits for URLs, that is, times and
 // linking information. A visit database must also be a URLDatabase, as this
 // modifies tables used by URLs directly and could be thought of as inheriting
@@ -104,20 +102,6 @@ class VisitDatabase {
   void GetVisibleVisitsInRange(base::Time begin_time, base::Time end_time,
                                int max_count,
                                VisitVector* visits);
-
-  // Fills all visits in the given time ranges into the given vector that should
-  // be user-visible, which excludes things like redirects and subframes. The
-  // begin time is inclusive, the end time is exclusive.
-  //
-  // Up to |max_count| visits will be returned. If there are more visits than
-  // that, the most recent |max_count| will be returned. If 0, all visits in the
-  // range will be computed.
-  //
-  // Only one visit for each URL will be returned, and it will be the most
-  // recent one in the time range.
-  void GetVisibleVisitsDuringTimes(const VisitFilter& time_filter,
-                                   int max_count,
-                                   VisitVector* visits);
 
   // Returns the visit ID for the most recent visit of the given URL ID, or 0
   // if there is no visit for the URL.

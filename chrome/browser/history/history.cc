@@ -40,7 +40,6 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -633,18 +632,6 @@ HistoryService::Handle HistoryService::QueryMostVisitedURLs(
                   consumer,
                   new history::QueryMostVisitedURLsRequest(callback),
                   result_count, days_back);
-}
-
-HistoryService::Handle HistoryService::QueryFilteredURLs(
-    int result_count,
-    const history::VisitFilter& filter,
-    CancelableRequestConsumerBase* consumer,
-    const QueryMostVisitedURLsCallback& callback) {
-  return Schedule(PRIORITY_NORMAL,
-                  &HistoryBackend::QueryFilteredURLs,
-                  consumer,
-                  new history::QueryMostVisitedURLsRequest(callback),
-                  result_count, filter);
 }
 
 void HistoryService::Observe(int type,

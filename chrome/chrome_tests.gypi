@@ -1497,7 +1497,6 @@
         'browser/history/top_sites_unittest.cc',
         'browser/history/url_database_unittest.cc',
         'browser/history/visit_database_unittest.cc',
-        'browser/history/visit_filter_unittest.cc',
         'browser/history/visit_tracker_unittest.cc',
         'browser/importer/firefox_importer_unittest.cc',
         'browser/importer/firefox_importer_unittest_messages_internal.h',
