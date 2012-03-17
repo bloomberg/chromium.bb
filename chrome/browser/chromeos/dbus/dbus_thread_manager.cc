@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_input_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_node_client.h"
+#include "chrome/browser/chromeos/dbus/cashew_client.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
@@ -66,6 +67,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         system_bus_.get(), bluetooth_adapter_client_.get()));
     bluetooth_node_client_.reset(BluetoothNodeClient::Create(
         system_bus_.get(), bluetooth_device_client_.get()));
+    // Create the Cashew client.
+    cashew_client_.reset(CashewClient::Create(system_bus_.get()));
     // Create the cros-disks client.
     cros_disks_client_.reset(
         CrosDisksClient::Create(system_bus_.get()));
@@ -130,6 +133,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual CashewClient* GetCashewClient() OVERRIDE {
+    return cashew_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE {
     return cros_disks_client_.get();
   }
@@ -182,6 +190,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
   scoped_ptr<BluetoothManagerClient> bluetooth_manager_client_;
   scoped_ptr<BluetoothNodeClient> bluetooth_node_client_;
+  scoped_ptr<CashewClient> cashew_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;

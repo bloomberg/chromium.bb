@@ -25,6 +25,7 @@ class BluetoothDeviceClient;
 class BluetoothInputClient;
 class BluetoothManagerClient;
 class BluetoothNodeClient;
+class CashewClient;
 class CrosDisksClient;
 class CryptohomeClient;
 class ImageBurnerClient;
@@ -99,6 +100,11 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual BluetoothNodeClient* GetBluetoothNodeClient() = 0;
+
+  // Returns the Cashew client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual CashewClient* GetCashewClient() = 0;
 
   // Returns the cros-disks client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut

@@ -105,6 +105,8 @@
         'browser/chromeos/dbus/mock_bluetooth_node_client.h',
         'browser/chromeos/dbus/mock_cros_disks_client.cc',
         'browser/chromeos/dbus/mock_cros_disks_client.h',
+        'browser/chromeos/dbus/mock_cashew_client.cc',
+        'browser/chromeos/dbus/mock_cashew_client.h',
         'browser/chromeos/dbus/mock_cryptohome_client.cc',
         'browser/chromeos/dbus/mock_cryptohome_client.h',
         'browser/chromeos/dbus/mock_dbus_thread_manager.cc',

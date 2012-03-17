@@ -471,6 +471,8 @@
         'browser/chromeos/dbus/bluetooth_node_client.h',
         'browser/chromeos/dbus/bluetooth_property.cc',
         'browser/chromeos/dbus/bluetooth_property.h',
+        'browser/chromeos/dbus/cashew_client.cc',
+        'browser/chromeos/dbus/cashew_client.h',
         'browser/chromeos/dbus/cros_disks_client.cc',
         'browser/chromeos/dbus/cros_disks_client.h',
         'browser/chromeos/dbus/cryptohome_client.cc',
