@@ -261,6 +261,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString("promoVerboseBackupBody",
       GetStringFUTF16(IDS_SYNC_PROMO_V_BACKUP_BODY, short_product_name));
   localized_strings->SetString("signUpURL", create_account_url);
+  localized_strings->SetString("promoLearnMoreURL", sync_benefits_url);
 
   static OptionsStringResource resources[] = {
     { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
@@ -335,6 +336,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE },
     { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON },
     { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED },
+    { "promoLearnMore", IDS_LEARN_MORE },
     { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW },
     { "promoLearnMoreHide", IDS_SYNC_PROMO_LEARN_MORE_HIDE },
     { "promoInformation", IDS_SYNC_PROMO_INFORMATION },

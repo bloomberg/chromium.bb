@@ -105,12 +105,21 @@ html[promo-version='3'] #sync-setup-login-content-column {
 }
 
 #promo-skip {
-  text-align: center;
-  width: 335px;
+  padding: 0 26px;
+  width: 284px;
 }
 
+#promo-advanced,
 #promo-skip-button {
-  -webkit-margin-end: 25px;
+  padding: 0 !important; /* Override link button appearance. */
+}
+
+#promo-advanced {
+  float: right;
+}
+
+html[dir='rtl'] #promo-advanced {
+  float: left;
 }
 
 /* Page Title. ****************************************************************/
@@ -153,6 +162,10 @@ html[promo-version='2'] #promo-title-container h2 {
 
 html[promo-version='3'] #promo-title-container h2 {
   font-size: 14px;
+}
+
+#promo-learn-more {
+  display: inline-block;
 }
 
 /* Signup header bar. *********************************************************/
