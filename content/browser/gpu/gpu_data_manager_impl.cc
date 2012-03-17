@@ -206,6 +206,9 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
 
   std::string use_gl =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
+  FilePath swiftshader_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kSwiftShaderPath);
   uint32 flags = GetGpuFeatureType();
   if ((flags & content::GPU_FEATURE_TYPE_MULTISAMPLING) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
@@ -213,8 +216,8 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
 
   if (software_rendering_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
-    command_line->AppendSwitchPath(switches::kSwiftShaderPath,
-                                   swiftshader_path_);
+    if (swiftshader_path.empty())
+      swiftshader_path = swiftshader_path_;
   } else if ((flags & (content::GPU_FEATURE_TYPE_WEBGL |
                 content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
                 content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
@@ -224,6 +227,10 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
+
+  if (!swiftshader_path.empty())
+    command_line->AppendSwitchPath(switches::kSwiftShaderPath,
+                                   swiftshader_path);
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
