@@ -557,7 +557,7 @@ void Shell::Init() {
     internal::TrayUser* tray_user = new internal::TrayUser;
     tray_->audio_observer_ = tray_volume;
     tray_->brightness_observer_ = tray_brightness;
-    tray_->date_format_observer_ = tray_power_date;
+    tray_->clock_observer_ = tray_power_date;
     tray_->network_observer_ = tray_network;
     tray_->power_status_observer_ = tray_power_date;
     tray_->update_observer_ = tray_user;

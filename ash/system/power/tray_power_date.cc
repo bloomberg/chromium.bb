@@ -105,7 +105,6 @@ class DateView : public views::View {
 
   void set_actionable(bool actionable) { actionable_ = actionable; }
 
- private:
   void UpdateText() {
     base::Time now = base::Time::Now();
     if (type_ == DATE) {
@@ -139,6 +138,7 @@ class DateView : public views::View {
         &DateView::UpdateText);
   }
 
+ private:
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     if (!actionable_)
@@ -353,6 +353,10 @@ void TrayPowerDate::OnPowerStatusChanged(const PowerSupplyStatus& status) {
 
 void TrayPowerDate::OnDateFormatChanged() {
   date_tray_->UpdateTimeFormat();
+}
+
+void TrayPowerDate::Refresh() {
+  date_tray_->UpdateText();
 }
 
 }  // namespace internal

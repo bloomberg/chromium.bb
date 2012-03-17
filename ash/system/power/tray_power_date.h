@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_POWER_TRAY_POWER_DATE_H_
 #pragma once
 
-#include "ash/system/power/date_format_observer.h"
+#include "ash/system/power/clock_observer.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
@@ -21,7 +21,7 @@ class PowerTrayView;
 
 class TrayPowerDate : public SystemTrayItem,
                       public PowerStatusObserver,
-                      public DateFormatObserver {
+                      public ClockObserver {
  public:
   TrayPowerDate();
   virtual ~TrayPowerDate();
@@ -38,8 +38,9 @@ class TrayPowerDate : public SystemTrayItem,
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
-  // Overridden from DateFormatObserver.
+  // Overridden from ClockObserver.
   virtual void OnDateFormatChanged() OVERRIDE;
+  virtual void Refresh() OVERRIDE;
 
   scoped_ptr<tray::DateView> date_;
   scoped_ptr<tray::DateView> date_tray_;

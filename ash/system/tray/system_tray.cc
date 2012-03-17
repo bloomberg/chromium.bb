@@ -333,7 +333,7 @@ SystemTray::SystemTray()
     : items_(),
       audio_observer_(NULL),
       brightness_observer_(NULL),
-      date_format_observer_(NULL),
+      clock_observer_(NULL),
       network_observer_(NULL),
       power_status_observer_(NULL),
       update_observer_(NULL),

@@ -9,7 +9,7 @@
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/network/network_observer.h"
-#include "ash/system/power/date_format_observer.h"
+#include "ash/system/power/clock_observer.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -354,6 +354,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnPowerStatusChanged(power_status);
   }
 
+  virtual void SystemResumed() OVERRIDE {
+    ash::ClockObserver* observer =
+        ash::Shell::GetInstance()->tray()->clock_observer();
+    if (observer)
+      observer->Refresh();
+  }
+
   virtual void LockScreen() OVERRIDE {
   }
 
@@ -433,8 +440,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       case chrome::NOTIFICATION_PREF_CHANGED: {
         DCHECK_EQ(*content::Details<std::string>(details).ptr(),
                   prefs::kUse24HourClock);
-        ash::DateFormatObserver* observer =
-            ash::Shell::GetInstance()->tray()->date_format_observer();
+        ash::ClockObserver* observer =
+            ash::Shell::GetInstance()->tray()->clock_observer();
         if (observer)
           observer->OnDateFormatChanged();
         break;

@@ -19,7 +19,7 @@ namespace ash {
 
 class AudioObserver;
 class BrightnessObserver;
-class DateFormatObserver;
+class ClockObserver;
 class NetworkObserver;
 class PowerStatusObserver;
 class UpdateObserver;
@@ -62,8 +62,8 @@ class ASH_EXPORT SystemTray : public views::View,
   BrightnessObserver* brightness_observer() const {
     return brightness_observer_;
   }
-  DateFormatObserver* date_format_observer() const {
-    return date_format_observer_;
+  ClockObserver* clock_observer() const {
+    return clock_observer_;
   }
   NetworkObserver* network_observer() const {
     return network_observer_;
@@ -99,7 +99,7 @@ class ASH_EXPORT SystemTray : public views::View,
   // These observers are not owned by the tray.
   AudioObserver* audio_observer_;
   BrightnessObserver* brightness_observer_;
-  DateFormatObserver* date_format_observer_;
+  ClockObserver* clock_observer_;
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;
   UpdateObserver* update_observer_;

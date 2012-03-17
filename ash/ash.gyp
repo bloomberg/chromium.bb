@@ -123,7 +123,7 @@
         'system/network/network_observer.h',
         'system/network/tray_network.cc',
         'system/network/tray_network.h',
-        'system/power/date_format_observer.h',
+        'system/power/clock_observer.h',
         'system/power/power_status_observer.h',
         'system/power/power_supply_status.cc',
         'system/power/power_supply_status.h',
