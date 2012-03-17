@@ -35,11 +35,11 @@ SkTypeface::Style FontTypefaceStyle(const gfx::Font& font) {
 namespace gfx {
 
 // static
-void CanvasSkia::SizeStringInt(const string16& text,
-                               const gfx::Font& font,
-                               int* width,
-                               int* height,
-                               int flags) {
+void Canvas::SizeStringInt(const string16& text,
+                           const gfx::Font& font,
+                           int* width,
+                           int* height,
+                           int flags) {
   NSFont* native_font = font.GetNativeFont();
   NSString* ns_string = base::SysUTF16ToNSString(text);
   NSDictionary* attributes =
@@ -50,11 +50,11 @@ void CanvasSkia::SizeStringInt(const string16& text,
   *height = font.GetHeight();
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
-                               const gfx::Font& font,
-                               const SkColor& color,
-                               int x, int y, int w, int h,
-                               int flags) {
+void Canvas::DrawStringInt(const string16& text,
+                           const gfx::Font& font,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
+                           int flags) {
   SkTypeface* typeface = SkTypeface::CreateFromName(font.GetFontName().c_str(),
                                                     FontTypefaceStyle(font));
   SkPaint paint;
@@ -68,12 +68,12 @@ void CanvasSkia::DrawStringInt(const string16& text,
                     paint);
 }
 
-void CanvasSkia::DrawStringWithHalo(const string16& text,
-                                    const gfx::Font& font,
-                                    const SkColor& text_color,
-                                    const SkColor& halo_color,
-                                    int x, int y, int w, int h,
-                                    int flags) {
+void Canvas::DrawStringWithHalo(const string16& text,
+                                const gfx::Font& font,
+                                const SkColor& text_color,
+                                const SkColor& halo_color,
+                                int x, int y, int w, int h,
+                                int flags) {
 }
 
 }  // namespace gfx

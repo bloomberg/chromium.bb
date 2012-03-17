@@ -2137,8 +2137,8 @@
    ...
    obj:/usr/lib/libpangocairo-1.0.so.0.2002.3
    ...
-   fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
-   fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
+   fun:_ZN3gfx10Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
+   fun:_ZN3gfx10Canvas13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
 }
 {
    bug_51587
@@ -2854,7 +2854,7 @@
    fun:pango_layout_get_extents_internal
    fun:pango_layout_get_pixel_extents
    fun:pango_layout_get_pixel_size
-   fun:_ZN3gfx10CanvasSkia13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
+   fun:_ZN3gfx10Canvas13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
    fun:_ZN5views14TextButtonBase17CalculateTextSizeEPN3gfx4SizeEi
    fun:_ZN5views14TextButtonBase14UpdateTextSizeEv
    fun:_ZN5views14TextButtonBase7SetTextERKSbIwSt11char_traitsIwESaIwEE
@@ -2872,7 +2872,7 @@
    fun:pango_layout_get_extents_internal
    fun:pango_layout_get_pixel_extents
    fun:pango_layout_get_pixel_size
-   fun:_ZN3gfx10CanvasSkia13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
+   fun:_ZN3gfx10Canvas13SizeStringIntERKSbItN4base20string16_char_traitsESaItEERKNS_4FontEPiSA_i
 }
 {
    bug_70599

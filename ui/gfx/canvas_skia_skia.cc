@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -179,10 +179,10 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
 namespace gfx {
 
 // static
-void CanvasSkia::SizeStringInt(const string16& text,
-                               const gfx::Font& font,
-                               int* width, int* height,
-                               int flags) {
+void Canvas::SizeStringInt(const string16& text,
+                           const gfx::Font& font,
+                           int* width, int* height,
+                           int flags) {
   DCHECK_GE(*width, 0);
   DCHECK_GE(*height, 0);
 
@@ -229,11 +229,11 @@ void CanvasSkia::SizeStringInt(const string16& text,
   }
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
-                               const gfx::Font& font,
-                               const SkColor& color,
-                               int x, int y, int w, int h,
-                               int flags) {
+void Canvas::DrawStringInt(const string16& text,
+                           const gfx::Font& font,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
+                           int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
@@ -307,20 +307,20 @@ void CanvasSkia::DrawStringInt(const string16& text,
   canvas_->restore();
 }
 
-void CanvasSkia::DrawStringWithHalo(const string16& text,
-                                    const gfx::Font& font,
-                                    const SkColor& text_color,
-                                    const SkColor& halo_color_in,
-                                    int x, int y, int w, int h,
-                                    int flags) {
+void Canvas::DrawStringWithHalo(const string16& text,
+                                const gfx::Font& font,
+                                const SkColor& text_color,
+                                const SkColor& halo_color_in,
+                                int x, int y, int w, int h,
+                                int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
   // (since the resulting image can have 1-bit transparency only).
   SkColor halo_color = SkColorSetA(halo_color_in, 0xFF);
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
-  gfx::Size size(w + 2, h + 2);
-  CanvasSkia text_canvas(size, true);
+  Size size(w + 2, h + 2);
+  Canvas text_canvas(size, true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.DrawRect(gfx::Rect(size), bkgnd_paint);
@@ -353,9 +353,9 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
 
 // TODO(asvitkine): Remove the ifdef once all platforms use canvas_skia_skia.cc.
 #if defined(OS_WIN)
-void CanvasSkia::DrawFadeTruncatingString(
+void Canvas::DrawFadeTruncatingString(
       const string16& text,
-      CanvasSkia::TruncateFadeMode truncate_mode,
+      TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const gfx::Font& font,
       const SkColor& color,

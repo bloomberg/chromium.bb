@@ -781,8 +781,8 @@
    bug_70327
    Heapcheck:Leak
    ...
-   fun:gfx::CanvasSkia::SizeStringInt
-   fun:gfx::CanvasSkia::GetStringWidth
+   fun:gfx::Canvas::SizeStringInt
+   fun:gfx::Canvas::GetStringWidth
    fun:gfx::PlatformFontPango::GetStringWidth
    ...
    fun:ui::TextEliderTest_*_Test::TestBody

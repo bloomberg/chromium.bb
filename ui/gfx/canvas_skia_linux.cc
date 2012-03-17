@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 
 #include <algorithm>
 
@@ -36,7 +36,7 @@ const double kTextHaloWidth = 1.0;
 // A class to encapsulate string drawing params and operations.
 class DrawStringContext {
  public:
-  DrawStringContext(gfx::CanvasSkia* canvas,
+  DrawStringContext(gfx::Canvas* canvas,
                     const string16& text,
                     const gfx::Font& font,
                     const gfx::Rect& bounds,
@@ -57,7 +57,7 @@ class DrawStringContext {
   int flags_;
   const gfx::Font& font_;
 
-  gfx::CanvasSkia* canvas_;
+  gfx::Canvas* canvas_;
   cairo_t* cr_;
   PangoLayout* layout_;
 
@@ -68,7 +68,7 @@ class DrawStringContext {
   DISALLOW_COPY_AND_ASSIGN(DrawStringContext);
 };
 
-DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
+DrawStringContext::DrawStringContext(gfx::Canvas* canvas,
                                      const string16& text,
                                      const gfx::Font& font,
                                      const gfx::Rect& bounds,
@@ -115,7 +115,7 @@ void DrawStringContext::Draw(const SkColor& text_color) {
 void DrawStringContext::DrawWithHalo(const SkColor& text_color,
                                      const SkColor& halo_color) {
   gfx::Size size(bounds_.width() + 2, bounds_.height() + 2);
-  gfx::CanvasSkia text_canvas(size, false);
+  gfx::Canvas text_canvas(size, false);
   text_canvas.FillRect(gfx::Rect(size), static_cast<SkColor>(0));
 
   {
@@ -177,10 +177,10 @@ void DrawStringContext::DrawUnderline(cairo_t* cr, double extra_edge_width) {
 namespace gfx {
 
 // static
-void CanvasSkia::SizeStringInt(const string16& text,
-                               const gfx::Font& font,
-                               int* width, int* height,
-                               int flags) {
+void Canvas::SizeStringInt(const string16& text,
+                           const gfx::Font& font,
+                           int* width, int* height,
+                           int flags) {
   int org_width = *width;
   cairo_surface_t* surface =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
@@ -232,12 +232,12 @@ void CanvasSkia::SizeStringInt(const string16& text,
   cairo_surface_destroy(surface);
 }
 
-void CanvasSkia::DrawStringWithHalo(const string16& text,
-                                    const gfx::Font& font,
-                                    const SkColor& text_color,
-                                    const SkColor& halo_color,
-                                    int x, int y, int w, int h,
-                                    int flags) {
+void Canvas::DrawStringWithHalo(const string16& text,
+                                const gfx::Font& font,
+                                const SkColor& text_color,
+                                const SkColor& halo_color,
+                                int x, int y, int w, int h,
+                                int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 
@@ -247,11 +247,11 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   context.DrawWithHalo(text_color, halo_color);
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
-                               const gfx::Font& font,
-                               const SkColor& color,
-                               int x, int y, int w, int h,
-                               int flags) {
+void Canvas::DrawStringInt(const string16& text,
+                           const gfx::Font& font,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
+                           int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
 

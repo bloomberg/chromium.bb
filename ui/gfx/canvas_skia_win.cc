@@ -56,7 +56,7 @@ int ComputeFormatFlags(int flags, const string16& text) {
   if (!(flags & (gfx::Canvas::TEXT_ALIGN_CENTER |
                  gfx::Canvas::TEXT_ALIGN_RIGHT |
                  gfx::Canvas::TEXT_ALIGN_LEFT))) {
-    flags |= gfx::CanvasSkia::DefaultCanvasTextAlignment();
+    flags |= gfx::Canvas::DefaultCanvasTextAlignment();
   }
 
   // horizontal alignment
@@ -282,10 +282,10 @@ void DivideRect(const gfx::Rect& rect,
 namespace gfx {
 
 // static
-void CanvasSkia::SizeStringInt(const string16& text,
-                               const gfx::Font& font,
-                               int* width, int* height,
-                               int flags) {
+void Canvas::SizeStringInt(const string16& text,
+                           const gfx::Font& font,
+                           int* width, int* height,
+                           int flags) {
   // Clamp the max amount of text we'll measure to 2K.  When the string is
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
@@ -322,11 +322,11 @@ void CanvasSkia::SizeStringInt(const string16& text,
   *height = r.bottom;
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
-                               HFONT font,
-                               const SkColor& color,
-                               int x, int y, int w, int h,
-                               int flags) {
+void Canvas::DrawStringInt(const string16& text,
+                           HFONT font,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
+                           int flags) {
   SkRect fclip;
   if (!canvas_->getClipBounds(&fclip))
     return;
@@ -369,11 +369,11 @@ void CanvasSkia::DrawStringInt(const string16& text,
                    clip.height());
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
-                               const gfx::Font& font,
-                               const SkColor& color,
-                               int x, int y, int w, int h,
-                               int flags) {
+void Canvas::DrawStringInt(const string16& text,
+                           const gfx::Font& font,
+                           const SkColor& color,
+                           int x, int y, int w, int h,
+                           int flags) {
   DrawStringInt(text, font.GetNativeFont(), color, x, y, w, h, flags);
 }
 
@@ -405,7 +405,7 @@ static bool pixelShouldGetHalo(const SkBitmap& bitmap,
   return false;
 }
 
-void CanvasSkia::DrawStringWithHalo(const string16& text,
+void Canvas::DrawStringWithHalo(const string16& text,
                                     const gfx::Font& font,
                                     const SkColor& text_color,
                                     const SkColor& halo_color_in,
@@ -417,8 +417,8 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
-  gfx::Size size(w + 2, h + 2);
-  CanvasSkia text_canvas(size, true);
+  Size size(w + 2, h + 2);
+  Canvas text_canvas(size, true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
   text_canvas.DrawRect(gfx::Rect(size), bkgnd_paint);
@@ -454,9 +454,9 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
-void CanvasSkia::DrawFadeTruncatingString(
+void Canvas::DrawFadeTruncatingString(
       const string16& text,
-      CanvasSkia::TruncateFadeMode truncate_mode,
+      TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const gfx::Font& font,
       const SkColor& color,
