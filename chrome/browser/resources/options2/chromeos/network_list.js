@@ -461,13 +461,13 @@ cr.define('options.network', function() {
                        command: function() {
                          chrome.send('disableWifi');
                        },
-                       data: data});
+                       data: {}});
         } else if (this.data_.key == 'cellular') {
           addendum.push({label: localStrings.getString('turnOffCellular'),
                        command: function() {
                          chrome.send('disableCellular');
                        },
-                       data: data});
+                       data: {}});
         }
       }
       if (addendum.length > 0) {
