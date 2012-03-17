@@ -68,14 +68,17 @@ void NotifyEPMRequestStatus(RequestStatus status,
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
+  ExtensionProcessManager* extension_process_manager =
+      profile->GetExtensionProcessManager();
+  // This may be NULL in unit tests.
+  if (!extension_process_manager)
+    return;
+
   // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
   // system-level request).
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(process_id, render_view_id);
-  // This may be NULL in unit tests.
-  ExtensionProcessManager* extension_process_manager =
-      profile->GetExtensionProcessManager();
-  if (render_view_host && extension_process_manager) {
+  if (render_view_host) {
     if (status == REQUEST_STARTED) {
       extension_process_manager->OnNetworkRequestStarted(render_view_host);
     } else if (status == REQUEST_DONE) {
