@@ -79,14 +79,18 @@ static const size_t kSkippedClasses = (kAlignment < kMinClassSize ? 1 : 0);
 static const size_t kPageShift  = 15;
 static const size_t kNumClasses = 78 - kSkippedClasses;
 #else
-static const size_t kPageShift  = 13;
-static const size_t kNumClasses = 86 - kSkippedClasses;
+// Original TCMalloc code used kPageShift == 13.  In Chromium, we changed
+// this to 12 (as was done in prior versions of TCMalloc).
+static const size_t kPageShift  = 12;
+static const size_t kNumClasses = 54 - kSkippedClasses;
 #endif
 static const size_t kMaxThreadCacheSize = 4 << 20;
 
 static const size_t kPageSize   = 1 << kPageShift;
-// TODO(dmikurube): We Chromium may want to tune this kMaxSize.
-static const size_t kMaxSize    = 256 * 1024;
+// Original TCMalloc code used kMaxSize == 256 * 1024.  In Chromium, we
+// changed this to 32K, and represent it in terms of page size (as was done
+// in prior versions of TCMalloc).
+static const size_t kMaxSize    = 8u * kPageSize;
 // For all span-lengths < kMaxPages we keep an exact-size list.
 static const size_t kMaxPages = 1 << (20 - kPageShift);
 
