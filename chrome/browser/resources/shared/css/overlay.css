@@ -19,18 +19,10 @@
   top: 0;
 }
 
-/* Used to slide in the overlay. */
-.overlay.transparent .page {
-  /* TODO(flackr): Add perspective(500px) rotateX(5deg) when accelerated
-   *     compositing is enabled on chrome:// pages. See crbug.com/116800. */
-  -webkit-transform: scale(0.99) translateY(-20px);
-}
-
 /* The foreground dialog. */
 .overlay .page {
   -webkit-border-radius: 3px;
   -webkit-box-orient: vertical;
-  -webkit-transition: 200ms -webkit-transform;
   background: white;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
   color: #333;

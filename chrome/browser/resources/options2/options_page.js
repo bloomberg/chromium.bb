@@ -731,13 +731,8 @@ cr.define('options', function() {
       if ((this.visible && visible) || (!this.visible && !visible))
         return;
 
-      // If using an overlay, the visibility of the dialog is toggled at the
-      // same time as the overlay to show the dialog's out transition. This
-      // is handled in setOverlayVisible.
-      if (this.isOverlay)
-        this.setOverlayVisible_(visible);
-      else
-        this.pageDiv.hidden = !visible;
+      this.pageDiv.hidden = !visible;
+      this.setContainerVisibility_(visible);
 
       OptionsPage.updateRootPageFreezeState();
       OptionsPage.updateManagedBannerVisibility();
@@ -749,13 +744,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows or hides an overlay (including any visible dialog).
-     * @param {boolean} visible Whether the overlay should be visible or not.
+     * Shows or hides this page's container.
+     * @param {boolean} visible Whether the container should be visible or not.
      * @private
      */
-    setOverlayVisible_: function(visible) {
-      var pageDiv = this.pageDiv;
-      var container = pageDiv.parentNode;
+    setContainerVisibility_: function(visible) {
+      if (!this.isOverlay)
+        return;
+
+      var container = this.pageDiv.parentNode;
 
       if (visible)
         uber.invokeMethodOnParent('beginInterceptingEvents');
@@ -766,21 +763,12 @@ cr.define('options', function() {
           // again, the fadeCompleted_ callback would cause it to be erroneously
           // hidden again. Removing the transparent tag avoids that.
           container.classList.remove('transparent');
-
-          // Hide all dialogs in this container since a different one may have
-          // been previously visible before fading out.
-          var pages = container.querySelectorAll('.page');
-          for (var i = 0; i < pages.length; i++)
-            pages[i].hidden = true;
-          // Show the new dialog.
-          pageDiv.hidden = false;
         }
         return;
       }
 
       if (visible) {
         container.hidden = false;
-        pageDiv.hidden = false;
         if (document.documentElement.classList.contains('loading')) {
           container.classList.remove('transparent');
         } else {
@@ -795,8 +783,6 @@ cr.define('options', function() {
           if (e.propertyName != 'opacity')
             return;
           container.removeEventListener('webkitTransitionEnd', f);
-          pageDiv.hidden = true;
-          container.hidden = true;
           self.fadeCompleted_(container);
         });
         container.classList.add('transparent');
@@ -810,6 +796,7 @@ cr.define('options', function() {
      */
     fadeCompleted_: function(container) {
       if (container.classList.contains('transparent')) {
+        container.hidden = true;
         if (this.nestingLevel == 1)
           uber.invokeMethodOnParent('stopInterceptingEvents');
       }
