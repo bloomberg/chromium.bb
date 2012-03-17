@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/gfx/brush.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
@@ -20,30 +19,6 @@
 #if defined(OS_WIN)
 #include "ui/gfx/canvas_skia_paint.h"
 #endif
-
-namespace {
-
-// A platform wrapper for a Skia shader that makes sure the underlying
-// SkShader object is unref'ed when this object is destroyed.
-class SkiaShader : public gfx::Brush {
- public:
-  explicit SkiaShader(SkShader* shader) : shader_(shader) {
-  }
-  virtual ~SkiaShader() {
-    shader_->unref();
-  }
-
-  // Accessor for shader, so it can be associated with a SkPaint.
-  SkShader* shader() const { return shader_; }
-
- private:
-  SkShader* shader_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaShader);
-};
-
-
-}  // namespace
 
 namespace gfx {
 
@@ -191,14 +166,6 @@ void Canvas::FillRect(const gfx::Rect& rect,
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(mode);
-  DrawRect(rect, paint);
-}
-
-void Canvas::FillRect(const gfx::Rect& rect, const gfx::Brush* brush) {
-  const SkiaShader* shader = static_cast<const SkiaShader*>(brush);
-  SkPaint paint;
-  paint.setShader(shader->shader());
-  // TODO(beng): set shader transform to match canvas transform.
   DrawRect(rect, paint);
 }
 

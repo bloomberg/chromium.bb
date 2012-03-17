@@ -184,9 +184,6 @@ class UI_EXPORT Canvas {
                 const SkColor& color,
                 SkXfermode::Mode mode);
 
-  // Fills |rect| with the specified |brush|.
-  void FillRect(const gfx::Rect& rect, const gfx::Brush* brush);
-
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
