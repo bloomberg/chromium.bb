@@ -57,6 +57,7 @@
 #include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "net/test/python_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -759,37 +760,6 @@ void TimedMessageLoopRunner::QuitAfter(int ms) {
       base::TimeDelta::FromMilliseconds(ms));
 }
 
-namespace {
-
-void AppendToPythonPath(const FilePath& dir) {
-#if defined(OS_WIN)
-  const wchar_t kPythonPath[] = L"PYTHONPATH";
-  // TODO(ukai): handle longer PYTHONPATH variables.
-  wchar_t oldpath[4096];
-  if (::GetEnvironmentVariable(kPythonPath, oldpath, arraysize(oldpath)) == 0) {
-    ::SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
-  } else if (!wcsstr(oldpath, dir.value().c_str())) {
-    std::wstring newpath(oldpath);
-    newpath.append(L";");
-    newpath.append(dir.value());
-    SetEnvironmentVariableW(kPythonPath, newpath.c_str());
-  }
-#elif defined(OS_POSIX)
-  const char kPythonPath[] = "PYTHONPATH";
-  const char* oldpath = getenv(kPythonPath);
-  if (!oldpath) {
-    setenv(kPythonPath, dir.value().c_str(), 1);
-  } else if (!strstr(oldpath, dir.value().c_str())) {
-    std::string newpath(oldpath);
-    newpath.append(":");
-    newpath.append(dir.value());
-    setenv(kPythonPath, newpath.c_str(), 1);
-  }
-#endif
-}
-
-}  // anonymous namespace
-
 TestWebSocketServer::TestWebSocketServer()
     : started_(false), port_(kDefaultWsPort) {
 #if defined(OS_POSIX)
@@ -872,7 +842,9 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
 CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
   // Note: Python's first argument must be the script; do not append CommandLine
   // switches, as they would precede the script path and break this CommandLine.
-  return new CommandLine(FilePath(FILE_PATH_LITERAL("python")));
+  FilePath path;
+  CHECK(GetPythonRunTime(&path));
+  return new CommandLine(path);
 }
 
 void TestWebSocketServer::SetPythonPath() {
