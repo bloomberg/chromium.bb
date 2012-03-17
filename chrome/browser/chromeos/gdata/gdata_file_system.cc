@@ -1732,17 +1732,20 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
 
 base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
     base::ListValue* feed_list) {
-// A map of self URLs to pairs of gdata file and parent URL.
+  // A map of self URLs to pairs of gdata file and parent URL.
   typedef std::map<GURL, std::pair<GDataFileBase*, GURL> >
       UrlToFileAndParentMap;
   UrlToFileAndParentMap file_by_url;
   bool first_feed = true;
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
 
   for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
        feeds_iter != feed_list->end(); ++feeds_iter) {
     scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
-    if (!feed.get())
-      return base::PLATFORM_FILE_ERROR_FAILED;
+    if (!feed.get()) {
+      error = base::PLATFORM_FILE_ERROR_FAILED;
+      break;
+    }
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in GDatadirectory::FromDocumentEntry();
@@ -1768,8 +1771,27 @@ base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
       const Link* parent_link = doc->GetLinkByType(Link::PARENT);
       if (parent_link)
         parent_url = parent_link->href();
-      file_by_url[file->self_url()] = std::make_pair(file, parent_url);
+
+      UrlToFileAndParentMap::mapped_type& map_entry =
+          file_by_url[file->self_url()];
+      // An entry with the same self link may already exist, so we need to
+      // release the existing GDataFileBase instance before overwriting the
+      // entry with another GDataFileBase instance.
+      delete map_entry.first;
+      map_entry.first = file;
+      map_entry.second = parent_url;
     }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    // If the code above fails to parse a feed, any GDataFileBase instance
+    // added to |file_by_url| is not managed by a GDataDirectory instance,
+    // so we need to explicitly release them here.
+    for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
+         it != file_by_url.end(); ++it) {
+      delete it->second.first;
+    }
+    return error;
   }
 
   for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
