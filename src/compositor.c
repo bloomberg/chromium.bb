@@ -59,7 +59,10 @@ sigchld_handler(int signal_number, void *data)
 	int status;
 	pid_t pid;
 
-	pid = wait(&status);
+	pid = waitpid(-1, &status, WNOHANG);
+	if (!pid)
+		return 1;
+
 	wl_list_for_each(p, &child_process_list, link) {
 		if (p->pid == pid)
 			break;
