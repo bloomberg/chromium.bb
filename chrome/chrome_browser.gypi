@@ -1173,6 +1173,8 @@
         'browser/history/url_index_private_data.h',
         'browser/history/visit_database.cc',
         'browser/history/visit_database.h',
+        'browser/history/visit_filter.cc',
+        'browser/history/visit_filter.h',
         'browser/history/visit_tracker.cc',
         'browser/history/visit_tracker.h',
         'browser/history/visitsegment_database.cc',

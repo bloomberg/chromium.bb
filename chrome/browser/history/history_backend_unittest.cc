@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/visit_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
@@ -71,10 +72,47 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestDelegate);
 };
 
+class HistoryBackendCancelableRequest : public CancelableRequestProvider,
+                                       public CancelableRequestConsumerBase {
+ public:
+  HistoryBackendCancelableRequest() {}
+
+  // CancelableRequestConsumerBase overrides:
+  virtual void OnRequestAdded(
+      CancelableRequestProvider* provider,
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
+  virtual void OnRequestRemoved(
+      CancelableRequestProvider* provider,
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
+  virtual void WillExecute(
+      CancelableRequestProvider* provider,
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
+  virtual void DidExecute(
+      CancelableRequestProvider* provider,
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
+
+  template<class RequestType>
+  CancelableRequestProvider::Handle MockScheduleOfRequest(
+      RequestType* request) {
+    AddRequest(request, this);
+    return request->handle();
+  }
+};
+
 class HistoryBackendTest : public testing::Test {
  public:
   HistoryBackendTest() : bookmark_model_(NULL), loaded_(false) {}
   virtual ~HistoryBackendTest() {
+  }
+
+  // Callback for QueryMostVisited.
+  void OnQueryMostVisited(CancelableRequestProvider::Handle handle,
+                          history::MostVisitedURLList data) {
+    most_visited_list_.swap(data);
+  }
+
+  const history::MostVisitedURLList& get_most_visited_list() const {
+    return most_visited_list_;
   }
 
  protected:
@@ -82,6 +120,16 @@ class HistoryBackendTest : public testing::Test {
   scoped_ptr<InMemoryHistoryBackend> mem_backend_;
 
   void AddRedirectChain(const char* sequence[], int page_id) {
+    AddRedirectChainWithTransitionAndTime(sequence, page_id,
+                                          content::PAGE_TRANSITION_LINK,
+                                          Time::Now());
+  }
+
+  void AddRedirectChainWithTransitionAndTime(
+      const char* sequence[],
+      int page_id,
+      content::PageTransition transition,
+      base::Time time) {
     history::RedirectList redirects;
     for (int i = 0; sequence[i] != NULL; ++i)
       redirects.push_back(GURL(sequence[i]));
@@ -91,8 +139,8 @@ class HistoryBackendTest : public testing::Test {
     memcpy(&scope, &int_scope, sizeof(int_scope));
     scoped_refptr<history::HistoryAddPageArgs> request(
         new history::HistoryAddPageArgs(
-            redirects.back(), Time::Now(), scope, page_id, GURL(),
-            redirects, content::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED,
+            redirects.back(), time, scope, page_id, GURL(),
+            redirects, transition, history::SOURCE_BROWSED,
             true));
     backend_->AddPage(request);
   }
@@ -103,7 +151,9 @@ class HistoryBackendTest : public testing::Test {
   // navigation entry for |url2| has replaced that for |url1|. The possibly
   // updated transition code of the visit records for |url1| and |url2| is
   // returned by filling in |*transition1| and |*transition2|, respectively.
+  // |time| is a time of the redirect.
   void  AddClientRedirect(const GURL& url1, const GURL& url2, bool did_replace,
+                          base::Time time,
                           int* transition1, int* transition2) {
     void* const dummy_scope = reinterpret_cast<void*>(0x87654321);
     history::RedirectList redirects;
@@ -112,7 +162,7 @@ class HistoryBackendTest : public testing::Test {
     if (url2.is_valid())
       redirects.push_back(url2);
     scoped_refptr<HistoryAddPageArgs> request(
-        new HistoryAddPageArgs(url2, base::Time(), dummy_scope, 0, url1,
+        new HistoryAddPageArgs(url2, time, dummy_scope, 0, url1,
             redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
             history::SOURCE_BROWSED, did_replace));
     backend_->AddPage(request);
@@ -187,6 +237,7 @@ class HistoryBackendTest : public testing::Test {
 
   MessageLoop message_loop_;
   FilePath test_dir_;
+  history::MostVisitedURLList most_visited_list_;
 };
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(int backend_id,
@@ -571,18 +622,21 @@ TEST_F(HistoryBackendTest, ClientRedirect) {
 
   // Initial transition to page A.
   GURL url_a("http://google.com/a");
-  AddClientRedirect(GURL(), url_a, false, &transition1, &transition2);
+  AddClientRedirect(GURL(), url_a, false, base::Time(),
+                    &transition1, &transition2);
   EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 
   // User initiated redirect to page B.
   GURL url_b("http://google.com/b");
-  AddClientRedirect(url_a, url_b, false, &transition1, &transition2);
+  AddClientRedirect(url_a, url_b, false, base::Time(),
+                    &transition1, &transition2);
   EXPECT_TRUE(transition1 & content::PAGE_TRANSITION_CHAIN_END);
   EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 
   // Non-user initiated redirect to page C.
   GURL url_c("http://google.com/c");
-  AddClientRedirect(url_b, url_c, true, &transition1, &transition2);
+  AddClientRedirect(url_b, url_c, true, base::Time(),
+                    &transition1, &transition2);
   EXPECT_FALSE(transition1 & content::PAGE_TRANSITION_CHAIN_END);
   EXPECT_TRUE(transition2 & content::PAGE_TRANSITION_CHAIN_END);
 }
@@ -1171,4 +1225,164 @@ TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
   EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url,
                                           FAVICON, &favicon));
 }
+
+TEST_F(HistoryBackendTest, QueryFilteredURLs) {
+  const char* google = "http://www.google.com/";
+  const char* yahoo = "http://www.yahoo.com/";
+  const char* yahoo_sports = "http://sports.yahoo.com/";
+  const char* yahoo_sports_with_article1 =
+      "http://sports.yahoo.com/article1.htm";
+  const char* yahoo_sports_with_article2 =
+      "http://sports.yahoo.com/article2.htm";
+  const char* yahoo_sports_soccer = "http://sports.yahoo.com/soccer";
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  Time tested_time = Time::Now().LocalMidnight() +
+                     base::TimeDelta::FromHours(4);
+  base::TimeDelta half_an_hour = base::TimeDelta::FromMinutes(30);
+  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
+
+  const content::PageTransition kTypedTransition =
+      content::PAGE_TRANSITION_TYPED;
+
+  const char* redirect_sequence[2];
+  redirect_sequence[1] = NULL;
+
+  redirect_sequence[0] = google;
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kTypedTransition,
+      tested_time - one_day - half_an_hour * 2);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0,
+      kTypedTransition, tested_time - one_day);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0,
+      kTypedTransition, tested_time - half_an_hour / 2);
+  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0,
+                                        kTypedTransition, tested_time);
+
+  redirect_sequence[0] = yahoo;
+  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0,
+                                        kTypedTransition,
+                                        tested_time - one_day + half_an_hour);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kTypedTransition,
+      tested_time - one_day + half_an_hour * 2);
+
+  redirect_sequence[0] = yahoo_sports;
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kTypedTransition,
+      tested_time - one_day - half_an_hour * 2);
+  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0, kTypedTransition,
+                                        tested_time - one_day);
+  int transition1, transition2;
+  AddClientRedirect(GURL(yahoo_sports), GURL(yahoo_sports_with_article1), false,
+                    tested_time - one_day + half_an_hour,
+                    &transition1, &transition2);
+  AddClientRedirect(GURL(yahoo_sports_with_article1),
+                    GURL(yahoo_sports_with_article2),
+                    false,
+                    tested_time - one_day + half_an_hour * 2,
+                    &transition1, &transition2);
+
+  redirect_sequence[0] = yahoo_sports_soccer;
+  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0,
+                                        kTypedTransition,
+                                        tested_time - half_an_hour);
+  backend_->Commit();
+
+  scoped_refptr<QueryMostVisitedURLsRequest> request1 =
+      new history::QueryMostVisitedURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryMostVisited,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  HistoryBackendCancelableRequest cancellable_request;
+  cancellable_request.MockScheduleOfRequest<QueryMostVisitedURLsRequest>(
+      request1);
+
+  VisitFilter filter;
+  // Time limit is |tested_time| +/- 45 min.
+  base::TimeDelta three_quarters_of_an_hour = base::TimeDelta::FromMinutes(45);
+  filter.SetTimeInRangeFilter(tested_time - three_quarters_of_an_hour,
+                              tested_time + three_quarters_of_an_hour);
+  backend_->QueryFilteredURLs(request1, 100, filter);
+
+  ASSERT_EQ(4U, get_most_visited_list().size());
+  EXPECT_EQ(std::string(google), get_most_visited_list()[0].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports_soccer),
+            get_most_visited_list()[1].url.spec());
+  EXPECT_EQ(std::string(yahoo), get_most_visited_list()[2].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports),
+            get_most_visited_list()[3].url.spec());
+
+  // Time limit is between |tested_time| and |tested_time| + 2 hours.
+  scoped_refptr<QueryMostVisitedURLsRequest> request2 =
+      new history::QueryMostVisitedURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryMostVisited,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  cancellable_request.MockScheduleOfRequest<QueryMostVisitedURLsRequest>(
+      request2);
+  filter.SetTimeInRangeFilter(tested_time,
+                              tested_time + base::TimeDelta::FromHours(2));
+  backend_->QueryFilteredURLs(request2, 100, filter);
+
+  ASSERT_EQ(3U, get_most_visited_list().size());
+  EXPECT_EQ(std::string(google), get_most_visited_list()[0].url.spec());
+  EXPECT_EQ(std::string(yahoo), get_most_visited_list()[1].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports), get_most_visited_list()[2].url.spec());
+
+  // Time limit is between |tested_time| - 2 hours and |tested_time|.
+  scoped_refptr<QueryMostVisitedURLsRequest> request3 =
+      new history::QueryMostVisitedURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryMostVisited,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  cancellable_request.MockScheduleOfRequest<QueryMostVisitedURLsRequest>(
+      request3);
+  filter.SetTimeInRangeFilter(tested_time - base::TimeDelta::FromHours(2),
+                              tested_time);
+  backend_->QueryFilteredURLs(request3, 100, filter);
+
+  ASSERT_EQ(3U, get_most_visited_list().size());
+  EXPECT_EQ(std::string(google), get_most_visited_list()[0].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports_soccer),
+            get_most_visited_list()[1].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports), get_most_visited_list()[2].url.spec());
+
+  filter.ClearFilters();
+  base::Time::Exploded exploded_time;
+  tested_time.LocalExplode(&exploded_time);
+
+  // Today.
+  scoped_refptr<QueryMostVisitedURLsRequest> request4 =
+      new history::QueryMostVisitedURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryMostVisited,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  cancellable_request.MockScheduleOfRequest<QueryMostVisitedURLsRequest>(
+      request4);
+  filter.SetDayOfTheWeekFilter(static_cast<int>(exploded_time.day_of_week),
+                               tested_time);
+  backend_->QueryFilteredURLs(request4, 100, filter);
+
+  ASSERT_EQ(2U, get_most_visited_list().size());
+  EXPECT_EQ(std::string(google), get_most_visited_list()[0].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports_soccer),
+            get_most_visited_list()[1].url.spec());
+
+  // Today + time limit - only yahoo_sports_soccer should fit.
+  scoped_refptr<QueryMostVisitedURLsRequest> request5 =
+      new history::QueryMostVisitedURLsRequest(
+          base::Bind(&HistoryBackendTest::OnQueryMostVisited,
+                     base::Unretained(static_cast<HistoryBackendTest*>(this))));
+  cancellable_request.MockScheduleOfRequest<QueryMostVisitedURLsRequest>(
+      request5);
+  filter.SetTimeInRangeFilter(tested_time - base::TimeDelta::FromHours(1),
+                              tested_time - base::TimeDelta::FromMinutes(20));
+  backend_->QueryFilteredURLs(request5, 100, filter);
+
+  ASSERT_EQ(1U, get_most_visited_list().size());
+  EXPECT_EQ(std::string(yahoo_sports_soccer),
+            get_most_visited_list()[0].url.spec());
+}
+
 }  // namespace history

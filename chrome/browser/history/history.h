@@ -52,6 +52,7 @@ class HistoryBackend;
 class HistoryDatabase;
 struct HistoryDetails;
 class HistoryQueryTest;
+class VisitFilter;
 class URLDatabase;
 }  // namespace history
 
@@ -364,6 +365,13 @@ class HistoryService : public CancelableRequestProvider,
   Handle QueryMostVisitedURLs(int result_count, int days_back,
                               CancelableRequestConsumerBase* consumer,
                               const QueryMostVisitedURLsCallback& callback);
+
+  // Request the |result_count| URLs filtered and sorted based on the |filter|.
+  Handle QueryFilteredURLs(
+      int result_count,
+      const history::VisitFilter& filter,
+      CancelableRequestConsumerBase* consumer,
+      const QueryMostVisitedURLsCallback& callback);
 
   // Thumbnails ----------------------------------------------------------------
 
