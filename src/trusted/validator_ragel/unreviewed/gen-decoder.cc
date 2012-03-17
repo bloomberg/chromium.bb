@@ -540,8 +540,9 @@ namespace {
 "  }\n"
 "");
     }
-    fprintf(out_file, "  action branch_not_taken {\n"
-"    branch_taken = TRUE;\n"
+    fprintf(out_file,
+"  action branch_not_taken {\n"
+"    branch_not_taken = TRUE;\n"
 "  }\n"
 "  action branch_taken {\n"
 "    branch_taken = TRUE;\n"
@@ -813,7 +814,7 @@ namespace {
     fprintf(out_file, "\n"
 "  # Prefixes.\n"
 "  data16 = 0x66 @data16_prefix;\n"
-"  branch = 0x2e @branch_not_taken | 0x3e @branch_taken;\n"
+"  branch_hint = 0x2e @branch_not_taken | 0x3e @branch_taken;\n"
 "  condrep = 0xf2 @repnz_prefix | 0xf3 @repz_prefix;\n"
 "  lock = 0xf0 @lock_prefix;\n"
 "  rep = 0xf3 @rep_prefix;\n"
@@ -1137,6 +1138,9 @@ namespace {
         Instruction(instruction_),
         instruction_class(get_instruction_class(instruction_)),
         opcode_in_modrm(false), opcode_in_imm(false), rex { } {
+      if (branch_hint) {
+        optional_prefixes.insert("branch_hint");
+      }
       if (condrep) {
         optional_prefixes.insert("condrep");
       }

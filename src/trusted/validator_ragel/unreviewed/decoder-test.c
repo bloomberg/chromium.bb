@@ -775,6 +775,22 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       print_name("abs");
     }
   }
+  {
+    /* Print branch hint suffixes for conditional jump instructions (Jcc).  */
+    const char* jcc_jumps[] = {
+      "ja", "jae", "jbe", "jb", "je", "jg", "jge", "jle",
+      "jl", "jne", "jno", "jnp", "jns", "jo", "jp", "js", NULL};
+    for (int i = 0; jcc_jumps[i] != NULL; ++i) {
+      if (!strcmp(instruction_name, jcc_jumps[i])) {
+        if (instruction->prefix.branch_not_taken) {
+          print_name(",pn");
+        } else if (instruction->prefix.branch_taken) {
+          print_name(",pt");
+        }
+        break;
+      }
+    }
+  }
 #undef print_name
   if ((strcmp(instruction_name, "nop") || operands_count != 0) &&
       strcmp(instruction_name, "fwait") &&

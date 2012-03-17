@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 ################################################################################
@@ -163,6 +163,7 @@
 #   example “lock” prefix or “rep” prefix), CPUID checks, etc.
 #
 #     Possible prefixes:
+#       branch_hint: branch hint prefixes are allowed (0x2E, 0x3E)
 #       condrep: prefixes “repnz” and “repz” are allowed for the instruction
 #       lock: prefix “lock” is allowed for the instruction
 #       rep: prefix “rep” is allowed for the instruction (it's alias of “repz”)
@@ -376,54 +377,54 @@ int =Ib, 0xcd, nacl-forbidden
 jecxz Jb, 0xe3, ia32 nacl-forbidden
 jrcxz Jb, 0xe3, amd64 nacl-forbidden
 ######## Jcc ###################################################################
-ja Jb, 0x77
-ja Jw, data16 0x0f 0x87, nacl-forbidden
-ja Jd, 0x0f 0x87
-jae Jb, 0x73
-jae Jw, data16 0x0f 0x83, nacl-forbidden
-jae Jd, 0x0f 0x83
-jbe Jb, 0x76
-jbe Jw, data16 0x0f 0x86, nacl-forbidden
-jbe Jd, 0x0f 0x86
-jb Jb, 0x72
-jb Jw, data16 0x0f 0x82, nacl-forbidden
-jb Jd, 0x0f 0x82
-je Jb, 0x74
-je Jw, data16 0x0f 0x84, nacl-forbidden
-je Jd, 0x0f 0x84
-jg Jb, 0x7f
-jg Jw, data16 0x0f 0x8f, nacl-forbidden
-jg Jd, 0x0f 0x8f
-jge Jb, 0x7d
-jge Jw, data16 0x0f 0x8d, nacl-forbidden
-jge Jd, 0x0f 0x8d
-jle Jb, 0x7e
-jle Jw, data16 0x0f 0x8e, nacl-forbidden
-jle Jd, 0x0f 0x8e
-jl Jb, 0x7c
-jl Jw, data16 0x0f 0x8c, nacl-forbidden
-jl Jd, 0x0f 0x8c
-jne Jb, 0x75
-jne Jw, data16 0x0f 0x85, nacl-forbidden
-jne Jd, 0x0f 0x85
-jno Jb, 0x71
-jno Jw, data16 0x0f 0x81, nacl-forbidden
-jno Jd, 0x0f 0x81
-jnp Jb, 0x7b
-jnp Jw, data16 0x0f 0x8b, nacl-forbidden
-jnp Jd, 0x0f 0x8b
-jns Jb, 0x79
-jns Jw, data16 0x0f 0x89, nacl-forbidden
-jns Jd, 0x0f 0x89
-jo Jb, 0x70
-jo Jw, data16 0x0f 0x80, nacl-forbidden
-jo Jd, 0x0f 0x80
-jp Jb, 0x7a
-jp Jw, data16 0x0f 0x8a, nacl-forbidden
-jp Jd, 0x0f 0x8a
-js Jb, 0x78
-js Jw, data16 0x0f 0x88, nacl-forbidden
-js Jd, 0x0f 0x88
+ja Jb, 0x77, branch_hint
+ja Jw, data16 0x0f 0x87, branch_hint nacl-forbidden
+ja Jd, 0x0f 0x87, branch_hint
+jae Jb, 0x73, branch_hint
+jae Jw, data16 0x0f 0x83, branch_hint nacl-forbidden
+jae Jd, 0x0f 0x83, branch_hint
+jbe Jb, 0x76, branch_hint
+jbe Jw, data16 0x0f 0x86, branch_hint nacl-forbidden
+jbe Jd, 0x0f 0x86, branch_hint
+jb Jb, 0x72, branch_hint
+jb Jw, data16 0x0f 0x82, branch_hint nacl-forbidden
+jb Jd, 0x0f 0x82, branch_hint
+je Jb, 0x74, branch_hint
+je Jw, data16 0x0f 0x84, branch_hint nacl-forbidden
+je Jd, 0x0f 0x84, branch_hint
+jg Jb, 0x7f, branch_hint
+jg Jw, data16 0x0f 0x8f, branch_hint nacl-forbidden
+jg Jd, 0x0f 0x8f, branch_hint
+jge Jb, 0x7d, branch_hint
+jge Jw, data16 0x0f 0x8d, branch_hint nacl-forbidden
+jge Jd, 0x0f 0x8d, branch_hint
+jle Jb, 0x7e, branch_hint
+jle Jw, data16 0x0f 0x8e, branch_hint nacl-forbidden
+jle Jd, 0x0f 0x8e, branch_hint
+jl Jb, 0x7c, branch_hint
+jl Jw, data16 0x0f 0x8c, branch_hint nacl-forbidden
+jl Jd, 0x0f 0x8c, branch_hint
+jne Jb, 0x75, branch_hint
+jne Jw, data16 0x0f 0x85, branch_hint nacl-forbidden
+jne Jd, 0x0f 0x85, branch_hint
+jno Jb, 0x71, branch_hint
+jno Jw, data16 0x0f 0x81, branch_hint nacl-forbidden
+jno Jd, 0x0f 0x81, branch_hint
+jnp Jb, 0x7b, branch_hint
+jnp Jw, data16 0x0f 0x8b, branch_hint nacl-forbidden
+jnp Jd, 0x0f 0x8b, branch_hint
+jns Jb, 0x79, branch_hint
+jns Jw, data16 0x0f 0x89, branch_hint nacl-forbidden
+jns Jd, 0x0f 0x89, branch_hint
+jo Jb, 0x70, branch_hint
+jo Jw, data16 0x0f 0x80, branch_hint nacl-forbidden
+jo Jd, 0x0f 0x80, branch_hint
+jp Jb, 0x7a, branch_hint
+jp Jw, data16 0x0f 0x8a, branch_hint nacl-forbidden
+jp Jd, 0x0f 0x8a, branch_hint
+js Jb, 0x78, branch_hint
+js Jw, data16 0x0f 0x88, branch_hint nacl-forbidden
+js Jd, 0x0f 0x88, branch_hint
 ######## JMP (Near) ############################################################
 jmp Jw, data16 0xe9, nacl-forbidden
 jmp Jd, 0xe9
