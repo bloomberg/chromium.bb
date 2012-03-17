@@ -48,8 +48,6 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       uint32 keycode = GetUsbKeyCode(pp_key_event);
       if (keycode != 0)
         key_event.set_usb_keycode(keycode);
-      LOG(INFO) << " keycode: " << std::hex << key_event.keycode()
-                << " usb_keycode: " << key_event.usb_keycode() << std::dec;
       key_event.set_pressed(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
       input_stub_->InjectKeyEvent(key_event);
       return true;
