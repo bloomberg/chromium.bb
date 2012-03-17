@@ -123,7 +123,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
-		EGL_DEPTH_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
