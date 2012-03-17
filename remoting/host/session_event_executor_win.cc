@@ -26,13 +26,14 @@ const char kProcessChannelId[] = "chromoting-ipc";
 
 namespace remoting {
 
+using protocol::ClipboardEvent;
 using protocol::MouseEvent;
 using protocol::KeyEvent;
 
 SessionEventExecutorWin::SessionEventExecutorWin(
     MessageLoop* message_loop,
     base::MessageLoopProxy* io_message_loop,
-    scoped_ptr<protocol::InputStub> nested_executor)
+    scoped_ptr<protocol::HostEventStub> nested_executor)
     : nested_executor_(nested_executor.Pass()),
       message_loop_(message_loop),
       scroll_pressed_(false) {
@@ -51,6 +52,19 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 }
 
 SessionEventExecutorWin::~SessionEventExecutorWin() {
+}
+
+void SessionEventExecutorWin::InjectClipboardEvent(
+    const ClipboardEvent& event) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
+                   base::Unretained(this), event));
+    return;
+  }
+
+  nested_executor_->InjectClipboardEvent(event);
 }
 
 void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {

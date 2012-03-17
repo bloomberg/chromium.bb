@@ -10,7 +10,7 @@
 #include "ipc/ipc_channel.h"
 
 #include "remoting/host/event_executor.h"
-#include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/host_event_stub.h"
 
 class MessageLoop;
 
@@ -24,13 +24,17 @@ class ChannelProxy;
 
 namespace remoting {
 
-class SessionEventExecutorWin : public protocol::InputStub,
+class SessionEventExecutorWin : public protocol::HostEventStub,
                                 public IPC::Channel::Listener {
  public:
   SessionEventExecutorWin(MessageLoop* message_loop,
                           base::MessageLoopProxy* io_message_loop,
-                          scoped_ptr<protocol::InputStub> nested_executor);
+                          scoped_ptr<protocol::HostEventStub> nested_executor);
   ~SessionEventExecutorWin();
+
+  // ClipboardStub interface.
+  virtual void InjectClipboardEvent(
+      const protocol::ClipboardEvent& event) OVERRIDE;
 
   // protocol::InputStub implementation.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
@@ -41,7 +45,7 @@ class SessionEventExecutorWin : public protocol::InputStub,
 
  private:
   // Pointer to the next event executor.
-  scoped_ptr<protocol::InputStub> nested_executor_;
+  scoped_ptr<protocol::HostEventStub> nested_executor_;
 
   MessageLoop* message_loop_;
 

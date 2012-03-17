@@ -341,6 +341,11 @@
             }],
           ],  # conditions
         }],  # OS=="mac"
+        [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
         ['OS!="win"', {
           'sources!': [
             'host/plugin/host_plugin.def',
@@ -583,6 +588,8 @@
         'host/screen_recorder.h',
         'host/server_log_entry.cc',
         'host/server_log_entry.h',
+        'host/session_event_executor_win.cc',
+        'host/session_event_executor_win.h',
         'host/signaling_connector.cc',
         'host/signaling_connector.h',
         'host/ui_strings.cc',
@@ -701,6 +708,13 @@
         'host/it2me_host_user_interface.h',
         'host/simple_host_process.cc',
       ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
+      ],
     },  # end of target 'remoting_simple_host'
 
     {
@@ -732,15 +746,9 @@
           'sources': [
             'host/host_event_logger_win.cc',
             'host/remoting_host_messages.mc',
-            'host/session_event_executor_win.cc',
-            'host/session_event_executor_win.h',
           ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)',
-          ],
-          # Allow the host to connect to the remoting service.
-          'defines': [
-            'USE_CHROMOTING_IPC',
           ],
           # Rule to run the message compiler.
           'rules': [
@@ -1042,6 +1050,11 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
+        [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
         ['chromeos == 0', {
           'dependencies': [
             'remoting_host'
