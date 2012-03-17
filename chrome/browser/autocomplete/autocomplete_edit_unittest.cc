@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -107,11 +106,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
 
 }  // namespace
 
-class AutocompleteEditTest : public ::testing::Test {
- private:
-  // Needed by the blocking pool (but no need to pump it).
-  MessageLoop message_loop_;
-};
+class AutocompleteEditTest : public ::testing::Test {};
 
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
 TEST_F(AutocompleteEditTest, AdjustTextForCopy) {

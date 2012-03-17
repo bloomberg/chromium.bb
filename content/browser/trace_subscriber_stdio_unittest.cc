@@ -4,17 +4,12 @@
 
 #include "content/browser/trace_subscriber_stdio.h"
 
-#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TraceSubscriberStdioTest : public ::testing::Test {
- private:
-  // Needed by the blocking pool (but no need to pump it).
-  MessageLoop message_loop_;
-};
+class TraceSubscriberStdioTest : public ::testing::Test {};
 
 TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
   ScopedTempDir trace_dir;
