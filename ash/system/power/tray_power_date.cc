@@ -309,8 +309,8 @@ views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
     date_->set_actionable(true);
 
   views::View* container = new views::View;
-  views::BoxLayout* layout = new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 18, 10, 0);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
+      kTrayPopupPaddingHorizontal, 10, 0);
   layout->set_spread_blank_space(true);
   container->SetLayoutManager(layout);
   container->set_background(views::Background::CreateSolidBackground(

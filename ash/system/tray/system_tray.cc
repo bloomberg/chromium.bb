@@ -292,6 +292,11 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     return can_activate_;
   }
 
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    gfx::Size size = views::BubbleDelegateView::GetPreferredSize();
+    return gfx::Size(kTrayPopupWidth, size.height());
+  }
+
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     autoclose_.Stop();
   }

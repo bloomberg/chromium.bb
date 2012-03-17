@@ -81,8 +81,8 @@ gfx::Size Slider::GetPreferredSize() {
   const int kSizeMinor = 40;
 
   if (orientation_ == HORIZONTAL)
-    return gfx::Size(kSizeMajor, kSizeMinor);
-  return gfx::Size(kSizeMinor, kSizeMajor);
+    return gfx::Size(std::max(width(), kSizeMajor), kSizeMinor);
+  return gfx::Size(kSizeMinor, std::max(height(), kSizeMajor));
 }
 
 void Slider::OnPaint(gfx::Canvas* canvas) {

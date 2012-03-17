@@ -98,7 +98,7 @@ class VolumeView : public views::View,
  public:
   VolumeView() {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-          0, 0, 5));
+          kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
     icon_ = new VolumeButton(this);
     AddChildView(icon_);
@@ -107,7 +107,6 @@ class VolumeView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(delegate->GetVolumeLevel());
-    slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
     AddChildView(slider_);
   }
 
@@ -122,6 +121,12 @@ class VolumeView : public views::View,
   }
 
  private:
+  // Overridden from views::View.
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) OVERRIDE {
+    int w = width() - slider_->x();
+    slider_->SetSize(gfx::Size(w, slider_->height()));
+  }
+
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {

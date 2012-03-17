@@ -12,9 +12,13 @@ namespace ash {
 
 extern const int kTrayPaddingBetweenItems;
 extern const int kTrayPopupAutoCloseDelayInSeconds;
+extern const int kTrayPopupPaddingHorizontal;
+extern const int kTrayPopupPaddingBetweenItems;
 
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
+
+extern const int kTrayPopupWidth;
 
 }  // namespace ash
 

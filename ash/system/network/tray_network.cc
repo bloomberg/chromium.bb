@@ -197,7 +197,7 @@ class NetworkDefaultView : public views::View {
  public:
   explicit NetworkDefaultView(SystemTrayItem* owner) : owner_(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        0, 0, 5));
+        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
     icon_ = new NetworkTrayView(LARGE);
     AddChildView(icon_);
@@ -205,10 +205,10 @@ class NetworkDefaultView : public views::View {
     label_ = new views::Label();
     AddChildView(label_);
 
-    views::ImageView* more = new views::ImageView;
-    more->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+    more_ = new views::ImageView;
+    more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_MORE).ToSkBitmap());
-    AddChildView(more);
+    AddChildView(more_);
 
     Update(Shell::GetInstance()->tray_delegate()->
         GetMostRelevantNetworkIcon(true));
@@ -223,6 +223,16 @@ class NetworkDefaultView : public views::View {
 
  private:
   // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    // Let the box-layout do the layout first. Then move the '>' arrow to right
+    // align.
+    views::View::Layout();
+
+    gfx::Rect bounds = more_->bounds();
+    bounds.set_x(width() - more_->width());
+    more_->SetBoundsRect(bounds);
+  }
+
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     owner_->PopupDetailedView(0, true);
     return true;
@@ -231,6 +241,7 @@ class NetworkDefaultView : public views::View {
   SystemTrayItem* owner_;
   NetworkTrayView* icon_;
   views::Label* label_;
+  views::ImageView* more_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
 };

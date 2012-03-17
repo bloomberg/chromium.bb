@@ -236,7 +236,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   // Overridden from SystemTrayDelegate:
   virtual const std::string GetUserDisplayName() const OVERRIDE {
-    return "Über tray";
+    return "Über tray Über tray Über tray Über tray";
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {

@@ -10,8 +10,12 @@ namespace ash {
 
 const int kTrayPaddingBetweenItems = 8;
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
+extern const int kTrayPopupPaddingHorizontal = 18;
+const int kTrayPopupPaddingBetweenItems = 5;
 
 const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
+
+const int kTrayPopupWidth = 300;
 
 }  // namespace ash

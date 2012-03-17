@@ -31,7 +31,7 @@ class BrightnessView : public views::View,
  public:
   BrightnessView() {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-          0, 0, 5));
+          kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
     views::ImageView* icon = new views::ImageView();
     gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -44,7 +44,6 @@ class BrightnessView : public views::View,
     // level of the system. So start with a random value.
     // http://crosbug.com/26935
     slider_->SetValue(0.8f);
-    slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
     AddChildView(slider_);
   }
 
@@ -55,6 +54,12 @@ class BrightnessView : public views::View,
   }
 
  private:
+  // Overridden from views::View.
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds) OVERRIDE {
+    int w = width() - slider_->x();
+    slider_->SetSize(gfx::Size(w, slider_->height()));
+  }
+
   // Overridden from views:SliderListener.
   virtual void SliderValueChanged(views::Slider* sender,
                                   float value,

@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -25,7 +26,8 @@ class SettingsView : public views::View {
  public:
   SettingsView() {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-          0, 0, 3));
+        ash::kTrayPopupPaddingHorizontal, 0,
+        ash::kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* icon = new views::ImageView;
@@ -68,15 +70,7 @@ views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
 
-  views::View* container = new views::View;
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5);
-  layout->set_spread_blank_space(true);
-  container->SetLayoutManager(layout);
-
-  views::View* settings = new SettingsView;
-  container->AddChildView(settings);
-  return container;
+  return new SettingsView;
 }
 
 views::View* TraySettings::CreateDetailedView(user::LoginStatus status) {
