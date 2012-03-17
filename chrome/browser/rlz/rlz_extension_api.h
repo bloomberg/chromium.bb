@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class RlzRecordProductEventFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.recordProductEvent")
 };
 
 class RlzGetAccessPointRlzFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.getAccessPointRlz")
 };
 
@@ -26,11 +26,11 @@ class RlzSendFinancialPingFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.sendFinancialPing")
  // Making this function protected so that it can be overridden in tests.
  protected:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RlzClearProductStateFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.clearProductState")
 };
 

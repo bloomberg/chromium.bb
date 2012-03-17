@@ -420,12 +420,12 @@ TEST_F(TemplateURLTest, RLZ) {
   TemplateURLRef ref("http://bar/?{google:RLZ}{searchTerms}", 1, 2);
   ASSERT_TRUE(ref.IsValid());
   ASSERT_TRUE(ref.SupportsReplacement());
-  GURL result(ref.ReplaceSearchTerms(t_url, L"x",
+  GURL result(ref.ReplaceSearchTerms(t_url, ASCIIToUTF16("x"),
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   ASSERT_TRUE(result.is_valid());
   std::string expected_url = "http://bar/?";
   if (!rlz_string.empty())
-    expected_url += "rlz=" + WideToUTF8(rlz_string) + "&";
+    expected_url += "rlz=" + UTF16ToUTF8(rlz_string) + "&";
   expected_url += "x";
   EXPECT_EQ(expected_url, result.spec());
 }

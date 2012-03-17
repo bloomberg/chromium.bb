@@ -106,8 +106,8 @@ bool SendFinancialPing(const std::string& brand,
   rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
                                    rlz_lib::CHROME_HOME_PAGE,
                                    rlz_lib::NO_ACCESS_POINT};
-  std::string lang_ascii(WideToASCII(lang));
-  std::string referral_ascii(WideToASCII(referral));
+  std::string lang_ascii(UTF16ToASCII(lang));
+  std::string referral_ascii(UTF16ToASCII(referral));
   return rlz_lib::SendFinancialPing(rlz_lib::CHROME, points, "chrome",
                                     brand.c_str(), referral_ascii.c_str(),
                                     lang_ascii.c_str(), false, true);
@@ -239,7 +239,7 @@ void RLZTracker::PingNowImpl() {
   string16 lang;
   GoogleUpdateSettings::GetLanguage(&lang);
   if (lang.empty())
-    lang = L"en";
+    lang = ASCIIToUTF16("en");
   string16 referral;
   GoogleUpdateSettings::GetReferral(&referral);
 
@@ -371,7 +371,7 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength))
     return false;
 
-  string16 rlz_local(ASCIIToWide(std::string(str_rlz)));
+  string16 rlz_local(ASCIIToUTF16(std::string(str_rlz)));
   if (rlz)
     *rlz = rlz_local;
 

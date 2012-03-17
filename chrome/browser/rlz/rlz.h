@@ -18,7 +18,7 @@
 #include "base/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "rlz/win/lib/rlz_lib.h"
+#include "rlz/lib/rlz_lib.h"
 
 // RLZ is a library which is used to measure distribution scenarios.
 // Its job is to record certain lifetime events in the registry and to send
@@ -63,7 +63,7 @@ class RLZTracker : public content::NotificationObserver {
   // testing purposes. Production code should never need to call these.
  protected:
   RLZTracker();
-  ~RLZTracker();
+  virtual ~RLZTracker();
 
   // Performs initialization of RLZ tracker that is purposefully delayed so
   // that it does not interfere with chrome startup time.

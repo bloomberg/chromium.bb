@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "rlz/win/lib/rlz_lib.h"  // InitializeTempHivesForTesting
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
