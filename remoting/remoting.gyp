@@ -619,6 +619,7 @@
             'libraries': [
               '-lX11',
               '-lXdamage',
+              '-lXfixes',
               '-lXtst',
               '-lpam',
               '-lXext'
