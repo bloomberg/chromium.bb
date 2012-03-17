@@ -1535,7 +1535,7 @@ DELEGATE_TO_GL_4(viewport, Viewport, WGC3Dint, WGC3Dint, WGC3Dsizei, WGC3Dsizei)
 
 WebGLId WebGraphicsContext3DInProcessImpl::createBuffer() {
   makeContextCurrent();
-  GLuint o;
+  GLuint o = 0;
   glGenBuffersARB(1, &o);
   return o;
 }
@@ -1554,7 +1554,7 @@ WebGLId WebGraphicsContext3DInProcessImpl::createProgram() {
 
 WebGLId WebGraphicsContext3DInProcessImpl::createRenderbuffer() {
   makeContextCurrent();
-  GLuint o;
+  GLuint o = 0;
   glGenRenderbuffersEXT(1, &o);
   return o;
 }
@@ -1579,7 +1579,7 @@ WebGLId WebGraphicsContext3DInProcessImpl::createShader(
 
 WebGLId WebGraphicsContext3DInProcessImpl::createTexture() {
   makeContextCurrent();
-  GLuint o;
+  GLuint o = 0;
   glGenTextures(1, &o);
   return o;
 }
