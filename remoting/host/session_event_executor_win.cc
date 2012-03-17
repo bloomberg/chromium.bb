@@ -16,6 +16,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/desktop_win.h"
 
 namespace {
 
@@ -64,6 +65,7 @@ void SessionEventExecutorWin::InjectClipboardEvent(
     return;
   }
 
+  SwitchToInputDesktop();
   nested_executor_->InjectClipboardEvent(event);
 }
 
@@ -92,6 +94,7 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
     scroll_pressed_ = false;
   }
 
+  SwitchToInputDesktop();
   nested_executor_->InjectKeyEvent(event);
 }
 
@@ -104,11 +107,23 @@ void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
     return;
   }
 
+  SwitchToInputDesktop();
   nested_executor_->InjectMouseEvent(event);
 }
 
 bool SessionEventExecutorWin::OnMessageReceived(const IPC::Message& message) {
   return false;
+}
+
+void SessionEventExecutorWin::SwitchToInputDesktop() {
+  // Switch to the desktop receiving user input if different from the current
+  // one.
+  scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
+  if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
+    // If SetThreadDesktop() fails, the thread is still assigned a desktop.
+    // So we can continue capture screen bits, just from a diffected desktop.
+    desktop_.SetThreadDesktop(input_desktop.Pass());
+  }
 }
 
 }  // namespace remoting

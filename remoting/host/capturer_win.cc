@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,12 @@
 
 #include <windows.h>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/capturer_helper.h"
+#include "remoting/host/desktop_win.h"
 #include "remoting/host/differ.h"
+#include "remoting/host/scoped_thread_desktop_win.h"
 
 namespace remoting {
 
@@ -83,7 +86,10 @@ class CapturerGdi : public Capturer {
   static const int kNumBuffers = 2;
   VideoFrameBuffer buffers_[kNumBuffers];
 
+  ScopedThreadDesktopWin desktop_;
+
   // Gdi specific information about screen.
+  HWND desktop_window_;
   HDC desktop_dc_;
   HDC memory_dc_;
   HBITMAP target_bitmap_[kNumBuffers];
@@ -110,7 +116,8 @@ static const int kPixelsPerMeter = 3780;
 static const int kBytesPerPixel = 4;
 
 CapturerGdi::CapturerGdi()
-    : desktop_dc_(NULL),
+    : desktop_window_(NULL),
+      desktop_dc_(NULL),
       memory_dc_(NULL),
       dc_size_(SkISize::Make(0, 0)),
       current_buffer_(0),
@@ -168,7 +175,12 @@ void CapturerGdi::ReleaseBuffers() {
     }
   }
 
-  desktop_dc_ = NULL;
+  if (desktop_dc_) {
+    ReleaseDC(desktop_window_, desktop_dc_);
+    desktop_window_ = NULL;
+    desktop_dc_ = NULL;
+  }
+
   if (memory_dc_) {
     DeleteDC(memory_dc_);
     memory_dc_ = NULL;
@@ -180,19 +192,58 @@ void CapturerGdi::ScreenConfigurationChanged() {
 }
 
 void CapturerGdi::UpdateBufferCapture(const SkISize& size) {
+  // Switch to the desktop receiving user input if different from the current
+  // one.
+  scoped_ptr<DesktopWin> input_desktop = DesktopWin::GetInputDesktop();
+  if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
+    // Release GDI resources otherwise SetThreadDesktop will fail.
+    if (desktop_dc_) {
+      ReleaseDC(desktop_window_, desktop_dc_);
+      desktop_window_ = NULL;
+      desktop_dc_ = NULL;
+    }
+
+    if (memory_dc_) {
+      DeleteDC(memory_dc_);
+      memory_dc_ = NULL;
+    }
+
+    ReleaseBuffers();
+
+    // If SetThreadDesktop() fails, the thread is still assigned a desktop.
+    // So we can continue capture screen bits, just from a diffented desktop.
+    desktop_.SetThreadDesktop(input_desktop.Pass());
+  }
+
   // Make sure the DCs have the correct dimensions.
   if (size != dc_size_) {
     // TODO(simonmorris): screen dimensions changing isn't equivalent to needing
     // a new DC, but it's good enough for now.
-    desktop_dc_ = GetDC(GetDesktopWindow());
-    if (memory_dc_)
+    if (desktop_dc_) {
+      ReleaseDC(desktop_window_, desktop_dc_);
+      desktop_window_ = NULL;
+      desktop_dc_ = NULL;
+    }
+
+    if (memory_dc_) {
       DeleteDC(memory_dc_);
+      memory_dc_ = NULL;
+    }
+  }
+
+  if (desktop_dc_ == NULL) {
+    DCHECK(desktop_window_ == NULL);
+    DCHECK(memory_dc_ == NULL);
+
+    desktop_window_ = GetDesktopWindow();
+    desktop_dc_ = GetDC(desktop_window_);
     memory_dc_ = CreateCompatibleDC(desktop_dc_);
     dc_size_ = size;
   }
 
   // Make sure the current bitmap has the correct dimensions.
-  if (size != buffers_[current_buffer_].size) {
+  if (buffers_[current_buffer_].data == NULL ||
+      size != buffers_[current_buffer_].size) {
     ReallocateBuffer(current_buffer_, size);
     InvalidateFullScreen();
   }
