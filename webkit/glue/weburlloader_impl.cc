@@ -133,7 +133,7 @@ bool GetInfoFromDataURL(const GURL& url,
     info->mime_type.swap(mime_type);
     info->charset.swap(charset);
     info->security_info.clear();
-    info->content_length = -1;
+    info->content_length = data->length();
     info->encoded_data_length = 0;
 
     return true;

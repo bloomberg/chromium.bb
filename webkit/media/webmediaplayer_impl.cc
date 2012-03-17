@@ -28,7 +28,6 @@
 #include "v8/include/v8.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
-#include "webkit/media/simple_data_source.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webvideoframe_impl.h"
@@ -237,14 +236,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   }
 
   // Otherwise it's a regular request which requires resolving the URL first.
-  scoped_refptr<WebDataSource> data_source;
-  if (gurl.SchemeIs(kDataScheme)) {
-    data_source = new SimpleDataSource(main_loop_, frame_);
-  } else {
-    data_source = new BufferedDataSource(main_loop_, frame_, media_log_);
-  }
-  proxy_->set_data_source(data_source);
-  data_source->Initialize(url, base::Bind(
+  proxy_->set_data_source(
+      new BufferedDataSource(main_loop_, frame_, media_log_));
+  proxy_->data_source()->Initialize(url, base::Bind(
       &WebMediaPlayerImpl::DataSourceInitialized,
       base::Unretained(this), gurl));
 }

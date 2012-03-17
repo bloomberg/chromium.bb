@@ -446,7 +446,6 @@
         '../../glue/worker_task_runner_unittest.cc',
         '../../media/buffered_data_source_unittest.cc',
         '../../media/buffered_resource_loader_unittest.cc',
-        '../../media/simple_data_source_unittest.cc',
         '../../media/skcanvas_video_renderer_unittest.cc',
         '../../media/test_response_generator.cc',
         '../../media/test_response_generator.h',

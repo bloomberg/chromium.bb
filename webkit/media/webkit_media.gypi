@@ -26,8 +26,6 @@
         'filter_helpers.cc',
         'filter_helpers.h',
         'media_stream_client.h',
-        'simple_data_source.cc',
-        'simple_data_source.h',
         'skcanvas_video_renderer.cc',
         'skcanvas_video_renderer.h',
         'web_data_source.cc',

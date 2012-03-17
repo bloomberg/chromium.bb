@@ -83,12 +83,6 @@ void BufferedDataSource::Initialize(
   DCHECK(!loader_.get());
   url_ = url;
 
-  // This data source doesn't support data:// protocol so reject it.
-  if (url_.SchemeIs(kDataScheme)) {
-    initialize_cb.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
-    return;
-  }
-
   initialize_cb_ = initialize_cb;
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
