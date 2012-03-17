@@ -101,7 +101,6 @@ void AudioDevice::Start() {
 void AudioDevice::Stop() {
   {
     base::AutoLock auto_lock(audio_thread_lock_);
-    callback_ = NULL;  // After Stop() returns, we must never deref callback_.
     audio_thread_.Stop(MessageLoop::current());
   }
 
@@ -209,7 +208,13 @@ void AudioDevice::OnStateChanged(AudioStreamState state) {
 
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
-    if (callback_)
+    // Don't dereference the callback object if the audio thread
+    // is stopped or stopping.  That could mean that the callback
+    // object has been deleted.
+    // TODO(tommi): Add an explicit contract for clearing the callback
+    // object.  Possibly require calling Initialize again or provide
+    // a callback object via Start() and clear it in Stop().
+    if (!audio_thread_.IsStopped())
       callback_->OnRenderError();
   }
 }
@@ -233,7 +238,7 @@ void AudioDevice::OnStreamCreated(
   base::AutoLock auto_lock(audio_thread_lock_);
 
   // Takes care of the case when Stop() is called before OnStreamCreated().
-  if (!stream_id_ || !callback_) {
+  if (!stream_id_) {
     base::SharedMemory::CloseHandle(handle);
     // Close the socket handler.
     base::SyncSocket socket(socket_handle);
