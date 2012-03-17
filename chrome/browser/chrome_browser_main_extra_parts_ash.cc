@@ -69,8 +69,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   // Add the status area buttons after Profile has been initialized.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        ash::switches::kAshUberTray)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        ash::switches::kDisableAshUberTray)) {
     ChromeShellDelegate::instance()->status_area_host()->AddButtons();
   }
 }

@@ -32,6 +32,7 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
 
   // views::WidgetDelegate overrides:
   virtual bool CanActivate() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

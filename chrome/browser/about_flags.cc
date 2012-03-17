@@ -586,11 +586,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_ASH)
   {
-    "enable-ash-uber-tray",
+    "disable-ash-uber-tray",
     IDS_FLAGS_ENABLE_ASH_UBER_TRAY_NAME,
     IDS_FLAGS_ENABLE_ASH_UBER_TRAY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAshUberTray),
+    SINGLE_VALUE_TYPE(ash::switches::kDisableAshUberTray),
   },
   {
     "enable-ash-oak",

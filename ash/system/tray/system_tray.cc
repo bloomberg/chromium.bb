@@ -384,7 +384,7 @@ void SystemTray::ShowDefaultView() {
   popup_ = NULL;
   bubble_ = NULL;
 
-  ShowItems(items_, false, true);
+  ShowItems(items_.get(), false, true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -455,7 +455,7 @@ bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
     if (popup_)
       popup_->Hide();
     else
-      ShowItems(items_, false, true);
+      ShowItems(items_.get(), false, true);
     return true;
   }
   return false;
@@ -465,7 +465,7 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
   if (popup_)
     popup_->Hide();
   else
-    ShowItems(items_, false, true);
+    ShowItems(items_.get(), false, true);
   return true;
 }
 

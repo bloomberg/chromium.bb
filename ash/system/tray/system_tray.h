@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -53,7 +54,7 @@ class ASH_EXPORT SystemTray : public views::View,
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  const std::vector<SystemTrayItem*>& items() const { return items_; }
+  const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   AudioObserver* audio_observer() const {
     return audio_observer_;
@@ -90,7 +91,7 @@ class ASH_EXPORT SystemTray : public views::View,
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
-  std::vector<SystemTrayItem*> items_;
+  ScopedVector<SystemTrayItem> items_;
 
   // The container for all the tray views of the items.
   views::View* container_;

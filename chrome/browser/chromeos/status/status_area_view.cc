@@ -118,6 +118,19 @@ bool StatusAreaView::CanActivate() const {
 #endif
 }
 
+void StatusAreaView::DeleteDelegate() {
+#if defined(USE_ASH)
+  // If this is used as the content-view of the widget, then do nothing, since
+  // deleting the widget will end up deleting this. But if this is used only as
+  // the widget-delegate, then delete this now.
+  if (!GetWidget()) {
+    delete this;
+    return;
+  }
+#endif
+  WidgetDelegate::DeleteDelegate();
+}
+
 views::Widget* StatusAreaView::GetWidget() {
   return View::GetWidget();
 }

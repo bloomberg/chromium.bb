@@ -8,7 +8,7 @@ namespace ash {
 namespace switches {
 
 // Use the in-progress uber system tray.
-const char kAshUberTray[] = "ash-uber-tray";
+const char kDisableAshUberTray[] = "disable-ash-uber-tray";
 
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";

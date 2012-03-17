@@ -55,6 +55,7 @@ class StatusAreaView : public views::AccessiblePaneView,
 
   // views::WidgetDelegate overrides:
   virtual bool CanActivate() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 

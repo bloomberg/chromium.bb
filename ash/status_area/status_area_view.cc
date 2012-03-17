@@ -51,6 +51,14 @@ bool StatusAreaView::CanActivate() const {
   return focus_cycler->widget_activating() == GetWidget();
 }
 
+void StatusAreaView::DeleteDelegate() {
+  // If this is used as the content-view of the widget, then do nothing, since
+  // deleting the widget will end up deleting this. But if this is used only as
+  // the widget-delegate, then delete this now.
+  if (!GetWidget())
+    delete this;
+}
+
 void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(status_mock_, 0, 0);
 }

@@ -532,7 +532,7 @@ void Shell::Init() {
     status_widget_ = delegate_->CreateStatusArea();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshUberTray)) {
+  if (!command_line->HasSwitch(switches::kDisableAshUberTray)) {
     // TODO(sad): This is rather ugly at the moment. This is because we are
     // supporting both the old and the new status bar at the same time. This
     // will soon get better once the new one is ready and the old one goes out
