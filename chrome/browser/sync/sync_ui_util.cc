@@ -319,11 +319,6 @@ MessageType GetStatusInfo(ProfileSyncService* service,
                                       NULL, NULL, NULL);
         }
         result_type = SYNC_ERROR;
-      } else if (!status.authenticated) {
-        if (status_label) {
-          status_label->assign(
-              l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED));
-        }
       }
     } else if (service->unrecoverable_error_detected()) {
       result_type = SYNC_ERROR;
@@ -517,8 +512,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
                        full_status.summary));
 
     strings->SetString("version", GetVersionString());
-    strings->Set("authenticated",
-                 new base::FundamentalValue(full_status.authenticated));
     strings->SetString("auth_problem",
                        sync_ui_util::MakeSyncAuthErrorText(
                        service->GetAuthError().state()));
@@ -535,12 +528,6 @@ void ConstructAboutInformation(ProfileSyncService* service,
         details,
         "Client ID",
         full_status.unique_id.empty() ? "none" : full_status.unique_id);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Server Up",
-                                    full_status.server_up);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Server Reachable",
-                                    full_status.server_reachable);
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Notifications Enabled",
                                     full_status.notifications_enabled);

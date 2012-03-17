@@ -279,12 +279,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         SignalStateCompleteWithNextState(FULLY_SYNCED);
         break;
       }
-      if (!GetStatus().server_reachable) {
-        // The client cannot reach the sync server because the network is
-        // disabled. There is no need to wait anymore.
-        SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
-        break;
-      }
       break;
     }
     case WAITING_FOR_DATA_SYNC: {
@@ -333,12 +327,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
           GetLastSessionSnapshot()->num_encryption_conflicts == 0) {
         // Encryption is now complete for the the type in which we were waiting.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
-        break;
-      }
-      if (!GetStatus().server_reachable) {
-        // The client cannot reach the sync server because the network is
-        // disabled. There is no need to wait anymore.
-        SignalStateCompleteWithNextState(SERVER_UNREACHABLE);
         break;
       }
       break;
@@ -395,15 +383,6 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
           service_->unrecoverable_error_detected() == true) {
         // An actionable error has been detected.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
-      }
-      break;
-    }
-    case SERVER_UNREACHABLE: {
-      DVLOG(1) << GetClientInfoString("SERVER_UNREACHABLE");
-      if (GetStatus().server_reachable) {
-        // The client was offline due to the network being disabled, but is now
-        // back online. Wait for the pending sync cycle to complete.
-        SignalStateCompleteWithNextState(WAITING_FOR_FULL_SYNC);
       }
       break;
     }
@@ -537,7 +516,6 @@ bool ProfileSyncServiceHarness::AwaitDataSyncCompletion(
 
   CHECK(service()->sync_initialized());
   CHECK_NE(wait_state_, SYNC_DISABLED);
-  CHECK_NE(wait_state_, SERVER_UNREACHABLE);
 
   if (IsDataSynced()) {
     // Client is already synced; don't wait.
@@ -568,23 +546,12 @@ bool ProfileSyncServiceHarness::AwaitFullSyncCompletion(
     return true;
   }
 
-  if (wait_state_ == SERVER_UNREACHABLE) {
-    // Client was offline; wait for it to go online, and then wait for sync.
-    AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-    DCHECK_EQ(wait_state_, WAITING_FOR_FULL_SYNC);
-    return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-  }
-
   DCHECK(service()->sync_initialized());
   wait_state_ = WAITING_FOR_FULL_SYNC;
   AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
   if (wait_state_ == FULLY_SYNCED) {
     // Client is online; sync was successful.
     return true;
-  } else if (wait_state_ == SERVER_UNREACHABLE) {
-    // Client is offline; sync was unsuccessful.
-    LOG(ERROR) << "Client went offline after waiting for sync to finish";
-    return false;
   } else {
     LOG(ERROR) << "Invalid wait state: " << wait_state_;
     return false;

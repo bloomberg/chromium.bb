@@ -234,6 +234,11 @@ class SyncTest : public InProcessBrowserTest {
   // |index|. Used by SetupClients().
   virtual void InitializeInstance(int index);
 
+  // Implementations of the EnableNotifications() and DisableNotifications()
+  // functions defined above.
+  void DisableNotificationsImpl();
+  void EnableNotificationsImpl();
+
   // GAIA account used by the test case.
   std::string username_;
 
@@ -332,6 +337,10 @@ class SyncTest : public InProcessBrowserTest {
   // Indicates whether changes to a profile should also change the verifier
   // profile or not.
   bool use_verifier_;
+
+  // Indicates whether or not notifications were explicitly enabled/disabled.
+  // Defaults to true.
+  bool notifications_enabled_;
 
   // Sync integration tests need to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version

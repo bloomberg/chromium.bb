@@ -151,11 +151,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, AuthErrorTest) {
 
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
-  ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Must get auth error."));
+  ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             GetClient(0)->service()->GetAuthError().state());
-  ASSERT_EQ(ProfileSyncService::Status::OFFLINE_UNSYNCED,
-            GetClient(0)->GetStatus().summary);
 }
 
 // TODO(lipalani): Fix the typed_url dtc so this test case can pass.

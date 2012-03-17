@@ -36,8 +36,11 @@ using syncable::MODEL_TYPE_COUNT;
 using syncable::ModelType;
 using syncable::WriteTransaction;
 
+static char kValidAuthToken[] = "AuthToken";
+
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
     : ServerConnectionManager("unused", 0, false, "version"),
+      server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
       next_new_id_(10000),
@@ -55,8 +58,8 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
-  server_reachable_ = true;
   SetNewTimestamp(0);
+  set_auth_token(kValidAuthToken);
 }
 
 MockConnectionManager::~MockConnectionManager() {
@@ -97,6 +100,17 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
+  if (auth_token.empty()) {
+    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    return false;
+  }
+
+  if (auth_token != kValidAuthToken) {
+    // Simulate server-side auth failure.
+    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    InvalidateAndClearAuthToken();
+  }
+
   if (fail_next_postbuffer_) {
     fail_next_postbuffer_ = false;
     return false;
@@ -129,8 +143,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     ProcessCommit(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
     ProcessGetUpdates(&post, &response);
-  } else if (post.message_contents() == ClientToServerMessage::AUTHENTICATE) {
-    ProcessAuthenticate(&post, &response, auth_token);
   } else if (post.message_contents() == ClientToServerMessage::CLEAR_DATA) {
     ProcessClearData(&post, &response);
   } else {
@@ -162,14 +174,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   }
 
   return result;
-}
-
-bool MockConnectionManager::IsServerReachable() {
-  return true;
-}
-
-bool MockConnectionManager::IsUserAuthenticated() {
-  return true;
 }
 
 sync_pb::GetUpdatesResponse* MockConnectionManager::GetUpdateResponse() {
@@ -460,35 +464,6 @@ void MockConnectionManager::ProcessClearData(ClientToServerMessage* csm,
   response->set_error_code(clear_user_data_response_errortype_);
 }
 
-void MockConnectionManager::ProcessAuthenticate(
-    ClientToServerMessage* csm,
-    ClientToServerResponse* response,
-    const std::string& auth_token) {
-  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::AUTHENTICATE);
-  EXPECT_FALSE(auth_token.empty());
-
-  if (auth_token != valid_auth_token_) {
-    response->set_error_code(SyncEnums::AUTH_INVALID);
-    return;
-  }
-
-  response->set_error_code(SyncEnums::SUCCESS);
-  response->mutable_authenticate()->CopyFrom(auth_response_);
-  auth_response_.Clear();
-}
-
-void MockConnectionManager::SetAuthenticationResponseInfo(
-    const std::string& valid_auth_token,
-    const std::string& user_display_name,
-    const std::string& user_display_email,
-    const std::string& user_obfuscated_id) {
-  valid_auth_token_ = valid_auth_token;
-  sync_pb::UserIdentification* user = auth_response_.mutable_user();
-  user->set_display_name(user_display_name);
-  user->set_email(user_display_email);
-  user->set_obfuscated_id(user_obfuscated_id);
-}
-
 bool MockConnectionManager::ShouldConflictThisCommit() {
   bool conflict = false;
   if (conflict_all_commits_) {
@@ -641,19 +616,17 @@ sync_pb::DataTypeProgressMarker const*
 }
 
 void MockConnectionManager::SetServerReachable() {
-  server_status_ = HttpResponse::SERVER_CONNECTION_OK;
   server_reachable_ = true;
-
-  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
-     OnServerConnectionEvent(
-         ServerConnectionEvent(server_status_, server_reachable_)));
 }
 
 void MockConnectionManager::SetServerNotReachable() {
-  server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
   server_reachable_ = false;
+}
 
-  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
-     OnServerConnectionEvent(
-         ServerConnectionEvent(server_status_, server_reachable_)));
+void MockConnectionManager::UpdateConnectionStatus() {
+  if (!server_reachable_) {
+    server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
+  } else {
+    server_status_ = HttpResponse::SERVER_CONNECTION_OK;
+  }
 }

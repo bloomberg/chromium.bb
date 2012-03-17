@@ -22,6 +22,8 @@ void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
                                    SyncerStep begin, SyncerStep end);
 void SimulateCommitFailed(sessions::SyncSession* session,
                           SyncerStep begin, SyncerStep end);
+void SimulateConnectionFailure(sessions::SyncSession* session,
+                          SyncerStep begin, SyncerStep end);
 void SimulateSuccess(sessions::SyncSession* session,
                      SyncerStep begin, SyncerStep end);
 void SimulateThrottledImpl(sessions::SyncSession* session,

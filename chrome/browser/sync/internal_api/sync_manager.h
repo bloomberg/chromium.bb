@@ -124,10 +124,6 @@ class SyncManager {
     ~Status();
 
     Summary summary;
-    bool authenticated;      // Successfully authenticated via GAIA.
-    bool server_up;          // True if we have received at least one good
-                             // reply from the server.
-    bool server_reachable;   // True if we received any reply from the server.
     bool notifications_enabled;  // True only if subscribed for notifications.
 
     // Notifications counters updated by the actions in synapi.

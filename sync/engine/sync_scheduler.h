@@ -346,7 +346,7 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
                                 SyncerStep* start,
                                 SyncerStep* end);
 
-  // Used to update |server_connection_ok_|, see below.
+  // Used to update |connection_code_|, see below.
   void UpdateServerConnectionManagerStatus(
       HttpResponse::ServerConnectionCode code);
 
@@ -393,9 +393,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // TODO(tim): Bug 26339. This needs to track more than just time I think,
   // since the nudges could be for different types. Current impl doesn't care.
   base::TimeTicks last_sync_session_end_time_;
-
-  // Have we observed a valid server connection?
-  bool server_connection_ok_;
 
   // The latest connection code we got while trying to connect.
   HttpResponse::ServerConnectionCode connection_code_;

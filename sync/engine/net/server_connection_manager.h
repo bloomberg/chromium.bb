@@ -60,10 +60,6 @@ struct HttpResponse {
     // minimal changes prevail for the moment.  Fix this! Bug 35060.
     SYNC_AUTH_ERROR,
 
-    // All the following connection codes are valid responses from the server.
-    // Means the server is up.  If you update this list, be sure to also update
-    // IsGoodReplyFromServer().
-
     // SERVER_CONNECTION_OK is returned when request was handled correctly.
     SERVER_CONNECTION_OK,
 
@@ -96,16 +92,10 @@ struct HttpResponse {
       ServerConnectionCode code);
 };
 
-inline bool IsGoodReplyFromServer(HttpResponse::ServerConnectionCode code) {
-  return code >= HttpResponse::SERVER_CONNECTION_OK;
-}
-
 struct ServerConnectionEvent {
   HttpResponse::ServerConnectionCode connection_code;
-  bool server_reachable;
-  ServerConnectionEvent(HttpResponse::ServerConnectionCode code,
-                         bool server_reachable) :
-      connection_code(code), server_reachable(server_reachable) {}
+  explicit ServerConnectionEvent(HttpResponse::ServerConnectionCode code) :
+      connection_code(code) {}
 };
 
 class ServerConnectionEventListener {
@@ -127,7 +117,6 @@ class ScopedServerStatusWatcher : public base::NonThreadSafe {
  private:
   ServerConnectionManager* const conn_mgr_;
   HttpResponse* const response_;
-  bool server_reachable_;
   DISALLOW_COPY_AND_ASSIGN(ScopedServerStatusWatcher);
 };
 
@@ -201,20 +190,6 @@ class ServerConnectionManager {
   virtual bool PostBufferWithCachedAuth(PostBufferParams* params,
                                         ScopedServerStatusWatcher* watcher);
 
-  // Checks the time on the server. Returns false if the request failed. |time|
-  // is an out parameter that stores the value returned from the server.
-  virtual bool CheckTime(int32* out_time);
-
-  // Returns true if sync_server_ is reachable. This method verifies that the
-  // server is pingable and that traffic can be sent to and from it.
-  virtual bool IsServerReachable();
-
-  // Returns true if user has been successfully authenticated.
-  virtual bool IsUserAuthenticated();
-
-  // Updates status and broadcasts events on change.
-  bool CheckServerReachable();
-
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
 
@@ -225,17 +200,7 @@ class ServerConnectionManager {
     return server_status_;
   }
 
-  inline bool server_reachable() const { return server_reachable_; }
-
   const std::string client_id() const { return client_id_; }
-
-  // This changes the server info used by the connection manager. This allows
-  // a single client instance to talk to different backing servers. This is
-  // typically called during / after authentication so that the server url
-  // can be a function of the user's login id.
-  void SetServerParameters(const std::string& server_url,
-                           int port,
-                           bool use_ssl);
 
   // Returns the current server parameters in server_url, port and use_ssl.
   void GetServerParameters(std::string* server_url,
@@ -278,6 +243,10 @@ class ServerConnectionManager {
       previously_invalidated_token.assign(auth_token_);
       auth_token_ = std::string();
     }
+  }
+
+  bool HasInvalidAuthToken() {
+    return auth_token_.empty();
   }
 
   const std::string auth_token() const {
@@ -330,7 +299,7 @@ class ServerConnectionManager {
   std::string proto_sync_path_;
   std::string get_time_path_;
 
-  // The auth token to use in authenticated requests. Set by the AuthWatcher.
+  // The auth token to use in authenticated requests.
   std::string auth_token_;
 
   // The previous auth token that is invalid now.
@@ -339,7 +308,6 @@ class ServerConnectionManager {
   ObserverList<ServerConnectionEventListener> listeners_;
 
   HttpResponse::ServerConnectionCode server_status_;
-  bool server_reachable_;
 
   base::ThreadChecker thread_checker_;
 

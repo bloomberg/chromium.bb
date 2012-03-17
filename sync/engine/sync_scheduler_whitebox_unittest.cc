@@ -34,7 +34,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     routes[syncable::NIGORI] = GROUP_PASSIVE;
     registrar_.reset(new FakeModelSafeWorkerRegistrar(routes));
     connection_.reset(new MockConnectionManager(NULL));
-    connection_->SetServerReachable();
     context_ =
         new SyncSessionContext(
             connection_.get(), dir_maker_.directory(),
@@ -56,10 +55,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
 
   void SetLastSyncedTime(base::TimeTicks ticks) {
     scheduler_->last_sync_session_end_time_ = ticks;
-  }
-
-  void SetServerConnection(bool connected) {
-    scheduler_->server_connection_ok_ = connected;
   }
 
   void ResetWaitInterval() {
@@ -90,7 +85,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   void InitializeSyncerOnNormalMode() {
     SetMode(SyncScheduler::NORMAL_MODE);
     ResetWaitInterval();
-    SetServerConnection(true);
     SetLastSyncedTime(base::TimeTicks::Now());
   }
 

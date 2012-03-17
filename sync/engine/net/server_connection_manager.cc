@@ -152,8 +152,7 @@ int ServerConnectionManager::Connection::ReadResponse(string* out_buffer,
 ScopedServerStatusWatcher::ScopedServerStatusWatcher(
     ServerConnectionManager* conn_mgr, HttpResponse* response)
     : conn_mgr_(conn_mgr),
-      response_(response),
-      server_reachable_(conn_mgr->server_reachable_) {
+      response_(response) {
   response->server_status = conn_mgr->server_status_;
 }
 
@@ -163,9 +162,6 @@ ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
     conn_mgr_->NotifyStatusChanged();
     return;
   }
-  // Notify if we've gone on or offline.
-  if (server_reachable_ != conn_mgr_->server_reachable_)
-    conn_mgr_->NotifyStatusChanged();
 }
 
 ServerConnectionManager::ServerConnectionManager(
@@ -180,7 +176,6 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),
       server_status_(HttpResponse::NONE),
-      server_reachable_(false),
       terminated_(false),
       active_connection_(NULL) {
 }
@@ -215,7 +210,7 @@ void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
      OnServerConnectionEvent(
-         ServerConnectionEvent(server_status_, server_reachable_)));
+         ServerConnectionEvent(server_status_)));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
@@ -259,84 +254,9 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (post.get()->ReadBufferResponse(
       &params->buffer_out, &params->response, true)) {
     params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
-    server_reachable_ = true;
     return true;
   }
   return false;
-}
-
-bool ServerConnectionManager::CheckTime(int32* out_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Verify that the server really is reachable by checking the time. We need
-  // to do this because of wifi interstitials that intercept messages from the
-  // client and return HTTP OK instead of a redirect.
-  HttpResponse response;
-  ScopedServerStatusWatcher watcher(this, &response);
-  string post_body = "command=get_time";
-
-  for (int i = 0 ; i < 3;  i++) {
-    ScopedConnectionHelper post(this, MakeActiveConnection());
-    if (!post.get())
-      break;
-
-    // Note that the server's get_time path doesn't require authentication.
-    string get_time_path =
-        MakeSyncServerPath(kSyncServerGetTimePath, post_body);
-    DVLOG(1) << "Requesting get_time from:" << get_time_path;
-
-    string blank_post_body;
-    bool ok = post.get()->Init(get_time_path.c_str(), blank_post_body,
-        blank_post_body, &response);
-    if (!ok) {
-      DVLOG(1) << "Unable to check the time";
-      continue;
-    }
-    string time_response;
-    time_response.resize(
-        static_cast<string::size_type>(response.content_length));
-    ok = post.get()->ReadDownloadResponse(&response, &time_response);
-    if (!ok || string::npos !=
-        time_response.find_first_not_of("0123456789")) {
-      LOG(ERROR) << "unable to read a non-numeric response from get_time:"
-            << time_response;
-      continue;
-    }
-    *out_time = atoi(time_response.c_str());
-    DVLOG(1) << "Server was reachable.";
-    return true;
-  }
-  return false;
-}
-
-bool ServerConnectionManager::IsServerReachable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  int32 time;
-  return CheckTime(&time);
-}
-
-bool ServerConnectionManager::IsUserAuthenticated() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return IsGoodReplyFromServer(server_status_);
-}
-
-bool ServerConnectionManager::CheckServerReachable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const bool server_is_reachable = IsServerReachable();
-  if (server_reachable_ != server_is_reachable) {
-    server_reachable_ = server_is_reachable;
-    NotifyStatusChanged();
-  }
-  return server_is_reachable;
-}
-
-void ServerConnectionManager::SetServerParameters(const string& server_url,
-                                                  int port,
-                                                  bool use_ssl) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  sync_server_ = server_url;
-  sync_server_port_ = port;
-  use_ssl_ = use_ssl;
 }
 
 // Returns the current server parameters in server_url and port.

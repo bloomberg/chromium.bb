@@ -195,7 +195,6 @@ SyncScheduler::SyncScheduler(const std::string& name,
       mode_(NORMAL_MODE),
       // Start with assuming everything is fine with the connection.
       // At the end of the sync cycle we would have the correct status.
-      server_connection_ok_(true),
       connection_code_(HttpResponse::SERVER_CONNECTION_OK),
       delay_provider_(new DelayProvider()),
       syncer_(syncer),
@@ -231,9 +230,7 @@ void SyncScheduler::OnConnectionStatusChange() {
 }
 
 void SyncScheduler::OnServerConnectionErrorFixed() {
-  DCHECK(!server_connection_ok_);
   connection_code_ = HttpResponse::SERVER_CONNECTION_OK;
-  server_connection_ok_ = true;
   PostTask(FROM_HERE, "DoCanaryJob",
            base::Bind(&SyncScheduler::DoCanaryJob,
                       weak_ptr_factory_.GetWeakPtr()));
@@ -245,32 +242,8 @@ void SyncScheduler::UpdateServerConnectionManagerStatus(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG(2) << "New server connection code: "
             << HttpResponse::GetServerConnectionCodeString(code);
-  bool old_server_connection_ok = server_connection_ok_;
 
   connection_code_ = code;
-
-  // Note, be careful when adding cases here because if the SyncScheduler
-  // thinks there is no valid connection as determined by this method, it
-  // will drop out of *all* forward progress sync loops (it won't poll and it
-  // will queue up Talk notifications but not actually call SyncShare) until
-  // some external action causes a ServerConnectionManager to broadcast that
-  // a valid connection has been re-established
-  if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
-      HttpResponse::SYNC_AUTH_ERROR == code) {
-    server_connection_ok_ = false;
-    SDVLOG(2) << "Sync auth error or unavailable connection: "
-              << "server connection is down";
-  } else if (HttpResponse::SERVER_CONNECTION_OK == code) {
-    server_connection_ok_ = true;
-    SDVLOG(2) << "Sync server connection is ok: "
-              << "server connection is up, doing canary job";
-  }
-
-  if (old_server_connection_ok != server_connection_ok_) {
-    const char* transition =
-        server_connection_ok_ ? "down -> up" : "up -> down";
-    SDVLOG(2) << "Server connection changed: " << transition;
-  }
 }
 
 void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
@@ -403,10 +376,10 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
     return DROP;
   }
 
-  if (server_connection_ok_)
+  if (!session_context_->connection_manager()->HasInvalidAuthToken())
     return CONTINUE;
 
-  SDVLOG(2) << "Bad server connection. Using that to decide on job.";
+  SDVLOG(2) << "No valid auth token. Using that to decide on job.";
   return job.purpose == SyncSessionJob::NUDGE ? SAVE : DROP;
 }
 
@@ -873,15 +846,14 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
   }
   last_sync_session_end_time_ = now;
 
-  // Now update the status of the connection from SCM. We need this
-  // to decide whether we need to save/run future jobs. The notifications
-  // from SCM are not reliable.
+  // Now update the status of the connection from SCM. We need this to decide
+  // whether we need to save/run future jobs. The notifications from SCM are not
+  // reliable.
+  //
   // TODO(rlarocque): crbug.com/110954
-  // We should get rid of the notifications and
-  // it is probably not needed to maintain this status variable
-  // in 2 places. We should query it directly from SCM when needed.
-  // But that would need little more refactoring(including a method to
-  // query if the auth token is invalid) from SCM side.
+  // We should get rid of the notifications and it is probably not needed to
+  // maintain this status variable in 2 places. We should query it directly from
+  // SCM when needed.
   ServerConnectionManager* scm = session_context_->connection_manager();
   UpdateServerConnectionManagerStatus(scm->server_status());
 

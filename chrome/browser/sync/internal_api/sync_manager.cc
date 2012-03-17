@@ -275,9 +275,6 @@ class SyncManager::SyncInternal
       const ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) OVERRIDE;
 
-  // Listens for notifications from the ServerConnectionManager
-  void HandleServerConnectionEvent(const ServerConnectionEvent& event);
-
   // Open the directory named with username_for_share
   bool OpenDirectory();
 
@@ -692,9 +689,6 @@ SyncManager::SyncManager(const std::string& name)
 
 SyncManager::Status::Status()
     : summary(INVALID),
-      authenticated(false),
-      server_up(false),
-      server_reachable(false),
       notifications_enabled(false),
       notifications_received(0),
       unsynced_count(0),
@@ -1736,7 +1730,6 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
 void SyncManager::SyncInternal::OnServerConnectionEvent(
     const ServerConnectionEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  allstatus_.HandleServerConnectionEvent(event);
   if (event.connection_code ==
       browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,

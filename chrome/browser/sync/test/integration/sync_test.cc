@@ -116,6 +116,7 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
+      notifications_enabled_(true),
       test_server_handle_(base::kNullProcessHandle),
       number_of_default_sync_items_(0) {
   InProcessBrowserTest::set_show_window(true);
@@ -561,11 +562,15 @@ bool SyncTest::IsTestServerRunning() {
 void SyncTest::EnableNetwork(Profile* profile) {
   SetProxyConfig(profile->GetRequestContext(),
                  net::ProxyConfig::CreateDirect());
+  if (notifications_enabled_) {
+    EnableNotificationsImpl();
+  }
   // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
 void SyncTest::DisableNetwork(Profile* profile) {
+  DisableNotificationsImpl();
   // Set the current proxy configuration to a nonexistent proxy to effectively
   // disable networking.
   net::ProxyConfig config;
@@ -594,7 +599,7 @@ bool SyncTest::ServerSupportsNotificationControl() const {
   return server_type_ == LOCAL_PYTHON_SERVER;
 }
 
-void SyncTest::DisableNotifications() {
+void SyncTest::DisableNotificationsImpl() {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   std::string path = "chromiumsync/disablenotifications";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
@@ -602,12 +607,22 @@ void SyncTest::DisableNotifications() {
             UTF16ToASCII(browser()->GetSelectedWebContents()->GetTitle()));
 }
 
-void SyncTest::EnableNotifications() {
+void SyncTest::DisableNotifications() {
+  DisableNotificationsImpl();
+  notifications_enabled_ = false;
+}
+
+void SyncTest::EnableNotificationsImpl() {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   std::string path = "chromiumsync/enablenotifications";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Notifications enabled",
             UTF16ToASCII(browser()->GetSelectedWebContents()->GetTitle()));
+}
+
+void SyncTest::EnableNotifications() {
+  EnableNotificationsImpl();
+  notifications_enabled_ = true;
 }
 
 void SyncTest::TriggerNotification(

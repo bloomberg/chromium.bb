@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ struct DelayInfo {
 // Class to verify retries take place using the exponential backoff algorithm.
 class RetryVerifier {
  public:
-  static const int kMaxRetry = 5;
+  static const int kMaxRetry = 3;
   RetryVerifier();
   ~RetryVerifier();
   int retry_count() const { return retry_count_; }

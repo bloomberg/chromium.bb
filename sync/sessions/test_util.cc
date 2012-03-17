@@ -26,6 +26,12 @@ void SimulateCommitFailed(sessions::SyncSession* session,
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
+void SimulateConnectionFailure(sessions::SyncSession* session,
+                               SyncerStep begin, SyncerStep end) {
+  session->mutable_status_controller()->set_last_download_updates_result(
+      NETWORK_CONNECTION_UNAVAILABLE);
+}
+
 void SimulateSuccess(sessions::SyncSession* session,
                      SyncerStep begin, SyncerStep end) {
   if (session->HasMoreToSync()) {

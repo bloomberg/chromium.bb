@@ -41,9 +41,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
       const std::string& auth_token,
       browser_sync::ScopedServerStatusWatcher* watcher) OVERRIDE;
 
-  virtual bool IsServerReachable() OVERRIDE;
-  virtual bool IsUserAuthenticated() OVERRIDE;
-
   // Control of commit response.
   void SetMidCommitCallback(const base::Closure& callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
@@ -119,12 +116,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // GetUpdates responses to be buffered up, since the syncer may
   // issue multiple requests during a sync cycle.
   void NextUpdateBatch();
-
-  // For AUTHENTICATE responses.
-  void SetAuthenticationResponseInfo(const std::string& valid_auth_token,
-                                     const std::string& user_display_name,
-                                     const std::string& user_display_email,
-                                     const std::string& user_obfuscated_id);
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
@@ -219,6 +210,12 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void SetServerNotReachable();
 
+  // Updates our internal state as if we had attempted a connection.  Does not
+  // send notifications as a real connection attempt would.  This is useful in
+  // cases where we're mocking out most of the code that performs network
+  // requests.
+  void UpdateConnectionStatus();
+
   // Return by copy to be thread-safe.
   const std::string store_birthday() {
     base::AutoLock lock(store_birthday_lock_);
@@ -244,9 +241,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Functions to handle the various types of server request.
   void ProcessGetUpdates(sync_pb::ClientToServerMessage* csm,
                          sync_pb::ClientToServerResponse* response);
-  void ProcessAuthenticate(sync_pb::ClientToServerMessage* csm,
-                           sync_pb::ClientToServerResponse* response,
-                           const std::string& auth_token);
   void ProcessCommit(sync_pb::ClientToServerMessage* csm,
                      sync_pb::ClientToServerResponse* response_buffer);
   void ProcessClearData(sync_pb::ClientToServerMessage* csm,
@@ -280,6 +274,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
       const google::protobuf::RepeatedPtrField<
           sync_pb::DataTypeProgressMarker>& filter,
       syncable::ModelType value);
+
+  // When false, we pretend to have network connectivity issues.
+  bool server_reachable_;
 
   // All IDs that have been committed.
   std::vector<syncable::Id> committed_ids_;

@@ -1124,8 +1124,9 @@ TEST_F(SyncSchedulerTest, DISABLED_NoConfigDuringNormal) {
 // break things when a connection is detected.
 TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   connection()->SetServerNotReachable();
+  connection()->UpdateConnectionStatus();
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
-    .WillOnce(Invoke(sessions::test_util::SimulateDownloadUpdatesFailed))
+    .WillOnce(Invoke(sessions::test_util::SimulateConnectionFailure))
     .WillOnce(QuitLoopNowAction());
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   MessageLoop::current()->RunAllPending();
@@ -1136,6 +1137,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   MessageLoop::current()->RunAllPending();
 
   connection()->SetServerReachable();
+  connection()->UpdateConnectionStatus();
   scheduler()->OnConnectionStatusChange();
   MessageLoop::current()->RunAllPending();
 }

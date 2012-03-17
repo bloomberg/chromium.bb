@@ -40,8 +40,6 @@ class AllStatus : public SyncEngineEventListener {
   AllStatus();
   virtual ~AllStatus();
 
-  void HandleServerConnectionEvent(const ServerConnectionEvent& event);
-
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
   sync_api::SyncManager::Status status() const;

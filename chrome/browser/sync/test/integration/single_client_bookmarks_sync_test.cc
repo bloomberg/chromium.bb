@@ -31,16 +31,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
   DisableNetwork(GetProfile(0));
   const BookmarkNode* node = AddFolder(0, L"title");
   SetTitle(0, node, L"new_title");
-  ASSERT_FALSE(GetClient(0)->AwaitFullSyncCompletion("Offline state change."));
-  ProfileSyncService::Status status = GetClient(0)->GetStatus();
-
-  // Depending on when exactly the network change notification occurs the
-  // client could go to OFFLINE_UNSYNCED or OFFLINE. OFFLINE_UNSYNCED indicates
-  // client tried to sync a local change and could not connect to the server.
-  // OFFLINE indicates client received a network change notification of
-  // the disconnection even before it tried to sync.
-  ASSERT_TRUE(ProfileSyncService::Status::OFFLINE_UNSYNCED == status.summary ||
-              ProfileSyncService::Status::OFFLINE == status.summary);
+  // Expect that we backoff exponentially while we are unable to contact the
+  // server.
+  ASSERT_TRUE(GetClient(0)->AwaitExponentialBackoffVerification());
 
   EnableNetwork(GetProfile(0));
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Commit changes."));

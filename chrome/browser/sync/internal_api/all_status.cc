@@ -98,8 +98,11 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
 
 void AllStatus::CalcStatusChanges() {
   const bool unsynced_changes = status_.unsynced_count > 0;
-  const bool online = status_.authenticated &&
-    status_.server_reachable && status_.server_up;
+  // TODO(rlarocque): Hard-coding online to true is a hack that patches over
+  // crbug.com/112229, and limits the fallout from some ServerConnectionManager
+  // changes.  We will be making more drastic changes to the summary value in
+  // the near future.  See crbug.com/98346.
+  const bool online = true;
   if (online) {
     if (status_.syncing)
       status_.summary = sync_api::SyncManager::Status::SYNCING;
@@ -134,19 +137,6 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       break;
-  }
-}
-
-void AllStatus::HandleServerConnectionEvent(
-    const ServerConnectionEvent& event) {
-  ScopedStatusLock lock(this);
-  status_.server_up = IsGoodReplyFromServer(event.connection_code);
-  status_.server_reachable = event.server_reachable;
-
-  if (event.connection_code == HttpResponse::SERVER_CONNECTION_OK) {
-    status_.authenticated = true;
-  } else {
-    status_.authenticated = false;
   }
 }
 
