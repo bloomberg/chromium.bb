@@ -149,7 +149,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   scoped_refptr<media::VideoRendererBase> video_renderer =
       new media::VideoRendererBase(
           base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
-          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()));
+          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()),
+          true);
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->set_frame_provider(video_renderer);
 

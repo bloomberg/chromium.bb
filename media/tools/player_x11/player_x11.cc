@@ -135,7 +135,8 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create our video renderer and save a reference to it for painting.
   g_video_renderer = new media::VideoRendererBase(
       base::Bind(&Paint, paint_message_loop, paint_cb),
-      base::Bind(&SetOpaque));
+      base::Bind(&SetOpaque),
+      true);
   collection->AddVideoRenderer(g_video_renderer);
 
   collection->AddAudioRenderer(new media::NullAudioRenderer());

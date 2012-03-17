@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,10 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
     view_size_ = 2;  // Normal size.
     view_rotate_ = media::ROTATE_0;
     view_filter_ = media::FILTER_NONE;
-    renderer_ = new media::VideoRendererBase(base::Bind(
-        &WtlVideoWindow::InvalidateWrapper, base::Unretained(this)),
-                                             base::Bind(
-        &WtlVideoWindow::SetOpaque, base::Unretained(this)));
+    renderer_ = new media::VideoRendererBase(
+        base::Bind(&WtlVideoWindow::InvalidateWrapper, base::Unretained(this)),
+        base::Bind(&WtlVideoWindow::SetOpaque, base::Unretained(this)),
+        true);
     last_frame_ = NULL;
     hbmp_ = NULL;
   }
