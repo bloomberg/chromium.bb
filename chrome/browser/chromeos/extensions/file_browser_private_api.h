@@ -481,4 +481,20 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFiles");
 };
 
+// Implements the chrome.fileBrowserPrivate.executeTask method.
+class GetFileTransfersFunction : public AsyncExtensionFunction {
+ public:
+  GetFileTransfersFunction();
+  virtual ~GetFileTransfersFunction();
+
+ protected:
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  ListValue* GetFileTransfersList();
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTransfers");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

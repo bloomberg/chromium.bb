@@ -53,7 +53,6 @@ class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
 class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
-class ExtensionFileBrowserEventRouter;
 class ExtensionGlobalError;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
@@ -477,9 +476,6 @@ class ExtensionService
   }
 
 #if defined(OS_CHROMEOS)
-  ExtensionFileBrowserEventRouter* file_browser_event_router() {
-    return file_browser_event_router_.get();
-  }
   chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
     return input_method_event_router_.get();
   }
@@ -814,7 +810,6 @@ class ExtensionService
   scoped_ptr<ExtensionWebNavigationEventRouter> web_navigation_event_router_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ExtensionFileBrowserEventRouter> file_browser_event_router_;
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
       input_method_event_router_;
 #endif
