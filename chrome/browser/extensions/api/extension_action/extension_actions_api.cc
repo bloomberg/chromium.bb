@@ -2,51 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
 
 #include <string>
 
 #include "base/values.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/notification_service.h"
 
-namespace {
-// Errors.
-const char kNoBrowserActionError[] =
-    "This extension has no browser action specified.";
-const char kIconIndexOutOfBounds[] =
-    "Browser action icon index out of bounds.";
+ExtensionActionFunction::ExtensionActionFunction()
+    : details_(NULL),
+      tab_id_(ExtensionAction::kDefaultTabId),
+      extension_action_(NULL) {
 }
 
-bool BrowserActionFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details_));
-  EXTENSION_FUNCTION_VALIDATE(details_ != NULL);
+ExtensionActionFunction::~ExtensionActionFunction() {
+}
 
-  if (details_->HasKey("tabId"))
-    EXTENSION_FUNCTION_VALIDATE(details_->GetInteger("tabId", &tab_id_));
-
-  const Extension* extension = GetExtension();
-  browser_action_ = extension->browser_action();
-  if (!browser_action_) {
-    error_ = kNoBrowserActionError;
-    return false;
+bool ExtensionActionFunction::RunImpl() {
+  base::Value* arg;
+  args_->Get(0, &arg);
+  if (arg->IsType(base::Value::TYPE_DICTIONARY)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details_));
+    EXTENSION_FUNCTION_VALIDATE(details_ != NULL);
+    if (details_->HasKey("tabId"))
+      EXTENSION_FUNCTION_VALIDATE(details_->GetInteger("tabId", &tab_id_));
   }
-
-  if (!RunBrowserAction())
-    return false;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      content::Source<ExtensionAction>(browser_action_),
-      content::NotificationService::NoDetails());
   return true;
 }
 
-bool BrowserActionSetIconFunction::RunBrowserAction() {
+bool ExtensionActionFunction::SetIcon() {
   base::BinaryValue* binary = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->GetBinary("imageData", &binary));
   IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
@@ -54,18 +40,18 @@ bool BrowserActionSetIconFunction::RunBrowserAction() {
   SkBitmap bitmap;
   EXTENSION_FUNCTION_VALIDATE(
       IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
-  browser_action_->SetIcon(tab_id_, bitmap);
+  extension_action_->SetIcon(tab_id_, bitmap);
   return true;
 }
 
-bool BrowserActionSetTitleFunction::RunBrowserAction() {
+bool ExtensionActionFunction::SetTitle() {
   std::string title;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("title", &title));
-  browser_action_->SetTitle(tab_id_, title);
+  extension_action_->SetTitle(tab_id_, title);
   return true;
 }
 
-bool BrowserActionSetPopupFunction::RunBrowserAction() {
+bool ExtensionActionFunction::SetPopup() {
   std::string popup_string;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("popup", &popup_string));
 
@@ -73,19 +59,20 @@ bool BrowserActionSetPopupFunction::RunBrowserAction() {
   if (!popup_string.empty())
     popup_url = GetExtension()->GetResourceURL(popup_string);
 
-  browser_action_->SetPopupUrl(tab_id_, popup_url);
+  extension_action_->SetPopupUrl(tab_id_, popup_url);
   return true;
 }
 
-bool BrowserActionSetBadgeTextFunction::RunBrowserAction() {
+bool ExtensionActionFunction::SetBadgeText() {
   std::string badge_text;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("text", &badge_text));
-  browser_action_->SetBadgeText(tab_id_, badge_text);
+  extension_action_->SetBadgeText(tab_id_, badge_text);
   return true;
 }
 
-bool BrowserActionFunction::ParseCSSColorString(const std::string& color_string,
-                                                SkColor* result) {
+bool ExtensionActionFunction::ParseCSSColorString(
+    const std::string& color_string,
+    SkColor* result) {
   std::string formatted_color = "#";
   // Check the string for incorrect formatting.
   if (color_string[0] != '#')
@@ -119,7 +106,7 @@ bool BrowserActionFunction::ParseCSSColorString(const std::string& color_string,
   return true;
 }
 
-bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
+bool ExtensionActionFunction::SetBadgeBackgroundColor() {
   Value* color_value = NULL;
   details_->Get("color", &color_value);
   SkColor color = 0;
@@ -143,7 +130,7 @@ bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
       return false;
   }
 
-  browser_action_->SetBadgeBackgroundColor(tab_id_, color);
+  extension_action_->SetBadgeBackgroundColor(tab_id_, color);
 
   return true;
 }

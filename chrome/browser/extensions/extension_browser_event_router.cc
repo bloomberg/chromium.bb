@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_page_actions_module_constants.h"
+#include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
@@ -29,7 +29,7 @@
 
 namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;
-namespace page_action_keys = extension_page_actions_module_constants;
+namespace page_action_keys = extension_page_actions_api_constants;
 
 using content::NavigationController;
 using content::WebContents;

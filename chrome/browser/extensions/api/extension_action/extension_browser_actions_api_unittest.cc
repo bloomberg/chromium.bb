@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 void RunPassTest(const std::string& css_string, SkColor expected_result) {
