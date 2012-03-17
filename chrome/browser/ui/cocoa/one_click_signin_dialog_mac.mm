@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 
 void ShowOneClickSigninDialog(Profile* profile,
+                              const std::string& session_index,
                               const std::string& email,
                               const std::string& password) {
   // TODO(rogerta): cocoa dialog not yet implemented.  See
