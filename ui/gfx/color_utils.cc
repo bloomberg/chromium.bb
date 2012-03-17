@@ -296,6 +296,14 @@ SkColor GetReadableColor(SkColor foreground, SkColor background) {
       foreground : foreground2;
 }
 
+SkColor InvertColor(SkColor color) {
+  return SkColorSetARGB(
+      SkColorGetA(color),
+      255 - SkColorGetR(color),
+      255 - SkColorGetG(color),
+      255 - SkColorGetB(color));
+}
+
 SkColor GetSysSkColor(int which) {
 #if defined(OS_WIN)
   return skia::COLORREFToSkColor(GetSysColor(which));

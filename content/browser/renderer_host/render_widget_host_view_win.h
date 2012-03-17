@@ -28,6 +28,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/surface/accelerated_surface_win.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;
@@ -91,7 +92,8 @@ class RenderWidgetHostViewWin
                          RenderWidgetHostHWNDTraits>,
       public content::RenderWidgetHostViewBase,
       public content::NotificationObserver,
-      public BrowserAccessibilityDelegate {
+      public BrowserAccessibilityDelegate,
+      public gfx::SysColorChangeListener {
  public:
   virtual ~RenderWidgetHostViewWin();
 
@@ -238,6 +240,9 @@ class RenderWidgetHostViewWin
       int acc_obj_id, gfx::Point point) OVERRIDE;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+
+  // Implementation of SysColorChangeListener:
+  virtual void OnSysColorChange() OVERRIDE;
 
  protected:
   friend class content::RenderWidgetHostView;
@@ -565,6 +570,8 @@ class RenderWidgetHostViewWin
 
   // Are touch events currently enabled?
   bool touch_events_enabled_;
+
+  gfx::ScopedSysColorChangeListener sys_color_change_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

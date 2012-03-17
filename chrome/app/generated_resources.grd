@@ -15419,6 +15419,12 @@ Battery full
       </message>
     </if>
 
+    <!-- Inverting for high-constrast mode. -->
+    <message name="IDS_INVERT_NOTIFICATION"
+             desc="Text that explains that Chrome has inverted (i.e. reversed black and white) all web pages because the user is using Windows High-Constrast mode with an inverted color scheme.">
+      Web pages are displayed inverted because you have High Constrast mode enabled and you're using a light-on-dark color scheme.
+    </message>
+
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->

@@ -341,6 +341,8 @@ extern const char kPasswordsUseLocalProfileId[];
 extern const char kProfileAvatarIndex[];
 extern const char kProfileName[];
 
+extern const char kInvertNotificationShown[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL3Enabled[];

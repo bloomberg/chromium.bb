@@ -74,6 +74,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
+#include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
@@ -212,6 +213,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
+  InvertBubble::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif

@@ -331,7 +331,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       pointer_down_context_(false),
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
-      touch_events_enabled_(false) {
+      touch_events_enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(sys_color_change_listener_(this)) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -1329,6 +1330,12 @@ void RenderWidgetHostViewWin::OnThemeChanged() {
     return;
   render_widget_host_->Send(new ViewMsg_ThemeChanged(
       render_widget_host_->GetRoutingID()));
+}
+
+void RenderWidgetHostViewWin::OnSysColorChange() {
+  render_widget_host_->Send(new ViewMsg_InvertWebContent(
+      render_widget_host_->GetRoutingID(),
+      gfx::IsInvertedColorScheme()));
 }
 
 LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {

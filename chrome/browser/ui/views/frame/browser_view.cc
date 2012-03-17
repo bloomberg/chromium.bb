@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -92,6 +93,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/events/event.h"
@@ -325,7 +328,8 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
-      move_observer_(NULL) {
+      move_observer_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)) {
   browser_->tabstrip_model()->AddObserver(this);
 }
 
@@ -615,6 +619,8 @@ void BrowserView::Show() {
   force_location_bar_focus_ = false;
 
   browser()->OnWindowDidShow();
+
+  InvertBubble::MaybeShowInvertBubble(browser_->profile(), contents_);
 }
 
 void BrowserView::ShowInactive() {
@@ -1850,6 +1856,10 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
   SchedulePaint();
   Layout();
   return false;
+}
+
+void BrowserView::OnSysColorChange() {
+  InvertBubble::MaybeShowInvertBubble(browser_->profile(), contents_);
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {

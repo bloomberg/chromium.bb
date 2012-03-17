@@ -6,6 +6,7 @@
 #define UI_GFX_COLOR_UTILS_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_export.h"
 
@@ -20,7 +21,7 @@ struct HSL {
   double l;
 };
 
-unsigned char GetLuminanceForColor(SkColor color);
+UI_EXPORT unsigned char GetLuminanceForColor(SkColor color);
 
 // Calculated according to http://www.w3.org/TR/WCAG20/#relativeluminancedef
 UI_EXPORT double RelativeLuminance(SkColor color);
@@ -75,6 +76,9 @@ UI_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
 // NOTE: This won't do anything but waste time if the supplied foreground color
 // has a luma value close to the midpoint (0.5 in the HSL representation).
 UI_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
+
+// Invert a color.
+UI_EXPORT SkColor InvertColor(SkColor color);
 
 // Gets a Windows system color as a SkColor
 UI_EXPORT SkColor GetSysSkColor(int which);

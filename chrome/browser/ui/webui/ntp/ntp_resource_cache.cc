@@ -49,6 +49,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/sys_color_change_listener.h"
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -106,6 +107,14 @@ std::string SkColorToRGBComponents(SkColor color) {
       SkColorGetR(color),
       SkColorGetG(color),
       SkColorGetB(color));
+}
+
+SkColor GetThemeColor(ui::ThemeProvider* tp, int id) {
+  SkColor color = tp->GetColor(id);
+  // If web contents are being inverted because the system is in high-contrast
+  // mode, any system theme colors we use must be inverted too to cancel out.
+  return gfx::IsInvertedColorScheme() ?
+      color_utils::InvertColor(color) : color;
 }
 
 // Get the CSS string for the background position on the new tab page for the
@@ -420,7 +429,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
 
   // Get our theme colors
   SkColor color_background =
-      tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_BACKGROUND);
 
   // Generate the replacements.
   std::vector<std::string> subst;
@@ -453,33 +462,33 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // Get our theme colors
   SkColor color_background =
-      tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
-  SkColor color_text = tp->GetColor(ThemeService::COLOR_NTP_TEXT);
-  SkColor color_link = tp->GetColor(ThemeService::COLOR_NTP_LINK);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_BACKGROUND);
+  SkColor color_text = GetThemeColor(tp, ThemeService::COLOR_NTP_TEXT);
+  SkColor color_link = GetThemeColor(tp, ThemeService::COLOR_NTP_LINK);
   SkColor color_link_underline =
-      tp->GetColor(ThemeService::COLOR_NTP_LINK_UNDERLINE);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_LINK_UNDERLINE);
 
   SkColor color_section =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION);
   SkColor color_section_text =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_TEXT);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_TEXT);
   SkColor color_section_link =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_LINK);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_LINK);
   SkColor color_section_link_underline =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE);
   SkColor color_section_header_text =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_TEXT);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_HEADER_TEXT);
   SkColor color_section_header_text_hover =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
   SkColor color_section_header_rule =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_RULE);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_HEADER_RULE);
   SkColor color_section_header_rule_light =
-      tp->GetColor(ThemeService::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
   SkColor color_text_light =
-      tp->GetColor(ThemeService::COLOR_NTP_TEXT_LIGHT);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_TEXT_LIGHT);
 
   SkColor color_header =
-      tp->GetColor(ThemeService::COLOR_NTP_HEADER);
+      GetThemeColor(tp, ThemeService::COLOR_NTP_HEADER);
   // Generate a lighter color for the header gradients.
   color_utils::HSL header_lighter;
   color_utils::SkColorToHSL(color_header, &header_lighter);

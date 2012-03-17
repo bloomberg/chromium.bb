@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -87,7 +88,8 @@ class BrowserView : public BrowserWindow,
                     public views::Widget::Observer,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
-                    public views::SingleSplitViewListener {
+                    public views::SingleSplitViewListener,
+                    public gfx::SysColorChangeListener {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -202,7 +204,7 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
-  // Register preferences specific to this view.
+  // Register local state preferences specific to this view.
   static void RegisterBrowserViewPrefs(PrefService* prefs);
 
   // Returns true if the specified point(BrowserView coordinates) is in
@@ -403,6 +405,9 @@ class BrowserView : public BrowserWindow,
 
   // views::SingleSplitViewListener overrides:
   virtual bool SplitHandleMoved(views::SingleSplitView* sender) OVERRIDE;
+
+  // gfx::ScopedSysColorChangeListener overrides:
+  virtual void OnSysColorChange() OVERRIDE;
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -717,6 +722,8 @@ class BrowserView : public BrowserWindow,
   PendingFullscreenRequest fullscreen_request_;
 
   BrowserWindowMoveObserver* move_observer_;
+
+  gfx::ScopedSysColorChangeListener color_change_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

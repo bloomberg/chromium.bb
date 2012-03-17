@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
+#include "ui/gfx/sys_color_change_listener.h"
 
 // Update the accessibility histogram 45 seconds after initialization.
 static const int kAccessibilityHistogramDelaySecs = 45;
@@ -50,5 +51,8 @@ bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
 void BrowserAccessibilityStateImpl::UpdateHistogram() {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.State",
                             accessibility_enabled_ ? 1 : 0,
+                            2);
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.InvertedColors",
+                            gfx::IsInvertedColorScheme() ? 1 : 0,
                             2);
 }
