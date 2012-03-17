@@ -33,6 +33,12 @@ AC_ARG_ENABLE([scanner],
               [],
               [enable_scanner=yes])
 
+AC_ARG_ENABLE([documentation],
+	      [AC_HELP_STRING([--disable-documentation],
+		              [Disable building the documentation])],
+	      [],
+	      [enable_documentation=yes])
+
 AM_CONDITIONAL(ENABLE_SCANNER, test "x$enable_scanner" = xyes)
 
 EXPAT_LIB=""
@@ -51,7 +57,9 @@ fi
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
-AC_PATH_PROG(PUBLICAN, publican)
+if test "x$enable_documentation" = "xyes"; then
+	AC_PATH_PROG(PUBLICAN, publican)
+fi
 AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
 AC_CONFIG_FILES([Makefile
