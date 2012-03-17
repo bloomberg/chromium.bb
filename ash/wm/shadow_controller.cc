@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/shadow.h"
 #include "ash/wm/shadow_types.h"
