@@ -259,7 +259,7 @@ void GpuChannel::HandleMessage() {
       // message but still has more commands to process, synthesize an IPC
       // message to flush that command buffer.
       if (stub) {
-        if (stub->HasUnprocessedCommands()) {
+        if (!stub->IsScheduled() && stub->HasUnprocessedCommands()) {
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
               stub->route_id()));
         }
