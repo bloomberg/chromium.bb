@@ -259,6 +259,37 @@
         }
       },
       {
+        "id": "FileTransferStatus",
+        "type": "object",
+        "description": "Payload data for file transfer status updates.",
+        "properties": {
+          "fileUrl": {
+            "type": "string",
+            "description": "URL of file that is being transfered."
+          },
+          "transferState": {
+            "type": "string",
+            "enum": ["started", "in_progress", "completed", "failed"],
+            "description": "File transfer progress state."
+          },
+          "transferType": {
+            "type": "string",
+            "enum": ["upload", "download"],
+            "description": "Defines file transfer direction."
+          },
+          "processed": {
+            "type": "integer",
+            "optional": true,
+            "description": "Completed portion of the transfer operation."
+          },
+          "total": {
+            "type": "integer",
+            "optional": true,
+            "description": "Total size (cost) of transfer operation."
+          }
+        }
+      },
+      {
         "id": "FileWatchEvent",
         "type": "object",
         "description": "Payload data for disk mount / unmount event.",
@@ -652,6 +683,24 @@
         ]
       },
       {
+        "name": "getFileTransfers",
+        "description": "Get the list of ongoing file transfer operations.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name" : "fileTransfers",
+                "type": "array",
+                "items": {"$ref": "FileTransferStatus"},
+                "description": "The list of FileTransferStatus representing ongoing file transfers."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getSizeStats",
         "description": "Retrieves total and remaining size of a mount point.",
         "parameters": [
@@ -729,6 +778,19 @@
             "$ref": "MountCompletedEvent",
             "name": "event",
             "description": "MountCompleted event information."
+          }
+        ]
+      },
+      {
+        "name": "onFileTransfersUpdated",
+        "type": "function",
+        "description": "Fired when file transfers with remote file system are in progress.",
+        "parameters": [
+          {
+            "type": "array",
+            "items": {"$ref": "FileTransferStatus"},
+            "name": "event",
+            "description": "List of ongoing file statuses for ongoing transfer operations."
           }
         ]
       },

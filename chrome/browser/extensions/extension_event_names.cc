@@ -31,6 +31,8 @@ const char kOnFileBrowserDiskChanged[] = "fileBrowserPrivate.onDiskChanged";
 const char kOnFileChanged[] = "fileBrowserPrivate.onFileChanged";
 const char kOnFileBrowserMountCompleted[] =
     "fileBrowserPrivate.onMountCompleted";
+const char kOnFileTransfersUpdated[] =
+    "fileBrowserPrivate.onFileTransfersUpdated";
 
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 

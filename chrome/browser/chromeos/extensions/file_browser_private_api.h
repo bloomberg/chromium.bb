@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/url_util.h"
@@ -42,6 +43,7 @@ class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
 class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
  protected:
   virtual bool PerformFileWatchOperation(
+      scoped_refptr<FileBrowserEventRouter> event_router,
       const FilePath& local_path, const FilePath& virtual_path,
       const std::string& extension_id) = 0;
 
@@ -52,14 +54,17 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
   bool GetLocalFilePath(const GURL& file_url, FilePath* local_path,
                         FilePath* virtual_path);
   void RespondOnUIThread(bool success);
-  void RunFileWatchOperationOnFileThread(const GURL& file_url,
-                                         const std::string& extension_id);
+  void RunFileWatchOperationOnFileThread(
+      scoped_refptr<FileBrowserEventRouter> event_router,
+      const GURL& file_url,
+      const std::string& extension_id);
 };
 
 // Implements the chrome.fileBrowserPrivate.addFileWatch method.
 class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
  protected:
   virtual bool PerformFileWatchOperation(
+      scoped_refptr<FileBrowserEventRouter> event_router,
       const FilePath& local_path, const FilePath& virtual_path,
       const std::string& extension_id) OVERRIDE;
 
@@ -72,6 +77,7 @@ class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
 class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
  protected:
   virtual bool PerformFileWatchOperation(
+      scoped_refptr<FileBrowserEventRouter> event_router,
       const FilePath& local_path, const FilePath& virtual_path,
       const std::string& extension_id) OVERRIDE;
 
@@ -479,6 +485,22 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   ListValue* local_paths_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFiles");
+};
+
+// Implements the chrome.fileBrowserPrivate.executeTask method.
+class GetFileTransfersFunction : public AsyncExtensionFunction {
+ public:
+  GetFileTransfersFunction();
+  virtual ~GetFileTransfersFunction();
+
+ protected:
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  ListValue* GetFileTransfersList();
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTransfers");
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_
