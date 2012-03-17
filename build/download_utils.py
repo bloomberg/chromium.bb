@@ -9,7 +9,6 @@ This library is used by scripts that download tarballs, zipfiles, etc. as part
 of the build process.
 """
 
-import cygtar
 import hashlib
 import http_download
 import os.path
@@ -41,10 +40,6 @@ ARCH_COLLAPSE = {
     'i686'  : 'x86-32',
     'x86_64': 'x86-64',
     'armv7l': 'arm',
-}
-
-EXT_COLLAPSE = {
-    '.tgz' : (cygtar)
 }
 
 
