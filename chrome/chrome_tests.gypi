@@ -1523,8 +1523,6 @@
         'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
-        'browser/mock_keychain_mac.cc',
-        'browser/mock_keychain_mac.h',
         'browser/net/browser_url_util_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',

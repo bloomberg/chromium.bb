@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mock_keychain_mac.h"
 #include "chrome/browser/password_manager/encryptor_password_mac.h"
+#include "crypto/mock_keychain_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+using crypto::MockKeychain;
 
 // Test that if we have an existing password in the Keychain and we are
 // authorized by the user to read it then we get it back correctly.

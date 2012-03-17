@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
-#define CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
+#ifndef CRYPTO_MOCK_KEYCHAIN_MAC_H_
+#define CRYPTO_MOCK_KEYCHAIN_MAC_H_
 #pragma once
 
 #include <map>
@@ -12,11 +12,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/keychain_mac.h"
+#include "crypto/keychain_mac.h"
 
-// Mock Keychain wrapper for testing code that interacts with the OS Keychain.
-// Implemented by storing SecKeychainAttributeList and KeychainPasswordData
-// values in separate mutable containers and mapping them to integer keys.
+namespace crypto {
+
+// Mock Keychain wrapper for testing code that interacts with the OS X
+// Keychain.  Implemented by storing SecKeychainAttributeList and
+// KeychainPasswordData values in separate mutable containers and
+// mapping them to integer keys.
 //
 // Note that "const" is pretty much meaningless for this class; the const-ness
 // of MacKeychain doesn't apply to the actual keychain data, so all of the Mock
@@ -25,58 +28,66 @@ class MockKeychain : public MacKeychain {
  public:
   MockKeychain();
   virtual ~MockKeychain();
+
+  // MacKeychain implementation.
   virtual OSStatus ItemCopyAttributesAndData(
-      SecKeychainItemRef itemRef, SecKeychainAttributeInfo *info,
-      SecItemClass *itemClass, SecKeychainAttributeList **attrList,
-      UInt32 *length, void **outData) const OVERRIDE;
+      SecKeychainItemRef itemRef,
+      SecKeychainAttributeInfo* info,
+      SecItemClass* itemClass,
+      SecKeychainAttributeList** attrList,
+      UInt32* length,
+      void** outData) const OVERRIDE;
   // Pass "fail_me" as the data to get errSecAuthFailed.
   virtual OSStatus ItemModifyAttributesAndData(
-      SecKeychainItemRef itemRef, const SecKeychainAttributeList *attrList,
-      UInt32 length, const void *data) const OVERRIDE;
-  virtual OSStatus ItemFreeAttributesAndData(SecKeychainAttributeList *attrList,
-                                             void *data) const OVERRIDE;
+      SecKeychainItemRef itemRef,
+      const SecKeychainAttributeList* attrList,
+      UInt32 length,
+      const void* data) const OVERRIDE;
+  virtual OSStatus ItemFreeAttributesAndData(SecKeychainAttributeList* attrList,
+                                             void* data) const OVERRIDE;
   virtual OSStatus ItemDelete(SecKeychainItemRef itemRef) const OVERRIDE;
   virtual OSStatus SearchCreateFromAttributes(
-      CFTypeRef keychainOrArray, SecItemClass itemClass,
-      const SecKeychainAttributeList *attrList,
-      SecKeychainSearchRef *searchRef) const OVERRIDE;
+      CFTypeRef keychainOrArray,
+      SecItemClass itemClass,
+      const SecKeychainAttributeList* attrList,
+      SecKeychainSearchRef* searchRef) const OVERRIDE;
   virtual OSStatus SearchCopyNext(SecKeychainSearchRef searchRef,
-                                  SecKeychainItemRef *itemRef) const OVERRIDE;
+                                  SecKeychainItemRef* itemRef) const OVERRIDE;
   // Pass "some.domain.com" as the serverName to get errSecDuplicateItem.
   virtual OSStatus AddInternetPassword(
       SecKeychainRef keychain,
       UInt32 serverNameLength,
-      const char *serverName,
+      const char* serverName,
       UInt32 securityDomainLength,
-      const char *securityDomain,
+      const char* securityDomain,
       UInt32 accountNameLength,
-      const char *accountName,
-      UInt32 pathLength, const char *path,
+      const char* accountName,
+      UInt32 pathLength, const char* path,
       UInt16 port, SecProtocolType protocol,
       SecAuthenticationType authenticationType,
       UInt32 passwordLength,
-      const void *passwordData,
-      SecKeychainItemRef *itemRef) const OVERRIDE;
+      const void* passwordData,
+      SecKeychainItemRef* itemRef) const OVERRIDE;
   virtual OSStatus FindGenericPassword(
       CFTypeRef keychainOrArray,
       UInt32 serviceNameLength,
-      const char *serviceName,
+      const char* serviceName,
       UInt32 accountNameLength,
-      const char *accountName,
-      UInt32 *passwordLength,
-      void **passwordData,
-      SecKeychainItemRef *itemRef) const OVERRIDE;
-  virtual OSStatus ItemFreeContent(SecKeychainAttributeList *attrList,
-                                   void *data) const OVERRIDE;
+      const char* accountName,
+      UInt32* passwordLength,
+      void** passwordData,
+      SecKeychainItemRef* itemRef) const OVERRIDE;
+  virtual OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
+                                   void* data) const OVERRIDE;
   virtual OSStatus AddGenericPassword(
       SecKeychainRef keychain,
       UInt32 serviceNameLength,
-      const char *serviceName,
+      const char* serviceName,
       UInt32 accountNameLength,
-      const char *accountName,
+      const char* accountName,
       UInt32 passwordLength,
-      const void *passwordData,
-      SecKeychainItemRef *itemRef) const OVERRIDE;
+      const void* passwordData,
+      SecKeychainItemRef* itemRef) const OVERRIDE;
   virtual void Free(CFTypeRef ref) const OVERRIDE;
 
   // Return the counts of objects returned by Create/Copy functions but never
@@ -127,11 +138,16 @@ class MockKeychain : public MacKeychain {
   // Returns true if the keychain already contains a password that matches the
   // attributes provided.
   bool AlreadyContainsInternetPassword(
-      UInt32 serverNameLength, const char *serverName,
-      UInt32 securityDomainLength, const char *securityDomain,
-      UInt32 accountNameLength, const char *accountName,
-      UInt32 pathLength, const char *path,
-      UInt16 port, SecProtocolType protocol,
+      UInt32 serverNameLength,
+      const char* serverName,
+      UInt32 securityDomainLength,
+      const char* securityDomain,
+      UInt32 accountNameLength,
+      const char* accountName,
+      UInt32 pathLength,
+      const char* path,
+      UInt16 port,
+      SecProtocolType protocol,
       SecAuthenticationType authenticationType) const;
   // Initializes storage for keychain data at |key|.
   void InitializeKeychainData(unsigned int key) const;
@@ -158,7 +174,8 @@ class MockKeychain : public MacKeychain {
 
   // Returns the address of the attribute in attribute_list with tag |tag|.
   static SecKeychainAttribute* AttributeWithTag(
-      const SecKeychainAttributeList& attribute_list, UInt32 tag);
+      const SecKeychainAttributeList& attribute_list,
+      UInt32 tag);
 
   static const int kDummySearchRef = 1000;
 
@@ -204,4 +221,6 @@ class MockKeychain : public MacKeychain {
   mutable std::string add_generic_password_;
 };
 
-#endif  // CHROME_BROWSER_MOCK_KEYCHAIN_MAC_H_
+}  // namespace crypto
+
+#endif  // CRYPTO_MOCK_KEYCHAIN_MAC_H_

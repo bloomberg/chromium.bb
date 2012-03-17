@@ -9,8 +9,10 @@
 #include "base/base64.h"
 #include "base/mac/mac_logging.h"
 #include "base/rand_util.h"
-#include "chrome/browser/keychain_mac.h"
+#include "crypto/keychain_mac.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using crypto::MacKeychain;
 
 namespace {
 
