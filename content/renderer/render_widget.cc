@@ -1013,7 +1013,9 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 
   // When GPU rendering, combine pending animations and invalidations into
   // a single update.
-  if (is_accelerated_compositing_active_ && animation_timer_.IsRunning())
+  if (is_accelerated_compositing_active_ &&
+      animation_update_pending_ &&
+      animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -1051,7 +1053,9 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
   // When GPU rendering, combine pending animations and invalidations into
   // a single update.
-  if (is_accelerated_compositing_active_ && animation_timer_.IsRunning())
+  if (is_accelerated_compositing_active_ &&
+      animation_update_pending_ &&
+      animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
