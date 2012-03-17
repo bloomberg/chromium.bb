@@ -5785,15 +5785,6 @@
    fun:_ZN47SelectFileDialogExtensionTest_SelfDeleting_Test8TestBodyEv
 }
 {
-   bug_118384
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore16CCVideoLayerImpl11appendQuadsERNS_12CCQuadCullerEPKNS_17CCSharedQuadStateE
-   fun:_ZN7WebCore12CCRenderPass19appendQuadsForLayerEPNS_11CCLayerImplEPNS_22CCOcclusionTrackerBaseIS1_NS_15CCRenderSurfaceEEEPNS_16CCOverdrawCountsE
-   fun:_ZN7WebCore19CCLayerTreeHostImpl21calculateRenderPassesERN3WTF6VectorINS1_6OwnPtrINS_12CCRenderPassEEELm0EEERNS2_IPNS_11CCLayerImplELm0EEE
-   fun:_ZN7WebCore19CCLayerTreeHostImpl10drawLayersEv
-   fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
-}
-{
    bug_118387a
    Memcheck:Unaddressable
    fun:_ZN3WTF11currentTimeEv
