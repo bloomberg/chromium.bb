@@ -197,15 +197,26 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   args->GetBoolean(0, &bluetooth_enabled);
 
   adapter_->SetPowered(bluetooth_enabled,
-                       base::Bind(&BluetoothOptionsHandler::ErrorCallback,
+                       base::Bind(&BluetoothOptionsHandler::EnableChangeError,
                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothOptionsHandler::EnableChangeError() {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to change power state.";
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
     const ListValue* args) {
-  adapter_->SetDiscovering(true,
-                           base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  adapter_->SetDiscovering(
+      true,
+      base::Bind(&BluetoothOptionsHandler::FindDevicesError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothOptionsHandler::FindDevicesError() {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to start discovery.";
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
@@ -234,8 +245,9 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
       // Connection request.
       DVLOG(1) << "Connect: " << address;
       device->Connect(
-          this, base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                           weak_ptr_factory_.GetWeakPtr()));
+          this, base::Bind(&BluetoothOptionsHandler::ConnectError,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           device->address()));
     }
   } else if (command == kCancelCommand) {
     // Cancel pairing.
@@ -252,23 +264,46 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   } else if (command == kDisconnectCommand) {
     // Disconnect from device.
     DVLOG(1) << "Disconnect device: " << address;
-    device->Disconnect(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    device->Disconnect(base::Bind(&BluetoothOptionsHandler::DisconnectError,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  device->address()));
   } else if (command == kForgetCommand) {
     // Disconnect from device and delete pairing information.
     DVLOG(1) << "Forget device: " << address;
-    device->Forget(base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                              weak_ptr_factory_.GetWeakPtr()));
+    device->Forget(base::Bind(&BluetoothOptionsHandler::ForgetError,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              device->address()));
   } else {
     LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }
 }
 
+void BluetoothOptionsHandler::ConnectError(const std::string& address) {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to connect to device: " << address;
+}
+
+void BluetoothOptionsHandler::DisconnectError(const std::string& address) {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to disconnect from device: " << address;
+}
+
+void BluetoothOptionsHandler::ForgetError(const std::string& address) {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to disconnect and unpair device: " << address;
+}
+
 void BluetoothOptionsHandler::StopDiscoveryCallback(
     const ListValue* args) {
-  adapter_->SetDiscovering(false,
-                           base::Bind(&BluetoothOptionsHandler::ErrorCallback,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  adapter_->SetDiscovering(
+      false,
+      base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothOptionsHandler::StopDiscoveryError() {
+  // TODO(kevers): display an error in the UI.
+  DVLOG(1) << "Failed to stop discovery.";
 }
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(
@@ -384,14 +419,6 @@ void BluetoothOptionsHandler::DeviceRemoved(BluetoothAdapter* adapter,
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.removeBluetoothDevice",
       address);
-}
-
-void BluetoothOptionsHandler::ErrorCallback() {
-  // TODO(keybuk): we don't get any form of error response from dbus::
-  // yet, other than an error occurred. I'm going to fix that, then this
-  // gets replaced by genuine error information from the method which we
-  // can act on, rather than a debug log statement.
-  DVLOG(1) << "Failed.";
 }
 
 }  // namespace options2

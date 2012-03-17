@@ -139,9 +139,29 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
                              BluetoothDevice* device) OVERRIDE;
 
  private:
-  // Called by BluetoothAdapter in response to our method calls in case of
-  // error.
-  void ErrorCallback();
+  // Called by BluetoothAdapter in response to a failure to change the
+  // power status of the adapter.
+  void EnableChangeError();
+
+  // Called by BluetoothAdapter in response to a failure to set the adapter
+  // into discovery mode.
+  void FindDevicesError();
+
+  // Called by BluetoothAdapter in response to a failure to remove the adapter
+  // from discovery mode.
+  void StopDiscoveryError();
+
+  // Called by BluetoothDevice in response to a failure to connect to the
+  // device with bluetooth address |address|.
+  void ConnectError(const std::string& address);
+
+  // Called by BluetoothDevice in response to a failure to disconnect the
+  // device with bluetooth address |address|.
+  void DisconnectError(const std::string& address);
+
+  // Called by BluetoothDevice in response to a failure to disconnect and
+  // unpair the device with bluetooth address |address|.
+  void ForgetError(const std::string& address);
 
   // Called on completion of initialization of the settings page to update
   // the Bluetooth controls.
