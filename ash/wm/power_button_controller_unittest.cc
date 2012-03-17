@@ -312,6 +312,9 @@ TEST_F(PowerButtonControllerTest, LockToShutdown) {
 
 // Test that we handle the case where lock requests are ignored.
 TEST_F(PowerButtonControllerTest, LockFail) {
+  // We require animations to have a duration for this test.
+  ui::LayerAnimator::set_disable_animations_for_test(false);
+
   controller_->set_has_legacy_power_button_for_test(false);
   controller_->OnLoginStateChange(true /*logged_in*/, false /*is_guest*/);
   controller_->OnLockStateChange(false);

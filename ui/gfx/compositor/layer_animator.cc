@@ -60,8 +60,6 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 
 void LayerAnimator::SetTransform(const Transform& transform) {
   base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(transform, duration));
   element->set_tween_type(tween_type_);
@@ -76,8 +74,6 @@ Transform LayerAnimator::GetTargetTransform() const {
 
 void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
   base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBoundsElement(bounds, duration));
   element->set_tween_type(tween_type_);
@@ -92,8 +88,6 @@ gfx::Rect LayerAnimator::GetTargetBounds() const {
 
 void LayerAnimator::SetOpacity(float opacity) {
   base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
   scoped_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateOpacityElement(opacity, duration));
   element->set_tween_type(tween_type_);
@@ -108,8 +102,6 @@ float LayerAnimator::GetTargetOpacity() const {
 
 void LayerAnimator::SetVisibility(bool visibility) {
   base::TimeDelta duration = transition_duration_;
-  if (disable_animations_for_test_)
-    duration = base::TimeDelta();
 
   // Tween type doesn't matter for visibility.
   StartAnimation(new LayerAnimationSequence(

@@ -141,6 +141,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
     disable_animations_for_test_ = disable_animations;
   }
 
+  static bool disable_animations_for_test() {
+    return disable_animations_for_test_;
+  }
+
  protected:
   LayerAnimationDelegate* delegate() { return delegate_; }
   const LayerAnimationDelegate* delegate() const { return delegate_; }
