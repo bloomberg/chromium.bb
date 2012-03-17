@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,10 +35,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   static void AllocateSharedMemory(
       uint32 buffer_size, base::ProcessHandle child_process,
       base::SharedMemoryHandle* handle);
-
-  // Generates a unique channel name for a child process.
-  // The "instance" pointer value is baked into the channel id.
-  static std::string GenerateRandomChannelID(void* instance);
 
   // Returns a unique ID to identify a child process. On construction, this
   // function will be used to generate the id_, but it is also used to generate

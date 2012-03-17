@@ -97,6 +97,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
@@ -384,7 +385,7 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
 
   // Setup the IPC channel.
   const std::string channel_id =
-      ChildProcessHostImpl::GenerateRandomChannelID(this);
+      IPC::Channel::GenerateVerifiedChannelID(std::string());
   channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_SERVER, this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));

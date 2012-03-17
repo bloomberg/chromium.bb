@@ -29,6 +29,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
@@ -1159,6 +1160,19 @@ void Channel::ResetToAcceptingConnectionState() {
 bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
   return ChannelImpl::IsNamedServerInitialized(channel_id);
 }
+
+// static
+std::string Channel::GenerateVerifiedChannelID(const std::string& prefix) {
+  // A random name is sufficient validation on posix systems, so we don't need
+  // an additional shared secret.
+
+  std::string id = prefix;
+  if (!id.empty())
+    id.append(".");
+
+  return id.append(GenerateUniqueRandomChannelID());
+}
+
 
 #if defined(OS_LINUX)
 // static

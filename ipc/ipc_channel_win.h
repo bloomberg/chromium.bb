@@ -43,7 +43,8 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   bool DidEmptyInputBuffers() OVERRIDE;
   virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
-  static const std::wstring PipeName(const std::string& channel_id);
+  static const string16 PipeName(const std::string& channel_id,
+                                 int32* secret);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();
@@ -78,6 +79,16 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   // avoid recursing through ProcessIncomingMessages, which could cause
   // problems.  TODO(darin): make this unnecessary
   bool processing_incoming_;
+
+  // Determines if we should validate a client's secret on connection.
+  bool validate_client_;
+
+  // This is a unique per-channel value used to authenticate the client end of
+  // a connection. If the value is non-zero, the client passes it in the hello
+  // and the host validates. (We don't send the zero value fto preserve IPC
+  // compatability with existing clients that don't validate the channel.)
+  int32 client_secret_;
+
 
   base::WeakPtrFactory<ChannelImpl> weak_factory_;
 

@@ -1594,4 +1594,93 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   RunTest(workers);
 }
 
+//-----------------------------------------------------------------------------
+
+// Generate a validated channel ID using Channel::GenerateVerifiedChannelID().
+namespace {
+
+class VerifiedServer : public Worker {
+ public:
+  VerifiedServer(base::Thread* listener_thread,
+                 const std::string& channel_name,
+                 const std::string& reply_text)
+      : Worker(channel_name, Channel::MODE_SERVER),
+        reply_text_(reply_text) {
+    Worker::OverrideThread(listener_thread);
+  }
+
+  virtual void OnNestedTestMsg(Message* reply_msg) {
+    VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
+    SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
+    Send(reply_msg);
+    Done();
+  }
+
+ private:
+  std::string reply_text_;
+};
+
+class VerifiedClient : public Worker {
+ public:
+  VerifiedClient(base::Thread* listener_thread,
+                 const std::string& channel_name,
+                 const std::string& expected_text)
+      : Worker(channel_name, Channel::MODE_CLIENT),
+        expected_text_(expected_text) {
+    Worker::OverrideThread(listener_thread);
+  }
+
+  virtual void Run() {
+    std::string response;
+    SyncMessage* msg = new SyncChannelNestedTestMsg_String(&response);
+    bool result = Send(msg);
+    DCHECK(result);
+    DCHECK_EQ(response, expected_text_);
+
+    VLOG(1) << __FUNCTION__ << " Received reply: " << response;
+    Done();
+  }
+
+ private:
+  bool pump_during_send_;
+  std::string expected_text_;
+};
+
+void Verified() {
+  std::vector<Worker*> workers;
+
+  // A shared worker thread for servers
+  base::Thread server_worker_thread("Verified_ServerListener");
+  ASSERT_TRUE(server_worker_thread.Start());
+
+  base::Thread client_worker_thread("Verified_ClientListener");
+  ASSERT_TRUE(client_worker_thread.Start());
+
+  std::string channel_id = Channel::GenerateVerifiedChannelID("Verified");
+  Worker* worker;
+
+  worker = new VerifiedServer(&server_worker_thread,
+                              channel_id,
+                              "Got first message");
+  workers.push_back(worker);
+
+  worker = new VerifiedClient(&client_worker_thread,
+                              channel_id,
+                              "Got first message");
+  workers.push_back(worker);
+
+  RunTest(workers);
+
+#if defined(OS_WIN)
+#endif
+}
+
+}  // namespace
+
+// Windows needs to send an out-of-band secret to verify the client end of the
+// channel. Test that we still connect correctly in that case.
+TEST_F(IPCSyncChannelTest, Verified) {
+  Verified();
+}
+
 }  // namespace IPC

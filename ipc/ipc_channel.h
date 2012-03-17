@@ -6,6 +6,8 @@
 #define IPC_IPC_CHANNEL_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
@@ -189,6 +191,15 @@ class IPC_EXPORT Channel : public Message::Sender {
   // Returns true if a named server channel is initialized on the given channel
   // ID. Even if true, the server may have already accepted a connection.
   static bool IsNamedServerInitialized(const std::string& channel_id);
+
+  // Generates a channel ID that's non-predictable and unique.
+  static std::string GenerateUniqueRandomChannelID();
+
+  // Generates a channel ID that, if passed to the client as a shared secret,
+  // will validate that the client's authenticity. On platforms that do not
+  // require additional this is simply calls GenerateUniqueRandomChannelID().
+  // For portability the prefix should not include the \ character.
+  static std::string GenerateVerifiedChannelID(const std::string& prefix);
 
 #if defined(OS_LINUX)
   // Sandboxed processes live in a PID namespace, so when sending the IPC hello

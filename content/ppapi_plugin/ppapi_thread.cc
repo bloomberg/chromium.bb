@@ -280,8 +280,8 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
   DCHECK(is_broker_ == (get_plugin_interface_ == NULL));
   IPC::ChannelHandle plugin_handle;
-  plugin_handle.name = StringPrintf("%d.r%d", base::GetCurrentProcId(),
-                                    renderer_id);
+  plugin_handle.name = IPC::Channel::GenerateVerifiedChannelID(
+      StringPrintf("%d.r%d", base::GetCurrentProcId(), renderer_id));
 
   ppapi::proxy::ProxyChannel* dispatcher = NULL;
   bool init_result = false;

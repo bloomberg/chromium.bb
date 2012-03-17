@@ -52,9 +52,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
 
-  static int last_channel_id = 0;
-  channel_id_ = ++last_channel_id;
-
+  channel_id_ = IPC::Channel::GenerateVerifiedChannelID("gpu");
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
   disallowed_features_.multisampling =
@@ -418,9 +416,8 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   DCHECK(!channel_.get());
 
   // Map renderer ID to a (single) channel to that process.
-  std::string channel_name = GetChannelName();
   channel_.reset(new IPC::SyncChannel(
-      channel_name,
+      channel_id_,
       IPC::Channel::MODE_SERVER,
       this,
       io_message_loop,
@@ -442,7 +439,7 @@ void GpuChannel::DidDestroyCommandBuffer(gfx::GpuPreference gpu_preference) {
 }
 
 std::string GpuChannel::GetChannelName() {
-  return StringPrintf("gpu.%d.%d", base::GetCurrentProcId(), channel_id_);
+  return channel_id_;
 }
 
 #if defined(OS_POSIX)

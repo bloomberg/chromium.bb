@@ -24,8 +24,6 @@ typedef std::stack<scoped_refptr<NPChannelBase> > NPChannelRefStack;
 static base::LazyInstance<NPChannelRefStack>::Leaky
     g_lazy_channel_stack = LAZY_INSTANCE_INITIALIZER;
 
-static int next_pipe_id = 0;
-
 NPChannelBase* NPChannelBase::GetChannel(
     const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
     ChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
@@ -44,8 +42,8 @@ NPChannelBase* NPChannelBase::GetChannel(
   if (!channel->channel_valid()) {
     channel->channel_handle_ = channel_handle;
     if (mode & IPC::Channel::MODE_SERVER_FLAG) {
-      channel->channel_handle_.name.append(".");
-      channel->channel_handle_.name.append(base::IntToString(next_pipe_id++));
+      channel->channel_handle_.name =
+          IPC::Channel::GenerateVerifiedChannelID(channel_key);
     }
     channel->mode_ = mode;
     if (channel->Init(ipc_message_loop, create_pipe_now, shutdown_event)) {
