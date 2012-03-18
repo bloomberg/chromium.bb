@@ -229,7 +229,7 @@ class NetworkDefaultView : public views::View {
     views::View::Layout();
 
     gfx::Rect bounds = more_->bounds();
-    bounds.set_x(width() - more_->width());
+    bounds.set_x(width() - more_->width() - kTrayPopupPaddingBetweenItems);
     more_->SetBoundsRect(bounds);
   }
 

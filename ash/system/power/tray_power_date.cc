@@ -35,10 +35,10 @@ namespace internal {
 
 namespace {
 // Width and height of battery images.
-const int kBatteryImageHeight = 26;
-const int kBatteryImageWidth = 24;
+const int kBatteryImageHeight = 25;
+const int kBatteryImageWidth = 25;
 // Number of different power states.
-const int kNumPowerImages = 20;
+const int kNumPowerImages = 16;
 // Amount of slop to add into the timer to make sure we're into the next minute
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
@@ -218,8 +218,8 @@ class PowerTrayView : public views::ImageView {
     }
 
     SkIRect region = SkIRect::MakeXYWH(
-        image_index * kBatteryImageWidth,
-        supply_status_.line_power_on ? 0 : kBatteryImageHeight,
+        supply_status_.line_power_on ? kBatteryImageWidth : 0,
+        image_index * kBatteryImageHeight,
         kBatteryImageWidth, kBatteryImageHeight);
     all.ToSkBitmap()->extractSubset(&image, region);
 
