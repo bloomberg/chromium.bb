@@ -351,7 +351,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
   DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
-// TODO(asvitkine): Remove the ifdef once all platforms use canvas_skia_skia.cc.
+// TODO(asvitkine): Remove the ifdef once all platforms use canvas_skia.cc.
 #if defined(OS_WIN)
 void Canvas::DrawFadeTruncatingString(
       const string16& text,

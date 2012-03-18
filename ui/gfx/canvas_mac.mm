@@ -13,7 +13,7 @@
 
 // Note: This is a temporary Skia-based implementation of the ui/gfx text
 // rendering routines for views/aura.  It replaces the stale Cocoa-based
-// implementation.  A future |canvas_skia_skia.cc| implementation will supersede
+// implementation.  A future |canvas_skia.cc| implementation will supersede
 // this and the other platform-specific implmenentations.
 // Most drawing options, such as alignment and multi-line, are not implemented
 // here.
