@@ -339,7 +339,7 @@ class Cgroup(object):
     cros_lib.SafeMakedirs(self.path, sudo=True)
 
     force_inheritance = True
-    if self.parent.GetValue('cgroup.clone_children').strip() == '1':
+    if self.parent.GetValue('cgroup.clone_children', '').strip() == '1':
       force_inheritance = False
 
     if force_inheritance:
