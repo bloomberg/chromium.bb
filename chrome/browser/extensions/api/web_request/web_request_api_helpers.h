@@ -4,8 +4,8 @@
 
 // Helper classes and functions used for the WebRequest API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_
 #pragma once
 
 #include <list>
@@ -27,7 +27,7 @@ class ListValue;
 class Value;
 }
 
-namespace extension_webrequest_api_helpers {
+namespace extension_web_request_api_helpers {
 
 typedef std::pair<std::string, std::string> ResponseHeader;
 typedef std::vector<ResponseHeader> ResponseHeaders;
@@ -178,6 +178,6 @@ bool MergeOnAuthRequiredResponses(
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries);
 
-}  // namespace extension_webrequest_api_helpers
+}  // namespace extension_web_request_api_helpers
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBREQUEST_WEBREQUEST_API_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_

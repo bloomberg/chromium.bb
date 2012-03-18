@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/common/url_constants.h"
 #include "net/http/http_util.h"
 
-namespace extension_webrequest_api_helpers {
+namespace extension_web_request_api_helpers {
 
 
 EventResponseDelta::EventResponseDelta(
@@ -544,4 +544,4 @@ bool MergeOnAuthRequiredResponses(
   return credentials_set;
 }
 
-}  // namespace extension_webrequest_api_helpers
+}  // namespace extension_web_request_api_helpers

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_constants.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 
-namespace extension_webrequest_api_constants {
+namespace extension_web_request_api_constants {
 
 const char kChallengerKey[] = "challenger";
 const char kErrorKey[] = "error";
@@ -58,4 +58,4 @@ const char kHostPermissionsRequired[] =
     "You need to request host permissions in the manifest file in order to "
     "be notified about requests from the webRequest API.";
 
-}  // namespace extension_webrequest_api_constants
+}  // namespace extension_web_request_api_constants

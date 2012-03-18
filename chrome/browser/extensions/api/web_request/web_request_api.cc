@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 
 #include <algorithm>
 
@@ -16,9 +16,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_constants.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_time_tracker.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -51,8 +51,8 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 
-namespace helpers = extension_webrequest_api_helpers;
-namespace keys = extension_webrequest_api_constants;
+namespace helpers = extension_web_request_api_helpers;
+namespace keys = extension_web_request_api_constants;
 
 namespace {
 

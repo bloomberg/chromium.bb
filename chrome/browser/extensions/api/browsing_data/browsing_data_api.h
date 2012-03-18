@@ -6,8 +6,8 @@
 // clearing browsing data, and clearing the browser's cache (which, let's be
 // honest, are the same thing), as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
 #pragma once
 
 #include <string>
@@ -242,4 +242,4 @@ class RemoveWebSQLFunction : public BrowsingDataExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeWebSQL")
 };
-#endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSINGDATA_BROWSING_DATA_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_

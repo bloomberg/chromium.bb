@@ -15,9 +15,9 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_constants.h"
-#include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -32,8 +32,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace helpers = extension_webrequest_api_helpers;
-namespace keys = extension_webrequest_api_constants;
+namespace helpers = extension_web_request_api_helpers;
+namespace keys = extension_web_request_api_constants;
 
 using helpers::CalculateOnAuthRequiredDelta;
 using helpers::CalculateOnBeforeRequestDelta;
