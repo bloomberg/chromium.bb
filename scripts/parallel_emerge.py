@@ -1129,7 +1129,7 @@ class ScoredTarget(object):
   def update_score(self):
     self.score = (
         -len(self.info["tprovides"]),
-        self.info["binary"],
+        not self.info["binary"],
         -len(self.info["provides"]),
         self.info["idx"],
         self.target,
