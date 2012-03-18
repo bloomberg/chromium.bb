@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/gfx/native_widget_types.h"
@@ -43,7 +44,6 @@ class BrowserViewLayout;
 class BrowserWindowMoveObserver;
 class ContentsContainer;
 class DownloadShelfView;
-class EncodingMenuModel;
 class Extension;
 class FullscreenExitBubbleViews;
 class InfoBarContainerView;
@@ -53,7 +53,6 @@ class TabContentsContainer;
 class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
-class ZoomMenuModel;
 
 #if defined(OS_WIN)
 class AeroPeekManager;
@@ -63,10 +62,6 @@ class JumpList;
 #if defined(USE_AURA)
 class LauncherUpdater;
 #endif
-
-namespace ui {
-class Accelerator;
-}
 
 namespace views {
 class AccessiblePaneView;
@@ -83,7 +78,7 @@ class Menu;
 class BrowserView : public BrowserWindow,
                     public BrowserWindowTesting,
                     public TabStripModelObserver,
-                    public ui::SimpleMenuModel::Delegate,
+                    public ui::AcceleratorProvider,
                     public views::WidgetDelegate,
                     public views::Widget::Observer,
                     public views::ClientView,
@@ -191,12 +186,6 @@ class BrowserView : public BrowserWindow,
 
   // Retrieves the icon to use in the frame to indicate guest session.
   SkBitmap GetGuestAvatarIcon() const;
-
-#if defined(OS_WIN)
-  // Called right before displaying the system menu to allow the BrowserView
-  // to add or delete entries.
-  void PrepareToRunSystemMenu(HMENU menu);
-#endif
 
   // Returns true if the Browser object associated with this BrowserView is a
   // tabbed-type window (i.e. a browser window, not an app or popup).
@@ -355,14 +344,9 @@ class BrowserView : public BrowserWindow,
                              int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
-  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
-  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
-  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  // Overridden from ui::AcceleratorProvider:
+  virtual bool GetAcceleratorForCommandId(int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
@@ -467,11 +451,6 @@ class BrowserView : public BrowserWindow,
     FullscreenExitBubbleType bubble_type;
   };
 
-#if defined(OS_WIN)
-  // Creates the system menu.
-  void InitSystemMenu();
-#endif
-
   // Returns the BrowserViewLayout.
   BrowserViewLayout* GetBrowserViewLayout() const;
 
@@ -528,15 +507,6 @@ class BrowserView : public BrowserWindow,
   // Copy the accelerator table from the app resources into something we can
   // use.
   void LoadAccelerators();
-
-#if defined(OS_WIN)
-  // Builds the correct menu for when we have minimal chrome.
-  void BuildSystemMenuForBrowserWindow();
-  void BuildSystemMenuForAppOrPopupWindow();
-
-  // Adds optional debug items for frame type toggling.
-  void AddFrameToggleItems();
-#endif
 
   // Retrieves the command id for the specified Windows app command.
   int GetCommandIDForAppCommandID(int app_command_id) const;
@@ -676,13 +646,6 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // The additional items we insert into the system menu.
-  scoped_ptr<views::SystemMenuModel> system_menu_contents_;
-  scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
-  scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
-  // The wrapped system menu itself.
-  scoped_ptr<views::NativeMenuWin> system_menu_;
-
   // This object is used to perform periodic actions in a worker
   // thread. It is currently used to monitor hung plugin windows.
   WorkerThreadTicker ticker_;
