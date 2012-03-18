@@ -44,7 +44,7 @@ class CONTENT_EXPORT AudioRendererImpl
   virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
-                    const media::FilterStatusCB& cb) OVERRIDE;
+                    const media::PipelineStatusCB& cb) OVERRIDE;
   virtual void Play(const base::Closure& callback) OVERRIDE;
 
   // media::AudioRenderer implementation.

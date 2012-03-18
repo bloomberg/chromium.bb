@@ -39,7 +39,7 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   virtual void Stop(const base::Closure& stop_cb) OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
   virtual void Seek(
-      base::TimeDelta time, const FilterStatusCB& seek_cb) OVERRIDE;
+      base::TimeDelta time, const PipelineStatusCB& seek_cb) OVERRIDE;
   virtual void OnAudioRendererDisabled() OVERRIDE;
 
  protected:
@@ -110,8 +110,8 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   // pending.
   bool IsOperationPending() const;
 
-  // Called by operations that take a FilterStatusCB instead of a Closure.
-  // TODO: Remove when Closures are replaced by FilterStatusCB.
+  // Called by operations that take a PipelineStatusCB instead of a Closure.
+  // TODO: Remove when Closures are replaced by PipelineStatusCB.
   void OnStatusCB(const base::Closure& callback, PipelineStatus status);
 
   // Vector of the filters added to the composite.
@@ -119,9 +119,9 @@ class MEDIA_EXPORT CompositeFilter : public Filter {
   FilterVector filters_;
 
   // Callback for the pending request.
-  // TODO: Remove callback_ when Closures are replaced by FilterStatusCB.
+  // TODO: Remove callback_ when Closures are replaced by PipelineStatusCB.
   base::Closure callback_;
-  FilterStatusCB status_cb_;
+  PipelineStatusCB status_cb_;
 
   // Time parameter for the pending Seek() request.
   base::TimeDelta pending_seek_time_;

@@ -21,7 +21,7 @@ using media::CopyUPlane;
 using media::CopyVPlane;
 using media::CopyYPlane;
 using media::DemuxerStream;
-using media::FilterStatusCB;
+using media::PipelineStatusCB;
 using media::kNoTimestamp;
 using media::PIPELINE_OK;
 using media::PipelineStatusCB;
@@ -129,7 +129,7 @@ void RTCVideoDecoder::Stop(const base::Closure& callback) {
   VideoDecoder::Stop(callback);
 }
 
-void RTCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
+void RTCVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   if (MessageLoop::current() != message_loop_) {
      message_loop_->PostTask(FROM_HERE,
                              base::Bind(&RTCVideoDecoder::Seek, this,

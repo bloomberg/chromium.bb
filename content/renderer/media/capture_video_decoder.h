@@ -34,7 +34,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
-                    const media::FilterStatusCB& cb) OVERRIDE;
+                    const media::PipelineStatusCB& cb) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
@@ -72,7 +72,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   void PlayOnDecoderThread(const base::Closure& callback);
   void SeekOnDecoderThread(base::TimeDelta time,
-                           const media::FilterStatusCB& cb);
+                           const media::PipelineStatusCB& cb);
   void PauseOnDecoderThread(const base::Closure& callback);
   void FlushOnDecoderThread(const base::Closure& callback);
   void StopOnDecoderThread(const base::Closure& callback);

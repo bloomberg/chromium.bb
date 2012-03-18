@@ -83,7 +83,7 @@ void CaptureVideoDecoder::Stop(const base::Closure& callback) {
 }
 
 void CaptureVideoDecoder::Seek(base::TimeDelta time,
-                               const media::FilterStatusCB& cb) {
+                               const media::PipelineStatusCB& cb) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CaptureVideoDecoder::SeekOnDecoderThread,
@@ -187,8 +187,9 @@ void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& callback) {
   capture_engine_->StopCapture(this);
 }
 
-void CaptureVideoDecoder::SeekOnDecoderThread(base::TimeDelta time,
-                                              const media::FilterStatusCB& cb) {
+void CaptureVideoDecoder::SeekOnDecoderThread(
+    base::TimeDelta time,
+    const media::PipelineStatusCB& cb) {
   DVLOG(1) << "SeekOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 

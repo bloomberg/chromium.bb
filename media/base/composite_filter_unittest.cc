@@ -54,9 +54,9 @@ class CompositeFilterTest : public testing::Test {
   // |seek_time| - The time to pass to the Seek() call if |method_to_call|
   //               equals SEEK.
   // |callback| - The callback object to pass to the method.
-  // |expected_status| - Some filter methods use a FilterStatusCB instead of
+  // |expected_status| - Some filter methods use a PipelineStatusCB instead of
   //                     a Closure. For these methods this function
-  //                     creates a FilterStatusCB that makes sure the status
+  //                     creates a PipelineStatusCB that makes sure the status
   //                     passed to the callback matches |expected_status| and
   //                     then calls |callback|.
   void DoFilterCall(MethodToCall method_to_call, Filter* filter,
@@ -118,7 +118,7 @@ class CompositeFilterTest : public testing::Test {
   PipelineStatus filter_1_status_;
 
   // Callback passed to |filter_1_| during last Seek() call.
-  FilterStatusCB filter_1_status_cb_;
+  PipelineStatusCB filter_1_status_cb_;
 
   // Second filter added to the composite.
   scoped_refptr<StrictMock<MockFilter> > filter_2_;
@@ -131,7 +131,7 @@ class CompositeFilterTest : public testing::Test {
   PipelineStatus filter_2_status_;
 
   // Callback passed to |filter_2_| during last Seek() call.
-  FilterStatusCB filter_2_status_cb_;
+  PipelineStatusCB filter_2_status_cb_;
 
   // FilterHost implementation passed to |composite_| via set_host().
   scoped_ptr<StrictMock<MockFilterHost> > mock_filter_host_;

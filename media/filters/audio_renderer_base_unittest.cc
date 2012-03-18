@@ -80,7 +80,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   }
 
   MOCK_METHOD1(OnSeekComplete, void(PipelineStatus));
-  FilterStatusCB NewSeekCB() {
+  PipelineStatusCB NewSeekCB() {
     return base::Bind(&AudioRendererBaseTest::OnSeekComplete,
                       base::Unretained(this));
   }

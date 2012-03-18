@@ -33,7 +33,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
-                    const media::FilterStatusCB& cb) OVERRIDE;
+                    const media::PipelineStatusCB& cb) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;

@@ -8,9 +8,9 @@
 
 namespace media {
 
-void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status) {
+void ResetAndRunCB(PipelineStatusCB* cb, PipelineStatus status) {
   DCHECK(!cb->is_null());
-  FilterStatusCB tmp_cb(*cb);
+  PipelineStatusCB tmp_cb(*cb);
   cb->Reset();
   tmp_cb.Run(status);
 }
@@ -63,7 +63,7 @@ void Filter::Stop(const base::Closure& callback) {
 
 void Filter::SetPlaybackRate(float playback_rate) {}
 
-void Filter::Seek(base::TimeDelta time, const FilterStatusCB& callback) {
+void Filter::Seek(base::TimeDelta time, const PipelineStatusCB& callback) {
   DCHECK(!callback.is_null());
   callback.Run(PIPELINE_OK);
 }

@@ -126,7 +126,7 @@ void AudioRendererImpl::Pause(const base::Closure& callback) {
 }
 
 void AudioRendererImpl::Seek(base::TimeDelta time,
-                             const media::FilterStatusCB& cb) {
+                             const media::PipelineStatusCB& cb) {
   AudioRendererBase::Seek(time, cb);
   if (stopped_)
     return;

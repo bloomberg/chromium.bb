@@ -202,7 +202,7 @@ void CompositeFilter::SetPlaybackRate(float playback_rate) {
 }
 
 void CompositeFilter::Seek(base::TimeDelta time,
-                           const FilterStatusCB& seek_cb) {
+                           const PipelineStatusCB& seek_cb) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (IsOperationPending()) {

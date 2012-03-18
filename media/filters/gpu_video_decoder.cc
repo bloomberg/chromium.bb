@@ -88,7 +88,7 @@ void GpuVideoDecoder::Stop(const base::Closure& callback) {
   callback.Run();
 }
 
-void GpuVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
+void GpuVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Seek, this, time, cb));

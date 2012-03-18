@@ -39,7 +39,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
-  virtual void Seek(base::TimeDelta time, const FilterStatusCB& cb) OVERRIDE;
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
 
   // AudioRenderer implementation.
   virtual void Initialize(const scoped_refptr<AudioDecoder>& decoder,
@@ -154,7 +154,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
 
   // Filter callbacks.
   base::Closure pause_cb_;
-  FilterStatusCB seek_cb_;
+  PipelineStatusCB seek_cb_;
 
   base::Closure underflow_cb_;
 

@@ -106,7 +106,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->demuxer(), SetPreload(AUTO));
     EXPECT_CALL(*mocks_->demuxer(), Seek(mocks_->demuxer()->GetStartTime(), _))
-        .WillOnce(Invoke(&RunFilterStatusCB));
+        .WillOnce(Invoke(&RunPipelineStatusCB));
     EXPECT_CALL(*mocks_->demuxer(), Stop(_))
         .WillOnce(Invoke(&RunStopFilterCallback));
 
@@ -134,7 +134,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->video_decoder(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->video_decoder(),
                 Seek(mocks_->demuxer()->GetStartTime(), _))
-        .WillOnce(Invoke(&RunFilterStatusCB));
+        .WillOnce(Invoke(&RunPipelineStatusCB));
     EXPECT_CALL(*mocks_->video_decoder(), Stop(_))
         .WillOnce(Invoke(&RunStopFilterCallback));
   }
@@ -153,7 +153,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->video_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->video_renderer(),
                 Seek(mocks_->demuxer()->GetStartTime(), _))
-        .WillOnce(Invoke(&RunFilterStatusCB));
+        .WillOnce(Invoke(&RunPipelineStatusCB));
     EXPECT_CALL(*mocks_->video_renderer(), Stop(_))
         .WillOnce(Invoke(&RunStopFilterCallback));
   }
@@ -173,7 +173,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), SetVolume(1.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), Seek(base::TimeDelta(), _))
-        .WillOnce(Invoke(&RunFilterStatusCB));
+        .WillOnce(Invoke(&RunPipelineStatusCB));
     EXPECT_CALL(*mocks_->audio_renderer(), Stop(_))
         .WillOnce(Invoke(&RunStopFilterCallback));
   }
@@ -224,18 +224,18 @@ class PipelineTest : public ::testing::Test {
   void ExpectSeek(const base::TimeDelta& seek_time) {
     // Every filter should receive a call to Seek().
     EXPECT_CALL(*mocks_->demuxer(), Seek(seek_time, _))
-        .WillOnce(Invoke(&RunFilterStatusCB));
+        .WillOnce(Invoke(&RunPipelineStatusCB));
 
     if (audio_stream_) {
       EXPECT_CALL(*mocks_->audio_renderer(), Seek(seek_time, _))
-          .WillOnce(Invoke(&RunFilterStatusCB));
+          .WillOnce(Invoke(&RunPipelineStatusCB));
     }
 
     if (video_stream_) {
       EXPECT_CALL(*mocks_->video_decoder(), Seek(seek_time, _))
-          .WillOnce(Invoke(&RunFilterStatusCB));
+          .WillOnce(Invoke(&RunPipelineStatusCB));
       EXPECT_CALL(*mocks_->video_renderer(), Seek(seek_time, _))
-          .WillOnce(Invoke(&RunFilterStatusCB));
+          .WillOnce(Invoke(&RunPipelineStatusCB));
     }
 
     // We expect a successful seek callback.
@@ -726,7 +726,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   host->NotifyEnded();
 }
 
-void SendReadErrorToCB(::testing::Unused, const FilterStatusCB& cb) {
+void SendReadErrorToCB(::testing::Unused, const PipelineStatusCB& cb) {
   cb.Run(PIPELINE_ERROR_READ);
 }
 

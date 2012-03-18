@@ -45,15 +45,10 @@ class DemuxerStream;
 class Filter;
 class FilterHost;
 
-struct PipelineStatistics;
-
-// Used for completing asynchronous methods.
-typedef base::Callback<void(PipelineStatus)> FilterStatusCB;
-
 // These functions copy |*cb|, call Reset() on |*cb|, and then call Run()
 // on the copy.  This is used in the common case where you need to clear
 // a callback member variable before running the callback.
-MEDIA_EXPORT void ResetAndRunCB(FilterStatusCB* cb, PipelineStatus status);
+MEDIA_EXPORT void ResetAndRunCB(PipelineStatusCB* cb, PipelineStatus status);
 MEDIA_EXPORT void ResetAndRunCB(base::Closure* cb);
 
 class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
@@ -98,7 +93,7 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
 
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
-  virtual void Seek(base::TimeDelta time, const FilterStatusCB& callback);
+  virtual void Seek(base::TimeDelta time, const PipelineStatusCB& callback);
 
   // This method is called from the pipeline when the audio renderer
   // is disabled. Filters can ignore the notification if they do not

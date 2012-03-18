@@ -573,12 +573,12 @@ void Pipeline::OnFilterStateTransition() {
 }
 
 // Called from any thread.
-// This method makes the FilterStatusCB behave like a Closure. It
+// This method makes the PipelineStatusCB behave like a Closure. It
 // makes it look like a host()->SetError() call followed by a call to
 // OnFilterStateTransition() when errors occur.
 //
 // TODO: Revisit this code when SetError() is removed from FilterHost and
-//       all the Closures are converted to FilterStatusCB.
+//       all the Closures are converted to PipelineStatusCB.
 void Pipeline::OnFilterStateTransitionWithStatus(PipelineStatus status) {
   if (status != PIPELINE_OK)
     SetError(status);

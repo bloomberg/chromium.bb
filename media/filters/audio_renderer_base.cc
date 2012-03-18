@@ -70,7 +70,7 @@ void AudioRendererBase::Stop(const base::Closure& callback) {
   }
 }
 
-void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
+void AudioRendererBase::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPaused, state_);
   DCHECK(!pending_read_) << "Pending read must complete before seeking";
