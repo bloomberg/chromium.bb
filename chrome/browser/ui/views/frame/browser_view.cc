@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
@@ -556,12 +555,6 @@ SkBitmap BrowserView::GetGuestAvatarIcon() const {
   return SkBitmap();
 #endif
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
-  system_menu_->UpdateStates();
-}
-#endif
 
 // static
 void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
@@ -1452,43 +1445,12 @@ void BrowserView::TabStripEmpty() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, ui::SimpleMenuModel::Delegate implementation:
-
-bool BrowserView::IsCommandIdChecked(int command_id) const {
-  // TODO(beng): encoding menu.
-  // No items in our system menu are check-able.
-  return false;
-}
-
-bool BrowserView::IsCommandIdEnabled(int command_id) const {
-  return browser_->command_updater()->IsCommandEnabled(command_id);
-}
+// BrowserView, ui::AcceleratorProvider implementation:
 
 bool BrowserView::GetAcceleratorForCommandId(int command_id,
                                              ui::Accelerator* accelerator) {
   // Let's let the ToolbarView own the canonical implementation of this method.
   return toolbar_->GetAcceleratorForCommandId(command_id, accelerator);
-}
-
-bool BrowserView::IsItemForCommandIdDynamic(int command_id) const {
-  return command_id == IDC_RESTORE_TAB;
-}
-
-string16 BrowserView::GetLabelForCommandId(int command_id) const {
-  DCHECK(command_id == IDC_RESTORE_TAB);
-
-  int string_id = IDS_RESTORE_TAB;
-  if (IsCommandIdEnabled(command_id)) {
-    TabRestoreService* trs =
-        TabRestoreServiceFactory::GetForProfile(browser_->profile());
-    if (trs && trs->entries().front()->type == TabRestoreService::WINDOW)
-      string_id = IDS_RESTORE_WINDOW;
-  }
-  return l10n_util::GetStringUTF16(string_id);
-}
-
-void BrowserView::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommandIfEnabled(command_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1940,8 +1902,6 @@ void BrowserView::Init() {
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  InitSystemMenu();
-
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
   if (JumpList::Enabled()) {
@@ -1988,19 +1948,6 @@ void BrowserView::LoadingAnimationCallback() {
 // BrowserView, private --------------------------------------------------------
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-void BrowserView::InitSystemMenu() {
-  system_menu_contents_.reset(new views::SystemMenuModel(this));
-  // We add the menu items in reverse order so that insertion_index never needs
-  // to change.
-  if (IsBrowserTypeNormal())
-    BuildSystemMenuForBrowserWindow();
-  else
-    BuildSystemMenuForAppOrPopupWindow();
-  system_menu_.reset(
-      new views::NativeMenuWin(system_menu_contents_.get(),
-                               frame_->GetNativeWindow()));
-  system_menu_->Rebuild();
-}
 #endif
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
@@ -2304,68 +2251,6 @@ void BrowserView::LoadAccelerators() {
   }
 #endif
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void BrowserView::BuildSystemMenuForBrowserWindow() {
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                             IDS_TASK_MANAGER);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
-  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  AddFrameToggleItems();
-  // If it's a regular browser window with tabs, we don't add any more items,
-  // since it already has menus (Page, Chrome).
-}
-
-void BrowserView::BuildSystemMenuForAppOrPopupWindow() {
-  if (browser_->is_app()) {
-    system_menu_contents_->AddSeparator();
-    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                               IDS_TASK_MANAGER);
-  }
-  system_menu_contents_->AddSeparator();
-  encoding_menu_contents_.reset(new EncodingMenuModel(browser_.get()));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ENCODING_MENU,
-                                                IDS_ENCODING_MENU,
-                                                encoding_menu_contents_.get());
-  zoom_menu_contents_.reset(new ZoomMenuModel(this));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
-                                                zoom_menu_contents_.get());
-  system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-  system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
-  system_menu_contents_->AddSeparator();
-  if (browser_->is_app()) {
-    system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
-                                               IDS_APP_MENU_NEW_WEB_PAGE);
-  } else {
-    system_menu_contents_->AddItemWithStringId(IDC_SHOW_AS_TAB,
-                                               IDS_SHOW_AS_TAB);
-  }
-  system_menu_contents_->AddItemWithStringId(IDC_COPY_URL,
-                                             IDS_APP_MENU_COPY_URL);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
-  system_menu_contents_->AddItemWithStringId(IDC_FORWARD,
-                                             IDS_CONTENT_CONTEXT_FORWARD);
-  system_menu_contents_->AddItemWithStringId(IDC_BACK,
-                                             IDS_CONTENT_CONTEXT_BACK);
-  AddFrameToggleItems();
-}
-
-void BrowserView::AddFrameToggleItems() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDebugEnableFrameToggle)) {
-    system_menu_contents_->AddSeparator();
-    system_menu_contents_->AddItem(IDC_DEBUG_FRAME_TOGGLE,
-                                   L"Toggle Frame Type");
-  }
-}
-#endif
 
 int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,20 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "ui/views/widget/native_widget_win.h"
 
 class BrowserView;
+class EncodingMenuModel;
+class SystemMenuModelDelegate;
+class ZoomMenuModel;
+
+namespace views {
+class NativeMenuWin;
+class SystemMenuModel;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin
@@ -48,6 +57,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
+  virtual void InitSystemContextMenu() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
@@ -55,10 +65,25 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();
 
+  // Builds the correct menu for when we have minimal chrome.
+  void BuildSystemMenuForBrowserWindow();
+  void BuildSystemMenuForAppOrPopupWindow();
+
+  // Adds optional debug items for frame type toggling.
+  void AddFrameToggleItems();
+
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
   BrowserFrame* browser_frame_;
+
+  // The additional items we insert into the system menu.
+  scoped_ptr<SystemMenuModelDelegate> system_menu_delegate_;
+  scoped_ptr<views::SystemMenuModel> system_menu_contents_;
+  scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
+  scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
+  // The wrapped system menu itself.
+  scoped_ptr<views::NativeMenuWin> system_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };

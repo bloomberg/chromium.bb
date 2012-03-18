@@ -23,6 +23,7 @@ class BrowserFrameGtk : public views::NativeWidgetGtk,
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
+  virtual void InitSystemContextMenu() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
