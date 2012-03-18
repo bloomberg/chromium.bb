@@ -55,6 +55,7 @@ const char* kInvalidCallbackIdError = "Invalid callbackId";
 
 }  // namespace
 
+
 AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
                          ChromeV8Context* context)
     : ChromeV8Extension(dispatcher),
@@ -71,6 +72,7 @@ AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
       base::Bind(&AppBindings::GetAppNotifyChannel, base::Unretained(this)));
 }
 
+
 v8::Handle<v8::Value> AppBindings::GetIsInstalled(
     const v8::Arguments& args) {
   // TODO(aa): Hm, maybe ExtensionBindingsContext should have GetExtension()
@@ -79,8 +81,9 @@ v8::Handle<v8::Value> AppBindings::GetIsInstalled(
       extension_dispatcher_->extensions()->GetByID(context_->extension_id());
 
   // TODO(aa): Why only hosted app?
+  // TODO(aa): GARRR - why is there IsExtensionActive and IsApplicationActive!?
   bool result = extension && extension->is_hosted_app() &&
-      extension_dispatcher_->IsExtensionActive(extension->id());
+      extension_dispatcher_->IsApplicationActive(extension->id());
   return v8::Boolean::New(result);
 }
 

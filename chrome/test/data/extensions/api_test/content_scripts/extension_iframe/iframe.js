@@ -28,15 +28,11 @@ if (chrome.storage) {
   success = false;
 }
 
-// Ditto chrome.tabs, though it's special because it's a dependency of the
-// partially unprivileged chrome.extension.
-if (chrome.tabs) {
-  console.log('Error: chrome.tabs exists, it shouldn\'t.');
-  success = false;
-}
-
-// Parts of chrome.extension are unavailable.
+// Parts of chrome.extension and chrome.tabs (which get included because it's
+// a dependency of chrome.extension) are unavailable.
 if (!runsWithException(function() { return chrome.extension.getViews; }))
+  success = false;
+if (!runsWithException(function() { return chrome.tabs.create; }))
   success = false;
 
 chrome.extension.sendRequest({success: success});

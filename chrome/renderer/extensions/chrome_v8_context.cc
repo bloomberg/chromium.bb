@@ -15,8 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-using extensions::Feature;
-
 namespace {
 
 const char kChromeHidden[] = "chromeHidden";
@@ -26,13 +24,11 @@ const char kValidateCallbacks[] = "validateCallbacks";
 const char kValidateAPI[] = "validateAPI";
 #endif
 
-std::string GetContextTypeDescription(Feature::Context context_type) {
+std::string GetContextTypeDescription(
+    ChromeV8Context::ContextType context_type) {
   switch (context_type) {
-    case Feature::UNSPECIFIED_CONTEXT:    return "unspecified";
-    case Feature::PRIVILEGED_CONTEXT:     return "privileged";
-    case Feature::UNPRIVILEGED_CONTEXT:   return "unprivileged";
-    case Feature::CONTENT_SCRIPT_CONTEXT: return "content script";
-    case Feature::WEB_PAGE_CONTEXT:       return "web page";
+    case ChromeV8Context::OTHER:          return "other";
+    case ChromeV8Context::CONTENT_SCRIPT: return "content script";
   }
   NOTREACHED();
   return "";
@@ -43,7 +39,7 @@ std::string GetContextTypeDescription(Feature::Context context_type) {
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
                                  const std::string& extension_id,
-                                 Feature::Context context_type)
+                                 ChromeV8Context::ContextType context_type)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),
       extension_id_(extension_id),

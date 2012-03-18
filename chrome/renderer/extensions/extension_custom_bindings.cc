@@ -22,6 +22,9 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
+using WebKit::WebFrame;
+using WebKit::WebView;
+
 namespace extensions {
 
 namespace {
