@@ -64,8 +64,6 @@ void BrowserFrame::InitBrowserFrame() {
   params.transparent = true;
 #endif
   Init(params);
-
-  native_browser_frame_->InitSystemContextMenu();
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {

@@ -56,10 +56,6 @@ bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
 
 bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                     aura::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
-      (event->flags() & ui::EF_LEFT_MOUSE_BUTTON) == 0)
-    return false;
-
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
       // We also update the current window component here because for the
@@ -77,7 +73,9 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       } else {
         window_resizer_.reset();
       }
-      if (component == HTCAPTION && event->flags() & ui::EF_IS_DOUBLE_CLICK)
+      if (component == HTCAPTION &&
+          event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+          event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
         ToggleMaximizedState(target);
       return WindowResizer::GetBoundsChangeForWindowComponent(component) != 0;
     }

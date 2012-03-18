@@ -9,20 +9,12 @@
 
 #include <set>
 
-#include "base/command_line.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
-#include "ui/views/controls/menu/native_menu_win.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget.h"
@@ -46,9 +38,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetWin(browser_frame),
       browser_view_(browser_view),
-      browser_frame_(browser_frame),
-      system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
-          browser_view->browser())) {
+      browser_frame_(browser_frame) {
 }
 
 BrowserFrameWin::~BrowserFrameWin() {
@@ -104,7 +94,7 @@ void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
 
 void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,
                                       BOOL is_system_menu) {
-  system_menu_->UpdateStates();
+  browser_view_->PrepareToRunSystemMenu(menu);
 }
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
@@ -162,20 +152,6 @@ const views::NativeWidget* BrowserFrameWin::AsNativeWidget() const {
   return this;
 }
 
-void BrowserFrameWin::InitSystemContextMenu() {
-  system_menu_contents_.reset(new views::SystemMenuModel(
-      system_menu_delegate_.get()));
-  // We add the menu items in reverse order so that insertion_index never needs
-  // to change.
-  if (browser_view_->IsBrowserTypeNormal())
-    BuildSystemMenuForBrowserWindow();
-  else
-    BuildSystemMenuForAppOrPopupWindow();
-  system_menu_.reset(
-      new views::NativeMenuWin(system_menu_contents_.get(), GetNativeWindow()));
-  system_menu_->Rebuild();
-}
-
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
   TITLEBARINFOEX titlebar_info;
   titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
@@ -222,67 +198,6 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // For popup and app windows we want to use the default margins.
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
-}
-
-void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                             IDS_TASK_MANAGER);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
-  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  AddFrameToggleItems();
-  // If it's a regular browser window with tabs, we don't add any more items,
-  // since it already has menus (Page, Chrome).
-}
-
-void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
-  Browser* browser = browser_view()->browser();
-  if (browser->is_app()) {
-    system_menu_contents_->AddSeparator();
-    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                               IDS_TASK_MANAGER);
-  }
-  system_menu_contents_->AddSeparator();
-  encoding_menu_contents_.reset(new EncodingMenuModel(browser));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ENCODING_MENU,
-                                                IDS_ENCODING_MENU,
-                                                encoding_menu_contents_.get());
-  zoom_menu_contents_.reset(new ZoomMenuModel(system_menu_delegate_.get()));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
-                                                zoom_menu_contents_.get());
-  system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-  system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
-  system_menu_contents_->AddSeparator();
-  if (browser->is_app()) {
-    system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
-                                               IDS_APP_MENU_NEW_WEB_PAGE);
-  } else {
-    system_menu_contents_->AddItemWithStringId(IDC_SHOW_AS_TAB,
-                                               IDS_SHOW_AS_TAB);
-  }
-  system_menu_contents_->AddItemWithStringId(IDC_COPY_URL,
-                                             IDS_APP_MENU_COPY_URL);
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
-  system_menu_contents_->AddItemWithStringId(IDC_FORWARD,
-                                             IDS_CONTENT_CONTEXT_FORWARD);
-  system_menu_contents_->AddItemWithStringId(IDC_BACK,
-                                             IDS_CONTENT_CONTEXT_BACK);
-  AddFrameToggleItems();
-}
-
-void BrowserFrameWin::AddFrameToggleItems() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDebugEnableFrameToggle)) {
-    system_menu_contents_->AddSeparator();
-    system_menu_contents_->AddItem(IDC_DEBUG_FRAME_TOGGLE,
-                                   L"Toggle Frame Type");
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
