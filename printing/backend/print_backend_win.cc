@@ -183,20 +183,20 @@ std::string PrintBackendWin::GetPrinterDriverInfo(
   ScopedPrinterHandle printer_handle;
   if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
                      printer_handle.Receive(), NULL)) {
-    return false;
+    return driver_info;
   }
   DCHECK(printer_handle.IsValid());
   DWORD bytes_needed = 0;
   ::GetPrinterDriver(printer_handle, NULL, 6, NULL, 0, &bytes_needed);
   scoped_array<BYTE> driver_info_buffer(new BYTE[bytes_needed]);
   if (!bytes_needed || !driver_info_buffer.get())
-    return false;
+    return driver_info;
   if (!::GetPrinterDriver(printer_handle, NULL, 6, driver_info_buffer.get(),
                           bytes_needed, &bytes_needed)) {
-    return false;
+    return driver_info;
   }
   if (!bytes_needed)
-    return false;
+    return driver_info;
   const DRIVER_INFO_6* driver_info_6 =
       reinterpret_cast<DRIVER_INFO_6*>(driver_info_buffer.get());
 
