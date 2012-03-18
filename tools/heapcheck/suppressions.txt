@@ -1879,14 +1879,6 @@
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
 }
 {
-   bug_118573_a
-   Heapcheck:Leak
-   ...
-   fun:gdata::GDataFileSystem::UpdateRootWithDocumentFeed
-   fun:gdata::GDataFileSystem::UpdateDirectoryWithDocumentFeed
-   fun:gdata::GDataFileSystem::OnLoadRootFeed
-}
-{
    bug_118573_b
    Heapcheck:Leak
    fun:std::basic_string::_Rep::_S_create
