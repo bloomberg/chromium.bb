@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/common/extensions/feature.h"
 #include "chrome/renderer/module_system.h"
 #include "v8/include/v8.h"
 
@@ -27,19 +28,10 @@ class RenderView;
 // we won't need this object and it's a bit less state to keep track of.
 class ChromeV8Context {
  public:
-  enum ContextType {
-    CONTENT_SCRIPT,
-
-    // TODO(kalman): for now, have this as OTHER, since we only currently need
-    // know whether something is a content script or not. However, when
-    // necessary this should enumerate the other types, such as FRAME.
-    OTHER
-  };
-
   ChromeV8Context(v8::Handle<v8::Context> context,
                   WebKit::WebFrame* frame,
                   const std::string& extension_id,
-                  ContextType context_type);
+                  extensions::Feature::Context context_type);
   ~ChromeV8Context();
 
   v8::Handle<v8::Context> v8_context() const {
@@ -57,7 +49,7 @@ class ChromeV8Context {
     web_frame_ = NULL;
   }
 
-  ContextType context_type() const {
+  extensions::Feature::Context context_type() const {
     return context_type_;
   }
 
@@ -116,7 +108,7 @@ class ChromeV8Context {
   std::string extension_id_;
 
   // The type of context.
-  ContextType context_type_;
+  extensions::Feature::Context context_type_;
 
   // Owns and structures the JS that is injected to set up extension bindings.
   scoped_ptr<ModuleSystem> module_system_;

@@ -28,7 +28,7 @@ v8::Handle<v8::Value> ResourceBundleSourceMap::GetSource(
 }
 
 bool ResourceBundleSourceMap::Contains(const std::string& name) {
-  return resource_id_map_.count(name) > 0;
+  return !!resource_id_map_.count(name);
 }
 
 v8::Handle<v8::String> ResourceBundleSourceMap::ConvertString(
