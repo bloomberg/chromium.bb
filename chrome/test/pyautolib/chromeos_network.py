@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -128,10 +128,7 @@ class PyNetworkUITest(pyauto.PyUITest):
   _ROUTER_CONFIG_FILE = os.path.join(pyauto.PyUITest.DataDir(),
                                      'pyauto_private', 'chromeos', 'network',
                                      'wifi_testbed_config')
-
   _FLIMFLAM_PATH = 'org.chromium.flimflam'
-  _proxy = dbus.SystemBus().get_object(_FLIMFLAM_PATH, '/')
-  _manager = dbus.Interface(_proxy, _FLIMFLAM_PATH + '.Manager')
 
   def setUp(self):
     # Move ethernet to the end of the flimflam priority list,
@@ -154,6 +151,10 @@ class PyNetworkUITest(pyauto.PyUITest):
       os.system('route del -net %(ipaddress)s gateway %(gateway)s netmask '
                 '%(netmask)s dev %(iface)s' % self.ps_route_entry)
 
+  def _GetFlimflamManager(self):
+    _proxy = dbus.SystemBus().get_object(self._FLIMFLAM_PATH, '/')
+    return dbus.Interface(_proxy, self._FLIMFLAM_PATH + '.Manager')
+
   def _ParseDefaultRoutingTable(self):
     """Creates and stores a dictionary of the default routing paths."""
     route_table_headers = ['destination', 'gateway', 'genmask', 'flags',
@@ -170,24 +171,24 @@ class PyNetworkUITest(pyauto.PyUITest):
       self.ForgetWifiNetwork(service)
 
   def _SetServiceOrder(self, service_order):
-    self._manager.SetServiceOrder(service_order)
+    self._GetFlimflamManager().SetServiceOrder(service_order)
     # Flimflam throws a dbus exception if device is already disabled.  This
     # is not an error.
     try:
-      self._manager.DisableTechnology('wifi')
+      self._GetFlimflamManager().DisableTechnology('wifi')
     except dbus.DBusException as e:
       if 'org.chromium.flimflam.Error.AlreadyDisabled' not in str(e):
         raise e
-    self._manager.EnableTechnology('wifi')
+    self._GetFlimflamManager().EnableTechnology('wifi')
 
   def _PushServiceOrder(self, service_order):
-    self._old_service_order = self._manager.GetServiceOrder()
+    self._old_service_order = self._GetFlimflamManager().GetServiceOrder()
     self._SetServiceOrder(service_order)
     service_order = service_order.split(',')
 
     # Verify services that are present in both the service_order
     # we set and the one retrieved from device are in the correct order.
-    set_service_order = self._manager.GetServiceOrder().split(',')
+    set_service_order = self._GetFlimflamManager().GetServiceOrder().split(',')
     common_service = set(service_order) & set(set_service_order)
 
     service_order = [s for s in service_order if s in common_service]
@@ -203,7 +204,7 @@ class PyNetworkUITest(pyauto.PyUITest):
     # Verify services that are present in both the service_order
     # we set and the one retrieved from device are in the correct order.
     old_service_order = self._old_service_order.split(',')
-    set_service_order = self._manager.GetServiceOrder().split(',')
+    set_service_order = self._GetFlimflamManager().GetServiceOrder().split(',')
     common_service = set(old_service_order) & set(set_service_order)
 
     old_service_order = [s for s in old_service_order if s in common_service]
