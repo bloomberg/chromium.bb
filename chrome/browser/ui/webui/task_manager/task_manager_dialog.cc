@@ -96,7 +96,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
     *out_close_dialog = true;
   }
   virtual bool ShouldShowDialogTitle() const OVERRIDE {
-    return false;
+    return true;
   }
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE {
