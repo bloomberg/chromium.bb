@@ -105,6 +105,8 @@ irt_library = LinkIrt('irt', irt_browser, ['ppruntime',
                                            'm'])
 
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
+env.SDKInstallBin('irt.nexe', irt_library)
+
 # TODO(mcgrathr): these should be installed, but scons is a mystery
 #env.AddHeaderToSdk(['irt.h'])
 #env.AddHeaderToSdk(['irt_ppapi.h'])
