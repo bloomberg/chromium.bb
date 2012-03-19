@@ -33,9 +33,9 @@
   # This is the suite that gets run on 'Chromium' builds.
   'CONTINUOUS': {
     'all': [
+      'about_plugins_ui.AboutPluginsUITest',
       'apptest',
       'autofill',
-      'about_plugins_ui.AboutPluginsTest.testAboutPluginDetailInfo',
       'bookmark_bar',
       'bookmarks',
       'browser',
@@ -309,8 +309,6 @@
       '-policy_prefs_ui',
       # No Protector on ChromeOS.
       '-protector',
-      # No Web Driver test for ChromeOS.
-      '-about_plugins_ui',
       # You cannot adjust the downloads directory on ChromeOS.
       '-prefs.PrefsTest.testDownloadDirPref',
 
@@ -460,10 +458,10 @@
   'FULL': {
     'all': [
       '@CONTINUOUS',
+      'about_plugins_ui.ChromeAboutPluginsUITest',
       'media.media_basic_playback',
       'nacl_sdk',
       'translate',
-      'about_plugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -577,8 +575,6 @@
       # ===========================
       # No NaCl support on ChromeOS.
       '-nacl_sdk',
-      # No Web Driver test for ChromeOS.
-      '-about_plugins_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

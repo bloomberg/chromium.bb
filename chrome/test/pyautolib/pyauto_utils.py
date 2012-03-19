@@ -176,3 +176,19 @@ def Shard(ilist, shard_index, num_shards):
   else:
     chunk_end = chunk_start + chunk_size
   return ilist[chunk_start:chunk_end]
+
+
+def WaitForDomElement(pyauto, driver, xpath):
+  """Wait for the UI element to appear.
+
+  Args:
+    pyauto: an instance of pyauto.PyUITest.
+    driver: an instance of chrome driver or a web element.
+    xpath: the xpath of the element to wait for.
+
+  Returns:
+    The element if it is found.
+    NoSuchElementException if it is not found.
+  """
+  pyauto.WaitUntil(lambda: len(driver.find_elements_by_xpath(xpath)) > 0)
+  return driver.find_element_by_xpath(xpath)
