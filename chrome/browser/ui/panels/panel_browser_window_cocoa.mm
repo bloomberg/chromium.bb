@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,7 +46,8 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     panel_(panel),
     bounds_(bounds),
     is_shown_(false),
-    has_find_bar_(false) {
+    has_find_bar_(false),
+    activation_requested_by_browser_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
   browser_->tabstrip_model()->AddObserver(this);
 }
@@ -127,6 +129,8 @@ void PanelBrowserWindowCocoa::ClosePanel() {
 void PanelBrowserWindowCocoa::ActivatePanel() {
   if (!is_shown_)
     return;
+
+  AutoReset<bool> pin(&activation_requested_by_browser_, true);
   [BrowserWindowUtils activateWindowForController:controller_];
 }
 

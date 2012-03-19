@@ -6,12 +6,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
+#include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -59,15 +61,61 @@ enum {
 
 #endif  // MAC_OS_X_VERSION_10_6
 
+@interface PanelWindowControllerCocoa (PanelsCanBecomeKey)
+// Internal helper method for extracting the total number of panel windows
+// from the panel manager. Used to decide if panel can become the key window.
+- (int)numPanels;
+@end
+
+@interface PanelWindowCocoaImpl : ChromeBrowserWindow {
+  // Panel windows use a higher priority NSWindowLevel to ensure they are always
+  // visible, causing the OS to prefer panel windows when selecting a window
+  // to make the key window. To counter this preference, we override
+  // -[NSWindow:canBecomeKeyWindow] to restrict when the panel can become the
+  // key window to a limited set of scenarios, such as when cycling through
+  // windows, when panels are the only remaining windows, when an event
+  // triggers window activation, etc. The panel may also be prevented from
+  // becoming the key window, regardless of the above scenarios, such as when
+  // a panel is minimized.
+  BOOL canBecomeKey_;  // Defaults to NO.
+}
+@end
+
 @implementation PanelWindowCocoaImpl
+// The panels cannot be reduced to 3-px windows on the edge of the screen
+// active area (above Dock). Default constraining logic makes at least a height
+// of the titlebar visible, so the user could still grab it. We do 'restore'
+// differently, and minimize panels to 3 px. Hence the need to override the
+// constraining logic.
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen {
   return frameRect;
 }
 
+// Prevent panel window from becoming key - for example when it is minimized.
 - (BOOL)canBecomeKeyWindow {
+  // Give precedence to controller preventing activation of the window.
   PanelWindowControllerCocoa* controller =
-      static_cast<PanelWindowControllerCocoa*>([self delegate]);
-  return [controller canBecomeKeyWindow];
+      base::mac::ObjCCast<PanelWindowControllerCocoa>([self windowController]);
+  if (![controller canBecomeKeyWindow])
+    return false;
+
+  BrowserCrApplication* app = base::mac::ObjCCast<BrowserCrApplication>(
+      [BrowserCrApplication sharedApplication]);
+
+  // A Panel window can become the key window only in limited scenarios.
+  // This prevents the system from always preferring a Panel window due
+  // to its higher priority NSWindowLevel when selecting a window to make key.
+  return canBecomeKey_ ||
+      [controller activationRequestedByBrowser] ||
+      [app isCyclingWindows] ||
+      [app previousKeyWindow] == self ||
+      [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
+}
+
+- (void)sendEvent:(NSEvent*)anEvent {
+  // Allow the panel to become key in response to a mouse click.
+  AutoReset<BOOL> pin(&canBecomeKey_, YES);
+  [super sendEvent:anEvent];
 }
 @end
 
@@ -368,7 +416,7 @@ enum {
     return NO;
   }
 
-  // the tab strip is empty, it's ok to close the window
+  // The tab strip is empty, it's ok to close the window.
   return YES;
 }
 
@@ -653,6 +701,14 @@ enum {
   // keyboard navigation or via main menu, the care should be taken to avoid
   // cases when minimized Panel is getting keyboard input, invisibly.
   return canBecomeKeyWindow_;
+}
+
+- (int)numPanels {
+  return windowShim_->panel()->manager()->num_panels();
+}
+
+- (BOOL)activationRequestedByBrowser {
+  return windowShim_->ActivationRequestedByBrowser();
 }
 
 - (void)updateWindowLevel {

@@ -84,6 +84,12 @@ class PanelBrowserWindowCocoa : public NativePanel,
   // handlers.
   void DidCloseNativeWindow();
 
+  // A Panel window is allowed to become the key window if the activation
+  // request came from the browser.
+  bool ActivationRequestedByBrowser() {
+    return activation_requested_by_browser_;
+  }
+
  private:
   friend class PanelBrowserWindowCocoaTest;
   friend class NativePanelTestingCocoa;
@@ -113,6 +119,12 @@ class PanelBrowserWindowCocoa : public NativePanel,
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
   bool has_find_bar_; // Find bar should only be created once per panel.
+
+  // Allow a panel to become key if activated via browser logic, as opposed
+  // to by default system selection. The system will prefer a panel
+  // window over other application windows due to panels having a higher
+  // priority NSWindowLevel, so we distinguish between the two scenarios.
+  bool activation_requested_by_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
 };

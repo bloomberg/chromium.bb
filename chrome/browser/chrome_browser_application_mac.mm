@@ -4,6 +4,7 @@
 
 #import "chrome/browser/chrome_browser_application_mac.h"
 
+#import "base/auto_reset.h"
 #import "base/logging.h"
 #include "base/mac/crash_logging.h"
 #import "base/mac/scoped_nsexception_enabler.h"
@@ -206,6 +207,14 @@ void SwizzleInit() {
 
 }  // namespace
 
+// These methods are being exposed for the purposes of overriding.
+// Used to determine when a Panel window can become the key window.
+@interface NSApplication (PanelsCanBecomeKey)
+- (void)_cycleWindowsReversed:(BOOL)arg1;
+- (id)_removeWindow:(id)window;
+- (id)_setKeyWindow:(id)window;
+@end
+
 @implementation BrowserCrApplication
 
 + (void)initialize {
@@ -218,7 +227,17 @@ void SwizzleInit() {
   SwizzleInit();
   if ((self = [super init])) {
     eventHooks_.reset([[NSMutableArray alloc] init]);
+    previousKeyWindows_.reset([[NSMutableArray alloc] init]);
   }
+
+  // Sanity check to alert if overridden methods are not supported.
+  DCHECK([NSApplication
+      instancesRespondToSelector:@selector(_cycleWindowsReversed:)]);
+  DCHECK([NSApplication
+      instancesRespondToSelector:@selector(_removeWindow:)]);
+  DCHECK([NSApplication
+      instancesRespondToSelector:@selector(_setKeyWindow:)]);
+
   return self;
 }
 
@@ -488,4 +507,51 @@ void SwizzleInit() {
   return [super accessibilitySetValue:value forAttribute:attribute];
 }
 
+- (void)_cycleWindowsReversed:(BOOL)arg1 {
+  AutoReset<BOOL> pin(&cyclingWindows_, YES);
+  [super _cycleWindowsReversed:arg1];
+}
+
+- (BOOL)isCyclingWindows {
+  return cyclingWindows_;
+}
+
+- (id)_removeWindow:(id)window {
+  [previousKeyWindows_ removeObject:window];
+  id result = [super _removeWindow:window];
+
+  // Ensure app has a key window after a window is removed.
+  // OS wants to make a panel browser window key after closing an app window
+  // because panels use a higher priority window level, but panel windows may
+  // refuse to become key, leaving the app with no key window. The OS does
+  // not seem to consider other windows after the first window chosen refuses
+  // to become key. Force consideration of other windows here.
+  if ([self isActive] && [self keyWindow] == nil) {
+    NSWindow* key =
+        [self makeWindowsPerform:@selector(canBecomeKeyWindow) inOrder:YES];
+    [key makeKeyWindow];
+  }
+
+  // Return result from the super class. It appears to be the app that
+  // owns the removed window (determined via experimentation).
+  return result;
+}
+
+- (id)_setKeyWindow:(id)window {
+  // |window| is nil when the current key window is being closed.
+  // A separate call follows with a new value when a new key window is set.
+  // Closed windows are not tracked in previousKeyWindows_.
+  if (window != nil) {
+    [previousKeyWindows_ removeObject:window];
+    NSWindow* currentKeyWindow = [self keyWindow];
+    if (currentKeyWindow != nil && currentKeyWindow != window)
+      [previousKeyWindows_ addObject:currentKeyWindow];
+  }
+
+  return [super _setKeyWindow:window];
+}
+
+- (id)previousKeyWindow {
+  return [previousKeyWindows_ lastObject];
+}
 @end

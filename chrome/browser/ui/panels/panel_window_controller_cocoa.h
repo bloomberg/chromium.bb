@@ -26,19 +26,6 @@
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
-@interface PanelWindowCocoaImpl : ChromeBrowserWindow {
-}
-// The panels cannot be reduced to 3-px windows on the edge of the screen
-// active area (above Dock). Default constraining logic makes at least a height
-// of the titlebar visible, so the user could still grab it. We do 'restore'
-// differently, and minimize panels to 3 px. Hence the need to override the
-// constraining logic.
-- (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen;
-
-// Prevent panel window from becoming key - for example when it is minimized.
-- (BOOL)canBecomeKeyWindow;
-@end
-
 @interface PanelWindowControllerCocoa : NSWindowController
                                             <NSWindowDelegate,
                                              NSAnimationDelegate,
@@ -142,6 +129,9 @@ class PanelBrowserWindowCocoa;
 // Helper for NSWindow, returns NO for minimized panels in some cases, so they
 // are not un-minimized when another panel is minimized.
 - (BOOL)canBecomeKeyWindow;
+
+// Returns true if browser window requested activation of the window.
+- (BOOL)activationRequestedByBrowser;
 
 // Returns width of titlebar when shown in "icon only" mode.
 - (int)titlebarIconOnlyWidthInScreenCoordinates;

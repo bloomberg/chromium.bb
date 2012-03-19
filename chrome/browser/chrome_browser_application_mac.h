@@ -23,9 +23,14 @@
                                                 CrAppControlProtocol> {
  @private
   BOOL handlingSendEvent_;
+  BOOL cyclingWindows_;
 
   // Array of objects implementing CrApplicationEventHookProtocol.
   scoped_nsobject<NSMutableArray> eventHooks_;
+
+  // App's previous key windows. Most recent key window is last.
+  // Does not include current key window.
+  scoped_nsobject<NSMutableArray> previousKeyWindows_;
 }
 
 // Our implementation of |-terminate:| only attempts to terminate the
@@ -43,6 +48,12 @@
 // context" out of it).
 - (void)addEventHook:(id<CrApplicationEventHookProtocol>)hook;
 - (void)removeEventHook:(id<CrApplicationEventHookProtocol>)hook;
+
+// Keep track of the previous key windows and whether windows are being
+// cycled for use in determining whether a Panel window can become the
+// key window.
+- (id)previousKeyWindow;
+- (BOOL)isCyclingWindows;
 @end
 
 namespace chrome_browser_application_mac {
