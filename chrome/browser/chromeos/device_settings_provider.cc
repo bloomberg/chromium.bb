@@ -55,6 +55,7 @@ const char* kKnownSettings[] = {
   kScreenSaverTimeout,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
+  kStartUpUrls,
   kStatsReportingPref,
 };
 
@@ -289,6 +290,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kReportDeviceBootMode
     //   kScreenSaverExtensionId,
     //   kScreenSaverTimeout,
+    //   kStartUpUrls
 
     NOTREACHED();
   }
@@ -437,6 +439,17 @@ void DeviceSettingsProvider::DecodeKioskPolicies(
       list->Append(entry);
     }
     new_values_cache->SetValue(kAppPack, list);
+  }
+
+  if (policy.has_start_up_urls()) {
+    base::ListValue* list = new base::ListValue();
+    const em::StartUpUrlsProto& urls_proto = policy.start_up_urls();
+    const RepeatedPtrField<std::string>& urls = urls_proto.start_up_urls();
+    for (RepeatedPtrField<std::string>::const_iterator it = urls.begin();
+         it != urls.end(); ++it) {
+      list->Append(base::Value::CreateStringValue(*it));
+    }
+    new_values_cache->SetValue(kStartUpUrls, list);
   }
 }
 

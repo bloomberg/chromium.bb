@@ -64,4 +64,8 @@ const char kScreenSaverTimeout[] = "cros.screen_saver.timeout";
 const char kIdleLogoutTimeout[] = "cros.idle_logout.timeout";
 const char kIdleLogoutWarningDuration[] = "cros.idle_logout.warning_duration";
 
+// Defines the set of URLs to be opened on login to the anonymous account used
+// if the device is in KIOSK mode.
+const char kStartUpUrls[] = "cros.start_up_urls";
+
 }  // namespace chromeos

@@ -711,33 +711,46 @@ void ExistingUserController::InitializeStartUrls() const {
   const std::string current_locale =
       StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
   std::string start_url;
-  if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
-    const char* url = kChromeVoxTutorialURLPattern;
-    start_url = base::StringPrintf(url, current_locale.c_str());
+  const base::ListValue *urls;
+  if (UserManager::Get()->IsLoggedInAsDemoUser() &&
+      CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
+    // the demo user will get its start urls from the special policy if it is
+    // set.
+    for (base::ListValue::const_iterator it = urls->begin();
+         it != urls->end(); ++it) {
+      std::string url;
+      if ((*it)->GetAsString(&url))
+        start_urls.push_back(url);
+    }
   } else {
-    const char* url = kGetStartedURLPattern;
-    start_url = base::StringPrintf(url, current_locale.c_str());
-    std::string params_str;
+    if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
+      const char* url = kChromeVoxTutorialURLPattern;
+      start_url = base::StringPrintf(url, current_locale.c_str());
+    } else {
+      const char* url = kGetStartedURLPattern;
+      start_url = base::StringPrintf(url, current_locale.c_str());
+      std::string params_str;
 #if 0
-    const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
-    std::string board;
-    system::StatisticsProvider* provider =
-        system::StatisticsProvider::GetInstance();
-    if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
-      LOG(ERROR) << "Failed to get board information";
-    if (!board.empty()) {
-      params_str.append(base::StringPrintf(kGetStartedBoardParam,
-                                           board.c_str()));
-    }
+      const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+      std::string board;
+      system::StatisticsProvider* provider =
+          system::StatisticsProvider::GetInstance();
+      if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+        LOG(ERROR) << "Failed to get board information";
+      if (!board.empty()) {
+        params_str.append(base::StringPrintf(kGetStartedBoardParam,
+                                             board.c_str()));
+      }
 #endif
-    if (is_owner_login_)
-      params_str.append(kGetStartedOwnerParam);
-    if (!params_str.empty()) {
-      params_str.insert(0, kGetStartedParamsStartMark);
-      start_url.append(params_str);
+      if (is_owner_login_)
+        params_str.append(kGetStartedOwnerParam);
+      if (!params_str.empty()) {
+        params_str.insert(0, kGetStartedParamsStartMark);
+        start_url.append(params_str);
+      }
     }
+    start_urls.push_back(start_url);
   }
-  start_urls.push_back(start_url);
 
   ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();

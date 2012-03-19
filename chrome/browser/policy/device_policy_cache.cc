@@ -570,6 +570,23 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     Value::CreateBooleanValue(container.update_disabled()));
     }
   }
+
+  if (policy.has_start_up_urls()) {
+    const em::StartUpUrlsProto& container(policy.start_up_urls());
+    if (container.start_up_urls_size()) {
+      ListValue* urls = new ListValue();
+      RepeatedPtrField<std::string>::const_iterator entry;
+      for (entry = container.start_up_urls().begin();
+           entry != container.start_up_urls().end();
+           ++entry) {
+        urls->Append(Value::CreateStringValue(*entry));
+      }
+      policies->Set(key::kDeviceStartUpUrls,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    urls);
+    }
+  }
 }
 
 // static

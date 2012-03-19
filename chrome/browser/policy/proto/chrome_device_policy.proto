@@ -160,6 +160,12 @@ message AutoUpdateSettingsProto {
   optional string target_version_prefix = 2;
 }
 
+message StartUpUrlsProto {
+  // Specifies the URLs to be loaded on login to the anonymous account used if
+  // the device is in KIOSK mode.
+  repeated string start_up_urls = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -178,4 +184,5 @@ message ChromeDeviceSettingsProto {
   optional ForcedLogoutTimeoutsProto forced_logout_timeouts = 15;
   optional ScreenSaverProto login_screen_saver = 16;
   optional AutoUpdateSettingsProto auto_update_settings = 17;
+  optional StartUpUrlsProto start_up_urls = 18;
 }

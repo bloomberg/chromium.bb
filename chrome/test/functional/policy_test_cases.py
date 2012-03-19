@@ -192,6 +192,7 @@ class PolicyPrefsTestCases(object):
     'DeviceIdleLogoutWarningDuration': (15000, [], []),
     'DeviceLoginScreenSaverId': ('lcncmkcnkcdbbanbjakcencbaoegdjlp', [], []),
     'DeviceLoginScreenSaverTimeout': (30000, [], []),
+    'DeviceStartUpUrls': ([ 'http://google.com' ], [], []),
     'DeviceAppPack': ([], [], []),
     'DeviceAutoUpdateDisabled': (True, [], []),
 

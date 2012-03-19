@@ -41,6 +41,8 @@ extern const char kScreenSaverTimeout[];
 extern const char kIdleLogoutTimeout[];
 extern const char kIdleLogoutWarningDuration[];
 
+extern const char kStartUpUrls[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_
