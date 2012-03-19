@@ -95,6 +95,7 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 
 void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
   switch (window->GetProperty(aura::client::kShowStateKey)) {
+    case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL: {
       const gfx::Rect* restore = GetRestoreBounds(window);
       if (restore)

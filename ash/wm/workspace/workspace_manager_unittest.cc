@@ -370,8 +370,10 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   EXPECT_EQ(GetFullscreenBounds(w1.get()).width(), w1->bounds().width());
   EXPECT_EQ(GetFullscreenBounds(w1.get()).height(), w1->bounds().height());
 
-  // Restore the window.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  // Restore the window. Use SHOW_STATE_DEFAULT as that is what we'll end up
+  // with when using views::Widget.
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
+  EXPECT_EQ("0,0 250x251", w1->bounds().ToString());
 
   // Should be 1 workspace, TYPE_NORMAL with w1.
   ASSERT_EQ(1u, workspaces().size());
