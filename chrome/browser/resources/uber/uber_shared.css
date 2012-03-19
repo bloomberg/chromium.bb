@@ -36,7 +36,9 @@ body.uber-frame header {
   position: fixed;
   right: 0;
   top: 0;
-  z-index: 2;
+  /* list.css sets a z-index of up to 2, this is set to 3 to ensure that the
+   * header is in front of the selected list item. */
+  z-index: 3;
 }
 
 html[dir='rtl'] body.uber-frame header {
