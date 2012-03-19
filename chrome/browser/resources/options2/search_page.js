@@ -322,7 +322,8 @@ cr.define('options', function() {
         page = pagesToSearch[key];
         var elements = page.pageDiv.querySelectorAll('section');
         for (var i = 0, node; node = elements[i]; i++) {
-          node.classList.add('search-hidden');
+          if (!node.hidden)
+            node.classList.add('search-hidden');
         }
       }
 
@@ -335,9 +336,11 @@ cr.define('options', function() {
           var elements =
               page.pageDiv.querySelectorAll('section');
           for (var i = 0, node; node = elements[i]; i++) {
-            if (this.performReplace_(regEx, replaceString, node)) {
-              node.classList.remove('search-hidden');
-              foundMatches = true;
+            if (!node.hidden) {
+              if (this.performReplace_(regEx, replaceString, node)) {
+                node.classList.remove('search-hidden');
+                foundMatches = true;
+              }
             }
           }
         }

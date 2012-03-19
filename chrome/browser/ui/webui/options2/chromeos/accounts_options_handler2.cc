@@ -90,9 +90,6 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->IsCurrentUserOwner() ?
       ASCIIToUTF16("true") : ASCIIToUTF16("false"));
-  localized_strings->SetString("logged_in_as_guest",
-      UserManager::Get()->IsLoggedInAsGuest() ?
-      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
   localized_strings->SetString("whitelist_is_managed",
       g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
           ASCIIToUTF16("true") : ASCIIToUTF16("false"));

@@ -32,6 +32,10 @@ class CoreChromeOSOptionsHandler : public ::options2::CoreOptionsHandler {
                        const std::string& metric) OVERRIDE;
   virtual void StopObservingPref(const std::string& path) OVERRIDE;
 
+  // OptionsPageUIHandler implementation.
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

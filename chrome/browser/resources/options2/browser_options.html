@@ -108,13 +108,13 @@
       <button id="themes-reset" i18n-content="themesReset"></button>
 </if>
     </div>
-    <div class="checkbox"><label>
+    <div class="checkbox" guest-visibility="disabled"><label>
       <input id="show-home-button" type="checkbox"
           pref="browser.show_home_button" metric="Options_Homepage_HomeButton">
       <span i18n-content="homePageShowHomeButton"></span>
     </label></div>
     <div id="change-home-page-section" hidden>
-      <div id="change-home-page-section-container">
+      <div id="change-home-page-section-container" guest-visibility="disabled">
         <span id="home-page-ntp" class="home-page-label"
             i18n-content="homePageNtp"></span>
         <span id="home-page-url" class="home-page-label"></span>
@@ -122,7 +122,7 @@
             i18n-content="changeHomePage"></button>
       </div>
     </div>
-    <div class="checkbox"><label>
+    <div class="checkbox" guest-visibility="disabled"><label>
         <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
             metric="Options_ShowBookmarksBar">
         <span i18n-content="toolbarShowBookmarksBar"></span>
@@ -169,7 +169,7 @@
               i18n-content="defaultSearchManageEngines">
           </button>
         </div>
-        <div class="checkbox">
+        <div class="checkbox" guest-visibility="disabled">
           <label id="instant-label">
             <!-- TODO(estade): metric? -->
             <input id="instant-field-trial-control" type="checkbox"
@@ -183,7 +183,7 @@
         </div>
       </div>
   </section>
-  <section>
+  <section guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="pp_ifdef('chromeos')">
     <div id="sync-section">
@@ -265,10 +265,14 @@
   <section>
     <h3 i18n-content="datetimeTitle"></h3>
     <div class="option-control-table">
-      <span class="option-name" i18n-content="timezone"></span>
-      <div id="timezone-value">
-        <select id="timezone-select" class="control" i18n-options="timezoneList"
-            data-type="string" pref="cros.system.timezone"></select>
+      <div guest-visibility="disabled">
+        <span class="option-name" i18n-content="timezone"></span>
+        <div id="timezone-value">
+          <select id="timezone-select" class="control"
+              i18n-options="timezoneList" data-type="string"
+              pref="cros.system.timezone">
+          </select>
+        </div>
       </div>
       <div class="checkbox">
         <label>
@@ -307,14 +311,14 @@
           <span i18n-content="linkDoctorPref"></span>
         </label>
       </div>
-      <div class="checkbox">
+      <div class="checkbox" guest-visibility="disabled">
         <label>
           <input id="searchSuggestEnabled" pref="search.suggest_enabled"
               metric="Options_UseSuggestCheckbox" type="checkbox">
           <span i18n-content="suggestPref"></span>
         </label>
       </div>
-      <div class="checkbox">
+      <div class="checkbox" guest-visibility="disabled">
         <label>
           <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
               metric="Options_DnsPrefetchCheckbox" type="checkbox">
@@ -554,7 +558,7 @@
 <if expr="pp_ifdef('chromeos')">
   <!-- This section is duplicated here for ChromeOS. This must stay in sync
        with the section above. -->
-  <section id="startup-section">
+  <section id="startup-section" guest-visibility="hidden">
     <h3 i18n-content="sectionTitleStartup"></h3>
     <div>
       <div class="radio">

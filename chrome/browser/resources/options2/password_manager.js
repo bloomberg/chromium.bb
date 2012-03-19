@@ -71,7 +71,7 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     canShowPage: function() {
-      return !BrowserOptions.guestModeActive();
+      return !(cr.isChromeOS && AccountsOptions.loggedInAsGuest());
     },
 
     /** @inheritDoc */

@@ -77,6 +77,9 @@ cr.define('options', function() {
             self.updateAdvancedSettingsExpander_();
       });
 
+      if (cr.isChromeOS)
+        AccountsOptions.applyGuestModeVisibility(document);
+
       // Sync (Sign in) section.
       this.updateSyncState_(templateData.syncData);
 
@@ -224,23 +227,17 @@ cr.define('options', function() {
       };
 
       if (cr.isChromeOS) {
+        if (!AccountsOptions.loggedInAsGuest()) {
+          $('account-picture-wrapper').onclick = function(event) {
+            OptionsPage.navigateToPage('changePicture');
+          };
+        }
+
         // Username (canonical email) of the currently logged in user or
         // |kGuestUser| if a guest session is active.
         this.username_ = localStrings.getString('username');
 
         this.updateAccountPicture_();
-
-        if (cr.commandLine && cr.commandLine.options['--bwsi']) {
-          // Disable the screen lock checkbox in guest mode.
-          $('enable-screen-lock').disabled = true;
-
-          // Hide the startup section in Guest mode.
-          $('startup-section').hidden = true;
-        } else {
-          $('account-picture-wrapper').onclick = function(event) {
-            OptionsPage.navigateToPage('changePicture');
-          };
-        }
 
         $('manage-accounts-button').onclick = function(event) {
           OptionsPage.navigateToPage('accounts');
@@ -267,13 +264,6 @@ cr.define('options', function() {
         };
 
         $('auto-launch').onclick = this.handleAutoLaunchChanged_;
-      }
-
-      // Date and time section (CrOS only).
-      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
-        // Disable time-related settings if we're not logged in as a real user.
-        $('timezone-select').disabled = true;
-        $('use-24hour-clock').disabled = true;
       }
 
       // Privacy section.
@@ -342,7 +332,7 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
       };
-      if (this.guestModeActive_()) {
+      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
         // Disable and turn off Autofill in guest mode.
         var autofillEnabled = $('autofill-enabled');
         autofillEnabled.disabled = true;
@@ -356,10 +346,6 @@ cr.define('options', function() {
         passwordManagerEnabled.checked = false;
         cr.dispatchSimpleEvent(passwordManagerEnabled, 'change');
         $('manage-passwords').disabled = true;
-
-        // Hide the entire section on ChromeOS
-        if (cr.isChromeOS)
-          $('passwords-and-autofill-section').hidden = true;
       }
 
       if (cr.isMac)
@@ -968,16 +954,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns whether the browser in guest mode. Some features are disabled or
-     * hidden in guest mode.
-     * @return {boolean} True if guest mode is currently active.
-     * @private
-     */
-    guestModeActive_: function() {
-      return cr.commandLine && cr.commandLine.options['--bwsi'];
-    },
-
-    /**
      * Set the font size selected item.
      * @private
      */
@@ -1235,7 +1211,6 @@ cr.define('options', function() {
   [
     'addBluetoothDevice',
     'getStartStopSyncButton',
-    'guestModeActive',
     'hideBluetoothSettings',
     'removeCloudPrintConnectorSection',
     'removeBluetoothDevice',

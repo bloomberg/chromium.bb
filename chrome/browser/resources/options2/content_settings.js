@@ -71,6 +71,9 @@ cr.define('options', function() {
         };
       }
 
+      if (cr.isChromeOS)
+        AccountsOptions.applyGuestModeVisibility(document);
+
       // Cookies filter page ---------------------------------------------------
       $('show-cookies-button').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -210,6 +211,17 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     CrosSettings::Get()->RemoveSettingsObserver(path.c_str(), this);
   else  // Call base class to handle regular preferences.
     ::options2::CoreOptionsHandler::StopObservingPref(path);
+}
+
+void CoreChromeOSOptionsHandler::GetLocalizedValues(
+    DictionaryValue* localized_strings) {
+  DCHECK(localized_strings);
+  CoreOptionsHandler::GetLocalizedValues(localized_strings);
+
+  localized_strings->SetString(
+      "loggedInAsGuest",
+      chromeos::UserManager::Get()->IsLoggedInAsGuest() ?
+          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
 void CoreChromeOSOptionsHandler::Observe(
