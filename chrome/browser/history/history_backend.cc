@@ -26,6 +26,7 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/visit_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -1411,6 +1412,117 @@ void HistoryBackend::QueryMostVisitedURLs(
   MostVisitedURLList* result = &request->value;
   QueryMostVisitedURLsImpl(result_count, days_back, result);
   request->ForwardResult(request->handle(), *result);
+}
+
+void HistoryBackend::QueryFilteredURLs(
+      scoped_refptr<QueryMostVisitedURLsRequest> request,
+      int result_count,
+      const history::VisitFilter& filter)  {
+  if (request->canceled())
+    return;
+
+  if (!db_.get()) {
+    // No History Database - return an empty list.
+    request->ForwardResult(request->handle(), MostVisitedURLList());
+    return;
+  }
+
+  VisitVector visits;
+  db_->GetVisibleVisitsDuringTimes(filter, 0, &visits);
+
+  std::map<VisitID, std::pair<VisitID, URLID> > segment_ids;
+  for (size_t i = 0; i < visits.size(); ++i) {
+    segment_ids[visits[i].visit_id] =
+        std::make_pair(visits[i].referring_visit, visits[i].segment_id);
+  }
+
+  std::map<URLID, double> score_map;
+  const double kLn2 = 0.6931471805599453;
+  base::Time now = base::Time::Now();
+  for (size_t i = 0; i < visits.size(); ++i) {
+    URLID segment_id = visits[i].segment_id;
+    for (VisitID visit_id = visits[i].visit_id; !segment_id && visit_id;) {
+      std::map<VisitID, std::pair<VisitID, URLID> >::iterator vi =
+          segment_ids.find(visit_id);
+      if (vi == segment_ids.end()) {
+        VisitRow visit_row;
+        if (!db_->GetRowForVisit(visit_id, &visit_row))
+          break;
+        segment_ids[visit_id] =
+            std::make_pair(visit_row.referring_visit, visit_row.segment_id);
+        segment_id = visit_row.segment_id;
+        visit_id = visit_row.referring_visit;
+      } else {
+        visit_id = vi->second.first;
+        segment_id = vi->second.second;
+      }
+    }
+    if (!segment_id)
+      continue;
+    double score = 0.0;
+    switch (filter.sorting_order()) {
+      case VisitFilter::ORDER_BY_RECENCY: {
+        // Decay score by half each week.
+        base::TimeDelta time_passed = now - visits[i].visit_time;
+        // Clamp to 0 in case time jumps backwards (e.g. due to DST).
+        double decay_exponent = std::max(0.0, kLn2 * static_cast<double>(
+            time_passed.InMicroseconds()) / base::Time::kMicrosecondsPerWeek);
+        score = 1.0 / exp(decay_exponent);
+      } break;
+      case VisitFilter::ORDER_BY_VISIT_COUNT:
+        score = 1.0;  // Every visit counts the same.
+        break;
+      case VisitFilter::ORDER_BY_DURATION_SPENT:
+        NOTREACHED() << "Not implemented!";
+        break;
+    }
+
+    std::map<URLID, double>::iterator it = score_map.find(visits[i].segment_id);
+    if (it == score_map.end())
+      score_map[visits[i].segment_id] = score;
+    else
+      it->second += score;
+  }
+
+  // TODO(georgey): experiment with visit_segment database granularity (it is
+  // currently 24 hours) to use it directly instead of using visits database,
+  // which is considerably slower.
+  ScopedVector<PageUsageData> data;
+  data->reserve(score_map.size());
+  for (std::map<URLID, double>::iterator it = score_map.begin();
+       it != score_map.end(); ++it) {
+    PageUsageData* pud = new PageUsageData(it->first);
+    pud->SetScore(it->second);
+    data->push_back(pud);
+  }
+
+  // Limit to the top |result_count| results.
+  std::sort(data.begin(), data.end(), PageUsageData::Predicate);
+  if (result_count && static_cast<int>(data.size()) > result_count) {
+    STLDeleteContainerPointers(data.begin() + result_count, data.end());
+    data.resize(result_count);
+  }
+
+  // Get URL data.
+  for (size_t i = 0; i < data.size(); ++i) {
+    URLID url_id = db_->GetSegmentRepresentationURL(data[i]->GetID());
+    URLRow info;
+    if (db_->GetURLRow(url_id, &info)) {
+      data[i]->SetURL(info.url());
+      data[i]->SetTitle(info.title());
+    }
+  }
+
+  MostVisitedURLList& result = request->value;
+  for (size_t i = 0; i < data.size(); ++i) {
+    PageUsageData* current_data = data[i];
+    RedirectList redirects;
+    GetMostRecentRedirectsFrom(current_data->GetURL(), &redirects);
+    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
+    result.push_back(url);
+  }
+
+  request->ForwardResult(request->handle(), result);
 }
 
 void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,

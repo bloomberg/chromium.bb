@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -105,11 +106,16 @@ void SuggestionsHandler::SendPagesValue() {
 }
 
 void SuggestionsHandler::StartQueryForSuggestions() {
-  // TODO(georgey) change it to provide our data.
-  history::TopSites* top_sites = Profile::FromWebUI(web_ui())->GetTopSites();
-  if (top_sites) {
-    top_sites->GetMostVisitedURLs(
-        &topsites_consumer_,
+  HistoryService* history =
+      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  // |history| may be null during unit tests.
+  if (history) {
+    history::VisitFilter time_filter;
+    base::TimeDelta half_an_hour =
+       base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerHour / 2);
+    base::Time now = base::Time::Now();
+    time_filter.SetTimeInRangeFilter(now - half_an_hour, now + half_an_hour);
+    history->QueryFilteredURLs(0, time_filter, &history_consumer_,
         base::Bind(&SuggestionsHandler::OnSuggestionsURLsAvailable,
                    base::Unretained(this)));
   }
@@ -131,11 +137,9 @@ void SuggestionsHandler::HandleClearBlacklist(const ListValue* args) {
 
 void SuggestionsHandler::SetPagesValueFromTopSites(
     const history::MostVisitedURLList& data) {
-  // TODO(georgey) - change to our suggestions pages - right now as a test
-  // returns top 20 sites in reverse order.
   pages_value_.reset(new ListValue());
   for (size_t i = 0; i < data.size(); i++) {
-    const history::MostVisitedURL& suggested_url = data[data.size() - i - 1];
+    const history::MostVisitedURL& suggested_url = data[i];
     if (suggested_url.url.is_empty())
       continue;
 
@@ -148,7 +152,8 @@ void SuggestionsHandler::SetPagesValueFromTopSites(
 }
 
 void SuggestionsHandler::OnSuggestionsURLsAvailable(
-    const history::MostVisitedURLList& data) {
+    CancelableRequestProvider::Handle handle,
+    history::MostVisitedURLList data) {
   SetPagesValueFromTopSites(data);
   if (got_first_suggestions_request_)
     SendPagesValue();
