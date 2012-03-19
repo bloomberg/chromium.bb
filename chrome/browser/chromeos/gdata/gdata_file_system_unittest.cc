@@ -352,6 +352,7 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_file_ = expected_file;
 
+    base::AutoLock lock(file_system_->lock_);
     file_system_->GetCacheState(res_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
                    base::Unretained(this)));
