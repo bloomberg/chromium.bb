@@ -1561,7 +1561,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                             master_prefs_->dont_import_items,
                             master_prefs_->make_chrome_default,
                             process_singleton_.get());
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
       // On Windows, the download is tagged with enable/disable stats so there
       // is no need for this code.
 
@@ -1569,7 +1569,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // the pref.
       if (GoogleUpdateSettings::GetCollectStatsConsent())
         local_state_->SetBoolean(prefs::kMetricsReportingEnabled, true);
-#endif  // OS_POSIX
+#endif  // OS_POSIX && !OS_CHROMEOS
     }  // if (!first_run_ui_bypass_)
 
     Browser::SetNewHomePagePrefs(profile_->GetPrefs());
