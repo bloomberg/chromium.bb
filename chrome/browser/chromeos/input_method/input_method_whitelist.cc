@@ -6,18 +6,18 @@
 
 #include <vector>
 
-#include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
+#include "chrome/browser/chromeos/input_method/input_methods.h"
 
 namespace chromeos {
 namespace input_method {
 
 InputMethodWhitelist::InputMethodWhitelist() {
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    supported_input_methods_.insert(kIBusEngines[i].input_method_id);
+  for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+    supported_input_methods_.insert(kInputMethods[i].input_method_id);
   }
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    supported_layouts_.insert(kIBusEngines[i].xkb_layout_id);
+  for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+    supported_layouts_.insert(kInputMethods[i].xkb_layout_id);
   }
 }
 
@@ -36,14 +36,14 @@ bool InputMethodWhitelist::XkbLayoutIsSupported(
 
 InputMethodDescriptors* InputMethodWhitelist::GetSupportedInputMethods() const {
   InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-  input_methods->reserve(arraysize(kIBusEngines));
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
+  input_methods->reserve(arraysize(kInputMethods));
+  for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
     input_methods->push_back(InputMethodDescriptor(
         *this,
-        kIBusEngines[i].input_method_id,
+        kInputMethods[i].input_method_id,
         "",
-        kIBusEngines[i].xkb_layout_id,
-        kIBusEngines[i].language_code));
+        kInputMethods[i].xkb_layout_id,
+        kInputMethods[i].language_code));
   }
   return input_methods;
 }

@@ -6,7 +6,6 @@
   'variables': {
     'input_method_out_dir':
       '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/chromeos/input_method',
-    'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
   },
   'targets': [
     {
@@ -15,20 +14,20 @@
       'actions': [
         {
           'inputs': [
-            'ibus_input_methods.txt',
-            'gen_ibus_input_methods.py',
+            'input_methods.txt',
+            'gen_input_methods.py',
           ],
           'outputs': [
-            '<(input_method_out_dir)/ibus_input_methods.h',
+            '<(input_method_out_dir)/input_methods.h',
           ],
-          'action_name': 'gen_ibus_input_methods',
+          'action_name': 'gen_input_methods',
           'action': [
             'python',
-            'gen_ibus_input_methods.py',
-            'ibus_input_methods.txt',
-            '<(input_method_out_dir)/ibus_input_methods.h',
+            'gen_input_methods.py',
+            'input_methods.txt',
+            '<(input_method_out_dir)/input_methods.h',
           ],
-          'message': 'Generating ibus_input_methods.h',
+          'message': 'Generating input_methods.h',
         },
       ],
       'direct_dependent_settings': {
