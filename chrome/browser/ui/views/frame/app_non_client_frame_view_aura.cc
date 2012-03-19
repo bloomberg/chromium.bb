@@ -140,6 +140,7 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
       control_widget_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           mouse_watcher_(new Host(this), this)) {
+  set_background(views::Background::CreateSolidBackground(SK_ColorBLACK));
 }
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
