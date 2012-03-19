@@ -548,6 +548,8 @@
         'browser/chromeos/gdata/gdata_params.h',
         'browser/chromeos/gdata/gdata_parser.cc',
         'browser/chromeos/gdata/gdata_parser.h',
+        'browser/chromeos/gdata/gdata_sync_client.cc',
+        'browser/chromeos/gdata/gdata_sync_client.h',
         'browser/chromeos/gdata/gdata_uploader.cc',
         'browser/chromeos/gdata/gdata_uploader.h',
         'browser/chromeos/gdata/gdata_upload_file_info.cc',

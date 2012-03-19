@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -410,7 +411,7 @@ void DeleteStaleCacheVersionsWithCallback(
 }
 
 // Task posted from Pin and Unpin to modify cache status on the IO thread pool.
-// Upon completion, OnCacheStatusModified (i.e. |modification_callback| is
+// Upon completion, OnFilePinned/OnFileUnpinned (i.e. |modification_callback| is
 // invoked on the same thread where Pin/Unpin was called.
 void ModifyCacheStatusOnIOThreadPool(const ModifyCacheStatusParams& params) {
   // Set or clear bits specified in |flags|.
@@ -515,7 +516,8 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       on_cache_initialized_(new base::WaitableEvent(
           true /* manual reset*/, false /* initially not signaled*/)),
       cache_initialization_started_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      sync_client_(new GDataSyncClient(ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
   documents_service_->Initialize(profile_);
 
   // download_manager will be NULL for unit tests.
@@ -565,6 +567,14 @@ GDataFileSystem::~GDataFileSystem() {
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset(NULL);
+}
+
+void GDataFileSystem::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void GDataFileSystem::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void GDataFileSystem::Shutdown() {
@@ -2003,7 +2013,7 @@ void GDataFileSystem::Pin(const std::string& resource_id,
                      GDataRootDirectory::CACHE_PINNED,
                      true,
                      GetCacheFilePath(resource_id, md5),
-                     base::Bind(&GDataFileSystem::OnCacheStatusModified,
+                     base::Bind(&GDataFileSystem::OnFilePinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
 }
@@ -2024,7 +2034,7 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                      GDataRootDirectory::CACHE_PINNED,
                      false,
                      GetCacheFilePath(resource_id, md5),
-                     base::Bind(&GDataFileSystem::OnCacheStatusModified,
+                     base::Bind(&GDataFileSystem::OnFileUnpinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
 }
@@ -2122,6 +2132,23 @@ void GDataFileSystem::OnRemovedFromCache(base::PlatformFileError error,
                                          const std::string& resource_id,
                                          const std::string& md5) {
   DVLOG(1) << "OnRemovedFromCache: " << error;
+}
+
+void GDataFileSystem::OnFilePinned(base::PlatformFileError error,
+                                   const std::string& resource_id,
+                                   const std::string& md5,
+                                   mode_t mode_bits,
+                                   const CacheOperationCallback& callback) {
+  OnCacheStatusModified(error, resource_id, md5, mode_bits, callback);
+  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
+}
+
+void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
+                                     const std::string& resource_id,
+                                     const std::string& md5,
+                                     mode_t mode_bits,
+                                     const CacheOperationCallback& callback) {
+  OnCacheStatusModified(error, resource_id, md5, mode_bits, callback);
 }
 
 void GDataFileSystem::OnCacheStatusModified(

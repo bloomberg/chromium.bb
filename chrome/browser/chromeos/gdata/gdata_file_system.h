@@ -34,6 +34,7 @@ namespace gdata {
 
 class DocumentsServiceInterface;
 class GDataDownloadObserver;
+class GDataSyncClient;
 
 // Callback for completion of cache operation.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -112,6 +113,22 @@ class ReadOnlyFindFileDelegate : public FindFileDelegate {
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
 class GDataFileSystem : public ProfileKeyedService {
  public:
+  // Used to notify events on the file system.
+  class Observer {
+   public:
+    // Trigerred when a file has been pinned, after the cache state is
+    // updated.
+    virtual void OnFilePinned(const std::string& resource_id,
+                              const std::string& md5) {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  // Adds and removes the observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -633,8 +650,23 @@ class GDataFileSystem : public ProfileKeyedService {
                           const std::string& resource_id,
                           const std::string& md5);
 
-  // Callback for any method that needs to modify cache status, e.g. Pin and
-  // Unpin.
+  // Callback for Pin. Calls OnCacheStatusModified() and notifies the
+  // observers.
+  void OnFilePinned(base::PlatformFileError error,
+                    const std::string& resource_id,
+                    const std::string& md5,
+                    mode_t mode_bits,
+                    const CacheOperationCallback& callback);
+
+  // Callback for Unpin. Calls OnCacheStatusModified() and notifies the
+  // observers.
+  void OnFileUnpinned(base::PlatformFileError error,
+                      const std::string& resource_id,
+                      const std::string& md5,
+                      mode_t mode_bits,
+                      const CacheOperationCallback& callback);
+
+  // Helper function for OnFilePinned() and OnFileUnpinned().
   void OnCacheStatusModified(base::PlatformFileError error,
                              const std::string& resource_id,
                              const std::string& md5,
@@ -680,6 +712,9 @@ class GDataFileSystem : public ProfileKeyedService {
   bool cache_initialization_started_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
+
+  ObserverList<Observer> observers_;
+  scoped_ptr<GDataSyncClient> sync_client_;
 };
 
 // Singleton that owns all GDataFileSystems and associates them with
