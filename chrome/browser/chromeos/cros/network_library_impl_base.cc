@@ -1116,7 +1116,19 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     if (!profile_path.empty())
       dict.SetString(flimflam::kProfileProperty, profile_path);
 
-    CallConfigureService(network->unique_id(), &dict);
+    // For ethernet networks, apply them to the current ethernet service.
+    if (network->type() == TYPE_ETHERNET) {
+      const EthernetNetwork* ethernet = ethernet_network();
+      if (ethernet) {
+        CallConfigureService(ethernet->unique_id(), &dict);
+      } else {
+        DLOG(WARNING) << "Tried to import ONC with an ethernet network when "
+                      << "there is no active ethernet connection.";
+      }
+    } else {
+      CallConfigureService(network->unique_id(), &dict);
+    }
+
     network_ids.insert(network->unique_id());
   }
 
