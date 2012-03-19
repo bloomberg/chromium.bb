@@ -403,7 +403,7 @@ class MigrationReconfigureTest : public MigrationTwoClientTest {
   DISALLOW_COPY_AND_ASSIGN(MigrationReconfigureTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, DISABLED_SetSyncTabs) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -431,7 +431,8 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest,
+                       DISABLED_SetSyncTabsAndMigrate) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
