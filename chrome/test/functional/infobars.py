@@ -72,17 +72,18 @@ class InfobarTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('dismiss', infobar_index=0)
     self.assertFalse(self._GetTabInfo()['infobars'])
 
-  def _VerifyGeolocationInfobar(self, match_text, windex, tab_index):
-    """Verify geolocation infobar and match given text.
+  def _VerifyGeolocationInfobar(self, windex, tab_index):
+    """Verify geolocation infobar properties.
 
     Assumes that geolocation infobar is showing up in the given tab in the
     given window.
     """
+    # TODO(dyu): Remove this helper function when a function to identify
+    # infobar_type and index of the type is implemented.
     tab_info = self._GetTabInfo(windex, tab_index)
     geolocation_infobar = tab_info['infobars']
     self.assertTrue(geolocation_infobar)
     self.assertEqual(1, len(geolocation_infobar))
-    self.assertEqual(match_text, geolocation_infobar[0]['text'])
     self.assertEqual('Learn more', geolocation_infobar[0]['link_text'])
     self.assertEqual(2, len(geolocation_infobar[0]['buttons']))
     self.assertEqual('Allow', geolocation_infobar[0]['buttons'][0])
@@ -90,12 +91,10 @@ class InfobarTest(pyauto.PyUITest):
 
   def testGeolocationInfobar(self):
     """Verify geoLocation infobar."""
-    url = self.GetFileURLForDataPath(  # triggers geolocation
-        'geolocation', 'geolocation_on_load.html')
-    match_text='file:/// wants to track your physical location.'
+    url = self.GetHttpURLForDataPath('geolocation', 'geolocation_on_load.html')
     self.NavigateToURL(url)
     self.assertTrue(self.WaitForInfobarCount(1))
-    self._VerifyGeolocationInfobar(windex=0, tab_index=0, match_text=match_text)
+    self._VerifyGeolocationInfobar(windex=0, tab_index=0)
     # Accept, and verify that the infobar went away
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.assertFalse(self._GetTabInfo()['infobars'])
@@ -104,23 +103,21 @@ class InfobarTest(pyauto.PyUITest):
     """Verify GeoLocation inforbar in multiple tabs."""
     url = self.GetFileURLForDataPath(  # triggers geolocation
         'geolocation', 'geolocation_on_load.html')
-    match_text='file:/// wants to track your physical location.'
     for tab_index in range(1, 2):
       self.AppendTab(pyauto.GURL(url))
       self.assertTrue(
           self.WaitForInfobarCount(1, windex=0, tab_index=tab_index))
-      self._VerifyGeolocationInfobar(windex=0, tab_index=tab_index,
-                                     match_text=match_text)
+      self._VerifyGeolocationInfobar(windex=0, tab_index=tab_index)
     # Try in a new window
     self.OpenNewBrowserWindow(True)
     self.NavigateToURL(url, 1, 0)
     self.assertTrue(self.WaitForInfobarCount(1, windex=1, tab_index=0))
-    self._VerifyGeolocationInfobar(windex=1, tab_index=0, match_text=match_text)
+    self._VerifyGeolocationInfobar(windex=1, tab_index=0)
     # Incognito window
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 2, 0)
     self.assertTrue(self.WaitForInfobarCount(1, windex=2, tab_index=0))
-    self._VerifyGeolocationInfobar(windex=2, tab_index=0, match_text=match_text)
+    self._VerifyGeolocationInfobar(windex=2, tab_index=0)
 
   def testMultipleDownloadsInfobar(self):
     """Verify the mutiple downloads infobar."""
