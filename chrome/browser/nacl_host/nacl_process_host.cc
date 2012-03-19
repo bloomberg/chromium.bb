@@ -279,7 +279,13 @@ NaClProcessHost::~NaClProcessHost() {
   }
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
-    NaClBrokerService::GetInstance()->OnLoaderDied();
+    // If the nacl-gdb switch is not empty, the NaCl loader has been launched
+    // without the broker and so we shouldn't inform the broker about
+    // the loader termination.
+    if (CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kNaClGdb).empty()) {
+      NaClBrokerService::GetInstance()->OnLoaderDied();
+    }
   } else {
     debug_context_->SetChildProcessHost(NULL);
   }
@@ -599,7 +605,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
     if (base::OpenProcessHandleWithAccess(
             peer_pid,
             base::kProcessAccessDuplicateHandle |
-            base::kProcessAccessQueryLimitedInfomation |
+            base::kProcessAccessQueryInformation |
             base::kProcessAccessWaitForTermination,
             &process)) {
       process_->SetHandle(process);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/ui/ppapi_uitest.h"
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -110,243 +112,215 @@ class TestFinishObserver : public content::NotificationObserver {
 
 }  // namespace
 
-class PPAPITestBase : public InProcessBrowserTest {
- public:
-  PPAPITestBase() {
-    EnableDOMAutomation();
+PPAPITestBase::PPAPITestBase() {
+  EnableDOMAutomation();
+}
+
+void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
+  // The test sends us the result via a cookie.
+  command_line->AppendSwitch(switches::kEnableFileCookies);
+
+  // Some stuff is hung off of the testing interface which is not enabled
+  // by default.
+  command_line->AppendSwitch(switches::kEnablePepperTesting);
+
+  // Smooth scrolling confuses the scrollbar test.
+  command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+}
+
+GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
+  FilePath test_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
+  test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
+  test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));
+
+  // Sanity check the file name.
+  EXPECT_TRUE(file_util::PathExists(test_path));
+
+  GURL test_url = net::FilePathToFileURL(test_path);
+
+  GURL::Replacements replacements;
+  std::string query = BuildQuery("", test_case);
+  replacements.SetQuery(query.c_str(), url_parse::Component(0, query.size()));
+  return test_url.ReplaceComponents(replacements);
+}
+
+void PPAPITestBase::RunTest(const std::string& test_case) {
+  GURL url = GetTestFileUrl(test_case);
+  RunTestURL(url);
+}
+
+void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
+  GURL url = GetTestFileUrl(test_case);
+  RunTestURL(url);
+  // If that passed, we simply run the test again, which navigates again.
+  RunTestURL(url);
+}
+
+void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
+  // For HTTP tests, we use the output DIR to grab the generated files such
+  // as the NEXEs.
+  FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
+  FilePath src_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+
+  // TestServer expects a path relative to source. So we must first
+  // generate absolute paths to SRC and EXE and from there generate
+  // a relative path.
+  if (!exe_dir.IsAbsolute()) file_util::AbsolutePath(&exe_dir);
+  if (!src_dir.IsAbsolute()) file_util::AbsolutePath(&src_dir);
+  ASSERT_TRUE(exe_dir.IsAbsolute());
+  ASSERT_TRUE(src_dir.IsAbsolute());
+
+  size_t match, exe_size, src_size;
+  std::vector<FilePath::StringType> src_parts, exe_parts;
+
+  // Determine point at which src and exe diverge, and create a relative path.
+  exe_dir.GetComponents(&exe_parts);
+  src_dir.GetComponents(&src_parts);
+  exe_size = exe_parts.size();
+  src_size = src_parts.size();
+  for (match = 0; match < exe_size && match < src_size; ++match) {
+    if (exe_parts[match] != src_parts[match])
+      break;
+  }
+  FilePath web_dir;
+  for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr) {
+    web_dir = web_dir.Append(FILE_PATH_LITERAL(".."));
+  }
+  for (; match < exe_size; ++match) {
+    web_dir = web_dir.Append(exe_parts[match]);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // The test sends us the result via a cookie.
-    command_line->AppendSwitch(switches::kEnableFileCookies);
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              web_dir);
+  ASSERT_TRUE(test_server.Start());
+  std::string query = BuildQuery("files/test_case.html?", test_case);
 
-    // Some stuff is hung off of the testing interface which is not enabled
-    // by default.
-    command_line->AppendSwitch(switches::kEnablePepperTesting);
+  GURL url = test_server.GetURL(query);
+  RunTestURL(url);
+}
 
-    // Smooth scrolling confuses the scrollbar test.
-    command_line->AppendSwitch(switches::kDisableSmoothScrolling);
-  }
+void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
+  FilePath websocket_root_dir;
+  ASSERT_TRUE(
+      PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
 
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) = 0;
+  ui_test_utils::TestWebSocketServer server;
+  int port = server.UseRandomPort();
+  ASSERT_TRUE(server.Start(websocket_root_dir));
+  std::string url = StringPrintf("%s&websocket_port=%d",
+                                 test_case.c_str(), port);
+  RunTestViaHTTP(url);
+}
 
-  // Returns the URL to load for file: tests.
-  GURL GetTestFileUrl(const std::string& test_case) {
-    FilePath test_path;
-    EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_path));
-    test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
-    test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
-    test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));
+std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
+  const char* const prefixes[] = {
+      "FAILS_", "FLAKY_", "DISABLED_", "SLOW_" };
+  for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
+    if (test_name.find(prefixes[i]) == 0)
+      return test_name.substr(strlen(prefixes[i]));
+  return test_name;
+}
 
-    // Sanity check the file name.
-    EXPECT_TRUE(file_util::PathExists(test_path));
+void PPAPITestBase::RunTestURL(const GURL& test_url) {
+  // See comment above TestingInstance in ppapi/test/testing_instance.h.
+  // Basically it sends messages using the DOM automation controller. The
+  // value of "..." means it's still working and we should continue to wait,
+  // any other value indicates completion (in this case it will start with
+  // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
+  TestFinishObserver observer(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), kTimeoutMs);
 
-    GURL test_url = net::FilePathToFileURL(test_path);
+  ui_test_utils::NavigateToURL(browser(), test_url);
 
-    GURL::Replacements replacements;
-    std::string query = BuildQuery("", test_case);
-    replacements.SetQuery(query.c_str(), url_parse::Component(0, query.size()));
-    return test_url.ReplaceComponents(replacements);
-  }
+  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
 
-  void RunTest(const std::string& test_case) {
-    GURL url = GetTestFileUrl(test_case);
-    RunTestURL(url);
-  }
+  EXPECT_STREQ("PASS", observer.result().c_str());
+}
 
-  // Run the test and reload. This can test for clean shutdown, including leaked
-  // instance object vars.
-  void RunTestAndReload(const std::string& test_case) {
-    GURL url = GetTestFileUrl(test_case);
-    RunTestURL(url);
-    // If that passed, we simply run the test again, which navigates again.
-    RunTestURL(url);
-  }
+PPAPITest::PPAPITest() {
+}
 
-  void RunTestViaHTTP(const std::string& test_case) {
-    // For HTTP tests, we use the output DIR to grab the generated files such
-    // as the NEXEs.
-    FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
-    FilePath src_dir;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPITestBase::SetUpCommandLine(command_line);
 
-    // TestServer expects a path relative to source. So we must first
-    // generate absolute paths to SRC and EXE and from there generate
-    // a relative path.
-    if (!exe_dir.IsAbsolute()) file_util::AbsolutePath(&exe_dir);
-    if (!src_dir.IsAbsolute()) file_util::AbsolutePath(&src_dir);
-    ASSERT_TRUE(exe_dir.IsAbsolute());
-    ASSERT_TRUE(src_dir.IsAbsolute());
+  // Append the switch to register the pepper plugin.
+  // library name = <out dir>/<test_name>.<library_extension>
+  // MIME type = application/x-ppapi-<test_name>
+  FilePath plugin_dir;
+  EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
 
-    size_t match, exe_size, src_size;
-    std::vector<FilePath::StringType> src_parts, exe_parts;
+  FilePath plugin_lib = plugin_dir.Append(library_name);
+  EXPECT_TRUE(file_util::PathExists(plugin_lib));
+  FilePath::StringType pepper_plugin = plugin_lib.value();
+  pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
+  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                   pepper_plugin);
+  command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
+}
 
-    // Determine point at which src and exe diverge, and create a relative path.
-    exe_dir.GetComponents(&exe_parts);
-    src_dir.GetComponents(&src_parts);
-    exe_size = exe_parts.size();
-    src_size = src_parts.size();
-    for (match = 0; match < exe_size && match < src_size; ++match) {
-      if (exe_parts[match] != src_parts[match])
-        break;
-    }
-    FilePath web_dir;
-    for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr) {
-      web_dir = web_dir.Append(FILE_PATH_LITERAL(".."));
-    }
-    for (; match < exe_size; ++match) {
-      web_dir = web_dir.Append(exe_parts[match]);
-    }
+std::string PPAPITest::BuildQuery(const std::string& base,
+                                  const std::string& test_case){
+  return StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
+}
 
-    net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                                net::TestServer::kLocalhost,
-                                web_dir);
-    ASSERT_TRUE(test_server.Start());
-    std::string query = BuildQuery("files/test_case.html?", test_case);
+OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
+}
 
-    GURL url = test_server.GetURL(query);
-    RunTestURL(url);
-  }
+void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPITest::SetUpCommandLine(command_line);
 
-  void RunTestWithWebSocketServer(const std::string& test_case) {
-    FilePath websocket_root_dir;
-    ASSERT_TRUE(
-        PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
+  // Run PPAPI out-of-process to exercise proxy implementations.
+  command_line->AppendSwitch(switches::kPpapiOutOfProcess);
+}
 
-    ui_test_utils::TestWebSocketServer server;
-    int port = server.UseRandomPort();
-    ASSERT_TRUE(server.Start(websocket_root_dir));
-    std::string url = StringPrintf("%s&websocket_port=%d",
-                                   test_case.c_str(), port);
-    RunTestViaHTTP(url);
-  }
+PPAPINaClTest::PPAPINaClTest() {
+}
 
-  std::string StripPrefixes(const std::string& test_name) {
-    const char* const prefixes[] = {
-        "FAILS_", "FLAKY_", "DISABLED_", "SLOW_" };
-    for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
-      if (test_name.find(prefixes[i]) == 0)
-        return test_name.substr(strlen(prefixes[i]));
-    return test_name;
-  }
+void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPITestBase::SetUpCommandLine(command_line);
 
- protected:
-  // Runs the test for a tab given the tab that's already navigated to the
-  // given URL.
-  void RunTestURL(const GURL& test_url) {
-    // See comment above TestingInstance in ppapi/test/testing_instance.h.
-    // Basically it sends messages using the DOM automation controller. The
-    // value of "..." means it's still working and we should continue to wait,
-    // any other value indicates completion (in this case it will start with
-    // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
-    TestFinishObserver observer(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(), kTimeoutMs);
+  FilePath plugin_lib;
+  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
+  EXPECT_TRUE(file_util::PathExists(plugin_lib));
 
-    ui_test_utils::NavigateToURL(browser(), test_url);
+  // Enable running NaCl outside of the store.
+  command_line->AppendSwitch(switches::kEnableNaCl);
+  command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
+}
 
-    ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
+// Append the correct mode and testcase string
+std::string PPAPINaClTest::BuildQuery(const std::string& base,
+                                      const std::string& test_case) {
+  return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
+                      test_case.c_str());
+}
 
-    EXPECT_STREQ("PASS", observer.result().c_str());
-  }
-};
+PPAPINaClTestDisallowedSockets::PPAPINaClTestDisallowedSockets() {
+}
 
-// In-process plugin test runner.  See OutOfProcessPPAPITest below for the
-// out-of-process version.
-class PPAPITest : public PPAPITestBase {
- public:
-  PPAPITest() {
-  }
+void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
+    CommandLine* command_line) {
+  PPAPITestBase::SetUpCommandLine(command_line);
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PPAPITestBase::SetUpCommandLine(command_line);
+  FilePath plugin_lib;
+  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
+  EXPECT_TRUE(file_util::PathExists(plugin_lib));
 
-    // Append the switch to register the pepper plugin.
-    // library name = <out dir>/<test_name>.<library_extension>
-    // MIME type = application/x-ppapi-<test_name>
-    FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
+  // Enable running NaCl outside of the store.
+  command_line->AppendSwitch(switches::kEnableNaCl);
+}
 
-    FilePath plugin_lib = plugin_dir.Append(library_name);
-    EXPECT_TRUE(file_util::PathExists(plugin_lib));
-    FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugin);
-    command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
-  }
-
-  std::string BuildQuery(const std::string& base,
-                         const std::string& test_case){
-    return StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
-  }
-
-};
-
-// Variant of PPAPITest that runs plugins out-of-process to test proxy
-// codepaths.
-class OutOfProcessPPAPITest : public PPAPITest {
- public:
-  OutOfProcessPPAPITest() {  
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PPAPITest::SetUpCommandLine(command_line);
-
-    // Run PPAPI out-of-process to exercise proxy implementations.
-    command_line->AppendSwitch(switches::kPpapiOutOfProcess);
-  }
-};
-
-// NaCl plugin test runner.
-class PPAPINaClTest : public PPAPITestBase {
- public:
-  PPAPINaClTest() {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PPAPITestBase::SetUpCommandLine(command_line);
-
-    FilePath plugin_lib;
-    EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-    EXPECT_TRUE(file_util::PathExists(plugin_lib));
-
-    // Enable running NaCl outside of the store.
-    command_line->AppendSwitch(switches::kEnableNaCl);
-    command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
-  }
-
-  // Append the correct mode and testcase string
-  std::string BuildQuery(const std::string& base,
-                         const std::string& test_case) {
-    return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
-                        test_case.c_str());
-  }
-};
-
-class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
- public:
-  PPAPINaClTestDisallowedSockets() {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PPAPITestBase::SetUpCommandLine(command_line);
-
-    FilePath plugin_lib;
-    EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-    EXPECT_TRUE(file_util::PathExists(plugin_lib));
-
-    // Enable running NaCl outside of the store.
-    command_line->AppendSwitch(switches::kEnableNaCl);
-  }
-
-  // Append the correct mode and testcase string
-  std::string BuildQuery(const std::string& base,
-                         const std::string& test_case) {
-    return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
-                        test_case.c_str());
-  }
-};
+// Append the correct mode and testcase string
+std::string PPAPINaClTestDisallowedSockets::BuildQuery(
+    const std::string& base,
+    const std::string& test_case) {
+  return StringPrintf("%smode=nacl&testcase=%s", base.c_str(),
+                      test_case.c_str());
+}
 
 // This macro finesses macro expansion to do what we want.
 #define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)

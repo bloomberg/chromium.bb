@@ -305,6 +305,8 @@
       'tests/pp_thread.h',
       'tests/test_case.cc',
       'tests/test_case.h',
+      'tests/test_empty.cc',
+      'tests/test_empty.h',
       'tests/test_net_address_private_untrusted.cc',
       'tests/test_net_address_private_untrusted.h',
       'tests/test_tcp_server_socket_private.cc',
