@@ -778,7 +778,7 @@ void VectorPlatformDeviceEmf::InternalDrawBitmap(const SkBitmap& bitmap,
   bitmap_header.bV4AlphaMask = 0xff000000;
 
   SkAutoLockPixels lock(bitmap);
-  SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  SkASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
   const uint32_t* pixels = static_cast<const uint32_t*>(bitmap.getPixels());
   if (pixels == NULL) {
     SkASSERT(false);

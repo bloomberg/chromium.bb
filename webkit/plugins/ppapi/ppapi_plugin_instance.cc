@@ -1606,7 +1606,7 @@ bool PluginInstance::DrawJPEGToPlatformDC(
   // However, Skia currently has no JPEG compression code and we cannot
   // depend on gfx/jpeg_codec.h in Skia. So we do the compression here.
   SkAutoLockPixels lock(bitmap);
-  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
   const uint32_t* pixels =
       static_cast<const uint32_t*>(bitmap.getPixels());
   std::vector<unsigned char> compressed_image;
@@ -1646,7 +1646,7 @@ void PluginInstance::DrawSkBitmapToCanvas(
     const gfx::Rect& dest_rect,
     int canvas_height) {
   SkAutoLockPixels lock(bitmap);
-  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
   base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(
           NULL, bitmap.getAddr32(0, 0),

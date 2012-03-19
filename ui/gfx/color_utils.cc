@@ -212,7 +212,7 @@ SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
     return SkColorSetARGB(alpha, 0, 0, 0);
 
   // Assume ARGB_8888 format.
-  DCHECK(favicon->getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(favicon->config() == SkBitmap::kARGB_8888_Config);
   SkColor* current_color = pixels;
 
   DCHECK(favicon->width() <= 16 && favicon->height() <= 16);
@@ -248,7 +248,7 @@ void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
     return;
 
   // Assume ARGB_8888 format.
-  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
 
   int pixel_width = bitmap.width();
   int pixel_height = bitmap.height();

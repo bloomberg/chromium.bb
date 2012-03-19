@@ -291,7 +291,7 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
         DCHECK(bitmap.get());
         if (bitmap.get()) {
           SkAutoLockPixels lock(*bitmap.get());
-          DCHECK_EQ(bitmap->getConfig(), SkBitmap::kARGB_8888_Config);
+          DCHECK_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
           const uint32_t* pixels =
               static_cast<const uint32_t*>(bitmap->getPixels());
           if (pixels == NULL) {

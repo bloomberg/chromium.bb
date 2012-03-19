@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -574,7 +574,7 @@ SkBitmap SkBitmapOperations::CreateHSLShiftedBitmap(
 SkBitmap SkBitmapOperations::CreateTiledBitmap(const SkBitmap& source,
                                                int src_x, int src_y,
                                                int dst_w, int dst_h) {
-  DCHECK(source.getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(source.config() == SkBitmap::kARGB_8888_Config);
 
   SkBitmap cropped;
   cropped.setConfig(SkBitmap::kARGB_8888_Config, dst_w, dst_h, 0);

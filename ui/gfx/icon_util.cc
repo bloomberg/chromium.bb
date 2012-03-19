@@ -55,7 +55,7 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
   // Only 32 bit ARGB bitmaps are supported. We also try to perform as many
   // validations as we can on the bitmap.
   SkAutoLockPixels bitmap_lock(bitmap);
-  if ((bitmap.getConfig() != SkBitmap::kARGB_8888_Config) ||
+  if ((bitmap.config() != SkBitmap::kARGB_8888_Config) ||
       (bitmap.width() <= 0) || (bitmap.height() <= 0) ||
       (bitmap.getPixels() == NULL))
     return NULL;
@@ -235,7 +235,7 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
   // been properly initialized.
   SkAutoLockPixels bitmap_lock(bitmap);
-  if ((bitmap.getConfig() != SkBitmap::kARGB_8888_Config) ||
+  if ((bitmap.config() != SkBitmap::kARGB_8888_Config) ||
       (bitmap.height() <= 0) || (bitmap.width() <= 0) ||
       (bitmap.getPixels() == NULL))
     return false;
