@@ -352,9 +352,8 @@
 </if>  <!-- pp_ifdef('_google_chrome') -->
     </div>
   </section>
-  <!-- By default, the bluetooth section is hidden.  It is only
-       visible if the command line flag 'enable_bluetooth' is set
-       and a bluetooth adapter is discovered or emmulating ChromeOS. -->
+  <!-- By default, the bluetooth section is hidden.  It is only visible if a
+       bluetooth adapter is discovered -->
 <if expr="pp_ifdef('chromeos')">
   <section id="bluetooth-devices" hidden>
     <h3 i18n-content="bluetooth"></h3>
