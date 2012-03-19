@@ -125,10 +125,10 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 class RenderWidgetHostViewAura::ResizeLock :
     public base::SupportsWeakPtr<RenderWidgetHostViewAura::ResizeLock> {
  public:
-  ResizeLock(RenderWidgetHostViewAura* view, const gfx::Size new_size)
-      : view_(view),
+  ResizeLock(aura::RootWindow* root_window, const gfx::Size new_size)
+      : root_window_(root_window),
         new_size_(new_size) {
-    view_->window_->GetRootWindow()->HoldMouseMoves();
+    root_window_->HoldMouseMoves();
 
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
@@ -138,14 +138,13 @@ class RenderWidgetHostViewAura::ResizeLock :
   }
 
   ~ResizeLock() {
-    if (view_) {
-      view_->window_->GetRootWindow()->ReleaseMouseMoves();
-    }
+    CancelLock();
   }
 
   void CancelLock() {
-    view_->window_->GetRootWindow()->ReleaseMouseMoves();
-    view_ = NULL;
+    if (root_window_)
+      root_window_->ReleaseMouseMoves();
+    root_window_ = NULL;
   }
 
   const gfx::Size& expected_size() const {
@@ -153,7 +152,7 @@ class RenderWidgetHostViewAura::ResizeLock :
   }
 
  private:
-  RenderWidgetHostViewAura* view_;
+  aura::RootWindow* root_window_;
   gfx::Size new_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeLock);
@@ -252,8 +251,10 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   if (window_->bounds().size() != rect.size() &&
-      host_->is_accelerated_compositing_active())
-    resize_locks_.push_back(make_linked_ptr(new ResizeLock(this, rect.size())));
+      host_->is_accelerated_compositing_active()) {
+    resize_locks_.push_back(make_linked_ptr(
+        new ResizeLock(window_->GetRootWindow(), rect.size())));
+  }
   window_->SetBounds(rect);
   host_->WasResized();
 }
