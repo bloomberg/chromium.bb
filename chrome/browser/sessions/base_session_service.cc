@@ -6,13 +6,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/compress_data_helper.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -177,37 +175,16 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   WriteString16ToPickle(pickle, &bytes_written, max_state_size,
                         entry.GetTitle());
 
-  std::string content_state_without_post;
+  std::string content_state = entry.GetContentState();
   if (entry.GetHasPostData()) {
-    content_state_without_post =
-        webkit_glue::RemoveFormDataFromHistoryState(entry.GetContentState());
-    int original_size = entry.GetContentState().size() / 1024;
-    int new_size = content_state_without_post.size() / 1024;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "SessionService.ContentStateSizeWithPostOriginal", original_size,
-        62, 100000, 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "SessionService.ContentStateSizeWithPostRemoved", new_size,
-        62, 100000, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "SessionService.ContentStateSizeWithoutPost",
-        entry.GetContentState().size() / 1024,
-        62, 100000, 50);
+    if (save_post_data_) {
+      content_state =
+          webkit_glue::RemovePasswordDataFromHistoryState(content_state);
+    } else {
+      content_state =
+          webkit_glue::RemoveFormDataFromHistoryState(content_state);
+    }
   }
-
-  std::string content_state;
-
-  if (!save_post_data_) {
-    // TODO(marja): This branch will be removed when saving the post data
-    // becomes the default.
-    if (entry.GetHasPostData())
-      content_state = content_state_without_post;
-    else
-      content_state = entry.GetContentState();
-  }
-  // Else: use an empty content state for keeping the data format compatible.
-
   WriteStringToPickle(pickle, &bytes_written, max_state_size, content_state);
 
   pickle.WriteInt(entry.GetTransitionType());
@@ -218,11 +195,6 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
       entry.GetReferrer().url.is_valid() ?
           entry.GetReferrer().url.spec() : std::string());
   pickle.WriteInt(entry.GetReferrer().policy);
-
-  if (save_post_data_) {
-    CompressDataHelper::CompressAndWriteStringToPickle(
-        entry.GetContentState(), max_state_size, &pickle, &bytes_written);
-  }
 
   // Adding more data? Be sure and update TabRestoreService too.
   return new SessionCommand(command_id, pickle);
@@ -303,17 +275,6 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     navigation->referrer_ = content::Referrer(
         referrer_spec.empty() ? GURL() : GURL(referrer_spec),
         policy);
-
-    // And even later, compressed content state was added.
-    base::TimeTicks start_time_ = base::TimeTicks::Now();
-    std::string content_state;
-    if (CompressDataHelper::ReadAndDecompressStringFromPickle(
-            *pickle.get(), &iterator, &content_state) &&
-        !content_state.empty()) {
-      navigation->state_ = content_state;
-    }
-    base::TimeDelta total_time = base::TimeTicks::Now() - start_time_;
-    time_spent_reading_compressed_content_states += total_time;
   }
 
   navigation->virtual_url_ = GURL(url_spec);
@@ -380,14 +341,4 @@ bool BaseSessionService::RunTaskOnBackendThread(
     task.Run();
     return true;
   }
-}
-
-void BaseSessionService::ResetContentStateReadingMetrics() {
-  time_spent_reading_compressed_content_states = base::TimeDelta();
-}
-
-void BaseSessionService::WriteContentStateReadingMetrics() {
-  UMA_HISTOGRAM_TIMES("SessionService.ReadingCompressedContentStates",
-                      time_spent_reading_compressed_content_states);
-  ResetContentStateReadingMetrics();
 }

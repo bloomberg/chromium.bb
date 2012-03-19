@@ -31,6 +31,13 @@ using WebKit::WebVector;
 namespace webkit_glue {
 
 namespace {
+
+enum IncludeFormData {
+  NEVER_INCLUDE_FORM_DATA,
+  INCLUDE_FORM_DATA_WITHOUT_PASSWORDS,
+  ALWAYS_INCLUDE_FORM_DATA
+};
+
 struct SerializeObject {
   SerializeObject() : version(0) {}
   SerializeObject(const char* data, int len)
@@ -60,12 +67,13 @@ struct SerializeObject {
 // 9: Adds support for itemSequenceNumbers
 // 10: Adds support for blob
 // 11: Adds support for pageScaleFactor
+// 12: Adds support for hasPasswordData in HTTP body
 // Should be const, but unit tests may modify it.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See CreateHistoryStateForURL.
 //
-int kVersion = 11;
+int kVersion = 12;
 
 // A bunch of convenience functions to read/write to SerializeObjects.
 // The serializers assume the input data is in the correct format and so does
@@ -255,6 +263,7 @@ void WriteFormData(const WebHTTPBody& http_body, SerializeObject* obj) {
     }
   }
   WriteInteger64(http_body.identifier(), obj);
+  WriteBoolean(http_body.containsPasswordData(), obj);
 }
 
 WebHTTPBody ReadFormData(const SerializeObject* obj) {
@@ -297,6 +306,9 @@ WebHTTPBody ReadFormData(const SerializeObject* obj) {
   }
   if (obj->version >= 4)
     http_body.setIdentifier(ReadInteger64(obj));
+
+  if (obj->version >= 12)
+    http_body.setContainsPasswordData(ReadBoolean(obj));
 
   return http_body;
 }
@@ -356,7 +368,7 @@ void WriteHistoryItem(
 // Assumes the data is in the format returned by WriteHistoryItem.
 WebHistoryItem ReadHistoryItem(
     const SerializeObject* obj,
-    bool include_form_data,
+    IncludeFormData include_form_data,
     bool include_scroll_offset) {
   // See note in WriteHistoryItem. on this.
   obj->version = ReadInteger(obj);
@@ -412,9 +424,19 @@ WebHistoryItem ReadHistoryItem(
   const WebHTTPBody& http_body = ReadFormData(obj);
   const WebString& http_content_type = ReadString(obj);
   ALLOW_UNUSED const WebString& unused_referrer = ReadString(obj);
-  if (include_form_data) {
+  if (include_form_data == ALWAYS_INCLUDE_FORM_DATA ||
+      (include_form_data == INCLUDE_FORM_DATA_WITHOUT_PASSWORDS &&
+       !http_body.isNull() && !http_body.containsPasswordData())) {
+    // Include the full HTTP body.
     item.setHTTPBody(http_body);
     item.setHTTPContentType(http_content_type);
+  } else if (!http_body.isNull()) {
+    // Don't include the data in the HTTP body, but include its identifier. This
+    // enables fetching data from the cache.
+    WebHTTPBody empty_http_body;
+    empty_http_body.initialize();
+    empty_http_body.setIdentifier(http_body.identifier());
+    item.setHTTPBody(empty_http_body);
   }
 
   // Subitems
@@ -429,12 +451,14 @@ WebHistoryItem ReadHistoryItem(
 
 // Reconstruct a HistoryItem from a string, using our JSON Value deserializer.
 // This assumes that the given serialized string has all the required key,value
-// pairs, and does minimal error checking. If |include_form_data| is true,
-// the form data from a post is restored, otherwise the form data is empty.
-// If |include_scroll_offset| is true, the scroll offset is restored.
+// pairs, and does minimal error checking. The form data of the post is restored
+// if |include_form_data| is |ALWAYS_INCLUDE_FORM_DATA| or if the data doesn't
+// contain passwords and |include_form_data| is
+// |INCLUDE_FORM_DATA_WITHOUT_PASSWORDS|. Otherwise the form data is empty. If
+// |include_scroll_offset| is true, the scroll offset is restored.
 WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item,
-    bool include_form_data,
+    IncludeFormData include_form_data,
     bool include_scroll_offset) {
   if (serialized_item.empty())
     return WebHistoryItem();
@@ -449,7 +473,22 @@ std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
   const WebHistoryItem& item =
-      HistoryItemFromString(content_state, false, true);
+      HistoryItemFromString(content_state, NEVER_INCLUDE_FORM_DATA, true);
+  if (item.isNull()) {
+    // Couldn't parse the string, return an empty string.
+    return std::string();
+  }
+
+  return HistoryItemToString(item);
+}
+
+std::string RemovePasswordDataFromHistoryState(
+    const std::string& content_state) {
+  // TODO(darin): We should avoid using the WebKit API here, so that we do not
+  // need to have WebKit initialized before calling this method.
+  const WebHistoryItem& item =
+      HistoryItemFromString(
+          content_state, INCLUDE_FORM_DATA_WITHOUT_PASSWORDS, true);
   if (item.isNull()) {
     // Couldn't parse the string, return an empty string.
     return std::string();
@@ -463,7 +502,7 @@ std::string RemoveScrollOffsetFromHistoryState(
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
   const WebHistoryItem& item =
-      HistoryItemFromString(content_state, true, false);
+      HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, false);
   if (item.isNull()) {
     // Couldn't parse the string, return an empty string.
     return std::string();
@@ -495,7 +534,7 @@ std::string HistoryItemToString(const WebHistoryItem& item) {
 }
 
 WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
-  return HistoryItemFromString(serialized_item, true, true);
+  return HistoryItemFromString(serialized_item, ALWAYS_INCLUDE_FORM_DATA, true);
 }
 
 std::vector<FilePath> FilePathsFromHistoryState(
@@ -504,7 +543,7 @@ std::vector<FilePath> FilePathsFromHistoryState(
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
   const WebHistoryItem& item =
-      HistoryItemFromString(content_state, true, true);
+      HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, true);
   if (item.isNull()) {
     // Couldn't parse the string.
     return to_return;

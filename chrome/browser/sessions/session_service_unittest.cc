@@ -27,6 +27,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
+#include "webkit/glue/glue_serialize.h"
 
 using content::NavigationEntry;
 
@@ -765,18 +769,27 @@ TEST_F(SessionServiceTest, RemovePostData) {
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 2);
 
-  // Expected: the content state of the POST navigation was removed but the
-  // content state of the normal navigation was not.
-  EXPECT_EQ("", windows[0]->tabs[0]->navigations[0].state());
+  // Expected: the HTTP body was removed from the content state of the POST
+  // navigation but the content state of the normal navigation is intact.
+  EXPECT_NE(content_state, windows[0]->tabs[0]->navigations[0].state());
   helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
 }
 
-TEST_F(SessionServiceTest, KeepPostData) {
+TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   helper_.service()->save_post_data_ = true;
 
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
-  std::string content_state("dummy_content_state");
+
+  // Create a content state representing a HTTP body without posted passwords.
+  WebKit::WebHTTPBody http_body;
+  http_body.initialize();
+  const char char_data[] = "data";
+  http_body.appendData(WebKit::WebData(char_data, sizeof(char_data)-1));
+  WebKit::WebHistoryItem history_item;
+  history_item.initialize();
+  history_item.setHTTPBody(http_body);
+  std::string content_state = webkit_glue::HistoryItemToString(history_item);
 
   // Create a TabNavigation containing content_state and representing a POST
   // request.
@@ -803,4 +816,40 @@ TEST_F(SessionServiceTest, KeepPostData) {
   // Expected: the content state of both navigations was saved and restored.
   helper_.AssertNavigationEquals(nav1, windows[0]->tabs[0]->navigations[0]);
   helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
+}
+
+TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
+  helper_.service()->save_post_data_ = true;
+
+  SessionID tab_id;
+  ASSERT_NE(window_id.id(), tab_id.id());
+
+  // Create a content state representing a HTTP body with posted passwords.
+  WebKit::WebHTTPBody http_body;
+  http_body.initialize();
+  const char char_data[] = "data";
+  http_body.appendData(WebKit::WebData(char_data, sizeof(char_data)-1));
+  http_body.setContainsPasswordData(true);
+  WebKit::WebHistoryItem history_item;
+  history_item.initialize();
+  history_item.setHTTPBody(http_body);
+  std::string content_state = webkit_glue::HistoryItemToString(history_item);
+
+  // Create a TabNavigation containing content_state and representing a POST
+  // request with passwords.
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
+                     ASCIIToUTF16("title"), content_state,
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
+  nav1.set_type_mask(TabNavigation::HAS_POST_DATA);
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+
+  helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
+
+  // Expected: the HTTP body was removed from the content state of the POST
+  // navigation with passwords.
+  EXPECT_NE(content_state, windows[0]->tabs[0]->navigations[0].state());
 }

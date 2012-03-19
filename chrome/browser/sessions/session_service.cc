@@ -964,7 +964,6 @@ bool SessionService::CreateTabsAndWindows(
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
 
-  ResetContentStateReadingMetrics();
   for (std::vector<SessionCommand*>::const_iterator i = data.begin();
        i != data.end(); ++i) {
     const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
@@ -1152,7 +1151,6 @@ bool SessionService::CreateTabsAndWindows(
         return true;
     }
   }
-  WriteContentStateReadingMetrics();
   return true;
 }
 

@@ -173,16 +173,13 @@ class BaseSessionService : public CancelableRequestProvider,
   bool RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 
-  // For metrics
-  void ResetContentStateReadingMetrics();
-  void WriteContentStateReadingMetrics();
-
   // Max number of navigation entries in each direction we'll persist.
   static const int max_persist_navigation_count;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, KeepPostData);
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, KeepPostDataWithoutPasswords);
   FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemovePostData);
+  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemovePostDataWithPasswords);
 
   // The profile. This may be null during testing.
   Profile* profile_;
@@ -208,9 +205,6 @@ class BaseSessionService : public CancelableRequestProvider,
 
   // Whether to save the HTTP bodies of the POST requests.
   bool save_post_data_;
-
-  // For metrics.
-  base::TimeDelta time_spent_reading_compressed_content_states;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };

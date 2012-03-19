@@ -1946,8 +1946,6 @@
         'browser/service/service_process_control.h',
         'browser/sessions/base_session_service.cc',
         'browser/sessions/base_session_service.h',
-        'browser/sessions/compress_data_helper.cc',
-        'browser/sessions/compress_data_helper.h',
         'browser/sessions/restore_tab_helper.cc',
         'browser/sessions/restore_tab_helper.h',
         'browser/sessions/session_backend.cc',

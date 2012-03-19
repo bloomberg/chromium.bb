@@ -97,6 +97,11 @@ WEBKIT_GLUE_EXPORT std::string CreateHistoryStateForURL(const GURL& url);
 WEBKIT_GLUE_EXPORT std::string RemoveFormDataFromHistoryState(
     const std::string& content_state);
 
+// Removes form data containing passwords from the history state string
+// |content_state|.
+WEBKIT_GLUE_EXPORT std::string RemovePasswordDataFromHistoryState(
+    const std::string& content_state);
+
 // Removes scroll offset from the history state string |content_state|.
 WEBKIT_GLUE_EXPORT std::string RemoveScrollOffsetFromHistoryState(
     const std::string& content_state);

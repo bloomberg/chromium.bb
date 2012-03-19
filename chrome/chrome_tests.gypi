@@ -1674,7 +1674,6 @@
         'browser/search_engines/template_url_prepopulate_data_unittest.cc',
         'browser/search_engines/template_url_scraper_unittest.cc',
         'browser/search_engines/template_url_unittest.cc',
-        'browser/sessions/compress_data_helper_unittest.cc',
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
