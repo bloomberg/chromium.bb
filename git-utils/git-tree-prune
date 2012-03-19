@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""A tool for listing branches with closed and abandoned issues."""
+
+import os
+import sys
+import urllib2
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEPOT_TOOLS_DIR = os.path.dirname(BASE_DIR)
+sys.path.insert(0, DEPOT_TOOLS_DIR)
+
+import git_cl
+
+
+def get_branches():
+  """Get list of all local git branches."""
+  return [Branch(l[2:]) for l in git_cl.RunGit(["branch"]).splitlines()]
+
+
+class Branch(git_cl.Changelist):
+  def __init__(self, name):
+    git_cl.Changelist.__init__(self, branchref=name)
+    self._issue_status = None
+    
+  def GetStatus(self):
+    if not self._issue_status:
+      if self.GetIssue():
+        try:        
+          issue_properties = self.RpcServer().get_issue_properties(
+              self.GetIssue(), None)
+          if issue_properties['closed']:
+            self._issue_status = 'closed'
+          else:
+            self._issue_status = 'pending'
+        except urllib2.HTTPError, e:
+          if e.code == 404:
+            self._issue_status = 'abandoned'
+      else:
+        self._issue_status = 'no-issue'
+    return self._issue_status
+
+
+def main(argv):
+  branches = get_branches()
+  filtered = { 'closed' : [],
+               'pending' : [],
+               'abandoned' : [],
+               'no-issue' : []}
+
+  for branch in branches:
+    filtered[branch.GetStatus()].append(branch)
+
+  print "# Branches with closed issues"
+  for branch in filtered['closed']:
+    print "git branch -D %s # Issue %s is closed." % (branch.GetBranch(),
+                                                        branch.GetIssue())
+
+  print "\n# Pending Branches"
+  for branch in filtered['pending']:
+    print "# Branch %s - Issue %s" % (branch.GetBranch(), branch.GetIssue())
+
+  print "\n# Branches with abandoned issues"
+  for branch in filtered['abandoned']:
+    print "# Branch %s - was issue %s" % (
+        branch.GetBranch(), branch.GetIssue())
+
+  print "\n# Branches without associated issues"
+  for branch in filtered['no-issue']:
+    print "# Branch %s" % (branch.GetBranch())
+
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))
