@@ -12,7 +12,12 @@
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_context.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/quota/special_storage_policy.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// No longer applicable.
+#else
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -85,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
         static_cast<DOMStorageContextImpl*>(
             BrowserContext::GetDOMStorageContext(&browser_context));
     dom_storage_context->set_data_path_for_testing(temp_dir.path());
-    dom_storage_context->set_clear_local_state_on_exit(true);
+    dom_storage_context->SetClearLocalState(true);
   }
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
@@ -99,3 +104,5 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_ClearLocalState) {
   ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
   ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

@@ -7,15 +7,16 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "googleurl/src/gurl.h"
 
 class FilePath;
-class GURL;
 class NullableString16;
 
 namespace base {
@@ -55,6 +56,15 @@ class DomStorageTaskRunner;
 class DomStorageContext
     : public base::RefCountedThreadSafe<DomStorageContext> {
  public:
+  struct UsageInfo {
+    GURL origin;
+    size_t data_size;
+    base::Time last_modified;
+
+    UsageInfo();
+    ~UsageInfo();
+  };
+
   // An interface for observing LocalStorage events on the
   // background thread.
   class EventObserver {
@@ -79,8 +89,28 @@ class DomStorageContext
   DomStorageContext(const FilePath& directory,  // empty for incognito profiles
                     quota::SpecialStoragePolicy* special_storage_policy,
                     DomStorageTaskRunner* task_runner);
+  const FilePath& directory() const { return directory_; }
   DomStorageTaskRunner* task_runner() const { return task_runner_; }
   DomStorageNamespace* GetStorageNamespace(int64 namespace_id);
+
+  void GetUsageInfo(std::vector<UsageInfo>* info);
+  void DeleteOrigin(const GURL& origin);
+  void DeleteDataModifiedSince(const base::Time& cutoff);
+  void PurgeMemory();
+
+  // Used by content settings to alter the behavior around
+  // what data to keep and what data to discard at shutdown.
+  // The policy is not so straight forward to describe, see
+  // the implementation for details.
+  void SetClearLocalState(bool clear_local_state) {
+    clear_local_state_ = clear_local_state;
+  }
+  void SaveSessionState() {
+    save_session_state_ = true;
+  }
+
+  // Called when the BrowserContext/Profile is going away.
+  void Shutdown();
 
   // Methods to add, remove, and notify EventObservers.
   void AddEventObserver(EventObserver* observer);
@@ -121,7 +151,7 @@ class DomStorageContext
   StorageNamespaceMap namespaces_;
 
   // Where localstorage data is stored, maybe empty for the incognito use case.
-  FilePath directory_;
+  const FilePath directory_;
 
   // Used to schedule sequenced background tasks.
   scoped_refptr<DomStorageTaskRunner> task_runner_;
@@ -132,6 +162,10 @@ class DomStorageContext
   // We use a 32 bit identifier for per tab storage sessions.
   // At a tab per second, this range is large enough for 68 years.
   base::AtomicSequenceNumber session_id_sequence_;
+
+  bool clear_local_state_;
+  bool save_session_state_;
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 };
 
 }  // namespace dom_storage
