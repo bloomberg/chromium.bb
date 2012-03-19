@@ -1978,8 +1978,14 @@ def GetTranslatedNexe(env, pexe):
   pexe_name = pexe.abspath
   nexe_name = pexe_name[:pexe_name.index('.pexe')] + '.nexe'
 
-  return env.Command(target=nexe_name, source=[pexe_name],
+  node = env.Command(target=nexe_name, source=[pexe_name],
                      action=[Action('${TRANSLATECOM}', '${TRANSLATECOMSTR}')])
+  # Ignore nexe dependency on pexe and assume it's already there. This replaces
+  # ignoring the test dependency on the nexe, which is what built_elsewhere
+  # does when not in pnacl_generate_pexe mode
+  if env.Bit('built_elsewhere'):
+    env.Ignore(nexe_name, pexe_name)
+  return node
 
 pre_base_env.AddMethod(GetTranslatedNexe)
 
@@ -2307,8 +2313,9 @@ def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False,
       deps.append(arg)
 
   # If we are testing build output captured from elsewhere,
-  # ignore build dependencies.
-  if env.Bit('built_elsewhere'):
+  # ignore build dependencies, (except pexe translation, which we always
+  # want to do in pnacl_generate_pexe mode)
+  if env.Bit('built_elsewhere') and not env.Bit('pnacl_generate_pexe'):
     env.Ignore(name, deps)
   else:
     env.Depends(name, extra_deps)
