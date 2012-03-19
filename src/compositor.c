@@ -219,6 +219,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->compositor = compositor;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->alpha = 255;
+	surface->pitch = 1;
 
 	surface->buffer = NULL;
 	surface->output = NULL;
