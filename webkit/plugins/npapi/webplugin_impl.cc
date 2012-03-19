@@ -754,6 +754,11 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
 }
 
 #if defined(OS_MACOSX)
+WebPluginAcceleratedSurface* WebPluginImpl::GetAcceleratedSurface(
+    gfx::GpuPreference gpu_preference) {
+  return NULL;
+}
+
 void WebPluginImpl::AcceleratedPluginEnabledRendering() {
 }
 

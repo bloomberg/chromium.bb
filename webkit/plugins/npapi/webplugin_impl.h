@@ -113,6 +113,8 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
                                  const GURL& first_party_for_cookies) OVERRIDE;
   virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
 #if defined(OS_MACOSX)
+  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
+      gfx::GpuPreference gpu_preference) OVERRIDE;
   virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
   virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
                                                    int32 height,

@@ -157,7 +157,7 @@ class WebPlugin {
 
   // Returns the accelerated surface abstraction for accelerated plugins.
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
-      gfx::GpuPreference gpu_preference);
+      gfx::GpuPreference gpu_preference) = 0;
 
   // Composited Core Animation plugin support.
   virtual void AcceleratedPluginEnabledRendering() = 0;
