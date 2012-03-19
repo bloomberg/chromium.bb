@@ -71,6 +71,7 @@ all_units = [
          'ppb_gamepad.srpc',
          'ppb_graphics_2d.srpc',
          'ppb_graphics_3d.srpc',
+         'ppb_host_resolver_private.srpc',
          'ppb_image_data.srpc',
          'ppb_input_event.srpc',
          'ppb_instance.srpc',
