@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -199,6 +200,11 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
   base::PlatformFileError error() const { return error_; }
 
  private:
+  // Callback for GDataFile::GetCacheState.
+  void OnCacheStateReceived(base::PlatformFileError error,
+                            gdata::GDataFile* file,
+                            int cache_state);
+
   // GDataFileSystem::FindFileDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
@@ -210,6 +216,7 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
   int cache_state_;
   bool is_hosted_document_;
   base::PlatformFileError error_;
+  base::WeakPtrFactory<FilePropertiesDelegate> weak_ptr_factory_;
 };
 
 // FilePropertiesDelegate class implementation.
@@ -217,7 +224,8 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
 FilePropertiesDelegate::FilePropertiesDelegate()
   : cache_state_(0),
     is_hosted_document_(false),
-    error_(base::PLATFORM_FILE_OK) {
+    error_(base::PLATFORM_FILE_OK),
+    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 FilePropertiesDelegate::~FilePropertiesDelegate() { }
@@ -261,6 +269,38 @@ void FilePropertiesDelegate::CopyProperties(
   property_dict->SetBoolean("isHosted", is_hosted_document_);
 }
 
+void FilePropertiesDelegate::OnCacheStateReceived(
+    base::PlatformFileError error,
+    gdata::GDataFile* file,
+    int cache_state) {
+  // TODO(gspencer) : Wire this up with UI.
+  cache_state_ = cache_state;
+
+#if defined(_DEBUG)
+  std::string state;
+  if (cache_state == gdata::GDataFile::CACHE_STATE_NONE) {
+    state = "none";
+  } else {
+    if (cache_state & gdata::GDataFile::CACHE_STATE_PRESENT)
+      state = "present";
+    if (cache_state & gdata::GDataFile::CACHE_STATE_PINNED) {
+      if (!state.empty())
+        state += ",";
+      state += "pinned";
+    }
+    if (cache_state & gdata::GDataFile::CACHE_STATE_DIRTY) {
+      if (!state.empty())
+       state += ",";
+      state += "dirty";
+    }
+  }
+
+  DVLOG(1) << "got OnCacheStateReceived: err=" << error
+           << ", file_id=" << file->id()
+           << ", cache_state=" << state;
+#endif // #if defined(_DEBUG)
+}
+
 void FilePropertiesDelegate::OnDone(base::PlatformFileError error,
                                     const FilePath& directory_path,
                                     gdata::GDataFileBase* entity) {
@@ -279,7 +319,8 @@ void FilePropertiesDelegate::OnDone(base::PlatformFileError error,
   thumbnail_url_ = file->thumbnail_url();
   edit_url_ = file->edit_url();
   content_url_ = file->content_url();
-  cache_state_ = file->GetCacheState();
+  file->GetCacheState(base::Bind(&FilePropertiesDelegate::OnCacheStateReceived,
+                                 weak_ptr_factory_.GetWeakPtr()));
   is_hosted_document_ = file->is_hosted_document();
 }
 
