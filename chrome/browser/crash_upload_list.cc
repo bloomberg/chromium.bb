@@ -5,6 +5,7 @@
 #include "chrome/browser/crash_upload_list.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/bind.h"
 #include "base/file_path.h"
