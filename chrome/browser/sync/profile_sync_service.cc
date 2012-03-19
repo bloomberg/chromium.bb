@@ -234,9 +234,6 @@ void ProfileSyncService::RegisterAuthNotifications() {
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  content::Source<TokenService>(token_service));
   registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile_));
 }
@@ -1010,7 +1007,7 @@ void ProfileSyncService::ShowErrorUI() {
   // Any other errors (such as unrecoverable error) should be handled by the UI
   // itself and should not result in a call to ShowErrorUI.
   if (last_auth_error_.state() != AuthError::NONE) {
-    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI();
+    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(true);
   } else if (ShouldShowActionOnUI(last_actionable_error_)) {
     ShowSyncSetup(chrome::kPersonalOptionsSubPage);
   } else {
@@ -1492,12 +1489,6 @@ void ProfileSyncService::Observe(int type,
       // normal operation.
       backend_->StartSyncingWithServer();
 
-      break;
-    }
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED: {
-      GoogleServiceAuthError error =
-          *(content::Details<const GoogleServiceAuthError>(details).ptr());
-      UpdateAuthErrorState(error);
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {

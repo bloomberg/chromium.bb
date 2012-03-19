@@ -260,6 +260,7 @@ const char kPasswordManagerSubPage[] = "passwords";
 const char kPersonalOptionsSubPage[] = "personal";
 const char kSearchEnginesSubPage[] = "searchEngines";
 const char kSyncSetupSubPage[] = "syncSetup";
+const char kSyncSetupForceLoginSubPage[] = "syncSetup#forceLogin";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";

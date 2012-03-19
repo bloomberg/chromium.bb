@@ -48,8 +48,11 @@ class SyncSetupHandler : public OptionsPageUIHandler,
       base::DictionaryValue* localized_strings,
       content::WebUI* web_ui);
 
-  // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup();
+  // Initializes the sync setup flow and shows the setup UI. If |force_login| is
+  // true, then the user is forced through the login flow even if they are
+  // already signed in (useful for when we need to force the user to re-enter
+  // credentials so we can fetch new tokens).
+  void OpenSyncSetup(bool force_login);
 
   // Terminates the sync setup flow.
   void CloseSyncSetup();

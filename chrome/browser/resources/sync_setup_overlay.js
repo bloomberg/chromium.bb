@@ -73,7 +73,9 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     didShowPage: function() {
-      chrome.send('SyncSetupAttachHandler');
+      var forceLogin = document.location.hash == "#forceLogin";
+      var result = JSON.stringify({'forceLogin': forceLogin});
+      chrome.send('SyncSetupAttachHandler', [result]);
     },
 
     /** @inheritDoc */

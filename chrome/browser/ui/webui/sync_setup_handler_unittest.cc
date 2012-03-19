@@ -221,7 +221,7 @@ TEST_F(SyncSetupHandlerTest, Basic) {
 TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(false);
   EXPECT_EQ(&web_ui_,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
@@ -248,7 +248,7 @@ TEST_F(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(false);
   // Fake a failed signin attempt.
   handler_->TryLogin(kTestUser, kTestPassword, "", "");
   GoogleServiceAuthError error(
@@ -276,7 +276,7 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(false);
   // Fake a failed signin attempt that requires a captcha.
   handler_->TryLogin(kTestUser, kTestPassword, "", "");
   GoogleServiceAuthError error = GoogleServiceAuthError::FromCaptchaChallenge(
@@ -319,7 +319,7 @@ TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(false);
   ASSERT_EQ(1U, web_ui_.call_data().size());
   // Fake a successful GAIA request (gaia credentials valid, but signin not
   // complete yet).
@@ -354,7 +354,7 @@ TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup();
+  handler_->OpenSyncSetup(false);
   ASSERT_EQ(1U, web_ui_.call_data().size());
   // Fake a successful GAIA request (gaia credentials valid, but signin not
   // complete yet).

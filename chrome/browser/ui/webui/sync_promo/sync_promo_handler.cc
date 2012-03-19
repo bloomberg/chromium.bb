@@ -225,7 +225,8 @@ void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
   web_ui()->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
                                    version);
 
-  OpenSyncSetup();
+  // Open the sync wizard to the login screen.
+  OpenSyncSetup(true);
   // We don't need to compute anything for this, just do this every time.
   RecordUserFlowAction(SYNC_PROMO_VIEWED);
   // Increment view count first and show natural numbers in stats rather than 0

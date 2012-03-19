@@ -5643,7 +5643,7 @@ void Browser::ShowSyncSetup() {
     ShowSingletonTabOverwritingNTP(params);
   } else {
     LoginUIServiceFactory::GetForProfile(
-        profile()->GetOriginalProfile())->ShowLoginUI();
+        profile()->GetOriginalProfile())->ShowLoginUI(false);
   }
 #endif
 }

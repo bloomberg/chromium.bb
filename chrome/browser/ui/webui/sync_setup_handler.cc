@@ -670,7 +670,15 @@ void SyncSetupHandler::HandlePassphraseCancel(const ListValue* args) {
 }
 
 void SyncSetupHandler::HandleAttachHandler(const ListValue* args) {
-  OpenSyncSetup();
+  bool force_login = false;
+  std::string json;
+  if (args->GetString(0, &json) && !json.empty()) {
+    scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+    DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
+    result->GetBoolean("forceLogin", &force_login);
+  }
+
+  OpenSyncSetup(force_login);
 }
 
 void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
@@ -692,7 +700,10 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!flow_);
-  OpenSyncSetup();
+  // Open the sync setup wizard to the appropriate stage in the wizard (i.e.
+  // display login prompt if the user is not signed in, otherwise display the
+  // sync settings).
+  OpenSyncSetup(false);
 }
 
 void SyncSetupHandler::CloseSyncSetup() {
@@ -729,7 +740,7 @@ void SyncSetupHandler::CloseSyncSetup() {
   signin_tracker_.reset();
 }
 
-void SyncSetupHandler::OpenSyncSetup() {
+void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   ProfileSyncService* service = GetSyncService();
   if (!service) {
     // If there's no sync service, the user tried to manually invoke a syncSetup
@@ -749,13 +760,13 @@ void SyncSetupHandler::OpenSyncSetup() {
 
   GetLoginUIService()->SetLoginUI(web_ui());
 
-  if (!SigninTracker::AreServicesSignedIn(GetProfile())) {
-    // User is not logged in - need to display login UI.
-    DisplayGaiaLogin(false);
-  } else {
+  if (!force_login && service->HasSyncSetupCompleted()) {
     // User is already logged in. They must have brought up the config wizard
     // via the "Advanced..." button or the wrench menu.
     StartConfigureSync();
+  } else {
+    // User is not logged in - need to display login UI.
+    DisplayGaiaLogin(false);
   }
 
   ShowSetupUI();

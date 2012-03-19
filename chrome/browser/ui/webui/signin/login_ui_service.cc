@@ -39,22 +39,25 @@ void LoginUIService::FocusLoginUI() {
   ui_->GetWebContents()->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
-void LoginUIService::ShowLoginUI() {
+void LoginUIService::ShowLoginUI(bool force_login) {
   if (ui_) {
     // We already have active login UI - make it visible.
     FocusLoginUI();
     return;
   }
 
+  std::string page(force_login ?
+      chrome::kSyncSetupForceLoginSubPage : chrome::kSyncSetupSubPage);
+
   // Need to navigate to the settings page and display the UI.
   if (profile_) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (!browser) {
       browser = Browser::Create(profile_);
-      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+      browser->ShowOptionsTab(page);
       browser->window()->Show();
     } else {
-      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+      browser->ShowOptionsTab(page);
     }
   }
 }

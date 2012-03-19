@@ -119,7 +119,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
     LoginUIServiceFactory::GetForProfile(
-        browser_->profile()->GetOriginalProfile())->ShowLoginUI();
+        browser_->profile()->GetOriginalProfile())->ShowLoginUI(true);
   } else {
     delegate_->OnSyncSetupResult(false);
   }

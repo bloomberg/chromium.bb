@@ -48,7 +48,7 @@ SyncSetupWebUITest.prototype = {
                             OptionsPage.navigateToPage('syncSetup');
                           }));
 
-    this.mockHandler.expects(once()).SyncSetupAttachHandler().
+    this.mockHandler.expects(once()).SyncSetupAttachHandler(NOT_NULL).
         will(callFunction(function() {
                             SyncSetupOverlay.showSyncSetupPage(
                                 'login', {
