@@ -59,6 +59,19 @@ class GLES2_UTILS_EXPORT GLES2Util {
  public:
   static const int kNumFaces = 6;
 
+  // Bits returned by GetChannelsForFormat
+  enum ChannelBits {
+    kRed = 0x1,
+    kGreen = 0x2,
+    kBlue = 0x4,
+    kAlpha = 0x8,
+    kDepth = 0x10000,
+    kStencil = 0x20000,
+
+    kRGB = kRed | kGreen | kBlue,
+    kRGBA = kRGB | kAlpha
+  };
+
   struct EnumToString {
     uint32 value;
     const char* name;
@@ -106,12 +119,12 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static uint32 IndexToGLFaceTarget(int index);
 
-  // Returns a bitmask for the channels the given format supports where
-  // 0x1 is red
-  // 0x2 is green
-  // 0x4 is blue
-  // 0x8 is alpha
+  // Returns a bitmask for the channels the given format supports.
+  // See ChannelBits.
   static uint32 GetChannelsForFormat(int format);
+
+  // Returns a bitmask for the channels the given attachment type needs.
+  static uint32 GetChannelsNeededForAttachmentType(int type);
 
   static bool IsNPOT(uint32 value) {
     return value > 0 && (value & (value - 1)) != 0;

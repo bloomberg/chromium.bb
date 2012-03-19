@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -543,21 +543,49 @@ uint32 GLES2Util::IndexToGLFaceTarget(int index) {
 uint32 GLES2Util::GetChannelsForFormat(int format) {
   switch (format) {
     case GL_ALPHA:
-      return 0x0008;
+    case GL_ALPHA16F_EXT:
+    case GL_ALPHA32F_EXT:
+      return kAlpha;
     case GL_LUMINANCE:
-      return 0x0007;
+      return kRGB;
     case GL_LUMINANCE_ALPHA:
-      return 0x000F;
+      return kRGBA;
     case GL_RGB:
     case GL_RGB8_OES:
     case GL_RGB565:
-      return 0x0007;
+    case GL_RGB16F_EXT:
+    case GL_RGB32F_EXT:
+      return kRGB;
     case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
+    case GL_RGBA16F_EXT:
+    case GL_RGBA32F_EXT:
     case GL_RGBA:
     case GL_RGBA8_OES:
     case GL_RGBA4:
     case GL_RGB5_A1:
-      return 0x000F;
+      return kRGBA;
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT:
+      return kDepth;
+    case GL_STENCIL_INDEX8:
+      return kStencil;
+    case GL_DEPTH_STENCIL_OES:
+    case GL_DEPTH24_STENCIL8_OES:
+      return kDepth | kStencil;
+    default:
+      return 0x0000;
+  }
+}
+
+uint32 GLES2Util::GetChannelsNeededForAttachmentType(int type) {
+  switch (type) {
+    case GL_COLOR_ATTACHMENT0:
+      return kRGBA;
+    case GL_DEPTH_ATTACHMENT:
+      return kDepth;
+    case GL_STENCIL_ATTACHMENT:
+      return kStencil;
     default:
       return 0x0000;
   }

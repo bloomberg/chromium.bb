@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,8 +63,10 @@ class RenderbufferAttachment
   }
 
   virtual bool ValidForAttachmentType(GLenum attachment_type) {
-    // TODO(gman): Fill this out.
-    return true;
+    uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
+        attachment_type);
+    uint32 have = GLES2Util::GetChannelsForFormat(internal_format());
+    return (need & have) != 0;
   }
 
   RenderbufferManager::RenderbufferInfo* renderbuffer() const {
@@ -146,8 +148,15 @@ class TextureAttachment
   }
 
   virtual bool ValidForAttachmentType(GLenum attachment_type) {
-    // TODO(gman): Fill this out.
-    return true;
+    GLenum type = 0;
+    GLenum internal_format = 0;
+    if (!texture_->GetLevelType(target_, level_, &type, &internal_format)) {
+      return false;
+    }
+    uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
+        attachment_type);
+    uint32 have = GLES2Util::GetChannelsForFormat(internal_format);
+    return (need & have) != 0;
   }
 
  private:

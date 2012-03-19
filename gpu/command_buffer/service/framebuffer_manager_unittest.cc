@@ -176,6 +176,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLsizei kWidth1 = 16;
   const GLsizei kHeight1 = 32;
   const GLenum kFormat1 = GL_RGBA4;
+  const GLenum kBadFormat1 = GL_DEPTH_COMPONENT16;
   const GLsizei kSamples1 = 0;
   const GLsizei kWidth2 = 16;
   const GLsizei kHeight2 = 32;
@@ -212,6 +213,13 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
             info_->IsPossiblyComplete());
   EXPECT_TRUE(info_->IsCleared());
 
+  // Try a format that's not good for COLOR_ATTACHMENT0.
+  renderbuffer_manager_.SetInfo(
+      rb_info1, kSamples1, kBadFormat1, kWidth1, kHeight1);
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
+            info_->IsPossiblyComplete());
+
+  // Try a good format.
   renderbuffer_manager_.SetInfo(
       rb_info1, kSamples1, kFormat1, kWidth1, kHeight1);
   EXPECT_EQ(static_cast<GLenum>(kFormat1), info_->GetColorAttachmentFormat());
@@ -269,7 +277,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
       rb_info3, kSamples3, kFormat3, kWidth3, kHeight3);
   renderbuffer_manager_.SetCleared(rb_info3);
 
-  info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info1);
+  info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info3);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(kFormat1), info_->GetColorAttachmentFormat());
   EXPECT_TRUE(info_->HasDepthAttachment());
@@ -297,12 +305,12 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_EQ(kFormat1, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
 
-  EXPECT_TRUE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_TRUE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
 
   // Clear it.
   manager_.MarkAttachmentsAsCleared(
       info_, &renderbuffer_manager_, &texture_manager_);
-  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(info_->IsCleared());
 
   // Check replacing an attachment
@@ -378,6 +386,7 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   const GLsizei kHeight1 = 32;
   const GLint kLevel1 = 0;
   const GLenum kFormat1 = GL_RGBA;
+  const GLenum kBadFormat1 = GL_DEPTH_COMPONENT16;
   const GLenum kTarget1 = GL_TEXTURE_2D;
   const GLsizei kSamples1 = 0;
   const GLsizei kWidth2 = 16;
@@ -411,7 +420,16 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(info_->IsCleared());
   EXPECT_EQ(static_cast<GLenum>(0), info_->GetColorAttachmentFormat());
 
+  // Try format that doesn't work with COLOR_ATTACHMENT0
   texture_manager_.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
+  texture_manager_.SetLevelInfo(
+      tex_info1, GL_TEXTURE_2D, kLevel1,
+      kBadFormat1, kWidth1, kHeight1, kDepth, kBorder, kBadFormat1, kType,
+      true);
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
+            info_->IsPossiblyComplete());
+
+  // Try a good format.
   texture_manager_.SetLevelInfo(
       tex_info1, GL_TEXTURE_2D, kLevel1,
       kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType, false);
