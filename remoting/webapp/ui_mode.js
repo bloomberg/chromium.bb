@@ -75,6 +75,12 @@ remoting.updateModalUi = function(mode, attr) {
       }
     }
     element.hidden = hidden;
+    if (!hidden) {
+      var autofocusNode = element.querySelector('[autofocus]');
+      if (autofocusNode) {
+        autofocusNode.focus();
+      }
+    }
   }
 };
 
