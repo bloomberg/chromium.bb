@@ -8,10 +8,10 @@ import pyauto_functional # has to be imported before pyauto
 import pyauto
 import sys
 
-ZERG_CHROMEDRIVER_PORT = 4444
+VM_CHROMEDRIVER_PORT = 4444
 
 if __name__ == '__main__':
-  """Utility script to prepare machine state for use in Zerg.
+  """Script to prepare machine state for use as a WebDriver-controlled VM.
 
   This script is intended to be run manually over ssh on a Chromium OS virtual
   machine qcow2 image. Manually create a snapshot of the VM when prompted. The
@@ -20,10 +20,10 @@ if __name__ == '__main__':
   pyauto_suite = pyauto.PyUITestSuite(sys.argv)
   pyuitest = pyauto.PyUITest()
   pyuitest.setUp()
-  driver = pyuitest.NewWebDriver(port=ZERG_CHROMEDRIVER_PORT)
+  driver = pyuitest.NewWebDriver(port=VM_CHROMEDRIVER_PORT)
   logging.info('WebDriver is listening on port %d.'
-               % ZERG_CHROMEDRIVER_PORT)
-  logging.info('Machine prepared for Zerg VM snapshot.')
+               % VM_CHROMEDRIVER_PORT)
+  logging.info('Machine prepared for VM snapshot.')
   raw_input('Please snapshot the VM and hit ENTER when done to '
             'terminate this script.')
   pyuitest.tearDown()
