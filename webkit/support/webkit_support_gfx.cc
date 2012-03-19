@@ -25,7 +25,10 @@ extern "C" {
 namespace webkit_support {
 
 // Define macro here to make webkit_support_gfx independent of target base.
-#define NOTREACHED(msg) exit(1)
+// Note that the NOTREACHED() macro will result in a crash. This is preferable
+// to calling exit() / abort(), since the latter may not surfce the problem as
+// crash reports, making it hard to tell where the problem is.
+#define NOTREACHED(msg) *((int*)0) = 3
 #define DCHECK(condition) \
   if (!(condition)) fprintf(stderr, "DCHECK failed: " #condition ".")
 
