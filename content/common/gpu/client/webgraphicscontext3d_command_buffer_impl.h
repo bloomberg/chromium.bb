@@ -533,6 +533,9 @@ class WebGraphicsContext3DCommandBufferImpl
   // The GLES2Implementation we use for OpenGL rendering.
   gpu::gles2::GLES2Implementation* gl_;
 
+  bool visible_;
+  bool free_command_buffer_when_invisible_;
+
   // State needed by MaybeInitializeGL.
   GpuChannelHost* host_;
   int32 surface_id_;

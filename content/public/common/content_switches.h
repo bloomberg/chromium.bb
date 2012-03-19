@@ -97,6 +97,7 @@ extern const char kEnableOriginBoundCerts[];
 extern const char kEnablePartialSwap[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
+extern const char kEnablePruneGpuCommandBuffers[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSandboxLogging[];
 extern const char kEnableSeccompSandbox[];

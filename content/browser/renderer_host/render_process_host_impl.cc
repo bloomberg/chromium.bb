@@ -697,6 +697,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePepperTesting,
     switches::kEnablePointerLock,
     switches::kEnablePreparsedJsCaching,
+    switches::kEnablePruneGpuCommandBuffers,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,

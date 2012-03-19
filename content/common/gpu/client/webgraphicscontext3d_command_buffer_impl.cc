@@ -74,6 +74,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       factory_(factory),
       context_(NULL),
       gl_(NULL),
+      visible_(false),
+      free_command_buffer_when_invisible_(false),
       host_(NULL),
       surface_id_(surface_id),
       active_url_(active_url),
@@ -236,6 +238,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
     context_->DisableShaderTranslation();
   }
+  free_command_buffer_when_invisible_ =
+      command_line.HasSwitch(switches::kEnablePruneGpuCommandBuffers);
 
   // Set attributes_ from created offscreen context.
   {
@@ -262,6 +266,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
       &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
       weak_ptr_factory_.GetWeakPtr()));
 
+  visible_ = true;
   return true;
 }
 
@@ -447,6 +452,7 @@ void WebGraphicsContext3DCommandBufferImpl::unmapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
     bool visible) {
   gl_->Flush();
+  visible_ = visible;
   context_->SetSurfaceVisible(visible);
   if (!visible)
     gl_->FreeEverything();
@@ -675,9 +681,17 @@ DELEGATE_TO_GL_1(enable, Enable, WGC3Denum)
 DELEGATE_TO_GL_1(enableVertexAttribArray, EnableVertexAttribArray,
                  WGC3Duint)
 
-DELEGATE_TO_GL(finish, Finish)
+void WebGraphicsContext3DCommandBufferImpl::finish() {
+  gl_->Finish();
+  if (!visible_ && free_command_buffer_when_invisible_)
+    gl_->FreeEverything();
+}
 
-DELEGATE_TO_GL(flush, Flush)
+void WebGraphicsContext3DCommandBufferImpl::flush() {
+  gl_->Flush();
+  if (!visible_ && free_command_buffer_when_invisible_)
+    gl_->FreeEverything();
+}
 
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)

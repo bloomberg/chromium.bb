@@ -288,6 +288,10 @@ const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 const char kEnablePrivilegedWebGLExtensions[] =
     "enable-privileged-webgl-extensions";
 
+// Aggressively free GPU command buffers belonging to hidden tabs.
+const char kEnablePruneGpuCommandBuffers[] =
+    "enable-prune-gpu-command-buffers";
+
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
