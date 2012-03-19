@@ -414,6 +414,7 @@ if env.Bit('linux') and not env.CrossToolsBuild():
 
   bootstrap_env.Alias('nacl_helper_bootstrap', bootstrap_out)
   bootstrap_env.Requires(SEL_LDR_NODE, bootstrap_out)
+  env.SDKInstallBin('nacl_helper_bootstrap', bootstrap_prog)
 
 # ----------------------------------------------------------
 # Unit Tests
