@@ -766,8 +766,8 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
 
   int default_index = 0;
   ListValue search_engines;
-  std::vector<const TemplateURL*> model_urls =
-      template_url_service_->GetTemplateURLs();
+  TemplateURLService::TemplateURLVector model_urls(
+      template_url_service_->GetTemplateURLs());
   for (size_t i = 0; i < model_urls.size(); ++i) {
     if (!model_urls[i]->ShowInDefaultList())
       continue;
@@ -796,8 +796,8 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
     return;
   }
 
-  std::vector<const TemplateURL*> model_urls =
-      template_url_service_->GetTemplateURLs();
+  TemplateURLService::TemplateURLVector model_urls(
+      template_url_service_->GetTemplateURLs());
   if (selected_index >= 0 &&
       selected_index < static_cast<int>(model_urls.size()))
     template_url_service_->SetDefaultSearchProvider(model_urls[selected_index]);
