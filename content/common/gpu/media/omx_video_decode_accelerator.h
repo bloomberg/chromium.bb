@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,8 @@
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
+
+class Gles2TextureToEglImageTranslator;
 
 // Class to wrap OpenMAX IL accelerator behind VideoDecodeAccelerator interface.
 // The implementation assumes an OpenMAX IL 1.1.2 implementation conforming to
@@ -87,6 +89,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   bool CreateComponent();
   // Buffer allocation/free methods for input and output buffers.
   bool AllocateInputBuffers();
+  bool AllocateFakeOutputBuffers();
   bool AllocateOutputBuffers();
   void FreeInputBuffers();
   void FreeOutputBuffers();
@@ -148,6 +151,8 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   OMX_U32 output_port_;
   int output_buffers_at_component_;
 
+  gfx::Size last_requested_picture_buffer_dimensions_;
+
   // NOTE: someday there may be multiple contexts for a single decoder.  But not
   // today.
   // TODO(fischman,vrk): handle lost contexts?
@@ -179,7 +184,9 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // NOTE: all calls to this object *MUST* be executed in message_loop_.
   Client* client_;
 
-  // These two members are only used during Initialization.
+  scoped_ptr<Gles2TextureToEglImageTranslator> texture_to_egl_image_translator_;
+
+  // These members are only used during Initialization.
   // OMX_AVCProfile requested during Initialization.
   uint32 profile_;
   bool component_name_is_nvidia_h264ext_;

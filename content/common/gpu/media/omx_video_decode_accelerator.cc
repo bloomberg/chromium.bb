@@ -21,8 +21,8 @@ typedef std::pair<scoped_ptr<base::SharedMemory>, int32> SharedMemoryAndId;
 
 enum { kNumPictureBuffers = 4 };
 
-// Open the libnvomx here for now.
-void* omx_handle = dlopen("libnvomx.so", RTLD_NOW);
+// Open the libOmxCore here for now.
+void* omx_handle = dlopen("libOmxCore.so", RTLD_NOW);
 
 typedef OMX_ERRORTYPE (*OMXInit)();
 typedef OMX_ERRORTYPE (*OMXGetHandle)(
@@ -160,6 +160,8 @@ bool OmxVideoDecodeAccelerator::Initialize(Profile profile) {
 
   if (!AllocateInputBuffers())  // Does its own RETURN_ON_FAILURE dances.
     return false;
+  if (!AllocateFakeOutputBuffers())  // Does its own RETURN_ON_FAILURE dances.
+    return false;
 
   return true;
 }
@@ -198,6 +200,13 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   component_name_is_nvidia_h264ext_ = !strcmp(
       reinterpret_cast<char *>(component.get()),
       "OMX.Nvidia.h264ext.decode");
+
+  bool component_name_is_sec_h264ext = !strcmp(
+      reinterpret_cast<char *>(component.get()),
+      "OMX.SEC.AVC.Decoder");
+  Gles2TextureToEglImageTranslator* texture_to_egl_image_translator =
+      new Gles2TextureToEglImageTranslator(component_name_is_sec_h264ext);
+  texture_to_egl_image_translator_.reset(texture_to_egl_image_translator);
 
   // Get the port information. This will obtain information about the number of
   // ports and index of the first port.
@@ -267,20 +276,6 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
   RETURN_ON_OMX_FAILURE(result,
                         "SetParameter(OMX_IndexParamPortDefinition) failed",
                         PLATFORM_FAILURE, false);
-
-  // Fill the component with fake output buffers.  This seems to be required for
-  // the component to move from Loaded to Idle.  How bogus.
-  for (int i = 0; i < kNumPictureBuffers; ++i) {
-    OMX_BUFFERHEADERTYPE* buffer;
-    result = OMX_UseBuffer(component_handle_, &buffer, output_port_,
-                           NULL, 0, reinterpret_cast<OMX_U8*>(0x1));
-    RETURN_ON_OMX_FAILURE(result, "OMX_UseBuffer failed",
-                          PLATFORM_FAILURE, false);
-    buffer->pAppPrivate = NULL;
-    buffer->nTimeStamp = -1;
-    buffer->nOutputPortIndex = output_port_;
-    CHECK(fake_output_buffers_.insert(buffer).second);
-  }
   return true;
 }
 
@@ -344,10 +339,12 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(fake_output_buffers_.size(), 0U);
   DCHECK_EQ(pictures_.size(), 0U);
 
-  static Gles2TextureToEglImageTranslator texture2eglImage_translator;
   for (size_t i = 0; i < buffers.size(); ++i) {
-    EGLImageKHR egl_image = texture2eglImage_translator.TranslateToEglImage(
-        egl_display_, egl_context_, buffers[i].texture_id());
+    EGLImageKHR egl_image =
+        texture_to_egl_image_translator_->TranslateToEglImage(
+            egl_display_, egl_context_,
+            buffers[i].texture_id(),
+            last_requested_picture_buffer_dimensions_);
     CHECK(pictures_.insert(std::make_pair(
         buffers[i].id(), OutputPicture(buffers[i], NULL, egl_image))).second);
   }
@@ -657,6 +654,23 @@ bool OmxVideoDecodeAccelerator::AllocateInputBuffers() {
   return true;
 }
 
+bool OmxVideoDecodeAccelerator::AllocateFakeOutputBuffers() {
+  // Fill the component with fake output buffers.
+  for (unsigned int i = 0; i < kNumPictureBuffers; ++i) {
+    OMX_BUFFERHEADERTYPE* buffer;
+    OMX_ERRORTYPE result;
+    result = OMX_AllocateBuffer(component_handle_, &buffer, output_port_,
+                                NULL, 0);
+    RETURN_ON_OMX_FAILURE(result, "OMX_AllocateBuffer failed",
+                          PLATFORM_FAILURE, false);
+    buffer->pAppPrivate = NULL;
+    buffer->nTimeStamp = -1;
+    buffer->nOutputPortIndex = output_port_;
+    CHECK(fake_output_buffers_.insert(buffer).second);
+  }
+  return true;
+}
+
 bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
@@ -696,7 +710,6 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
-  static Gles2TextureToEglImageTranslator texture2eglImage_translator;
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
@@ -704,8 +717,8 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
     delete reinterpret_cast<media::Picture*>(omx_buffer->pAppPrivate);
     result = OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
     RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
-    texture2eglImage_translator.DestroyEglImage(egl_display_,
-                                                it->second.egl_image);
+    texture_to_egl_image_translator_->DestroyEglImage(egl_display_,
+                                                      it->second.egl_image);
     if (client_)
       client_->DismissPictureBuffer(it->first);
   }
@@ -730,6 +743,8 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   // ProvidePictureBuffers() will trigger AssignPictureBuffers, which ultimately
   // assigns the textures to the component and re-enables the port.
   const OMX_VIDEO_PORTDEFINITIONTYPE& vformat = port_format.format.video;
+  last_requested_picture_buffer_dimensions_.SetSize(vformat.nFrameWidth,
+                                                    vformat.nFrameHeight);
   if (client_) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
