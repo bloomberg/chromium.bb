@@ -98,12 +98,13 @@ void CommandBufferProxy::OnConsoleMessage(
 }
 
 void CommandBufferProxy::SetMemoryAllocationChangedCallback(
-    const base::Callback<void(const GpuMemoryAllocation&)>& callback) {
+    const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+        callback) {
   memory_allocation_changed_callback_ = callback;
 }
 
 void CommandBufferProxy::OnSetMemoryAllocation(
-    const GpuMemoryAllocation& allocation) {
+    const GpuMemoryAllocationForRenderer& allocation) {
   if (!memory_allocation_changed_callback_.is_null())
     memory_allocation_changed_callback_.Run(allocation);
 }

@@ -36,7 +36,7 @@
 #endif
 
 class GpuChannel;
-class GpuMemoryAllocation;
+struct GpuMemoryAllocation;
 class GpuWatchdog;
 
 // This Base class is used to expose methods of GpuCommandBufferStub used for

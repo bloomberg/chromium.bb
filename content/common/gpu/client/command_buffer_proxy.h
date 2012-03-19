@@ -24,7 +24,7 @@
 
 class GpuChannelHost;
 struct GPUCommandBufferConsoleMessage;
-class GpuMemoryAllocation;
+struct GpuMemoryAllocationForRenderer;
 
 namespace base {
 class SharedMemory;
@@ -76,7 +76,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // Register a callback to invoke whenever we recieve a new memory allocation.
   void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocation&)>& callback);
+      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+          callback);
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
@@ -123,7 +124,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnDestroyed(gpu::error::ContextLostReason reason);
   void OnEchoAck();
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
-  void OnSetMemoryAllocation(const GpuMemoryAllocation& allocation);
+  void OnSetMemoryAllocation(const GpuMemoryAllocationForRenderer& allocation);
 
   // Try to read an updated copy of the state from shared memory.
   void TryUpdateState();
@@ -157,7 +158,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   base::Closure channel_error_callback_;
 
-  base::Callback<void(const GpuMemoryAllocation&)>
+  base::Callback<void(const GpuMemoryAllocationForRenderer&)>
       memory_allocation_changed_callback_;
 
   GpuConsoleMessageCallback console_message_callback_;

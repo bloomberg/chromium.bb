@@ -521,7 +521,8 @@ class WebGraphicsContext3DCommandBufferImpl
   bool ShouldUseSwapClient();
 
   // MemoryAllocationChanged callback.
-  void OnMemoryAllocationChanged(const GpuMemoryAllocation& allocation);
+  void OnMemoryAllocationChanged(const GpuMemoryAllocationForRenderer&
+      allocation);
 
   bool initialize_failed_;
 

@@ -280,7 +280,8 @@ bool ContentGLContext::SetSurfaceVisible(bool visible) {
 }
 
 void ContentGLContext::SetMemoryAllocationChangedCallback(
-    const base::Callback<void(const GpuMemoryAllocation&)>& callback) {
+    const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+        callback) {
   GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(callback);
 }
 

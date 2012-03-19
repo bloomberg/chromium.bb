@@ -173,7 +173,7 @@ TEST_F(GpuMemoryManagerTest, ComparatorTests) {
 }
 
 // Test GpuMemoryManager::Manage basic functionality.
-// Expect memory allocation to set has_frontbuffer, has_backbuffer according
+// Expect memory allocation to set suggest_have_frontbuffer/backbuffer according
 // to visibility and last used time for stubs with surface.
 // Expect memory allocation to be shared according to share groups for stubs
 // without a surface.
@@ -185,10 +185,10 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
   client_.stubs_.push_back(&stub2);
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
 
   // Test stubs without surface, with share group of 1 stub.
   FakeCommandBufferStubWithoutSurface stub3, stub4;
@@ -212,7 +212,7 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
 }
 
 // Test GpuMemoryManager::Manage functionality: changing visibility.
-// Expect memory allocation to set has_frontbuffer, has_backbuffer according
+// Expect memory allocation to set suggest_have_frontbuffer/backbuffer according
 // to visibility and last used time for stubs with surface.
 // Expect memory allocation to be shared according to share groups for stubs
 // without a surface.
@@ -234,10 +234,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
   client_.stubs_.push_back(&stub5);
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub1.allocation_, stub3.allocation_);
   EXPECT_EQ(stub2.allocation_, stub4.allocation_);
   EXPECT_EQ(stub1.allocation_, stub5.allocation_);
@@ -246,10 +246,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
   stub2.surface_state_.visible = true;
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, true);
   EXPECT_EQ(stub1.allocation_, stub3.allocation_);
   EXPECT_EQ(stub2.allocation_, stub4.allocation_);
   EXPECT_EQ(stub2.allocation_, stub5.allocation_);
@@ -280,14 +280,14 @@ TEST_F(GpuMemoryManagerTest, TestManageManyVisibleStubs) {
   client_.stubs_.push_back(&stub7);
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub3.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub3.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub4.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub4.allocation_.has_backbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub3.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub3.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub4.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub4.allocation_.suggest_have_backbuffer, true);
   EXPECT_EQ(stub5.allocation_, stub1.allocation_);
   EXPECT_EQ(stub6.allocation_, stub2.allocation_);
   EXPECT_EQ(stub7.allocation_, stub1.allocation_);
@@ -318,14 +318,14 @@ TEST_F(GpuMemoryManagerTest, TestManageManyNotVisibleStubs) {
   client_.stubs_.push_back(&stub7);
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub3.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub3.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub4.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub4.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub3.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub3.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub4.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub4.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub5.allocation_, stub1.allocation_);
   EXPECT_EQ(stub6.allocation_, stub4.allocation_);
   EXPECT_EQ(stub7.allocation_, stub1.allocation_);
@@ -356,10 +356,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
   client_.stubs_.push_back(&stub7);
 
   Manage();
-  EXPECT_EQ(stub3.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub3.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub4.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub4.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub3.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub3.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub4.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub4.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub5.allocation_, stub3.allocation_);
   EXPECT_EQ(stub6.allocation_, stub4.allocation_);
   EXPECT_EQ(stub7.allocation_, stub3.allocation_);
@@ -368,10 +368,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingLastUsedTime) {
   stub4.surface_state_.last_used_time = newer_;
 
   Manage();
-  EXPECT_EQ(stub3.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub3.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub4.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub4.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub3.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub3.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub4.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub4.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub5.allocation_, stub3.allocation_);
   EXPECT_EQ(stub6.allocation_, stub4.allocation_);
   EXPECT_EQ(stub7.allocation_, stub4.allocation_);
@@ -402,10 +402,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   client_.stubs_.push_back(&stub4);
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, true);
   EXPECT_EQ(stub3.allocation_, stub1.allocation_);
   EXPECT_EQ(stub3.allocation_, stub2.allocation_);
   EXPECT_EQ(stub4.allocation_, stub1.allocation_);
@@ -414,10 +414,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   stub1.surface_state_.visible = false;
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, true);
   EXPECT_NE(stub3.allocation_, stub1.allocation_);
   EXPECT_EQ(stub3.allocation_, stub2.allocation_);
   EXPECT_NE(stub4.allocation_, stub1.allocation_);
@@ -426,10 +426,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   stub2.surface_state_.visible = false;
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub3.allocation_, stub1.allocation_);
   EXPECT_EQ(stub3.allocation_, stub2.allocation_);
   EXPECT_EQ(stub4.allocation_, stub1.allocation_);
@@ -438,10 +438,10 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   stub1.surface_state_.last_used_time = older_;
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, true);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, true);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
   EXPECT_NE(stub3.allocation_, stub1.allocation_);
   EXPECT_EQ(stub3.allocation_, stub2.allocation_);
   EXPECT_NE(stub4.allocation_, stub1.allocation_);
@@ -450,12 +450,37 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   stub2.surface_state_.last_used_time = older_;
 
   Manage();
-  EXPECT_EQ(stub1.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub1.allocation_.has_backbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_frontbuffer, false);
-  EXPECT_EQ(stub2.allocation_.has_backbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub1.allocation_.suggest_have_backbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_frontbuffer, false);
+  EXPECT_EQ(stub2.allocation_.suggest_have_backbuffer, false);
   EXPECT_EQ(stub3.allocation_, stub1.allocation_);
   EXPECT_EQ(stub3.allocation_, stub2.allocation_);
   EXPECT_EQ(stub4.allocation_, stub1.allocation_);
   EXPECT_EQ(stub4.allocation_, stub2.allocation_);
+}
+
+// Test GpuMemoryAllocation comparison operators: Iterate over all possible
+// combinations of gpu_resource_size_in_bytes, suggest_have_backbuffer, and
+// suggest_have_frontbuffer, and make sure allocations with equal values test
+// equal and non equal values test not equal.
+TEST_F(GpuMemoryManagerTest, GpuMemoryAllocationCompareTests) {
+  int gpu_resource_size_in_bytes_values[] = { 0, 1, 12345678 };
+  bool suggest_have_backbuffer_values[] = { false, true };
+  bool suggest_have_frontbuffer_values[] = { false, true };
+
+  for(int* sz = &gpu_resource_size_in_bytes_values[0];
+      sz != &gpu_resource_size_in_bytes_values[3]; ++sz) {
+    for(bool* shbb = &suggest_have_backbuffer_values[0];
+        shbb != &suggest_have_backbuffer_values[2]; ++shbb) {
+      for(bool* shfb = &suggest_have_frontbuffer_values[0];
+          shfb != &suggest_have_frontbuffer_values[2]; ++shfb) {
+        GpuMemoryAllocation allocation(*sz, *shbb, *shfb);
+        EXPECT_EQ(allocation, GpuMemoryAllocation(*sz, *shbb, *shfb));
+        EXPECT_NE(allocation, GpuMemoryAllocation(*sz+1, *shbb, *shfb));
+        EXPECT_NE(allocation, GpuMemoryAllocation(*sz, !*shbb, *shfb));
+        EXPECT_NE(allocation, GpuMemoryAllocation(*sz, *shbb, !*shfb));
+      }
+    }
+  }
 }

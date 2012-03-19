@@ -25,7 +25,7 @@
 class GpuChannelHost;
 class CommandBufferProxy;
 class GURL;
-class GpuMemoryAllocation;
+struct GpuMemoryAllocationForRenderer;
 
 namespace gpu {
 class TransferBuffer;
@@ -166,7 +166,8 @@ class ContentGLContext : public base::SupportsWeakPtr<ContentGLContext>,
 
   // Register a callback to invoke whenever we recieve a new memory allocation.
   void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocation&)>& callback);
+      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
+          callback);
 
   // TODO(gman): Remove this
   void DisableShaderTranslation();

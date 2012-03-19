@@ -124,10 +124,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
 #endif
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(GpuMemoryAllocation)
+IPC_STRUCT_TRAITS_BEGIN(GpuMemoryAllocationForRenderer)
   IPC_STRUCT_TRAITS_MEMBER(gpu_resource_size_in_bytes)
-  IPC_STRUCT_TRAITS_MEMBER(has_frontbuffer)
-  IPC_STRUCT_TRAITS_MEMBER(has_backbuffer)
+  IPC_STRUCT_TRAITS_MEMBER(suggest_have_backbuffer)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
@@ -448,7 +447,7 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetSurfaceVisible, bool /* visible */)
 
 // Sent to proxy when the gpu memory manager changes its memory allocation.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
-                    GpuMemoryAllocation /* allocation */)
+                    GpuMemoryAllocationForRenderer /* allocation */)
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages

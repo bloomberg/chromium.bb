@@ -623,12 +623,14 @@ void GpuCommandBufferStub::SetMemoryAllocation(
 
   SendMemoryAllocationToProxy(allocation);
 
+  DCHECK(surface_);
+
   if (!surface_)
     return;
-  if (allocation.has_frontbuffer && allocation.has_backbuffer)
+  if (allocation.suggest_have_frontbuffer && allocation.suggest_have_backbuffer)
     surface_->SetBufferAllocation(
         gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
-  else if (allocation.has_frontbuffer)
+  else if (allocation.suggest_have_frontbuffer)
     surface_->SetBufferAllocation(
         gfx::GLSurface::BUFFER_ALLOCATION_FRONT_ONLY);
   else

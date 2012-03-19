@@ -104,7 +104,7 @@ void GpuMemoryManager::Manage() {
   const GpuMemoryAllocation all_buffers_allocation(
       kResourceSizeNonHibernatedTab, true, true);
   const GpuMemoryAllocation front_buffers_allocation(
-      kResourceSizeNonHibernatedTab, true, false);
+      kResourceSizeNonHibernatedTab, false, true);
   const GpuMemoryAllocation no_buffers_allocation(
       kResourceSizeHibernatedTab, false, false);
 

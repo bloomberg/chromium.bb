@@ -8,45 +8,88 @@
 
 #include "base/basictypes.h"
 
-// These are memory allocation limits assigned to a context.
-// They will change over time, given memory availability, and browser state
-// Exceeding these limits for an unreasonable amount of time will cause context
-// to be lost.
-class GpuMemoryAllocation {
- public:
+// These are per context memory allocation limits set by the GpuMemoryManager
+// and assigned to the browser and renderer context.
+// They will change over time, given memory availability, and browser state.
+
+
+// Memory Allocation which will be assigned to the renderer context.
+struct GpuMemoryAllocationForRenderer {
   enum {
     INVALID_RESOURCE_SIZE = -1
   };
 
+  // Exceeding this limit for an unreasonable amount of time may cause context
+  // to be lost.
   size_t gpu_resource_size_in_bytes;
-  bool has_frontbuffer;
-  bool has_backbuffer;
+  bool suggest_have_backbuffer;
 
-  GpuMemoryAllocation()
+  GpuMemoryAllocationForRenderer()
       : gpu_resource_size_in_bytes(0),
-        has_frontbuffer(false),
-        has_backbuffer(false) {
+        suggest_have_backbuffer(false) {
   }
 
-  GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
-                      bool has_frontbuffer,
-                      bool has_backbuffer)
+  GpuMemoryAllocationForRenderer(size_t gpu_resource_size_in_bytes,
+                                 bool suggest_have_backbuffer)
       : gpu_resource_size_in_bytes(gpu_resource_size_in_bytes),
-        has_frontbuffer(has_frontbuffer),
-        has_backbuffer(has_backbuffer) {
+        suggest_have_backbuffer(suggest_have_backbuffer) {
+  }
+
+  bool operator==(const GpuMemoryAllocationForRenderer& other) const {
+    return gpu_resource_size_in_bytes == other.gpu_resource_size_in_bytes &&
+           suggest_have_backbuffer == other.suggest_have_backbuffer;
+  }
+  bool operator!=(const GpuMemoryAllocationForRenderer& other) const {
+    return !(*this == other);
   }
 };
 
-inline bool operator==(const GpuMemoryAllocation& lhs,
-                       const GpuMemoryAllocation& rhs) {
-  return lhs.gpu_resource_size_in_bytes == rhs.gpu_resource_size_in_bytes &&
-      lhs.has_frontbuffer == rhs.has_frontbuffer &&
-      lhs.has_backbuffer == rhs.has_backbuffer;
-}
+// Memory Allocation which will be assigned to the browser.
+struct GpuMemoryAllocationForBrowser {
+  bool suggest_have_frontbuffer;
 
-inline bool operator!=(const GpuMemoryAllocation& lhs,
-                       const GpuMemoryAllocation& rhs) {
-  return !(lhs == rhs);
-}
+  GpuMemoryAllocationForBrowser()
+      : suggest_have_frontbuffer(false) {
+  }
+
+  GpuMemoryAllocationForBrowser(bool suggest_have_frontbuffer)
+      : suggest_have_frontbuffer(suggest_have_frontbuffer) {
+  }
+
+  bool operator==(const GpuMemoryAllocationForBrowser& other) const {
+      return suggest_have_frontbuffer == other.suggest_have_frontbuffer;
+  }
+  bool operator!=(const GpuMemoryAllocationForBrowser& other) const {
+    return !(*this == other);
+  }
+};
+
+// Combination of the above two Memory Allocations which will be created by the
+// GpuMemoryManager.
+struct GpuMemoryAllocation : public GpuMemoryAllocationForRenderer,
+                             public GpuMemoryAllocationForBrowser {
+  GpuMemoryAllocation()
+      : GpuMemoryAllocationForRenderer(),
+        GpuMemoryAllocationForBrowser() {
+  }
+
+  GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
+                      bool suggest_have_backbuffer,
+                      bool suggest_have_frontbuffer)
+      : GpuMemoryAllocationForRenderer(gpu_resource_size_in_bytes,
+                                       suggest_have_backbuffer),
+        GpuMemoryAllocationForBrowser(suggest_have_frontbuffer) {
+  }
+
+  bool operator==(const GpuMemoryAllocation& other) const {
+      return static_cast<const GpuMemoryAllocationForRenderer&>(*this) ==
+             static_cast<const GpuMemoryAllocationForRenderer&>(other) &&
+             static_cast<const GpuMemoryAllocationForBrowser&>(*this) ==
+             static_cast<const GpuMemoryAllocationForBrowser&>(other);
+  }
+  bool operator!=(const GpuMemoryAllocation& other) const {
+    return !(*this == other);
+  }
+};
 
 #endif // CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_
