@@ -21,7 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "content/browser/renderer_host/resource_request_details.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -38,6 +38,7 @@
 
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::ResourceRequestDetails;
 using content::WebContents;
 
 namespace safe_browsing {
@@ -450,7 +451,7 @@ void ClientSideDetectionHost::Observe(
   const ResourceRequestDetails* req = content::Details<ResourceRequestDetails>(
       details).ptr();
   if (req && browse_info_.get()) {
-    browse_info_->ips.insert(req->socket_address().host());
+    browse_info_->ips.insert(req->socket_address.host());
   }
 }
 

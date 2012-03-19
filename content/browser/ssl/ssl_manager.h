@@ -22,17 +22,17 @@
 
 class LoadFromMemoryCacheDetails;
 class NavigationControllerImpl;
-class ResourceRedirectDetails;
-class ResourceRequestDetails;
 class SSLPolicy;
 
 namespace content {
 class NavigationEntryImpl;
+struct ResourceRedirectDetails;
+struct ResourceRequestDetails;
 }
 
 namespace net {
 class SSLInfo;
-}  // namespace net
+}
 
 // The SSLManager SSLManager controls the SSL UI elements in a TabContents.  It
 // listens for various events that influence when these elements should or
@@ -98,8 +98,8 @@ class SSLManager : public content::NotificationObserver {
   // the type we need is in NavigationController which would create a circular
   // header file dependency.
   void DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details);
-  void DidStartResourceResponse(ResourceRequestDetails* details);
-  void DidReceiveResourceRedirect(ResourceRedirectDetails* details);
+  void DidStartResourceResponse(content::ResourceRequestDetails* details);
+  void DidReceiveResourceRedirect(content::ResourceRedirectDetails* details);
   void DidChangeSSLInternalState();
 
   // Update the NavigationEntry with our current state.

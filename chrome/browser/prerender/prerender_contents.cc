@@ -23,7 +23,7 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_request_details.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -36,6 +36,7 @@
 using content::DownloadItem;
 using content::OpenURLParams;
 using content::RenderViewHost;
+using content::ResourceRedirectDetails;
 using content::WebContents;
 
 namespace prerender {
@@ -434,9 +435,9 @@ void PrerenderContents::Observe(int type,
       ResourceRedirectDetails* resource_redirect_details =
           content::Details<ResourceRedirectDetails>(details).ptr();
       CHECK(resource_redirect_details);
-      if (resource_redirect_details->resource_type() ==
+      if (resource_redirect_details->resource_type ==
           ResourceType::MAIN_FRAME) {
-        if (!AddAliasURL(resource_redirect_details->new_url()))
+        if (!AddAliasURL(resource_redirect_details->new_url))
           return;
       }
       break;

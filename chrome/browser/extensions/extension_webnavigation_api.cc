@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_request_details.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -31,6 +31,7 @@
 namespace keys = extension_webnavigation_api_constants;
 
 using content::BrowserContext;
+using content::ResourceRedirectDetails;
 using content::WebContents;
 
 namespace {
@@ -536,10 +537,10 @@ void ExtensionWebNavigationTabObserver::Observe(
       ResourceRedirectDetails* resource_redirect_details =
           content::Details<ResourceRedirectDetails>(details).ptr();
       ResourceType::Type resource_type =
-          resource_redirect_details->resource_type();
+          resource_redirect_details->resource_type;
       if (resource_type == ResourceType::MAIN_FRAME ||
           resource_type == ResourceType::SUB_FRAME) {
-        int64 frame_id = resource_redirect_details->frame_id();
+        int64 frame_id = resource_redirect_details->frame_id;
         if (!navigation_state_.CanSendEvents(frame_id))
           return;
         navigation_state_.SetIsServerRedirected(frame_id);

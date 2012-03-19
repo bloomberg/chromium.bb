@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/resource_request_details.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
@@ -28,6 +28,8 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::ResourceDispatcherHostImpl;
+using content::ResourceRedirectDetails;
+using content::ResourceRequestDetails;
 using content::ResourceRequestInfoImpl;
 using content::SSLStatus;
 using content::WebContents;
@@ -184,11 +186,11 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
 
 void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
-      details->url(),
-      details->resource_type(),
-      details->origin_child_id(),
-      details->ssl_cert_id(),
-      details->ssl_cert_status()));
+      details->url,
+      details->resource_type,
+      details->origin_child_id,
+      details->ssl_cert_id,
+      details->ssl_cert_status));
 
   // Notify our policy that we started a resource request.  Ideally, the
   // policy should have the ability to cancel the request, but we can't do
