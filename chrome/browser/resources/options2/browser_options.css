@@ -134,8 +134,8 @@ input[type='range'] {
   vertical-align: baseline;
 }
 
-.network-group:hover,
-.network-group[selected] {
+list:not([disabled]) > .network-group:hover,
+list:not([disabled]) > .network-group[selected] {
   background-color: #f8f8f8 !important;
   background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
                                             rgba(255, 255, 255, 0)) !important;

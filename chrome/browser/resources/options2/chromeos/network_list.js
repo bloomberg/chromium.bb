@@ -765,6 +765,14 @@ cr.define('options.network', function() {
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
 
+    if (data.accessLocked) {
+      $('network-locked-message').hidden = false;
+      networkList.disabled = true;
+    } else {
+      $('network-locked-message').hidden = true;
+      networkList.disabled = false;
+    }
+
     // Only show Ethernet control if connected.
     var ethernetConnection = getConnection_(data.wiredList);
     if (ethernetConnection) {
@@ -936,6 +944,12 @@ cr.define('options.network', function() {
      // available once back-end suport is in place.
      return false;
   }
+
+  /**
+   * Whether the Network list is disabled. Only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(NetworkList, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
   // Export
   return {
