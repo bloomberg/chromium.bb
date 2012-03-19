@@ -150,7 +150,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 }
 
 // Restart the sync service on a client and make sure sync is up and running.
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, RestartSyncService) {
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
+                       DISABLED_RestartSyncService) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
