@@ -6,10 +6,13 @@
 #define ASH_WM_WORKSPACE_MULTI_WINDOW_RESIZE_CONTROLLER_H_
 #pragma once
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/mouse_watcher.h"
 
@@ -24,6 +27,7 @@ class Widget;
 namespace ash {
 namespace internal {
 
+class MultiWindowResizeControllerTest;
 class WorkspaceWindowResizer;
 
 // Two directions resizes happen in.
@@ -36,7 +40,7 @@ enum Direction {
 // widget that allows resizing multiple windows at the same time.
 // MultiWindowResizeController is driven by WorkspaceEventFilter.
 class ASH_EXPORT MultiWindowResizeController :
-    public views::MouseWatcherListener {
+    public views::MouseWatcherListener, public aura::WindowObserver {
  public:
   MultiWindowResizeController();
   virtual ~MultiWindowResizeController();
@@ -53,13 +57,19 @@ class ASH_EXPORT MultiWindowResizeController :
   // MouseWatcherListenre overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
 
+  // WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
  private:
+  friend class MultiWindowResizeControllerTest;
+
   // Used to track the two resizable windows and direction.
   struct ResizeWindows {
     ResizeWindows();
     ~ResizeWindows();
 
-    // Returns true if |other| equals this ResizeWindows.
+    // Returns true if |other| equals this ResizeWindows. This does *not*
+    // consider the windows in |other_windows|.
     bool Equals(const ResizeWindows& other) const;
 
     // Returns true if this ResizeWindows is valid.
@@ -73,6 +83,10 @@ class ASH_EXPORT MultiWindowResizeController :
 
     // Direction
     Direction direction;
+
+    // Windows after |window2| that are to be resized. Determined at the time
+    // the resize starts.
+    std::vector<aura::Window*> other_windows;
   };
 
   class ResizeMouseWatcherHost;
@@ -89,6 +103,18 @@ class ASH_EXPORT MultiWindowResizeController :
                                  int edge_want,
                                  int x,
                                  int y) const;
+
+  // Returns the first window touching |window|.
+  aura::Window* FindWindowTouching(aura::Window* window,
+                                   Direction direction) const;
+
+  // Places any windows touching |start| into |others|.
+  void FindWindowsTouching(aura::Window* start,
+                           Direction direction,
+                           std::vector<aura::Window*>* others) const;
+
+  // Hides the window after a delay.
+  void DelayedHide();
 
   // Shows the widget immediately.
   void ShowNow();
@@ -109,7 +135,7 @@ class ASH_EXPORT MultiWindowResizeController :
   void CancelResize();
 
   // Returns the bounds for the resize widget.
-  gfx::Rect CalculateResizeWidgetBounds() const;
+  gfx::Rect CalculateResizeWidgetBounds(const gfx::Point& location) const;
 
   // Returns true if |screen_location| is over the resize windows (or the resize
   // widget itself).
@@ -117,10 +143,14 @@ class ASH_EXPORT MultiWindowResizeController :
 
   // Returns true if |screen_location| is over |window|.
   bool IsOverWindow(aura::Window* window,
-                    const gfx::Point& screen_location) const;
+                    const gfx::Point& screen_location,
+                    int component) const;
 
   // Windows and direction to resize.
   ResizeWindows windows_;
+
+  // Timer before hiding.
+  base::OneShotTimer<MultiWindowResizeController> hide_timer_;
 
   // Timer used before showing.
   base::OneShotTimer<MultiWindowResizeController> show_timer_;
@@ -130,11 +160,19 @@ class ASH_EXPORT MultiWindowResizeController :
   // If non-null we're in a resize loop.
   scoped_ptr<WorkspaceWindowResizer> window_resizer_;
 
+  // Mouse coordinate passed to Show().
+  gfx::Point show_location_;
+
   // Bounds the widget was last shown at.
   gfx::Rect show_bounds_;
 
   // Size of the grid.
   int grid_size_;
+
+  // Used to detect whether the mouse is over the windows. While
+  // |resize_widget_| is non-NULL (ie the widget is showing) we ignore calls
+  // to Show().
+  scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiWindowResizeController);
 };

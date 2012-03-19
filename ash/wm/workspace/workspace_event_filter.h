@@ -18,6 +18,8 @@ class Window;
 namespace ash {
 namespace internal {
 
+class WorkspaceEventFilterTestHelper;
+
 class WorkspaceEventFilter : public ToplevelWindowEventFilter,
                              public aura::WindowObserver {
  public:
@@ -38,6 +40,8 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
                                              int window_component) OVERRIDE;
 
  private:
+  friend class WorkspaceEventFilterTestHelper;
+
   // Updates the top-level window under the mouse so that we can change
   // the look of the caption area based on mouse-hover.
   void UpdateHoveredWindow(aura::Window* toplevel);

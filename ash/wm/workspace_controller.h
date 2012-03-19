@@ -29,6 +29,7 @@ class Widget;
 namespace ash {
 namespace internal {
 
+class WorkspaceControllerTestHelper;
 class WorkspaceEventFilter;
 class WorkspaceLayoutManager;
 class WorkspaceManager;
@@ -53,6 +54,9 @@ class ASH_EXPORT WorkspaceController :
   // Shows the menu allowing you to configure various aspects of workspaces.
   void ShowMenu(views::Widget* widget, const gfx::Point& location);
 
+  // Sets the size of the grid.
+  void SetGridSize(int grid_size);
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -67,6 +71,8 @@ class ASH_EXPORT WorkspaceController :
       ui::Accelerator* accelerator) OVERRIDE;
 
  private:
+  friend class WorkspaceControllerTestHelper;
+
   enum MenuItem {
     MENU_SNAP_TO_GRID,
   };

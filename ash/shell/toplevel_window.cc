@@ -19,9 +19,12 @@ ToplevelWindow::CreateParams::CreateParams()
 
 // static
 void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
+  static int count = 0;
+  int x = count == 0 ? 50 : 350;
+  count = (count + 1) % 2;
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),
-                                            gfx::Rect(120, 150, 400, 300));
+                                            gfx::Rect(x, 150, 300, 300));
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
   widget->Show();
 }

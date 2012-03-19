@@ -38,8 +38,7 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       root_window, workspace_manager_.get());
   viewport->SetLayoutManager(layout_manager_);
   root_window->AddObserver(this);
-  workspace_manager_->set_grid_size(kGridSize);
-  event_filter_->set_grid_size(kGridSize);
+  SetGridSize(kGridSize);
 }
 
 WorkspaceController::~WorkspaceController() {
@@ -71,6 +70,11 @@ void WorkspaceController::ShowMenu(views::Widget* widget,
 #endif  // !defined(OS_MACOSX)
 }
 
+void WorkspaceController::SetGridSize(int grid_size) {
+  workspace_manager_->set_grid_size(grid_size);
+  event_filter_->set_grid_size(grid_size);
+}
+
 void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
                                                   const void* key,
                                                   intptr_t old) {
@@ -97,8 +101,7 @@ void WorkspaceController::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_SNAP_TO_GRID: {
       int size = workspace_manager_->grid_size() == 0 ? kGridSize : 0;
-      workspace_manager_->set_grid_size(size);
-      event_filter_->set_grid_size(size);
+      SetGridSize(size);
       if (!size)
         return;
       for (size_t i = 0; i < viewport_->children().size(); ++i) {
