@@ -1010,7 +1010,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "42748a86c686a58b7c6b11259bb52c75e4bb5bc7",
+      "source_hash": "1471f89d096904006237c6bd4dc9b4212161647d",
       "zip_path": "examples\/api\/fontSettings.zip"
     },
     {
@@ -2214,7 +2214,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "61ccd353013bfd844716c43d0f0a46cde5d1690a",
+      "source_hash": "a6789cf4474d6497960c2f82437109953d4ed1e5",
       "zip_path": "examples\/api\/storage\/stylizr.zip"
     },
     {

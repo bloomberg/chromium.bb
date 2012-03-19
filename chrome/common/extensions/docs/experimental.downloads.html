@@ -207,6 +207,8 @@
             <a href="#properties">Properties</a>
             <ol>
               <li>
+                <a href="#property-DANGER_UNCOMMON">DANGER_UNCOMMON</a>
+              </li><li>
                 <a href="#property-ERROR_GENERIC">ERROR_GENERIC</a>
               </li><li>
                 <a href="#property-ERROR_INVALID_URL">ERROR_INVALID_URL</a>
@@ -226,6 +228,10 @@
             <ol>
               <li>
                 <a href="#type-HttpHeaders">HttpHeaders</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-DownloadDangerType">DownloadDangerType</a>
                 <ol>
                 </ol>
               </li>
@@ -275,6 +281,33 @@ directory. For other examples and for help in viewing the source code, see
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
             <div>
+              <a name="property-DANGER_UNCOMMON"></a>
+              <h4>DANGER_UNCOMMON</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.experimental.downloads.</span><span>DANGER_UNCOMMON</span>
+              </div>
+              <div>
+          <dt>
+            <var>DANGER_UNCOMMON</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <code>"uncommon"</code>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The download is not commonly downloaded and could be dangerous.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div>
               <a name="property-ERROR_GENERIC"></a>
               <h4>ERROR_GENERIC</h4>
               <div class="summary">
@@ -711,6 +744,32 @@ directory. For other examples and for help in viewing the source code, see
               </div>
             </dl>
           </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-DownloadDangerType"></a>
+              <h4>DownloadDangerType</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["safe", "file", "url", "content", "uncommon"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>String indicating whether a download is known to be safe or is considered dangerous. The values correspond to the <code>DANGER_SAFE</code>, <code>DANGER_FILE</code>, <code>DANGER_URL</code>, <code>DANGER_CONTENT</code>, and <code>DANGER_UNCOMMON</code> properties.</dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

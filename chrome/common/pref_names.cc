@@ -141,9 +141,12 @@ const char kWebKitFantasyFontFamilyMap[] =
 
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
-// TODO(falken): Add all the scripts we should support.
-const char* const kWebKitScriptsForFontFamilyMaps[] =
-    { "Arab", "Hang", "Hans", "Hant", "Hrkt" };
+const char* const kWebKitScriptsForFontFamilyMaps[] = {
+    "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
+    "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
+    "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
+    "Thaa", "Thai", "Tibt", "Yiii"
+};
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
     arraysize(kWebKitScriptsForFontFamilyMaps);
