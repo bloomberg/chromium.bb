@@ -39,5 +39,8 @@ SSLClientSocketTest.*
 # See http://crbug.com/104805
 HostResolverImplTest.AbortOnlyExistingRequestsOnIPAddressChange
 
+# Fails, see http://crbug.com/118874
+DnsConfigServiceTest.*GetSystemConfig
+
 # See http://crbug.com/50346
 DiskCacheEntryTest.*
