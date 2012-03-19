@@ -18,6 +18,7 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura::WindowPropertyWatcher
@@ -80,8 +81,11 @@ void BrowserFrameAura::ShowContextMenuForView(views::View* source,
   // if NonClientHitTest returns :
   // - HTCAPTION: in title bar or unobscured part of tabstrip
   // - HTNOWHERE: as the name implies.
-  int hit_test = browser_view()->frame()->non_client_view()->
-      NonClientHitTest(p);
+  views::NonClientView* non_client_view = browser_view()->frame()->
+      non_client_view();
+  gfx::Point point_in_view_coords(p);
+  views::View::ConvertPointFromScreen(non_client_view, &point_in_view_coords);
+  int hit_test = non_client_view->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
     SystemMenuModelDelegate menu_delegate(browser_view(),
                                           browser_view()->browser());
