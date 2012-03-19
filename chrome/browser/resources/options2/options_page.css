@@ -423,17 +423,18 @@ html[enable-background-mode=false] #background-mode-section {
 /* UI Controls */
 
 /* LIST */
-html:not([os=mac]) list[hasElementFocus] {
+list[hasElementFocus] {
+<if expr="not is_macosx">
   outline: 1px solid rgba(0, 128, 256, 0.5);
   outline-offset: -2px;
-}
-
-/* This matches the native list outline on Mac */
-html[os=mac] list[hasElementFocus] {
+</if>
+<if expr="is_macosx">
+  /* This matches the native list outline on Mac */
   outline-color: rgb(117, 154, 217);
   outline-offset: -1px;
   outline-style: auto;
   outline-width: 5px;
+</if>
 }
 
 .suboption {

@@ -40,20 +40,23 @@
 
 .language-options-left {
   -webkit-box-orient: vertical;
+<if expr="not is_macosx">
   background-color: rgb(235, 239, 249);
+</if>
+<if expr="is_macosx">
+  background-color: white;
+</if>
   display: -webkit-box;
   width: 300px;
 }
 
 /* On OS X we use the native OS spellchecker, so don't display the dictionary */
 /* pane. */
-html[os=mac] .language-options-left {
- background-color: white;
+<if expr="is_macosx">
+.language-options-right {
+  visibility: hidden;
 }
-
-html[os=mac] .language-options-right {
- visibility: hidden;
-}
+</if>
 
 .language-options-lower-left {
   -webkit-box-flex: 0;
@@ -134,29 +137,28 @@ html[os=mac] .language-options-right {
   margin-top: 12px;
 }
 
-/*
- * In ChromeOS we present the language choices as a big page of links.
- */
-
-html[os=chromeos] #add-language-overlay-language-list {
+/* In ChromeOS we present the language choices as a big page of links. */
+<if expr="pp_ifdef('chromeos')">
+#add-language-overlay-language-list {
   -webkit-column-count: 2;
   -webkit-column-gap: 20px;
 }
 
-html[os=chromeos] #add-language-overlay-page {
+#add-language-overlay-page {
   padding: 20px;
   width: 800px;
 }
 
-html[os=chromeos] #add-language-overlay-page button.link-button {
+#add-language-overlay-page button.link-button {
   padding: 0;
   text-align: left;
 }
 
-html[os=chromeos] #add-language-overlay-page ul {
+#add-language-overlay-page ul {
   margin: 0;
   padding: 0;
 }
+</if>
 
 /* TODO(kochi): This is temporary copy from new_tab.css */
 /* Notification */
