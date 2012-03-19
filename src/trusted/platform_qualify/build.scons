@@ -58,11 +58,17 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   elif env.Bit('target_x86_32'):
     pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
-  env.ComponentProgram('platform_qual_test',
-                       'arch/x86/platform_qual_test.c')
-  env.ComponentProgram('nacl_cpuwhitelist_test',
-                       'arch/x86/nacl_cpuwhitelist_test.c')
+  platform_qual_test = env.ComponentProgram(
+      'platform_qual_test', 'arch/x86/platform_qual_test.c')
+  node = env.CommandTest('platform_qual_test.out', [platform_qual_test])
+  env.AddNodeToTestSuite(
+      node, ['small_tests'], 'run_platform_qual_test',
+      is_broken=env.IsRunningUnderValgrind() or env.Bit('asan'))
 
+  cpuwhitelist_test = env.ComponentProgram(
+      'cpuwhitelist_test', 'arch/x86/nacl_cpuwhitelist_test.c')
+  node = env.CommandTest('cpuwhitelist_test.out', [cpuwhitelist_test])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpuwhitelist_test')
 
 
 if env.Bit('build_arm'):
