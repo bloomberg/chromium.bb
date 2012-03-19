@@ -98,34 +98,4 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
   EXPECT_EQ(open_url1_etc_caption, change->GetApplyButtonText());
 }
 
-TEST_F(SessionStartupChangeTest, DiscardButtonCaptions) {
-  // Discard button captions for "Open NTP" and "Open specific URLs" cases.
-  string16 open_ntp_caption =
-      l10n_util::GetStringUTF16(IDS_KEEP_STARTUP_SETTINGS_NTP);
-  string16 open_url1_etc_caption =
-      l10n_util::GetStringFUTF16(IDS_KEEP_STARTUP_SETTINGS_URLS,
-                                 UTF8ToUTF16(GURL(kStartupUrl1).host()));
-
-  // "Open URLs" with no URLs is the same as "Open NTP".
-  SessionStartupPref backup_startup_pref(SessionStartupPref::URLS);
-  scoped_ptr<BaseSettingChange> change(
-      CreateSessionStartupChange(initial_startup_pref_, backup_startup_pref));
-  ASSERT_TRUE(change->Init(&profile_));
-  EXPECT_EQ(open_ntp_caption, change->GetDiscardButtonText());
-
-  // Single URL.
-  backup_startup_pref.urls.push_back(GURL(kStartupUrl1));
-  change.reset(
-      CreateSessionStartupChange(initial_startup_pref_, backup_startup_pref));
-  ASSERT_TRUE(change->Init(&profile_));
-  EXPECT_EQ(open_url1_etc_caption, change->GetDiscardButtonText());
-
-  // Multiple URLs: name of the first one used.
-  backup_startup_pref.urls.push_back(GURL(kStartupUrl2));
-  change.reset(
-      CreateSessionStartupChange(initial_startup_pref_, backup_startup_pref));
-  ASSERT_TRUE(change->Init(&profile_));
-  EXPECT_EQ(open_url1_etc_caption, change->GetDiscardButtonText());
-}
-
 }  // namespace protector

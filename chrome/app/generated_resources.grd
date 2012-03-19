@@ -1271,32 +1271,20 @@ are declared in build/common.gypi.
         Attempted startup settings change
       </message>
       <message name="IDS_STARTUP_SETTINGS_CHANGE_BUBBLE_MESSAGE" desc="The text of the startup settings change notification.">
-        Arrr! Something tried to commandeer your startup settings!
+        Arrr! Something tried to commandeer the pages you'd like to see at startup:
       </message>
-      <message name="IDS_KEEP_STARTUP_SETTINGS_RESTORE" desc="The title of the button that confirms staying with the previous startup settings to restore the session.">
-        Keep restoring open pages
-      </message>
-      <message name="IDS_KEEP_STARTUP_SETTINGS_NTP" desc="The title of the button that confirms staying with the previous startup settings to open the NTP.">
-        Keep opening the New Tab Page
-      </message>
-      <message name="IDS_KEEP_STARTUP_SETTINGS_URLS" desc="The title of the button that confirms staying with the previous startup settings to open a specific page.">
-        Keep opening <ph name="DOMAIN">$1<ex>google.com</ex></ph>
-      </message>
-      <message name="IDS_CHANGE_STARTUP_SETTINGS_RESTORE" desc="The title of the button that accepts new startup settings to restore the session.">
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_RESTORE" desc="The title of the button that accepts new startup settings to restore the session. Must be kept short.">
         Change to restoring open pages
       </message>
-      <message name="IDS_CHANGE_STARTUP_SETTINGS_NTP" desc="The title of the button that accepts new startup settings to open the NTP.">
-        Change to opening the New Tab Page
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_NTP" desc="The title of the button that accepts new startup settings to open the NTP. Must be kept short.">
+        Change to New Tab Page
       </message>
-      <message name="IDS_CHANGE_STARTUP_SETTINGS_URLS" desc="The title of the button that accepts new startup settings to open a specific page.">
-        Change to opening <ph name="URL">$1<ex>google.com</ex></ph>
-      </message>
-      <message name="IDS_SELECT_STARTUP_SETTINGS" desc="The title of the button that opens a settings page, allowing user to select the startup settings to use.">
-        Select startup settings...
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_URLS" desc="The title of the button that accepts new startup settings to open a specific page. Must be kept short.">
+        Change to <ph name="URL">$1<ex>google.com</ex></ph>
       </message>
 
-      <message name="IDS_KEEP_SETTING" desc="The title of the button that confirms staying with the previous setting.">
-        Keep existing setting
+      <message name="IDS_KEEP_SETTING" desc="The title of the button that confirms staying with the previous settings.">
+        Keep my settings
       </message>
 
       <!-- Keywords -->

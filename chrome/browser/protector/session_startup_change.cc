@@ -135,26 +135,7 @@ string16 SessionStartupChange::GetApplyButtonText() const {
 }
 
 string16 SessionStartupChange::GetDiscardButtonText() const {
-  switch (backup_pref_.type) {
-    case SessionStartupPref::DEFAULT:
-      return l10n_util::GetStringUTF16(IDS_KEEP_STARTUP_SETTINGS_NTP);
-
-    case SessionStartupPref::LAST:
-      return l10n_util::GetStringUTF16(IDS_KEEP_STARTUP_SETTINGS_RESTORE);
-
-    case SessionStartupPref::URLS:
-      if (backup_pref_.urls.empty()) {
-        return l10n_util::GetStringUTF16(IDS_KEEP_STARTUP_SETTINGS_NTP);
-      } else {
-        string16 first_url = UTF8ToUTF16(backup_pref_.urls[0].host());
-        return l10n_util::GetStringFUTF16(IDS_KEEP_STARTUP_SETTINGS_URLS,
-                                          first_url);
-      }
-
-    default:
-      NOTREACHED();
-      return string16();
-  }
+  return l10n_util::GetStringUTF16(IDS_KEEP_SETTING);
 }
 
 BaseSettingChange* CreateSessionStartupChange(
