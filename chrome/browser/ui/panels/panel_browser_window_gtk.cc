@@ -430,6 +430,8 @@ void PanelBrowserWindowGtk::PanelPaste() {
 }
 
 void PanelBrowserWindowGtk::DrawAttention(bool draw_attention) {
+  DCHECK((panel_->attention_mode() & Panel::USE_PANEL_ATTENTION) != 0);
+
   if (is_drawing_attention_ == draw_attention)
     return;
 
@@ -440,6 +442,9 @@ void PanelBrowserWindowGtk::DrawAttention(bool draw_attention) {
       gtk_widget_get_window(GTK_WIDGET(window())), &rect, TRUE);
 
   UpdateTitleBar();
+
+  if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0)
+    ::BrowserWindowGtk::FlashFrame(draw_attention);
 }
 
 bool PanelBrowserWindowGtk::IsDrawingAttention() const {
@@ -714,7 +719,7 @@ void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
   if (!is_drawing_attention_)
     return;
 
-  DrawAttention(false);
+  panel_->FlashFrame(false);
   DCHECK(panel_->expansion_state() == Panel::EXPANDED);
 
   disableMinimizeUntilTime_ = base::Time::Now() +

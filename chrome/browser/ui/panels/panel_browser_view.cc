@@ -190,7 +190,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
       panel_->SetExpansionState(Panel::EXPANDED);
 
     if (is_drawing_attention_) {
-      DrawAttention(false);
+      panel_->FlashFrame(false);
 
       // Restore the panel from title-only mode here. Could not do this in the
       // code above.
@@ -371,10 +371,15 @@ void PanelBrowserView::PanelPaste() {
 }
 
 void PanelBrowserView::DrawAttention(bool draw_attention) {
+  DCHECK((panel_->attention_mode() & Panel::USE_PANEL_ATTENTION) != 0);
+
   if (is_drawing_attention_ == draw_attention)
     return;
   is_drawing_attention_ = draw_attention;
   GetFrameView()->SchedulePaint();
+
+  if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0)
+    ::BrowserView::FlashFrame(draw_attention);
 }
 
 bool PanelBrowserView::IsDrawingAttention() const {

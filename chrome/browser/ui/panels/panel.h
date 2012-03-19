@@ -42,6 +42,17 @@ class Panel : public BrowserWindow,
    MINIMIZED
   };
 
+  // Controls how the attention should be drawn.
+  enum AttentionMode {
+    // Uses the panel attention. The panel's titlebar would be painted
+    // differently to attract the user's attention. This is the default mode.
+    USE_PANEL_ATTENTION = 0x01,
+    // Uses the system attention. On Windows or Linux (depending on Window
+    // Manager), the app icon on taskbar will be flashed. On MacOS, the dock
+    // icon will jump once.
+    USE_SYSTEM_ATTENTION = 0x02
+  };
+
   // The panel can be minimized to 4-pixel lines.
   static const int kMinimizedPanelHeight = 4;
 
@@ -235,6 +246,11 @@ class Panel : public BrowserWindow,
 
   bool draggable() const;
 
+  AttentionMode attention_mode() const { return attention_mode_; }
+  void set_attention_mode(AttentionMode attention_mode) {
+    attention_mode_ = attention_mode;
+  }
+
   // The restored size is the size of the panel when it is expanded.
   gfx::Size restored_size() const { return restored_size_; }
   void set_restored_size(const gfx::Size& size) { restored_size_ = size; }
@@ -335,6 +351,8 @@ class Panel : public BrowserWindow,
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
+
+  AttentionMode attention_mode_;
 
   ExpansionState expansion_state_;
 

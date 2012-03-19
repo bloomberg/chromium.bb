@@ -47,6 +47,7 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     bounds_(bounds),
     is_shown_(false),
     has_find_bar_(false),
+    attention_request_id_(0),
     activation_requested_by_browser_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
   browser_->tabstrip_model()->AddObserver(this);
@@ -203,11 +204,24 @@ void PanelBrowserWindowCocoa::PanelPaste() {
 }
 
 void PanelBrowserWindowCocoa::DrawAttention(bool draw_attention) {
+  DCHECK((panel_->attention_mode() & Panel::USE_PANEL_ATTENTION) != 0);
+
   PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
   if (draw_attention)
     [titlebar drawAttention];
   else
     [titlebar stopDrawingAttention];
+
+  if ((panel_->attention_mode() & Panel::USE_SYSTEM_ATTENTION) != 0) {
+    if (draw_attention) {
+      DCHECK(!attention_request_id_);
+      attention_request_id_ =
+          [NSApp requestUserAttention:NSInformationalRequest];
+    } else {
+      [NSApp cancelUserAttentionRequest:attention_request_id_];
+      attention_request_id_ = 0;
+    }
+  }
 }
 
 bool PanelBrowserWindowCocoa::IsDrawingAttention() const {

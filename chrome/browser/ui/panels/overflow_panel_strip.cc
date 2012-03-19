@@ -99,6 +99,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel,
   }
 
   // Set panel properties for this strip.
+  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(false);
 
   if (num_panels() == 1) {

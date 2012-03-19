@@ -119,6 +119,7 @@ class PanelBrowserWindowCocoa : public NativePanel,
   PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
   bool has_find_bar_; // Find bar should only be created once per panel.
+  NSInteger attention_request_id_;  // identifier from requestUserAttention.
 
   // Allow a panel to become key if activated via browser logic, as opposed
   // to by default system selection. The system will prefer a panel

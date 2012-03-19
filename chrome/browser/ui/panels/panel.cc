@@ -52,6 +52,8 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       auto_resizable_(false),
       always_on_top_(false),
       in_preview_mode_(false),
+      native_panel_(NULL),
+      attention_mode_(USE_PANEL_ATTENTION),
       expansion_state_(EXPANDED) {
 }
 
@@ -246,15 +248,18 @@ bool Panel::IsActive() const {
   return native_panel_->IsPanelActive();
 }
 
-void Panel::FlashFrame(bool flash) {
-  if (IsDrawingAttention() == flash || !panel_strip_)
+void Panel::FlashFrame(bool draw_attention) {
+  if (IsDrawingAttention() == draw_attention || !panel_strip_)
     return;
 
   // Don't draw attention for an active panel.
-  if (flash && IsActive())
+  if (draw_attention && IsActive())
     return;
 
-  native_panel_->DrawAttention(flash);
+  // Invoking native panel to draw attention must be done before informing the
+  // panel strip because it needs to check internal state of the panel to
+  // determine if the panel has been drawing attention.
+  native_panel_->DrawAttention(draw_attention);
   panel_strip_->OnPanelAttentionStateChanged(this);
 }
 

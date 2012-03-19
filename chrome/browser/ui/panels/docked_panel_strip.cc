@@ -109,6 +109,7 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
                       gfx::Size(max_panel_width, max_panel_height));
 
+  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(true);
   panel->SetAlwaysOnTop(true);
 }

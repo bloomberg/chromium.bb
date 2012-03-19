@@ -40,6 +40,9 @@ void DetachedPanelStrip::AddPanel(Panel* panel,
   panel->SetPanelStrip(this);
   panels_.insert(panel);
 
+  panel->set_attention_mode(
+      static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
+                                        Panel::USE_SYSTEM_ATTENTION));
   panel->SetAlwaysOnTop(false);
 }
 
