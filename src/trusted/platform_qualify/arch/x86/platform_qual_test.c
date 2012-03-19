@@ -46,9 +46,6 @@ int main() {
    * printf("CPU is whitelisted\n");
    */
 
-  if (NaClOsRestoresLdt() != 1) return -1;
-  printf("OS restores LDT\n");
-
   printf("platform_qual_test: PASS\n");
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -64,13 +64,4 @@ int NaClOsIsSupported() {
  */
 int NaClOsIs64BitWindows() {
   return 0;
-}
-
-/*
- * Returns 1 if the operating system is a version that restores the
- * local descriptor table of processes.  This determines which 64-bit
- * solution is required to execute Native Client modules.
- */
-int NaClOsRestoresLdt() {
-  return 1;
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -70,42 +70,5 @@ int NaClOsIs64BitWindows() {
      */
     return 1;
   }
-  return 0;
-}
-
-/*
- * Returns 1 if the operating system is a version that restores the
- * local descriptor table of processes.  This determines which 64-bit
- * solution is required to execute Native Client modules.
- */
-int NaClOsRestoresLdt() {
-  OSVERSIONINFO version_info;
-
-  if (!NaClOsIs64BitWindows()) {
-    /*
-     * All known 32-bit versions of Windows restore the LDT after context
-     * switches.
-     */
-    return 1;
-  }
-  memset(&version_info, 0, sizeof(version_info));
-  version_info.dwOSVersionInfoSize = sizeof(version_info);
-  if (!GetVersionEx(&version_info)) {
-    /* If the API doesn't work we have to assume the worst. */
-    return 0;
-  }
-
-  if (6 == version_info.dwMajorVersion &&
-      1 == version_info.dwMinorVersion) {
-    /*
-     * Windows 7 is believed to restore the LDT on context switches.
-     * This code also allows Windows Server 2008 R2.
-     * TODO(sehr): Need to confirm Windows Server 2008 R2.
-     */
-    return 1;
-  }
-  /*
-   * Every other 64-bit version may have issues restoring the LDT.
-   */
   return 0;
 }
