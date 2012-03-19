@@ -65,7 +65,6 @@
           'plugin_ppb_gamepad.cc',
           'plugin_ppb_graphics_2d.cc',
           'plugin_ppb_graphics_3d.cc',
-          'plugin_ppb_host_resolver_private.cc',
           'plugin_ppb_image_data.cc',
           'plugin_ppb_input_event.cc',
           'plugin_ppb_instance.cc',

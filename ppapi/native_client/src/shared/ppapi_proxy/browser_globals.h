@@ -36,7 +36,6 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
-#include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
@@ -113,7 +112,6 @@ const PPB_Gamepad* PPBGamepadInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_Graphics3D* PPBGraphics3DInterface();
 const PPB_Graphics3DTrusted* PPBGraphics3DTrustedInterface();
-const PPB_HostResolver_Private* PPBHostResolverPrivateInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_InputEvent* PPBInputEventInterface();
