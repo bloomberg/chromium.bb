@@ -1,4 +1,5 @@
 { u'prod_enterprise_executive_user': {
+    u'user_recommended_policies': {},
     u'user_mandatory_policies': {
       u'ExtensionInstallForcelist': [
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
@@ -11,6 +12,7 @@
          'https://clients2.google.com/service/update2/crx')],
       u'PolicyRefreshRate': 28800000,
       u'PrintingEnabled': True}},
+
   u'prod_enterprise_sales_user': {
     u'user_mandatory_policies': {
       u'AlternateErrorPagesEnabled': False,
@@ -72,6 +74,7 @@
         u'news.yahoo.com',
         u'slashdot.org/popular'],
       u'URLWhitelist': [u'https://google.com']}},
+
   u'prod_enterprise_development_user': {
     u'user_mandatory_policies': {
       u'AlternateErrorPagesEnabled': True,
@@ -127,6 +130,7 @@
       u'SearchSuggestEnabled': True,
       u'ShowHomeButton': True,
       u'SyncDisabled': False}},
+
   u'prod_enterprise_test_user': {
     u'user_mandatory_policies': {
       u'PolicyRefreshRate': 5400000,
@@ -186,6 +190,7 @@
       u'SyncDisabled': False,
       u'URLWhitelist': [u'https://google.com'],
       u'DefaultImagesSetting': 1, u'DefaultSearchProviderEnabled': True}},
+
   u'prod_enterprise_operations_user': {
     u'user_mandatory_policies': {
       u'ChromeOsLockOnIdleSuspend': True,
@@ -245,6 +250,7 @@
         u'news.yahoo.com',
         u'slashdot.org/popular'],
       u'URLWhitelist': [u'https://google.com']}},
+
   u'test_enterprise_executive_user': {
     u'user_mandatory_policies': {
       u'ExtensionInstallForcelist': [
@@ -258,6 +264,7 @@
          'https://clients2.google.com/service/update2/crx')],
       u'PolicyRefreshRate': 28800000,
       u'PrintingEnabled': True}},
+
   u'test_enterprise_sales_user': {
     u'user_mandatory_policies': {
       u'AlternateErrorPagesEnabled': False,
@@ -319,6 +326,7 @@
         u'news.yahoo.com',
         u'slashdot.org/popular'],
       u'URLWhitelist': [u'https://google.com']}},
+
   u'test_enterprise_development_user': {
     u'user_mandatory_policies': {
       u'AlternateErrorPagesEnabled': True,
@@ -374,6 +382,7 @@
       u'SearchSuggestEnabled': True,
       u'ShowHomeButton': True,
       u'SyncDisabled': False}},
+
   u'test_enterprise_test_user': {
     u'user_mandatory_policies': {
       u'PolicyRefreshRate': 5400000,
@@ -433,6 +442,7 @@
       u'SyncDisabled': False,
       u'URLWhitelist': [u'https://google.com'],
       u'DefaultImagesSetting': 1, u'DefaultSearchProviderEnabled': True}},
+
   u'test_enterprise_operations_user': {
     u'user_mandatory_policies': {
       u'ChromeOsLockOnIdleSuspend': True,
@@ -491,5 +501,115 @@
         u'ftp://*',
         u'news.yahoo.com',
         u'slashdot.org/popular'],
-      u'URLWhitelist': [u'https://google.com']}}
+      u'URLWhitelist': [u'https://google.com']}},
+
+  u'prod_enterprise_crosprqa0_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {}},
+
+  u'prod_enterprise_crosprqa2_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceDataRoamingEnabled': False,
+      u'DeviceMetricsReportingEnabled': True,
+      u'DeviceShowUserNamesOnSignin': True}},
+
+  u'prod_enterprise_crosprqa3_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceUserWhitelist': [
+        u'bob.exc@crosprqa1.com',
+        u'*@crosprqa3.com',
+        u'*@crosprqa2.com',
+        u'*@crosprqa0.com',
+        u'*@gmail.com'],
+      u'DeviceDataRoamingEnabled': True,
+      u'DeviceMetricsReportingEnabled': True,
+      u'DeviceShowUserNamesOnSignin': True}},
+
+  u'prod_enterprise_crosprqa4_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceGuestModeEnabled': False,
+      u'DeviceUserWhitelist': [
+        u'adm@crosprqa4.com',
+        u'scott@crosprqa4.com',
+        u'bob.exc@crosprqa4.com',
+        u'bill.fac@crosprqa4.com',
+        u'carl.ops@crosprqa4.com',
+        u'code.dev@crospcrosprqa4.com',
+        u'ddt.teg@crosprqa4.com',
+        u'dil.int@crosprqa4.com',
+        u'greg.sal@crosprqa4.com',
+        u'kim.ins@crosprqa4.com',
+        u'rudy.exs@crosprqa4.com',
+        u'tom.eng@crosprqa4.com',
+        u'exc1@crosprqa4.com',
+        u'sal1@crosprqa4.com',
+        u'dev1@crosprqa4.com',
+        u'teg1@crosprqa4.com',
+        u'eng1@crosprqa4.com',
+        u'ops1@crosprqa4.com',
+        u'*@crosprqa0.com',
+        u'*@crosprqa2.com',
+        u'*@crosprqa3.com'],
+      u'ChromeOsReleaseChannel': u'domain',
+      u'DeviceDataRoamingEnabled': False,
+      u'DeviceMetricsReportingEnabled': False,
+      u'DeviceShowUserNamesOnSignin': False}},
+
+  u'test_enterprise_crosqa0_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {}},
+
+  u'test_enterprise_crosqa2_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceDataRoamingEnabled': False,
+      u'DeviceMetricsReportingEnabled': True,
+      u'DeviceShowUserNamesOnSignin': True}},
+
+  u'test_enterprise_crosqa3_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceUserWhitelist': [
+        u'bob.exc@crosprqa1.com',
+        u'*@crosqa3.com',
+        u'*@crosqa2.com',
+        u'*@crosqa0.com',
+        u'*@gmail.com'],
+      u'DeviceDataRoamingEnabled': True,
+      u'DeviceMetricsReportingEnabled': True,
+      u'DeviceShowUserNamesOnSignin': True}},
+
+  u'test_enterprise_crosqa4_user': {
+    u'device_recommended_policies': {},
+    u'device_mandatory_policies': {
+      u'DeviceGuestModeEnabled': False,
+      u'DeviceUserWhitelist': [
+        u'adm@crosqa4.com',
+        u'scott@crosqa4.com',
+        u'bob.exc@crosqa4.com',
+        u'bill.fac@crosqa4.com',
+        u'carl.ops@crosqa4.com',
+        u'code.dev@crosqa4.com',
+        u'ddt.teg@crosqa4.com',
+        u'dil.int@crosqa4.com',
+        u'greg.sal@crosqa4.com',
+        u'kim.ins@crosqa4.com',
+        u'rudy.exs@crosqa4.com',
+        u'tom.eng@crosqa4.com',
+        u'exc1@crosqa4.com',
+        u'sal1@crosqa4.com',
+        u'dev1@crosqa4.com',
+        u'teg1@crosqa4.com',
+        u'eng1@crosqa4.com',
+        u'ops1@crosqa4.com',
+        u'*@crosqa0.com',
+        u'*@crosqa2.com',
+        u'*@crosqa3.com'],
+      u'ChromeOsReleaseChannel': u'domain',
+      u'DeviceDataRoamingEnabled': False,
+      u'DeviceMetricsReportingEnabled': False,
+      u'DeviceShowUserNamesOnSignin': False}},
 }
