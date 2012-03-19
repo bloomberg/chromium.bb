@@ -521,8 +521,7 @@ hg-bot-sanity() {
   fi
 
   if ! hg-on-branch "${dir}" pnacl-sfi ||
-     hg-has-changes "${dir}" ||
-     hg-has-untracked "${dir}" ; then
+     hg-has-changes "${dir}" ; then
     Banner "WARNING: ${name} repository is in an illegal state." \
            "         Wiping and trying again."
     rm -rf "${dir}"

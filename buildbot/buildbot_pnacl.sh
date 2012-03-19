@@ -360,9 +360,9 @@ mode-buildbot-arm() {
   gyp-arm-build Release
 
   scons-tests "arm" "${mode} -j8 -k" ""
-  scons-tests "arm" "${mode} -k" "small_tests"
-  scons-tests "arm" "${mode} -k" "medium_tests"
-  scons-tests "arm" "${mode} -k" "large_tests"
+  # Run all 3 test suites in a single scons invocation to minimize
+  # processing time of *.scons files
+  scons-tests "arm" "${mode} -k" "small_tests medium_tests large_tests"
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
   # Running a subset here (and skipping in scons-test() itself).
@@ -389,9 +389,8 @@ mode-buildbot-arm-try() {
 mode-buildbot-arm-hw() {
   FAIL_FAST=false
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
-  scons-tests-no-translator "arm" "${flags} -k" "small_tests"
-  scons-tests-no-translator "arm" "${flags} -k" "medium_tests"
-  scons-tests-no-translator "arm" "${flags} -k" "large_tests"
+  scons-tests-no-translator "arm" "${flags} -k" \
+     "small_tests medium_tests large_tests"
   browser-tests "arm" "${flags}"
 }
 
