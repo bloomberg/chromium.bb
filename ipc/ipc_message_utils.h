@@ -93,7 +93,6 @@ enum IPCMessageStart {
   TextInputClientMsgStart,
   ChromeUtilityMsgStart,
   MediaStreamMsgStart,
-  ChromePluginMsgStart,
   ChromeBenchmarkingMsgStart,
   IntentsMsgStart,
   JavaBridgeMsgStart,

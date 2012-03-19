@@ -6,7 +6,6 @@
 
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/benchmarking_messages.h"
-#include "chrome/common/chrome_plugin_messages.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/icon_messages.h"
