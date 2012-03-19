@@ -17,8 +17,9 @@
 #include "chrome/test/ui/ui_test.h"
 #include "content/common/test_url_constants.h"
 #include "content/public/common/url_constants.h"
-#include "content/test/net/url_request_failed_dns_job.h"
+#include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -351,7 +352,9 @@ TEST_F(ResourceDispatcherTest, DISABLED_CrossSiteNavigationErrorPage) {
   // http://crbug.com/22877.
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
             tab->NavigateToURLBlockUntilNavigationsComplete(
-                GURL(URLRequestFailedDnsJob::kTestUrl), 2));
+                GURL(URLRequestFailedJob::GetMockHttpUrl(
+                     net::ERR_NAME_NOT_RESOLVED)),
+                2));
   EXPECT_NE(L"set cookie on unload", GetActiveTabTitle());
 
   // Check that the cookie was set, meaning that the onunload handler ran.

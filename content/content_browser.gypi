@@ -702,8 +702,8 @@
     'browser/zygote_main_linux.cc',
     # TODO:  These should be moved to test_support (see below), but
     # are currently used by production code in automation_provider.cc.
-    'test/net/url_request_failed_dns_job.cc',
-    'test/net/url_request_failed_dns_job.h',
+    'test/net/url_request_failed_job.cc',
+    'test/net/url_request_failed_job.h',
     'test/net/url_request_mock_http_job.cc',
     'test/net/url_request_mock_http_job.h',
     'test/net/url_request_slow_download_job.cc',

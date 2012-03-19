@@ -1,0 +1,50 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
+#pragma once
+
+#include <string>
+
+#include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
+#include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_job.h"
+
+// This class simulates a URLRequestJob failing with a given error code while
+// trying to connect.
+class URLRequestFailedJob : public net::URLRequestJob {
+ public:
+  URLRequestFailedJob(net::URLRequest* request, int net_error);
+
+  virtual void Start() OVERRIDE;
+
+  // Adds the testing URLs to the net::URLRequestFilter.
+  CONTENT_EXPORT static void AddUrlHandler();
+
+  // Given a net error code, constructs a mock URL that will return that error
+  // asynchronously when started.  |net_error| must be a valid net error code
+  // other than net::OK and net::ERR_IO_PENDING.
+  CONTENT_EXPORT static GURL GetMockHttpUrl(int net_error);
+  CONTENT_EXPORT static GURL GetMockHttpsUrl(int net_error);
+
+ private:
+  static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     const std::string& scheme);
+
+  virtual ~URLRequestFailedJob();
+
+  // Simulate a failure.
+  void StartAsync();
+
+  const int net_error_;
+
+  base::WeakPtrFactory<URLRequestFailedJob> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestFailedJob);
+};
+
+#endif  // CONTENT_TEST_NET_URL_REQUEST_FAILED_JOB_H_
