@@ -160,6 +160,8 @@ const char kRequestUnlockScreenMethod[] = "RequestUnlockScreen";
 const char kScreenIsLockedMethod[] = "ScreenIsLocked";
 const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
 const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
+const char kStateOverrideRequest[] = "StateOverrideRequest";
+const char kStateOverrideRequestPermanent[] = "StateOverrideRequestPermanent";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
@@ -183,6 +185,7 @@ const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
 const char kButtonEventSignal[] = "ButtonEvent";
+const char kStateOverrideCancel[] = "StateOverrideCancel";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
