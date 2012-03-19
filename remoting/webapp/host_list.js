@@ -249,6 +249,15 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
  * @private
  */
 remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
+  for (var i = 0; i < this.hosts_.length; ++i) {
+    if (this.hosts_[i].hostId == hostTableEntry.host.hostId) {
+      this.hosts_[i].hostName = hostTableEntry.host.hostName;
+      break;
+    }
+  }
+  window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
+                              JSON.stringify(this.hosts_));
+
   /** @param {string} token */
   var renameHost = function(token) {
     var headers = {

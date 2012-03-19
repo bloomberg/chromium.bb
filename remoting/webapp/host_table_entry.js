@@ -160,6 +160,10 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
   if (editBox) {
     if (this.host.hostName != editBox.value) {
       this.host.hostName = editBox.value;
+      if (this.host.status == 'ONLINE') {
+        this.tableRow.title = chrome.i18n.getMessage(
+            /*i18n-content*/'TOOLTIP_CONNECT', this.host.hostName);
+      }
       this.onRename_(this);
     }
     this.removeEditBox_();
