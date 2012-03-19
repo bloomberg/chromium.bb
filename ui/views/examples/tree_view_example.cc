@@ -16,6 +16,7 @@ namespace examples {
 
 TreeViewExample::TreeViewExample()
     : ExampleBase("Tree View"),
+      tree_view_(NULL),
       model_(new NodeType(ASCIIToUTF16("root"), 1)) {
 }
 
