@@ -5265,11 +5265,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION" desc="Description for the flag to disable the 'Other devices' menu on the NTP.">
         Disable the new tab page menu for accessing tabs on other devices.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ASH_UBER_TRAY_NAME" desc="Name of the flag to enable the uber tray in ash.">
-        Enable Uber Tray.
+      <message name="IDS_FLAGS_DISABLE_ASH_UBER_TRAY_NAME" desc="Name of the flag to disable the uber tray in ash.">
+        Disable Uber Tray.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ASH_UBER_TRAY_DESCRIPTION" desc="Description of the flag to enable the uber tray in ash.">
-        Enables the in-progress uber tray for ash. Replaces the existing status view.
+      <message name="IDS_FLAGS_DISABLE_ASH_UBER_TRAY_DESCRIPTION" desc="Description of the flag to enable the uber tray in ash.">
+        Disables the uber tray for ash. Switches to using the old status view.
       </message>
       <message name="IDS_FLAGS_ENABLE_ASH_OAK_NAME" desc="Name of the flag to enable the oak tree viewer in ash.">
         Enable Oak.
