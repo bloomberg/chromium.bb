@@ -377,8 +377,10 @@ NetworkIconInfo::~NetworkIconInfo() {
 
 SystemTray::SystemTray()
     : items_(),
+      accessibility_observer_(NULL),
       audio_observer_(NULL),
       brightness_observer_(NULL),
+      caps_lock_observer_(NULL),
       clock_observer_(NULL),
       network_observer_(NULL),
       power_status_observer_(NULL),

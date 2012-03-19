@@ -17,8 +17,10 @@
 
 namespace ash {
 
+class AccessibilityObserver;
 class AudioObserver;
 class BrightnessObserver;
+class CapsLockObserver;
 class ClockObserver;
 class NetworkObserver;
 class PowerStatusObserver;
@@ -56,11 +58,17 @@ class ASH_EXPORT SystemTray : public views::View,
 
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
+  AccessibilityObserver* accessibility_observer() const {
+    return accessibility_observer_;
+  }
   AudioObserver* audio_observer() const {
     return audio_observer_;
   }
   BrightnessObserver* brightness_observer() const {
     return brightness_observer_;
+  }
+  CapsLockObserver* caps_lock_observer() const {
+    return caps_lock_observer_;
   }
   ClockObserver* clock_observer() const {
     return clock_observer_;
@@ -97,8 +105,10 @@ class ASH_EXPORT SystemTray : public views::View,
   views::View* container_;
 
   // These observers are not owned by the tray.
+  AccessibilityObserver* accessibility_observer_;
   AudioObserver* audio_observer_;
   BrightnessObserver* brightness_observer_;
+  CapsLockObserver* caps_lock_observer_;
   ClockObserver* clock_observer_;
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;

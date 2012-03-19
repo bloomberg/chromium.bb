@@ -29,6 +29,8 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_empty.h"
+#include "ash/system/tray_accessibility.h"
+#include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
@@ -555,8 +557,14 @@ void Shell::Init() {
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
     internal::TrayUser* tray_user = new internal::TrayUser;
+    internal::TrayAccessibility* tray_accessibility =
+        new internal::TrayAccessibility;
+    internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
+
+    tray_->accessibility_observer_ = tray_accessibility;
     tray_->audio_observer_ = tray_volume;
     tray_->brightness_observer_ = tray_brightness;
+    tray_->caps_lock_observer_ = tray_caps_lock;
     tray_->clock_observer_ = tray_power_date;
     tray_->network_observer_ = tray_network;
     tray_->power_status_observer_ = tray_power_date;
@@ -569,6 +577,8 @@ void Shell::Init() {
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
+    tray_->AddTrayItem(tray_accessibility);
+    tray_->AddTrayItem(tray_caps_lock);
   }
   if (!status_widget_)
     status_widget_ = internal::CreateStatusArea(tray_.get());

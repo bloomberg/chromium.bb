@@ -13,9 +13,12 @@
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray_accessibility.h"
+#include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -27,6 +30,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -60,7 +64,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public SystemKeyEventListener::CapsLockObserver {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
       : tray_(tray),
@@ -79,6 +84,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     OnNetworkManagerChanged(crosnet);
     crosnet->AddCellularDataPlanObserver(this);
 
+    if (SystemKeyEventListener::GetInstance())
+      SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
+
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
@@ -89,6 +97,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     InitializePrefChangeRegistrar();
 
     network_icon_large_->SetResourceSize(NetworkMenuIcon::SIZE_LARGE);
+
+    accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
+                                g_browser_process->local_state(), this);
   }
 
   virtual ~SystemTrayDelegate() {
@@ -96,6 +107,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (audiohandler)
       audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+    if (SystemKeyEventListener::GetInstance())
+      SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
   }
 
   // Overridden from ash::SystemTrayDelegate:
@@ -438,17 +451,36 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_PREF_CHANGED: {
-        DCHECK_EQ(*content::Details<std::string>(details).ptr(),
-                  prefs::kUse24HourClock);
-        ash::ClockObserver* observer =
-            ash::Shell::GetInstance()->tray()->clock_observer();
-        if (observer)
-          observer->OnDateFormatChanged();
+        std::string pref = *content::Details<std::string>(details).ptr();
+        PrefService* service = content::Source<PrefService>(source).ptr();
+        if (pref == prefs::kUse24HourClock) {
+          ash::ClockObserver* observer =
+              ash::Shell::GetInstance()->tray()->clock_observer();
+          if (observer)
+            observer->OnDateFormatChanged();
+        } else if (pref == prefs::kSpokenFeedbackEnabled) {
+          ash::AccessibilityObserver* observer =
+              ash::Shell::GetInstance()->tray()->accessibility_observer();
+          if (observer) {
+            observer->OnAccessibilityModeChanged(
+                service->GetBoolean(prefs::kSpokenFeedbackEnabled));
+          }
+        } else {
+          NOTREACHED();
+        }
         break;
       }
       default:
         NOTREACHED();
     }
+  }
+
+  // Overridden from SystemKeyEventListener::CapsLockObserver.
+  virtual void OnCapsLockChange(bool enabled) OVERRIDE {
+    ash::CapsLockObserver* observer =
+      ash::Shell::GetInstance()->tray()->caps_lock_observer();
+    if (observer)
+      observer->OnCapsLockChanged(enabled);
   }
 
   ash::SystemTray* tray_;
@@ -461,6 +493,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string active_network_path_;
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
   PowerSupplyStatus power_supply_status_;
+
+  BooleanPrefMember accessibility_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };
