@@ -92,4 +92,32 @@ class PageActionSetBadgeTextFunction : public PageActionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setBadgeText")
 };
 
+// Implement chrome.pageAction.getTitle().
+class PageActionGetTitleFunction : public PageActionFunction {
+  virtual ~PageActionGetTitleFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getTitle")
+};
+
+// Implement chrome.pageAction.getPopup().
+class PageActionGetPopupFunction : public PageActionFunction {
+  virtual ~PageActionGetPopupFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getPopup")
+};
+
+// Implement chrome.pageAction.getBadgeText().
+class PageActionGetBadgeTextFunction : public PageActionFunction {
+  virtual ~PageActionGetBadgeTextFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getBadgeText")
+};
+
+// Implement chrome.pageAction.getBadgeBackgroundColor().
+class PageActionGetBadgeBackgroundColorFunction : public PageActionFunction {
+  virtual ~PageActionGetBadgeBackgroundColorFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getBadgeBackgroundColor")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_PAGE_ACTIONS_API_H_

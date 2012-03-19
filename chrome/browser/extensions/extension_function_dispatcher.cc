@@ -182,6 +182,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<PageActionSetIconFunction>();
   RegisterFunction<PageActionSetTitleFunction>();
   RegisterFunction<PageActionSetPopupFunction>();
+  RegisterFunction<PageActionGetTitleFunction>();
+  RegisterFunction<PageActionGetPopupFunction>();
 
   // Browser Actions.
   RegisterFunction<BrowserActionSetIconFunction>();
@@ -189,6 +191,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionSetBadgeTextFunction>();
   RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
   RegisterFunction<BrowserActionSetPopupFunction>();
+  RegisterFunction<BrowserActionGetTitleFunction>();
+  RegisterFunction<BrowserActionGetBadgeTextFunction>();
+  RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
+  RegisterFunction<BrowserActionGetPopupFunction>();
 
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();

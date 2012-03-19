@@ -15,6 +15,7 @@ class BrowserActionFunction : public ExtensionActionFunction {
  protected:
   virtual ~BrowserActionFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  void FireUpdateNotification();
 };
 
 // Implement chrome.browserAction.setIcon().
@@ -51,6 +52,35 @@ class BrowserActionSetBadgeBackgroundColorFunction
   virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
   virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
+};
+
+// Implement chrome.browserAction.getTitle().
+class BrowserActionGetTitleFunction : public BrowserActionFunction {
+  virtual ~BrowserActionGetTitleFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getTitle")
+};
+
+// Implement chrome.browserAction.getPopup().
+class BrowserActionGetPopupFunction : public BrowserActionFunction {
+  virtual ~BrowserActionGetPopupFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getPopup")
+};
+
+// Implement chrome.browserAction.getBadgeText().
+class BrowserActionGetBadgeTextFunction : public BrowserActionFunction {
+  virtual ~BrowserActionGetBadgeTextFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeText")
+};
+
+// Implement chrome.browserAction.getBadgeBackgroundColor().
+class BrowserActionGetBadgeBackgroundColorFunction
+    : public BrowserActionFunction {
+  virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
+  virtual bool RunExtensionAction() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeBackgroundColor")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_BROWSER_ACTIONS_API_H_

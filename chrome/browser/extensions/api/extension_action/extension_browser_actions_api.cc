@@ -18,6 +18,13 @@ const char kNoBrowserActionError[] =
     "This extension has no browser action specified.";
 }
 
+void BrowserActionFunction::FireUpdateNotification() {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+      content::Source<ExtensionAction>(extension_action_),
+      content::NotificationService::NoDetails());
+}
+
 bool BrowserActionFunction::RunImpl() {
   ExtensionActionFunction::RunImpl();
   extension_action_ = GetExtension()->browser_action();
@@ -26,32 +33,56 @@ bool BrowserActionFunction::RunImpl() {
     return false;
   }
 
-  if (!RunExtensionAction())
-    return false;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      content::Source<ExtensionAction>(extension_action_),
-      content::NotificationService::NoDetails());
-  return true;
+  return RunExtensionAction();
 }
 
 bool BrowserActionSetIconFunction::RunExtensionAction() {
-  return SetIcon();
+  if (!SetIcon())
+    return false;
+  FireUpdateNotification();
+  return true;
 }
 
 bool BrowserActionSetTitleFunction::RunExtensionAction() {
-  return SetTitle();
+  if (!SetTitle())
+    return false;
+  FireUpdateNotification();
+  return true;
 }
 
 bool BrowserActionSetPopupFunction::RunExtensionAction() {
-  return SetPopup();
+  if (!SetPopup())
+    return false;
+  FireUpdateNotification();
+  return true;
 }
 
 bool BrowserActionSetBadgeTextFunction::RunExtensionAction() {
-  return SetBadgeText();
+  if (!SetBadgeText())
+    return false;
+  FireUpdateNotification();
+  return true;
 }
 
 bool BrowserActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
-  return SetBadgeBackgroundColor();
+  if (!SetBadgeBackgroundColor())
+    return false;
+  FireUpdateNotification();
+  return true;
+}
+
+bool BrowserActionGetTitleFunction::RunExtensionAction() {
+  return GetTitle();
+}
+
+bool BrowserActionGetPopupFunction::RunExtensionAction() {
+  return GetPopup();
+}
+
+bool BrowserActionGetBadgeTextFunction::RunExtensionAction() {
+  return GetBadgeText();
+}
+
+bool BrowserActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
+  return GetBadgeBackgroundColor();
 }

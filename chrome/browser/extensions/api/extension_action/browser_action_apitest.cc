@@ -446,3 +446,23 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   ASSERT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
+  ASSERT_TRUE(RunExtensionTest("browser_action/getters")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Test that there is a browser action in the toolbar.
+  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+
+  // Test the getters for defaults.
+  ResultCatcher catcher;
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Test the getters for a specific tab.
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update2.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+}

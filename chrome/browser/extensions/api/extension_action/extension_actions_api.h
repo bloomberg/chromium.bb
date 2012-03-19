@@ -29,6 +29,10 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   bool SetPopup();
   bool SetBadgeBackgroundColor();
   bool SetBadgeText();
+  bool GetTitle();
+  bool GetPopup();
+  bool GetBadgeBackgroundColor();
+  bool GetBadgeText();
 
   // All the browser action APIs take a single argument called details that is
   // a dictionary.

@@ -194,3 +194,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TestCrash57333) {
                                           .AppendASCII("crash_57333")
                                           .AppendASCII("Extension2")));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Getters) {
+  ASSERT_TRUE(RunExtensionTest("page_action/getters")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  ResultCatcher catcher;
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(extension->GetResourceURL("update.html")));
+  ASSERT_TRUE(catcher.GetNextResult());
+}

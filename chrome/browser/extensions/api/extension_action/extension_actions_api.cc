@@ -134,3 +134,31 @@ bool ExtensionActionFunction::SetBadgeBackgroundColor() {
 
   return true;
 }
+
+bool ExtensionActionFunction::GetTitle() {
+  result_.reset(Value::CreateStringValue(extension_action_->GetTitle(tab_id_)));
+  return true;
+}
+
+bool ExtensionActionFunction::GetPopup() {
+  result_.reset(Value::CreateStringValue(
+                    extension_action_->GetPopupUrl(tab_id_).spec()));
+  return true;
+}
+
+bool ExtensionActionFunction::GetBadgeText() {
+  result_.reset(Value::CreateStringValue(
+                    extension_action_->GetBadgeText(tab_id_)));
+  return true;
+}
+
+bool ExtensionActionFunction::GetBadgeBackgroundColor() {
+  ListValue* list = new ListValue();
+  SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
+  list->Append(Value::CreateIntegerValue(SkColorGetR(color)));
+  list->Append(Value::CreateIntegerValue(SkColorGetG(color)));
+  list->Append(Value::CreateIntegerValue(SkColorGetB(color)));
+  list->Append(Value::CreateIntegerValue(SkColorGetA(color)));
+  result_.reset(list);
+  return true;
+}

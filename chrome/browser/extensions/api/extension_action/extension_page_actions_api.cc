@@ -222,3 +222,23 @@ bool PageActionSetBadgeTextFunction::RunExtensionAction() {
   contents_->extension_tab_helper()->PageActionStateChanged();
   return true;
 }
+
+bool PageActionGetTitleFunction::RunExtensionAction() {
+  return GetTitle();
+}
+
+bool PageActionGetPopupFunction::RunExtensionAction() {
+  return GetPopup();
+}
+
+// Not currently exposed to extensions. To re-enable, add mapping in
+// extension_function_dispatcher.
+bool PageActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
+  return GetBadgeBackgroundColor();
+}
+
+// Not currently exposed to extensions. To re-enable, add mapping in
+// extension_function_dispatcher.
+bool PageActionGetBadgeTextFunction::RunExtensionAction() {
+  return GetBadgeText();
+}

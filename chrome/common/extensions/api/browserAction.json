@@ -6,7 +6,19 @@
   {
     "namespace": "browserAction",
     "dependencies": [ "tabs" ],
-    "types": [],
+    "types": [
+      {
+        "id": "ColorArray",
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "minItems": 4,
+        "maxItems": 4
+      }
+    ],
     "functions": [
       {
         "name": "setTitle",
@@ -27,6 +39,34 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
+          }
+        ]
+      },
+      {
+        "name": "getTitle",
+        "type": "function",
+        "description": "Gets the title of the browser action.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Specify the tab to get the title from. If no tab is specified, the non-tab-specific title is returned."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
           }
         ]
       },
@@ -84,6 +124,34 @@
         ]
       },
       {
+        "name": "getPopup",
+        "type": "function",
+        "description": "Gets the html document set as the popup for this browser action.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Specify the tab to get the popup from. If no tab is specified, the non-tab-specific popup is returned."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "setBadgeText",
         "type": "function",
         "description": "Sets the badge text for the browser action. The badge is displayed on top of the icon.",
@@ -106,6 +174,34 @@
         ]
       },
       {
+        "name": "getBadgeText",
+        "type": "function",
+        "description": "Gets the badge text of the browser action. If no tab is specified, the non-tab-specific badge text is returned.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Specify the tab to get the badge text from. If no tab is specified, the non-tab-specific badge text is returned."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "setBadgeBackgroundColor",
         "type": "function",
         "description": "Sets the background color for the badge.",
@@ -119,15 +215,7 @@
                 "description": "An array of four integers in the range [0,255] that make up the RGBA color of the badge. For example, opaque red is <code>[255, 0, 0, 255]</code>. Can also be a string with a CSS value, with opaque red being <code>#FF0000</code> or <code>#F00</code>.",
                 "choices": [
                   {"type": "string"},
-                  {"type": "array",
-                    "items": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 255
-                    },
-                    "minItems": 4,
-                    "maxItems": 4
-                  }
+                  {"$ref": "ColorArray"}
                 ]
               },
               "tabId": {
@@ -136,6 +224,34 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
+          }
+        ]
+      },
+      {
+        "name": "getBadgeBackgroundColor",
+        "type": "function",
+        "description": "Gets the background color of the browser action.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "description": "Specify the tab to get the badge background color from. If no tab is specified, the non-tab-specific badge background color is returned."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "ColorArray"
+              }
+            ]
           }
         ]
       }
