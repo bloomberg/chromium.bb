@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,13 +193,9 @@ GtkWindow* DockInfo::GetLocalProcessWindowAtPoint(
   if (factory_)
     return factory_->GetLocalProcessWindowAtPoint(screen_point, ignore);
 
-#if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
-  return NULL;
-#else
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
   return BrowserWindowGtk::GetBrowserWindowForXID(xid);
-#endif
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

@@ -17,11 +17,7 @@
 
 class TabContentsWrapper;
 typedef struct _GdkColor GdkColor;
-#if defined(TOOLKIT_VIEWS)
-class NativeTabContentsViewGtk;
-#else
 class ChromeWebContentsViewDelegateGtk;
-#endif
 
 class ConstrainedWindowGtkDelegate {
  public:
@@ -49,11 +45,7 @@ class ConstrainedWindowGtkDelegate {
 // centers the dialog. It is thus an order of magnitude simpler.
 class ConstrainedWindowGtk : public ConstrainedWindow {
  public:
-#if defined(TOOLKIT_VIEWS)
-   typedef NativeTabContentsViewGtk TabContentsViewType;
-#else
-   typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
-#endif
+  typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
 
   ConstrainedWindowGtk(TabContentsWrapper* wrapper,
                        ConstrainedWindowGtkDelegate* delegate);

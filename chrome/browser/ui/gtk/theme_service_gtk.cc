@@ -290,11 +290,7 @@ ThemeServiceGtk::~ThemeServiceGtk() {
 void ThemeServiceGtk::Init(Profile* profile) {
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(prefs::kUsesSystemTheme, this);
-#if defined(OS_CHROMEOS)
-  use_gtk_ = false;
-#else
   use_gtk_ = profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-#endif
   ThemeService::Init(profile);
 }
 
@@ -376,9 +372,7 @@ void ThemeServiceGtk::Observe(int type,
   if ((type == chrome::NOTIFICATION_PREF_CHANGED) &&
       (*content::Details<std::string>(details).ptr() ==
           prefs::kUsesSystemTheme)) {
-#if !defined(OS_CHROMEOS)
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-#endif
   } else {
     ThemeService::Observe(type, source, details);
   }
@@ -608,9 +602,6 @@ gfx::Image* ThemeServiceGtk::GetDefaultFavicon(bool native) {
 
 // static
 bool ThemeServiceGtk::DefaultUsesSystemTheme() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -620,7 +611,6 @@ bool ThemeServiceGtk::DefaultUsesSystemTheme() {
     default:
       return false;
   }
-#endif
 }
 
 void ThemeServiceGtk::ClearAllThemeData() {

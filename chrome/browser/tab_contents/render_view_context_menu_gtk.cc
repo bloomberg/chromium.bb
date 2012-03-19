@@ -91,7 +91,6 @@ void RenderViewContextMenuGtk::PlatformInit() {
   if (params_.is_editable) {
     content::RenderWidgetHostView* rwhv =
         source_web_contents_->GetRenderWidgetHostView();
-#if !defined(TOOLKIT_VIEWS)
     if (rwhv) {
       MenuGtk* menu = menu_gtk_.get();
       gboolean show_input_method_menu = TRUE;
@@ -110,7 +109,6 @@ void RenderViewContextMenuGtk::PlatformInit() {
       menu->AppendSeparator();
       menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
     }
-#endif
   }
 }
 

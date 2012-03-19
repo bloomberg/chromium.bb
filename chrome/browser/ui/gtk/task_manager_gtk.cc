@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -35,12 +36,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/controls/menu/menu_2.h"
-#else
-#include "chrome/browser/ui/gtk/menu_gtk.h"
-#endif
 
 namespace {
 
@@ -241,30 +236,18 @@ class TaskManagerGtk::ContextMenuController
       menu_model_->AddCheckItemWithStringId(
           i, TaskManagerColumnIDToResourceID(i));
     }
-#if defined(TOOLKIT_VIEWS)
-    menu_.reset(new views::Menu2(menu_model_.get()));
-#else
     menu_.reset(new MenuGtk(NULL, menu_model_.get()));
-#endif
   }
 
   virtual ~ContextMenuController() {}
 
   void RunMenu(const gfx::Point& point, guint32 event_time) {
-#if defined(TOOLKIT_VIEWS)
-    menu_->RunContextMenuAt(point);
-#else
     menu_->PopupAsContext(point, event_time);
-#endif
   }
 
   void Cancel() {
     task_manager_ = NULL;
-#if defined(TOOLKIT_VIEWS)
-    menu_->CancelMenu();
-#else
     menu_->Cancel();
-#endif
   }
 
  private:
@@ -301,11 +284,7 @@ class TaskManagerGtk::ContextMenuController
 
   // The model and view for the right click context menu.
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::Menu2> menu_;
-#else
   scoped_ptr<MenuGtk> menu_;
-#endif
 
   // The TaskManager the context menu was brought up for. Set to NULL when the
   // menu is canceled.
@@ -499,15 +478,8 @@ void TaskManagerGtk::Init() {
   destroy_handler_id_ = g_signal_connect(dialog_, "destroy",
                                          G_CALLBACK(OnDestroyThunk), this);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
-  // GTK does menu on mouse-up while views does menu on mouse-down,
-  // so connect to different handlers.
-#if defined(TOOLKIT_VIEWS)
-  g_signal_connect(dialog_, "button-release-event",
-                   G_CALLBACK(OnButtonEventThunk), this);
-#else
   g_signal_connect(dialog_, "button-press-event",
                    G_CALLBACK(OnButtonEventThunk), this);
-#endif
   gtk_widget_add_events(dialog_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
@@ -524,10 +496,8 @@ void TaskManagerGtk::Init() {
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
   g_signal_connect(treeview_, "row-activated",
                    G_CALLBACK(OnRowActivatedThunk), this);
-#if defined(TOOLKIT_GTK)
   g_signal_connect(treeview_, "button-press-event",
                    G_CALLBACK(OnButtonEventThunk), this);
-#endif
 
   // |selection| is owned by |treeview_|.
   GtkTreeSelection* selection = gtk_tree_view_get_selection(

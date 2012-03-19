@@ -26,6 +26,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
+#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -46,18 +49,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/skia_utils_gtk.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "ui/views/controls/textfield/native_textfield_views.h"
-#include "ui/views/events/event.h"
-#else
-#include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/omnibox/omnibox_popup_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
-#endif
 
 using content::WebContents;
 
@@ -167,11 +158,7 @@ OmniboxViewGtk::OmniboxViewGtk(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-#if defined(TOOLKIT_VIEWS)
-    views::View* location_bar)
-#else
     GtkWidget* location_bar)
-#endif
     : text_view_(NULL),
       tag_table_(NULL),
       text_buffer_(NULL),
@@ -190,15 +177,7 @@ OmniboxViewGtk::OmniboxViewGtk(
       security_level_(ToolbarModel::NONE),
       mark_set_handler_id_(0),
       button_1_pressed_(false),
-#if defined(OS_CHROMEOS)
-      text_selected_during_click_(false),
-      text_view_focused_before_button_press_(false),
-#endif
-#if defined(TOOLKIT_VIEWS)
-      location_bar_view_(location_bar),
-#else
       theme_service_(ThemeServiceGtk::GetFrom(profile)),
-#endif
       enter_was_pressed_(false),
       tab_was_pressed_(false),
       paste_clipboard_requested_(false),
@@ -213,11 +192,7 @@ OmniboxViewGtk::OmniboxViewGtk(
       pre_edit_size_before_change_(0),
       going_to_focus_(NULL) {
   popup_view_.reset(
-#if defined(TOOLKIT_VIEWS)
-      new AutocompletePopupContentsView
-#else
       new OmniboxPopupViewGtk
-#endif
           (GetFont(), this, model_.get(), location_bar));
 }
 
@@ -416,16 +391,10 @@ void OmniboxViewGtk::Init() {
   instant_animation_.reset(new ui::MultiAnimation(parts));
   instant_animation_->set_continuous(false);
 
-#if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
-#else
-  // Manually invoke SetBaseColor() because TOOLKIT_VIEWS doesn't observe
-  // themes.
-  SetBaseColor();
-#endif
 
   ViewIDUtil::SetID(GetNativeView(), VIEW_ID_AUTOCOMPLETE);
 }
@@ -855,39 +824,6 @@ bool OmniboxViewGtk::IsImeComposing() const {
   return supports_pre_edit_ && !pre_edit_.empty();
 }
 
-#if defined(TOOLKIT_VIEWS)
-int OmniboxViewGtk::GetMaxEditWidth(int entry_width) const {
-  return entry_width;
-}
-
-views::View* OmniboxViewGtk::AddToView(views::View* parent) {
-  views::NativeViewHost* host = new views::NativeViewHost;
-  parent->AddChildView(host);
-  host->set_focus_view(parent);
-  host->Attach(GetNativeView());
-  return host;
-}
-
-int OmniboxViewGtk::OnPerformDrop(
-    const views::DropTargetEvent& event) {
-  string16 text;
-  const ui::OSExchangeData& data = event.data();
-  if (data.HasURL()) {
-    GURL url;
-    string16 title;
-    if (data.GetURLAndTitle(&url, &title))
-      text = UTF8ToUTF16(url.spec());
-  } else {
-    data.GetString(&text);
-  }
-
-  if (!text.empty() && OnPerformDropImpl(text))
-    return CopyOrLinkDragOperation(event.source_operations());
-
-  return ui::DragDropTypes::DRAG_NONE;
-}
-#endif  // defined(TOOLKIT_VIEWS)
-
 void OmniboxViewGtk::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
@@ -911,11 +847,7 @@ void OmniboxViewGtk::AnimationCanceled(const ui::Animation* animation) {
 void OmniboxViewGtk::SetBaseColor() {
   DCHECK(text_view_);
 
-#if defined(TOOLKIT_VIEWS)
-  bool use_gtk = false;
-#else
   bool use_gtk = theme_service_->UsingNativeTheme();
-#endif
   if (use_gtk) {
     gtk_widget_modify_cursor(text_view_, NULL, NULL);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
@@ -939,19 +871,11 @@ void OmniboxViewGtk::SetBaseColor() {
     g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
-    const GdkColor* background_color_ptr;
-#if defined(TOOLKIT_VIEWS)
-    const GdkColor background_color = gfx::SkColorToGdkColor(
-        LocationBarView::GetColor(ToolbarModel::NONE,
-                                  LocationBarView::BACKGROUND));
-    background_color_ptr = &background_color;
-#else
-    background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
-#endif
+    const GdkColor* background_color_ptr =
+        &LocationBarViewGtk::kBackgroundColor;
     gtk_widget_modify_cursor(text_view_, &ui::kGdkBlack, &ui::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
-#if !defined(TOOLKIT_VIEWS)
     GdkColor c;
     // Override the selected colors so we don't leak colors from the current
     // gtk theme into the chrome-theme.
@@ -970,7 +894,6 @@ void OmniboxViewGtk::SetBaseColor() {
     c = gfx::SkColorToGdkColor(
         theme_service_->get_inactive_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
-#endif
 
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(text_view_, GetFont().GetFontSize());
@@ -988,12 +911,7 @@ void OmniboxViewGtk::UpdateInstantViewColors() {
   SkColor selection_text, selection_bg;
   GdkColor faded_text, normal_bg;
 
-#if defined(TOOLKIT_VIEWS)
-  bool use_gtk = false;
-#else
   bool use_gtk = theme_service_->UsingNativeTheme();
-#endif
-
   if (use_gtk) {
     GtkStyle* style = gtk_rc_get_style(instant_view_);
 
@@ -1006,22 +924,11 @@ void OmniboxViewGtk::UpdateInstantViewColors() {
   } else {
     gdk_color_parse(kTextBaseColor, &faded_text);
 
-#if defined(TOOLKIT_VIEWS)
-    normal_bg = gfx::SkColorToGdkColor(
-        LocationBarView::GetColor(ToolbarModel::NONE,
-                                  LocationBarView::BACKGROUND));
-    selection_text = LocationBarView::GetColor(
-        ToolbarModel::NONE, LocationBarView::SELECTED_TEXT);
-
-    GtkStyle* style = gtk_rc_get_style(instant_view_);
-    selection_bg = gfx::GdkColorToSkColor(style->base[GTK_STATE_SELECTED]);
-#else
     normal_bg = LocationBarViewGtk::kBackgroundColor;
     selection_text =
         theme_service_->get_active_selection_fg_color();
     selection_bg =
         theme_service_->get_active_selection_bg_color();
-#endif
   }
 
   double alpha = instant_animation_->is_animating() ?
@@ -1194,11 +1101,6 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
     g_signal_stop_emission(widget, signal_id, 0);
   }
 
-#if defined(TOOLKIT_VIEWS)
-  location_bar_view_->GetWidget()->NotifyAccessibilityEvent(
-      location_bar_view_, ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
-#endif
-
   return result;
 }
 
@@ -1233,13 +1135,6 @@ gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
 
   if (event->button == 1) {
     button_1_pressed_ = true;
-#if defined(OS_CHROMEOS)
-    // When the first button is pressed, track some stuff that will help us
-    // determine whether we should select all of the text when the button is
-    // released.
-    text_view_focused_before_button_press_ = gtk_widget_has_focus(text_view_);
-    text_selected_during_click_ = false;
-#endif
 
     // Button press event may change the selection, we need to record the change
     // and report it to |model_| later when button is released.
@@ -1267,22 +1162,6 @@ gboolean OmniboxViewGtk::HandleViewButtonRelease(GtkWidget* sender,
   // likely have told us to stop propagating.  We want to handle selection.
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
   klass->button_release_event(text_view_, event);
-
-#if defined(OS_CHROMEOS)
-  if (!text_view_focused_before_button_press_ && !text_selected_during_click_) {
-    // If this was a focusing click and the user didn't drag to highlight any
-    // text, select the full input and update the PRIMARY selection.
-    SelectAllInternal(false, true);
-
-    // So we told the buffer where the cursor should be, but make sure to tell
-    // the view so it can scroll it to be visible if needed.
-    // NOTE: This function doesn't seem to like a count of 0, looking at the
-    // code it will skip an important loop.  Use -1 to achieve the same.
-    GtkTextIter start, end;
-    GetTextBufferBounds(&start, &end);
-    gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
-  }
-#endif
 
   // Inform |model_| about possible text selection change. We may get a button
   // release with no press (e.g. if the user clicks in the omnibox to dismiss a
@@ -1516,14 +1395,6 @@ void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
 
   // Get the currently-selected text, if there is any.
   std::string new_selected_text = GetSelectedText();
-
-#if defined(OS_CHROMEOS)
-  // If the user just selected some text with the mouse (or at least while the
-  // mouse button was down), make sure that we won't blow their selection away
-  // later by selecting all of the text when the button is released.
-  if (button_1_pressed_ && !new_selected_text.empty())
-    text_selected_during_click_ = true;
-#endif
 
   // If we had some text selected earlier but it's no longer highlighted, we
   // might need to save it now...
@@ -1834,12 +1705,7 @@ bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
 }
 
 gfx::Font OmniboxViewGtk::GetFont() {
-#if defined(TOOLKIT_VIEWS)
-  bool use_gtk = false;
-#else
   bool use_gtk = theme_service_->UsingNativeTheme();
-#endif
-
   if (use_gtk) {
     // If we haven't initialized the text view yet, just create a temporary one
     // whose style we can grab.
@@ -2391,41 +2257,3 @@ void OmniboxViewGtk::AdjustVerticalAlignmentOfInstantView() {
   pango_layout_iter_free(iter);
   g_object_set(instant_anchor_tag_, "rise", baseline - height, NULL);
 }
-
-#if defined(TOOLKIT_VIEWS)
-// static
-OmniboxView* OmniboxView::CreateOmniboxView(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    LocationBarView* location_bar) {
-  if (views::Widget::IsPureViews()) {
-    OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
-                                                          toolbar_model,
-                                                          profile,
-                                                          command_updater,
-                                                          popup_window_mode,
-                                                          location_bar);
-    omnibox_view->Init();
-    return omnibox_view;
-  }
-
-  OmniboxViewGtk* omnibox_view = new OmniboxViewGtk(controller,
-                                                    toolbar_model,
-                                                    profile,
-                                                    command_updater,
-                                                    popup_window_mode,
-                                                    location_bar);
-  omnibox_view->Init();
-
-  // Make all the children of the widget visible. NOTE: this won't display
-  // anything, it just toggles the visible flag.
-  gtk_widget_show_all(omnibox_view->GetNativeView());
-  // Hide the widget. NativeViewHostGtk will make it visible again as necessary.
-  gtk_widget_hide(omnibox_view->GetNativeView());
-
-  return omnibox_view;
-}
-#endif

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@ namespace {
 void SetDialogTitle(GtkWidget* dialog, const string16& title) {
   gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
 
-#if !defined(OS_CHROMEOS)
   // The following code requires the dialog to be realized. However, we host
   // dialog's content in a Chrome window without really realize the dialog
   // on ChromeOS. Thus, skip the following code for ChromeOS.
@@ -32,7 +31,6 @@ void SetDialogTitle(GtkWidget* dialog, const string16& title) {
 
   if (width > req.width)
     gtk_widget_set_size_request(dialog, width, -1);
-#endif  // !defined(OS_CHROMEOS)
 }
 
 int g_dialog_response;

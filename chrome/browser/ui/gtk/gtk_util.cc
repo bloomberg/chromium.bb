@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,13 +45,6 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/native_dialog_window.h"
-#else
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#endif
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT
@@ -286,28 +280,6 @@ gboolean PaintNoBackground(GtkWidget* widget,
   return TRUE;
 }
 
-#if defined(OS_CHROMEOS)
-
-WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
-  chromeos::BrowserView* browser_view = static_cast<chromeos::BrowserView*>(
-      window);
-  return browser_view->GetSelectedWebContents();
-}
-
-GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
-  gfx::NativeView widget = gtk_window_get_focus(window->GetNativeHandle());
-
-  if (widget == NULL) {
-    chromeos::BrowserView* browser_view = static_cast<chromeos::BrowserView*>(
-        window);
-    widget = browser_view->saved_focused_widget();
-  }
-
-  return widget;
-}
-
-#else
-
 WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       window);
@@ -317,8 +289,6 @@ WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
 GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
   return gtk_window_get_focus(window->GetNativeHandle());
 }
-
-#endif
 
 }  // namespace
 
@@ -1059,105 +1029,6 @@ void GetTextColors(GdkColor* normal_base,
   g_object_unref(fake_entry);
 }
 
-#if defined(OS_CHROMEOS)
-
-GtkWindow* GetLastActiveBrowserWindow() {
-  if (Browser* b = BrowserList::GetLastActive()) {
-    if (!b->is_type_tabbed()) {
-      b = BrowserList::FindTabbedBrowser(b->profile(), true);
-    }
-
-    if (b)
-      return GTK_WINDOW(b->window()->GetNativeHandle());
-  }
-
-  return NULL;
-}
-
-int GetNativeDialogFlags(GtkWindow* dialog) {
-  int flags = chromeos::DIALOG_FLAG_DEFAULT;
-
-  if (gtk_window_get_resizable(dialog))
-    flags |= chromeos::DIALOG_FLAG_RESIZEABLE;
-  if (gtk_window_get_modal(dialog))
-    flags |= chromeos::DIALOG_FLAG_MODAL;
-
-  return flags;
-}
-
-GtkWindow* GetDialogTransientParent(GtkWindow* dialog) {
-  GtkWindow* parent = gtk_window_get_transient_for(dialog);
-  if (!parent)
-    parent = GetLastActiveBrowserWindow();
-
-  return parent;
-}
-
-void ShowDialog(GtkWidget* dialog) {
-  // Make sure all controls are visible so that we get correct size.
-  gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
-
-  // Get dialog window size.
-  gint width = 0;
-  gint height = 0;
-  gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);
-
-  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
-      dialog,
-      GetNativeDialogFlags(GTK_WINDOW(dialog)),
-      gfx::Size(width, height),
-      gfx::Size());
-}
-
-void ShowDialogWithLocalizedSize(GtkWidget* dialog,
-                                 int width_id,
-                                 int height_id,
-                                 bool resizeable) {
-  int width = (width_id == -1) ? 0 :
-      views::Widget::GetLocalizedContentsWidth(width_id);
-  int height = (height_id == -1) ? 0 :
-      views::Widget::GetLocalizedContentsHeight(height_id);
-
-  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
-      dialog,
-      resizeable ? chromeos::DIALOG_FLAG_RESIZEABLE :
-                   chromeos::DIALOG_FLAG_DEFAULT,
-      gfx::Size(width, height),
-      gfx::Size());
-}
-
-void ShowDialogWithMinLocalizedWidth(GtkWidget* dialog,
-                                     int width_id) {
-  int width = (width_id == -1) ? 0 :
-      views::Widget::GetLocalizedContentsWidth(width_id);
-
-  chromeos::ShowNativeDialog(GetDialogTransientParent(GTK_WINDOW(dialog)),
-      dialog,
-      GetNativeDialogFlags(GTK_WINDOW(dialog)),
-      gfx::Size(),
-      gfx::Size(width, 0));
-}
-
-void PresentWindow(GtkWidget* window, int timestamp) {
-  GtkWindow* host_window = chromeos::GetNativeDialogWindow(window);
-  if (!host_window)
-      host_window = GTK_WINDOW(window);
-  if (timestamp)
-    gtk_window_present_with_time(host_window, timestamp);
-  else
-    gtk_window_present(host_window);
-}
-
-GtkWindow* GetDialogWindow(GtkWidget* dialog) {
-  return chromeos::GetNativeDialogWindow(dialog);
-}
-
-gfx::Rect GetDialogBounds(GtkWidget* dialog) {
-  return chromeos::GetNativeDialogContentsBounds(dialog);
-}
-
-#else
-
 void ShowDialog(GtkWidget* dialog) {
   gtk_widget_show_all(dialog);
 }
@@ -1205,8 +1076,6 @@ gfx::Rect GetDialogBounds(GtkWidget* dialog) {
 
   return gfx::Rect(x, y, width, height);
 }
-
-#endif
 
 string16 GetStockPreferencesMenuLabel() {
   GtkStockItem stock_item;

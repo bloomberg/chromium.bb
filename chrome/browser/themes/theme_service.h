@@ -174,10 +174,6 @@ class ThemeService : public base::NonThreadSafe,
   // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
   // shared instances owned by the theme provider and should not be freed.
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
-#elif defined(TOOLKIT_USES_GTK)
-  // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
-  // shared instances owned by the theme provider and should not be freed.
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
 #endif
 
   // Set the current theme to the theme defined in |extension|.

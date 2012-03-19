@@ -18,12 +18,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#else
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#endif
 
 using content::BrowserThread;
 
@@ -123,23 +118,13 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
       gtk_util::IsWidgetAncestryVisible(focus_widget)) {
     gtk_widget_grab_focus(focus_widget);
   } else {
-  // TODO(estade): this define should not need to be here because this class
-  // should not be used on linux/views.
-#if defined(TOOLKIT_GTK)
     ContainingView()->focus_store()->SetWidget(focus_widget);
-#endif
   }
 }
 
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
-#if defined(TOOLKIT_VIEWS)
-  return static_cast<NativeTabContentsViewGtk*>(
-      static_cast<TabContentsViewViews*>(wrapper_->web_contents()->GetView())->
-          native_tab_contents_view());
-#else
   return ChromeWebContentsViewDelegateGtk::GetFor(wrapper_->web_contents());
-#endif
 }
 
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
