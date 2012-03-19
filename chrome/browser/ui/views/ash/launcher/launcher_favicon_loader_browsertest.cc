@@ -34,6 +34,10 @@ class ContentsObserver : public content::WebContentsObserver {
 
   bool got_favicons() const { return got_favicons_; }
   int downloads_received() const { return downloads_received_; }
+  void Reset() {
+    got_favicons_ = false;
+    downloads_received_ = 0;
+  }
 
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
@@ -72,18 +76,18 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser, test_server()->GetURL(url_path));
   }
 
-  Browser* CreatePanelBrowser(const char* url) {
+  void CreatePanelBrowser(const char* url, Browser** result) {
     Browser::CreateParams params(Browser::TYPE_PANEL, browser()->profile());
     params.app_name = "Test Panel";
     Browser* browser =  Browser::CreateWithParams(params);
     EXPECT_TRUE(browser->is_type_panel());
-    CHECK(!contents_observer_.get());
+    ASSERT_EQ(static_cast<void*>(NULL), contents_observer_.get());
     // Load initial tab contents before setting the observer.
     ui_test_utils::NavigateToURL(browser, GURL());
     contents_observer_.reset(
         new ContentsObserver(browser->GetWebContentsAt(0)));
     NavigateTo(browser, url);
-    return browser;
+    *result = browser;
   }
 
   LauncherFaviconLoader* GetFaviconLoader(Browser* browser) {
@@ -94,6 +98,11 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     EXPECT_EQ(LauncherUpdater::TYPE_PANEL, launcher_updater->type());
     LauncherFaviconLoader* loader = launcher_updater->favicon_loader();
     return loader;
+  }
+
+  void ResetDownloads() {
+    ASSERT_NE(static_cast<void*>(NULL), contents_observer_.get());
+    contents_observer_->Reset();
   }
 
   bool WaitForFaviconDownlads(int expected) {
@@ -121,7 +130,9 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, SmallLauncherIcon) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser = CreatePanelBrowser("launcher-smallfavicon.html");
+  Browser* panel_browser;
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePanelBrowser("launcher-smallfavicon.html", &panel_browser));
   LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
   EXPECT_TRUE(WaitForFaviconDownlads(1));
@@ -131,7 +142,9 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, SmallLauncherIcon) {
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, LargeLauncherIcon) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser = CreatePanelBrowser("launcher-largefavicon.html");
+  Browser* panel_browser;
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePanelBrowser("launcher-largefavicon.html", &panel_browser));
   LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
   EXPECT_TRUE(WaitForFaviconDownlads(1));
@@ -141,7 +154,9 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, LargeLauncherIcon) {
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser = CreatePanelBrowser("launcher-manyfavicon.html");
+  Browser* panel_browser;
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePanelBrowser("launcher-manyfavicon.html", &panel_browser));
   LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
@@ -154,15 +169,22 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
 
 IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ChangeLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
-  Browser* panel_browser = CreatePanelBrowser("launcher-manyfavicon.html");
+  Browser* panel_browser;
+  ASSERT_NO_FATAL_FAILURE(
+      CreatePanelBrowser("launcher-manyfavicon.html", &panel_browser));
   LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
-  WaitForFaviconDownlads(3);
+
+  EXPECT_TRUE(WaitForFaviconDownlads(3));
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   EXPECT_EQ(48, favicon_loader->GetFavicon().height());
+  ASSERT_NO_FATAL_FAILURE(ResetDownloads());
+
   NavigateTo(panel_browser, "launcher-smallfavicon.html");
   EXPECT_TRUE(WaitForFaviconDownlads(1));
   EXPECT_TRUE(favicon_loader->GetFavicon().empty());
+  ASSERT_NO_FATAL_FAILURE(ResetDownloads());
+
   NavigateTo(panel_browser, "launcher-largefavicon.html");
   EXPECT_TRUE(WaitForFaviconDownlads(1));
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
