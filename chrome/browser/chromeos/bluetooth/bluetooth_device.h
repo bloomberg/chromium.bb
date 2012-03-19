@@ -165,6 +165,20 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // and at least one service available for use.
   bool IsConnected() const;
 
+  // Indicates whether the device is currently pairing and expecting a
+  // PIN Code to be returned.
+  bool ExpectingPinCode() const { return !pincode_callback_.is_null(); }
+
+  // Indicates whether the device is currently pairing and expecting a
+  // Passkey to be returned.
+  bool ExpectingPasskey() const { return !passkey_callback_.is_null(); }
+
+  // Indicates whether the device is currently pairing and expecting
+  // confirmation of a displayed passkey.
+  bool ExpectingConfirmation() const {
+    return !confirmation_callback_.is_null();
+  }
+
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;

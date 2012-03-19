@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
@@ -23,7 +24,7 @@ namespace {
 // value stored in each list element is indicated by the following constants.
 const int kUpdateDeviceAddressIndex = 0;
 const int kUpdateDeviceCommandIndex = 1;
-const int kUpdateDevicePasskeyIndex = 2;
+const int kUpdateDeviceAuthTokenIndex = 2;
 
 // |UpdateDeviceCallback| provides a command value of one of the following
 // constants that indicates what update it is providing to us.
@@ -233,14 +234,33 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
 
   if (command == kConnectCommand) {
     int size = args->GetSize();
-    if (size > kUpdateDevicePasskeyIndex) {
+    if (size > kUpdateDeviceAuthTokenIndex) {
       // PIN code or Passkey entry during the pairing process.
-      // TODO(keybuk, kevers): disambiguate PIN (string) vs. Passkey (integer)
-      std::string pincode;
-      args->GetString(kUpdateDevicePasskeyIndex, &pincode);
-      DVLOG(1) << "PIN code supplied: " << address << ": " << pincode;
+      std::string auth_token;
+      args->GetString(kUpdateDeviceAuthTokenIndex, &auth_token);
 
-      device->SetPinCode(pincode);
+      if (device->ExpectingPinCode()) {
+        // PIN Code is an array of 1 to 16 8-bit bytes, the usual
+        // interpretation, and the one shared by BlueZ, is a UTF-8 string
+        // of as many characters that will fit in that space, thus we
+        // can use the auth token from JavaScript unmodified.
+        DVLOG(1) << "PIN Code supplied: " << address << ": " << auth_token;
+        device->SetPinCode(auth_token);
+      } else if (device->ExpectingPasskey()) {
+        // Passkey is a numeric in the range 0-999999, in this case the
+        // JavaScript code should have ensured the auth token string only
+        // contains digits so a simple conversion is sufficient. In the
+        // failure case, just use 0 since that's the most likely Passkey
+        // anyway, and if it's refused the device will request a new one.
+        unsigned passkey = 0;
+        base::StringToUint(auth_token, &passkey);
+
+        DVLOG(1) << "Passkey supplied: " << address << ": " << passkey;
+        device->SetPasskey(passkey);
+      } else {
+        LOG(WARNING) << "Auth token supplied after pairing ended: " << address
+                     << ": " << auth_token;
+      }
     } else {
       // Connection request.
       DVLOG(1) << "Connect: " << address;
