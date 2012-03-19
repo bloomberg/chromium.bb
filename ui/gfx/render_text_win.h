@@ -30,7 +30,7 @@ struct TextRun {
   //            See the example at: http://www.catch22.net/tuts/neatpad/12.
   SkColor foreground;
   // A gfx::Font::FontStyle flag to specify bold and italic styles.
-  // Supercedes |font.GetFontStyle()|. Stored separately to avoid calling
+  // Supersedes |font.GetFontStyle()|. Stored separately to avoid calling
   // |font.DeriveFont()|, which is expensive on Windows.
   int font_style;
   bool strike;
@@ -69,6 +69,9 @@ class RenderTextWin : public RenderText {
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
   virtual Size GetStringSize() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
+  virtual size_t IndexOfAdjacentGrapheme(
+      size_t index,
+      LogicalCursorDirection direction) OVERRIDE;
 
  protected:
   // Overridden from RenderText:
@@ -78,21 +81,17 @@ class RenderTextWin : public RenderText {
   virtual SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) OVERRIDE;
+  virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual void GetGlyphBounds(size_t index,
                               ui::Range* xspan,
                               int* height) OVERRIDE;
   virtual std::vector<Rect> GetSubstringBounds(ui::Range range) OVERRIDE;
-  virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void ResetLayout() OVERRIDE;
   virtual void EnsureLayout() OVERRIDE;
   virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
-  virtual size_t IndexOfAdjacentGrapheme(
-      size_t index,
-      LogicalCursorDirection direction) OVERRIDE;
-
   void ItemizeLogicalText();
   void LayoutVisualText();
 
