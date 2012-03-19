@@ -62,24 +62,26 @@ void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
 }
 
 void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
-                                                WebIDBCallbacks* callbacks,
+                                                WebIDBCallbacks* callbacks_ptr,
                                                 WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.type() == WebIDBKey::InvalidType) {
+  if (key.type() == WebIDBKey::NullType) {
     // No key, so this would qualify for a prefetch.
     ++continue_count_;
 
     if (!prefetch_keys_.empty()) {
       // We have a prefetch cache, so serve the result from that.
-      CachedContinue(callbacks);
+      CachedContinue(callbacks.get());
       return;
     }
 
     if (continue_count_ > kPrefetchContinueThreshold) {
       // Request pre-fetch.
-      dispatcher->RequestIDBCursorPrefetch(prefetch_amount_, callbacks,
+      dispatcher->RequestIDBCursorPrefetch(prefetch_amount_,
+                                           callbacks.release(),
                                            idb_cursor_id_, &ec);
 
       // Increase prefetch_amount_ exponentially.
@@ -94,7 +96,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
     ResetPrefetchCache();
   }
 
-  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key), callbacks,
+  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key), callbacks.release(),
                                        idb_cursor_id_, &ec);
 }
 
