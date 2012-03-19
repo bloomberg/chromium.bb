@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -80,9 +81,18 @@ void CriticalNotificationBubbleView::UpdateBubbleHeadline(int seconds) {
 }
 
 void CriticalNotificationBubbleView::OnCountdown() {
+  UpgradeDetector* upgrade_detector = UpgradeDetector::GetInstance();
+  if (upgrade_detector->critical_update_acknowledged()) {
+    // The user has already interacted with the bubble and chosen a path.
+    GetWidget()->Close();
+    return;
+  }
+
   int seconds = GetRemainingTime();
   if (seconds <= 0) {
     // Time's up!
+    upgrade_detector->acknowledge_critical_update();
+
     content::RecordAction(
         UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
@@ -99,6 +109,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
 
 void CriticalNotificationBubbleView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
+  // Let other bubbles know we have an answer from the user.
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
 
   if (sender == restart_button_) {
@@ -122,6 +133,19 @@ void CriticalNotificationBubbleView::ButtonPressed(
 
 void CriticalNotificationBubbleView::WindowClosing() {
   refresh_timer_.Stop();
+}
+
+void CriticalNotificationBubbleView::GetAccessibleState(
+    ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+}
+
+void CriticalNotificationBubbleView::ViewHierarchyChanged(
+    bool is_add, View* parent, View* child) {
+  if (is_add && child == this) {
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_ALERT, true);
+  }
 }
 
 bool CriticalNotificationBubbleView::AcceleratorPressed(

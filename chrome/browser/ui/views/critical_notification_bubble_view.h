@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,11 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
 
   // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;
+
+  // views::View overrides:
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      bool is_add, View* parent, View* child) OVERRIDE;
 
  protected:
   // views::BubbleDelegateView overrides:
