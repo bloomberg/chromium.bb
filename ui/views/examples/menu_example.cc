@@ -10,10 +10,11 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/button/text_button.h"
-#include "ui/views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 namespace examples {
@@ -66,8 +67,10 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
+  ui::SimpleMenuModel* GetMenuModel();
+
   scoped_ptr<ExampleMenuModel> menu_model_;
-  scoped_ptr<Menu2> menu_;
+  scoped_ptr<MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuButton);
 };
@@ -182,12 +185,19 @@ ExampleMenuButton::~ExampleMenuButton() {
 
 void ExampleMenuButton::OnMenuButtonClicked(View* source,
                                             const gfx::Point& point) {
-  if (!menu_model_.get()) {
-    menu_model_.reset(new ExampleMenuModel);
-    menu_.reset(new Menu2(menu_model_.get()));
-  }
+  MenuModelAdapter menu_model_adapter(GetMenuModel());
+  menu_runner_.reset(new MenuRunner(menu_model_adapter.CreateMenu()));
 
-  menu_->RunMenuAt(point, Menu2::ALIGN_TOPRIGHT);
+  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
+        gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPRIGHT,
+        views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
+}
+
+ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {
+  if (!menu_model_.get())
+    menu_model_.reset(new ExampleMenuModel);
+  return menu_model_.get();
 }
 
 }  // namespace
@@ -199,8 +209,7 @@ MenuExample::~MenuExample() {
 }
 
 void MenuExample::CreateExampleView(View* container) {
-  // Menu2 is not a sub class of View, hence we cannot directly
-  // add to the container. Instead, we add a button to open a menu.
+  // We add a button to open a menu.
   ExampleMenuButton* menu_button = new ExampleMenuButton(
       ASCIIToUTF16("Open a menu"));
   container->SetLayoutManager(new FillLayout);

@@ -22,6 +22,7 @@
 #include "ui/views/examples/combobox_example.h"
 #include "ui/views/examples/double_split_view_example.h"
 #include "ui/views/examples/link_example.h"
+#include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/native_theme_button_example.h"
 #include "ui/views/examples/native_theme_checkbox_example.h"
@@ -42,10 +43,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-
-#if !defined(USE_AURA)
-#include "ui/views/examples/menu_example.h"
-#endif
 
 namespace views {
 namespace examples {
@@ -161,16 +158,13 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
   // Adds all the individual examples to the combobox model.
   void AddExamples() {
-    combobox_model_.AddExample(new TreeViewExample);
-    combobox_model_.AddExample(new TableExample);
+    // Please keep this list in alphabetical order!
     combobox_model_.AddExample(new BubbleExample);
     combobox_model_.AddExample(new ButtonExample);
     combobox_model_.AddExample(new ComboboxExample);
     combobox_model_.AddExample(new DoubleSplitViewExample);
     combobox_model_.AddExample(new LinkExample);
-#if !defined(USE_AURA)
     combobox_model_.AddExample(new MenuExample);
-#endif
     combobox_model_.AddExample(new MessageBoxExample);
     combobox_model_.AddExample(new NativeThemeButtonExample);
     combobox_model_.AddExample(new NativeThemeCheckboxExample);
@@ -180,9 +174,11 @@ class ExamplesWindowContents : public WidgetDelegateView,
     combobox_model_.AddExample(new SingleSplitViewExample);
     combobox_model_.AddExample(new SliderExample);
     combobox_model_.AddExample(new TabbedPaneExample);
+    combobox_model_.AddExample(new TableExample);
     combobox_model_.AddExample(new TextExample);
     combobox_model_.AddExample(new TextfieldExample);
     combobox_model_.AddExample(new ThrobberExample);
+    combobox_model_.AddExample(new TreeViewExample);
     combobox_model_.AddExample(new WidgetExample);
   }
 
