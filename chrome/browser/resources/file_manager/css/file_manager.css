@@ -1018,6 +1018,8 @@ li.table-row {
   -webkit-box-align: center;
   text-align: left;
   padding: 5px;
+  -webkit-padding-end: 10px;
+  -webkit-padding-start: 10px;
 }
 
 .task-item > div {

@@ -4,22 +4,46 @@
  * found in the LICENSE file.
  */
 
+
 .cr-button {
-  border: 1px solid #aaa;
+  -webkit-appearance: none;
+  -webkit-user-select: none;
+  background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
   border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  color: #444;
   font: -webkit-small-control;
+  margin: 0 1px 0 0;
+  text-shadow: 0 1px 0 rgb(240, 240, 240);
   cursor: default;
 }
 
 .cr-button:hover {
-  border: 1px solid #999;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 3px 0;
+  background-image: -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
+  border-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
+      inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  color: black;
 }
 
 .cr-button:active {
-  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 3px 0 inset;
+  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  box-shadow: none;
+  text-shadow: none;
 }
 
+.cr-button:disabled {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #999;
+}
+
+.cr-button:focus {
+  -webkit-transition: border-color 200ms;
+  border-color: rgb(77, 144, 254);
+  outline: none;
+}
 
 
 .cr-combobutton {
@@ -49,51 +73,48 @@
   border-bottom-right-radius: 0px;
 }
 
-.cr-combobutton[open] .cr-cb-button-container {
-  border-top-left-radius: 0;
-}
-
 .cr-cb-button-container > * {
   background-color: rgba(0, 0, 0, 0);
-}
-
-.cr-combobutton[open] .cr-cb-button-container:hover > * {
-  background-color: #f2f6fa;
 }
 
 .cr-cb-trigger {
   -webkit-box-flex: 0;
   -webkit-margin-start: -1px;
   width: 20px;
-  background-image: url('../images/disclosure_arrow_dk_grey_down.png');
-  background-repeat: no-repeat;
-  background-position: center;
   display: none;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
+  margin-left: -2px;
+}
+
+.cr-cb-trigger > img {
+  content: url('../images/disclosure_arrow_dk_grey_down.png');
+  margin-left: 6px;
+  margin-top: 13px;
 }
 
 .cr-combobutton[multiple] .cr-cb-trigger {
   display: block;
 }
 
-.cr-combobutton[open] .cr-cb-trigger {
-  border-top-right-radius: 0;
-}
-
 .cr-cb-popup {
   position: absolute;
-  right: 0;
+  right: 1px;
   display: -webkit-box;
   opacity: 0;
   pointer-events: none;
   -webkit-box-orient: vertical;
   -webkit-box-align: stretch;
+  box-sizing: border-box;
 
-  border: 1px solid #aaa;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  border-bottom-width: 0;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
+  background: white;
+  color: black;
+  cursor: default;
+  white-space: nowrap;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  padding:  8px 0;
 }
 
 .cr-cb-popup:active {
@@ -106,9 +127,18 @@
 }
 
 .cr-cb-popup > * {
-  background-color: white;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cr-cb-popup > *:hover {
-  background-color: #f2f6fa;
+  background-color: #dce5fa;
+}
+
+.cr-cb-popup > *:active {
+  background-color: #426dc9;
+  color: #fff;
 }

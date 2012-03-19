@@ -120,6 +120,12 @@ chrome.fileBrowserPrivate = {
         iconUrl: emptyIcon
       },
       {
+        taskId: 'fake-extension-id|fake-item',
+        title: 'External action',
+        regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        iconUrl: 'images/icon16.png'
+      },
+      {
         taskId: extensionId + '|view-txt',
         title: 'View',
         regexp: /\.txt$/i,

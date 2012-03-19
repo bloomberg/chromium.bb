@@ -2263,6 +2263,7 @@ FileManager.prototype = {
   FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
     this.taskItems_.clear();
 
+    var defaultTask = null;
     var tasksCount = 0;
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -2316,9 +2317,14 @@ FileManager.prototype = {
       }
       this.renderTaskItem_(task);
       tasksCount++;
+      if (defaultTask == null) defaultTask = task;
     }
 
     this.taskItems_.visible = tasksCount > 0;
+    if (tasksCount > 1) {
+      // Duplicate default task in drop-down list.
+      this.renderTaskItem_(defaultTask);
+    }
 
     selection.tasksList = tasksList;
     if (selection.dispatchDefault) {
