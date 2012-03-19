@@ -262,7 +262,8 @@ void wl_resource_queue_event(struct wl_resource *resource,
 
 /* msg is a printf format string, variable args are its args. */
 void wl_resource_post_error(struct wl_resource *resource,
-			    uint32_t code, const char *msg, ...);
+			    uint32_t code, const char *msg, ...)
+	__attribute__ ((format (printf, 3, 4)));
 void wl_resource_post_no_memory(struct wl_resource *resource);
 
 #include "wayland-server-protocol.h"
