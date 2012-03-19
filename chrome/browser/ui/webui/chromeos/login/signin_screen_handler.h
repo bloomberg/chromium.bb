@@ -126,6 +126,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   // delegate is set before Show() method will be called.
   void SetDelegate(SigninScreenHandlerDelegate* delegate);
 
+  // Called when network is connected.
+  void OnNetworkReady();
+
  private:
   friend class ReportDnsCacheClearedOnUIThread;
 
@@ -209,6 +212,10 @@ class SigninScreenHandler : public BaseScreenHandler,
   void StartClearingDnsCache();
   void OnDnsCleared();
 
+  // Decides whether an auth extension should be pre-loaded. If it should,
+  // pre-loads it.
+  void MaybePreloadAuthExtension();
+
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
 
@@ -223,6 +230,12 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Has Gaia page silent load been started for the current sign-in attempt?
   bool gaia_silent_load_;
+
+  // The active network at the moment when Gaia page was preloaded.
+  std::string gaia_silent_load_network_;
+
+  // Is account picker being shown for the first time.
+  bool is_account_picker_showing_first_time_;
 
   // True if dns cache cleanup is done.
   bool dns_cleared_;

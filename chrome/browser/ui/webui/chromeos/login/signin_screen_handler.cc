@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -123,8 +124,10 @@ class NetworkStateInformer
     : public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver {
  public:
-  explicit NetworkStateInformer(content::WebUI* web_ui);
+  NetworkStateInformer(SigninScreenHandler* handler, content::WebUI* web_ui);
   virtual ~NetworkStateInformer();
+
+  void Init();
 
   // Adds observer's callback to be called when network state has been changed.
   void AddObserver(const std::string& callback);
@@ -143,6 +146,12 @@ class NetworkStateInformer
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns active network id.
+  std::string active_network_id() { return active_network_; }
+
+  bool is_online() { return state_ == ONLINE; }
+
  private:
   enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL};
 
@@ -156,15 +165,21 @@ class NetworkStateInformer
   ConnectionType last_network_type_;
   std::string network_name_;
   State state_;
+  SigninScreenHandler* handler_;
   content::WebUI* web_ui_;
 };
 
 // NetworkStateInformer implementation -----------------------------------------
 
-NetworkStateInformer::NetworkStateInformer(content::WebUI* web_ui)
+NetworkStateInformer::NetworkStateInformer(SigninScreenHandler* handler,
+                                           content::WebUI* web_ui)
     : last_network_type_(TYPE_WIFI),
       state_(OFFLINE),
+      handler_(handler),
       web_ui_(web_ui) {
+}
+
+void NetworkStateInformer::Init() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
@@ -236,10 +251,15 @@ bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
       NOTREACHED();
     }
   }
+
   bool updated = (new_state != state_) ||
       (active_network_ != new_active_network);
   state_ = new_state;
   active_network_ = new_active_network;
+
+  if (updated && state_ == ONLINE)
+    handler_->OnNetworkReady();
+
   return updated;
 }
 
@@ -258,6 +278,7 @@ SigninScreenHandler::SigninScreenHandler()
       oobe_ui_(false),
       focus_stolen_(false),
       gaia_silent_load_(false),
+      is_account_picker_showing_first_time_(false),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
@@ -369,6 +390,11 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
     delegate_->SetWebUIHandler(this);
 }
 
+void SigninScreenHandler::OnNetworkReady() {
+  LOG(ERROR) << "network: " << network_state_informer_->active_network_id();
+  MaybePreloadAuthExtension();
+}
+
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::Initialize() {
@@ -391,7 +417,8 @@ void SigninScreenHandler::Initialize() {
 
 void SigninScreenHandler::RegisterMessages() {
   LOG(ERROR) << "RegisterMessages";
-  network_state_informer_.reset(new NetworkStateInformer(web_ui()));
+  network_state_informer_.reset(new NetworkStateInformer(this, web_ui()));
+  network_state_informer_->Init();
 
   web_ui()->RegisterMessageCallback("authenticateUser",
       base::Bind(&SigninScreenHandler::HandleAuthenticateUser,
@@ -551,6 +578,16 @@ void SigninScreenHandler::OnDnsCleared() {
 void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
+
+  if (gaia_silent_load_ &&
+      (!network_state_informer_->is_online() ||
+       gaia_silent_load_network_ !=
+           network_state_informer_->active_network_id())) {
+    // Network has changed. Force Gaia reload.
+    gaia_silent_load_ = false;
+    // Gaia page will be realoded, so focus isn't stolen anymore.
+    focus_stolen_ = false;
+  }
 
   LoadAuthExtension(!gaia_silent_load_, false, false);
   ShowScreen(kGaiaSigninScreen, NULL);
@@ -729,6 +766,8 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   LOG(ERROR) << "HandleShowAddUser: email=" << email_ << ", gaia_sielnt_load="
              << gaia_silent_load_;
 
+  is_account_picker_showing_first_time_ = false;
+
   if (gaia_silent_load_ && email_.empty()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
@@ -825,16 +864,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
 void SigninScreenHandler::HandleAccountPickerReady(
     const base::ListValue* args) {
-  // Fetching of the extension is not started before account picker page is
-  // loaded because it can affect the loading speed.
-  // Do not load the extension for the screen locker, see crosbug.com/25018.
-  if (!ScreenLocker::default_screen_locker() &&
-      !gaia_silent_load_ &&
-      !cookie_remover_ &&
-      !dns_clear_task_running_) {
-    gaia_silent_load_ = true;
-    LoadAuthExtension(true, true, false);
-  }
+  is_account_picker_showing_first_time_ = true;
+  MaybePreloadAuthExtension();
 
   if (ScreenLocker::default_screen_locker()) {
     content::NotificationService::current()->Notify(
@@ -964,6 +995,24 @@ void SigninScreenHandler::StartClearingCookies() {
       base::Time());
   cookie_remover_->AddObserver(this);
   cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
+}
+
+void SigninScreenHandler::MaybePreloadAuthExtension() {
+  // Fetching of the extension is not started before account picker page is
+  // loaded because it can affect the loading speed. Also if |cookie_remover_|
+  // or |dns_clear_task_running_| then auth extension showing has already been
+  // initiated and preloading is senseless.
+  // Do not load the extension for the screen locker, see crosbug.com/25018.
+  if (is_account_picker_showing_first_time_ &&
+      !gaia_silent_load_ &&
+      !ScreenLocker::default_screen_locker() &&
+      !cookie_remover_ &&
+      !dns_clear_task_running_ &&
+      network_state_informer_->is_online()) {
+    gaia_silent_load_ = true;
+    gaia_silent_load_network_ = network_state_informer_->active_network_id();
+    LoadAuthExtension(true, true, false);
+  }
 }
 
 }  // namespace chromeos
