@@ -150,6 +150,14 @@
         <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="aura/launcher_overflow_p.png" type="BINDATA" />
         <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="aura/multi_window_resize_h.png" type="BINDATA" />
         <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="aura/multi_window_resize_v.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="aura/resize_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP" file="aura/resize_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="aura/resize_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_LEFT" file="aura/resize_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="aura/resize_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="aura/resize_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="aura/resize_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="aura/resize_shadow_bottom_right.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="aura/window_shadow_active_top_left.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="aura/window_shadow_active_top.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="aura/window_shadow_active_top_right.png" type="BINDATA" />

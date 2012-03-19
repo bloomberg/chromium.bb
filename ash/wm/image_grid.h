@@ -64,19 +64,6 @@ class ASH_EXPORT ImageGrid {
   class ASH_EXPORT TestAPI {
    public:
     TestAPI(ImageGrid* grid) : grid_(grid) {}
-    ui::Layer* top_left_layer() const { return grid_->top_left_layer_.get(); }
-    ui::Layer* top_layer() const { return grid_->top_layer_.get(); }
-    ui::Layer* top_right_layer() const { return grid_->top_right_layer_.get(); }
-    ui::Layer* left_layer() const { return grid_->left_layer_.get(); }
-    ui::Layer* center_layer() const { return grid_->center_layer_.get(); }
-    ui::Layer* right_layer() const { return grid_->right_layer_.get(); }
-    ui::Layer* bottom_left_layer() const {
-      return grid_->bottom_left_layer_.get();
-    }
-    ui::Layer* bottom_layer() const { return grid_->bottom_layer_.get(); }
-    ui::Layer* bottom_right_layer() const {
-      return grid_->bottom_right_layer_.get();
-    }
 
     gfx::Rect top_left_clip_rect() const {
       return grid_->top_left_painter_->clip_rect_;
@@ -109,6 +96,17 @@ class ASH_EXPORT ImageGrid {
   int left_image_width() const { return left_image_width_; }
   int right_image_width() const { return right_image_width_; }
 
+  // Visible to allow independent layer animations and for testing.
+  ui::Layer* top_left_layer() const { return top_left_layer_.get(); }
+  ui::Layer* top_layer() const { return top_layer_.get(); }
+  ui::Layer* top_right_layer() const { return top_right_layer_.get(); }
+  ui::Layer* left_layer() const { return left_layer_.get(); }
+  ui::Layer* center_layer() const { return center_layer_.get(); }
+  ui::Layer* right_layer() const { return right_layer_.get(); }
+  ui::Layer* bottom_left_layer() const { return bottom_left_layer_.get(); }
+  ui::Layer* bottom_layer() const { return bottom_layer_.get(); }
+  ui::Layer* bottom_right_layer() const { return bottom_right_layer_.get(); }
+
   // Sets the grid to display the passed-in images (any of which can be NULL).
   // Ownership of the images remains with the caller.  May be called more than
   // once to switch images.
@@ -123,6 +121,10 @@ class ASH_EXPORT ImageGrid {
                  const gfx::Image* bottom_right_image);
 
   void SetSize(const gfx::Size& size);
+
+  // Sets the grid to a position and size such that the inner edges of the top,
+  // bottom, left and right images will be flush with |content_bounds|.
+  void SetContentBounds(const gfx::Rect& content_bounds);
 
  private:
   // Delegate responsible for painting a specific image on a layer.

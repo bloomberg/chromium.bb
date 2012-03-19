@@ -38,7 +38,7 @@ float GetOpacityForStyle(ash::internal::Shadow::Style style) {
 namespace ash {
 namespace internal {
 
-Shadow::Shadow() {
+Shadow::Shadow() : style_(STYLE_ACTIVE) {
 }
 
 Shadow::~Shadow() {
@@ -167,18 +167,8 @@ void Shadow::UpdateImagesForStyle() {
 }
 
 void Shadow::UpdateImageGridBounds() {
-  image_grid_->SetSize(
-      gfx::Size(content_bounds_.width() +
-                    image_grid_->left_image_width() +
-                    image_grid_->right_image_width(),
-                content_bounds_.height() +
-                    image_grid_->top_image_height() +
-                    image_grid_->bottom_image_height()));
-  image_grid_->layer()->SetBounds(
-      gfx::Rect(content_bounds_.x() - image_grid_->left_image_width(),
-                content_bounds_.y() - image_grid_->top_image_height(),
-                image_grid_->layer()->bounds().width(),
-                image_grid_->layer()->bounds().height()));
+  // Update bounds based on content bounds and image sizes.
+  image_grid_->SetContentBounds(content_bounds_);
 }
 
 }  // namespace internal

@@ -203,6 +203,18 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
 }
 
+void ImageGrid::SetContentBounds(const gfx::Rect& content_bounds) {
+  SetSize(
+      gfx::Size(
+          content_bounds.width() + left_image_width_ + right_image_width_,
+          content_bounds.height() + top_image_height_ + bottom_image_height_));
+  layer_->SetBounds(
+      gfx::Rect(content_bounds.x() - left_image_width_,
+                content_bounds.y() - top_image_height_,
+                layer_->bounds().width(),
+                layer_->bounds().height()));
+}
+
 void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
                                           ui::Layer* layer) {
   if (clip_rect != clip_rect_) {

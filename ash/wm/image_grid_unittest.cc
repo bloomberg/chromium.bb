@@ -43,15 +43,15 @@ TEST_F(ImageGridTest, Basic) {
                  image_BxB.get(), image_1xB.get(), image_BxB.get());
 
   ImageGrid::TestAPI test_api(&grid);
-  ASSERT_TRUE(test_api.top_left_layer() != NULL);
-  ASSERT_TRUE(test_api.top_layer() != NULL);
-  ASSERT_TRUE(test_api.top_right_layer() != NULL);
-  ASSERT_TRUE(test_api.left_layer() != NULL);
-  ASSERT_TRUE(test_api.center_layer() != NULL);
-  ASSERT_TRUE(test_api.right_layer() != NULL);
-  ASSERT_TRUE(test_api.bottom_left_layer() != NULL);
-  ASSERT_TRUE(test_api.bottom_layer() != NULL);
-  ASSERT_TRUE(test_api.bottom_right_layer() != NULL);
+  ASSERT_TRUE(grid.top_left_layer() != NULL);
+  ASSERT_TRUE(grid.top_layer() != NULL);
+  ASSERT_TRUE(grid.top_right_layer() != NULL);
+  ASSERT_TRUE(grid.left_layer() != NULL);
+  ASSERT_TRUE(grid.center_layer() != NULL);
+  ASSERT_TRUE(grid.right_layer() != NULL);
+  ASSERT_TRUE(grid.bottom_left_layer() != NULL);
+  ASSERT_TRUE(grid.bottom_layer() != NULL);
+  ASSERT_TRUE(grid.bottom_right_layer() != NULL);
 
   const gfx::Size size(20, 30);
   grid.SetSize(size);
@@ -59,33 +59,33 @@ TEST_F(ImageGridTest, Basic) {
   // The top-left layer should be flush with the top-left corner and unscaled.
   EXPECT_EQ(gfx::Rect(0, 0, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.top_left_layer()).ToString());
+                *grid.top_left_layer()).ToString());
 
   // The top layer should be flush with the top edge and stretched horizontally
   // between the two top corners.
   EXPECT_EQ(gfx::Rect(
                 kBorder, 0, size.width() - 2 * kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.top_layer()).ToString());
+                *grid.top_layer()).ToString());
 
   // The top-right layer should be flush with the top-right corner and unscaled.
   EXPECT_EQ(gfx::Rect(size.width() - kBorder, 0, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.top_right_layer()).ToString());
+                *grid.top_right_layer()).ToString());
 
   // The left layer should be flush with the left edge and stretched vertically
   // between the two left corners.
   EXPECT_EQ(gfx::Rect(
                 0, kBorder, kBorder, size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.left_layer()).ToString());
+                *grid.left_layer()).ToString());
 
   // The center layer should fill the space in the middle of the grid.
   EXPECT_EQ(gfx::Rect(
                 kBorder, kBorder, size.width() - 2 * kBorder,
                 size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.center_layer()).ToString());
+                *grid.center_layer()).ToString());
 
   // The right layer should be flush with the right edge and stretched
   // vertically between the two right corners.
@@ -93,13 +93,13 @@ TEST_F(ImageGridTest, Basic) {
                 size.width() - kBorder, kBorder,
                 kBorder, size.height() - 2 * kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.right_layer()).ToString());
+                *grid.right_layer()).ToString());
 
   // The bottom-left layer should be flush with the bottom-left corner and
   // unscaled.
   EXPECT_EQ(gfx::Rect(0, size.height() - kBorder, kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.bottom_left_layer()).ToString());
+                *grid.bottom_left_layer()).ToString());
 
   // The bottom layer should be flush with the bottom edge and stretched
   // horizontally between the two bottom corners.
@@ -107,7 +107,7 @@ TEST_F(ImageGridTest, Basic) {
                 kBorder, size.height() - kBorder,
                 size.width() - 2 * kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.bottom_layer()).ToString());
+                *grid.bottom_layer()).ToString());
 
   // The bottom-right layer should be flush with the bottom-right corner and
   // unscaled.
@@ -115,7 +115,38 @@ TEST_F(ImageGridTest, Basic) {
                 size.width() - kBorder, size.height() - kBorder,
                 kBorder, kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.bottom_right_layer()).ToString());
+                *grid.bottom_right_layer()).ToString());
+}
+
+// Test that an ImageGrid's layers are transformed correctly when
+// SetContentBounds() is called.
+TEST_F(ImageGridTest, SetContentBounds) {
+  // Size of the images around the grid's border.
+  const int kBorder = 2;
+
+  scoped_ptr<gfx::Image> image_1x1(CreateImage(gfx::Size(1, 1)));
+  scoped_ptr<gfx::Image> image_1xB(CreateImage(gfx::Size(1, kBorder)));
+  scoped_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
+  scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
+
+  ImageGrid grid;
+  grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
+                 image_Bx1.get(), image_1x1.get(), image_Bx1.get(),
+                 image_BxB.get(), image_1xB.get(), image_BxB.get());
+
+  ImageGrid::TestAPI test_api(&grid);
+
+  const gfx::Point origin(5, 10);
+  const gfx::Size size(20, 30);
+  grid.SetContentBounds(gfx::Rect(origin, size));
+
+  // The master layer is positioned above the top-left corner of the content
+  // bounds and has height/width that contain the grid and bounds.
+  EXPECT_EQ(gfx::Rect(origin.x() - kBorder,
+                      origin.y() - kBorder,
+                      size.width() + 2 * kBorder,
+                      size.height() + 2 * kBorder).ToString(),
+            test_api.GetTransformedLayerBounds(*grid.layer()).ToString());
 }
 
 // Check that we don't crash if only a single image is supplied.
@@ -129,15 +160,15 @@ TEST_F(ImageGridTest, SingleImage) {
                  NULL, NULL, NULL);
 
   ImageGrid::TestAPI test_api(&grid);
-  EXPECT_TRUE(test_api.top_left_layer() == NULL);
-  ASSERT_TRUE(test_api.top_layer() != NULL);
-  EXPECT_TRUE(test_api.top_right_layer() == NULL);
-  EXPECT_TRUE(test_api.left_layer() == NULL);
-  EXPECT_TRUE(test_api.center_layer() == NULL);
-  EXPECT_TRUE(test_api.right_layer() == NULL);
-  EXPECT_TRUE(test_api.bottom_left_layer() == NULL);
-  EXPECT_TRUE(test_api.bottom_layer() == NULL);
-  EXPECT_TRUE(test_api.bottom_right_layer() == NULL);
+  EXPECT_TRUE(grid.top_left_layer() == NULL);
+  ASSERT_TRUE(grid.top_layer() != NULL);
+  EXPECT_TRUE(grid.top_right_layer() == NULL);
+  EXPECT_TRUE(grid.left_layer() == NULL);
+  EXPECT_TRUE(grid.center_layer() == NULL);
+  EXPECT_TRUE(grid.right_layer() == NULL);
+  EXPECT_TRUE(grid.bottom_left_layer() == NULL);
+  EXPECT_TRUE(grid.bottom_layer() == NULL);
+  EXPECT_TRUE(grid.bottom_right_layer() == NULL);
 
   const gfx::Size kSize(10, 10);
   grid.SetSize(kSize);
@@ -146,7 +177,7 @@ TEST_F(ImageGridTest, SingleImage) {
   // shouldn't be scaled vertically.
   EXPECT_EQ(gfx::Rect(0, 0, kSize.width(), kBorder).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.top_layer()).ToString());
+                *grid.top_layer()).ToString());
 }
 
 // Check that we don't crash when we reset existing images to NULL and
@@ -162,30 +193,30 @@ TEST_F(ImageGridTest, ResetImages) {
 
   // Only the top edge has a layer.
   ImageGrid::TestAPI test_api(&grid);
-  ASSERT_TRUE(test_api.top_left_layer() == NULL);
-  ASSERT_FALSE(test_api.top_layer() == NULL);
-  ASSERT_TRUE(test_api.top_right_layer() == NULL);
-  ASSERT_TRUE(test_api.left_layer() == NULL);
-  ASSERT_TRUE(test_api.center_layer() == NULL);
-  ASSERT_TRUE(test_api.right_layer() == NULL);
-  ASSERT_TRUE(test_api.bottom_left_layer() == NULL);
-  ASSERT_TRUE(test_api.bottom_layer() == NULL);
-  ASSERT_TRUE(test_api.bottom_right_layer() == NULL);
+  ASSERT_TRUE(grid.top_left_layer() == NULL);
+  ASSERT_FALSE(grid.top_layer() == NULL);
+  ASSERT_TRUE(grid.top_right_layer() == NULL);
+  ASSERT_TRUE(grid.left_layer() == NULL);
+  ASSERT_TRUE(grid.center_layer() == NULL);
+  ASSERT_TRUE(grid.right_layer() == NULL);
+  ASSERT_TRUE(grid.bottom_left_layer() == NULL);
+  ASSERT_TRUE(grid.bottom_layer() == NULL);
+  ASSERT_TRUE(grid.bottom_right_layer() == NULL);
 
   grid.SetImages(NULL, NULL, NULL,
                  NULL, NULL, NULL,
                  NULL, image.get(), NULL);
 
   // Now only the bottom edge has a layer.
-  ASSERT_TRUE(test_api.top_left_layer() == NULL);
-  ASSERT_TRUE(test_api.top_layer() == NULL);
-  ASSERT_TRUE(test_api.top_right_layer() == NULL);
-  ASSERT_TRUE(test_api.left_layer() == NULL);
-  ASSERT_TRUE(test_api.center_layer() == NULL);
-  ASSERT_TRUE(test_api.right_layer() == NULL);
-  ASSERT_TRUE(test_api.bottom_left_layer() == NULL);
-  ASSERT_FALSE(test_api.bottom_layer() == NULL);
-  ASSERT_TRUE(test_api.bottom_right_layer() == NULL);
+  ASSERT_TRUE(grid.top_left_layer() == NULL);
+  ASSERT_TRUE(grid.top_layer() == NULL);
+  ASSERT_TRUE(grid.top_right_layer() == NULL);
+  ASSERT_TRUE(grid.left_layer() == NULL);
+  ASSERT_TRUE(grid.center_layer() == NULL);
+  ASSERT_TRUE(grid.right_layer() == NULL);
+  ASSERT_TRUE(grid.bottom_left_layer() == NULL);
+  ASSERT_FALSE(grid.bottom_layer() == NULL);
+  ASSERT_TRUE(grid.bottom_right_layer() == NULL);
 }
 
 // Test that side (top, left, right, bottom) layers that are narrower than their
@@ -217,14 +248,14 @@ TEST_F(ImageGridTest, SmallerSides) {
   EXPECT_EQ(gfx::Rect(
                 kCorner, 0, kSize.width() - 2 * kCorner, kEdge).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.top_layer()).ToString());
+                *grid.top_layer()).ToString());
 
   // The left layer should be flush with the left edge and stretched vertically
   // between the top left corner and the bottom.
   EXPECT_EQ(gfx::Rect(
                 0, kCorner, kEdge, kSize.height() - kCorner).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.left_layer()).ToString());
+                *grid.left_layer()).ToString());
 
   // The right layer should be flush with the right edge and stretched
   // vertically between the top right corner and the bottom.
@@ -232,7 +263,7 @@ TEST_F(ImageGridTest, SmallerSides) {
                 kSize.width() - kEdge, kCorner,
                 kEdge, kSize.height() - kCorner).ToString(),
             test_api.GetTransformedLayerBounds(
-                *test_api.right_layer()).ToString());
+                *grid.right_layer()).ToString());
 }
 
 // Test that we hide or clip layers as needed when the grid is assigned a small
@@ -268,11 +299,11 @@ TEST_F(ImageGridTest, TooSmall) {
   grid.SetSize(kSmallSize);
 
   // The scalable images around the sides and in the center should be hidden.
-  EXPECT_FALSE(test_api.top_layer()->visible());
-  EXPECT_FALSE(test_api.bottom_layer()->visible());
-  EXPECT_FALSE(test_api.left_layer()->visible());
-  EXPECT_FALSE(test_api.right_layer()->visible());
-  EXPECT_FALSE(test_api.center_layer()->visible());
+  EXPECT_FALSE(grid.top_layer()->visible());
+  EXPECT_FALSE(grid.bottom_layer()->visible());
+  EXPECT_FALSE(grid.left_layer()->visible());
+  EXPECT_FALSE(grid.right_layer()->visible());
+  EXPECT_FALSE(grid.center_layer()->visible());
 
   // The corner images' clip rects should sum to the expected size.
   EXPECT_EQ(kSmallSize.width(),
@@ -294,11 +325,11 @@ TEST_F(ImageGridTest, TooSmall) {
   grid.SetSize(kLargeSize);
 
   // The scalable images should be visible now.
-  EXPECT_TRUE(test_api.top_layer()->visible());
-  EXPECT_TRUE(test_api.bottom_layer()->visible());
-  EXPECT_TRUE(test_api.left_layer()->visible());
-  EXPECT_TRUE(test_api.right_layer()->visible());
-  EXPECT_TRUE(test_api.center_layer()->visible());
+  EXPECT_TRUE(grid.top_layer()->visible());
+  EXPECT_TRUE(grid.bottom_layer()->visible());
+  EXPECT_TRUE(grid.left_layer()->visible());
+  EXPECT_TRUE(grid.right_layer()->visible());
+  EXPECT_TRUE(grid.center_layer()->visible());
 
   // We shouldn't be clipping the corner images anymore.
   EXPECT_TRUE(test_api.top_left_clip_rect().IsEmpty());
