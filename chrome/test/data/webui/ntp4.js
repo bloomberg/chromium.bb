@@ -30,7 +30,8 @@ TEST_F('NTP4WebUITest', 'TestBrowsePages', function() {
   }
 });
 
-TEST_F('NTP4WebUITest', 'NTPHasThumbnails', function() {
+// http://crbug.com/118944
+TEST_F('NTP4WebUITest', 'FLAKY_NTPHasThumbnails', function() {
   var mostVisited = document.querySelectorAll('.most-visited');
   assertEquals(8, mostVisited.length, 'There should be 8 most visited tiles.');
 
