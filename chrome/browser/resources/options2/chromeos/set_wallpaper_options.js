@@ -57,6 +57,11 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       $('wallpaper-grid').updateAndFocus();
+      // A quick hack to fix issue 118472. This is a general problem of list
+      // control and options overlay.
+      // TODO(bshe): Remove this hack when we fixed the general problem which
+      // tracked in issue 118829.
+      $('wallpaper-grid').redraw();
       chrome.send('onSetWallpaperPageShown');
     },
 
