@@ -422,7 +422,7 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       client_area_top, left->width(), client_area_height);
 
   // Draw the color to fill in the edges.
-  canvas->DrawRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
+  canvas->FillRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
       client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1),
       kClientEdgeColor);
 }
