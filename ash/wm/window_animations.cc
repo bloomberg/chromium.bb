@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_animations.h"
 
+#include "ash/animation_timings.h"
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
@@ -72,10 +73,10 @@ namespace {
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
-const float kWindowAnimation_TranslateFactor = -0.025f;
-const float kWindowAnimation_ScaleFactor = 1.05f;
+const float kWindowAnimation_TranslateX = 3.f;
+const float kWindowAnimation_TranslateY = -12.f;
+const float kWindowAnimation_ScaleFactor = .95f;
 const float kWindowAnimation_MinimizeRotate = -5.f;
-
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
 
 // Amount windows are scaled during workspace animations.
@@ -183,6 +184,14 @@ class WorkspaceHidingWindowAnimationObserver :
   DISALLOW_COPY_AND_ASSIGN(WorkspaceHidingWindowAnimationObserver);
 };
 
+base::TimeDelta GetAnimationDurationForWindow(aura::Window* window) {
+  int duration =
+      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
+  if (duration > 0)
+    return TimeDelta::FromInternalValue(duration);
+  return TimeDelta::FromMilliseconds(kStandardTransitionDuration);
+}
+
 // Shows a window using an animation, animating its opacity from 0.f to 1.f, and
 // its transform from |start_transform| to |end_transform|.
 void AnimateShowWindowCommon(aura::Window* window,
@@ -195,11 +204,7 @@ void AnimateShowWindowCommon(aura::Window* window,
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    int duration =
-        window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-    if (duration > 0)
-      settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
-
+    settings.SetTransitionDuration(GetAnimationDurationForWindow(window));
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
   }
@@ -215,11 +220,7 @@ void AnimateHideWindowCommon(aura::Window* window,
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.AddObserver(new HidingWindowAnimationObserver(window));
 
-  int duration =
-      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-  if (duration > 0)
-    settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
-
+  settings.SetTransitionDuration(GetAnimationDurationForWindow(window));
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
 }
@@ -229,9 +230,8 @@ void AnimateShowWindow_Drop(aura::Window* window) {
   ui::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
-  transform.ConcatTranslate(
-      kWindowAnimation_TranslateFactor * window->bounds().width(),
-      kWindowAnimation_TranslateFactor * window->bounds().height());
+  transform.ConcatTranslate(kWindowAnimation_TranslateX,
+                            kWindowAnimation_TranslateY);
   AnimateShowWindowCommon(window, transform, ui::Transform());
 }
 
@@ -239,9 +239,10 @@ void AnimateHideWindow_Drop(aura::Window* window) {
   ui::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
-  transform.ConcatTranslate(
-      kWindowAnimation_TranslateFactor * window->bounds().width(),
-      kWindowAnimation_TranslateFactor * window->bounds().height());
+  // Window keeps dropping vertically when hidden (i.e. doesn't reverse
+  // direction)
+  transform.ConcatTranslate(kWindowAnimation_TranslateX,
+                            -kWindowAnimation_TranslateY);
   AnimateHideWindowCommon(window, transform);
 }
 
@@ -299,6 +300,8 @@ void AnimateShowWindow_Workspace(aura::Window* window) {
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetTransitionDuration(
+        TimeDelta::FromMilliseconds(kSlowTransitionDuration));
 
     window->layer()->SetTransform(ui::Transform());
     // Opacity animates only during the first half of the animation.
@@ -322,6 +325,8 @@ void AnimateHideWindow_Workspace(aura::Window* window) {
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetTransitionDuration(
+        TimeDelta::FromMilliseconds(kSlowTransitionDuration));
     // Add an observer that sets visibility of the layer to false once animation
     // completes.
     settings.AddObserver(new WorkspaceHidingWindowAnimationObserver(window));
