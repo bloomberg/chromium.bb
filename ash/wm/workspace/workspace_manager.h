@@ -148,6 +148,9 @@ class ASH_EXPORT WorkspaceManager {
   // Creates a new workspace of the specified type.
   Workspace* CreateWorkspace(Workspace::Type type);
 
+  // Deletes workspaces of TYPE_MAXIMIZED when they become empty.
+  void CleanupWorkspace(Workspace* workspace);
+
   aura::Window* contents_view_;
 
   Workspace* active_workspace_;

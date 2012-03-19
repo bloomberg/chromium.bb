@@ -135,8 +135,7 @@ void WorkspaceManager::RemoveWindow(aura::Window* window) {
   if (!workspace)
     return;
   workspace->RemoveWindow(window);
-  if (workspace->is_empty())
-    delete workspace;
+  CleanupWorkspace(workspace);
 }
 
 void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
@@ -347,11 +346,9 @@ void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
     new_workspace->AddWindowAfter(window, NULL);
   }
   SetActiveWorkspace(new_workspace);
-  if (current_workspace->is_empty()) {
-    // Delete at the end so that we don't attempt to switch to another
-    // workspace in RemoveWorkspace().
-    delete current_workspace;
-  }
+  // Delete at the end so that we don't attempt to switch to another
+  // workspace in RemoveWorkspace().
+  CleanupWorkspace(current_workspace);
 }
 
 Workspace* WorkspaceManager::GetManagedWorkspace() {
@@ -370,6 +367,11 @@ Workspace* WorkspaceManager::CreateWorkspace(Workspace::Type type) {
     workspace = new ManagedWorkspace(this);
   AddWorkspace(workspace);
   return workspace;
+}
+
+void WorkspaceManager::CleanupWorkspace(Workspace* workspace) {
+  if (workspace->type() != Workspace::TYPE_MANAGED && workspace->is_empty())
+    delete workspace;
 }
 
 }  // namespace internal

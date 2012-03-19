@@ -138,18 +138,18 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
   // Maximize the window.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 
-  // Should be 1 workspace, TYPE_MAXIMIZED with w1.
-  ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
-  ASSERT_EQ(1u, workspaces()[0]->windows().size());
-  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  // Should be 2 workspaces, the second TYPE_MAXIMIZED with w1.
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+  ASSERT_EQ(1u, workspaces()[1]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
   EXPECT_EQ(GetWorkAreaBounds().width(), w1->bounds().width());
   EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
 
   // Restore the window.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 
-  // Should be 1 workspace, TYPE_NORMAL with w1.
+  // Should be 1 workspace, TYPE_MANAGED with w1.
   ASSERT_EQ(1u, workspaces().size());
   EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
@@ -179,11 +179,12 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
       gfx::Insets(0, 0, 30, 0));
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 
-  // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the work area bounds.
-  ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
-  ASSERT_EQ(1u, workspaces()[0]->windows().size());
-  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  // Should be 2 workspaces, the second TYPE_MAXIMIZED with w1, fills the work
+  // area bounds.
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+  ASSERT_EQ(1u, workspaces()[1]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
   EXPECT_EQ(GetWorkAreaBounds().width(), w1->bounds().width());
   EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
 
@@ -192,12 +193,12 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
       Shell::GetRootWindow(),
       gfx::Insets(0, 0, 60, 0));
 
-  // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the changed work
-  // area bounds.
-  ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
-  ASSERT_EQ(1u, workspaces()[0]->windows().size());
-  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  // Should be 2 workspaces, the second TYPE_MAXIMIZED with w1, fills the
+  // changed work area bounds.
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+  ASSERT_EQ(1u, workspaces()[1]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
   EXPECT_EQ(GetWorkAreaBounds().width(), w1->bounds().width());
   EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
 }
@@ -316,14 +317,14 @@ TEST_F(WorkspaceManagerTest, TwoMaximized) {
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w2->Show();
 
-  // Should now be two workspaces.
-  ASSERT_EQ(2u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
-  ASSERT_EQ(1u, workspaces()[0]->windows().size());
-  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  // Should now be three workspaces.
+  ASSERT_EQ(3u, workspaces().size());
   EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
   ASSERT_EQ(1u, workspaces()[1]->windows().size());
-  EXPECT_EQ(w2.get(), workspaces()[1]->windows()[0]);
+  EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[2]->type());
+  ASSERT_EQ(1u, workspaces()[2]->windows().size());
+  EXPECT_EQ(w2.get(), workspaces()[2]->windows()[0]);
   ASSERT_TRUE(w1->layer() != NULL);
   EXPECT_FALSE(w1->layer()->visible());
   ASSERT_TRUE(w2->layer() != NULL);
@@ -375,7 +376,7 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
   EXPECT_EQ("0,0 250x251", w1->bounds().ToString());
 
-  // Should be 1 workspace, TYPE_NORMAL with w1.
+  // Should be 1 workspace, TYPE_MANAGED with w1.
   ASSERT_EQ(1u, workspaces().size());
   EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
   ASSERT_EQ(1u, workspaces()[0]->windows().size());
@@ -385,10 +386,10 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
 
   // Back to fullscreen.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ(1u, workspaces().size());
-  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
-  ASSERT_EQ(1u, workspaces()[0]->windows().size());
-  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[1]->type());
+  ASSERT_EQ(1u, workspaces()[1]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[1]->windows()[0]);
   EXPECT_EQ(GetFullscreenBounds(w1.get()).width(), w1->bounds().width());
   EXPECT_EQ(GetFullscreenBounds(w1.get()).height(), w1->bounds().height());
   ASSERT_TRUE(GetRestoreBounds(w1.get()));
@@ -429,7 +430,7 @@ TEST_F(WorkspaceManagerTest, MinimizeSingleWindow) {
   EXPECT_EQ(Workspace::TYPE_MANAGED, workspaces()[0]->type());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  ASSERT_TRUE(workspaces().empty());
+  ASSERT_EQ(1u, workspaces().size());
   EXPECT_FALSE(w1->layer()->IsDrawn());
 
   // Show the window.
