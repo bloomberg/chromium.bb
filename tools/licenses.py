@@ -148,6 +148,10 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/pdfsqueeze/",
         "License File": "COPYING",
     },
+    os.path.join('third_party', 'v8-i18n'): {
+        "Name": "Internationalization Library for v8",
+        "URL": "http://code.google.com/p/v8-i18n/",
+    },
     os.path.join('v8', 'strongtalk'): {
         "Name": "Strongtalk",
         "URL": "http://www.strongtalk.org/",
