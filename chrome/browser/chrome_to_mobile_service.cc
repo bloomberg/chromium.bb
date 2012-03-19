@@ -255,7 +255,6 @@ content::URLFetcher* ChromeToMobileService::CreateRequest(
 }
 
 void ChromeToMobileService::RefreshAccessToken() {
-  DCHECK(access_token_.empty());
   if (access_token_fetcher_.get())
     return;
 
