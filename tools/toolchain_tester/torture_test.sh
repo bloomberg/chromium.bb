@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,7 +74,7 @@ help() {
 }
 
 
-#@ install-tests         - Download test tarball
+v#@ install-tests         - Download test tarball
 install-tests() {
   mkdir -p ${TEST_ROOT}
   DownloadOrCopy ${TEST_TARBALL_URL} ${TEST_ROOT}/test_tarball.tgz
@@ -117,6 +117,10 @@ prereq-arm() {
   ./scons platform=arm irt_core sel_ldr run_intrinsics_test
 }
 
+handle-error() {
+  echo "@@@STEP_FAILURE@@@"
+}
+
 standard_tests() {
   local config=$1
   local exclude=$2
@@ -127,7 +131,7 @@ standard_tests() {
       --config=${config} \
       --append="CFLAGS:-std=gnu89" \
       "$@" \
-      ${TEST_PATH_C}/*c ${TEST_PATH_C}/ieee/*c
+      ${TEST_PATH_C}/*c ${TEST_PATH_C}/ieee/*c || handle-error
 }
 
 eh_tests() {
@@ -139,7 +143,7 @@ eh_tests() {
       --exclude=tools/toolchain_tester/unsuitable_dejagnu_tests.txt \
       --exclude=tools/toolchain_tester/${exclude} \
       "$@" \
-      ${TEST_PATH_CPP}/eh/*.C
+      ${TEST_PATH_CPP}/eh/*.C || handle-error
 }
 
 #@
