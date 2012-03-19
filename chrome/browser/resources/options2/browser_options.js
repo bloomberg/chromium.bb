@@ -102,16 +102,10 @@ cr.define('options', function() {
       }
 
       // On Startup section.
-      var startupSetPagesLink = $('startup-set-pages');
-      /** @const */ var showPagesValue = Number($('startup-show-pages').value);
-
       Preferences.getInstance().addEventListener('session.restore_on_startup',
-                                                 function(event) {
-        startupSetPagesLink.disabled = event.value['disabled'] &&
-                                       event.value['value'] != showPagesValue;
-      });
+         this.onRestoreOnStartupChanged_.bind(this));
 
-      startupSetPagesLink.onclick = function() {
+      $('startup-set-pages').onclick = function() {
         OptionsPage.navigateToPage('startup');
       };
 
@@ -460,6 +454,35 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       $('search-field').focus();
+    },
+
+    /**
+     * Event listener for the 'session.restore_on_startup' pref.
+     * @param {Event} event The preference change event.
+     * @private
+     */
+    onRestoreOnStartupChanged_: function(event) {
+      /** @const */ var showPagesValue = Number($('startup-show-pages').value);
+      /** @const */ var showHomePageValue = 0;
+
+      $('startup-set-pages').disabled = event.value['disabled'] &&
+                                        event.value['value'] != showPagesValue;
+
+      if (event.value['value'] == showHomePageValue) {
+        // If the user previously selected "Show the homepage", the
+        // preference will already be migrated to "Open a specific page". So
+        // the only way to reach this code is if the 'restore on startup'
+        // preference is managed.
+        assert(event.value['controlledBy']);
+
+        // Select "open the following pages" and lock down the list of URLs
+        // to reflect the intention of the policy.
+        $('startup-show-pages').checked = true;
+        StartupOverlay.getInstance().setControlsDisabled(true);
+      } else {
+        // Re-enable the controls in the startup overlay if necessary.
+        StartupOverlay.getInstance().updateControlStates();
+      }
     },
 
     /**

@@ -80,12 +80,10 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the enabled state of the custom startup page list controls
-     * based on the current startup radio button selection.
-     * @private
+     * Sets the enabled state of the custom startup page list
+     * @param {boolean} disable True to disable, false to enable
      */
-    updateCustomStartupPageControlStates_: function() {
-      var disable = this.startup_pages_pref_.disabled;
+    setControlsDisabled: function(disable) {
       var startupPagesList = $('startupPagesList');
       startupPagesList.disabled = disable;
       startupPagesList.setAttribute('tabindex', disable ? -1 : 0);
@@ -97,6 +95,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Enables or disables the the custom startup page list controls
+     * based on the whether the 'pages to restore on startup' pref is enabled.
+     */
+    updateControlStates: function() {
+      this.setControlsDisabled(
+          this.startup_pages_pref_.disabled);
+    },
+
+    /**
      * Handles change events of the preference
      * 'session.urls_to_restore_on_startup'.
      * @param {event} preference changed event.
@@ -104,7 +111,7 @@ cr.define('options', function() {
      */
     handleStartupPageListChange_: function(event) {
       this.startup_pages_pref_.disabled = event.value['disabled'];
-      this.updateCustomStartupPageControlStates_();
+      this.updateControlStates();
     },
 
     /**
