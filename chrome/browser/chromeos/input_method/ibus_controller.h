@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_CONTROLLER_H_
+#pragma once
 
 #include <string>
 #include <utility>
@@ -12,123 +13,14 @@
 #include "base/basictypes.h"
 #include "base/logging.h"  // DCHECK
 #include "base/string_split.h"
+#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 
 namespace chromeos {
 namespace input_method {
 
-class InputMethodDescriptor;
-typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
-class InputMethodWhitelist;
-
-// A structure which represents an input method.
-class InputMethodDescriptor {
- public:
-  InputMethodDescriptor();
-  InputMethodDescriptor(const InputMethodWhitelist& whitelist,
-                        const std::string& in_id,
-                        const std::string& in_name,
-                        const std::string& in_raw_layout,
-                        const std::string& in_language_code);
-  ~InputMethodDescriptor();
-
-  bool operator==(const InputMethodDescriptor& other) const {
-    return (id() == other.id());
-  }
-
-  // Debug print function.
-  std::string ToString() const;
-
-  const std::string& id() const { return id_; }
-  const std::string& name() const { return name_; }
-  const std::string& keyboard_layout() const { return keyboard_layout_; }
-  const std::vector<std::string>& virtual_keyboard_layouts() const {
-    return virtual_keyboard_layouts_;
-  }
-  const std::string& language_code() const { return language_code_; }
-
-  // Returns the fallback input method descriptor (the very basic US
-  // keyboard). This function is mostly used for testing, but may be used
-  // as the fallback, when there is no other choice.
-  static InputMethodDescriptor GetFallbackInputMethodDescriptor();
-
- private:
-  // For GetFallbackInputMethodDescriptor(). Use the public constructor instead.
-  InputMethodDescriptor(const std::string& in_id,
-                        const std::string& in_name,
-                        const std::string& in_keyboard_layout,
-                        const std::string& in_virtual_keyboard_layouts,
-                        const std::string& in_language_code);
-
-  // An ID that identifies an input method engine (e.g., "t:latn-post",
-  // "pinyin", "hangul").
-  std::string id_;
-  // A name used to specify the user-visible name of this input method.  It is
-  // only used by extension IMEs, and should be blank for internal IMEs.
-  std::string name_;
-  // A preferred physical keyboard layout for the input method (e.g., "us",
-  // "us(dvorak)", "jp"). Comma separated layout names do NOT appear.
-  std::string keyboard_layout_;
-  // Preferred virtual keyboard layouts for the input method. Comma separated
-  // layout names in order of priority, such as "handwriting,us", could appear.
-  std::vector<std::string> virtual_keyboard_layouts_;
-  // Language code like "ko", "ja", "en-US", and "zh-CN".
-  std::string language_code_;
-};
-
-// A structure which represents a property for an input method engine.
-struct InputMethodProperty {
-  InputMethodProperty(const std::string& in_key,
-              const std::string& in_label,
-              bool in_is_selection_item,
-              bool in_is_selection_item_checked,
-              int in_selection_item_id);
-
-  InputMethodProperty();
-  ~InputMethodProperty();
-
-  // Debug print function.
-  std::string ToString() const;
-
-  std::string key;  // A key which identifies the property. Non-empty string.
-                    // (e.g. "InputMode.HalfWidthKatakana")
-  std::string label;  // A description of the property. Non-empty string.
-                      // (e.g. "Switch to full punctuation mode", "Hiragana")
-  bool is_selection_item;  // true if the property is a selection item.
-  bool is_selection_item_checked;  // true if |is_selection_item| is true and
-                                   // the selection_item is selected.
-  int selection_item_id;  // A group ID (>= 0) of the selection item.
-                          // kInvalidSelectionItemId if |is_selection_item| is
-                          // false.
-  static const int kInvalidSelectionItemId = -1;
-};
+struct InputMethodConfigValue;
+struct InputMethodProperty;
 typedef std::vector<InputMethodProperty> InputMethodPropertyList;
-
-// A structure which represents a value of an input method configuration item.
-// This struct is used by SetInputMethodConfig().
-struct InputMethodConfigValue {
-  InputMethodConfigValue();
-  ~InputMethodConfigValue();
-
-  // Debug print function.
-  std::string ToString() const;
-
-  enum ValueType {
-    kValueTypeString = 0,
-    kValueTypeInt,
-    kValueTypeBool,
-    kValueTypeStringList,
-  };
-
-  // A value is stored on |string_value| member if |type| is kValueTypeString.
-  // The same is true for other enum values.
-  ValueType type;
-
-  std::string string_value;
-  int int_value;
-  bool bool_value;
-  std::vector<std::string> string_list_value;
-};
-
 typedef std::vector<std::pair<double, double> > HandwritingStroke;
 
 // IBusController is used to interact with the IBus daemon.
@@ -253,20 +145,6 @@ class IBusController {
       const std::string& name,
       const std::string& raw_layout,
       const std::string& language_code) = 0;
-
-  // Gets all input method engines that are supported, including ones not
-  // active.  Caller has to delete the returned list. This function never
-  // returns NULL.
-  virtual InputMethodDescriptors* GetSupportedInputMethods() = 0;
-
-  //
-  // FUNCTIONS BELOW ARE ONLY FOR UNIT TESTS. DO NOT USE THEM.
-  //
-  // Returns true if |input_method_id| is whitelisted.
-  virtual bool InputMethodIdIsWhitelisted(
-      const std::string& input_method_id) = 0;
-  // Returns true if |xkb_layout| is supported.
-  virtual bool XkbLayoutIsSupported(const std::string& xkb_layout) = 0;
 };
 
 }  // namespace input_method

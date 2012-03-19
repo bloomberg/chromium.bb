@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,14 +34,6 @@ namespace input_method {
 
 namespace {
 
-InputMethodDescriptor GetDesc(IBusController* controller,
-                              const std::string& id,
-                              const std::string& raw_layout,
-                              const std::string& language_code) {
-  return controller->CreateInputMethodDescriptor(id, "", raw_layout,
-                                                 language_code);
-}
-
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
   explicit TestableInputMethodUtil(InputMethodDescriptors* methods)
@@ -59,14 +51,10 @@ class TestableInputMethodUtil : public InputMethodUtil {
 
 class InputMethodUtilTest : public testing::Test {
  public:
-  InputMethodUtilTest()
-      : controller_(IBusController::Create()),
-        util_(controller_->GetSupportedInputMethods()) {
-  }
-  static void SetUpTestCase() {
+  InputMethodUtilTest() : util_(whitelist_.GetSupportedInputMethods()) {
   }
 
-  scoped_ptr<IBusController> controller_;
+  InputMethodWhitelist whitelist_;
   TestableInputMethodUtil util_;
 };
 

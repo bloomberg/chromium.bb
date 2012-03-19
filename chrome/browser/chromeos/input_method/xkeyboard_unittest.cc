@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/x11_util.h"
@@ -37,8 +38,7 @@ namespace {
 class XKeyboardTest : public testing::Test {
  public:
   XKeyboardTest()
-      : controller_(IBusController::Create()),
-        util_(controller_->GetSupportedInputMethods()),
+      : util_(whitelist_.GetSupportedInputMethods()),
         ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
@@ -50,7 +50,7 @@ class XKeyboardTest : public testing::Test {
     xkey_.reset();
   }
 
-  scoped_ptr<IBusController> controller_;
+  InputMethodWhitelist whitelist_;
   InputMethodUtil util_;
   scoped_ptr<XKeyboard> xkey_;
 

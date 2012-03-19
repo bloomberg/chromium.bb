@@ -22,187 +22,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 
 namespace chromeos {
 namespace input_method {
-
-namespace {
-
-const char kFallbackLayout[] = "us";
-
-InputMethodDescriptors* GetSupportedInputMethodsInternal(
-    const InputMethodWhitelist& whitelist) {
-  InputMethodDescriptors* input_methods = new InputMethodDescriptors;
-  input_methods->reserve(arraysize(kIBusEngines));
-  for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-    input_methods->push_back(InputMethodDescriptor(
-        whitelist,
-        kIBusEngines[i].input_method_id,
-        "",
-        kIBusEngines[i].xkb_layout_id,
-        kIBusEngines[i].language_code));
-  }
-  return input_methods;
-}
-
-}  // namespace
-
-class InputMethodWhitelist {
- public:
-  InputMethodWhitelist() {
-    for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      supported_input_methods_.insert(kIBusEngines[i].input_method_id);
-    }
-    for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      supported_layouts_.insert(kIBusEngines[i].xkb_layout_id);
-    }
-  }
-
-  // Returns true if |input_method_id| is whitelisted.
-  bool InputMethodIdIsWhitelisted(const std::string& input_method_id) const {
-    return (supported_input_methods_.count(input_method_id) > 0);
-  }
-
-  // Returns true if |xkb_layout| is supported.
-  bool XkbLayoutIsSupported(const std::string& xkb_layout) const {
-    return (supported_layouts_.count(xkb_layout) > 0);
-  }
-
- private:
-  std::set<std::string> supported_input_methods_;
-  std::set<std::string> supported_layouts_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodWhitelist);
-};
-
-InputMethodDescriptor::InputMethodDescriptor(
-    const InputMethodWhitelist& whitelist,
-    const std::string& id,
-    const std::string& name,
-    const std::string& raw_layout,
-    const std::string& language_code)
-    : id_(id),
-      name_(name),
-      language_code_(language_code) {
-  keyboard_layout_ = kFallbackLayout;
-  base::SplitString(raw_layout, ',', &virtual_keyboard_layouts_);
-
-  // Find a valid XKB layout name from the comma-separated list, |raw_layout|.
-  // Only the first acceptable XKB layout name in the list is used as the
-  // |keyboard_layout| value of the InputMethodDescriptor object to be created
-  for (size_t i = 0; i < virtual_keyboard_layouts_.size(); ++i) {
-    if (whitelist.XkbLayoutIsSupported(virtual_keyboard_layouts_[i])) {
-      keyboard_layout_ = virtual_keyboard_layouts_[i];
-      DCHECK(keyboard_layout_.find(",") == std::string::npos);
-      break;
-    }
-  }
-}
-
-InputMethodDescriptor::InputMethodDescriptor() {
-}
-
-InputMethodDescriptor::~InputMethodDescriptor() {
-}
-
-InputMethodDescriptor::InputMethodDescriptor(
-    const std::string& in_id,
-    const std::string& in_name,
-    const std::string& in_keyboard_layout,
-    const std::string& in_virtual_keyboard_layouts,
-    const std::string& in_language_code)
-    : id_(in_id),
-      name_(in_name),
-      keyboard_layout_(in_keyboard_layout),
-      language_code_(in_language_code) {
-  DCHECK(keyboard_layout_.find(",") == std::string::npos);
-  base::SplitString(
-      in_virtual_keyboard_layouts, ',', &virtual_keyboard_layouts_);
-}
-
-// static
-InputMethodDescriptor
-InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
-  return InputMethodDescriptor(
-      "xkb:us::eng", "", kFallbackLayout, kFallbackLayout, "en-US");
-}
-
-std::string InputMethodDescriptor::ToString() const {
-  std::stringstream stream;
-  stream << "id=" << id()
-         << ", name=" << name()
-         << ", keyboard_layout=" << keyboard_layout()
-         << ", virtual_keyboard_layouts=" << virtual_keyboard_layouts_.size()
-         << ", language_code=" << language_code();
-  return stream.str();
-}
-
-InputMethodProperty::InputMethodProperty(const std::string& in_key,
-                         const std::string& in_label,
-                         bool in_is_selection_item,
-                         bool in_is_selection_item_checked,
-                         int in_selection_item_id)
-    : key(in_key),
-      label(in_label),
-      is_selection_item(in_is_selection_item),
-      is_selection_item_checked(in_is_selection_item_checked),
-      selection_item_id(in_selection_item_id) {
-  DCHECK(!key.empty());
-}
-
-InputMethodProperty::InputMethodProperty()
-    : is_selection_item(false),
-      is_selection_item_checked(false),
-      selection_item_id(kInvalidSelectionItemId) {
-}
-
-InputMethodProperty::~InputMethodProperty() {
-}
-
-std::string InputMethodProperty::ToString() const {
-  std::stringstream stream;
-  stream << "key=" << key
-         << ", label=" << label
-         << ", is_selection_item=" << is_selection_item
-         << ", is_selection_item_checked=" << is_selection_item_checked
-         << ", selection_item_id=" << selection_item_id;
-  return stream.str();
-}
-
-InputMethodConfigValue::InputMethodConfigValue()
-    : type(kValueTypeString),
-      int_value(0),
-      bool_value(false) {
-}
-
-InputMethodConfigValue::~InputMethodConfigValue() {
-}
-
-std::string InputMethodConfigValue::ToString() const {
-  std::stringstream stream;
-  stream << "type=" << type;
-  switch (type) {
-    case kValueTypeString:
-      stream << ", string_value=" << string_value;
-      break;
-    case kValueTypeInt:
-      stream << ", int_value=" << int_value;
-      break;
-    case kValueTypeBool:
-      stream << ", bool_value=" << (bool_value ? "true" : "false");
-      break;
-    case kValueTypeStringList:
-      stream << ", string_list_value=";
-      for (size_t i = 0; i < string_list_value.size(); ++i) {
-        if (i) {
-          stream << ",";
-        }
-        stream << string_list_value[i];
-      }
-      break;
-  }
-  return stream.str();
-}
 
 #if defined(HAVE_IBUS)
 const char kPanelObjectKey[] = "panel-object";
@@ -799,10 +622,6 @@ class IBusControllerImpl : public IBusController {
                                  language_code);
   }
 
-  virtual InputMethodDescriptors* GetSupportedInputMethods() {
-    return GetSupportedInputMethodsInternal(whitelist_);
-  }
-
   // IBusController override.
   virtual void AddObserver(Observer* observer) {
     observers_.AddObserver(observer);
@@ -1368,11 +1187,6 @@ class IBusControllerStubImpl : public IBusController {
       const std::string& language_code) {
     return InputMethodDescriptor(whitelist_, id, name, raw_layout,
                                  language_code);
-  }
-  // See the comment above. We have to keep the implementation the same as
-  // IBusControllerImpl.
-  virtual InputMethodDescriptors* GetSupportedInputMethods() {
-    return GetSupportedInputMethodsInternal(whitelist_);
   }
 
  private:

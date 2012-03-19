@@ -18,6 +18,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -155,7 +156,7 @@ class InputMethodManagerImpl
         enable_auto_ime_shutdown_(true),
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
-        util_(ibus_controller_->GetSupportedInputMethods()),
+        util_(whitelist_.GetSupportedInputMethods()),
         xkeyboard_(XKeyboard::Create(util_)),
         ignore_hotkeys_(false) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
@@ -296,7 +297,7 @@ class InputMethodManagerImpl
   }
 
   virtual InputMethodDescriptors* GetSupportedInputMethods() {
-    return ibus_controller_->GetSupportedInputMethods();
+    return whitelist_.GetSupportedInputMethods();
   }
 
   virtual void ChangeInputMethod(const std::string& input_method_id) {
@@ -1525,6 +1526,8 @@ class InputMethodManagerImpl
   std::multimap<std::string,
                 const InputMethodSpecificHotkeySetting*> extra_hotkeys_;
 #endif
+
+  InputMethodWhitelist whitelist_;
 
   // An object which provides miscellaneous input method utility functions. Note
   // that |util_| is required to initialize |xkeyboard_|.
