@@ -158,7 +158,7 @@ void GDataOperationRegistry::OnOperationStart(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   *id = in_flight_operations_.Add(operation);
-  DVLOG(1) << "GDataOperation[" << id << "] started.";
+  DVLOG(1) << "GDataOperation[" << *id << "] started.";
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnProgressUpdate(GetProgressStatusList()));
 }

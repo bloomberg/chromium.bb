@@ -244,7 +244,7 @@ void DocumentsService::DownloadFile(const FilePath& virtual_path,
                                     const DownloadActionCallback& callback) {
   StartOperationOnUIThread(
       new DownloadFileOperation(operation_registry_.get(), profile_, callback,
-                                document_url));
+                                document_url, virtual_path));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,

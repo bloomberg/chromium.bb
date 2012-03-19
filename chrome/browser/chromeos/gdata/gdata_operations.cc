@@ -126,7 +126,8 @@ void AuthOperation::Start() {
 
 void AuthOperation::DoCancel() {
   oauth2_access_token_fetcher_->CancelRequest();
-  callback_.Run(GDATA_CANCELLED, std::string());
+  if (!callback_.is_null())
+    callback_.Run(GDATA_CANCELLED, std::string());
 }
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
@@ -152,6 +153,18 @@ UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
     : GDataOperationRegistry::Operation(registry),
       profile_(profile),
       // MessageLoopProxy is used to run |callback| on the origin thread.
+      relay_proxy_(base::MessageLoopProxy::current()),
+      re_authenticate_count_(0),
+      save_temp_file_(false) {
+}
+
+UrlFetchOperationBase::UrlFetchOperationBase(
+    GDataOperationRegistry* registry,
+    GDataOperationRegistry::OperationType type,
+    const FilePath& path,
+    Profile* profile)
+    : GDataOperationRegistry::Operation(registry, type, path),
+      profile_(profile),
       relay_proxy_(base::MessageLoopProxy::current()),
       re_authenticate_count_(0),
       save_temp_file_(false) {
@@ -227,12 +240,6 @@ void UrlFetchOperationBase::DoCancel() {
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
-void UrlFetchOperationBase::OnURLFetchDownloadProgress(const URLFetcher* source,
-                                                       int64 current,
-                                                       int64 total) {
-  NotifyProgress(current, total);
-}
-
 void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
@@ -250,8 +257,9 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
   }
 
   // Overridden by each specialization
-  ProcessURLFetchResults(source);
-  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  bool success = ProcessURLFetchResults(source);
+  NotifyFinish(success ? GDataOperationRegistry::OPERATION_COMPLETED
+                       : GDataOperationRegistry::OPERATION_FAILED);
 }
 
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
@@ -295,13 +303,14 @@ GURL EntryActionOperation::GetURL() const {
   return AddStandardUrlParams(document_url_);
 }
 
-void EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
   if (!callback_.is_null()) {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
     relay_proxy_->PostTask(FROM_HERE,
                            base::Bind(callback_, code, document_url_));
   }
+  return true;
 }
 
 void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -321,7 +330,7 @@ GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
 
 GetDataOperation::~GetDataOperation() {}
 
-void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
@@ -345,6 +354,7 @@ void GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
         FROM_HERE,
         base::Bind(callback_, code, base::Passed(&root_value)));
   }
+  return root_value.get() != NULL;
 }
 
 void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -416,8 +426,12 @@ DownloadFileOperation::DownloadFileOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
     const DownloadActionCallback& callback,
-    const GURL& document_url)
-    : UrlFetchOperationBase(registry, profile),
+    const GURL& document_url,
+    const FilePath& virtual_path)
+    : UrlFetchOperationBase(registry,
+                            GDataOperationRegistry::OPERATION_DOWNLOAD,
+                            virtual_path,
+                            profile),
       callback_(callback),
       document_url_(document_url) {
   // Make sure we download the content into a temp file.
@@ -431,7 +445,13 @@ GURL DownloadFileOperation::GetURL() const {
   return document_url_;
 }
 
-void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
+void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
+                                                       int64 current,
+                                                       int64 total) {
+  NotifyProgress(current, total);
+}
+
+bool DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
 
   // Take over the ownership of the the downloaded temp file.
@@ -447,6 +467,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
         FROM_HERE,
         base::Bind(callback_, code, document_url_, temp_file));
   }
+  return code == HTTP_SUCCESS;
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -705,7 +726,10 @@ InitiateUploadOperation::InitiateUploadOperation(
     Profile* profile,
     const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
-    : UrlFetchOperationBase(registry, profile),
+    : UrlFetchOperationBase(registry,
+                            GDataOperationRegistry::OPERATION_UPLOAD,
+                            params.virtual_path,
+                            profile),
       callback_(callback),
       params_(params),
       initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
@@ -720,7 +744,7 @@ GURL InitiateUploadOperation::GetURL() const {
   return initiate_upload_url_;
 }
 
-void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
 
@@ -739,6 +763,7 @@ void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     relay_proxy_->PostTask(FROM_HERE,
                            base::Bind(callback_, code, GURL(upload_location)));
   }
+  return code == HTTP_SUCCESS;
 }
 
 void InitiateUploadOperation::RunCallbackOnPrematureFailure(
@@ -787,7 +812,10 @@ ResumeUploadOperation::ResumeUploadOperation(
     Profile* profile,
     const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
-    : UrlFetchOperationBase(registry, profile),
+  : UrlFetchOperationBase(registry,
+                          GDataOperationRegistry::OPERATION_UPLOAD,
+                          params.virtual_path,
+                          profile),
       callback_(callback),
       params_(params) {
 }
@@ -798,7 +826,7 @@ GURL ResumeUploadOperation::GetURL() const {
   return params_.upload_location;
 }
 
-void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
@@ -843,6 +871,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
         base::Bind(callback_, ResumeUploadResponse(code, start_range_received,
                    end_range_received, resource_id, md5_checksum)));
   }
+  return code == HTTP_CREATED || code == HTTP_RESUME_INCOMPLETE;
 }
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
@@ -883,5 +912,12 @@ bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
                                 params_.end_range - params_.start_range + 1);
   return true;
 }
+
+void ResumeUploadOperation::OnURLFetchUploadProgress(
+    const content::URLFetcher* source, int64 current, int64 total) {
+  // Adjust the progress values according to the range currently uploaded.
+  NotifyProgress(params_.start_range + current, params_.content_length);
+}
+
 
 }  // namespace gdata

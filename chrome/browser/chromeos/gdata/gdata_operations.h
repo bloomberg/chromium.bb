@@ -93,6 +93,10 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
  protected:
   UrlFetchOperationBase(GDataOperationRegistry* registry, Profile* profile);
+  UrlFetchOperationBase(GDataOperationRegistry* registry,
+                        GDataOperationRegistry::OperationType type,
+                        const FilePath& path,
+                        Profile* profile);
   virtual ~UrlFetchOperationBase();
 
   // Gets URL for the request.
@@ -111,7 +115,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
   // Invoked by OnURLFetchComplete when the operation completes without an
   // authentication error. Must be implemented by a derived class.
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source) = 0;
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source) = 0;
 
   // Invoked by this base class upon an authentication error or cancel by
   // an user operation. Must be implemented by a derived class.
@@ -119,15 +123,6 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
   // Implement GDataOperationRegistry::Operation
   virtual void DoCancel() OVERRIDE;
-
-  // Implement URLFetcherDelegate.
-  // TODO(kinaba): http://crosbug.com/27370
-  // Current URLFetcherDelegate notifies only the progress of "download"
-  // transfers, and no notification for upload progress in POST/PUT.
-  // For some GData operations, however, progress of uploading transfer makes
-  // more sense. We need to add a way to track upload status.
-  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
-                                          int64 current, int64 total) OVERRIDE;
 
   // Overridden from URLFetcherDelegate.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -161,7 +156,7 @@ class EntryActionOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source)
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -186,7 +181,7 @@ class GetDataOperation : public UrlFetchOperationBase {
 
  protected:
   // Overridden from UrlFetchOperationBase.
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source)
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -248,15 +243,20 @@ class DownloadFileOperation : public UrlFetchOperationBase {
   DownloadFileOperation(GDataOperationRegistry* registry,
                         Profile* profile,
                         const DownloadActionCallback& callback,
-                        const GURL& document_url);
+                        const GURL& document_url,
+                        const FilePath& virtual_path);
   virtual ~DownloadFileOperation();
 
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source)
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
+
+  // Overridden from content::URLFetcherDelegate.
+  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+                                          int64 current, int64 total) OVERRIDE;
 
  private:
   DownloadActionCallback callback_;
@@ -440,7 +440,7 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source)
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -472,7 +472,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual GURL GetURL() const OVERRIDE;
-  virtual void ProcessURLFetchResults(const content::URLFetcher* source)
+  virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
@@ -481,6 +481,10 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
+
+  // Overridden from content::UrlFetcherDelegate
+  virtual void OnURLFetchUploadProgress(const content::URLFetcher* source,
+                                        int64 current, int64 total) OVERRIDE;
 
  private:
   ResumeUploadCallback callback_;
