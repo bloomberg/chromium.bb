@@ -15,7 +15,6 @@
 #include "net/http/http_cache.h"
 #include "net/test/test_server.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
@@ -149,9 +148,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
-  if (RunningOnValgrind())
-    WebKit::WebCache::clear();
-  WebKit::shutdown();
 }
 
 WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
