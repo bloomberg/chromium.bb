@@ -677,7 +677,6 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 
   if (is_preview_enabled_) {
     print_preview_context_.InitWithFrame(frame);
-
     RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
   } else {
     Print(frame, WebNode());
@@ -974,12 +973,19 @@ void PrintWebViewHelper::OnInitiatePrintPreview() {
   if (GetPrintFrame(&frame)) {
     print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview(PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
+  } else {
+    // This should not happen. Let's add a CHECK here to see how often this
+    // gets hit.
+    // TODO(thestig) Remove this later when we have sufficient usage of this
+    // code on the M19 stable channel.
+    CHECK(false);
   }
 }
 
 void PrintWebViewHelper::PrintNode(const WebNode& node) {
-  if (node.isNull()) {
-    NOTREACHED();
+  if (node.isNull() || !node.document().frame()) {
+    // This can occur when the context menu refers to an invalid WebNode.
+    // See http://crbug.com/100890#c17 for a repro case.
     return;
   }
 
@@ -1565,19 +1571,16 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_frame;
-  // TODO(vandebo) Remove when http://crbug.com/100890 is resolved.
-  CHECK(frame_ != NULL);
   node_.reset();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
     const WebKit::WebNode& web_node) {
   DCHECK(!web_node.isNull());
+  DCHECK(web_node.document().frame());
   DCHECK(!IsRendering());
   state_ = INITIALIZED;
   frame_ = web_node.document().frame();
-  // TODO(vandebo) Remove when http://crbug.com/100890 is resolved.
-  CHECK(frame_ != NULL);
   node_ = web_node;
 }
 
@@ -1734,7 +1737,7 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 }
 
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() {
-  // TODO(vandebo) turn this back into a DCHECK when http://crbug.com/100890 is
+  // TODO(thestig) turn this back into a DCHECK when http://crbug.com/118303 is
   // resolved.
   CHECK(state_ != UNINITIALIZED);
   return frame_;
