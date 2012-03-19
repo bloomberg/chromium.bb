@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_EVENT_H_
-#define ASH_WM_EVENT_H_
+#ifndef ASH_IME_EVENT_H_
+#define ASH_IME_EVENT_H_
 #pragma once
 
 #include "ash/ash_export.h"
@@ -36,4 +36,4 @@ class ASH_EXPORT TranslatedKeyEvent : public aura::KeyEvent {
 
 }  // namespace ash
 
-#endif  // ASH_WM_EVENT_H_
+#endif  // ASH_IME_EVENT_H_

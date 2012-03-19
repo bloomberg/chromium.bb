@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_INPUT_METHOD_EVENT_FILTER_
-#define ASH_WM_INPUT_METHOD_EVENT_FILTER_
+#ifndef ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
+#define ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
 #pragma once
 
 #include "ash/ash_export.h"
@@ -56,4 +56,4 @@ class ASH_EXPORT InputMethodEventFilter
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_INPUT_METHOD_EVENT_FILTER_
+#endif  // ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
