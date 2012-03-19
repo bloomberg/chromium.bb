@@ -29,6 +29,8 @@ cr.define('ntp', function() {
   };
   var DRAG_SOURCE_LIMIT = DRAG_SOURCE.OUTSIDE_NTP + 1;
 
+  /** @const */ var appInstallHintTileLimit = 10;
+
   /**
    * App context menu. The class is designed to be used as a singleton with
    * the app that is currently showing a context menu stored in this.app_.
@@ -683,8 +685,9 @@ cr.define('ntp', function() {
         ntp.getCardSlider().selectCardByValue(this);
         this.content_.scrollTop = this.content_.scrollHeight;
       }
+
       this.appendTile(new App(appData), animate);
-      this.repositionHint_();
+      this.hintStateMayHaveChanged_();
     },
 
     /**
@@ -701,9 +704,9 @@ cr.define('ntp', function() {
           break;
         }
       }
-      this.addTileAt(new App(appData), index, false);
 
-      this.repositionHint_();
+      this.addTileAt(new App(appData), index, false);
+      this.hintStateMayHaveChanged_();
     },
 
     /**
@@ -903,20 +906,60 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Called when we may need to change app install hint visibility.
+     * @private
+     */
+    hintStateMayHaveChanged_: function() {
+      if (this.updateHintState_())
+        this.repositionTiles_();
+      else
+        this.repositionHint_();
+    },
+
+    /**
+     * Updates whether the app install hint is visible. Returns true if we need
+     * to reposition other tiles (because webstore app changed visibility).
+     * @private
+     */
+    updateHintState_: function() {
+      if (!this.appInstallHint_)
+        return;
+
+      var appsPages = document.querySelectorAll('.apps-page');
+      var numTiles = this.tileElements_.length;
+      var showHint =
+          numTiles < appInstallHintTileLimit && appsPages.length == 1;
+      this.appInstallHint_.hidden = !showHint;
+
+      var webstoreApp = this.querySelector('.webstore');
+      if (!webstoreApp)
+        return false;
+
+      var webstoreTile = findAncestorByClass(webstoreApp, 'tile');
+      if (showHint) {
+        if (!webstoreTile.classList.contains('real'))
+          return false;
+
+        webstoreTile.classList.remove('real');
+        return true;
+      }
+
+      if (webstoreTile.classList.contains('real'))
+        return false;
+
+      webstoreTile.classList.add('real');
+      return true;
+    },
+
+    /**
      * Repositions the app tile hint (to be called when tiles move).
      * @private
      */
     repositionHint_: function() {
-      if (!this.appInstallHint_)
+      if (!this.appInstallHint_ || this.appInstallHint_.hidden)
         return;
 
       var index = this.tileElements_.length;
-      if (index >= 18) {
-        this.appInstallHint_.hidden = true;
-        return;
-      }
-
-      this.appInstallHint_.hidden = false;
       var layout = this.layoutValues_;
       var col = index % layout.numRowTiles;
       var row = Math.floor(index / layout.numRowTiles);

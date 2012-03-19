@@ -58,6 +58,12 @@
   position: absolute;
 }
 
+/* Not real but not a doppleganger: show nothing. This state exists for a
+ * webstore tile that's on the same page as a [+]. */
+.tile:not(.real):not(.doppleganger) {
+  display: none;
+}
+
 /* I don't know why this is necessary. -webkit-user-drag: element on .tile
  * should be enough. If we don't do this, we get 2 drag representations for
  * the image. */

@@ -245,9 +245,3 @@ html.dragging-mode .app-install-hint {
   top: 80%;
   white-space: nowrap;
 }
-
-/* Only display on the first apps page, and only if it has less than 18
- * apps (the latter part is handled in javascript). */
-.apps-page:not(:last-of-type) .app-install-hint {
-  display: none;
-}

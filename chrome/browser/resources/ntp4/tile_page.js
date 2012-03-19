@@ -66,7 +66,7 @@ cr.define('ntp', function() {
     },
 
     get index() {
-      return Array.prototype.indexOf.call(this.parentNode.children, this);
+      return Array.prototype.indexOf.call(this.tilePage.tileElements_, this);
     },
 
     get tilePage() {
