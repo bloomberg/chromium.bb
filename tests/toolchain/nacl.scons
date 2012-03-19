@@ -173,7 +173,7 @@ for tag, e in ENVIRONMENTS_TO_TRY:
       continue
 
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2644
-    if env.Bit('bitcode'):
+    if env.Bit('bitcode') and not env.Bit('target_x86_64'):
       is_broken = True
 
     name = src.split('.')[0] + '_' + tag
