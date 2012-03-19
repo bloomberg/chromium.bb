@@ -177,9 +177,13 @@ class GDataFileSystemTest : public testing::Test {
 
   void TestGetCacheFilePath(const std::string& res_id, const std::string& md5,
                             const std::string& expected_filename) {
-    FilePath actual_path = file_system_->GetCacheFilePath(res_id, md5);
+    FilePath actual_path = file_system_->GetCacheFilePath(
+        res_id,
+        md5,
+        GDataFileSystem::CACHE_TYPE_TMP,
+        false  /* is_local */);
     FilePath expected_path =
-        file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_BLOBS];
+        file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_TMP];
     expected_path = expected_path.Append(expected_filename);
     EXPECT_EQ(expected_path, actual_path);
 
@@ -291,7 +295,11 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_FALSE(file_system_->root_->CacheFileExists(res_id, md5));
 
     // Verify that no files with $res_id.* exist in dir.
-    FilePath path = file_system_->GetCacheFilePath(res_id, "*");
+    FilePath path = file_system_->GetCacheFilePath(
+        res_id,
+        "*",
+        GDataFileSystem::CACHE_TYPE_TMP,
+        false  /* is_local*/);
     std::string all_res_id = res_id + FilePath::kExtensionSeparator + "*";
     file_util::FileEnumerator traversal(path.DirName(), false,
                                         file_util::FileEnumerator::FILES,
@@ -375,7 +383,7 @@ class GDataFileSystemTest : public testing::Test {
   void PrepareForInitCacheTest() {
     // Create gdata cache blobs directory.
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_BLOBS]));
+        file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_TMP]));
 
     // Dump some files into cache blob dir so that
     // GDataFileSystem::InitializeCacheIOThreadPool would scan through them and
@@ -388,7 +396,10 @@ class GDataFileSystemTest : public testing::Test {
       // convention.
       FilePath source_path = GetTestFilePath(init_cache_table[i].source);
       FilePath dest_path = file_system_->GetCacheFilePath(
-          init_cache_table[i].resource, init_cache_table[i].md5);
+          init_cache_table[i].resource,
+          init_cache_table[i].md5,
+          GDataFileSystem::CACHE_TYPE_TMP,
+          false  /* is_local */);
       ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
 
       // Change mode of cached file.
@@ -425,7 +436,11 @@ class GDataFileSystemTest : public testing::Test {
               file_system_->root_->GetCacheState(res_id, md5));
 
     // Verify file attributes of actual cache file.
-    FilePath path = file_system_->GetCacheFilePath(res_id, md5);
+    FilePath path = file_system_->GetCacheFilePath(
+        res_id,
+        md5,
+        GDataFileSystem::CACHE_TYPE_TMP,
+        false  /* is_local */);
     struct stat64 stat_buf;
     EXPECT_EQ(0, stat64(path.value().c_str(), &stat_buf));
     EXPECT_TRUE(stat_buf.st_mode & expected_mode_bits);

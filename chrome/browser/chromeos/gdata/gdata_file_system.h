@@ -129,6 +129,15 @@ class GDataFileSystem : public ProfileKeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Enum defining GCache subdirectory location.
+  enum CacheSubdir {  // This indexes into |cache_paths_| vector.
+    CACHE_TYPE_META = 0,
+    CACHE_TYPE_PINNED,
+    CACHE_TYPE_OUTGOING,
+    CACHE_TYPE_PERSISTENT,
+    CACHE_TYPE_TMP,
+  };
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -310,12 +319,6 @@ class GDataFileSystem : public ProfileKeyedService {
     const bool is_exclusive;
     const bool is_recursive;
     FileOperationCallback callback;
-  };
-
-  enum CacheType {  // This indexes into |cache_paths_| vector.
-    CACHE_TYPE_BLOBS = 0,
-    CACHE_TYPE_META,
-    CACHE_TYPE_TMP,
   };
 
   // Callback similar to FileOperationCallback but with a given
@@ -574,7 +577,9 @@ class GDataFileSystem : public ProfileKeyedService {
 
   // Returns absolute path of the file if it were cached or to be cached.
   FilePath GetCacheFilePath(const std::string& resource_id,
-                            const std::string& md5);
+                            const std::string& md5,
+                            CacheSubdir subdir_id,
+                            bool is_local);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
   // Initializes cache if it has not been initialized.
@@ -631,6 +636,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // Initializes cache if it hasn't been initialized by posting
   // InitializeCacheOnIOThreadPool task to IO thread pool.
   void InitializeCacheIfNecessary();
+  // Traverses cache sundirectory |subdir| and build |cache_map| with found
+  // file blobs.
+  void TraverseCacheDirectory(CacheSubdir subdir,
+      GDataRootDirectory::CacheMap* cache_map);
 
   // Task posted from InitializeCacheIfNecessary to run on IO thread pool.
   // Creates cache directory and its sub-directories if they don't exist,
@@ -722,7 +731,8 @@ class GDataFileSystem : public ProfileKeyedService {
   // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
   FilePath gdata_cache_path_;
 
-  // Paths for all subdirectories of GCache, one for each CacheType enum.
+  // Paths for all subdirectories of GCache, one for each CacheSubdir
+  // enum.
   std::vector<FilePath> cache_paths_;
 
   scoped_ptr<base::WaitableEvent> on_cache_initialized_;

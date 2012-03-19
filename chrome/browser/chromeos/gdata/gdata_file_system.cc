@@ -38,9 +38,16 @@ namespace {
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kFeedField[] = "feed";
 const char kWildCard[] = "*";
+const char kLocallyModifiedFileExtension[] = "local";
+
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
-const FilePath::CharType kGDataCacheBlobsDir[] = FILE_PATH_LITERAL("blobs");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
+const FilePath::CharType kGDataCachePinnedDir[] =
+    FILE_PATH_LITERAL("pinned");
+const FilePath::CharType kGDataCacheOutgoingDir[] =
+    FILE_PATH_LITERAL("outgoing");
+const FilePath::CharType kGDataCachePersistentDir[] =
+    FILE_PATH_LITERAL("persistent");
 const FilePath::CharType kGDataCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
 const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
@@ -562,9 +569,11 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
   gdata_cache_path_ = gdata_cache_path_.Append(kGDataCacheVersionDir);
-  // Insert into |cache_paths_| in the order defined in enum CacheType.
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheBlobsDir));
+  // Insert into |cache_paths_| in the order defined in enum CacheSubdir.
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheMetaDir));
+  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePinnedDir));
+  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheOutgoingDir));
+  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePersistentDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDir));
   DVLOG(1) << "GCache dir: " << gdata_cache_path_.value();
 }
@@ -1962,14 +1971,23 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
 //===================== GDataFileSystem: Cache entry points ====================
 
 FilePath GDataFileSystem::GetCacheFilePath(const std::string& resource_id,
-                                           const std::string& md5) {
+                                           const std::string& md5,
+                                           CacheSubdir subdir_id,
+                                           bool is_local) {
+  DCHECK(subdir_id != CACHE_TYPE_META);
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
-  FilePath path(GDataFileBase::EscapeUtf8FileName(resource_id) +
-                FilePath::kExtensionSeparator +
-                GDataFileBase::EscapeUtf8FileName(md5));
-  return cache_paths_[CACHE_TYPE_BLOBS].Append(path);
+  std::string base_name = GDataFileBase::EscapeUtf8FileName(resource_id);
+  if (is_local) {
+    DCHECK(subdir_id == CACHE_TYPE_PERSISTENT);
+    base_name += FilePath::kExtensionSeparator;
+    base_name += kLocallyModifiedFileExtension;
+  } else if (!md5.empty()) {
+    base_name += FilePath::kExtensionSeparator;
+    base_name += GDataFileBase::EscapeUtf8FileName(md5);
+  }
+  return cache_paths_[subdir_id].Append(base_name);
 }
 
 void GDataFileSystem::InitializeCacheIfNecessary() {
@@ -1993,7 +2011,10 @@ void GDataFileSystem::StoreToCache(const std::string& resource_id,
                      md5,
                      source_path,
                      callback,
-                     GetCacheFilePath(resource_id, md5),
+                     GetCacheFilePath(resource_id,
+                                      md5,
+                                      CACHE_TYPE_TMP,
+                                      false  /* is_local */),
                      base::Bind(&GDataFileSystem::OnStoredToCache,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2016,7 +2037,10 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
   // Post task to delete all cache versions of resource_id.
   // If $resource_id.* is passed to DeleteStaleCacheVersions, then all
   // $resource_id.* will be deleted since no file will match "$resource_id.*".
-  FilePath files_to_delete = GetCacheFilePath(resource_id, kWildCard);
+  FilePath files_to_delete = GetCacheFilePath(resource_id,
+                                              kWildCard,
+                                              CACHE_TYPE_TMP,
+                                              false  /* is_local */);
   BrowserThread::PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
@@ -2043,7 +2067,10 @@ void GDataFileSystem::Pin(const std::string& resource_id,
                      callback,
                      GDataRootDirectory::CACHE_PINNED,
                      true,
-                     GetCacheFilePath(resource_id, md5),
+    GetCacheFilePath(resource_id,
+                     md5,
+                     CACHE_TYPE_TMP,
+                     false  /* is_local */),
                      base::Bind(&GDataFileSystem::OnFilePinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2064,7 +2091,10 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                      callback,
                      GDataRootDirectory::CACHE_PINNED,
                      false,
-                     GetCacheFilePath(resource_id, md5),
+                     GetCacheFilePath(resource_id,
+                                      md5,
+                                      CACHE_TYPE_TMP,
+                                      false  /* is_local */),
                      base::Bind(&GDataFileSystem::OnFileUnpinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2081,10 +2111,26 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
     return;
   }
 
+
   // Scan cache directory to enumerate all files in it, retrieve their file
   // attributes and creates corresponding entries for cache map.
   GDataRootDirectory::CacheMap cache_map;
-  file_util::FileEnumerator traversal(cache_paths_[CACHE_TYPE_BLOBS], false,
+  TraverseCacheDirectory(CACHE_TYPE_PERSISTENT, &cache_map);
+  TraverseCacheDirectory(CACHE_TYPE_TMP, &cache_map);
+
+  {  // Lock to update cache map.
+    base::AutoLock lock(lock_);
+    root_->SetCacheMap(cache_map);
+  }
+
+  // Signal that cache initialization has completed.
+  on_cache_initialized_->Signal();
+}
+
+void GDataFileSystem::TraverseCacheDirectory(CacheSubdir subdir,
+    GDataRootDirectory::CacheMap* cache_map) {
+  file_util::FileEnumerator traversal(cache_paths_[subdir],
+                                      false,
                                       file_util::FileEnumerator::FILES,
                                       kWildCard);
   for (FilePath current = traversal.Next(); !current.empty();
@@ -2105,16 +2151,8 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
     // Insert a CacheEntry for current cached file into ResourceMap.
     gdata::GDataRootDirectory::CacheEntry* entry =
         new gdata::GDataRootDirectory::CacheEntry(md5, mode_bits);
-    cache_map.insert(std::make_pair(resource_id, entry));
+    cache_map->insert(std::make_pair(resource_id, entry));
   }
-
-  {  // Lock to update cache map.
-    base::AutoLock lock(lock_);
-    root_->SetCacheMap(cache_map);
-  }
-
-  // Signal that cache initialization has completed.
-  on_cache_initialized_->Signal();
 }
 
 //=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====
@@ -2149,7 +2187,10 @@ void GDataFileSystem::OnGetFromCache(const std::string& resource_id,
   // Lock to access cache map.
   base::AutoLock lock(lock_);
   if (root_->CacheFileExists(resource_id, md5)) {
-    path = GetCacheFilePath(resource_id, md5);
+    path = GetCacheFilePath(resource_id,
+                            md5,
+                            CACHE_TYPE_TMP,
+                            false  /* is_local */);
   } else {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
