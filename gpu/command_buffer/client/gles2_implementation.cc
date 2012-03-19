@@ -217,16 +217,6 @@ class StrictSharedIdHandler : public IdHandlerInterface {
     return id;
   }
 
-  bool FreeId(GLuint id) {
-    ResourceIdSet::iterator it = used_ids_.find(id);
-    if (it == used_ids_.end()) {
-      return false;
-    }
-    used_ids_.erase(it);
-    free_ids_.push(id);
-    return true;
-  }
-
   GLES2Implementation* gles2_;
   id_namespaces::IdNamespaces id_namespace_;
   ResourceIdSet used_ids_;
