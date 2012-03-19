@@ -107,7 +107,7 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
     arraysize(kAllVersionsNoInfobarVersionRange), "" }
 
 #define kGoogleTalkDefinition { \
-    "google-talk", "Google Talk NPAPI Plugin", "Google Talk NPAPI Plugin", \
+    "google-talk", "Google Talk", "Google Talk", \
     kAllVersionsNoInfobarVersionRange, \
     arraysize(kAllVersionsNoInfobarVersionRange), ""}
 
