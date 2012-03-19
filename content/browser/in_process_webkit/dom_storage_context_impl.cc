@@ -198,13 +198,6 @@ DOMStorageContextImpl::GetMessageFilterSet() const {
 }
 
 void DOMStorageContextImpl::PurgeMemory() {
-  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
-    webkit_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&DOMStorageContextImpl::PurgeMemory, this));
-    return;
-  }
-
   // It is only safe to purge the memory from the LocalStorage namespace,
   // because it is backed by disk and can be reloaded later.  If we purge a
   // SessionStorage namespace, its data will be gone forever, because it isn't
@@ -284,28 +277,6 @@ void DOMStorageContextImpl::DeleteAllLocalStorageFiles() {
   }
 }
 
-void DOMStorageContextImpl::SetClearLocalState(bool clear_local_state) {
-  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
-    webkit_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &DOMStorageContextImpl::SetClearLocalState,
-            this, clear_local_state));
-    return;
-  }
-  clear_local_state_on_exit_ = clear_local_state;
-}
-
-void DOMStorageContextImpl::SaveSessionState() {
-  if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
-    webkit_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&DOMStorageContextImpl::SaveSessionState, this));
-    return;
-  }
-  save_session_state_ = true;
-}
-
 DOMStorageNamespace* DOMStorageContextImpl::CreateLocalStorage() {
   FilePath dir_path;
   if (!data_path_.empty())
@@ -345,7 +316,6 @@ void DOMStorageContextImpl::CompleteCloningSessionStorage(
 void DOMStorageContextImpl::GetAllStorageFiles(
     const GetAllStorageFilesCallback& callback) {
   if (!webkit_message_loop_->RunsTasksOnCurrentThread()) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     webkit_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(
@@ -382,3 +352,4 @@ FilePath DOMStorageContextImpl::GetFilePath(const string16& origin_id) const {
 }
 
 #endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
+

@@ -10,11 +10,6 @@
 #include "chrome/test/ui/ui_layout_test.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
-#include "webkit/dom_storage/dom_storage_types.h"
-
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-// No longer applicable.
-#else
 
 static const char* kRootFiles[] = {
   "clear.html",
@@ -215,5 +210,3 @@ TEST_F(DomStorageEmptyDatabaseTest, MAYBE_NonEmptyDirAfterSet) {
   QuitBrowser();
   EXPECT_TRUE(StorageDirIsEmpty());
 }
-
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

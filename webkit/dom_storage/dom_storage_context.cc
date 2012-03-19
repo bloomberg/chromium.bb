@@ -6,33 +6,20 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/time.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "webkit/dom_storage/dom_storage_area.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/special_storage_policy.h"
 
-using file_util::FileEnumerator;
-
 namespace dom_storage {
-
-DomStorageContext::UsageInfo::UsageInfo() {}
-DomStorageContext::UsageInfo::~UsageInfo() {}
 
 DomStorageContext::DomStorageContext(
     const FilePath& directory,
     quota::SpecialStoragePolicy* special_storage_policy,
     DomStorageTaskRunner* task_runner)
     : directory_(directory),
-      task_runner_(task_runner),
-      clear_local_state_(false),
-      save_session_state_(false),
-      special_storage_policy_(special_storage_policy) {
+      task_runner_(task_runner) {
   // AtomicSequenceNum starts at 0 but we want to start session
   // namespace ids at one since zero is reserved for the
   // kLocalStorageNamespaceId.
@@ -55,45 +42,6 @@ DomStorageNamespace* DomStorageContext::GetStorageNamespace(
     return NULL;
   }
   return found->second;
-}
-
-void DomStorageContext::GetUsageInfo(std::vector<UsageInfo>* infos) {
-  FileEnumerator enumerator(directory_, false, FileEnumerator::FILES);
-  for (FilePath path = enumerator.Next(); !path.empty();
-       path = enumerator.Next()) {
-    if (path.MatchesExtension(DomStorageArea::kDatabaseFileExtension)) {
-      UsageInfo info;
-
-      // Extract origin id from the path and construct a GURL.
-      WebKit::WebString origin_id = webkit_glue::FilePathToWebString(
-          path.BaseName().RemoveExtension());
-      info.origin = GURL(WebKit::WebSecurityOrigin::
-          createFromDatabaseIdentifier(origin_id).toString());
-
-      FileEnumerator::FindInfo find_info;
-      enumerator.GetFindInfo(&find_info);
-      info.data_size = FileEnumerator::GetFilesize(find_info);
-      info.last_modified = FileEnumerator::GetLastModifiedTime(find_info);
-
-      infos->push_back(info);
-    }
-  }
-}
-
-void DomStorageContext::DeleteOrigin(const GURL& origin) {
-  // TODO(michaeln): write me
-}
-
-void DomStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
-  // TODO(michaeln): write me
-}
-
-void DomStorageContext::PurgeMemory() {
-  // TODO(michaeln): write me
-}
-
-void DomStorageContext::Shutdown() {
-  // TODO(michaeln): write me
 }
 
 void DomStorageContext::AddEventObserver(EventObserver* observer) {
