@@ -75,7 +75,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_icon_large_(ALLOW_THIS_IN_INITIALIZER_LIST(
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
-        network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))) {
+        network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
+        clock_type_(base::k24HourClock) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
@@ -95,8 +96,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources());
 
-    InitializePrefChangeRegistrar();
+    SetProfile(ProfileManager::GetDefaultProfile());
 
     network_icon_large_->SetResourceSize(NetworkMenuIcon::SIZE_LARGE);
 
@@ -147,9 +151,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual base::HourClockType GetHourClockType() const OVERRIDE {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    return !profile || profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock) ?
-        base::k24HourClock : base::k12HourClock;
+    return clock_type_;
   }
 
   virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
@@ -321,11 +323,22 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return browser;
   }
 
-  void InitializePrefChangeRegistrar() {
-    Profile* profile = ProfileManager::GetDefaultProfile();
+  void SetProfile(Profile* profile) {
     pref_registrar_.reset(new PrefChangeRegistrar);
     pref_registrar_->Init(profile->GetPrefs());
     pref_registrar_->Add(prefs::kUse24HourClock, this);
+    UpdateClockType(profile->GetPrefs());
+  }
+
+  void UpdateClockType(PrefService* service) {
+    clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
+        base::k24HourClock : base::k12HourClock;
+    ash::ClockObserver* observer =
+        ash::Shell::GetInstance()->tray()->clock_observer();
+    clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
+        base::k24HourClock : base::k12HourClock;
+    if (observer)
+      observer->OnDateFormatChanged();
   }
 
   void NotifyRefreshNetwork() {
@@ -449,9 +462,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-        // Profile may have changed after login. So re-initialize the
-        // pref-change registrar.
-        InitializePrefChangeRegistrar();
         tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
         break;
       }
@@ -466,10 +476,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         std::string pref = *content::Details<std::string>(details).ptr();
         PrefService* service = content::Source<PrefService>(source).ptr();
         if (pref == prefs::kUse24HourClock) {
-          ash::ClockObserver* observer =
-              ash::Shell::GetInstance()->tray()->clock_observer();
-          if (observer)
-            observer->OnDateFormatChanged();
+          UpdateClockType(service);
         } else if (pref == prefs::kSpokenFeedbackEnabled) {
           ash::AccessibilityObserver* observer =
               ash::Shell::GetInstance()->tray()->accessibility_observer();
@@ -480,6 +487,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         } else {
           NOTREACHED();
         }
+        break;
+      }
+      case chrome::NOTIFICATION_SESSION_STARTED: {
+        SetProfile(ProfileManager::GetDefaultProfile());
         break;
       }
       default:
@@ -505,6 +516,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string active_network_path_;
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
   PowerSupplyStatus power_supply_status_;
+  base::HourClockType clock_type_;
 
   BooleanPrefMember accessibility_enabled_;
 
