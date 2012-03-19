@@ -20,11 +20,14 @@
           'objects.json',
           'simple_api.json',
         ],
+        'idl_schema_files': [
+        ],
         'cc_dir': 'tools/json_schema_compiler/test',
         'root_namespace': 'test::api',
       },
       'sources': [
         '<@(json_schema_files)',
+        '<@(idl_schema_files)',
       ],
       'includes': ['../../../build/json_schema_compile.gypi'],
     },

@@ -8,10 +8,13 @@
       'target_name': 'api',
       'type': 'static_library',
       'sources': [
-        '<@(json_schema_files)',
         '<@(idl_schema_files)',
+        '<@(json_schema_files)',
       ],
-      'includes': ['../../../../build/json_schema_compile.gypi'],
+      'includes': [
+        '../../../../build/json_schema_bundle_compile.gypi',
+        '../../../../build/json_schema_compile.gypi',
+      ],
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
