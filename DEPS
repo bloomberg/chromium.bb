@@ -326,6 +326,9 @@ deps = {
 
   "src/third_party/undoview":
     "/trunk/deps/third_party/undoview@119694",
+
+  "src/tools/deps2git":
+    "/trunk/tools/deps2git@123141",
 }
 
 
