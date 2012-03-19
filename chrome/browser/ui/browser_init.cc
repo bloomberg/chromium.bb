@@ -754,12 +754,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // GetOffTheRecordProfile() call above.
   profile->InitChromeOSPreferences();
 
-#if defined(TOOLKIT_USES_GTK)
-  // Create the WmMessageListener so that it can listen for messages regardless
-  // of what window has focus.
-  chromeos::WmMessageListener::GetInstance();
-#endif
-
   if (process_startup) {
     // This observer is a singleton. It is never deleted but the pointer is kept
     // in a static so that it isn't reported as a leak.

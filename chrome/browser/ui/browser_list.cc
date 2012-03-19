@@ -40,9 +40,6 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#endif
 #endif
 
 using content::WebContents;
@@ -259,15 +256,6 @@ bool FastShutdown() {
 }
 
 void NotifyWindowManagerAboutSignout() {
-#if defined(TOOLKIT_USES_GTK)
-  static bool notified = false;
-  if (!notified) {
-    // Let the window manager know that we're going away before we start closing
-    // windows so it can display a graceful transition to a black screen.
-    chromeos::WmIpc::instance()->NotifyAboutSignout();
-    notified = true;
-  }
-#endif
 }
 
 #endif

@@ -41,10 +41,6 @@
 #include "ui/gfx/rect.h"
 #include "unicode/timezone.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -468,11 +464,6 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
-
-#if defined(TOOLKIT_USES_GTK)
-  // Tell the window manager that the user isn't logged in.
-  chromeos::WmIpc::instance()->SetLoggedInProperty(false);
-#endif
 
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.

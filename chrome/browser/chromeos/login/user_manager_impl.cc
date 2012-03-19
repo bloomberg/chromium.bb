@@ -57,10 +57,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#endif
-
 using content::BrowserThread;
 
 typedef GoogleServiceAuthError AuthError;
@@ -867,11 +863,6 @@ void UserManagerImpl::NotifyOnLogin() {
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::Source<UserManagerImpl>(this),
       content::Details<const User>(logged_in_user_));
-
-#if defined(TOOLKIT_USES_GTK)
-  // Let the window manager know that we're logged in now.
-  WmIpc::instance()->SetLoggedInProperty(true);
-#endif
 
   // Ensure we've opened the real user's key/certificate database.
   crypto::OpenPersistentNSSDB();

@@ -29,11 +29,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#include "ui/views/widget/native_widget_gtk.h"
-#endif
-
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
@@ -224,13 +219,6 @@ void WebUILoginView::OnWindowCreated() {
 }
 
 void WebUILoginView::UpdateWindowType() {
-#if defined(TOOLKIT_USES_GTK)
-  std::vector<int> params;
-  WmIpc::instance()->SetWindowType(
-      GTK_WIDGET(GetNativeWindow()),
-      WM_IPC_WINDOW_LOGIN_WEBUI,
-      &params);
-#endif
 }
 
 void WebUILoginView::LoadURL(const GURL & url) {

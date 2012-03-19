@@ -14,10 +14,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#endif
-
 using content::OpenURLParams;
 using content::Referrer;
 
@@ -68,15 +64,6 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
   ASSERT_TRUE(new_browser);
   EXPECT_TRUE(new_browser->is_type_popup());
   EXPECT_FALSE(new_browser->is_app());
-
-#if defined(TOOLKIT_USES_GTK)
-  // This window type tells the cros window manager to treat the window
-  // as a panel.
-  EXPECT_EQ(
-      WM_IPC_WINDOW_CHROME_PANEL_CONTENT,
-      WmIpc::instance()->GetWindowType(
-          GTK_WIDGET(new_browser->window()->GetNativeHandle()), NULL));
-#endif
 }
 
 #if defined(USE_AURA)
