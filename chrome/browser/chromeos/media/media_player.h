@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_MEDIA_MEDIA_PLAYER_H_
 #pragma once
 
-#include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -15,16 +14,15 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "net/url_request/url_request.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class Browser;
+class FilePath;
 class GURL;
 class Profile;
 
-class MediaPlayer : public content::NotificationObserver,
-                    public net::URLRequest::Interceptor {
+class MediaPlayer : public content::NotificationObserver {
  public:
   typedef std::vector<GURL> UrlVector;
 
@@ -66,19 +64,6 @@ class MediaPlayer : public content::NotificationObserver,
   // called from the mediaplayer itself for example.
   void NotifyPlaylistChanged();
 
-  // Always returns NULL because we don't want to attempt a redirect
-  // before seeing the detected mime type of the request.
-  // Implementation of net::URLRequest::Interceptor.
-  virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request) OVERRIDE;
-
-  // Determines if the requested document can be viewed by the
-  // MediaPlayer.  If it can, returns a net::URLRequestJob that
-  // redirects the browser to the view URL.
-  // Implementation of net::URLRequest::Interceptor.
-  virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) OVERRIDE;
-
   // Used to detect when the mediaplayer is closed.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -110,9 +95,6 @@ class MediaPlayer : public content::NotificationObserver,
   // Used to register for events on the windows, like to listen for closes.
   content::NotificationRegistrar registrar_;
 
-  // List of mimetypes that the mediaplayer should listen to.  Used for
-  // interceptions of url GETs.
-  std::set<std::string> supported_mime_types_;
   friend class MediaPlayerBrowserTest;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);
 };
