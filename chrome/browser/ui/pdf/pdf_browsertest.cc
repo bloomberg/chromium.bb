@@ -283,8 +283,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
 // Tests that loading async pdfs works correctly (i.e. document fully loads).
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
-// Flaky as per http://crbug.com/74548.
-IN_PROC_BROWSER_TEST_F(PDFBrowserTest, DISABLED_SLOW_Loading) {
+// If it flakes, reopen http://crbug.com/74548.
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
   ASSERT_TRUE(pdf_test_server()->Start());
 
   NavigationController* controller =
