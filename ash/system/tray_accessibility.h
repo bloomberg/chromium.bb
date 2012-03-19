@@ -30,6 +30,9 @@ class TrayAccessibility : public TrayImageItem,
   virtual ~TrayAccessibility();
 
  private:
+  // Overridden from TrayImageItem.
+  virtual bool ShouldDisplay() OVERRIDE;
+
   // Overridden from AccessibilityObserver.
   virtual void OnAccessibilityModeChanged(bool enabled) OVERRIDE;
 

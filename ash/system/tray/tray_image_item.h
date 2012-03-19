@@ -22,6 +22,9 @@ class TrayImageItem : public SystemTrayItem {
 
   views::ImageView* image_view() { return image_view_.get(); }
 
+ protected:
+  virtual bool ShouldDisplay() = 0;
+
  private:
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;

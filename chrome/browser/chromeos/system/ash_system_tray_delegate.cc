@@ -24,6 +24,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -187,6 +189,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void SetVolumeLevel(float level) OVERRIDE {
     AudioHandler::GetInstance()->SetVolumePercent(level * 100.f);
+  }
+
+  virtual bool IsCapsLockOn() const OVERRIDE {
+    input_method::InputMethodManager* ime_manager =
+        input_method::InputMethodManager::GetInstance();
+    return ime_manager->GetXKeyboard()->CapsLockIsEnabled();
+  }
+
+  virtual bool IsInAccessibilityMode() const OVERRIDE {
+    return accessibility_enabled_.GetValue();
   }
 
   virtual void ShutDown() OVERRIDE {

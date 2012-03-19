@@ -21,7 +21,7 @@ views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   image_view_.reset(new views::ImageView);
   image_view_->SetImage(ui::ResourceBundle::GetSharedInstance().
       GetImageNamed(resource_id_).ToSkBitmap());
-  image_view_->SetVisible(false);
+  image_view_->SetVisible(ShouldDisplay());
   return image_view_.get();
 }
 
@@ -45,4 +45,3 @@ void TrayImageItem::DestroyDetailedView() {
 
 }  // namespace internal
 }  // namespace ash
-

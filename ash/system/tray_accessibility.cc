@@ -4,6 +4,8 @@
 
 #include "ash/system/tray_accessibility.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "grit/ui_resources.h"
 #include "ui/views/controls/image_view.h"
 
@@ -15,6 +17,10 @@ TrayAccessibility::TrayAccessibility()
 }
 
 TrayAccessibility::~TrayAccessibility() {}
+
+bool TrayAccessibility::ShouldDisplay() {
+  return ash::Shell::GetInstance()->tray_delegate()->IsInAccessibilityMode();
+}
 
 void TrayAccessibility::OnAccessibilityModeChanged(bool enabled) {
   if (image_view())

@@ -4,6 +4,8 @@
 
 #include "ash/system/tray_caps_lock.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "grit/ui_resources.h"
 #include "ui/views/controls/image_view.h"
 
@@ -15,6 +17,10 @@ TrayCapsLock::TrayCapsLock()
 }
 
 TrayCapsLock::~TrayCapsLock() {}
+
+bool TrayCapsLock::ShouldDisplay() {
+  return ash::Shell::GetInstance()->tray_delegate()->IsCapsLockOn();
+}
 
 void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   if (image_view())

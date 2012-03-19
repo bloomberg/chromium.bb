@@ -77,6 +77,12 @@ class SystemTrayDelegate {
   // Sets the volume level.
   virtual void SetVolumeLevel(float level) = 0;
 
+  // Gets whether the caps lock is on.
+  virtual bool IsCapsLockOn() const = 0;
+
+  // Gets whether accessibility mode is turned on.
+  virtual bool IsInAccessibilityMode() const = 0;
+
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;
 

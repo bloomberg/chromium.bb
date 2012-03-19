@@ -298,6 +298,14 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     volume_ = volume;
   }
 
+  virtual bool IsCapsLockOn() const OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsInAccessibilityMode() const OVERRIDE {
+    return false;
+  }
+
   virtual void ShutDown() OVERRIDE {}
 
   virtual void SignOut() OVERRIDE {
