@@ -4,6 +4,8 @@
 
 /* Force tab strip to extend to the left and right edges of the window. */
 #internet-details-content-area {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -47,6 +49,8 @@
 /* Fix the height of the subpages so that the dialog does not resize when the
    user switches tabs. */
 #internet-details-content-area > .subpages-tab-contents {
+  -webkit-box-flex: 1;
+  -webkit-box-sizing: border-box;
   -webkit-padding-end: 10px;
   height: 350px;
   min-width: 480px;

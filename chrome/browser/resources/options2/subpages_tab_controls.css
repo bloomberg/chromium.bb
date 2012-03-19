@@ -50,13 +50,13 @@ html[dir=rtl] .subpages-nav-tabs .tab-label {
 .subpages-nav-tabs {
   background: -webkit-linear-gradient(white, #F3F3F3);  /* very light gray */
   border-bottom: 1px solid #A0A0A0;  /* light gray */
-  margin-bottom: 15px;
   padding: 4px;
 }
 
 .subpages-tab-contents {
    -webkit-padding-start: 10px;
   display: none;
+  padding-top: 15px;
 }
 
 .active-tab-contents {
