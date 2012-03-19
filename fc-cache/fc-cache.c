@@ -22,8 +22,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../src/fcarch.h"
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #else
@@ -34,6 +32,7 @@
 #endif
 
 #include <fontconfig/fontconfig.h>
+#include "../src/fcarch.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
