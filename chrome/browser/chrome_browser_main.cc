@@ -31,7 +31,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
-#include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -1492,10 +1491,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Autoload any profiles which are running background apps.
   // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
-  if (!BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
-      &parsed_command_line())) {
-    browser_process_->profile_manager()->AutoloadProfiles();
-  }
+  browser_process_->profile_manager()->AutoloadProfiles();
+
   // Post-profile init ---------------------------------------------------------
 
 #if !defined(OS_MACOSX)

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,11 +55,6 @@ class BackgroundModeManager
   static void RegisterPrefs(PrefService* prefs);
 
   virtual void RegisterProfile(Profile* profile);
-
-  // Returns true if background mode is permanently disabled for this Chrome
-  // session.
-  static bool IsBackgroundModePermanentlyDisabled(
-      const CommandLine* command_line);
 
   static void LaunchBackgroundApplication(Profile* profile,
                                           const Extension* extension);

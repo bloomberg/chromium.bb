@@ -176,6 +176,10 @@ class PrefService : public base::NonThreadSafe {
   // and is managed.
   bool IsManagedPreference(const char* pref_name) const;
 
+  // Returns |true| if a preference with the given name is available and its
+  // value can be changed by the user.
+  bool IsUserModifiablePreference(const char* pref_name) const;
+
   // Lands pending writes to disk. This should only be used if we need to save
   // immediately (basically, during shutdown).
   void CommitPendingWrite();

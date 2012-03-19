@@ -53,8 +53,8 @@ BackgroundModeManager::BackgroundModeData::~BackgroundModeData() {
 //  BackgroundModeManager::BackgroundModeData, ui::SimpleMenuModel overrides
 bool BackgroundModeManager::BackgroundModeData::IsCommandIdChecked(
     int command_id) const {
-  DCHECK(command_id == IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND);
-  return true;
+  NOTREACHED() << "There are no checked items in the profile submenu.";
+  return false;
 }
 
 bool BackgroundModeManager::BackgroundModeData::IsCommandIdEnabled(
@@ -153,10 +153,6 @@ BackgroundModeManager::BackgroundModeManager(
   // currently quitting.
   CHECK(g_browser_process != NULL);
   CHECK(!browser_shutdown::IsTryingToQuit());
-  // If background mode is currently disabled, just exit - don't listen for any
-  // notifications.
-  if (IsBackgroundModePermanentlyDisabled(command_line))
-    return;
 
   // Add self as an observer for the profile info cache so we know when profiles
   // are deleted and their names change.
@@ -460,6 +456,11 @@ bool BackgroundModeManager::IsCommandIdChecked(
 
 bool BackgroundModeManager::IsCommandIdEnabled(
     int command_id) const {
+  if (command_id == IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND) {
+    PrefService* service = g_browser_process->local_state();
+    DCHECK(service);
+    return service->IsUserModifiablePreference(prefs::kBackgroundModeEnabled);
+  }
   return command_id != IDC_MinimumLabelValue;
 }
 
@@ -743,26 +744,6 @@ BackgroundModeManager::GetBackgroundModeIterator(
     }
   }
   return profile_it;
-}
-
-// static
-bool BackgroundModeManager::IsBackgroundModePermanentlyDisabled(
-    const CommandLine* command_line) {
-
-  // Background mode is disabled if the appropriate flag is passed, or if
-  // extensions are disabled, or if the associated preference is unset. It's
-  // always disabled on chromeos since chrome is always running on that
-  // platform, making it superfluous.
-#if defined(OS_CHROMEOS)
-  if (command_line->HasSwitch(switches::kKeepAliveForTest))
-      return false;
-  return true;
-#else
-  bool background_mode_disabled =
-      command_line->HasSwitch(switches::kDisableBackgroundMode) ||
-      command_line->HasSwitch(switches::kDisableExtensions);
-  return background_mode_disabled;
-#endif
 }
 
 bool BackgroundModeManager::IsBackgroundModePrefEnabled() const {

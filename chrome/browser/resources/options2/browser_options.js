@@ -453,6 +453,9 @@ cr.define('options', function() {
 
       // Background mode section.
       if ($('backgroundModeCheckbox')) {
+        cr.defineProperty($('backgroundModeCheckbox'),
+            'controlledBy',
+            cr.PropertyKind.ATTR);
         $('backgroundModeCheckbox').onclick = function(event) {
           chrome.send('backgroundModeAction',
               [String($('backgroundModeCheckbox').checked)]);
@@ -1062,8 +1065,12 @@ cr.define('options', function() {
      * Set the checked state for the backgroundModeCheckbox element.
      * @private
      */
-    setBackgroundModeCheckboxState_: function(checked) {
+    setBackgroundModeCheckboxState_: function(
+        checked, disabled, controlled_by) {
       $('backgroundModeCheckbox').checked = checked;
+      $('backgroundModeCheckbox').disabled = disabled;
+      $('backgroundModeCheckbox').controlledBy = controlled_by;
+      OptionsPage.updateManagedBannerVisibility();
     },
 
     /**

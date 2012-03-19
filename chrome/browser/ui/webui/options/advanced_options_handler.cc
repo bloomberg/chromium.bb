@@ -392,7 +392,7 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
   bool enabled = checked_str == "true";
   content::RecordAction(
       enabled ?
-      UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
+          UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
           UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
   bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
   enable_metrics_recording_.SetValue(is_enabled);
@@ -424,7 +424,7 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
   bool enabled = checked_str == "true";
   content::RecordAction(
       enabled ?
-      UserMetricsAction("Options_CheckCertRevocation_Enable") :
+          UserMetricsAction("Options_CheckCertRevocation_Enable") :
           UserMetricsAction("Options_CheckCertRevocation_Disable"));
   rev_checking_enabled_.SetValue(enabled);
 }
@@ -434,16 +434,34 @@ void AdvancedOptionsHandler::HandleBackgroundModeCheckbox(
     const ListValue* args) {
   std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   bool enabled = checked_str == "true";
-  content::RecordAction(enabled ?
-                        UserMetricsAction("Options_BackgroundMode_Enable") :
-      UserMetricsAction("Options_BackgroundMode_Disable"));
+  content::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_BackgroundMode_Enable") :
+          UserMetricsAction("Options_BackgroundMode_Disable"));
   background_mode_enabled_.SetValue(enabled);
 }
 
 void AdvancedOptionsHandler::SetupBackgroundModeSettings() {
-    base::FundamentalValue checked(background_mode_enabled_.GetValue());
-    web_ui()->CallJavascriptFunction(
-        "options.AdvancedOptions.SetBackgroundModeCheckboxState", checked);
+  base::FundamentalValue checked(background_mode_enabled_.GetValue());
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  const PrefService::Preference* pref =
+      service->FindPreference(prefs::kBackgroundModeEnabled);
+  DCHECK(pref);
+  base::FundamentalValue disabled(!pref->IsUserModifiable());
+  std::string controlled_by_str;
+  if (pref->IsManaged())
+    controlled_by_str = "policy";
+  else if (pref->IsExtensionControlled())
+    controlled_by_str = "extension";
+  else if (pref->IsRecommended())
+    controlled_by_str = "recommended";
+  base::StringValue controlled_by(controlled_by_str);
+  web_ui()->CallJavascriptFunction(
+      "options.AdvancedOptions.SetBackgroundModeCheckboxState",
+      checked,
+      disabled,
+      controlled_by);
 }
 #endif
 

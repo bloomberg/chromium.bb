@@ -699,6 +699,11 @@ bool PrefService::IsManagedPreference(const char* pref_name) const {
   return pref && pref->IsManaged();
 }
 
+bool PrefService::IsUserModifiablePreference(const char* pref_name) const {
+  const Preference* pref = FindPreference(pref_name);
+  return pref && pref->IsUserModifiable();
+}
+
 const DictionaryValue* PrefService::GetDictionary(const char* path) const {
   DCHECK(CalledOnValidThread());
 

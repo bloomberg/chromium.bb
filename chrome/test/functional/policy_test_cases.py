@@ -167,6 +167,7 @@ class PolicyPrefsTestCases(object):
     'EnterpriseWebStoreName': ('', []),
     'EnableMemoryInfo': (True, []),
     'DisablePrintPreview': (True, [], [ 'win', 'mac', 'linux' ]),
+    'BackgroundModeEnabled': (True, [ ADVANCED ], [ 'win', 'linux' ]),
 
     # ChromeOS-only policies:
     'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),

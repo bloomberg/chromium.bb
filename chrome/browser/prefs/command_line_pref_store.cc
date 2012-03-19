@@ -73,6 +73,7 @@ CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
   ApplyProxyMode();
   ValidateProxySwitches();
   ApplySSLSwitches();
+  ApplyBackgroundModeSwitches();
 }
 
 CommandLinePrefStore::~CommandLinePrefStore() {}
@@ -160,5 +161,13 @@ void CommandLinePrefStore::ApplySSLSwitches() {
       list_value->Append(base::Value::CreateStringValue(*it));
     }
     SetValue(prefs::kCipherSuiteBlacklist, list_value);
+  }
+}
+
+void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
+  if (command_line_->HasSwitch(switches::kDisableBackgroundMode) ||
+      command_line_->HasSwitch(switches::kDisableExtensions)) {
+    Value* value = Value::CreateBooleanValue(false);
+    SetValue(prefs::kBackgroundModeEnabled, value);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class CommandLinePrefStore : public ValueMapPrefStore {
 
   // Apply the SSL/TLS preferences from the given switches.
   void ApplySSLSwitches();
+
+  // Determines whether the background mode is force-disabled.
+  void ApplyBackgroundModeSwitches();
 
   // Weak reference.
   const CommandLine* command_line_;

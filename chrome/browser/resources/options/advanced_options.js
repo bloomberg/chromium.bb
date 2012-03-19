@@ -108,6 +108,9 @@ var OptionsPage = options.OptionsPage;
       };
 
       if ($('backgroundModeCheckbox')) {
+        cr.defineProperty($('backgroundModeCheckbox'),
+            'controlledBy',
+            cr.PropertyKind.ATTR);
         $('backgroundModeCheckbox').onclick = function(event) {
           chrome.send('backgroundModeAction',
               [String($('backgroundModeCheckbox').checked)]);
@@ -231,8 +234,12 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the checked state for the backgroundModeCheckbox element.
-  AdvancedOptions.SetBackgroundModeCheckboxState = function(checked) {
+  AdvancedOptions.SetBackgroundModeCheckboxState = function(
+      checked, disabled, controlled_by) {
     $('backgroundModeCheckbox').checked = checked;
+    $('backgroundModeCheckbox').disabled = disabled;
+    $('backgroundModeCheckbox').controlledBy = controlled_by;
+    OptionsPage.updateManagedBannerVisibility();
   };
 
   // Set the Cloud Print proxy UI to enabled, disabled, or processing.

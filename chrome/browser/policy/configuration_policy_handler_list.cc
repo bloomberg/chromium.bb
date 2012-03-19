@@ -297,6 +297,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kChromeOsReleaseChannel,
     Value::TYPE_STRING },
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  { key::kBackgroundModeEnabled,
+    prefs::kBackgroundModeEnabled,
+    Value::TYPE_BOOLEAN },
+#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 };
 
 }  // namespace

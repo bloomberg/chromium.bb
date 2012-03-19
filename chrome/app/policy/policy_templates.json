@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 137
+#   For your editing convenience: highest ID currently used: 138
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2532,6 +2532,25 @@
       'desc': '''Disables automatic updates when set to True.
 
       <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices automatically check for updates when this setting is not configured or set to False.''',
+    },
+    {
+      'name': 'BackgroundModeEnabled',
+      'type': 'main',
+      'supported_on': ['chrome.win:19-', 'chrome.linux:19-'],
+      'features': {
+        'dynamic_refresh': True,
+        'can_be_recommended': True,
+      },
+      'example_value': True,
+      'id': 138,
+      'caption': '''Continue running background apps when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is closed''',
+      'desc': '''Determines whether a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> process is started on OS login and keeps running when the last browser window is closed, allowing background apps to remain active. The background process displays an icon in the system tray and can always be closed from there.
+
+      If this policy is set to True, background mode is enabled and cannot be controlled by the user in the browser settings.
+
+      If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
+
+      If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.''',
     },
   ],
   'messages': {
