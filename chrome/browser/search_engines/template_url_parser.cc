@@ -19,178 +19,6 @@
 #include "libxml/parser.h"
 #include "libxml/xmlwriter.h"
 
-// To minimize memory overhead while parsing, a SAX style parser is used.
-// TemplateURLParsingContext is used to maintain the state we're in the document
-// while parsing.
-class TemplateURLParsingContext {
- public:
-  // Enum of the known element types.
-  enum ElementType {
-    UNKNOWN,
-    OPEN_SEARCH_DESCRIPTION,
-    URL,
-    PARAM,
-    SHORT_NAME,
-    DESCRIPTION,
-    IMAGE,
-    LANGUAGE,
-    INPUT_ENCODING,
-  };
-
-  enum Method {
-    GET,
-    POST
-  };
-
-  // Key/value of a Param node.
-  typedef std::pair<std::string, std::string> Param;
-
-  TemplateURLParsingContext(
-      TemplateURLParser::ParameterFilter* parameter_filter,
-      TemplateURL* url)
-      : url_(url),
-        parameter_filter_(parameter_filter),
-        method_(GET),
-        suggestion_method_(GET),
-        is_suggest_url_(false),
-        derive_image_from_url_(false) {
-    if (kElementNameToElementTypeMap == NULL)
-      InitMapping();
-  }
-
-  // Invoked when an element starts.
-  void PushElement(const std::string& element) {
-    ElementType type;
-    if (kElementNameToElementTypeMap->find(element) ==
-        kElementNameToElementTypeMap->end()) {
-      type = UNKNOWN;
-    } else {
-      type = (*kElementNameToElementTypeMap)[element];
-    }
-    elements_.push_back(type);
-  }
-
-  void PopElement() {
-    elements_.pop_back();
-  }
-
-  // Returns the current ElementType.
-  ElementType GetKnownType() {
-    if (elements_.size() == 2 && elements_[0] == OPEN_SEARCH_DESCRIPTION)
-      return elements_[1];
-
-    // We only expect PARAM nodes under the Url node
-    if (elements_.size() == 3 && elements_[0] == OPEN_SEARCH_DESCRIPTION &&
-        elements_[1] == URL && elements_[2] == PARAM)
-      return PARAM;
-
-    return UNKNOWN;
-  }
-
-  TemplateURL* template_url() { return url_; }
-
-  void AddImageRef(const std::string& type, int width, int height) {
-    if (width > 0 && height > 0)
-      current_image_.reset(new TemplateURL::ImageRef(type, width, height));
-  }
-
-  void EndImage() {
-    current_image_.reset();
-  }
-
-  void SetImageURL(const GURL& url) {
-    if (current_image_.get()) {
-      current_image_->url = url;
-      url_->image_refs_.push_back(*current_image_);
-      current_image_.reset();
-    }
-  }
-
-  void ResetString() {
-    string_.clear();
-  }
-
-  void AppendString(const string16& string) {
-    string_ += string;
-  }
-
-  const string16& GetString() {
-    return string_;
-  }
-
-  void ResetExtraParams() {
-    extra_params_.clear();
-  }
-
-  void AddExtraParams(const std::string& key, const std::string& value) {
-    if (parameter_filter_ && !parameter_filter_->KeepParameter(key, value))
-      return;
-    extra_params_.push_back(Param(key, value));
-  }
-
-  const std::vector<Param>& extra_params() const { return extra_params_; }
-
-  void set_is_suggestion(bool value) { is_suggest_url_ = value; }
-  bool is_suggestion() const { return is_suggest_url_; }
-
-  TemplateURLParser::ParameterFilter* parameter_filter() const {
-    return parameter_filter_;
-  }
-
-  void set_derive_image_from_url(bool derive_image_from_url) {
-    derive_image_from_url_ = derive_image_from_url;
-  }
-
-  void set_method(Method method) { method_ = method; }
-  Method method() { return method_; }
-
-  void set_suggestion_method(Method method) { suggestion_method_ = method; }
-  Method suggestion_method() { return suggestion_method_; }
-
-  // Builds the image URL from the Template search URL if no image URL has been
-  // set.
-  void DeriveImageFromURL() {
-    if (derive_image_from_url_ &&
-        url_->GetFaviconURL().is_empty() && url_->url()) {
-      GURL url(url_->url()->url());  // More url's please...
-      url_->SetFaviconURL(TemplateURL::GenerateFaviconURL(url));
-    }
-  }
-
- private:
-  static void InitMapping();
-
-  // Key is UTF8 encoded.
-  static std::map<std::string, ElementType>* kElementNameToElementTypeMap;
-  // TemplateURL supplied to Read method. It's owned by the caller, so we
-  // don't need to free it.
-  TemplateURL* url_;
-  std::vector<ElementType> elements_;
-  scoped_ptr<TemplateURL::ImageRef> current_image_;
-
-  // Character content for the current element.
-  string16 string_;
-
-  TemplateURLParser::ParameterFilter* parameter_filter_;
-
-  // The list of parameters parsed in the Param nodes of a Url node.
-  std::vector<Param> extra_params_;
-
-  // The HTTP methods used.
-  Method method_;
-  Method suggestion_method_;
-
-  // If true, we are currently parsing a suggest URL, otherwise it is an HTML
-  // search.  Note that we don't need a stack as Url nodes cannot be nested.
-  bool is_suggest_url_;
-
-  // Whether we should derive the image from the URL (when images are data
-  // URLs).
-  bool derive_image_from_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLParsingContext);
-};
-
 namespace {
 
 //
@@ -233,17 +61,6 @@ const char kOSDNS[] = "xmlns";
 // The namespace for documents we understand.
 const char kNameSpace[] = "http://a9.com/-/spec/opensearch/1.1/";
 
-// Removes the namespace from the specified |name|, ex: os:Url -> Url.
-void PruneNamespace(std::string* name) {
-  size_t index = name->find_first_of(":");
-  if (index != std::string::npos)
-    name->erase(0, index + 1);
-}
-
-string16 XMLCharToUTF16(const xmlChar* value, int length) {
-  return UTF8ToUTF16(std::string((const char*)value, length));
-}
-
 std::string XMLCharToString(const xmlChar* value) {
   return std::string((const char*)value);
 }
@@ -268,7 +85,372 @@ bool IsValidEncodingString(const std::string& input_encoding) {
   return true;
 }
 
-void ParseURL(const xmlChar** atts, TemplateURLParsingContext* context) {
+void AppendParamToQuery(const std::string& key,
+                        const std::string& value,
+                        std::string* query) {
+  if (!query->empty())
+    query->append("&");
+  if (!key.empty()) {
+    query->append(key);
+    query->append("=");
+  }
+  query->append(value);
+}
+
+// Returns true if the ref is null, or the url wrapped by ref is
+// valid with a spec of http/https.
+bool IsHTTPRef(const TemplateURLRef* ref) {
+  if (ref == NULL)
+    return true;
+  GURL url(ref->url());
+  return (url.is_valid() && (url.SchemeIs(chrome::kHttpScheme) ||
+                             url.SchemeIs(chrome::kHttpsScheme)));
+}
+
+// Returns true if the TemplateURL is legal. A legal TemplateURL is one
+// where all URLs have a spec of http/https.
+bool IsLegal(TemplateURL* url) {
+  if (!IsHTTPRef(url->url()) || !IsHTTPRef(url->suggestions_url()))
+    return false;
+  // Make sure all the image refs are legal.
+  const std::vector<TemplateURL::ImageRef>& image_refs = url->image_refs();
+  for (size_t i = 0; i < image_refs.size(); i++) {
+    GURL image_url(image_refs[i].url);
+    if (!image_url.is_valid() ||
+        !(image_url.SchemeIs(chrome::kHttpScheme) ||
+          image_url.SchemeIs(chrome::kHttpsScheme))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+
+// TemplateURLParsingContext --------------------------------------------------
+
+// To minimize memory overhead while parsing, a SAX style parser is used.
+// TemplateURLParsingContext is used to maintain the state we're in the document
+// while parsing.
+class TemplateURLParsingContext {
+ public:
+  // Enum of the known element types.
+  enum ElementType {
+    UNKNOWN,
+    OPEN_SEARCH_DESCRIPTION,
+    URL,
+    PARAM,
+    SHORT_NAME,
+    DESCRIPTION,
+    IMAGE,
+    LANGUAGE,
+    INPUT_ENCODING,
+  };
+
+  enum Method {
+    GET,
+    POST
+  };
+
+  // Key/value of a Param node.
+  typedef std::pair<std::string, std::string> Param;
+
+  TemplateURLParsingContext(
+      TemplateURLParser::ParameterFilter* parameter_filter,
+      TemplateURL* url);
+
+  static void StartElementImpl(void* ctx,
+                               const xmlChar* name,
+                               const xmlChar** atts);
+  static void EndElementImpl(void* ctx, const xmlChar* name);
+  static void CharactersImpl(void* ctx, const xmlChar* ch, int len);
+
+  // Invoked when an element starts.
+  void PushElement(const std::string& element);
+
+  void PopElement();
+
+  TemplateURL* template_url() { return url_; }
+
+  void AddImageRef(const std::string& type, int width, int height);
+
+  void EndImage();
+
+  void SetImageURL(const GURL& url);
+
+  void ResetString();
+
+  void AppendString(const string16& string);
+
+  const string16& GetString();
+
+  void ResetExtraParams();
+
+  void AddExtraParams(const std::string& key, const std::string& value);
+
+  const std::vector<Param>& extra_params() const { return extra_params_; }
+
+  void set_is_suggestion(bool value) { is_suggest_url_ = value; }
+  bool is_suggestion() const { return is_suggest_url_; }
+
+  TemplateURLParser::ParameterFilter* parameter_filter() const {
+    return parameter_filter_;
+  }
+
+  void set_derive_image_from_url(bool derive_image_from_url) {
+    derive_image_from_url_ = derive_image_from_url;
+  }
+
+  void set_method(Method method) { method_ = method; }
+  Method method() { return method_; }
+
+  void set_suggestion_method(Method method) { suggestion_method_ = method; }
+  Method suggestion_method() { return suggestion_method_; }
+
+  // Builds the image URL from the Template search URL if no image URL has been
+  // set.
+  void DeriveImageFromURL();
+
+ private:
+  // Key is UTF8 encoded.
+  typedef std::map<std::string, ElementType> ElementNameToElementTypeMap;
+
+  static void InitMapping();
+
+  static void ParseURL(const xmlChar** atts,
+                       TemplateURLParsingContext* context);
+  static void ParseImage(const xmlChar** atts,
+                         TemplateURLParsingContext* context);
+  static void ParseParam(const xmlChar** atts,
+                         TemplateURLParsingContext* context);
+  static void ProcessURLParams(TemplateURLParsingContext* context);
+
+  // Returns the current ElementType.
+  ElementType GetKnownType();
+
+  static ElementNameToElementTypeMap* kElementNameToElementTypeMap;
+
+  // TemplateURL supplied to Read method. It's owned by the caller, so we
+  // don't need to free it.
+  TemplateURL* url_;
+
+  std::vector<ElementType> elements_;
+  scoped_ptr<TemplateURL::ImageRef> current_image_;
+
+  // Character content for the current element.
+  string16 string_;
+
+  TemplateURLParser::ParameterFilter* parameter_filter_;
+
+  // The list of parameters parsed in the Param nodes of a Url node.
+  std::vector<Param> extra_params_;
+
+  // The HTTP methods used.
+  Method method_;
+  Method suggestion_method_;
+
+  // If true, we are currently parsing a suggest URL, otherwise it is an HTML
+  // search.  Note that we don't need a stack as Url nodes cannot be nested.
+  bool is_suggest_url_;
+
+  // Whether we should derive the image from the URL (when images are data
+  // URLs).
+  bool derive_image_from_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLParsingContext);
+};
+
+// static
+TemplateURLParsingContext::ElementNameToElementTypeMap*
+    TemplateURLParsingContext::kElementNameToElementTypeMap = NULL;
+
+TemplateURLParsingContext::TemplateURLParsingContext(
+    TemplateURLParser::ParameterFilter* parameter_filter,
+    TemplateURL* url)
+    : url_(url),
+      parameter_filter_(parameter_filter),
+      method_(GET),
+      suggestion_method_(GET),
+      is_suggest_url_(false),
+      derive_image_from_url_(false) {
+  if (kElementNameToElementTypeMap == NULL)
+    InitMapping();
+}
+
+// Removes the namespace from the specified |name|, ex: os:Url -> Url.
+void PruneNamespace(std::string* name) {
+  size_t index = name->find_first_of(":");
+  if (index != std::string::npos)
+    name->erase(0, index + 1);
+}
+
+// static
+void TemplateURLParsingContext::StartElementImpl(void *ctx,
+                                                 const xmlChar *name,
+                                                 const xmlChar **atts) {
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
+  std::string node_name((const char*)name);
+  PruneNamespace(&node_name);
+  context->PushElement(node_name);
+  switch (context->GetKnownType()) {
+    case TemplateURLParsingContext::URL:
+      context->ResetExtraParams();
+      ParseURL(atts, context);
+      break;
+    case TemplateURLParsingContext::IMAGE:
+      ParseImage(atts, context);
+      break;
+    case TemplateURLParsingContext::PARAM:
+      ParseParam(atts, context);
+      break;
+    default:
+      break;
+  }
+  context->ResetString();
+}
+
+// static
+void TemplateURLParsingContext::EndElementImpl(void *ctx, const xmlChar *name) {
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
+  switch (context->GetKnownType()) {
+    case TemplateURLParsingContext::SHORT_NAME:
+      context->template_url()->set_short_name(context->GetString());
+      break;
+    case TemplateURLParsingContext::DESCRIPTION:
+      context->template_url()->set_description(context->GetString());
+      break;
+    case TemplateURLParsingContext::IMAGE: {
+      GURL image_url(UTF16ToUTF8(context->GetString()));
+      if (image_url.SchemeIs(chrome::kDataScheme)) {
+        // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
+        // decode the data URL in the renderer. For now, we'll just point to the
+        // favicon from the URL.
+        context->set_derive_image_from_url(true);
+      } else {
+        context->SetImageURL(image_url);
+      }
+      context->EndImage();
+      break;
+    }
+    case TemplateURLParsingContext::LANGUAGE:
+      context->template_url()->add_language(context->GetString());
+      break;
+    case TemplateURLParsingContext::INPUT_ENCODING: {
+      std::string input_encoding = UTF16ToASCII(context->GetString());
+      if (IsValidEncodingString(input_encoding))
+        context->template_url()->add_input_encoding(input_encoding);
+      break;
+    }
+    case TemplateURLParsingContext::URL:
+      ProcessURLParams(context);
+      break;
+    default:
+      break;
+  }
+  context->ResetString();
+  context->PopElement();
+}
+
+string16 XMLCharToUTF16(const xmlChar* value, int length) {
+  return UTF8ToUTF16(std::string((const char*)value, length));
+}
+
+// static
+void TemplateURLParsingContext::CharactersImpl(void *ctx,
+                                               const xmlChar *ch,
+                                               int len) {
+  TemplateURLParsingContext* context =
+      reinterpret_cast<TemplateURLParsingContext*>(ctx);
+  context->AppendString(XMLCharToUTF16(ch, len));
+}
+
+void TemplateURLParsingContext::PushElement(const std::string& element) {
+  ElementType type;
+  if (kElementNameToElementTypeMap->find(element) ==
+      kElementNameToElementTypeMap->end()) {
+    type = UNKNOWN;
+  } else {
+    type = (*kElementNameToElementTypeMap)[element];
+  }
+  elements_.push_back(type);
+}
+
+void TemplateURLParsingContext::PopElement() {
+  elements_.pop_back();
+}
+
+void TemplateURLParsingContext::AddImageRef(const std::string& type,
+                                            int width,
+                                            int height) {
+  if (width > 0 && height > 0)
+    current_image_.reset(new TemplateURL::ImageRef(type, width, height));
+}
+
+void TemplateURLParsingContext::EndImage() {
+  current_image_.reset();
+}
+
+void TemplateURLParsingContext::SetImageURL(const GURL& url) {
+  if (current_image_.get()) {
+    current_image_->url = url;
+    url_->image_refs_.push_back(*current_image_);
+    current_image_.reset();
+  }
+}
+
+void TemplateURLParsingContext::ResetString() {
+  string_.clear();
+}
+
+void TemplateURLParsingContext::AppendString(const string16& string) {
+  string_ += string;
+}
+
+const string16& TemplateURLParsingContext::GetString() {
+  return string_;
+}
+
+void TemplateURLParsingContext::ResetExtraParams() {
+  extra_params_.clear();
+}
+
+void TemplateURLParsingContext::AddExtraParams(const std::string& key,
+                                               const std::string& value) {
+  if (parameter_filter_ && !parameter_filter_->KeepParameter(key, value))
+    return;
+  extra_params_.push_back(Param(key, value));
+}
+
+void TemplateURLParsingContext::DeriveImageFromURL() {
+  if (derive_image_from_url_ &&
+      url_->GetFaviconURL().is_empty() && url_->url()) {
+    GURL url(url_->url()->url());  // More url's please...
+    url_->SetFaviconURL(TemplateURL::GenerateFaviconURL(url));
+  }
+}
+
+// static
+void TemplateURLParsingContext::InitMapping() {
+  kElementNameToElementTypeMap = new std::map<std::string, ElementType>;
+  (*kElementNameToElementTypeMap)[kURLElement] = URL;
+  (*kElementNameToElementTypeMap)[kParamElement] = PARAM;
+  (*kElementNameToElementTypeMap)[kShortNameElement] = SHORT_NAME;
+  (*kElementNameToElementTypeMap)[kDescriptionElement] = DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kImageElement] = IMAGE;
+  (*kElementNameToElementTypeMap)[kOpenSearchDescriptionElement] =
+      OPEN_SEARCH_DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kFirefoxSearchDescriptionElement] =
+      OPEN_SEARCH_DESCRIPTION;
+  (*kElementNameToElementTypeMap)[kLanguageElement] = LANGUAGE;
+  (*kElementNameToElementTypeMap)[kInputEncodingElement] = INPUT_ENCODING;
+}
+
+// static
+void TemplateURLParsingContext::ParseURL(const xmlChar** atts,
+                                         TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -314,7 +496,9 @@ void ParseURL(const xmlChar** atts, TemplateURLParsingContext* context) {
   }
 }
 
-void ParseImage(const xmlChar** atts, TemplateURLParsingContext* context) {
+// static
+void TemplateURLParsingContext::ParseImage(const xmlChar** atts,
+                                           TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -340,7 +524,9 @@ void ParseImage(const xmlChar** atts, TemplateURLParsingContext* context) {
   }
 }
 
-void ParseParam(const xmlChar** atts, TemplateURLParsingContext* context) {
+// static
+void TemplateURLParsingContext::ParseParam(const xmlChar** atts,
+                                           TemplateURLParsingContext* context) {
   if (!atts)
     return;
 
@@ -360,19 +546,9 @@ void ParseParam(const xmlChar** atts, TemplateURLParsingContext* context) {
     context->AddExtraParams(key, value);
 }
 
-static void AppendParamToQuery(const std::string& key,
-                               const std::string& value,
-                               std::string* query) {
-  if (!query->empty())
-    query->append("&");
-  if (!key.empty()) {
-    query->append(key);
-    query->append("=");
-  }
-  query->append(value);
-}
-
-void ProcessURLParams(TemplateURLParsingContext* context) {
+// static
+void TemplateURLParsingContext::ProcessURLParams(
+    TemplateURLParsingContext* context) {
   TemplateURL* t_url = context->template_url();
   const TemplateURLRef* t_url_ref =
       context->is_suggestion() ? t_url->suggestions_url() :
@@ -432,128 +608,17 @@ void ProcessURLParams(TemplateURLParsingContext* context) {
   }
 }
 
-void StartElementImpl(void *ctx, const xmlChar *name, const xmlChar **atts) {
-  TemplateURLParsingContext* context =
-      reinterpret_cast<TemplateURLParsingContext*>(ctx);
-  std::string node_name((const char*)name);
-  PruneNamespace(&node_name);
-  context->PushElement(node_name);
-  switch (context->GetKnownType()) {
-    case TemplateURLParsingContext::URL:
-      context->ResetExtraParams();
-      ParseURL(atts, context);
-      break;
-    case TemplateURLParsingContext::IMAGE:
-      ParseImage(atts, context);
-      break;
-    case TemplateURLParsingContext::PARAM:
-      ParseParam(atts, context);
-      break;
-    default:
-      break;
-  }
-  context->ResetString();
-}
+TemplateURLParsingContext::ElementType
+    TemplateURLParsingContext::GetKnownType() {
+  if (elements_.size() == 2 && elements_[0] == OPEN_SEARCH_DESCRIPTION)
+    return elements_[1];
 
-void EndElementImpl(void *ctx, const xmlChar *name) {
-  TemplateURLParsingContext* context =
-      reinterpret_cast<TemplateURLParsingContext*>(ctx);
-  switch (context->GetKnownType()) {
-    case TemplateURLParsingContext::SHORT_NAME:
-      context->template_url()->set_short_name(context->GetString());
-      break;
-    case TemplateURLParsingContext::DESCRIPTION:
-      context->template_url()->set_description(context->GetString());
-      break;
-    case TemplateURLParsingContext::IMAGE: {
-      GURL image_url(UTF16ToUTF8(context->GetString()));
-      if (image_url.SchemeIs(chrome::kDataScheme)) {
-        // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
-        // decode the data URL in the renderer. For now, we'll just point to the
-        // favicon from the URL.
-        context->set_derive_image_from_url(true);
-      } else {
-        context->SetImageURL(image_url);
-      }
-      context->EndImage();
-      break;
-    }
-    case TemplateURLParsingContext::LANGUAGE:
-      context->template_url()->add_language(context->GetString());
-      break;
-    case TemplateURLParsingContext::INPUT_ENCODING: {
-      std::string input_encoding = UTF16ToASCII(context->GetString());
-      if (IsValidEncodingString(input_encoding))
-        context->template_url()->add_input_encoding(input_encoding);
-      break;
-    }
-    case TemplateURLParsingContext::URL:
-      ProcessURLParams(context);
-      break;
-    default:
-      break;
-  }
-  context->ResetString();
-  context->PopElement();
-}
+  // We only expect PARAM nodes under the Url node
+  if (elements_.size() == 3 && elements_[0] == OPEN_SEARCH_DESCRIPTION &&
+      elements_[1] == URL && elements_[2] == PARAM)
+    return PARAM;
 
-void CharactersImpl(void *ctx, const xmlChar *ch, int len) {
-  TemplateURLParsingContext* context =
-      reinterpret_cast<TemplateURLParsingContext*>(ctx);
-  context->AppendString(XMLCharToUTF16(ch, len));
-}
-
-// Returns true if the ref is null, or the url wrapped by ref is
-// valid with a spec of http/https.
-bool IsHTTPRef(const TemplateURLRef* ref) {
-  if (ref == NULL)
-    return true;
-  GURL url(ref->url());
-  return (url.is_valid() && (url.SchemeIs(chrome::kHttpScheme) ||
-                             url.SchemeIs(chrome::kHttpsScheme)));
-}
-
-// Returns true if the TemplateURL is legal. A legal TemplateURL is one
-// where all URLs have a spec of http/https.
-bool IsLegal(TemplateURL* url) {
-  if (!IsHTTPRef(url->url()) || !IsHTTPRef(url->suggestions_url()))
-    return false;
-  // Make sure all the image refs are legal.
-  const std::vector<TemplateURL::ImageRef>& image_refs = url->image_refs();
-  for (size_t i = 0; i < image_refs.size(); i++) {
-    GURL image_url(image_refs[i].url);
-    if (!image_url.is_valid() ||
-        !(image_url.SchemeIs(chrome::kHttpScheme) ||
-          image_url.SchemeIs(chrome::kHttpsScheme))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-}  // namespace
-
-
-// TemplateURLParsingContext --------------------------------------------------
-
-// static
-std::map<std::string, TemplateURLParsingContext::ElementType>*
-    TemplateURLParsingContext::kElementNameToElementTypeMap = NULL;
-
-// static
-void TemplateURLParsingContext::InitMapping() {
-  kElementNameToElementTypeMap = new std::map<std::string, ElementType>;
-  (*kElementNameToElementTypeMap)[kURLElement] = URL;
-  (*kElementNameToElementTypeMap)[kParamElement] = PARAM;
-  (*kElementNameToElementTypeMap)[kShortNameElement] = SHORT_NAME;
-  (*kElementNameToElementTypeMap)[kDescriptionElement] = DESCRIPTION;
-  (*kElementNameToElementTypeMap)[kImageElement] = IMAGE;
-  (*kElementNameToElementTypeMap)[kOpenSearchDescriptionElement] =
-      OPEN_SEARCH_DESCRIPTION;
-  (*kElementNameToElementTypeMap)[kFirefoxSearchDescriptionElement] =
-      OPEN_SEARCH_DESCRIPTION;
-  (*kElementNameToElementTypeMap)[kLanguageElement] = LANGUAGE;
-  (*kElementNameToElementTypeMap)[kInputEncodingElement] = INPUT_ENCODING;
+  return UNKNOWN;
 }
 
 
@@ -572,9 +637,9 @@ bool TemplateURLParser::Parse(const unsigned char* data, size_t length,
   TemplateURLParsingContext context(param_filter, url);
   xmlSAXHandler sax_handler;
   memset(&sax_handler, 0, sizeof(sax_handler));
-  sax_handler.startElement = &StartElementImpl;
-  sax_handler.endElement = &EndElementImpl;
-  sax_handler.characters = &CharactersImpl;
+  sax_handler.startElement = &TemplateURLParsingContext::StartElementImpl;
+  sax_handler.endElement = &TemplateURLParsingContext::EndElementImpl;
+  sax_handler.characters = &TemplateURLParsingContext::CharactersImpl;
   xmlSAXUserParseMemory(&sax_handler, &context,
                         reinterpret_cast<const char*>(data),
                         static_cast<int>(length));
