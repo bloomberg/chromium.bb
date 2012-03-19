@@ -1,0 +1,35 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file contains the <code>PPB_Talk</code> interface.
+ */
+label Chrome {
+  M19 = 1.0
+};
+
+/**
+ * Extra interface for Talk.
+ */
+interface PPB_Talk_Private {
+  /**
+   * Creates a Talk_Private resource.
+   */
+  PP_Resource Create(PP_Instance instance);
+
+  /**
+   * Displays security UI.
+   *
+   * The callback will be issued with PP_OK as the result of the user gave
+   * permission, or PP_ERROR_NOACCESS if the user denied.
+   *
+   * You can only have one call pending. It will return PP_OK_COMPLETIONPENDING
+   * if the request is queued, or PP_ERROR_INPROGRESS if there is already a
+   * request in progress.
+   */
+  int32_t GetPermission(
+      [in] PP_Resource talk_resource,
+      [in] PP_CompletionCallback callback);
+};

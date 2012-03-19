@@ -25,6 +25,7 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_talk_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
@@ -282,6 +283,10 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
                                                    PP_Bool vertical) {
   NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateTalk(PP_Instance instance) {
+  return PPB_Talk_Private_Proxy::CreateProxyResource(instance);
 }
 
 #if !defined(OS_NACL)

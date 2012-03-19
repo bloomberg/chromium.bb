@@ -111,6 +111,7 @@ class ResourceCreationProxy : public InterfaceProxy,
                                           uint32_t size) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
+  virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPServerSocketPrivate(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;

@@ -262,6 +262,11 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));
 }
 
+PP_Resource ResourceCreationImpl::CreateTalk(PP_Instance /* instance */) {
+  // Not implemented in-process.
+  return 0;
+}
+
 PP_Resource ResourceCreationImpl::CreateResourceArray(
     PP_Instance instance,
     const PP_Resource elements[],

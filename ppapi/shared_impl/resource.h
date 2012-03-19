@@ -50,6 +50,7 @@
   F(PPB_PDFFont_API) \
   F(PPB_ResourceArray_API) \
   F(PPB_Scrollbar_API) \
+  F(PPB_Talk_Private_API) \
   F(PPB_TCPServerSocket_Private_API) \
   F(PPB_TCPSocket_Private_API) \
   F(PPB_Transport_API) \

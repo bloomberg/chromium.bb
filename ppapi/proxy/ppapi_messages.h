@@ -309,6 +309,13 @@ IPC_MESSAGE_ROUTED2(
     ppapi::HostResource /* filesystem */,
     int32_t /* result */)
 
+// PPB_Talk
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPBTalk_GetPermissionACK,
+    uint32 /* plugin_dispatcher_id */,
+    PP_Resource /* resource */,
+    int32_t /* result */)
+
 // PPB_TCPSocket_Private.
 IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPSocket_ConnectACK,
                     uint32 /* plugin_dispatcher_id */,
@@ -925,6 +932,12 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     ppapi::HostResource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)
+
+// PPB_Talk.
+IPC_MESSAGE_ROUTED2(
+    PpapiHostMsg_PPBTalk_GetPermission,
+    uint32 /* plugin_dispatcher_id */,
+    PP_Resource /* resource */)
 
 // PPB_Testing.
 IPC_SYNC_MESSAGE_ROUTED3_1(

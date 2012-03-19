@@ -219,6 +219,8 @@
         'thunk/ppb_resource_array_thunk.cc',
         'thunk/ppb_scrollbar_api.h',
         'thunk/ppb_scrollbar_thunk.cc',
+        'thunk/ppb_talk_private_api.h',
+        'thunk/ppb_talk_private_thunk.cc',
         'thunk/ppb_tcp_server_socket_private_api.h',
         'thunk/ppb_tcp_server_socket_private_thunk.cc',
         'thunk/ppb_tcp_socket_private_api.h',
