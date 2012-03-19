@@ -219,4 +219,14 @@ WebKit::WebGLId TestWebGraphicsContext3D::createTexture() {
   return 1;
 }
 
+WebKit::WebGLId TestWebGraphicsContext3D::createQueryEXT()
+{
+  return 1;
+}
+
+WebKit::WGC3Dboolean TestWebGraphicsContext3D::isQueryEXT(WebKit::WebGLId)
+{
+  return true;
+}
+
 }  // namespace ui

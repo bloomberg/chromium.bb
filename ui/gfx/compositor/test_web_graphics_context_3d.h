@@ -425,6 +425,17 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void deleteRenderbuffer(WebKit::WebGLId) {}
   virtual void deleteShader(WebKit::WebGLId) {}
   virtual void deleteTexture(WebKit::WebGLId) {}
+  virtual WebKit::WebGLId createQueryEXT();
+  virtual void deleteQueryEXT(WebKit::WebGLId) {};
+  virtual WebKit::WGC3Dboolean isQueryEXT(WebKit::WebGLId query);
+  virtual void beginQueryEXT(WebKit::WGC3Denum, WebKit::WebGLId) {}
+  virtual void endQueryEXT(WebKit::WGC3Denum) {}
+  virtual void getQueryivEXT(WebKit::WGC3Denum,
+                             WebKit::WGC3Denum,
+                             WebKit::WGC3Dint*) {}
+  virtual void getQueryObjectuivEXT(WebKit::WebGLId,
+                                    WebKit::WGC3Denum,
+                                    WebKit::WGC3Duint*) {}
 
  private:
   scoped_refptr<gfx::GLContext> gl_context_;
