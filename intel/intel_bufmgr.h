@@ -187,6 +187,11 @@ int drm_intel_get_aperture_sizes(int fd, size_t *mappable, size_t *total);
 int drm_intel_bufmgr_gem_get_devid(drm_intel_bufmgr *bufmgr);
 int drm_intel_gem_bo_wait(drm_intel_bo *bo, int64_t timeout_ns);
 
+drm_intel_context *drm_intel_gem_context_create(drm_intel_bufmgr *bufmgr);
+void drm_intel_gem_context_destroy(drm_intel_context *ctx);
+int drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
+				  int used, unsigned int flags);
+
 /* drm_intel_bufmgr_fake.c */
 drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 					     unsigned long low_offset,

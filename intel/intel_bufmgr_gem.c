@@ -2187,9 +2187,9 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 }
 
 static int
-drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
-			drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
-			unsigned int flags)
+do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
+	 drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+	 unsigned int flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	struct drm_i915_gem_execbuffer2 execbuf;
@@ -2231,7 +2231,10 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	execbuf.DR1 = 0;
 	execbuf.DR4 = DR4;
 	execbuf.flags = flags;
-	execbuf.rsvd1 = 0;
+	if (ctx == NULL)
+		i915_execbuffer2_set_context_id(execbuf, 0);
+	else
+		i915_execbuffer2_set_context_id(execbuf, ctx->ctx_id);
 	execbuf.rsvd2 = 0;
 
 	aub_exec(bo, flags, used);
@@ -2279,9 +2282,24 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 		       drm_clip_rect_t *cliprects, int num_cliprects,
 		       int DR4)
 {
-	return drm_intel_gem_bo_mrb_exec2(bo, used,
-					cliprects, num_cliprects, DR4,
-					I915_EXEC_RENDER);
+	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
+			I915_EXEC_RENDER);
+}
+
+static int
+drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
+			drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+			unsigned int flags)
+{
+	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
+			flags);
+}
+
+int
+drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
+			      int used, unsigned int flags)
+{
+	return do_exec2(bo, used, ctx, NULL, 0, 0, flags);
 }
 
 static int
