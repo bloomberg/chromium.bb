@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -106,6 +107,8 @@ void SettingLevelBubbleDelegateView::Init() {
 
 // SettingLevelBubble ----------------------------------------------------------
 void SettingLevelBubble::ShowBubble(double percent, bool enabled) {
+  if (ash::Shell::GetInstance()->tray())
+    return;
   hide_timer_.Stop();
 
   // Set up target percent and icon.
@@ -137,6 +140,8 @@ void SettingLevelBubble::ShowBubble(double percent, bool enabled) {
 }
 
 void SettingLevelBubble::HideBubble() {
+  if (ash::Shell::GetInstance()->tray())
+    return;
   hide_timer_.Stop();
   if (view_) {
     view_->GetWidget()->Close();
