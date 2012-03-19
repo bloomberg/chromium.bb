@@ -1184,7 +1184,7 @@ void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
     WriteTransaction trans(FROM_HERE, GetUserShare());
     WriteNode node(&trans);
     if (!node.InitByTagLookup(kNigoriTag)) {
-      LOG(WARNING) << "Unable to set 'sync_tabs' bit because Nigori node not "
+      NOTREACHED() << "Unable to set 'sync_tabs' bit because Nigori node not "
                    << "found.";
       return;
     }

@@ -1908,8 +1908,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
 
 // Restart the sync service on one client and make sure all data is synced when
 // the service restarts.
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       DISABLED_RestartSyncService) {
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RestartSyncService) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));

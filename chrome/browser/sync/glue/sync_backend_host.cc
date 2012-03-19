@@ -1020,7 +1020,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.registrar /* as SyncManager::ChangeDelegate */,
       MakeUserAgentForSyncApi(),
       options.credentials,
-      true,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSyncTabsForOtherClients),
       new BridgedSyncNotifier(
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier()),
