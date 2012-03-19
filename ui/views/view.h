@@ -895,6 +895,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // parent an opportunity to do a fresh layout if that makes sense.
   virtual void ChildPreferredSizeChanged(View* child) {}
 
+  // Called when the visibility of a child view changed.  This gives the parent
+  // an opportunity to do a fresh layout if that makes sense.
+  virtual void ChildVisibilityChanged(View* child) {}
+
   // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
   // if there is one. Be sure to call View::PreferredSizeChanged when
   // overriding such that the layout is properly invalidated.

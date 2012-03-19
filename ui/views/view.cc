@@ -401,6 +401,10 @@ void View::SetVisible(bool visible) {
 
     visible_ = visible;
 
+    // Notify the parent.
+    if (parent_)
+      parent_->ChildVisibilityChanged(this);
+
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);
     UpdateLayerVisibility();
