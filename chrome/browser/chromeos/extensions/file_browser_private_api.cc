@@ -1736,3 +1736,60 @@ bool GetFileTransfersFunction::RunImpl() {
   return true;
 }
 
+
+CancelFileTransfersFunction::CancelFileTransfersFunction() {}
+
+CancelFileTransfersFunction::~CancelFileTransfersFunction() {}
+
+bool CancelFileTransfersFunction::RunImpl() {
+  ListValue* url_list = NULL;
+  if (args_->GetList(0, &url_list)) {
+    SendResponse(false);
+    return false;
+  }
+
+  std::string virtual_path;
+  size_t len = url_list->GetSize();
+  UrlList file_urls;
+  file_urls.reserve(len);
+  for (size_t i = 0; i < len; ++i) {
+    url_list->GetString(i, &virtual_path);
+    file_urls.push_back(GURL(virtual_path));
+  }
+
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread,
+                 this));
+  return true;
+}
+
+void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
+    const SelectedFileInfoList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gdata::GDataFileSystem* file_system =
+      gdata::GDataFileSystemFactory::GetForProfile(profile_);
+  if (!file_system) {
+    SendResponse(false);
+    return;
+  }
+
+  scoped_ptr<ListValue> responses(new ListValue());
+  for (size_t i = 0; i < files.size(); ++i) {
+    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
+    FilePath file_path = gdata::util::ExtractGDataPath(files[i].path);
+    scoped_ptr<DictionaryValue> result(new DictionaryValue());
+    result->SetBoolean("canceled", file_system->CancelOperation(file_path));
+    GURL file_url;
+    if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
+            FilePath("gdata").Append(file_path),
+            source_url_.GetOrigin(),
+            &file_url)) {
+      result->SetString("fileUrl", file_url.spec());
+    }
+
+    responses->Append(result.release());
+  }
+  result_.reset(responses.release());
+  SendResponse(true);
+}

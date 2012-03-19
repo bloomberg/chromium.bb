@@ -113,6 +113,10 @@ class GDataOperationRegistry {
   // Cancels all in-flight operations.
   void CancelAll();
 
+  // Cancels ongoing operation for a given virtual |file_path|. Returns true if
+  // the operation was found and canceled.
+  bool CancelForFilePath(const FilePath& file_path);
+
   // Obtains the list of currently active operations.
   std::vector<ProgressStatus> GetProgressStatusList();
 

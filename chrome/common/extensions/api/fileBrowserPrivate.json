@@ -290,6 +290,21 @@
         }
       },
       {
+        "id": "FileTransferCancelStatus",
+        "type": "object",
+        "description": "Payload data for file transfer cancel response.",
+        "properties": {
+          "fileUrl": {
+            "type": "string",
+            "description": "URL of file that is being transfered."
+          },
+          "canceled": {
+            "type": "boolean",
+            "description": "True if ongoing transfer operation was found and canceled."
+          }
+        }
+      },
+      {
         "id": "FileWatchEvent",
         "type": "object",
         "description": "Payload data for disk mount / unmount event.",
@@ -695,6 +710,30 @@
                 "type": "array",
                 "items": {"$ref": "FileTransferStatus"},
                 "description": "The list of FileTransferStatus representing ongoing file transfers."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "cancelFileTransfers",
+        "description": "Cancels ongoing file transfers for selected files.",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of files for which ongoing transfer should be canceled.",
+            "items": {"type": "string"}
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name" : "fileTransferCancelStatuses",
+                "type": "array",
+                "items": {"$ref": "FileTransferCancelStatus"},
+                "description": "The list of FileTransferCancelStatus."
               }
             ]
           }

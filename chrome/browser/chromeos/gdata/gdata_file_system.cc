@@ -1196,6 +1196,10 @@ std::vector<GDataOperationRegistry::ProgressStatus>
   return documents_service_->operation_registry()->GetProgressStatusList();
 }
 
+bool GDataFileSystem::CancelOperation(const FilePath& file_path) {
+  return documents_service_->operation_registry()->CancelForFilePath(file_path);
+}
+
 void GDataFileSystem::AddOperationObserver(
     GDataOperationRegistry::Observer* observer) {
   return documents_service_->operation_registry()->AddObserver(observer);

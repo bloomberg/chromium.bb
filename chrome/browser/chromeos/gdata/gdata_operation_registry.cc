@@ -137,6 +137,21 @@ void GDataOperationRegistry::CancelAll() {
   }
 }
 
+bool GDataOperationRegistry::CancelForFilePath(const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (OperationIDMap::iterator iter(&in_flight_operations_);
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    Operation* operation = iter.GetCurrentValue();
+    if (operation->progress_status().file_path == file_path) {
+      operation->Cancel();
+      return true;
+    }
+  }
+  return false;
+}
+
 void GDataOperationRegistry::OnOperationStart(
     GDataOperationRegistry::Operation* operation,
     OperationID* id) {

@@ -221,8 +221,14 @@ class GDataFileSystem : public ProfileKeyedService {
 
   // Obtains the list of currently active operations.
   std::vector<GDataOperationRegistry::ProgressStatus> GetProgressStatusList();
+
+  // Cancels ongoing operation for a given |file_path|. Returns true if
+  // the operation was found and canceled.
+  bool CancelOperation(const FilePath& file_path);
+
   // Add operation observer.
   void AddOperationObserver(GDataOperationRegistry::Observer* observer);
+
   // Remove operation observer.
   void RemoveOperationObserver(GDataOperationRegistry::Observer* observer);
 
