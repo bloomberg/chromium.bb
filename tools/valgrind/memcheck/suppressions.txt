@@ -5050,15 +5050,13 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN14RenderViewHost*
+   fun:_ZN*RenderViewHost*
    ...
    fun:_ZN11BalloonHost4InitEv
-   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   ...
    fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
    fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   ...
    fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
    fun:_ZN5views4View14AddChildViewAtEPS0_i
    fun:_ZN5views4View12AddChildViewEPS0_
@@ -5811,6 +5809,21 @@
    Memcheck:Leak
    ...
    fun:*ModuleSystemTest*
+}
+{
+   bug_118890_a
+   Memcheck:Leak
+   ...
+   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN8notifier18SingleLoginAttemptC1EPNS_13LoginSettingsEPNS0_8DelegateE
+   fun:_ZN8notifier5Login15StartConnectionEv
+   fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
+}
+{
+   bug_118890_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13sync_notifier12_GLOBAL__N_124InvalidationNotifierTest5SetUpEv
 }
 
 #-----------------------------------------------------------------------
