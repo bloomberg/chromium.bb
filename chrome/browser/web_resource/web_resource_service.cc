@@ -212,6 +212,7 @@ void WebResourceService::StartFetch() {
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
   net::URLRequestContextGetter* url_request_context_getter =
       g_browser_process->system_request_context();
