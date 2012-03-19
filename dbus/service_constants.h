@@ -606,6 +606,7 @@ const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 
 // Service property names.
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
+const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
 }  // namespace shill
 
 namespace cashew {
