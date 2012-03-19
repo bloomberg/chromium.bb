@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -48,7 +48,7 @@ def _FocusField(driver, list_elem, field_elem):
   try:
     driver.execute_async_script(correct_focus_script, list_elem, field_elem)
   except selenium.common.exceptions.TimeoutException:
-    raise RuntimeError('Unable to focus list item ' + field_elem)
+    raise RuntimeError('Unable to focus list item ' + field_elem.tag_name)
 
 
 class DynamicList(object):
@@ -122,7 +122,7 @@ class DynamicList(object):
 
     item_list = self.GetCommittedItems()
     close_button_list = self.elem.find_elements_by_class_name(
-        'close-button')[:-1]
+        'row-delete-button')[:-1]
     for i in range(len(item_list)):
       if item_list[i] == item:
         # Highlight the item, so the close button shows up, then click it.
