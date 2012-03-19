@@ -1,3 +1,7 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 /* These additional styles constrain the size of the proxy page to the height of
    the dialog containing them. */
 html {
@@ -18,4 +22,8 @@ body {
 #proxy-page-title {
   /* We have a title on the window, so the title in domui should be hidden. */
   display: none;
+}
+
+#internet-details-content-area > .subpages-tab-contents {
+  height: 100% !important;
 }

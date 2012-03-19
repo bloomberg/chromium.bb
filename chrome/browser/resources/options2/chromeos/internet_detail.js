@@ -61,9 +61,14 @@ cr.define('options.internet', function() {
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
-
       options.internet.CellularPlanElement.decorate($('planList'));
+      this.initializePageContents_();
+    },
 
+    /**
+     * Initializes the contents of the page.
+     */
+    initializePageContents_: function() {
       $('detailsInternetDismiss').addEventListener('click', function(event) {
         InternetOptions.setDetails();
       });
@@ -305,7 +310,7 @@ cr.define('options.internet', function() {
       var bannerDiv = $('info-banner');
       // Show banner and determine its message if necessary.
       var controlledBy = $('directProxy').controlledBy;
-      if (controlledBy == '') {
+      if (!controlledBy || controlledBy == '') {
         bannerDiv.hidden = true;
       } else {
         bannerDiv.hidden = false;
@@ -380,6 +385,35 @@ cr.define('options.internet', function() {
       $('socksPort').disabled = all_disabled;
       $('proxyConfig').disabled = true;
     },
+  };
+
+  /**
+   * Performs minimal initialization of the InternetDetails dialog in
+   * preparation for showing proxy-setttings.
+   */
+  DetailsInternetPage.initializeProxySettings = function() {
+    var detailsPage = DetailsInternetPage.getInstance();
+    detailsPage.initializePageContents_();
+  };
+
+  /**
+   * Displays the InternetDetails dialog with only the proxy settings visible.
+   */
+  DetailsInternetPage.showProxySettings = function() {
+    var detailsPage = DetailsInternetPage.getInstance();
+    $('network-details-header').hidden = true;
+    $('buyplanDetails').hidden = true;
+    $('activateDetails').hidden = true;
+    $('viewAccountDetails').hidden = true;
+    detailsPage.cellular = false;
+    detailsPage.wireless = false;
+    detailsPage.vpn = false;
+    detailsPage.showProxy = true;
+    updateHidden('#internetTab', true);
+    updateHidden('#details-tab-strip', true);
+    updateHidden('#detailsInternetPage .action-area', true);
+    detailsPage.updateControls();
+    detailsPage.visible = true;
   };
 
   return {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,9 +80,7 @@ void ProxyHandler::GetLocalizedValues(
 }
 
 void ProxyHandler::SetNetworkName(const std::string& name) {
-  StringValue network(name);
-  web_ui()->CallJavascriptFunction("options.ProxyOptions.setNetworkName",
-                                   network);
+  // Not used in options2 version of the handler.
 }
 
 }  // namespace options2

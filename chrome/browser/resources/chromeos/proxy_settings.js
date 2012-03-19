@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 var OptionsPage = options.OptionsPage;
 var Preferences = options.Preferences;
-var ProxyOptions = options.ProxyOptions;
+var DetailsInternetPage = options.internet.DetailsInternetPage;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -23,7 +23,7 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
-  ProxyOptions.getInstance().initializePage();
+  DetailsInternetPage.initializeProxySettings();
 
   // TODO(ivankr): remove when http://crosbug.com/20660 is resolved.
   var inputs = document.querySelectorAll('input[pref]');
@@ -36,7 +36,7 @@ function load() {
   Preferences.getInstance().initialize();
   chrome.send('coreOptionsInitialize');
 
-  ProxyOptions.getInstance().visible = true;
+  DetailsInternetPage.showProxySettings();
 }
 
 document.addEventListener('DOMContentLoaded', load);
