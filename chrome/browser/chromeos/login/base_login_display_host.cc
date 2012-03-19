@@ -487,9 +487,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       initial_input_method_id =
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
-    manager->EnableInputMethods(
-        locale, chromeos::input_method::kKeyboardLayoutsOnly,
-        initial_input_method_id);
+    manager->EnableLayouts(locale, initial_input_method_id);
   }
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
@@ -512,9 +510,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
     if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
       std::string locale = chromeos::WizardController::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
-      manager->EnableInputMethods(
+      manager->EnableLayouts(
           locale,
-          chromeos::input_method::kKeyboardLayoutsOnly,
           manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
@@ -554,9 +551,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
       // initial locale and save it in preferences.
       DetermineAndSaveHardwareKeyboard(locale, layout);
       // Then, enable the hardware keyboard.
-      manager->EnableInputMethods(
+      manager->EnableLayouts(
           locale,
-          chromeos::input_method::kKeyboardLayoutsOnly,
           manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       // Reloading resource bundle causes us to do blocking IO on UI thread.
       // Temporarily allow it until we fix http://crosbug.com/11102

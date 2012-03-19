@@ -331,12 +331,13 @@ class InputMethodManagerImpl
     }
   }
 
-  virtual void EnableInputMethods(const std::string& language_code,
-                                  InputMethodType type,
-                                  const std::string& initial_input_method_id) {
+  virtual void EnableLayouts(const std::string& language_code,
+                             const std::string& initial_input_method_id) {
     std::vector<std::string> candidates;
     // Add input methods associated with the language.
-    util_.GetInputMethodIdsFromLanguageCode(language_code, type, &candidates);
+    util_.GetInputMethodIdsFromLanguageCode(language_code,
+                                            kKeyboardLayoutsOnly,
+                                            &candidates);
     // Add the hardware keyboard as well. We should always add this so users
     // can use the hardware keyboard on the login screen and the screen locker.
     candidates.push_back(util_.GetHardwareInputMethodId());

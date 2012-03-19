@@ -20,7 +20,7 @@ class InputMethodManagerTest : public InProcessBrowserTest {
     manager_->SetEnableAutoImeShutdown(true);
   }
   virtual void CleanUpOnMainThread() OVERRIDE {
-    manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
+    manager_->EnableLayouts("en-US", "xkb:us::eng");
     manager_->StopInputMethodDaemon();
   }
 
@@ -29,18 +29,18 @@ class InputMethodManagerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestEnableInputMethods) {
+IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestEnableLayouts) {
   // Currently 5 keyboard layouts are supported for en-US, and 1 for ja. See
   // ibus_input_method.txt.
-  manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "");
+  manager_->EnableLayouts("en-US", "");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   // The hardware keyboard layout "xkb:us::eng" is always active, hence 2U.
-  manager_->EnableInputMethods("ja", kKeyboardLayoutsOnly, "");
+  manager_->EnableLayouts("ja", "");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 }
 
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestNextInputMethod) {
-  manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
+  manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestNextInputMethod) {
 }
 
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestPreviousInputMethod) {
-  manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
+  manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToNextInputMethod();
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestPreviousInputMethod) {
 }
 
 IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestSwitchInputMethod) {
-  manager_->EnableInputMethods("en-US", kKeyboardLayoutsOnly, "xkb:us::eng");
+  manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestSwitchInputMethod) {
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   // Enable "xkb:jp::jpn" and press Muhenkan/ZenkakuHankaku.
-  manager_->EnableInputMethods("ja", kKeyboardLayoutsOnly, "xkb:us::eng");
+  manager_->EnableLayouts("ja", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestSwitchInputMethod) {
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
 
   // Do the same tests for Korean.
-  manager_->EnableInputMethods("ko", kKeyboardLayoutsOnly, "xkb:us::eng");
+  manager_->EnableLayouts("ko", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(

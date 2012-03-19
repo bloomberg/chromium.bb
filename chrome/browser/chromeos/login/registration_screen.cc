@@ -118,7 +118,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
-    manager->EnableInputMethods(locale, input_method::kKeyboardLayoutsOnly, "");
+    manager->EnableLayouts(locale, "");
   }
   delegate()->GetObserver()->OnExit(code);
 }

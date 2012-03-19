@@ -183,8 +183,8 @@ void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
     // use may not be supported by the new locale (3rd parameter).
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
-    manager->EnableInputMethods(
-        locale, input_method::kKeyboardLayoutsOnly,
+    manager->EnableLayouts(
+        locale,
         manager->GetInputMethodUtil()->GetHardwareInputMethodId());
   }
 }

@@ -144,18 +144,12 @@ class InputMethodManager {
   // empty. For example, if |language_code| is "en-US", US qwerty and US dvorak
   // layouts would be enabled. Likewise, for Germany locale, US qwerty layout
   // and several keyboard layouts for Germany would be enabled.
-  // If |type| is kAllInputMethods, all keyboard layouts and all input methods
-  // are enabled. If it's kKeyboardLayoutsOnly, only keyboard layouts are
-  // enabled. For example, for Japanese, xkb:jp::jpn is enabled when
-  // kKeyboardLayoutsOnly, and xkb:jp::jpn, mozc, mozc-jp, mozc-dv are enabled
-  // when kAllInputMethods.
   //
   // Note that this function does not save the input methods in the user's
   // preferences, as this function is designed for the login screen and the
   // screen locker, where we shouldn't change the user's preferences.
-  virtual void EnableInputMethods(
+  virtual void EnableLayouts(
       const std::string& language_code,
-      InputMethodType type,
       const std::string& initial_input_method_id) = 0;
 
   // Sets whether the input method property specified by |key| is activated. If
