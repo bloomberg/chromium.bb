@@ -1695,6 +1695,173 @@ cleanup:
   return retval;
 }
 
+#if NACL_WINDOWS
+static int32_t MunmapInternal(struct NaClApp *nap,
+                              uintptr_t sysaddr, size_t length) {
+  int32_t retval;
+  uintptr_t addr;
+  uintptr_t endaddr = sysaddr + length;
+  for (addr = sysaddr; addr < endaddr; addr += NACL_MAP_PAGESIZE) {
+    struct NaClVmmapEntry const *entry;
+
+    entry = NaClVmmapFindPage(&nap->mem_map,
+                              NaClSysToUser(nap, addr) >> NACL_PAGESHIFT);
+    if (NULL == entry) {
+      NaClLog(LOG_FATAL,
+              "NaClSysMunmap: could not find VM map entry for addr 0x%08x\n",
+              addr);
+    }
+    NaClLog(3,
+            ("NaClSysMunmap: addr 0x%08x, nmop 0x%08x\n"),
+            addr, entry->nmop);
+    if (NULL == entry->nmop) {
+      /* anonymous memory; we just decommit it and thus make it inaccessible */
+      if (!VirtualFree((void *) addr,
+                       NACL_MAP_PAGESIZE,
+                       MEM_DECOMMIT)) {
+        int error = GetLastError();
+        NaClLog(LOG_FATAL,
+                ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
+                 " addr 0x%08x, error %d (0x%x)\n"),
+                addr, error, error);
+      }
+    } else {
+      /*
+       * This should invoke a "safe" version of unmap that fills the
+       * memory hole as quickly as possible, and may return
+       * -NACL_ABI_E_MOVE_ADDRESS_SPACE.  The "safe" version just
+       * minimizes the size of the timing hole for any racers, plus
+       * the size of the memory window is only 64KB, rather than
+       * whatever size the user is unmapping.
+       */
+      retval = (*((struct NaClDescVtbl const *) entry->nmop->ndp->base.vtbl)->
+                Unmap)(entry->nmop->ndp,
+                       nap->effp,
+                       (void*) addr,
+                       NACL_MAP_PAGESIZE);
+      if (0 != retval) {
+        NaClLog(LOG_FATAL,
+                ("NaClSysMunmap: Could not unmap via ndp->Unmap 0x%08x"
+                 " and cannot handle address space move\n"),
+                addr);
+      }
+    }
+    NaClVmmapUpdate(&nap->mem_map,
+                    NaClSysToUser(nap, (uintptr_t) addr) >> NACL_PAGESHIFT,
+                    NACL_PAGES_PER_MAP,
+                    0,  /* prot */
+                    (struct NaClMemObj *) NULL,
+                    1);  /* delete */
+  }
+  return 0;
+}
+#else
+static int32_t MunmapInternal(struct NaClApp *nap,
+                              uintptr_t sysaddr, size_t length) {
+  UNREFERENCED_PARAMETER(nap);
+  /*
+   * Overwrite current mapping with inaccessible, anonymous
+   * zero-filled pages, which should be copy-on-write and thus
+   * relatively cheap.  Do not open up an address space hole.
+   */
+  if (MAP_FAILED == mmap((void *) sysaddr,
+                         length,
+                         PROT_NONE,
+                         MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
+                         -1,
+                         (off_t) 0)) {
+    NaClLog(4, "mmap to put in anonymous memory failed, errno = %d\n", errno);
+    return -NaClXlateErrno(errno);
+  }
+  NaClVmmapUpdate(&nap->mem_map,
+                  NaClSysToUser(nap, (uintptr_t) sysaddr) >> NACL_PAGESHIFT,
+                  length >> NACL_PAGESHIFT,
+                  0,  /* prot */
+                  (struct NaClMemObj *) NULL,
+                  1);  /* Delete mapping */
+  return 0;
+}
+#endif
+
+int32_t NaClSysMunmap(struct NaClAppThread  *natp,
+                      void                  *start,
+                      size_t                length) {
+  int32_t   retval = -NACL_ABI_EINVAL;
+  uintptr_t sysaddr;
+  int       holding_app_lock = 0;
+  size_t    alloc_rounded_length;
+
+  NaClLog(3, "Entered NaClSysMunmap(0x%08"NACL_PRIxPTR", "
+          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
+          (uintptr_t) natp, (uintptr_t) start, length);
+
+  NaClSysCommonThreadSyscallEnter(natp);
+
+  if (!NaClIsAllocPageMultiple((uintptr_t) start)) {
+    NaClLog(4, "start addr not allocation multiple\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  if (0 == length) {
+    /*
+     * Without this check we would get the following inconsistent
+     * behaviour:
+     *  * On Linux, an mmap() of zero length yields a failure.
+     *  * On Mac OS X, an mmap() of zero length returns no error,
+     *    which would lead to a NaClVmmapUpdate() of zero pages, which
+     *    should not occur.
+     *  * On Windows we would iterate through the 64k pages and do
+     *    nothing, which would not yield a failure.
+     */
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  alloc_rounded_length = NaClRoundAllocPage(length);
+  if (alloc_rounded_length != length) {
+    length = alloc_rounded_length;
+    NaClLog(1, "munmap: rounded length to 0x%"NACL_PRIxS"\n", length);
+  }
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) start, length);
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(4, "munmap: region not user addresses\n");
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
+  NaClXMutexLock(&natp->nap->mu);
+
+  while (0 != natp->nap->threads_launching) {
+    NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
+  }
+  natp->nap->vm_hole_may_exist = 1;
+  NaClUntrustedThreadsSuspend(natp->nap);
+
+  holding_app_lock = 1;
+
+  /*
+   * User should be unable to unmap any executable pages.  We check here.
+   */
+  if (NaClSysCommonAddrRangeContainsExecutablePages_mu(natp->nap,
+                                                       (uintptr_t) start,
+                                                       length)) {
+    NaClLog(2, "NaClSysMunmap: region contains executable pages\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+
+  retval = MunmapInternal(natp->nap, sysaddr, length);
+cleanup:
+  if (holding_app_lock) {
+    natp->nap->vm_hole_may_exist = 0;
+    NaClXCondVarBroadcast(&natp->nap->cv);
+    NaClXMutexUnlock(&natp->nap->mu);
+
+    NaClUntrustedThreadsResume(natp->nap);
+  }
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
+
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
                                        int32_t              *sap) {
   /*
