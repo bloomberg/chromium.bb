@@ -274,8 +274,9 @@ void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
   int percentage = static_cast<int>(fraction * 100);
   if (percentage < 0 || percentage > 100)
     return;
-  PREFIXED_HISTOGRAM("PercentLoadDoneAtSwapin",
-                     HISTOGRAM_PERCENTAGE(name, percentage));
+  PREFIXED_HISTOGRAM(
+      base::FieldTrial::MakeName("PercentLoadDoneAtSwapin", "Prerender"),
+      HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
