@@ -439,107 +439,51 @@ namespace gdata {
 FindFileDelegate::~FindFileDelegate() {
 }
 
+// FindFileCallbackRelayDelegate class implementation.
+// This class is used to relay calls between sync and async versions
+// of FindFileByPath(Sync|Async) calls.
+class FindFileCallbackRelayDelegate : public FindFileDelegate {
+ public:
+  explicit FindFileCallbackRelayDelegate(const FindFileCallback& callback);
+  virtual ~FindFileCallbackRelayDelegate();
+
+ private:
+  // FindFileDelegate overrides.
+  virtual void OnDone(base::PlatformFileError error,
+                      const FilePath& directory_path,
+                      GDataFileBase* file) OVERRIDE;
+
+  const FindFileCallback callback_;
+};
+
+FindFileCallbackRelayDelegate::FindFileCallbackRelayDelegate(
+    const FindFileCallback& callback) : callback_(callback) {
+}
+
+FindFileCallbackRelayDelegate::~FindFileCallbackRelayDelegate() {
+}
+
+void FindFileCallbackRelayDelegate::OnDone(base::PlatformFileError error,
+                                           const FilePath& directory_path,
+                                           GDataFileBase* file) {
+  if (!callback_.is_null()) {
+    callback_.Run(error, directory_path, file);
+  }
+}
+
 // ReadOnlyFindFileDelegate class implementation.
 
 ReadOnlyFindFileDelegate::ReadOnlyFindFileDelegate() : file_(NULL) {
 }
 
-void ReadOnlyFindFileDelegate::OnFileFound(gdata::GDataFile* file) {
-  // file_ should be set only once since OnFileFound() is a terminal
-  // function.
+void ReadOnlyFindFileDelegate::OnDone(base::PlatformFileError error,
+                                      const FilePath& directory_path,
+                                      GDataFileBase* file) {
   DCHECK(!file_);
-  DCHECK(!file->file_info().is_directory);
-  file_ = file;
-}
-
-void ReadOnlyFindFileDelegate::OnDirectoryFound(const FilePath&,
-                                                GDataDirectory* dir) {
-  // file_ should be set only once since OnDirectoryFound() is a terminal
-  // function.
-  DCHECK(!file_);
-  DCHECK(dir->file_info().is_directory);
-  file_ = dir;
-}
-
-FindFileDelegate::FindFileTraversalCommand
-ReadOnlyFindFileDelegate::OnEnterDirectory(const FilePath&, GDataDirectory*) {
-  // Keep traversing while doing read only lookups.
-  return FIND_FILE_CONTINUES;
-}
-
-void ReadOnlyFindFileDelegate::OnError(base::PlatformFileError) {
-  file_ = NULL;
-}
-
-bool ReadOnlyFindFileDelegate::had_terminated() const {
-  return false;
-}
-
-// FindFileDelegateReplyBase class implementation.
-
-FindFileDelegateReplyBase::FindFileDelegateReplyBase(
-      GDataFileSystem* file_system,
-      const FilePath& search_file_path,
-      bool require_content)
-      : file_system_(file_system),
-        search_file_path_(search_file_path),
-        require_content_(require_content) {
-  reply_message_proxy_ = base::MessageLoopProxy::current();
-}
-
-FindFileDelegateReplyBase::~FindFileDelegateReplyBase() {
-}
-
-FindFileDelegate::FindFileTraversalCommand
-FindFileDelegateReplyBase::OnEnterDirectory(
-      const FilePath& current_directory_path,
-      GDataDirectory* current_dir) {
-  return CheckAndRefreshContent(current_directory_path, current_dir) ?
-             FIND_FILE_CONTINUES : FIND_FILE_TERMINATES;
-}
-
-// Checks if the content of the |directory| under |directory_path| needs to be
-// refreshed. Returns true if directory content is fresh, otherwise it kicks
-// off content request request. After feed content content is received and
-// processed in GDataFileSystem::OnGetDocuments(), that function will also
-// restart the initiated FindFileByPath() request.
-bool FindFileDelegateReplyBase::CheckAndRefreshContent(
-    const FilePath& directory_path, GDataDirectory* directory) {
-  GURL feed_url;
-  if (directory->NeedsRefresh(&feed_url)) {
-    // If content is stale/non-existing, first fetch the content of the
-    // directory in order to traverse it further.
-    file_system_->RefreshDirectoryAndContinueSearch(
-        GDataFileSystem::FindFileParams(
-            search_file_path_,
-            require_content_,
-            directory_path,
-            feed_url,
-            true,    /* is_initial_feed */
-            this));
-    return false;
-  }
-  return true;
-}
-
-// GDataFileSystem::FindFileParams struct implementation.
-
-GDataFileSystem::FindFileParams::FindFileParams(
-    const FilePath& in_file_path,
-    bool in_require_content,
-    const FilePath& in_directory_path,
-    const GURL& in_feed_url,
-    bool in_initial_feed,
-    scoped_refptr<FindFileDelegate> in_delegate)
-    : file_path(in_file_path),
-      require_content(in_require_content),
-      directory_path(in_directory_path),
-      feed_url(in_feed_url),
-      initial_feed(in_initial_feed),
-      delegate(in_delegate) {
-}
-
-GDataFileSystem::FindFileParams::~FindFileParams() {
+  if (error == base::PLATFORM_FILE_OK)
+    file_ = file;
+  else
+    file_ = NULL;
 }
 
 // GDataFileSystem::CreateDirectoryParams struct implementation.
@@ -638,36 +582,65 @@ void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
   documents_service_->Authenticate(callback);
 }
 
-void GDataFileSystem::FindFileByPath(
-    const FilePath& file_path, scoped_refptr<FindFileDelegate> delegate) {
+void GDataFileSystem::FindFileByPathSync(
+    const FilePath& search_file_path,
+    FindFileDelegate* delegate) {
   base::AutoLock lock(lock_);
-  UnsafeFindFileByPath(file_path, delegate);
+  UnsafeFindFileByPath(search_file_path, delegate);
 }
 
-void GDataFileSystem::RefreshDirectoryAndContinueSearch(
-    const FindFileParams& params) {
-  // This routine will start two simultaneous feed content retrieval attempts
-  // when we are dealing with the root directory - from the feed cache (local
-  // disk) and from the gdata server (HTTP request).
-  // The first of these two feed operations that finishes (either disk cache or
-  // server retrieval) will be responsible for replying to this particular
-  // search request. If the sever side content is retrieved after the cache,
-  // we will also raise directory content change notification. In the opposite
-  // case, the local content from the disk cache will be ignored since we
-  // the server feed holds the most current state.
-  // |params.delegate| implementation will ensure that the outcome of the first
-  // completed operation is the one that gets reported to the caller (callback).
+void GDataFileSystem::FindFileByPathAsync(
+    const FilePath& search_file_path,
+    const FindFileCallback& callback) {
+  scoped_refptr<base::MessageLoopProxy> proxy(
+      base::MessageLoopProxy::current());
+  base::AutoLock lock(lock_);
+  if (root_->origin() == UNINITIALIZED) {
+    // Load root feed from this disk cache. Upon completion, kick off server
+    // fetching.
+    LoadRootFeedFromCache(search_file_path,
+                          true,     // load_from_server
+                          proxy,
+                          callback);
+    return;
+  } else if (root_->NeedsRefresh()) {
+    // If content is stale or from disk from cache, fetch content from
+    // the server.
+    LoadFeedFromServer(search_file_path, proxy, callback);
+    return;
+  }
+  proxy->PostTask(FROM_HERE,
+                  base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             search_file_path,
+                             callback));
+}
 
-  // If we are refreshing the content of the root directory, try fetch the
-  // feed from the disk first.
-  if (params.directory_path == FilePath(kGDataRootDirectory))
-      LoadRootFeed(params);
+void GDataFileSystem::FindFileByPathOnCallingThread(
+    const FilePath& search_file_path,
+    const FindFileCallback& callback) {
+  FindFileCallbackRelayDelegate delegate(callback);
+  FindFileByPathSync(search_file_path, &delegate);
+}
 
+void GDataFileSystem::LoadFeedFromServer(
+    const FilePath& search_file_path,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FindFileCallback& callback) {
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
-  scoped_ptr<base::ListValue> feed_list(new base::ListValue());
-  ContinueDirectoryRefresh(params, feed_list.Pass());
+  scoped_ptr<ListValue> feed_list(new ListValue());
+  // Kick off document feed fetching here if we don't have complete data
+  // to finish this call.
+  documents_service_->GetDocuments(
+      GURL(),   // root feed start.
+      base::Bind(&GDataFileSystem::OnGetDocuments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 search_file_path,
+                 base::Passed(&feed_list),
+                 proxy,
+                 callback));
 }
 
 void GDataFileSystem::Copy(const FilePath& src_file_path,
@@ -1080,7 +1053,9 @@ void GDataFileSystem::OnResumeUpload(const ResumeUploadCallback& callback,
 
 
 void GDataFileSystem::UnsafeFindFileByPath(
-    const FilePath& file_path, scoped_refptr<FindFileDelegate> delegate) {
+    const FilePath& file_path,
+    FindFileDelegate* delegate) {
+  DCHECK(delegate);
   lock_.AssertAcquired();
 
   std::vector<FilePath::StringType> components;
@@ -1094,15 +1069,10 @@ void GDataFileSystem::UnsafeFindFileByPath(
     // Last element must match, if not last then it must be a directory.
     if (i == components.size() - 1) {
       if (current_dir->file_name() == components[i])
-        delegate->OnDirectoryFound(directory_path, current_dir);
+        delegate->OnDone(base::PLATFORM_FILE_OK, directory_path, current_dir);
       else
-        delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 
-      return;
-    }
-
-    if (delegate->OnEnterDirectory(directory_path, current_dir) ==
-        FindFileDelegate::FIND_FILE_TERMINATES) {
       return;
     }
 
@@ -1110,7 +1080,7 @@ void GDataFileSystem::UnsafeFindFileByPath(
     GDataFileCollection::const_iterator file_iter =
         current_dir->children().find(components[i + 1]);
     if (file_iter == current_dir->children().end()) {
-      delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       return;
     }
 
@@ -1119,15 +1089,18 @@ void GDataFileSystem::UnsafeFindFileByPath(
       // Found directory, continue traversal.
       current_dir = file_iter->second->AsGDataDirectory();
     } else {
-      if ((i + 1) == (components.size() - 1))
-        delegate->OnFileFound(file_iter->second->AsGDataFile());
-      else
-        delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      if ((i + 1) == (components.size() - 1)) {
+        delegate->OnDone(base::PLATFORM_FILE_OK,
+                         directory_path,
+                         file_iter->second);
+      } else {
+        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+      }
 
       return;
     }
   }
-  delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+  delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
 bool GDataFileSystem::GetFileInfoFromPath(
@@ -1145,13 +1118,9 @@ GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
-  scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(file_path, find_delegate);
-  if (!find_delegate->file())
-    return NULL;
-
-  return find_delegate->file();
+  ReadOnlyFindFileDelegate find_delegate;
+  UnsafeFindFileByPath(file_path, &find_delegate);
+  return find_delegate.file();
 }
 
 void GDataFileSystem::GetFromCacheForPath(
@@ -1280,27 +1249,14 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   }
 }
 
-void GDataFileSystem::ContinueDirectoryRefresh(
-    const FindFileParams& params, scoped_ptr<base::ListValue> feed_list) {
-  // Kick off document feed fetching here if we don't have complete data
-  // to finish this call.
-  documents_service_->GetDocuments(
-      params.feed_url,
-      base::Bind(&GDataFileSystem::OnGetDocuments,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 params,
-                 base::Passed(&feed_list)));
-}
-
-
 void GDataFileSystem::OnGetDocuments(
-    const FindFileParams& params,
-    scoped_ptr<base::ListValue> feed_list,
+    const FilePath& search_file_path,
+    scoped_ptr<ListValue> feed_list,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FindFileCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
-
   base::PlatformFileError error = GDataToPlatformError(status);
-
   if (error == base::PLATFORM_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "No feed content!";
@@ -1308,7 +1264,12 @@ void GDataFileSystem::OnGetDocuments(
   }
 
   if (error != base::PLATFORM_FILE_OK) {
-    params.delegate->OnError(error);
+    if (!callback.is_null()) {
+      proxy->PostTask(FROM_HERE,
+           base::Bind(callback, error, FilePath(),
+               reinterpret_cast<GDataFileBase*>(NULL)));
+    }
+
     return;
   }
 
@@ -1317,7 +1278,12 @@ void GDataFileSystem::OnGetDocuments(
   GURL next_feed_url;
   scoped_ptr<DocumentFeed> current_feed(ParseDocumentFeed(data.get()));
   if (!current_feed.get()) {
-    params.delegate->OnError(base::PLATFORM_FILE_ERROR_FAILED);
+    if (!callback.is_null()) {
+      proxy->PostTask(FROM_HERE,
+           base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
+               reinterpret_cast<GDataFileBase*>(NULL)));
+    }
+
     return;
   }
 
@@ -1328,90 +1294,112 @@ void GDataFileSystem::OnGetDocuments(
   if (current_feed->GetNextFeedURL(&next_feed_url) &&
       !next_feed_url.is_empty()) {
     // Kick of the remaining part of the feeds.
-    ContinueDirectoryRefresh(FindFileParams(params.file_path,
-                                            params.require_content,
-                                            params.directory_path,
-                                            next_feed_url,
-                                            false,  /* initial_feed */
-                                            params.delegate),
-                             feed_list.Pass());
+    documents_service_->GetDocuments(
+        next_feed_url,
+        base::Bind(&GDataFileSystem::OnGetDocuments,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   search_file_path,
+                   base::Passed(&feed_list),
+                   proxy,
+                   callback));
     return;
   }
 
-  error = UpdateDirectoryWithDocumentFeed(params.directory_path,
-                                          feed_list.get(),
-                                          FROM_SERVER);
+  error = UpdateDirectoryWithDocumentFeed(feed_list.get(), FROM_SERVER);
   if (error != base::PLATFORM_FILE_OK) {
-    params.delegate->OnError(error);
+    if (!callback.is_null()) {
+      proxy->PostTask(FROM_HERE,
+           base::Bind(callback, error, FilePath(),
+               reinterpret_cast<GDataFileBase*>(NULL)));
+    }
+
     return;
   }
 
-  // If this was the root feed, cache its content.
-  if (params.directory_path == FilePath(kGDataRootDirectory)) {
-    scoped_ptr<base::Value> feed_list_value(feed_list.release());
-    SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
-  }
+  scoped_ptr<base::Value> feed_list_value(feed_list.release());
+  SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
 
-  // Continue file content search operation if the delegate hasn't terminated
-  // this search branch already.
-  if (!params.delegate->had_terminated())
-    FindFileByPath(params.file_path, params.delegate);
+  // If we had someone to report this too, then this retrieval was done in a
+  // context of search... so continue search.
+  if (!callback.is_null()) {
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               search_file_path,
+                               callback));
+  }
 }
 
-void GDataFileSystem::LoadRootFeed(
-    const GDataFileSystem::FindFileParams& params) {
-
+void GDataFileSystem::LoadRootFeedFromCache(
+    const FilePath& search_file_path,
+    bool load_from_server,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FindFileCallback& callback) {
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
                  cache_paths_[CACHE_TYPE_META].Append(kLastFeedFile),
-                 base::MessageLoopProxy::current(),
+                 proxy,
                  base::Bind(&GDataFileSystem::OnLoadRootFeed,
                             weak_ptr_factory_.GetWeakPtr(),
-                            params)));
+                            search_file_path,
+                            load_from_server,
+                            proxy,
+                            callback)));
 }
 
 void GDataFileSystem::OnLoadRootFeed(
-    const GDataFileSystem::FindFileParams& params,
+    const FilePath& search_file_path,
+    bool load_from_server,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    FindFileCallback callback,
     base::PlatformFileError error,
     scoped_ptr<base::Value> feed_list) {
-
   if (error == base::PLATFORM_FILE_OK &&
       (!feed_list.get() || feed_list->GetType() != Value::TYPE_LIST)) {
     LOG(WARNING) << "No feed content!";
     error = base::PLATFORM_FILE_ERROR_FAILED;
   }
 
-  if (error != base::PLATFORM_FILE_OK) {
-    // Report error only if the other branch had already completed, otherwise
-    // the hope is that feed retrieval over HTTP might still succeed.
-    if (params.delegate->had_terminated())
-      params.delegate->OnError(error);
-    return;
+  if (error == base::PLATFORM_FILE_OK) {
+    error = UpdateDirectoryWithDocumentFeed(
+        reinterpret_cast<ListValue*>(feed_list.get()),
+        FROM_CACHE);
   }
 
-  // Don't update root directory content if we have already terminated this
-  // delegate.
-  if (params.delegate->had_terminated())
-    return;
-
-  error = UpdateDirectoryWithDocumentFeed(
-      params.directory_path,
-      reinterpret_cast<base::ListValue*>(feed_list.get()),
-      FROM_CACHE);
-  if (error != base::PLATFORM_FILE_OK) {
-    params.delegate->OnError(error);
-    return;
+  // If we got feed content from cache, try search over it.
+  if (!load_from_server ||
+      (error == base::PLATFORM_FILE_OK && !callback.is_null())) {
+    // Continue file content search operation if the delegate hasn't terminated
+    // this search branch already.
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               search_file_path,
+                               callback));
+    callback.Reset();
   }
 
-  // Continue file content search operation if the delegate hasn't terminated
-  // this search branch already.
-  FindFileByPath(params.file_path, params.delegate);
+  if (!load_from_server)
+    return;
+
+  // Kick of the retreival of the feed from server. If we have previously
+  // |reported| to the original callback, then we just need to refresh the
+  // content without continuing search upon operation completion.
+  scoped_ptr<ListValue> server_feed_list(new ListValue());
+  documents_service_->GetDocuments(
+      GURL(),      // root feed start
+      base::Bind(&GDataFileSystem::OnGetDocuments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 search_file_path,
+                 base::Passed(&server_feed_list),
+                 proxy,
+                 callback));
 }
 
 // Static.
 void GDataFileSystem::LoadRootFeedOnIOThreadPool(
     const FilePath& file_path,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy ,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const GetJsonDocumentCallback& callback) {
 
   scoped_ptr<base::Value> root_value;
@@ -1616,12 +1604,7 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-
-  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(file_path, find_file_delegate);
-
-  GDataFileBase* file = find_file_delegate->file();
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
   if (!file)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -1640,21 +1623,13 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
 base::PlatformFileError GDataFileSystem::AddFileToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
   base::AutoLock lock(lock_);
-
-  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(file_path, find_file_delegate);
-
-  GDataFileBase* file = find_file_delegate->file();
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
   if (!file)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   DCHECK_EQ(root_.get(), file->parent());
 
-  scoped_refptr<ReadOnlyFindFileDelegate> find_dir_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(dir_path, find_dir_delegate);
-  GDataFileBase* dir = find_dir_delegate->file();
+  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
   if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -1673,19 +1648,11 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromDirectoryOnFilesystem(
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-
-  scoped_refptr<ReadOnlyFindFileDelegate> find_file_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(file_path, find_file_delegate);
-
-  GDataFileBase* file = find_file_delegate->file();
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
   if (!file)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  scoped_refptr<ReadOnlyFindFileDelegate> find_dir_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(dir_path, find_dir_delegate);
-  GDataFileBase* dir = find_dir_delegate->file();
+  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
   if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -1730,8 +1697,19 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
   return DocumentFeed::CreateFrom(feed_dict);
 }
 
-base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
-    base::ListValue* feed_list) {
+base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
+    ListValue* feed_list,
+    ContentOrigin origin) {
+  DVLOG(1) << "Updating directory with feed from "
+           << (origin == FROM_CACHE ? "cache" : "web server");
+
+  // We need to lock here as well (despite FindFileByPath lock) since directory
+  // instance below is a 'live' object.
+  base::AutoLock lock(lock_);
+  root_->set_origin(origin);
+  root_->set_refresh_time(base::Time::Now());
+  root_->RemoveChildren();
+
   // A map of self URLs to pairs of gdata file and parent URL.
   typedef std::map<GURL, std::pair<GDataFileBase*, GURL> >
       UrlToFileAndParentMap;
@@ -1739,7 +1717,7 @@ base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
   bool first_feed = true;
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
 
-  for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
+  for (ListValue::const_iterator feeds_iter = feed_list->begin();
        feeds_iter != feed_list->end(); ++feeds_iter) {
     scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
     if (!feed.get()) {
@@ -1809,77 +1787,6 @@ base::PlatformFileError GDataFileSystem::UpdateRootWithDocumentFeed(
   }
 
   NotifyDirectoryChanged(root_->GetFilePath());
-
-  return base::PLATFORM_FILE_OK;
-}
-
-base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
-    const FilePath& directory_path,
-    base::ListValue* feed_list,
-    ContentOrigin origin) {
-  DVLOG(1) << "Updating directory content of  "
-           << directory_path.value().c_str()
-           << " with feed from "
-           << (origin == FROM_CACHE ? "cache" : "web server");
-
-  // We need to lock here as well (despite FindFileByPath lock) since directory
-  // instance below is a 'live' object.
-  base::AutoLock lock(lock_);
-
-  // Find directory element within the cached file system snapshot.
-  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(directory_path, update_delegate);
-
-  GDataFileBase* file = update_delegate->file();
-  if (!file)
-    return base::PLATFORM_FILE_ERROR_FAILED;
-
-  GDataDirectory* dir = file->AsGDataDirectory();
-  if (!dir)
-    return base::PLATFORM_FILE_ERROR_FAILED;
-
-  dir->set_origin(origin);
-  dir->set_refresh_time(base::Time::Now());
-
-  // Remove all child elements if we are refreshing the entire content.
-  dir->RemoveChildren();
-
-  if (dir == root_.get())
-    return UpdateRootWithDocumentFeed(feed_list);
-
-  // Get through all collected feeds and fill in directory structure for all
-  // of them.
-  for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
-       feeds_iter != feed_list->end(); ++feeds_iter) {
-    scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
-    if (!feed.get())
-      return base::PLATFORM_FILE_ERROR_FAILED;
-
-    for (ScopedVector<DocumentEntry>::const_iterator iter =
-             feed->entries().begin();
-         iter != feed->entries().end(); ++iter) {
-      DocumentEntry* doc = *iter;
-
-      // For now, skip elements of the root directory feed that have parent.
-      // TODO(oleg): http://crosbug.com/26908. In theory, we could reconstruct
-      // the entire FS snapshot instead of fetching one dir/collection at
-      // the time.
-      if (dir == root_.get()) {
-        const Link* parent_link = doc->GetLinkByType(Link::PARENT);
-        if (parent_link)
-          continue;
-      }
-
-      GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc,
-                                                             root_.get());
-      if (file)
-        dir->AddFile(file);
-    }
-  }
-
-  NotifyDirectoryChanged(directory_path);
-
   return base::PLATFORM_FILE_OK;
 }
 
@@ -1902,11 +1809,7 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
   base::AutoLock lock(lock_);
 
   // Find parent directory element within the cached file system snapshot.
-  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(directory_path.DirName(), update_delegate);
-
-  GDataFileBase* file = update_delegate->file();
+  GDataFileBase* file = GetGDataFileInfoFromPath(directory_path);
   if (!file)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -1944,12 +1847,10 @@ GDataFileSystem::FindFirstMissingParentDirectory(
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
     current_path = current_path.Append(*iter);
-    scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
-        new ReadOnlyFindFileDelegate());
-    UnsafeFindFileByPath(current_path, find_delegate);
-    if (find_delegate->file()) {
-      if (find_delegate->file()->file_info().is_directory) {
-        *last_dir_content_url = find_delegate->file()->content_url();
+    GDataFileBase* file = GetGDataFileInfoFromPath(current_path);
+    if (file) {
+      if (file->file_info().is_directory) {
+        *last_dir_content_url = file->content_url();
       } else {
         // Huh, the segment found is a file not a directory?
         return FOUND_INVALID;
@@ -1965,12 +1866,9 @@ GDataFileSystem::FindFirstMissingParentDirectory(
 GURL GDataFileSystem::GetUploadUrlForDirectory(
     const FilePath& destination_directory) {
   // Find directory element within the cached file system snapshot.
-  scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
-      new ReadOnlyFindFileDelegate());
   base::AutoLock lock(lock_);
-  UnsafeFindFileByPath(destination_directory, find_delegate);
-  GDataDirectory* dir = find_delegate->file() ?
-      find_delegate->file()->AsGDataDirectory() : NULL;
+  GDataFileBase* file = GetGDataFileInfoFromPath(destination_directory);
+  GDataDirectory* dir = file ? file->AsGDataDirectory() : NULL;
   return dir ? dir->upload_url() : GURL();
 }
 
@@ -1983,11 +1881,7 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
   base::AutoLock lock(lock_);
 
   // Find directory element within the cached file system snapshot.
-  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
-      new ReadOnlyFindFileDelegate());
-  UnsafeFindFileByPath(file_path, update_delegate);
-
-  GDataFileBase* file = update_delegate->file();
+  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
 
   if (!file)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;

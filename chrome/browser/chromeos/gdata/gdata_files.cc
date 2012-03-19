@@ -229,11 +229,14 @@ void GDataDirectory::RemoveChildren() {
   children_.clear();
 }
 
-bool GDataDirectory::NeedsRefresh(GURL* feed_url) {
+bool GDataDirectory::NeedsRefresh() const {
+  // Refresh is needed for content read from disk cache or stale content.
+  if (origin_ == FROM_CACHE)
+    return true;
+
   if ((base::Time::Now() - refresh_time_).InSeconds() < kRefreshTimeInSec)
     return false;
 
-  *feed_url = start_feed_url_;
   return true;
 }
 

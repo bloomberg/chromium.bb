@@ -35,41 +35,6 @@ namespace gdata {
 class DocumentsServiceInterface;
 class GDataDownloadObserver;
 
-// Delegate class used to deal with results of virtual directory request
-// to FindFileByPath() method. This class is refcounted since we pass it
-// around and access it from different threads.
-class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
- public:
-  virtual ~FindFileDelegate();
-
-  enum FindFileTraversalCommand {
-    FIND_FILE_CONTINUES,
-    FIND_FILE_TERMINATES,
-  };
-
-  // Called when |file| search is completed within the file system.
-  virtual void OnFileFound(GDataFile* file) = 0;
-
-  // Called when |directory| is found at |directory_path| within the file
-  // system.
-  virtual void OnDirectoryFound(const FilePath& directory_path,
-                                GDataDirectory* directory) = 0;
-
-  // Called while traversing the virtual file system when |directory|
-  // under |directory_path| is encountered. If this function returns
-  // FIND_FILE_TERMINATES the current find operation will be terminated.
-  virtual FindFileTraversalCommand OnEnterDirectory(
-      const FilePath& directory_path, GDataDirectory* directory) = 0;
-
-  // Called when an error occurs while fetching feed content from the server.
-  virtual void OnError(base::PlatformFileError error) = 0;
-
-  // Returns true if the delegate had already encountered a terminal state
-  // that stops the traversal through the file system (OnError, OnDirectoryFound
-  // or OnFileFound).
-  virtual bool had_terminated() const = 0;
-};
-
 // Callback for completion of cache operation.
 typedef base::Callback<void(base::PlatformFileError error,
                             const std::string& resource_id,
@@ -83,47 +48,70 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& cache_file_path)>
     GetFromCacheCallback;
 
+// Used to get result of file search. Please note that |file| is a live
+// object provided to this callback under lock. It must not be used outside
+// of the callback method. This callback can be invoked on different thread
+// than one that started FileFileByPath() request.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& directory_path,
+                            GDataFileBase* file)>
+    FindFileCallback;
+
+// Used for file operations like removing files.
+typedef base::Callback<void(base::PlatformFileError error)>
+    FileOperationCallback;
+
+// Used to get files from the file system.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& file_path)>
+    GetFileCallback;
+
+// Used for file operations like removing files.
+typedef base::Callback<void(base::PlatformFileError error,
+                            scoped_ptr<base::Value> value)>
+    GetJsonDocumentCallback;
+
+// Used to get available space for the account from GData.
+typedef base::Callback<void(base::PlatformFileError error,
+                            int bytes_total,
+                            int bytes_used)>
+    GetAvailableSpaceCallback;
+
+
+// Delegate class used to deal with results synchronous read-only search
+// over virtual file system.
+class FindFileDelegate {
+ public:
+  virtual ~FindFileDelegate();
+
+  // Called when FindFileByPathSync() completes search.
+  virtual void OnDone(base::PlatformFileError error,
+                      const FilePath& directory_path,
+                      GDataFileBase* file) = 0;
+};
+
+// Delegate used to find a directory element for file system updates.
+class ReadOnlyFindFileDelegate : public FindFileDelegate {
+ public:
+  ReadOnlyFindFileDelegate();
+
+  // Returns found file.
+  GDataFileBase* file() { return file_; }
+
+ private:
+  // FindFileDelegate overrides.
+  virtual void OnDone(base::PlatformFileError error,
+                      const FilePath& directory_path,
+                      GDataFileBase* file) OVERRIDE;
+
+  // File entry that was found.
+  GDataFileBase* file_;
+};
+
 // GData file system abstraction layer.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
 class GDataFileSystem : public ProfileKeyedService {
  public:
-  struct FindFileParams {
-    FindFileParams(const FilePath& in_file_path,
-                   bool in_require_content,
-                   const FilePath& in_directory_path,
-                   const GURL& in_feed_url,
-                   bool in_initial_feed,
-                   scoped_refptr<FindFileDelegate> in_delegate);
-    ~FindFileParams();
-
-    const FilePath file_path;
-    const bool require_content;
-    const FilePath directory_path;
-    const GURL feed_url;
-    const bool initial_feed;
-    const scoped_refptr<FindFileDelegate> delegate;
-  };
-
-  // Used for file operations like removing files.
-  typedef base::Callback<void(base::PlatformFileError error)>
-      FileOperationCallback;
-
-  // Used to get files from the file system.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              const FilePath& file_path)>
-      GetFileCallback;
-
-  // Used for file operations like removing files.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              scoped_ptr<base::Value> value)>
-    GetJsonDocumentCallback;
-
-  // Used to get available space for the account from GData.
-  typedef base::Callback<void(base::PlatformFileError error,
-                              int bytes_total,
-                              int bytes_used)>
-      GetAvailableSpaceCallback;
-
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -134,14 +122,20 @@ class GDataFileSystem : public ProfileKeyedService {
   // Must be called on UI thread.
   void Authenticate(const AuthStatusCallback& callback);
 
-  // Finds file info by using virtual |file_path|. If |require_content| is set,
-  // the found directory will be pre-populated before passed back to the
-  // |delegate|. If |allow_refresh| is not set, directories' content
-  // won't be performed.
+  // Finds file info by using virtual |file_path|. This call will also
+  // retrieve and refresh file system content from server and disk cache.
   //
   // Can be called from any thread.
-  void FindFileByPath(const FilePath& file_path,
-                      scoped_refptr<FindFileDelegate> delegate);
+  void FindFileByPathAsync(const FilePath& file_path,
+                           const FindFileCallback& callback);
+
+  // Finds file info by using virtual |file_path|. This call does not initiate
+  // content refreshing and will invoke one of |delegate| methods directly as
+  // it executes.
+  //
+  // Can be called from any thread.
+  void FindFileByPathSync(const FilePath& file_path,
+                          FindFileDelegate* delegate);
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -217,15 +211,6 @@ class GDataFileSystem : public ProfileKeyedService {
   //
   // Can be called from any thread. |callback| is run on the calling thread.
   void GetFile(const FilePath& file_path, const GetFileCallback& callback);
-
-  // Initiates directory feed fetching operation and continues previously
-  // initiated FindFileByPath() attempt upon its completion. Safe to be called
-  // from any thread. Internally, it will route content refresh request to
-  // DocumentsService::GetDocuments() which will initiated content
-  // fetching from UI thread as required by gdata library (UrlFetcher).
-  //
-  // Can be called from any thread.
-  void RefreshDirectoryAndContinueSearch(const FindFileParams& params);
 
   // Gets absolute path of cache file corresponding to |gdata_file_path|.
   // Upon completion, |callback| is invoked on the same thread where this method
@@ -332,16 +317,9 @@ class GDataFileSystem : public ProfileKeyedService {
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeUploadCallback& callback);
 
-  // Unsafe (unlocked) version of the function above.
+  // Unsafe (unlocked) version of FindFileByPathSync method.
   void UnsafeFindFileByPath(const FilePath& file_path,
-                            scoped_refptr<FindFileDelegate> delegate);
-
-  // Starts directory refresh operation as a result of
-  // RefreshDirectoryAndContinueSearch call. |feed_list| is used to collect
-  // individual parts of document feeds as they are being retrieved from
-  // DocumentsService.
-  void ContinueDirectoryRefresh(const FindFileParams& params,
-                                scoped_ptr<base::ListValue> feed_list);
+                            FindFileDelegate* delegate);
 
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
@@ -379,8 +357,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // invoked by StartDirectoryRefresh() completes. This callback will update
   // the content of the refreshed directory object and continue initially
   // started FindFileByPath() request.
-  void OnGetDocuments(const FindFileParams& params,
+  void OnGetDocuments(const FilePath& search_file_path,
                       scoped_ptr<base::ListValue> feed_list,
+                      scoped_refptr<base::MessageLoopProxy> proxy,
+                      const FindFileCallback& callback,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
 
@@ -485,15 +465,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // represeting it.
   DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
 
-  // Load the whole directory structure from the root feed.
-  base::PlatformFileError UpdateRootWithDocumentFeed(
-      base::ListValue* feed_list);
-
-  // Updates content of the directory identified with |directory_path| with
-  // feeds collected in |feed_list|.
+  // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
-      const FilePath& directory_path, base::ListValue* feed_list,
+      base::ListValue* feed_list,
       ContentOrigin origin);
 
   // Converts |entry_value| into GFileDocument instance and adds it
@@ -508,9 +483,20 @@ class GDataFileSystem : public ProfileKeyedService {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
-  // Starts root feed load from the cache. If successful, it will continue
-  // search given |parms| after it refreshes content from the cache.
-  void LoadRootFeed(const GDataFileSystem::FindFileParams& params);
+  // Starts root feed load from the server. If successful, it will try to find
+  // the file upon retrieval completion.
+  void LoadFeedFromServer(const FilePath& search_file_path,
+                          scoped_refptr<base::MessageLoopProxy> proxy,
+                          const FindFileCallback& callback);
+
+  // Starts root feed load from the cache. If successful, it will try to find
+  // the file upon retrieval completion. In addition to that, it will
+  // initate retrieval of the root feed from the server if |load_from_server|
+  // is set.
+  void LoadRootFeedFromCache(const FilePath& search_file_path,
+                             bool load_from_server,
+                             scoped_refptr<base::MessageLoopProxy> proxy,
+                             const FindFileCallback& callback);
 
   // Loads root feed content from |file_path| on IO thread pool. Upon
   // completion it will invoke |callback| on thread represented by
@@ -521,7 +507,10 @@ class GDataFileSystem : public ProfileKeyedService {
       const GetJsonDocumentCallback& callback);
 
   // Callback for handling root directory refresh from the cache.
-  void OnLoadRootFeed(const GDataFileSystem::FindFileParams& params,
+  void OnLoadRootFeed(const FilePath& search_file_path,
+                      bool load_from_server,
+                      scoped_refptr<base::MessageLoopProxy> proxy,
+                      FindFileCallback callback,
                       base::PlatformFileError error,
                       scoped_ptr<base::Value> feed_list);
 
@@ -647,13 +636,17 @@ class GDataFileSystem : public ProfileKeyedService {
                              const CacheOperationCallback& callback);
 
   // Cache internal helper functions.
-
   void GetFromCacheInternal(const std::string& resource_id,
                             const std::string& md5,
                             const FilePath& gdata_file_path,
                             const GetFromCacheCallback& callback);
 
-  scoped_ptr<GDataRootDirectory> root_;
+  // Helper function used to perform file search on the calling thread of
+  // FindFileByPath() request.
+  void FindFileByPathOnCallingThread(const FilePath& search_file_path,
+                                     const FindFileCallback& callback);
+
+    scoped_ptr<GDataRootDirectory> root_;
 
   base::Lock lock_;
 
@@ -706,62 +699,6 @@ class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-};
-
-// Base class for find delegates that require content refreshed.
-// Also, keeps the track of the calling thread message loop proxy to ensure its
-// specializations can provide reply on it.
-class FindFileDelegateReplyBase : public FindFileDelegate {
- public:
-  FindFileDelegateReplyBase(
-      GDataFileSystem* file_system,
-      const FilePath& search_file_path,
-      bool require_content);
-  virtual ~FindFileDelegateReplyBase();
-
-  // FindFileDelegate overrides.
-  virtual FindFileTraversalCommand OnEnterDirectory(
-      const FilePath& current_directory_path,
-      GDataDirectory* current_dir) OVERRIDE;
-
- protected:
-  // Checks if the content of the |directory| under |directory_path| needs to be
-  // refreshed. Returns true if directory content is fresh, otherwise it kicks
-  // off content request request. After feed content content is received and
-  // processed in GDataFileSystem::OnGetDocuments(), that function will also
-  // restart the initiated FindFileByPath() request.
-  bool CheckAndRefreshContent(const FilePath& directory_path,
-                              GDataDirectory* directory);
-
- protected:
-  GDataFileSystem* file_system_;
-  // Search file path.
-  FilePath search_file_path_;
-  // True if the final directory content is required.
-  bool require_content_;
-  scoped_refptr<base::MessageLoopProxy> reply_message_proxy_;
-};
-
-// Delegate used to find a directory element for file system updates.
-class ReadOnlyFindFileDelegate : public FindFileDelegate {
- public:
-  ReadOnlyFindFileDelegate();
-
-  // Returns found file.
-  GDataFileBase* file() { return file_; }
-
- private:
-  // GDataFileSystem::FindFileDelegate overrides.
-  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
-  virtual void OnDirectoryFound(const FilePath&,
-                                GDataDirectory* dir) OVERRIDE;
-  virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
-                                                    GDataDirectory*) OVERRIDE;
-  virtual void OnError(base::PlatformFileError) OVERRIDE;
-  virtual bool had_terminated() const OVERRIDE;
-
-  // File entry that was found.
-  GDataFileBase* file_;
 };
 
 }  // namespace gdata

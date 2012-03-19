@@ -57,143 +57,6 @@ base::FileUtilProxy::Entry GDataFileToFileUtilProxyEntry(
   return entry;
 }
 
-// GetFileInfoDelegate is used to handle results of proxy's content search
-// during GetFileInfo call and route reply to the calling message loop.
-class GetFileInfoDelegate : public FindFileDelegateReplyBase {
- public:
-  GetFileInfoDelegate(
-      GDataFileSystem* file_system,
-      const FilePath& search_file_path,
-      const FileSystemOperationInterface::GetMetadataCallback& callback)
-      : FindFileDelegateReplyBase(file_system,
-                                  search_file_path,
-                                  false  /* require_content */),
-        callback_(callback) {
-  }
-
-  // GDataFileSystemProxy::FindFileDelegate overrides.
-  virtual void OnFileFound(GDataFile* file) OVERRIDE {
-    DCHECK(file);
-    Reply(base::PLATFORM_FILE_OK, file->file_info(), search_file_path_);
-  }
-
-  virtual void OnDirectoryFound(const FilePath& directory_path,
-                                GDataDirectory* dir) OVERRIDE {
-    DCHECK(dir);
-    Reply(base::PLATFORM_FILE_OK, dir->file_info(), search_file_path_);
-  }
-
-  virtual void OnError(base::PlatformFileError error) OVERRIDE {
-    Reply(error, base::PlatformFileInfo(), FilePath());
-  }
-
-  virtual bool had_terminated() const OVERRIDE {
-    return false;
-  }
-
- private:
-  // Relays reply back to the callback on calling thread.
-  void Reply(base::PlatformFileError result,
-             const base::PlatformFileInfo& file_info,
-             const FilePath& platform_path) {
-    if (!callback_.is_null()) {
-      reply_message_proxy_->PostTask(FROM_HERE,
-          Bind(&GetFileInfoDelegate::ReplyOnCallingThread,
-               this,
-               result,
-               file_info,
-               platform_path));
-    }
-  }
-
-  // Responds to callback.
-  void ReplyOnCallingThread(
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path) {
-    if (!callback_.is_null())
-      callback_.Run(result, file_info, platform_path);
-  }
-
-
-  FileSystemOperationInterface::GetMetadataCallback callback_;
-};
-
-
-// ReadDirectoryDelegate is used to handle results of proxy's content search
-// during ReadDirectories call and route reply to the calling message loop.
-class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
- public:
-  ReadDirectoryDelegate(
-      GDataFileSystem* file_system,
-      const FilePath& search_file_path,
-      const FileSystemOperationInterface::ReadDirectoryCallback& callback)
-      : FindFileDelegateReplyBase(file_system,
-                                  search_file_path,
-                                  true  /* require_content */),
-        callback_(callback), had_terminated_(false) {
-  }
-
-  // GDataFileSystemProxy::FindFileDelegate overrides.
-  virtual void OnFileFound(GDataFile* file) OVERRIDE {
-    // We are not looking for a file here at all.
-    Reply(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-          std::vector<base::FileUtilProxy::Entry>(), false);
-  }
-
-  virtual void OnDirectoryFound(const FilePath& directory_path,
-                                GDataDirectory* directory) OVERRIDE {
-    DCHECK(directory);
-    // Since we are reading directory content here, we need to make sure
-    // that the directory found actually contains fresh content.
-    if (!CheckAndRefreshContent(directory_path, directory))
-      return;
-
-    std::vector<base::FileUtilProxy::Entry> results;
-    if (!directory || !directory->file_info().is_directory) {
-      Reply(base::PLATFORM_FILE_ERROR_NOT_FOUND, results, false);
-      return;
-    }
-
-    // Convert gdata files to something File API stack can understand.
-    for (GDataFileCollection::const_iterator iter =
-              directory->children().begin();
-         iter != directory->children().end(); ++iter) {
-       results.push_back(GDataFileToFileUtilProxyEntry(*(iter->second)));
-    }
-
-    GURL unused;
-    Reply(base::PLATFORM_FILE_OK, results, directory->NeedsRefresh(&unused));
-  }
-
-  virtual void OnError(base::PlatformFileError error) OVERRIDE {
-    Reply(error, std::vector<base::FileUtilProxy::Entry>(), false);
-  }
-
-  virtual bool had_terminated() const OVERRIDE {
-    return had_terminated_;
-  }
-
- private:
-  // Relays reply back to the callback on calling thread.
-  void Reply(base::PlatformFileError result,
-             const std::vector<base::FileUtilProxy::Entry>& file_list,
-             bool has_more) {
-    if (had_terminated_)
-      return;
-
-    had_terminated_ = true;
-    if (!callback_.is_null()) {
-      reply_message_proxy_->PostTask(FROM_HERE,
-          base::Bind(callback_, result, file_list, has_more));
-    }
-  }
-
-  FileSystemOperationInterface::ReadDirectoryCallback callback_;
-  // Keeps the track if we have already replied to the callback.
-  bool had_terminated_;
-};
-
 // GDataFileSystemProxy class implementation.
 
 GDataFileSystemProxy::GDataFileSystemProxy(Profile* profile)
@@ -210,17 +73,25 @@ GDataFileSystemProxy::~GDataFileSystemProxy() {
 
 void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     const FileSystemOperationInterface::GetMetadataCallback& callback) {
-  // what platform you're on.
+  scoped_refptr<base::MessageLoopProxy> proxy =
+      base::MessageLoopProxy::current();
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    scoped_refptr<GetFileInfoDelegate> delegate(
-        new GetFileInfoDelegate(file_system_, FilePath(), callback));
-    delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(callback,
+                               base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                               base::PlatformFileInfo(),
+                               FilePath()));
     return;
   }
 
-  file_system_->FindFileByPath(
-      file_path, new GetFileInfoDelegate(file_system_, file_path, callback));
+  file_system_->FindFileByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystemProxy::OnGetMetadata,
+                 this,
+                 file_path,
+                 proxy,
+                 callback));
 }
 
 void GDataFileSystemProxy::Copy(const GURL& src_file_url,
@@ -258,16 +129,24 @@ void DoNothing(base::PlatformFileError /*error*/,
 
 void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {
+  scoped_refptr<base::MessageLoopProxy> proxy =
+      base::MessageLoopProxy::current();
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    scoped_refptr<ReadDirectoryDelegate> delegate(
-        new ReadDirectoryDelegate(file_system_, FilePath(), callback));
-    delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(callback,
+                               base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                               std::vector<base::FileUtilProxy::Entry>(),
+                               false));
     return;
   }
 
-  file_system_->FindFileByPath(
-      file_path, new ReadDirectoryDelegate(file_system_, file_path, callback));
+  file_system_->FindFileByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystemProxy::OnReadDirectory,
+                 this,
+                 proxy,
+                 callback));
 }
 
 void GDataFileSystemProxy::Remove(const GURL& file_url, bool recursive,
@@ -339,6 +218,63 @@ bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
     return false;
   }
   return true;
+}
+
+void GDataFileSystemProxy::OnGetMetadata(
+    const FilePath& file_path,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FileSystemOperationInterface::GetMetadataCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& directory_path,
+    GDataFileBase* file) {
+  if (error != base::PLATFORM_FILE_OK) {
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(callback,
+                               error,
+                               base::PlatformFileInfo(),
+                               FilePath()));
+    return;
+  }
+
+  proxy->PostTask(FROM_HERE,
+                  base::Bind(callback,
+                             base::PLATFORM_FILE_OK,
+                             file->file_info(),
+                             file_path));
+}
+
+void GDataFileSystemProxy::OnReadDirectory(
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FileSystemOperationInterface::ReadDirectoryCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& directory_path,
+    GDataFileBase* file) {
+  DCHECK(file);
+  GDataDirectory* directory = file->AsGDataDirectory();
+  if (!directory)
+    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  if (error != base::PLATFORM_FILE_OK) {
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(callback,
+                               error,
+                               std::vector<base::FileUtilProxy::Entry>(),
+                               false));
+    return;
+  }
+  std::vector<base::FileUtilProxy::Entry> entries;
+  // Convert gdata files to something File API stack can understand.
+  for (GDataFileCollection::const_iterator iter =
+            directory->children().begin();
+       iter != directory->children().end(); ++iter) {
+    entries.push_back(GDataFileToFileUtilProxyEntry(*(iter->second)));
+  }
+
+  proxy->PostTask(FROM_HERE,
+                  base::Bind(callback,
+                             base::PLATFORM_FILE_OK,
+                             entries,
+                             false));
 }
 
 }  // namespace gdata

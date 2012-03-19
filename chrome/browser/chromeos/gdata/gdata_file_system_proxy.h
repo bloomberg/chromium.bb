@@ -54,6 +54,31 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // a corresponding element within this file system.
   static bool ValidateUrl(const GURL& url, FilePath* file_path);
 
+  // Helper callback for relaying reply for metadata retrieval request to the
+  // calling thread. The callback is invoked while |file| is kept under lock
+  // so it is safe to retrieve data from it, but this pointer is not safe to
+  // be used outside of this method.
+  void OnGetMetadata(
+      const FilePath& file_path,
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      const fileapi::FileSystemOperationInterface::GetMetadataCallback&
+          callback,
+      base::PlatformFileError error,
+      const FilePath& directory_path,
+      GDataFileBase* file);
+
+  // Helper callback for relaying reply for ReadDirectory() to the calling
+  // thread. The callback is invoked while |file| is kept under lock
+  // so it is safe to retrieve data from it, but this pointer is not safe to
+  // be used outside of this method.
+  void OnReadDirectory(
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
+          callback,
+      base::PlatformFileError error,
+      const FilePath& directory_path,
+      GDataFileBase* file);
+
   // GDataFileSystemProxy is owned by Profile, which outlives
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
   // the time Profile is removed, the file manager is already gone). Hence

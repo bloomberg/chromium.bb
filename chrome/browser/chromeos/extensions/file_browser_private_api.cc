@@ -200,14 +200,9 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
 
  private:
   // GDataFileSystem::FindFileDelegate overrides.
-  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
-  virtual void OnDirectoryFound(const FilePath&,
-                                gdata::GDataDirectory* dir) OVERRIDE;
-  virtual FindFileTraversalCommand OnEnterDirectory(
-      const FilePath&,
-      gdata::GDataDirectory*) OVERRIDE;
-  virtual void OnError(base::PlatformFileError error) OVERRIDE;
-  virtual bool had_terminated() const OVERRIDE { return false; }
+  virtual void OnDone(base::PlatformFileError error,
+                      const FilePath& directory_path,
+                      gdata::GDataFileBase* file) OVERRIDE;
 
   GURL thumbnail_url_;
   GURL edit_url_;
@@ -266,31 +261,26 @@ void FilePropertiesDelegate::CopyProperties(
   property_dict->SetBoolean("isHosted", is_hosted_document_);
 }
 
-void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
-  DCHECK(!file->file_info().is_directory);
+void FilePropertiesDelegate::OnDone(base::PlatformFileError error,
+                                    const FilePath& directory_path,
+                                    gdata::GDataFileBase* entity) {
+  if (error != base::PLATFORM_FILE_OK) {
+    error_ = error;
+    return;
+  }
+
+  gdata::GDataFile* file = entity->AsGDataFile();
+  if (!file) {
+    LOG(WARNING) << "Reading properties of a non-file at "
+                 << directory_path.value();
+    return;
+  }
+
   thumbnail_url_ = file->thumbnail_url();
   edit_url_ = file->edit_url();
   content_url_ = file->content_url();
   cache_state_ = file->GetCacheState();
   is_hosted_document_ = file->is_hosted_document();
-}
-
-void FilePropertiesDelegate::OnDirectoryFound(const FilePath&,
-                                              gdata::GDataDirectory* dir) {
-  DCHECK(dir->file_info().is_directory);
-  // We don't set anything here because we don't have any properties for
-  // directories yet.
-}
-
-gdata::FindFileDelegate::FindFileTraversalCommand
-FilePropertiesDelegate::OnEnterDirectory(const FilePath&,
-                                         gdata::GDataDirectory*) {
-  // Keep traversing while doing read only lookups.
-  return FIND_FILE_CONTINUES;
-}
-
-void FilePropertiesDelegate::OnError(base::PlatformFileError error) {
-  error_ = error;
 }
 
 }  // namespace
@@ -1548,11 +1538,10 @@ bool GetGDataFilePropertiesFunction::RunImpl() {
       gdata::GDataFileSystemFactory::GetForProfile(profile_);
   DCHECK(file_system);
   for (std::vector<FilePath>::size_type i = 0; i < file_paths.size(); ++i) {
-    scoped_refptr<FilePropertiesDelegate> property_delegate(
-        new FilePropertiesDelegate());
-    file_system->FindFileByPath(file_paths[i], property_delegate);
+    FilePropertiesDelegate property_delegate;
+    file_system->FindFileByPathSync(file_paths[i], &property_delegate);
     base::DictionaryValue* property_dict = new base::DictionaryValue;
-    property_delegate->CopyProperties(property_dict);
+    property_delegate.CopyProperties(property_dict);
     property_dict->SetString("fileUrl", file_urls[i].spec());
     file_properties->Append(property_dict);
   }

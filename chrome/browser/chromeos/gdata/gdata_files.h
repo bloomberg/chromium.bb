@@ -203,9 +203,8 @@ class GDataDirectory : public GDataFileBase {
   // Removes children elements.
   void RemoveChildren();
 
-  // Checks if directory content needs to be retrieved again. If it does,
-  // the function will return URL for next feed in |next_feed_url|.
-  bool NeedsRefresh(GURL* next_feed_url);
+  // Checks if directory content needs to be refreshed from the server.
+  bool NeedsRefresh() const;
 
   // Last refresh time.
   const base::Time& refresh_time() const { return refresh_time_; }
