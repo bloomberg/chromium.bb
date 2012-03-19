@@ -55,12 +55,58 @@ const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 const SkColor kTrayBackgroundColor = SkColorSetARGB(100, 0, 0, 0);
 const SkColor kTrayBackgroundHover = SkColorSetARGB(150, 0, 0, 0);
 
-// A view with some special behaviour for tray items:
-// - changes background color on hover.
-// - TODO: accessibility
+// Container for items in the tray. It makes sure the widget is updated
+// correctly when the visibility/size of the tray item changes.
+// TODO: setup animation.
 class TrayItemContainer : public views::View {
  public:
-  explicit TrayItemContainer(views::View* view) : hover_(false) {
+  explicit TrayItemContainer(views::View* view) : child_(view) {
+    AddChildView(child_);
+    SetVisible(child_->visible());
+  }
+
+  virtual ~TrayItemContainer() {}
+
+ private:
+  // Makes sure the widget relayouts after the size/visibility of the view
+  // changes.
+  void ApplyChange() {
+    // Forcing the widget to the new size is sufficient. The positing is taken
+    // care of by the layout manager (ShelfLayoutManager).
+    GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
+  }
+
+  // Overridden from views::View.
+  virtual void Layout() {
+    child_->SetBoundsRect(gfx::Rect(size()));
+  }
+
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return child_->GetPreferredSize();
+  }
+
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+    ApplyChange();
+  }
+
+  virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
+    if (visible() == child_->visible())
+      return;
+    SetVisible(child_->visible());
+    ApplyChange();
+  }
+
+  views::View* child_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayItemContainer);
+};
+
+// A view with some special behaviour for tray items in the popup:
+// - changes background color on hover.
+// - TODO: accessibility
+class TrayPopupItemContainer : public views::View {
+ public:
+  explicit TrayPopupItemContainer(views::View* view) : hover_(false) {
     set_notify_enter_exit_on_child(true);
     set_border(view->border() ? views::Border::CreateEmptyBorder(0, 0, 0, 0) :
                                 NULL);
@@ -68,7 +114,7 @@ class TrayItemContainer : public views::View {
     AddChildView(view);
   }
 
-  virtual ~TrayItemContainer() {}
+  virtual ~TrayPopupItemContainer() {}
 
  private:
   // Overridden from views::View.
@@ -96,7 +142,7 @@ class TrayItemContainer : public views::View {
 
   bool hover_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayItemContainer);
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupItemContainer);
 };
 
 class SystemTrayBubbleBackground : public views::Background {
@@ -284,7 +330,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
       views::View* view = detailed_ ? (*it)->CreateDetailedView(login_status) :
                                       (*it)->CreateDefaultView(login_status);
       if (view)
-        AddChildView(new TrayItemContainer(view));
+        AddChildView(new TrayPopupItemContainer(view));
     }
   }
 
@@ -367,7 +413,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
   if (tray_item) {
-    container_->AddChildViewAt(tray_item, 0);
+    container_->AddChildViewAt(new TrayItemContainer(tray_item), 0);
     PreferredSizeChanged();
   }
 }
@@ -419,7 +465,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
       ++it) {
     views::View* view = (*it)->CreateTrayView(login_status);
     if (view)
-      container_->AddChildViewAt(view, 0);
+      container_->AddChildViewAt(new TrayItemContainer(view), 0);
   }
   PreferredSizeChanged();
 }
