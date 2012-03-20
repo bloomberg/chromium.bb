@@ -67,7 +67,7 @@ void NotifyRenderViewHost(RenderViewHost* render_view_host,
 // Converts a list of FilePaths to a list of SelectedFileInfo, with the
 // display name field left empty.
 std::vector<content::SelectedFileInfo> ConvertToSelectedFileInfoList(
-    std::vector<FilePath> paths) {
+    const std::vector<FilePath>& paths) {
   std::vector<content::SelectedFileInfo> selected_files;
   for (size_t i = 0; i < paths.size(); ++i) {
     selected_files.push_back(
