@@ -52,4 +52,8 @@ ProfileKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
   return prerender_manager;
 }
 
+bool PrerenderManagerFactory::ServiceHasOwnInstanceInIncognito() {
+  return true;
+}
+
 }  // end namespace prerender
