@@ -127,15 +127,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
   CheckChromeVersion(profile.get(), false);
 }
 
-// Fails on Win under some circumstances, see http://crbug.com/119059.
-#if defined(OS_WIN)
-#define MAYBE_ProfileReadmeCreated FAILS_ProfileReadmeCreated
-#else
-#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
-#endif
-
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
+// Fails on some bots, see http://crbug.com/119059.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, FAILS_ProfileReadmeCreated) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
