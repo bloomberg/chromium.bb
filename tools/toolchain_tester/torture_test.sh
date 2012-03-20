@@ -74,7 +74,7 @@ help() {
 }
 
 
-v#@ install-tests         - Download test tarball
+#@ install-tests         - Download test tarball
 install-tests() {
   mkdir -p ${TEST_ROOT}
   DownloadOrCopy ${TEST_TARBALL_URL} ${TEST_ROOT}/test_tarball.tgz

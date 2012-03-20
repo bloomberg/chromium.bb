@@ -4,8 +4,10 @@
 # ======================================================================
 # failures in phase sel_ldr
 # ======================================================================
-# alignment issues using __alignof__
+# alignment issues using __alignof__ (or stack alignment)
 alloca-1.c arm
+alloca-1.c x86-64,O0
+alloca-1.c x86-32,O0
 # setjmp/longjmp TODO
 built-in-setjmp.c
 # ??? (funny shenanigans with bitfields)
@@ -13,22 +15,16 @@ bitfld-5.c
 bitfld-3.c
 # local version of llabs overrides libc version
 20021127-1.c
-# va_arg structure passing codegen on arm
-20030914-2.c arm
-va-arg-4.c arm
 # postincrement of argument in definition prototype (is that even legal?)
 970217-1.c
 # bad shift of a 40-bit bitfield (assumes intermediate values are 40-bit)
 pr32244-1.c
 pr34971.c
-# incorrect handling of wide char literal
-# (it throws a warning, may just need the right flag)
-wchar_t-1.c
 # ======================================================================
 # failures in phase translate
 # ======================================================================
 # llvm does not know that "fabs(x) >= 0"
-20020720-1.c
+20020720-1.c O3
 # undef signal
 fp-cmp-1.c
 # undef signal
@@ -44,7 +40,7 @@ va-arg-pack-1.c
 # prefetch broken on ARM
 builtin-prefetch-2.c arm
 # vector broken on ARM
-simd-6.c arm
+simd-6.c arm,O0
 # This uses __builtin_return_address(1) (Works for x8632 O0/O3, and x8664 O0)
 # Addresses slightly off on x86-64 O3, and stock clang x86-64 O3 also.
 # Segfaults on ARM loading an uninit frame pointer (must force fp on?).
@@ -101,8 +97,6 @@ simd-1.c
 pr23135.c
 # asm - invalid output constraint =t (is apparently undocumented in gcc)
 990413-2.c
-# main() declared as void (error in clang, not in gcc)
-20091229-1.c
 # <scumbagsteve> implicit return type int
 # does not return a value </scumbagsteve> (error only in clang)
 920728-1.c
@@ -143,6 +137,9 @@ pr22061-4.c
 # ======================================================================
 # wont fixes - complex va_arg (e.g. structs passed as va_args)
 # ======================================================================
+# va_arg structure passing codegen on arm
+20030914-2.c arm,O0
+va-arg-4.c arm
 # complex va_arg
 920625-1.c
 # complex va_arg

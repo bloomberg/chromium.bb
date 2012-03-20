@@ -1,3 +1,10 @@
+# Unknown runtime failures
+filter1.C O3
+ctor2.C arm,O3
+new1.C arm,O3
+registers1.C arm,O3
+registers1.C x86-64,O3
+
 # compile failure, syntax error (this appears to tests a gcc  extension)
 # so not a biggy
 spec5.C
@@ -12,8 +19,7 @@ spec9.C
 # runtime failure: base class destructor does not seem to be called
 # at the right time
 dtor1.C
-# additional failures at -O3 (x8664 only)
-registers1.C x86-64,O3
+
 # ======================================================================
 # NOTE: the tests below fail on a regular gcc as well
 # ======================================================================
