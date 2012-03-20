@@ -4,11 +4,11 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/tests/dynamic_code_loading/dynamic_load_test.h"
+
 #include <assert.h>
 #include <errno.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 
@@ -23,14 +23,6 @@
 #define BUF_SIZE 64
 #elif defined(__i386__) || defined(__arm__)
 #define BUF_SIZE 32
-#else
-#error "Unknown Platform"
-#endif
-
-#if defined(__i386__) || defined(__x86_64__)
-#define NACL_BUNDLE_SIZE  32
-#elif defined(__arm__)
-#define NACL_BUNDLE_SIZE  16
 #else
 #error "Unknown Platform"
 #endif
@@ -56,7 +48,7 @@ char *allocate_code_space(int pages) {
     next_addr = (char *) DYNAMIC_CODE_SEGMENT_START;
   }
   addr = next_addr;
-  next_addr += 0x10000 * pages;
+  next_addr += PAGE_SIZE * pages;
   assert(next_addr < (char *) DYNAMIC_CODE_SEGMENT_END);
   return addr;
 }
@@ -438,7 +430,6 @@ void test_deleting_code_from_invalid_ranges() {
   assert(rc == 0);
 }
 
-
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
   test_func();
@@ -470,6 +461,7 @@ int TestMain() {
   RUN_TEST(test_deleting_zero_size);
   RUN_TEST(test_deleting_code_from_invalid_ranges);
   RUN_TEST(test_stress);
+  RUN_TEST(test_threaded_loads);
 
   /* Test again to make sure we didn't run out of space. */
   RUN_TEST(test_loading_code);

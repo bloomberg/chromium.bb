@@ -60,7 +60,8 @@ browser_libs = ['testrunner_browser',
 
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
-dynamic_load_test_object = env.ComponentObject('dynamic_load_test.c')
+dynamic_load_test_object = env.ComponentObject(['dynamic_load_test.c',
+                                                'dynamic_load_test_threaded.c'])
 
 dynamic_load_nonbrowser_test_nexe_name = env.ProgramNameForNmf(
     'dynamic_load_test')

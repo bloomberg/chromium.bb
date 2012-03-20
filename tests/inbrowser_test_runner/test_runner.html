@@ -57,6 +57,10 @@ function addTest(tester, url) {
       status.fail(embed.lastError);
     }), true);
 
+    div.addEventListener('crash', status.wrap(function(e) {
+      status.fail(embed.lastError);
+    }), true);
+
     // Insert div into the DOM.  This starts the load of the nacl plugin, etc.
     document.getElementById('scratch_space').appendChild(div);
   });
