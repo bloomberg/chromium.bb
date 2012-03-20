@@ -50,6 +50,10 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#ifdef FILE_MANAGER_EXTENSION
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#endif
+
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
@@ -502,6 +506,13 @@ TranslateManager::TranslateManager()
 
 void TranslateManager::InitiateTranslation(WebContents* tab,
                                            const std::string& page_lang) {
+#ifdef FILE_MANAGER_EXTENSION
+  const GURL& page_url = tab->GetURL();
+  if (page_url.SchemeIs("chrome-extension") &&
+      page_url.DomainIs(kFileBrowserDomain))
+    return;
+#endif
+
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
