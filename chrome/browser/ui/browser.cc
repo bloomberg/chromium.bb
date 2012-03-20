@@ -446,6 +446,16 @@ Browser::~Browser() {
 
   BrowserList::RemoveBrowser(this);
 
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service)
+    session_service->WindowClosed(session_id_);
+
+  TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile());
+  if (tab_restore_service)
+    tab_restore_service->BrowserClosed(tab_restore_service_delegate());
+
 #if !defined(OS_MACOSX)
   if (!BrowserList::HasBrowserWithProfile(profile_)) {
     // We're the last browser window with this profile. We need to nuke the
@@ -460,16 +470,6 @@ Browser::~Browser() {
     TabRestoreServiceFactory::ResetForProfile(profile_);
   }
 #endif
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service)
-    session_service->WindowClosed(session_id_);
-
-  TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile());
-  if (tab_restore_service)
-    tab_restore_service->BrowserClosed(tab_restore_service_delegate());
 
   profile_pref_registrar_.RemoveAll();
   local_pref_registrar_.RemoveAll();

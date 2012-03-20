@@ -89,15 +89,8 @@ BaseSessionService::BaseSessionService(SessionType type,
       profile_ ? profile_->GetPath() : path_);
   DCHECK(backend_.get());
 
-  if (!RunningInProduction()) {
-    // We seem to be running as part of a test, in which case we need
-    // to explicitly initialize the backend.  In production, the
-    // backend will automatically initialize itself just in time.
-    //
-    // Note that it's important not to initialize too early in
-    // production; this can cause e.g. http://crbug.com/110785.
-    backend_->Init();
-  }
+  RunTaskOnBackendThread(FROM_HERE,
+                         base::Bind(&SessionBackend::Init, backend_));
 }
 
 BaseSessionService::~BaseSessionService() {
@@ -325,14 +318,10 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
   return request->handle();
 }
 
-bool BaseSessionService::RunningInProduction() const {
-  return profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE);
-}
-
 bool BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  if (RunningInProduction()) {
+  if (profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
   } else {
     // Fall back to executing on the main thread if the file thread

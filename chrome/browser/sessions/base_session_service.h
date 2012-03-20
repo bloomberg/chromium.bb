@@ -162,11 +162,6 @@ class BaseSessionService : public CancelableRequestProvider,
       InternalGetCommandsRequest* request,
       CancelableRequestConsumerBase* consumer);
 
-  // Returns true if we appear to be running in production, false if
-  // we appear to be running as part of a unit test or if the FILE
-  // thread has gone away.
-  bool RunningInProduction() const;
-
   // In production, this posts the task to the FILE thread.  For
   // tests, it immediately runs the specified task on the current
   // thread.
