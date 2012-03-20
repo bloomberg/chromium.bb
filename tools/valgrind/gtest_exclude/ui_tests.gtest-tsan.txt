@@ -35,9 +35,5 @@ NPAPIVisiblePluginTester.PluginReferrerTest
 
 # Flaky under TSan, see http://crbug.com/118365
 AudioUILayoutTest.AudioConstructor
+AudioUILayoutTest.AudioConstructorSrc
 AudioUILayoutTest.AudioPlayEvent
-
-# These tests make TSan mad: 100+ nonsense reports, see http://crbug.com/118367
-AutomationProxyTest.GetTabCount
-AutomationProxyTest.GetBrowserWindow
-ChromeMainTest.SecondLaunchWithIncognitoUrl
