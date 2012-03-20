@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,10 @@
 class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
+
+namespace gfx {
+class Rect;
+}
 
 namespace printing {
 struct PageSizeMargins;
@@ -81,6 +85,7 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
   // selected printer and page size.
   void OnDidGetDefaultPageLayout(
       const printing::PageSizeMargins& page_layout,
+      const gfx::Rect& printable_area,
       bool has_custom_page_size_style);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.

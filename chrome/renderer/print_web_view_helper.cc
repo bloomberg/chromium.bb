@@ -35,6 +35,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_POSIX)
@@ -872,14 +873,27 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   ComputePageLayoutInPointsForCss(print_preview_context_.frame(), 0,
                                   print_params, ignore_css_margins_,
                                   fit_to_page_, NULL, &default_page_layout);
+
   if (!old_print_pages_params_.get() ||
       !PageLayoutIsEqual(*old_print_pages_params_, *print_pages_params_)) {
     bool has_page_size_style = PrintingFrameHasPageSizeStyle(
         print_preview_context_.frame(),
         print_preview_context_.total_page_count());
+    int dpi = GetDPI(&print_params);
+    gfx::Rect printable_area_in_points(
+      ConvertUnit(print_pages_params_->params.printable_area.x(),
+          dpi, printing::kPointsPerInch),
+      ConvertUnit(print_pages_params_->params.printable_area.y(),
+          dpi, printing::kPointsPerInch),
+      ConvertUnit(print_pages_params_->params.printable_area.width(),
+          dpi, printing::kPointsPerInch),
+      ConvertUnit(print_pages_params_->params.printable_area.height(),
+          dpi, printing::kPointsPerInch));
+
     // Margins: Send default page layout to browser process.
     Send(new PrintHostMsg_DidGetDefaultPageLayout(routing_id(),
                                                   default_page_layout,
+                                                  printable_area_in_points,
                                                   has_page_size_style));
   }
 

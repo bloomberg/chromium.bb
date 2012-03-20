@@ -15,6 +15,10 @@ struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 
+namespace gfx {
+class Rect;
+}
+
 namespace printing {
 
 struct PageSizeMargins;
@@ -46,6 +50,7 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
   void OnRequestPrintPreview(bool source_is_modifiable, bool webnode_only);
   void OnDidGetDefaultPageLayout(
       const printing::PageSizeMargins& page_layout_in_points,
+      const gfx::Rect& printable_area_in_points,
       bool has_custom_page_size_style);
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);

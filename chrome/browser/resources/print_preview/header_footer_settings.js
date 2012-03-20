@@ -13,7 +13,6 @@ cr.define('print_preview', function() {
   function HeaderFooterSettings() {
     this.headerFooterOption_ = $('header-footer-option');
     this.headerFooterCheckbox_ = $('header-footer');
-    this.headerFooterApplies_ = false;
     this.addEventListeners_();
   }
 
@@ -33,7 +32,7 @@ cr.define('print_preview', function() {
      * @return {boolean} true if Headers and Footers are checked.
      */
     hasHeaderFooter: function() {
-      return this.headerFooterApplies_ && this.headerFooterCheckbox_.checked;
+      return previewModifiable && this.headerFooterCheckbox_.checked;
     },
 
     /**
@@ -46,6 +45,40 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Checks the printable area and updates the visibility of header footer
+     * option based on the selected margins.
+     * @param {{contentWidth: number, contentHeight: number, marginLeft: number,
+     *          marginRight: number, marginTop: number, marginBottom: number,
+     *          printableAreaX: number, printableAreaY: number,
+     *          printableAreaWidth: number, printableAreaHeight: number}}
+     *          pageLayout Specifies default page layout details in points.
+     * @param {number} marginsType Specifies the selected margins type value.
+     */
+    checkAndHideHeaderFooterOption: function(pageLayout, marginsType) {
+      var headerFooterApplies = true;
+      if (marginsType ==
+              print_preview.MarginSettings.MARGINS_VALUE_NO_MARGINS ||
+          !previewModifiable) {
+        headerFooterApplies = false;
+      } else if (marginsType !=
+                     print_preview.MarginSettings.MARGINS_VALUE_MINIMUM) {
+        if (cr.isLinux || cr.isChromeOS) {
+          headerFooterApplies = pageLayout.marginTop > 0 ||
+                                pageLayout.marginBottom > 0;
+        } else {
+          var pageHeight = pageLayout.marginTop + pageLayout.marginBottom +
+                           pageLayout.contentHeight;
+          headerFooterApplies =
+              (pageLayout.marginTop > pageLayout.printableAreaY) ||
+              (pageLayout.marginBottom >
+                   (pageHeight - pageLayout.printableAreaY -
+                    pageLayout.printableAreaHeight));
+        }
+      }
+      this.setVisible_(headerFooterApplies);
+    },
+
+    /**
      * Adding listeners to header footer related controls.
      * @private
      */
@@ -54,14 +87,6 @@ cr.define('print_preview', function() {
           this.onHeaderFooterChanged_.bind(this);
       document.addEventListener(customEvents.PDF_LOADED,
                                 this.onPDFLoaded_.bind(this));
-      document.addEventListener(customEvents.MARGINS_SELECTION_CHANGED,
-                                this.onMarginsSelectionChanged_.bind(this));
-    },
-
-    onMarginsSelectionChanged_: function(event) {
-      this.headerFooterApplies_ = event.selectedMargins !=
-          print_preview.MarginSettings.MARGINS_VALUE_NO_MARGINS;
-      this.setVisible_(this.headerFooterApplies_);
     },
 
     /**

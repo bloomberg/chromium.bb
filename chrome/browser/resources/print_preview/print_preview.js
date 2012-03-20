@@ -126,8 +126,6 @@ var customEvents = {
   MARGIN_TEXTBOX_FOCUSED: 'marginTextboxFocused',
   // Fired when a new preview might be needed because of margin changes.
   MARGINS_MAY_HAVE_CHANGED: 'marginsMayHaveChanged',
-  // Fired when the margins selection in the dropdown changes.
-  MARGINS_SELECTION_CHANGED: 'marginsSelectionChanged',
   // Fired when a pdf generation related error occurs.
   PDF_GENERATION_ERROR: 'PDFGenerationError',
   // Fired once the first page of the pdf document is loaded in the plugin.
@@ -868,10 +866,13 @@ function onDidGetPreviewPageCount(pageCount, previewResponseId) {
 }
 
 /**
- * @param {printing::PageSizeMargins} pageLayout The default layout of the page
- *     in points.
+ * @param {{contentWidth: number, contentHeight: number, marginLeft: number,
+ *          marginRight: number, marginTop: number, marginBottom: number,
+ *          printableAreaX: number, printableAreaY: number,
+ *          printableAreaWidth: number, printableAreaHeight: number}} pageLayout
+ *          Specifies default page layout details in points.
  * @param {boolean} hasCustomPageSizeStyle Indicates whether the previewed
- *      document has a custom page size style.
+ *     document has a custom page size style.
  */
 function onDidGetDefaultPageLayout(pageLayout, hasCustomPageSizeStyle) {
   hasPageSizeStyle = hasCustomPageSizeStyle;
@@ -882,6 +883,8 @@ function onDidGetDefaultPageLayout(pageLayout, hasCustomPageSizeStyle) {
       pageLayout.marginTop,
       pageLayout.marginRight,
       pageLayout.marginBottom);
+  headerFooterSettings.checkAndHideHeaderFooterOption(
+      pageLayout, marginSettings.selectedMarginsValue);
 }
 
 /**

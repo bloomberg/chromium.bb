@@ -270,6 +270,51 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   checkSectionVisible(copiesSettings.copiesOption_, false);
 });
 
+// Page layout has zero margins. Hide header and footer option.
+TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
+       function() {
+  setInitialSettings({previewModifiable: true});
+  onDidGetDefaultPageLayout({
+      contentWidth: 100, contentHeight: 200, marginLeft: 0, marginRight: 0,
+      marginTop: 0, marginBottom: 0, printableAreaX: 0, printableAreaY: 0,
+      printableAreaWidth: 100, printableAreaHeight: 200}, true);
+  checkSectionVisible(headerFooterSettings.headerFooterOption_, false);
+});
+
+// Page layout has non-zero margins. Show header and footer option.
+TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
+       function() {
+  setInitialSettings({previewModifiable: true});
+  onDidGetDefaultPageLayout({
+      contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
+      marginTop: 4, marginBottom: 1, printableAreaX: 1, printableAreaY: 1,
+      printableAreaWidth: 103, printableAreaHeight: 203}, true);
+  checkSectionVisible(headerFooterSettings.headerFooterOption_, true);
+});
+
+// Page layout has zero top and bottom margins. Hide header and footer option.
+TEST_F('PrintPreviewWebUITest', 'ZeroTopAndBottomMarginsHideHeaderFooter',
+       function() {
+  setInitialSettings({previewModifiable: true});
+  onDidGetDefaultPageLayout({
+      contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
+      marginTop: 0, marginBottom: 0, printableAreaX: 1, printableAreaY: 1,
+      printableAreaWidth: 98, printableAreaHeight: 198}, false);
+  checkSectionVisible(headerFooterSettings.headerFooterOption_, false);
+});
+
+// Page layout has zero top and non-zero bottom margin. Show header and footer
+// option.
+TEST_F('PrintPreviewWebUITest', 'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
+       function() {
+  setInitialSettings({previewModifiable: true});
+  onDidGetDefaultPageLayout({
+      contentWidth: 100, contentHeight: 200, marginLeft: 6, marginRight: 4,
+      marginTop: 0, marginBottom: 3, printableAreaX: 1, printableAreaY: 1,
+      printableAreaWidth: 103, printableAreaHeight: 208}, false);
+  checkSectionVisible(headerFooterSettings.headerFooterOption_, true);
+});
+
 // Test that the color settings are set according to the printer capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').

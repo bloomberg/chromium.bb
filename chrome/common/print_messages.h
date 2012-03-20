@@ -365,10 +365,12 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,
 
 // Notify the browser of the default page layout according to the currently
 // selected printer and page size.
+// |printable_area_in_points| Specifies the printable area in points.
 // |has_custom_page_size_style| is true when the printing frame has a custom
 // page size css otherwise false.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetDefaultPageLayout,
+IPC_MESSAGE_ROUTED3(PrintHostMsg_DidGetDefaultPageLayout,
                     printing::PageSizeMargins /* page layout in points */,
+                    gfx::Rect /* printable area in points */,
                     bool /* has custom page size style */)
 
 // Notify the browser a print preview page has been rendered.

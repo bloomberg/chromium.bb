@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,10 @@ PRINTING_EXPORT extern const char kSettingPageRange[];
 PRINTING_EXPORT extern const char kSettingPageRangeFrom[];
 PRINTING_EXPORT extern const char kSettingPageRangeTo[];
 PRINTING_EXPORT extern const char kSettingPreviewModifiable[];
+PRINTING_EXPORT extern const char kSettingPrintableAreaX[];
+PRINTING_EXPORT extern const char kSettingPrintableAreaY[];
+PRINTING_EXPORT extern const char kSettingPrintableAreaWidth[];
+PRINTING_EXPORT extern const char kSettingPrintableAreaHeight[];
 PRINTING_EXPORT extern const char kSettingPrinterName[];
 PRINTING_EXPORT extern const char kSettingPrintToPDF[];
 

@@ -431,7 +431,7 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
       EXPECT_EQ(margin_right, param.a.margin_right);
       EXPECT_EQ(margin_left, param.a.margin_left);
       EXPECT_EQ(margin_bottom, param.a.margin_bottom);
-      EXPECT_EQ(page_has_print_css, param.b);
+      EXPECT_EQ(page_has_print_css, param.c);
     }
   }
 

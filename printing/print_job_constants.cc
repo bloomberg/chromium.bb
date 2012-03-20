@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,12 @@ const char kSettingPageRangeFrom[] = "from";
 const char kSettingPageRangeTo[] = "to";
 
 const char kSettingPreviewModifiable[] = "previewModifiable";
+
+// Keys that specifies the printable area details.
+const char kSettingPrintableAreaX[] = "printableAreaX";
+const char kSettingPrintableAreaY[] = "printableAreaY";
+const char kSettingPrintableAreaWidth[] = "printableAreaWidth";
+const char kSettingPrintableAreaHeight[] = "printableAreaHeight";
 
 // Printer name.
 const char kSettingPrinterName[] = "printerName";

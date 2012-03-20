@@ -240,13 +240,6 @@ cr.define('print_preview', function() {
         this.customMargins_ = new Margins(-1, -1, -1 , -1);
         this.customMargins = lastUsedMarginsSettings;
       }
-      this.dispatchMarginsChangedEvent_();
-    },
-
-    dispatchMarginsChangedEvent_: function() {
-      var customEvent = cr.Event(customEvents.MARGINS_SELECTION_CHANGED);
-      customEvent.selectedMargins = this.selectedMarginsValue;
-      document.dispatchEvent(customEvent);
     },
 
     /**
@@ -567,8 +560,6 @@ cr.define('print_preview', function() {
      * @private
      */
     onMarginsChanged_: function() {
-      this.dispatchMarginsChangedEvent_();
-
       if (this.isDefaultMarginsSelected() || this.isMinimumMarginsSelected() ||
           this.isNoMarginsSelected())
         this.onDefaultMinimumNoMarginsSelected_();
