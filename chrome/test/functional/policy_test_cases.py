@@ -10,17 +10,13 @@ class PolicyPrefsTestCases(object):
   """A list of test cases for policy_prefs_ui.py."""
 
   BROWSER         = 0
-  PERSONAL        = 1
-  ADVANCED        = 2
-  SEARCH_ENGINES  = 3
-  PASSWORDS       = 4
-  AUTOFILL        = 5
-  CONTENT         = 6
-  LANGUAGES       = 7
-  EXTENSIONS      = 8
-  SYSTEM          = 9
-  INTERNET        = 10
-  ACCOUNTS        = 11
+  SEARCH_ENGINES  = 1
+  PASSWORDS       = 2
+  AUTOFILL        = 3
+  CONTENT         = 4
+  HOMEPAGE        = 5
+  LANGUAGES       = 6
+  ACCOUNTS        = 7
 
   # Each policy has an entry with a tuple (Value, Pages, OS)
   #
@@ -35,15 +31,15 @@ class PolicyPrefsTestCases(object):
   #      all platforms are tested. Valid platforms are 'win', 'mac', 'linux'
   #      and 'chromeos'.
   policies = {
-    'HomepageLocation': ('http://chromium.org', [ BROWSER ]),
-    'HomepageIsNewTabPage': (True, [ BROWSER ]),
+    'HomepageLocation': ('http://chromium.org', [ HOMEPAGE ]),
+    'HomepageIsNewTabPage': (True, [ HOMEPAGE ]),
     # TODO(joaodasilva): Couldn't verify on linux.
     'DefaultBrowserSettingEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
     # TODO(joaodasilva): Test this on windows.
     'ApplicationLocaleValue': ('', [], [ 'win' ]),
-    'AlternateErrorPagesEnabled': (False, [ ADVANCED ]),
-    'SearchSuggestEnabled': (False, [ ADVANCED ]),
-    'DnsPrefetchingEnabled': (False, [ ADVANCED ]),
+    'AlternateErrorPagesEnabled': (False, [ BROWSER ]),
+    'SearchSuggestEnabled': (False, [ BROWSER ]),
+    'DnsPrefetchingEnabled': (False, [ BROWSER ]),
     'DisableSpdy': (True, []),
     'DisabledSchemes': ( ['file' ], []),
     'JavascriptEnabled': (False, [ CONTENT ]),
@@ -56,14 +52,14 @@ class PolicyPrefsTestCases(object):
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': (True, [], []),
     'CloudPrintSubmitEnabled': (False, [], [ 'win', 'mac', 'linux' ]),
-    'SafeBrowsingEnabled': (False, [ ADVANCED ]),
+    'SafeBrowsingEnabled': (False, [ BROWSER ]),
     # TODO(joaodasilva): This is only in place on official builds, but the
-    # SetUserCloudPolicy call is a nop on official builds. Should be ADVANCED.
+    # SetUserCloudPolicy call is a nop on official builds. Should be BROWSER.
     'MetricsReportingEnabled': (False, []),
-    'PasswordManagerEnabled': (False, [ PERSONAL ]),
+    'PasswordManagerEnabled': (False, [ BROWSER ]),
     # TODO(joaodasilva): Should be PASSWORDS too. http://crbug.com/97749
-    'PasswordManagerAllowShowPasswords': (False, [ PERSONAL ]),
-    'AutoFillEnabled': (False, [ PERSONAL ]),
+    'PasswordManagerAllowShowPasswords': (False, [ BROWSER ]),
+    'AutoFillEnabled': (False, [ BROWSER ]),
     'DisabledPlugins': (['Flash'], []),
     'EnabledPlugins': (['Flash'], []),
     'DisabledPluginsExceptions': (['Flash'], []),
@@ -74,12 +70,12 @@ class PolicyPrefsTestCases(object):
     'DiskCacheDir': ('${user_home}/test-cache', [], [ 'win', 'mac', 'linux' ]),
     'DiskCacheSize': (100, [], [ 'win', 'mac', 'linux' ]),
     'MediaCacheSize': (200, [], [ 'win', 'mac', 'linux' ]),
-    'DownloadDirectory': ('${user_home}/test-downloads', [ ADVANCED ],
+    'DownloadDirectory': ('${user_home}/test-downloads', [ BROWSER ],
                           [ 'win', 'mac', 'linux' ]),
     'ClearSiteDataOnExit': (True, [ CONTENT ]),
-    # TODO(joaodasilva): Should be ADVANCED. http://crbug.com/97749
+    # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
     'ProxyMode': ('direct', [], [ 'win', 'mac', 'linux' ]),
-    # TODO(joaodasilva): Should be ADVANCED. http://crbug.com/97749
+    # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
     'ProxyServerMode': (0, [], [ 'win', 'mac', 'linux' ]),
     'ProxyServer': ('http://localhost:8080', [], [ 'win', 'mac', 'linux' ]),
     'ProxyPacUrl': ('http://localhost:8080/proxy.pac', [],
@@ -147,12 +143,12 @@ class PolicyPrefsTestCases(object):
     'NotificationsBlockedForUrls': ([ '[*.]google.com' ], []),
     'Disable3DAPIs': (True, []),
     'InstantEnabled': (False, [ BROWSER ]),
-    'TranslateEnabled': (False, [ ADVANCED ]),
+    'TranslateEnabled': (False, [ BROWSER ]),
     'AllowOutdatedPlugins': (False, []),
     'AlwaysAuthorizePlugins': (True, []),
     'BookmarkBarEnabled': (False, [ BROWSER ]),
     'EditBookmarksEnabled': (False, []),
-    'AllowFileSelectionDialogs': (False, [ ADVANCED ],
+    'AllowFileSelectionDialogs': (False, [ BROWSER ],
                                   [ 'win', 'mac', 'linux' ]),
     'ImportBookmarks': (False, [], [ 'win', 'mac', 'linux' ]),
     'ImportHistory': (False, [], [ 'win', 'mac', 'linux' ]),
@@ -167,10 +163,10 @@ class PolicyPrefsTestCases(object):
     'EnterpriseWebStoreName': ('', []),
     'EnableMemoryInfo': (True, []),
     'DisablePrintPreview': (True, [], [ 'win', 'mac', 'linux' ]),
-    'BackgroundModeEnabled': (True, [ ADVANCED ], [ 'win', 'linux' ]),
+    'BackgroundModeEnabled': (True, [ BROWSER ], [ 'win', 'linux' ]),
 
     # ChromeOS-only policies:
-    'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),
+    'ChromeOsLockOnIdleSuspend': (True, [ BROWSER ], [ 'chromeos' ]),
     'PolicyRefreshRate': (300000, [], [ 'chromeos' ]),
     'OpenNetworkConfiguration': ('', [], [ 'chromeos' ]),
 

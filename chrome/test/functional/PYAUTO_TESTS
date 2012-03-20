@@ -138,8 +138,6 @@
       '-policy.PolicyTest.testApplicationLocaleValue',
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
-      # crbug.com/117644
-      '-policy_prefs_ui',
     ],
 
     'win': [

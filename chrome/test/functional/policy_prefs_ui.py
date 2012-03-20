@@ -36,6 +36,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
       'chrome://settings-frame/passwords',
       'chrome://settings-frame/autofill',
       'chrome://settings-frame/content',
+      'chrome://settings-frame/homePageOverlay',
       'chrome://settings-frame/languages',
   ]
   if pyauto.PyUITest.IsChromeOS():
@@ -55,15 +56,19 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     else:
       self.fail(msg='Unknown platform')
 
-  def IsBannerVisible(self):
-    """Returns true if the managed-banner is visible in the current page."""
-    # TODO(csilv): This logic assumes there is only one banner, it needs to be
-    # updated to work with uber page.
+  def IsAnyBannerVisible(self):
+    """Returns true if any managed prefs banner is visible in the current page.
+    """
     ret = self.ExecuteJavascript("""
         var visible = false;
-        var banner = document.getElementById('managed-prefs-banner');
-        if (banner)
-          visible = !banner.hidden;
+        var banners = document.querySelectorAll('.managed-prefs-banner');
+        for (var i=0; i<banners.length; i++) {
+          if (banners[i].parentElement.id == 'templates')
+            continue;
+
+          if (window.getComputedStyle(banners[i]).display != 'none')
+            visible = true;
+        }
         domAutomationController.send(visible.toString());
     """)
     return ret == 'true'
@@ -74,7 +79,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
     self.SetPolicies({})
     for page in PolicyPrefsUITest.settings_pages:
       self.NavigateToURL(page)
-      self.assertFalse(self.IsBannerVisible(), msg=
+      self.assertFalse(self.IsAnyBannerVisible(), msg=
           'Unexpected banner in %s.\n'
           'Please check that chrome/test/functional/policy_prefs_ui.py has an '
           'entry for any new policies introduced.' % page)
@@ -109,7 +114,7 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
           }
           self.SetPolicies(policy_dict)
         self.NavigateToURL(page)
-        self.assertEqual(expected, self.IsBannerVisible(), msg=
+        self.assertEqual(expected, self.IsAnyBannerVisible(), msg=
             'Banner was%sexpected in %s, but it was%svisible.\n'
             'The policy tested was "%s".\n'
             'Please check that chrome/test/functional/policy_prefs_ui.py has '
@@ -163,13 +168,13 @@ class PolicyPrefsUITest(policy_base.PolicyTestBase):
 
     self.SetPolicies({})
     self.NavigateToURL(page)
-    self.assertFalse(self.IsBannerVisible())
+    self.assertFalse(self.IsAnyBannerVisible())
 
     self.SetPolicies(policy_dict)
-    self.assertTrue(self.IsBannerVisible())
+    self.assertTrue(self.IsAnyBannerVisible())
 
     self.SetPolicies({})
-    self.assertFalse(self.IsBannerVisible())
+    self.assertFalse(self.IsAnyBannerVisible())
 
 
 if __name__ == '__main__':
