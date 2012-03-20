@@ -7,6 +7,7 @@
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
@@ -25,6 +26,13 @@
 
 namespace {
 
+// The avatar ends 2 px above the bottom of the tabstrip (which, given the
+// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
+// user).
+const int kAvatarBottomSpacing = 2;
+// There are 2 px on each side of the avatar (between the frame border and
+// it on the left, and between it and the tabstrip on the right).
+const int kAvatarSideSpacing = 2;
 // Space between left edge of window and tabstrip.
 const int kTabstripLeftSpacing = 4;
 // Space between right edge of tabstrip and maximize button.
@@ -35,7 +43,8 @@ const int kTabstripTopSpacingRestored = 10;
 // Place them flush to the top to make them clickable when the cursor is at
 // the screen edge.
 const int kTabstripTopSpacingMaximized = 0;
-
+// Height of the shadow of the tab images in the tab strip.
+const int kTabShadowHeight = 1;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,6 +81,9 @@ void BrowserNonClientFrameViewAura::Init() {
     window_icon_->Update();
   }
 
+  // Create incognito icon if necessary.
+  UpdateAvatarInfo();
+
   // Frame painter handles layout of these buttons.
   frame_painter_->Init(frame(), window_icon_, maximize_button_, close_button_);
 }
@@ -83,9 +95,15 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
-  return gfx::Rect(kTabstripLeftSpacing,
+  int tabstrip_x =
+      avatar_button() ?
+      (avatar_button()->bounds().right() + kAvatarSideSpacing) :
+      kTabstripLeftSpacing;
+  int tabstrip_width =
+      maximize_button_->x() - kTabstripRightSpacing - tabstrip_x;
+  return gfx::Rect(tabstrip_x,
                    GetHorizontalTabStripVerticalOffset(false),
-                   std::max(0, maximize_button_->x() - kTabstripRightSpacing),
+                   std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -155,7 +173,8 @@ void BrowserNonClientFrameViewAura::Layout() {
   bool maximized_layout =
       frame()->IsMaximized() || !browser_view()->IsBrowserTypeNormal();
   frame_painter_->LayoutHeader(this, maximized_layout);
-
+  if (avatar_button())
+    LayoutAvatar();
   BrowserNonClientFrameView::Layout();
 }
 
@@ -241,6 +260,23 @@ int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
   if (!frame()->IsMaximized() || force_restored)
     return kTabstripTopSpacingRestored;
   return kTabstripTopSpacingMaximized;
+}
+
+void BrowserNonClientFrameViewAura::LayoutAvatar() {
+  DCHECK(avatar_button());
+  SkBitmap incognito_icon = browser_view()->GetOTRAvatarIcon();
+
+  int avatar_bottom = GetHorizontalTabStripVerticalOffset(false) +
+      browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
+  int avatar_restored_y = avatar_bottom - incognito_icon.height();
+  int avatar_y = frame()->IsMaximized() ?
+      NonClientTopBorderHeight(false) + kTabShadowHeight:
+      avatar_restored_y;
+  gfx::Rect avatar_bounds(kAvatarSideSpacing,
+                          avatar_y,
+                          incognito_icon.width(),
+                          avatar_bottom - avatar_y);
+  avatar_button()->SetBoundsRect(avatar_bounds);
 }
 
 void BrowserNonClientFrameViewAura::PaintToolbarBackground(

@@ -62,6 +62,9 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool force_restored) const;
 
+  // Layout the incognito icon.
+  void LayoutAvatar();
+
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
