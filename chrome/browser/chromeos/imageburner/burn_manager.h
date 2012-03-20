@@ -14,16 +14,9 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
-
-namespace content {
-class WebContents;
-}
-
-namespace net {
-class FileStream;
-}
 
 namespace chromeos {
 namespace imageburner {
@@ -33,45 +26,6 @@ extern const char kName[];
 extern const char kHwid[];
 extern const char kFileName[];
 extern const char kUrl[];
-
-class Downloader {
- public:
-  class Listener : public base::SupportsWeakPtr<Listener> {
-   public:
-    // After download starts download status updates can be followed through
-    // content::DownloadItem::Observer interface.
-    virtual void OnBurnDownloadStarted(bool success) = 0;
-  };
-
-  Downloader();
-  ~Downloader();
-
-  // Downloads a file from the Internet.
-  // Should be called from UI thread.
-  void DownloadFile(const GURL& url,
-                    const FilePath& target_file,
-                    content::WebContents* web_contents);
-
-  // Adds an item to list of listeners that wait for confirmation that download
-  // has started.
-  void AddListener(Listener* listener, const GURL& url);
-
- private:
-  // Let listeners know if download started successfully.
-  void DownloadStarted(bool success, const GURL& url);
-
-  // Gets called after file stream is created and starts download.
-  void OnFileStreamCreated(const GURL& url,
-                           const FilePath& file_path,
-                           content::WebContents* web_contents,
-                           net::FileStream* file_stream);
-
-  typedef std::multimap<GURL, base::WeakPtr<Listener> > ListenerMap;
-  ListenerMap listeners_;
-  base::WeakPtrFactory<Downloader> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(Downloader);
-};
 
 // Config file is divided into blocks. Each block is associated with one image
 // and containes information about that image in form of key-value pairs, one
@@ -156,9 +110,6 @@ class StateMachine {
   StateMachine();
   ~StateMachine();
 
-  bool image_download_requested() const { return image_download_requested_; }
-  void OnImageDownloadRequested() { image_download_requested_ = true; }
-
   bool download_started() const { return download_started_; }
   void OnDownloadStarted() {
     download_started_ = true;
@@ -193,7 +144,6 @@ class StateMachine {
   }
 
  private:
-  bool image_download_requested_;
   bool download_started_;
   bool download_finished_;
 
@@ -211,7 +161,16 @@ class BurnManager : content::URLFetcherDelegate {
    public:
     virtual void OnImageDirCreated(bool success) = 0;
     virtual void OnConfigFileFetched(const ConfigFile& config_file,
-        bool success) = 0;
+                                     bool success) = 0;
+  };
+
+  class Observer {
+   public:
+    virtual void OnDownloadUpdated(int64 received_bytes,
+                                   int64 total_bytes,
+                                   const base::TimeDelta& time_remaining) = 0;
+    virtual void OnDownloadCancelled() = 0;
+    virtual void OnDownloadCompleted() = 0;
   };
 
   // Creates the global BurnManager instance.
@@ -224,12 +183,27 @@ class BurnManager : content::URLFetcherDelegate {
   // Initialize() should already have been called.
   static BurnManager* GetInstance();
 
+  // Add an observer.
+  void AddObserver(Observer* observer);
+
+  // Remove an observer.
+  void RemoveObserver(Observer* observer);
+
   // Creates URL image should be fetched from.
   // Must be called from UI thread.
   void FetchConfigFile(Delegate* delegate);
 
-  // URLFetcherDelegate override.
+  // Fetch a zipped recovery image.
+  void FetchImage(const GURL& image_url, const FilePath& file_path);
+
+  // Cancel fetching image.
+  void CancelImageFetch();
+
+  // URLFetcherDelegate overrides:
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+                                          int64 current,
+                                          int64 total) OVERRIDE;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.
@@ -256,12 +230,6 @@ class BurnManager : content::URLFetcherDelegate {
 
   StateMachine* state_machine() const { return state_machine_.get(); }
 
-  Downloader* downloader() {
-    if (!downloader_.get())
-      downloader_.reset(new Downloader());
-    return downloader_.get();
-  }
-
  private:
   BurnManager();
   virtual ~BurnManager();
@@ -283,8 +251,13 @@ class BurnManager : content::URLFetcherDelegate {
 
   scoped_ptr<StateMachine> state_machine_;
 
-  scoped_ptr<Downloader> downloader_;
   scoped_ptr<content::URLFetcher> config_fetcher_;
+  scoped_ptr<content::URLFetcher> image_fetcher_;
+
+  base::TimeTicks tick_image_download_start_;
+  int64 bytes_image_download_progress_last_reported_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BurnManager);
 };

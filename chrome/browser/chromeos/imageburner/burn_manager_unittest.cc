@@ -156,15 +156,6 @@ TEST(BurnManagerTest, StateMachineNormalWorkflow) {
     .Times(1)
     .RetiresOnSaturation();
 
-  EXPECT_FALSE(state_machine->image_download_requested());
-  EXPECT_FALSE(state_machine->download_started());
-  EXPECT_FALSE(state_machine->download_finished());
-  EXPECT_TRUE(state_machine->new_burn_posible());
-
-  state_machine->OnImageDownloadRequested();
-
-  EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_FALSE(state_machine->download_started());
   EXPECT_FALSE(state_machine->download_finished());
   EXPECT_TRUE(state_machine->new_burn_posible());
@@ -172,7 +163,6 @@ TEST(BurnManagerTest, StateMachineNormalWorkflow) {
   state_machine->OnDownloadStarted();
 
   EXPECT_EQ(StateMachine::DOWNLOADING, state_machine->state());
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_FALSE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
@@ -181,7 +171,6 @@ TEST(BurnManagerTest, StateMachineNormalWorkflow) {
 
   // TODO(tbarzic): make this pass.
   // EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
@@ -189,7 +178,6 @@ TEST(BurnManagerTest, StateMachineNormalWorkflow) {
   state_machine->OnBurnStarted();
 
   EXPECT_EQ(StateMachine::BURNING, state_machine->state());
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_FALSE(state_machine->new_burn_posible());
@@ -197,7 +185,6 @@ TEST(BurnManagerTest, StateMachineNormalWorkflow) {
   state_machine->OnSuccess();
 
   EXPECT_EQ(StateMachine::INITIAL, state_machine->state());
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_TRUE(state_machine->new_burn_posible());
@@ -224,25 +211,21 @@ TEST(BurnManagerTest, StateMachineError) {
   }
   state_machine->AddObserver(&observer);
 
-  state_machine->OnImageDownloadRequested();
   state_machine->OnDownloadStarted();
 
   state_machine->OnError(1234);
 
   // If called before download finished, download flags should be reset.
-  EXPECT_FALSE(state_machine->image_download_requested());
   EXPECT_FALSE(state_machine->download_started());
   EXPECT_EQ(state_machine->state(), StateMachine::INITIAL);
   EXPECT_TRUE(state_machine->new_burn_posible());
 
-  state_machine->OnImageDownloadRequested();
   state_machine->OnDownloadStarted();
   state_machine->OnDownloadFinished();
 
   state_machine->OnError(4321);
 
   // If called after download finished, download flags should not be changed.
-  EXPECT_TRUE(state_machine->image_download_requested());
   EXPECT_TRUE(state_machine->download_started());
   EXPECT_TRUE(state_machine->download_finished());
   EXPECT_EQ(state_machine->state(), StateMachine::INITIAL);
