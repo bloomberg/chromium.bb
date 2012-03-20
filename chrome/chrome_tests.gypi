@@ -13,6 +13,11 @@
       'test/automation/browser_proxy.h',
       'test/automation/tab_proxy.cc',
       'test/automation/tab_proxy.h',
+      '../content/public/common/page_type.h',
+      '../content/public/common/security_style.h',
+      # Must come before cert_status_flags.h
+      '../net/base/net_export.h',
+      '../net/base/cert_status_flags.h',
     ],
     'pyautolib_libraries': [
     ],
