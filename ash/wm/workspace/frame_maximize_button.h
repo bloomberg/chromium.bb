@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/image_button.h"
 
+namespace views {
+class NonClientFrameView;
+}
+
 namespace ash {
 
 namespace internal {
@@ -19,7 +23,8 @@ class SnapSizer;
 // Button used for the maximize control on the frame. Handles snapping logic.
 class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
  public:
-  explicit FrameMaximizeButton(views::ButtonListener* listener);
+  FrameMaximizeButton(views::ButtonListener* listener,
+                      views::NonClientFrameView* frame);
   virtual ~FrameMaximizeButton();
 
   // ImageButton overrides:
@@ -68,6 +73,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
 
   // Snaps the window to the current snap position.
   void Snap();
+
+  // Frame that the maximize button acts on.
+  views::NonClientFrameView* frame_;
 
   // Renders the snap position.
   scoped_ptr<internal::PhantomWindowController> phantom_window_;

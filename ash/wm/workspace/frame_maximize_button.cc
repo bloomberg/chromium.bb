@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 using ash::internal::SnapSizer;
 
@@ -87,8 +88,10 @@ ui::GestureStatus FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
 
 // FrameMaximizeButton ---------------------------------------------------------
 
-FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener)
+FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
+                                         views::NonClientFrameView* frame)
     : ImageButton(listener),
+      frame_(frame),
       is_snap_enabled_(false),
       exceeded_drag_threshold_(false),
       snap_type_(SNAP_NONE) {
@@ -155,7 +158,7 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
 SkBitmap FrameMaximizeButton::GetImageToPaint() {
   if (is_snap_enabled_) {
     int id = 0;
-    if (GetWidget()->IsMaximized()) {
+    if (frame_->GetWidget()->IsMaximized()) {
       switch (snap_type_) {
         case SNAP_LEFT:
           id = IDR_AURA_WINDOW_MAXIMIZED_RESTORE_SNAP_LEFT_P;
@@ -239,13 +242,13 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
     SnapSizer::Edge snap_edge = snap_type_ == SNAP_LEFT ?
         SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
     int grid_size = Shell::GetInstance()->GetGridSize();
-    snap_sizer_.reset(new SnapSizer(GetWidget()->GetNativeWindow(),
+    snap_sizer_.reset(new SnapSizer(frame_->GetWidget()->GetNativeWindow(),
                                     LocationForSnapSizer(location),
                                     snap_edge, grid_size));
   }
   if (!phantom_window_.get()) {
     phantom_window_.reset(new internal::PhantomWindowController(
-                              GetWidget()->GetNativeWindow(),
+                              frame_->GetWidget()->GetNativeWindow(),
                               internal::PhantomWindowController::TYPE_EDGE, 0));
   }
   phantom_window_->Show(BoundsForType(snap_type_));
@@ -256,18 +259,18 @@ FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
   int delta_x = location.x() - press_location_.x();
   int delta_y = location.y() - press_location_.y();
   if (!views::View::ExceededDragThreshold(delta_x, delta_y))
-    return GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
+    return frame_->GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
   else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
     return SNAP_LEFT;
   else if (delta_x > 0 && delta_y > -delta_x && delta_y < delta_x)
     return SNAP_RIGHT;
   else if (delta_y > 0)
     return SNAP_MINIMIZE;
-  return GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
+  return frame_->GetWidget()->IsMaximized() ? SNAP_NONE : SNAP_MAXIMIZE;
 }
 
 gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
-  aura::Window* window = GetWidget()->GetNativeWindow();
+  aura::Window* window = frame_->GetWidget()->GetNativeWindow();
   switch (type) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
@@ -302,19 +305,19 @@ void FrameMaximizeButton::Snap() {
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
-      if (GetWidget()->IsMaximized()) {
-        ash::SetRestoreBounds(GetWidget()->GetNativeWindow(),
+      if (frame_->GetWidget()->IsMaximized()) {
+        ash::SetRestoreBounds(frame_->GetWidget()->GetNativeWindow(),
                               BoundsForType(snap_type_));
-        GetWidget()->Restore();
+        frame_->GetWidget()->Restore();
       } else {
-        GetWidget()->SetBounds(BoundsForType(snap_type_));
+        frame_->GetWidget()->SetBounds(BoundsForType(snap_type_));
       }
       break;
     case SNAP_MAXIMIZE:
-      GetWidget()->Maximize();
+      frame_->GetWidget()->Maximize();
       break;
     case SNAP_MINIMIZE:
-      GetWidget()->Minimize();
+      frame_->GetWidget()->Minimize();
       break;
     default:
       NOTREACHED();

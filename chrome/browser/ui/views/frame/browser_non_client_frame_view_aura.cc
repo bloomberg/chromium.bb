@@ -55,7 +55,7 @@ BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
 
 void BrowserNonClientFrameViewAura::Init() {
   // Caption buttons.
-  maximize_button_ = new ash::FrameMaximizeButton(this);
+  maximize_button_ = new ash::FrameMaximizeButton(this, this);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);

@@ -51,7 +51,7 @@ CustomFrameViewAsh::~CustomFrameViewAsh() {
 void CustomFrameViewAsh::Init(views::Widget* frame) {
   frame_ = frame;
 
-  maximize_button_ = new FrameMaximizeButton(this);
+  maximize_button_ = new FrameMaximizeButton(this, this);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);

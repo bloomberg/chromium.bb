@@ -4,14 +4,20 @@
 
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
 
+#include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/debug/stack_trace.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "grit/generated_resources.h"  // Accessibility names
 #include "grit/ui_resources.h"
+#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
@@ -30,6 +36,11 @@ const int kTopMargin = 1;
 const int kHoverFadeDurationMs = 130;
 // The number of pixels within the shadow to draw the buttons.
 const int kShadowStart = 28;
+
+// TODO(pkotwicz): Remove these constants once the IDR_AURA_FULLSCREEN_SHADOW
+// resource is updated.
+const int kShadowWidthStretch = 6;
+const int kShadowHeightStretch = -2;
 }
 
 class AppNonClientFrameViewAura::ControlView
@@ -37,12 +48,24 @@ class AppNonClientFrameViewAura::ControlView
  public:
   explicit ControlView(AppNonClientFrameViewAura* owner) :
       owner_(owner),
-      close_button_(CreateImageButton(IDR_AURA_WINDOW_FULLSCREEN_CLOSE)),
-      restore_button_(CreateImageButton(IDR_AURA_WINDOW_FULLSCREEN_RESTORE)) {
+      close_button_(new views::ImageButton(this)),
+      restore_button_(new ash::FrameMaximizeButton(this, owner_)) {
+    close_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+    restore_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
+
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+    int control_base_resource_id = owner->browser_view()->IsOffTheRecord() ?
+        IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
+        IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+    control_base_ = *rb.GetImageNamed(control_base_resource_id);
+
     separator_ =
         *rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToSkBitmap();
     shadow_ = *rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToSkBitmap();
+
     AddChildView(close_button_);
     AddChildView(restore_button_);
   }
@@ -50,19 +73,44 @@ class AppNonClientFrameViewAura::ControlView
   virtual void Layout() OVERRIDE {
     restore_button_->SetPosition(gfx::Point(kShadowStart, 0));
     close_button_->SetPosition(
-        gfx::Point(kShadowStart + close_button_->width() + separator_.width(),
+        gfx::Point(kShadowStart + restore_button_->width() + separator_.width(),
                    0));
   }
 
+  virtual void ViewHierarchyChanged(bool is_add, View* parent,
+                                    View* child) OVERRIDE {
+    if (is_add && child == this) {
+      SetButtonImages(restore_button_,
+                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+      restore_button_->SizeToPreferredSize();
+
+      SetButtonImages(close_button_,
+                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
+                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
+                      IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
+      close_button_->SizeToPreferredSize();
+    }
+  }
+
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(shadow_.width(), shadow_.height());
+    return gfx::Size(shadow_.width() + kShadowWidthStretch,
+                     shadow_.height() + kShadowHeightStretch);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->TileImageInt(control_base_,
+        restore_button_->x(),
+        restore_button_->y(),
+        restore_button_->width() + close_button_->width(),
+        restore_button_->height());
+
     views::View::OnPaint(canvas);
+
     canvas->DrawBitmapInt(
         separator_, restore_button_->x() + restore_button_->width(), 0);
-    canvas->DrawBitmapInt(shadow_, 0, 0);
+    canvas->DrawBitmapInt(shadow_, 0, kShadowHeightStretch);
   }
 
   void ButtonPressed(
@@ -70,42 +118,30 @@ class AppNonClientFrameViewAura::ControlView
       const views::Event& event) OVERRIDE {
     if (sender == close_button_)
       owner_->Close();
-    else if (sender == restore_button_)
+    else if (sender == restore_button_) {
+      restore_button_->SetState(views::CustomButton::BS_NORMAL);
       owner_->Restore();
+    }
   }
 
  private:
-  // Gets an image representing 3 bitmaps laid out horizontally that will be
-  // used as the normal, hot and pushed states for the created button.
-  views::ImageButton* CreateImageButton(int resource_id) {
-    views::ImageButton* button = new views::ImageButton(this);
-    const SkBitmap* all_images =
-        ResourceBundle::GetSharedInstance().GetImageNamed(
-            resource_id).ToSkBitmap();
-    int width = all_images->width() / 3;
-    int height = all_images->height();
-
-    SkBitmap normal, hot, pushed;
-    all_images->extractSubset(
-        &normal,
-        SkIRect::MakeXYWH(0, 0, width, height));
-    all_images->extractSubset(
-        &hot,
-        SkIRect::MakeXYWH(width, 0, width, height));
-    all_images->extractSubset(
-        &pushed,
-        SkIRect::MakeXYWH(2 * width, 0, width, height));
-    button->SetImage(views::CustomButton::BS_NORMAL, &normal);
-    button->SetImage(views::CustomButton::BS_HOT, &hot);
-    button->SetImage(views::CustomButton::BS_PUSHED, &pushed);
-
-    button->SizeToPreferredSize();
-    return button;
+  // Sets images whose ids are passed in for each of the respective states
+  // of |button|.
+  void SetButtonImages(views::ImageButton* button, int normal_bitmap_id,
+                       int hot_bitmap_id, int pushed_bitmap_id) {
+    ui::ThemeProvider* theme_provider = GetThemeProvider();
+    button->SetImage(views::CustomButton::BS_NORMAL,
+                     theme_provider->GetBitmapNamed(normal_bitmap_id));
+    button->SetImage(views::CustomButton::BS_HOT,
+                     theme_provider->GetBitmapNamed(hot_bitmap_id));
+    button->SetImage(views::CustomButton::BS_PUSHED,
+                     theme_provider->GetBitmapNamed(pushed_bitmap_id));
   }
 
   AppNonClientFrameViewAura* owner_;
   views::ImageButton* close_button_;
   views::ImageButton* restore_button_;
+  SkBitmap control_base_;
   SkBitmap separator_;
   SkBitmap shadow_;
 
@@ -144,6 +180,10 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 }
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
+  if (control_widget_)
+    control_widget_->Close();
+  control_widget_ = NULL;
+  mouse_watcher_.Stop();
 }
 
 gfx::Rect AppNonClientFrameViewAura::GetBoundsForClientView() const {
