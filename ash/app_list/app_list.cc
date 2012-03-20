@@ -22,6 +22,12 @@ namespace {
 
 const float kDefaultContainerAnimationScaleFactor = 1.05f;
 
+// Duration for both default container and app list animation in milliseconds.
+const int kAnimationDurationMs = 130;
+
+// Delayed time of 2nd animation in milliseconds.
+const int kSecondAnimationStartDelay = kAnimationDurationMs - 20;
+
 // Gets preferred bounds of app list window.
 gfx::Rect GetPreferredBounds() {
   gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
@@ -101,37 +107,73 @@ void AppList::ResetView() {
 }
 
 void AppList::ScheduleAnimation() {
+  second_animation_timer_.Stop();
+
+  // Stop observing previous animation.
+  StopObservingImplicitAnimations();
+
+  ScheduleDimmingAnimation();
+
+  if (is_visible_) {
+    ScheduleBrowserWindowsAnimation();
+    second_animation_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kSecondAnimationStartDelay),
+        this,
+        &AppList::ScheduleAppListAnimation);
+  } else {
+    ScheduleAppListAnimation();
+    second_animation_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kSecondAnimationStartDelay),
+        this,
+        &AppList::ScheduleBrowserWindowsAnimation);
+  }
+
+}
+
+void AppList::ScheduleBrowserWindowsAnimation() {
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
   // |default_container| could be NULL during Shell shutdown.
   if (!default_container)
     return;
 
-  ui::Layer* layer = GetLayer(view_->GetWidget());
+  ui::Layer* layer = default_container->layer();
+  layer->GetAnimator()->StopAnimating();
 
-  // Stop observing previous animation.
-  StopObservingImplicitAnimations();
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  animation.SetTweenType(
+      is_visible_ ? ui::Tween::EASE_IN : ui::Tween::EASE_OUT);
 
-  ui::ScopedLayerAnimationSettings app_list_animation(layer->GetAnimator());
-  app_list_animation.AddObserver(this);
-  layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
-
-  if (is_visible_)
-    view_->AnimateShow();
-  else
-    view_->AnimateHide();
-
-  ui::Layer* default_container_layer = default_container->layer();
-  ui::ScopedLayerAnimationSettings default_container_animation(
-      default_container_layer->GetAnimator());
-  app_list_animation.AddObserver(this);
-  default_container_layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
-  default_container_layer->SetTransform(is_visible_ ?
+  layer->SetOpacity(is_visible_ ? 0.0 : 1.0);
+  layer->SetTransform(is_visible_ ?
       ui::GetScaleTransform(
-          gfx::Point(default_container_layer->bounds().width() / 2,
-                     default_container_layer->bounds().height() / 2),
+          gfx::Point(layer->bounds().width() / 2,
+                     layer->bounds().height() / 2),
           kDefaultContainerAnimationScaleFactor) :
       ui::Transform());
+}
+
+void AppList::ScheduleDimmingAnimation() {
+  ui::Layer* layer = GetLayer(view_->GetWidget());
+  layer->GetAnimator()->StopAnimating();
+
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(2 * kAnimationDurationMs));
+  animation.AddObserver(this);
+
+  layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
+}
+
+void AppList::ScheduleAppListAnimation() {
+  if (is_visible_)
+    view_->AnimateShow(kAnimationDurationMs);
+  else
+    view_->AnimateHide(kAnimationDurationMs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

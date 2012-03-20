@@ -43,15 +43,21 @@ AppListView::AppListView(
 AppListView::~AppListView() {
 }
 
-void AppListView::AnimateShow() {
+void AppListView::AnimateShow(int duration_ms) {
   ui::Layer* layer = model_view_->layer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(duration_ms));
+  animation.SetTweenType(ui::Tween::EASE_OUT);
   model_view_->SetTransform(ui::Transform());
 }
 
-void AppListView::AnimateHide() {
+void AppListView::AnimateHide(int duration_ms) {
   ui::Layer* layer = model_view_->layer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(duration_ms));
+  animation.SetTweenType(ui::Tween::EASE_IN);
   model_view_->SetTransform(
       ui::GetScaleTransform(gfx::Point(model_view_->width() / 2,
                                        model_view_->height() / 2),

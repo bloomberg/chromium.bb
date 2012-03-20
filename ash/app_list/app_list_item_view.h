@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/app_list/app_list_item_model_observer.h"
+#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -23,10 +24,11 @@ namespace ash {
 
 class AppListItemModel;
 class AppListModelView;
+class DropShadowLabel;
 
-class AppListItemView : public views::CustomButton,
-                        public views::ContextMenuController,
-                        public AppListItemModelObserver {
+class ASH_EXPORT AppListItemView : public views::CustomButton,
+                                   public views::ContextMenuController,
+                                   public AppListItemModelObserver {
  public:
   AppListItemView(AppListModelView* list_model_view,
                   AppListItemModel* model,
@@ -35,17 +37,19 @@ class AppListItemView : public views::CustomButton,
 
   static gfx::Size GetPreferredSizeForIconSize(const gfx::Size& icon_size);
 
+  // For testing. Testing calls this function to set minimum title width in
+  // pixels to get rid dependency on default font width.
+  static void SetMinTitleWidth(int width);
+
   void SetSelected(bool selected);
   bool selected() const {
     return selected_;
   }
 
+  void SetIconSize(const gfx::Size& size);
+
   AppListItemModel* model() const {
     return model_;
-  }
-
-  void set_icon_size(const gfx::Size& size) {
-    icon_size_ = size;
   }
 
   // Internal class name.
@@ -74,7 +78,7 @@ class AppListItemView : public views::CustomButton,
 
   AppListModelView* list_model_view_;
   views::ImageView* icon_;
-  views::Label* title_;
+  DropShadowLabel* title_;
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 

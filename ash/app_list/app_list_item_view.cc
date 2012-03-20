@@ -22,27 +22,51 @@ namespace ash {
 
 namespace {
 
-const int kPadding = 10;
+const int kTopBottomPadding = 10;
+const int kLeftRightPadding = 20;
 const int kIconTitleSpacing = 10;
-const int kMinLabelWidth = 150;
 
 const SkColor kTitleColor = SK_ColorWHITE;
 
-// 0.2 white
-const SkColor kHoverAndPushedColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF);
+// 0.33 black
+const SkColor kHoverAndPushedColor = SkColorSetARGB(0x55, 0x00, 0x00, 0x00);
 
-// 0.1 white
-const SkColor kSelectedColor = SkColorSetARGB(0x20, 0xFF, 0xFF, 0xFF);
+// 0.16 black
+const SkColor kSelectedColor = SkColorSetARGB(0x2A, 0x00, 0x00, 0x00);
 
 const SkColor kHighlightedColor = kHoverAndPushedColor;
 
-gfx::Font GetTitleFont() {
+// FontSize/IconSize ratio = 24 / 128, which means we should get 24 font size
+// when icon size is 128.
+const float kFontSizeToIconSizeRatio = 0.1875f;
+
+// Font smaller than kBoldFontSize needs to be bold.
+const int kBoldFontSize = 14;
+
+const int kMinFontSize = 12;
+
+const int kMinTitleChars = 15;
+
+const gfx::Font& GetTitleFontForIconSize(const gfx::Size& size) {
+  static int icon_height;
   static gfx::Font* font = NULL;
-  if (!font) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    font = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
-        1, gfx::Font::BOLD));
-  }
+
+  if (font && icon_height == size.height())
+    return *font;
+
+  delete font;
+
+  icon_height = size.height();
+  int font_size = std::max(
+      static_cast<int>(icon_height * kFontSizeToIconSizeRatio),
+      kMinFontSize);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font title_font(rb.GetFont(ui::ResourceBundle::BaseFont).GetFontName(),
+                       font_size);
+  if (font_size <= kBoldFontSize)
+    title_font = title_font.DeriveFont(0, gfx::Font::BOLD);
+  font = new gfx::Font(title_font);
   return *font;
 }
 
@@ -61,6 +85,10 @@ class StaticImageView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(StaticImageView);
 };
 
+// A minimum title width set by test to override the default logic that derives
+// the min width from font.
+int g_min_title_width = 0;
+
 }  // namespace
 
 // static
@@ -75,9 +103,9 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
       icon_(new StaticImageView),
       title_(new DropShadowLabel),
       selected_(false) {
-  title_->SetFont(GetTitleFont());
   title_->SetBackgroundColor(0);
   title_->SetEnabledColor(kTitleColor);
+  title_->SetDropShadowSize(3);
 
   AddChildView(icon_);
   AddChildView(title_);
@@ -97,11 +125,26 @@ AppListItemView::~AppListItemView() {
 // static
 gfx::Size AppListItemView::GetPreferredSizeForIconSize(
     const gfx::Size& icon_size) {
-  gfx::Size size(
-      std::max(icon_size.width() + icon_size.width() / 2, kMinLabelWidth),
-      icon_size.height() + kIconTitleSpacing + GetTitleFont().GetHeight());
-  size.Enlarge(2 * kPadding, 2 * kPadding);
+  int min_title_width = g_min_title_width;
+  if (min_title_width == 0) {
+    const gfx::Font& title_font = GetTitleFontForIconSize(icon_size);
+    min_title_width = kMinTitleChars * title_font.GetAverageCharacterWidth();
+  }
+
+  int dimension = std::max(icon_size.width() * 2, min_title_width);
+  gfx::Size size(dimension, dimension);
+  size.Enlarge(kLeftRightPadding, kTopBottomPadding);
   return size;
+}
+
+// static
+void AppListItemView::SetMinTitleWidth(int width) {
+  g_min_title_width = width;
+}
+
+void AppListItemView::SetIconSize(const gfx::Size& size) {
+  icon_size_ = size;
+  title_->SetFont(GetTitleFontForIconSize(size));
 }
 
 void AppListItemView::SetSelected(bool selected) {
@@ -134,14 +177,14 @@ gfx::Size AppListItemView::GetPreferredSize() {
 
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  rect.Inset(kPadding, kPadding);
+  rect.Inset(kLeftRightPadding, kTopBottomPadding);
   gfx::Size title_size = title_->GetPreferredSize();
+  int height = icon_size_.height() + kIconTitleSpacing +
+      title_size.height();
+  int y = rect.y() + (rect.height() - height) / 2;
 
   icon_->SetImageSize(icon_size_);
-  icon_->SetBounds(rect.x(),
-                   rect.y(),
-                   rect.width(),
-                   icon_size_.height());
+  icon_->SetBounds(rect.x(), y, rect.width(), icon_size_.height());
 
   title_->SetBounds(rect.x(),
                     icon_->bounds().bottom() + kIconTitleSpacing,

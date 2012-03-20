@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/timer.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -45,8 +46,20 @@ class AppList : public aura::EventFilter,
   // Forgets the view.
   void ResetView();
 
-  // Starts show/hide animation.
+  // Starts show/hide animation. ScheduleAnimation is the master who manages
+  // when to call sub animations. There are three sub animations: background
+  // dimming, browser windows scale/fade and app list scale/fade. The background
+  // dimming runs in parallel with the other two and spans the whole animation
+  // time. The rest sub animations run in two steps. On showing, the first step
+  // is browser windows scale-out and fade-out and the 2nd step is app list
+  // scale-in and fade-in. The 2nd step animation is started via a timer and
+  // there is is a little overlap between the two animations. Hiding animation
+  // is the reverse of the showing animation.
   void ScheduleAnimation();
+
+  void ScheduleBrowserWindowsAnimation();
+  void ScheduleDimmingAnimation();
+  void ScheduleAppListAnimation();
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
@@ -75,6 +88,10 @@ class AppList : public aura::EventFilter,
 
   // The AppListView this class manages, owned by its widget.
   AppListView* view_;
+
+  // Timer to schedule the 2nd step animation, started when the first step
+  // animation is scheduled in ScheduleAnimation.
+  base::OneShotTimer<AppList> second_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };

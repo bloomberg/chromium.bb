@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_APP_LIST_MODEL_VIEW_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
 
@@ -19,11 +20,19 @@ class AppListItemView;
 class AppListModel;
 
 // AppListModelView displays the UI for an AppListModel.
-class AppListModelView : public views::View,
-                         public ui::ListModelObserver {
+class ASH_EXPORT AppListModelView : public views::View,
+                                    public ui::ListModelObserver {
  public:
   explicit AppListModelView(views::ButtonListener* listener);
   virtual ~AppListModelView();
+
+  // Calculate preferred icon size, rows and cols for given |content_size| and
+  // |num_of_tiles|.
+  static void CalculateLayout(const gfx::Size& content_size,
+                              int num_of_tiles,
+                              gfx::Size* icon_size,
+                              int* rows,
+                              int* cols);
 
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
@@ -53,7 +62,7 @@ class AppListModelView : public views::View,
   views::ButtonListener* listener_;
 
   int selected_item_index_;
-  int items_per_row_;
+  int cols_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModelView);
 };
