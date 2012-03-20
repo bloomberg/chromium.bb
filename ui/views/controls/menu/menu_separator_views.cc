@@ -8,13 +8,19 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_config.h"
 
+namespace {
+
+const int kSeparatorHeight = 1;
+
+const SkColor kSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
+
+}  // namespace
+
 namespace views {
 
-static const SkColor kSeparatorColor = SkColorSetARGB(50, 00, 00, 00);
-
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
-  const int y = height() / 2;
-  canvas->DrawLine(gfx::Point(0, y), gfx::Point(width(), y), kSeparatorColor);
+  canvas->FillRect(gfx::Rect(0, height() / 2, width(), kSeparatorHeight),
+                   kSeparatorColor);
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {
