@@ -125,7 +125,7 @@ class DockedPanelStrip : public PanelStrip,
     // closed or moved out of the dock (e.g. to overflow)..
     Panel* left_panel;
 
-    PanelPlacement() : panel(NULL) { }
+    PanelPlacement() : panel(NULL), left_panel(NULL) { }
   };
 
   // Overridden from PanelMouseWatcherObserver:
