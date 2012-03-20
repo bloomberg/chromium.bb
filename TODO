@@ -3,6 +3,171 @@ Core wayland protocol
  - scanner: wl_* prefix removal: split it out into a namespace part so
    we can call variables "surface" instead of "wl_surface"?
 
+ - we need surface.enter/leave events to be emitted as the surface
+   enters and leaves outputs.  This lets us track which output(s) a
+   surface is currently showing on, which affects how we render
+   (subpixel information, dpi, rotation).  By using enter/leave
+   events, a surface can be on multiple output.
+
+ - We need rotation information in the output (multiples of 90
+   degress) and we'll need a way for a client to communicate that it
+   has rendered it's buffer according to the output rotation.  The
+   goal is to be able to pageflip directly to the client buffer, and
+   for that we need the client to render accordingly and the
+   compositor needs to know that it did.
+
+ - Atomicity.  Currently a lot of the atomicity in Wayland relies on
+   how we batch up all requests in a protocol buffer and only flushes
+   in the "blockhandler" in the client.  Consensus was that we need
+   something more reliable and explicit.  The suggestion is that we
+   make surface.attach a synchronization point such that everything
+   before that is batched and applied atomically when the
+   surface.attach request comes in.  For cases where we need atomicity
+   beyond a surface.attach, we can add an atomic grouping mechanism,
+   that can group together multiple surface.attach requests into a
+   bigger atomic change.  To be researched a bit.
+
+ - We should make pointer sprites regular surfaces.  Something like
+   input_device.set_sprite(surface).  This also make client side
+   animated cursors simple/possible, since we now get a frame event
+   that can drive the animation.
+
+ - Maybe try to make remote wayland actually happen, to see if there
+   is something in the protocol/architecute that makes it harder than
+   it should be.
+
+ - Remove wl_buffer.damage.  This is only used for wl_shm buffers and
+   is not a generic wl_buffer request.  We move it to wl_shm, and
+   we'll have to figure out how to get swrast to call it.
+
+ - Reconsider data types for coordinates in events.  double, floats or
+   fixed point.  Transformed and/or accelerated input generates
+   sub-pixel positions.  24.8 fixed point could work.  Need to think
+   about the range of coordinates we need.  Different from X problem,
+   since we don't have sub-windows, which is where X hits the 16 bit
+   limitations.  Monitor and window sizes haven't yet out-grown the 16
+   bit range.
+
+ - Key events need a bit more work/thinking/redesign. As it is we need
+   a mechanism to change and synchronize keymaps, repeat rates.  But
+   as we started talking, we decided that we needed to go back and
+   research what other systems do instead of just essentially copying
+   the X model.  Sending out unicode events in addition to keycode
+   events has a lot of benefits (OSK can send out unicode events
+   instead of fake keycode events, apps become much simpler...)  Move
+   keymap handling and repeat to the server?  Needs more research.
+
+ - Pointer axis events need modifiers (ctrl-scroll eg), but we either
+   need to send the modifier state with each axis/scroll event or send
+   keys down on pointer_focus and subsequent key events... or just key
+   events for modifier keys... or for the non-repeating subset?
+
+ - Input protocol restructuring: break up events into wl_pointer
+   (enter/leave/motion/button/axis events, set_pointer_surface
+   request), wl_keyboard (enter/leave/key events... what
+   else... unicode event, set_map request? pending kb work), and
+   wl_touch (down/up/motion/cancel events) interfaces.  Rename
+   wl_input_device to wl_seat.  wl_seat has zero or one of each, and
+   will announce this at bind time.  Raw devices are also tied to a
+   wl_seat, but we may not do that for 1.0, we just need to make sure
+   wl_seat has a forward compatible way to announce them.
+
+ - Add timestamp to touch_cancel, add touch id to touch_cancel (?)
+
+ - Serial numbers.  The wayland protocol, as X, uses timestamps to
+   match up certain requests with input events.  The problem is that
+   sometimes an event happens that triggers a timestamped event.  For
+   example, a surface goes away and a new surface receives a
+   pointer.enter event.  These events are normally timestamped with
+   the evdev event timestamp, but in this case, we don't have a evdev
+   timestamp.  So we have to go to gettimeofday (or clock_gettime())
+   and then we don't know if it's coming from the same time source
+   etc.  And we don't really need a real time timestamp, we just need
+   a serial number that encodes the order of events inside the server.
+   So we need to introduce a serial number mechanism (uint32_t,
+   maintained in libwayland-server.so) that we can use to order
+   events, and have a look at the events we send out and decide
+   whether they need serial number or timestamp or both.  We still
+   need real-time timestamps for actual input device events (motion,
+   buttons, keys, touch), to be able to reason about double-click
+   speed and movement speed.  The serial number will also give us a
+   mechanism to key together events that are "logically the same" such
+   as a unicode event and a keycode event, or a motion event and a
+   relative event from a raw device.
+
+ - The output protocol needs to send all the ugly timing details for the modes.
+
+ICCCM
+
+ - clipboard manager interface?  what's needed?  just notification
+   that the selection has gone away.  should the clipboard manager be
+   able to take over the selection "seamlessly", ie, with the same
+   timestamp etc?  Doesn't seem like we need that, the clipboard will
+   have to set a new data_source anyway, with the subset of mimetypes
+   it offers (the clipboad manager may only offer a subset of the
+   types offered by the original data_source)
+
+ - mime-type guidelines for data_source (ie, both dnd and selection):
+   recommended types for text or images, types that a clipboard
+   manager must support, mime-types must be listed in preferred order
+
+ - TRANSIENT_FOR handled by wl_shell_surface, WM_CLASS replaced by
+   .desktop file filename (absolute path if non-standard location)
+   WM_CLASS used for grouping windows in one button in a panel, for
+   example.  So we'll need a request to set that.
+
+ - we need a "no kb focus please" mechanism.  Or should this be
+   implicit in a specific surface type?
+
+EWMH
+
+ - configure should provide dx_left, dx_right, dy_top, dy_bottom, or
+   dx, dy, width and height.
+
+ - _NET_WM_NAME (shell_surface.set_title(utf8)), _NET_WM_ICON Is this
+   just another wl_surface? Do we need this if we have the .desktop
+   file?  How to set multiple sizes?
+
+ - ping event, essentially the opposite of the display.sync request.
+   Compositor can ping clients to see if they're alive (typically when
+   sending input events to a client surface)
+
+ - move to workspace, keep on top, on all workspaces, minimize etc
+   requests for implementing client side window menu? or just make a
+   "show window menu" request to let the compositor display and manage
+   a popup window?
+
+ - window move and resize functionality for kb and touch.
+
+ - dnd loose ends: self-dnd: initiate dnd with a null data-source,
+   compositor will not offer to other clients, client has to know
+   internally what's offered and how to transfer data. no fd passing.
+
+ - Protocol for specifying title bar rectangle (for moving
+   unresponsive apps).  Rectangle for close button, so we can popup
+   force-close dialog if application doesn't respond to ping event
+   when user clicks there.  We could use the region mechanism here
+   too.
+
+ - popup placement protocol logic.
+
+ - subsurface mechanism.  we need this for cases where we would use an
+   X subwindow for gl or video other different visual type.
+
+EGL/gbm
+
+ - Land Anders gbm_surface patches.
+
+ - Don't wl_display_iterate in eglSwapBuffer, send an eventfd fd?
+
+ - Land Robert Braggs EGL extensions: frame age, swap with damage
+
+ - Make it possible to share buffers from compositor to clients.
+   Tricky part here is how to indicate to EGL on the server side that
+   it should make an EGLImage available to a client.  We'll need a
+   "create a wl_buffer for this EGLImage for this client" kind of
+   entry point.
+
  - Protocol for arbitrating access to scanout buffers (physically
    contiguous memory).  When a client goes fullscreen (or ideally as
    the compositor starts the animation that will make it fullscreen)
@@ -11,13 +176,7 @@ Core wayland protocol
    allocate a scanout buffer now" event to the fullscreen-to-be
    client.
 
- - Next steps based on EGL_WL_bind_display: create EGLImageKHR from
-   shm buffers? async auth in the implementation of the extension?
-
- - wayland-egl: lazy-copy-back swapbuffer, sub-window.
-
- - configure should provide dx_left, dx_right, dy_top, dy_bottom, or
-   dx, dy, width and height.
+Misc
 
  - glyph cache
 
@@ -37,13 +196,6 @@ Core wayland protocol
       cache.retire: buffer /* cache has stopped using buffer, please
 			    * reupload whatever you had in that buffer */
 
- - Pointer image issue:
-
-    - A direct touch input device (eg touch screen) doesn't have a
-      pointer; indicate that somehow.
-
-    - Cursor themes, tie in with glyph/image cache.
-
  - A "please suspend" event from the compositor, to indicate to an
    application that it's no longer visible/active.  Or maybe discard
    buffer, as in "wayland discarded your buffer, it's no longer
@@ -53,30 +205,6 @@ Core wayland protocol
    to be able to throw away the surfaces in the session we're
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
-
- - Event when a surface moves from one output to another.
-
- - input device discovery, hotplug
-
-    - Advertise axes as part of the discovery, use something like
-      "org.wayland.input.x" to identify the axes.
-
-    - keyboard state, layout events at connect time and when it
-      changes, keyboard leds
-
-    - relative events
-
-    - multi touch?
-
-    - synaptics, 3-button emulation, scim
-
- - multi gpu, needs queue and seqno to wait on in requests
-
-Destkop/EWMH type protocol
-
- - Protocol for specifying title bar rectangle (for moving
-   unresponsive apps) and a rectangle for the close button (for
-   detecting ignored close clicks).
 
 libxkbcommon
 
