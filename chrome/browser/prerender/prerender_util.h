@@ -34,6 +34,11 @@ bool IsGoogleSearchResultURL(const GURL& url);
 // or https.
 bool IsWebURL(const GURL& url);
 
+// The prerender contents of some experiments should never be swapped in
+// by pretending to never match on the URL.  This function will return true
+// iff this is the case for the experiment_id specified.
+bool IsNoSwapInExperiment(uint8 experiment_id);
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_

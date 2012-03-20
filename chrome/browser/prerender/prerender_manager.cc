@@ -963,7 +963,8 @@ PrerenderContents* PrerenderManager::GetEntryButNotSpecifiedWC(
        it != prerender_list_.end();
        ++it) {
     PrerenderContents* prerender_contents = it->contents_;
-    if (prerender_contents->MatchesURL(url, NULL)) {
+    if (prerender_contents->MatchesURL(url, NULL) &&
+        !IsNoSwapInExperiment(prerender_contents->experiment_id())) {
       if (!prerender_contents->prerender_contents() ||
           !wc ||
           prerender_contents->prerender_contents()->web_contents() != wc) {
