@@ -65,6 +65,13 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     std::string Serialize() const;
     static FormatType Deserialize(const std::string& serialization);
 
+    // FormatType can be used as the key in a map on some platforms.
+#if defined(OS_WIN) || defined(USE_AURA)
+    bool operator<(const FormatType& other) const {
+      return data_ < other.data_;
+    }
+#endif
+
    private:
     friend class Clipboard;
 

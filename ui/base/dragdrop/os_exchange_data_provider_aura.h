@@ -46,15 +46,16 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
 #if defined(OS_WIN)
   virtual void SetFileContents(const FilePath& filename,
                                const std::string& file_contents) OVERRIDE;
-  virtual void SetHtml(const string16& html, const GURL& base_url) OVERRIDE;
   virtual bool GetFileContents(FilePath* filename,
                                std::string* file_contents) const OVERRIDE;
-  virtual bool GetHtml(string16* html, GURL* base_url) const OVERRIDE;
   virtual bool HasFileContents() const OVERRIDE;
-  virtual bool HasHtml() const OVERRIDE;
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download) OVERRIDE;
 #endif
+
+  virtual void SetHtml(const string16& html, const GURL& base_url) OVERRIDE;
+  virtual bool GetHtml(string16* html, GURL* base_url) const OVERRIDE;
+  virtual bool HasHtml() const OVERRIDE;
 
   void set_drag_image(const SkBitmap& drag_image) { drag_image_ = drag_image; }
   const SkBitmap& drag_image() const { return drag_image_; }
@@ -85,6 +86,10 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
 
   // Drag image and offset data.
   SkBitmap drag_image_;
+
+  // For HTML format
+  string16 html_;
+  GURL base_url_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderAura);
 };
