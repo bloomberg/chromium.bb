@@ -248,7 +248,8 @@ void ProfileDownloader::StartFetchingImage() {
       GURL(kUserEntryURL), content::URLFetcher::GET, this));
   user_entry_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
-  user_entry_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  user_entry_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                    net::LOAD_DO_NOT_SAVE_COOKIES);
   if (!auth_token_.empty()) {
     user_entry_fetcher_->SetExtraRequestHeaders(
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
@@ -311,7 +312,8 @@ void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
         GURL(image_url), content::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
         delegate_->GetBrowserProfile()->GetRequestContext());
-    profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+    profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                         net::LOAD_DO_NOT_SAVE_COOKIES);
     if (!auth_token_.empty()) {
       profile_image_fetcher_->SetExtraRequestHeaders(
           base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
