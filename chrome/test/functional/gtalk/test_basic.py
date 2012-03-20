@@ -136,6 +136,9 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
     # Click "chatpinger@appspot.com" to open a chat mole.
     self.RunInRoster('$Click($FindByText($BODY(), "chatpinger@appspot.com"))')
 
+    # Wait until ready to check whether mole is open(temporary work around).
+    time.sleep(1)
+
     # Wait for chat mole to open.
     self.assertTrue(self.WaitUntil(self.GetMoleInfo),
         msg='Timed out waiting for mole window to open.')

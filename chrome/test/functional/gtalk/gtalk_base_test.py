@@ -57,7 +57,7 @@ class GTalkBaseTest(pyauto.PyUITest):
   def GetGTalkExtensionInfo(self):
     """Get the data object about the GTalk extension."""
     extensions = [x for x in self.GetExtensionsInfo()
-        if x['name'] == 'Google Talk']
+        if x['name'] == 'Chat for Google']
     return extensions[0] if len(extensions) == 1 else None
 
   def RunInMole(self, js, mole_index=0):
