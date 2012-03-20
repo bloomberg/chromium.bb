@@ -824,17 +824,17 @@ def _CheckConstNSObject(input_api, output_api, source_file_filter):
   return []
 
 
-def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
+def CheckSingletonInHeaders(input_api, output_api, source_file_filter=None):
   """Checks to make sure no header files have |Singleton<|."""
-  pattern = input_api.re.compile(r'Singleton\s*<')
+  pattern = input_api.re.compile(r'(?<!class\s)Singleton\s*<')
   files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
     if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
         f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
       contents = input_api.ReadFile(f)
       for line in contents.splitlines(False):
-        line = input_api.re.sub(r'//.*$', '', line)  # Strip C++ comment.
-        if pattern.search(line):
+        if (not input_api.re.match(r'//', line) and # Strip C++ comment.
+            pattern.search(line)):
           files.append(f)
           break
 
@@ -924,7 +924,7 @@ def PanProjectChecks(input_api, output_api,
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
   snapshot("checking singletons")
-  results.extend(_CheckSingletonInHeaders(
+  results.extend(CheckSingletonInHeaders(
       input_api, output_api, source_file_filter=sources))
 
   # The following checks are only done on commit, since the commit bot will
