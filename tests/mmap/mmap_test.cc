@@ -220,6 +220,9 @@ bool test_munmap() {
   assert_addr_is_unreadable(addr);
   assert_addr_is_unreadable(addr + 0x1000);
   assert_addr_is_unreadable(addr + 0x10000);
+  /* Test that munmap() is idempotent. */
+  rc = munmap(addr, map_size);
+  assert(rc == 0);
   return true;
 }
 

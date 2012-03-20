@@ -1707,9 +1707,7 @@ static int32_t MunmapInternal(struct NaClApp *nap,
     entry = NaClVmmapFindPage(&nap->mem_map,
                               NaClSysToUser(nap, addr) >> NACL_PAGESHIFT);
     if (NULL == entry) {
-      NaClLog(LOG_FATAL,
-              "NaClSysMunmap: could not find VM map entry for addr 0x%08x\n",
-              addr);
+      continue;
     }
     NaClLog(3,
             ("NaClSysMunmap: addr 0x%08x, nmop 0x%08x\n"),
