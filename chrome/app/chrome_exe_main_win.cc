@@ -9,11 +9,12 @@
 #include "base/command_line.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
+#include "chrome/app/metro_driver_win.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/src/sandbox_factory.h"
 
-int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
+int RunChrome(HINSTANCE instance) {
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
   if (ShowRestartDialogIfCrashed(&exit_now)) {
@@ -36,6 +37,13 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   int rc = loader->Launch(instance, &sandbox_info);
   loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
   delete loader;
-
   return rc;
+}
+
+int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
+  MetroDriver metro_driver;
+  if (metro_driver.in_metro_mode())
+    return metro_driver.RunInMetro(instance, &RunChrome);
+  // Not in metro mode, proceed as normal.
+  return RunChrome(instance);
 }
