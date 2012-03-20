@@ -98,10 +98,6 @@ void OverflowPanelStrip::AddPanel(Panel* panel,
     RefreshLayout();
   }
 
-  // Set panel properties for this strip.
-  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
-  panel->SetAppIconVisibility(false);
-
   if (num_panels() == 1) {
     if (!panel_manager_->is_full_screen())
       panel_manager_->mouse_watcher()->AddObserver(this);
@@ -436,4 +432,10 @@ void OverflowPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
 
   for (size_t i = 0; i < panels_.size(); ++i)
     panels_[i]->FullScreenModeChanged(is_full_screen);
+}
+
+void OverflowPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
+  // Set panel properties for this strip.
+  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
+  panel->SetAppIconVisibility(false);
 }

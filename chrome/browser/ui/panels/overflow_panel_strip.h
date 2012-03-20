@@ -55,6 +55,7 @@ class OverflowPanelStrip : public PanelStrip,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
+  virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
 
   void OnFullScreenModeChanged(bool is_full_screen);
 

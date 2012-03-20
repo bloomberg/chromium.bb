@@ -50,6 +50,7 @@ class DetachedPanelStrip : public PanelStrip {
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
+  virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
 
   bool HasPanel(Panel* panel) const;
 

@@ -114,6 +114,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
   docked_strip_->AddPanel(panel, PanelStrip::DEFAULT_POSITION);
+  docked_strip_->UpdatePanelOnStripChange(panel);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_ADDED,
@@ -225,6 +226,7 @@ void PanelManager::MovePanelToStrip(
   }
 
   target_strip->AddPanel(panel, positioning_mask);
+  target_strip->UpdatePanelOnStripChange(panel);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,

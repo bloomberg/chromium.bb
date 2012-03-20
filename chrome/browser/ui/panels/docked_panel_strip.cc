@@ -101,17 +101,6 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   } else {
     InsertExistingPanelAtDefaultPosition(panel, update_bounds);
   }
-
-  // Always update limits, even on existing panels, in case the limits changed
-  // while panel was out of the strip.
-  int max_panel_width = GetMaxPanelWidth();
-  int max_panel_height = GetMaxPanelHeight();
-  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
-                      gfx::Size(max_panel_width, max_panel_height));
-
-  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
-  panel->SetAppIconVisibility(true);
-  panel->SetAlwaysOnTop(true);
 }
 
 void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
@@ -845,4 +834,17 @@ void DockedPanelStrip::CloseAll() {
   for (Panels::reverse_iterator iter = panels_copy.rbegin();
        iter != panels_copy.rend(); ++iter)
     (*iter)->Close();
+}
+
+void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
+  // Always update limits, even on existing panels, in case the limits changed
+  // while panel was out of the strip.
+  int max_panel_width = GetMaxPanelWidth();
+  int max_panel_height = GetMaxPanelHeight();
+  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
+                      gfx::Size(max_panel_width, max_panel_height));
+
+  panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
+  panel->SetAppIconVisibility(true);
+  panel->SetAlwaysOnTop(true);
 }

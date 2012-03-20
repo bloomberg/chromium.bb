@@ -110,6 +110,11 @@ class PanelStrip {
   // original strip and position when the drag gets cancelled.
   virtual void EndDraggingPanelWithinStrip(Panel* panel, bool aborted) = 0;
 
+  // When a panel is added to this strip, some modifications to its visual
+  // style or underlying implementation may be in order. Each strip decides
+  // what properties should be applied to a newly-added panel.
+  virtual void UpdatePanelOnStripChange(Panel* panel) = 0;
+
  protected:
   explicit PanelStrip(Type type);
   virtual ~PanelStrip();

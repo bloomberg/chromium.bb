@@ -39,11 +39,6 @@ void DetachedPanelStrip::AddPanel(Panel* panel,
   DCHECK_NE(this, panel->panel_strip());
   panel->SetPanelStrip(this);
   panels_.insert(panel);
-
-  panel->set_attention_mode(
-      static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
-                                        Panel::USE_SYSTEM_ATTENTION));
-  panel->SetAlwaysOnTop(false);
 }
 
 void DetachedPanelStrip::RemovePanel(Panel* panel) {
@@ -142,4 +137,11 @@ void DetachedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
 
 bool DetachedPanelStrip::HasPanel(Panel* panel) const {
   return panels_.find(panel) != panels_.end();
+}
+
+void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
+  panel->set_attention_mode(
+      static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
+                                        Panel::USE_SYSTEM_ATTENTION));
+  panel->SetAlwaysOnTop(false);
 }

@@ -65,6 +65,7 @@ class DockedPanelStrip : public PanelStrip,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
+  virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
 
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
