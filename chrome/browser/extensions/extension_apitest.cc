@@ -20,6 +20,7 @@ namespace {
 
 const char kTestServerPort[] = "testServer.port";
 const char kTestDataDirectory[] = "testDataDirectory";
+const char kTestWebSocketPort[] = "testWebSocketPort";
 
 };  // namespace
 
@@ -275,6 +276,16 @@ bool ExtensionApiTest::StartTestServer() {
   test_config_->SetInteger(kTestServerPort,
                            test_server()->host_port_pair().port());
 
+  return true;
+}
+
+bool ExtensionApiTest::StartWebSocketServer(const FilePath& root_directory) {
+  websocket_server_.reset(new ui_test_utils::TestWebSocketServer());
+  int port = websocket_server_->UseRandomPort();
+  if (!websocket_server_->Start(root_directory))
+    return false;
+
+  test_config_->SetInteger(kTestWebSocketPort, port);
   return true;
 }
 
