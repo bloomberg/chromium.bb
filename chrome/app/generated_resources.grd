@@ -10391,13 +10391,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Device
       </message>
       <message name="IDS_FILE_BROWSER_IMAGE_FILE_TYPE" desc="Image file type">
-        $1 image file
+        $1 image
       </message>
       <message name="IDS_FILE_BROWSER_VIDEO_FILE_TYPE" desc="Video file type">
-        $1 video file
+        $1 video
       </message>
       <message name="IDS_FILE_BROWSER_AUDIO_FILE_TYPE" desc="Audio file type">
-        $1 audio file
+        $1 audio
       </message>
       <message name="IDS_FILE_BROWSER_HTML_DOCUMENT_FILE_TYPE" desc="HTML document file type">
         HTML document

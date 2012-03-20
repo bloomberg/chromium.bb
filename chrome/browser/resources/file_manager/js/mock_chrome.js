@@ -466,9 +466,9 @@ chrome.fileBrowserPrivate = {
 
       FOLDER: 'Folder',
       DEVICE: 'Device',
-      IMAGE_FILE_TYPE: '$1 image file',
-      VIDEO_FILE_TYPE: '$1 video file',
-      AUDIO_FILE_TYPE: '$1 audio file',
+      IMAGE_FILE_TYPE: '$1 image',
+      VIDEO_FILE_TYPE: '$1 video',
+      AUDIO_FILE_TYPE: '$1 audio',
       HTML_DOCUMENT_FILE_TYPE: 'HTML document',
       ZIP_ARCHIVE_FILE_TYPE: 'Zip archive',
       RAR_ARCHIVE_FILE_TYPE: 'RAR archive',
