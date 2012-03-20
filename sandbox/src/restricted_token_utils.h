@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,12 +77,6 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level);
 // failing on XP. If the integrity level that you specify is greater than the
 // current integrity level, the function will fail.
 DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level);
-
-// Adds deny ACEs on the supplied object for WinRestrictedCodeSid and
-// WinNullSid. This prevents the object from being accessible to sandboxed
-// processes. This prevents the object from being accessed by a sandboxed
-// process at USER_INTERACTIVE through USER_LOCKDOWN;
-DWORD SetObjectDenyRestrictedAndNull(HANDLE handle, SE_OBJECT_TYPE type);
 
 }  // namespace sandbox
 

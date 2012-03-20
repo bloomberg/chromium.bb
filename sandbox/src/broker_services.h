@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,9 +73,6 @@ class BrokerServicesBase : public BrokerServices,
 
   // Handle to the worker thread that reacts to job notifications.
   HANDLE job_thread_;
-
-  // Copy of our security descriptor containing deny ACEs to block children.
-  PSECURITY_DESCRIPTOR security_descriptor_;
 
   // Lock used to protect the list of targets from being modified by 2
   // threads at the same time.
