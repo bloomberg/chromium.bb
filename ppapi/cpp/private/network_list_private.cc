@@ -17,9 +17,6 @@ template <> const char* interface_name<PPB_NetworkList_Private>() {
 
 }  // namespace
 
-NetworkListPrivate::NetworkListPrivate() {
-}
-
 NetworkListPrivate::NetworkListPrivate(PP_Resource resource)
     : Resource(resource) {
 }
@@ -29,13 +26,13 @@ bool NetworkListPrivate::IsAvailable() {
   return has_interface<PPB_NetworkList_Private>();
 }
 
-uint32_t NetworkListPrivate::GetCount() const {
+uint32_t NetworkListPrivate::GetCount() {
   if (!has_interface<PPB_NetworkList_Private>())
     return 0;
   return get_interface<PPB_NetworkList_Private>()->GetCount(pp_resource());
 }
 
-std::string NetworkListPrivate::GetName(uint32_t index) const {
+std::string NetworkListPrivate::GetName(uint32_t index) {
   if (!has_interface<PPB_NetworkList_Private>())
     return std::string();
   Var result(PASS_REF,
@@ -44,14 +41,14 @@ std::string NetworkListPrivate::GetName(uint32_t index) const {
   return result.is_string() ? result.AsString() : std::string();
 }
 
-PP_NetworkListType_Private NetworkListPrivate::GetType(uint32_t index) const {
+PP_NetworkListType_Private NetworkListPrivate::GetType(uint32_t index) {
   if (!has_interface<PPB_NetworkList_Private>())
     return PP_NETWORKLIST_ETHERNET;
   return get_interface<PPB_NetworkList_Private>()->GetType(
       pp_resource(), index);
 }
 
-PP_NetworkListState_Private NetworkListPrivate::GetState(uint32_t index) const {
+PP_NetworkListState_Private NetworkListPrivate::GetState(uint32_t index) {
   if (!has_interface<PPB_NetworkList_Private>())
     return PP_NETWORKLIST_DOWN;
   return get_interface<PPB_NetworkList_Private>()->GetState(
@@ -60,7 +57,7 @@ PP_NetworkListState_Private NetworkListPrivate::GetState(uint32_t index) const {
 
 void NetworkListPrivate::GetIpAddresses(
     uint32_t index,
-    std::vector<PP_NetAddress_Private>* addresses) const {
+    std::vector<PP_NetAddress_Private>* addresses) {
   if (!has_interface<PPB_NetworkList_Private>())
     return;
 
@@ -91,7 +88,7 @@ void NetworkListPrivate::GetIpAddresses(
   }
 }
 
-std::string NetworkListPrivate::GetDisplayName(uint32_t index) const {
+std::string NetworkListPrivate::GetDisplayName(uint32_t index) {
   if (!has_interface<PPB_NetworkList_Private>())
     return std::string();
   Var result(PASS_REF,
@@ -100,7 +97,7 @@ std::string NetworkListPrivate::GetDisplayName(uint32_t index) const {
   return result.is_string() ? result.AsString() : std::string();
 }
 
-uint32_t NetworkListPrivate::GetMTU(uint32_t index) const {
+uint32_t NetworkListPrivate::GetMTU(uint32_t index) {
   if (!has_interface<PPB_NetworkList_Private>())
     return 0;
   return get_interface<PPB_NetworkList_Private>()->GetMTU(

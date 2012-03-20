@@ -288,8 +288,6 @@
       'utility/graphics/paint_aggregator.h',
       'utility/graphics/paint_manager.cc',
       'utility/graphics/paint_manager.h',
-      'utility/private/network_list_observer_private.cc',
-      'utility/private/network_list_observer_private.h',
       'utility/threading/simple_thread.cc',
       'utility/threading/simple_thread.h',
       'utility/websocket/websocket_api.cc',

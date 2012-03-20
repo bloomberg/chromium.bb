@@ -805,8 +805,6 @@ TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_2Monitors)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_2Monitors)
 TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
-TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_ListObserver)
-TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_ListObserver)
 
 // PPB_TCPSocket_Private currently isn't supported in-process.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {

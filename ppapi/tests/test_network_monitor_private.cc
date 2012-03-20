@@ -6,14 +6,12 @@
 
 #include <string.h>
 
-#include "ppapi/cpp/instance_handle.h"
-#include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/cpp/private/network_list_private.h"
 #include "ppapi/cpp/private/network_monitor_private.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
-#include "ppapi/utility/private/network_list_observer_private.h"
+#include "ppapi/cpp/module.h"
 
 REGISTER_TEST_CASE(NetworkMonitorPrivate);
 
@@ -54,22 +52,6 @@ void TestCallback(void* user_data, PP_Resource network_list) {
     static_cast<pp::CompletionCallback>(data->completion_callback).Run(PP_OK);
 }
 
-
-class TestNetworkListObserver : public pp::NetworkListObserverPrivate {
- public:
-  explicit TestNetworkListObserver(const pp::InstanceHandle& instance)
-      : pp::NetworkListObserverPrivate(instance),
-        completion_callback(instance.pp_instance()) {
-  }
-  virtual void OnNetworkListChanged(const pp::NetworkListPrivate& list) {
-    current_list = list;
-    static_cast<pp::CompletionCallback>(completion_callback).Run(PP_OK);
-  }
-
-  pp::NetworkListPrivate current_list;
-  TestCompletionCallback completion_callback;
-};
-
 }  // namespace
 
 TestNetworkMonitorPrivate::TestNetworkMonitorPrivate(TestingInstance* instance)
@@ -87,17 +69,12 @@ void TestNetworkMonitorPrivate::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Basic, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(2Monitors, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(DeleteInCallback, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(ListObserver, filter);
-}
-
-std::string TestNetworkMonitorPrivate::VerifyNetworkListResource(
-    PP_Resource network_list_resource) {
-  pp::NetworkListPrivate network_list(network_list_resource);
-  return VerifyNetworkList(network_list);
 }
 
 std::string TestNetworkMonitorPrivate::VerifyNetworkList(
-    const pp::NetworkListPrivate& network_list) {
+    PP_Resource network_resource) {
+  pp::NetworkListPrivate network_list(network_resource);
+
   // Verify that there is at least one network interface.
   size_t count = network_list.GetCount();
   ASSERT_TRUE(count >= 1U);
@@ -160,7 +137,7 @@ std::string TestNetworkMonitorPrivate::VerifyNetworkList(
     const char kFillValue = 123;
     memset(&addresses.front(), kFillValue,
            addresses.size() * sizeof(PP_NetAddress_Private));
-    int result = interface->GetIpAddresses(network_list.pp_resource(), 0,
+    int result = interface->GetIpAddresses(network_resource, 0,
                                            &addresses.front(), i);
     ASSERT_EQ(result, static_cast<int>(address_count));
 
@@ -183,8 +160,7 @@ std::string TestNetworkMonitorPrivate::TestBasic() {
   ASSERT_EQ(callback_data.completion_callback.WaitForResult(), PP_OK);
   ASSERT_EQ(callback_data.call_counter, 1);
 
-  ASSERT_SUBTEST_SUCCESS(
-      VerifyNetworkListResource(callback_data.list_resource));
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.list_resource));
 
   PASS();
 }
@@ -197,8 +173,7 @@ std::string TestNetworkMonitorPrivate::Test2Monitors() {
   ASSERT_EQ(callback_data.completion_callback.WaitForResult(), PP_OK);
   ASSERT_EQ(callback_data.call_counter, 1);
 
-  ASSERT_SUBTEST_SUCCESS(
-      VerifyNetworkListResource(callback_data.list_resource));
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.list_resource));
 
   CallbackData callback_data_2(instance_->pp_instance());
 
@@ -207,8 +182,7 @@ std::string TestNetworkMonitorPrivate::Test2Monitors() {
   ASSERT_EQ(callback_data_2.completion_callback.WaitForResult(), PP_OK);
   ASSERT_EQ(callback_data_2.call_counter, 1);
 
-  ASSERT_SUBTEST_SUCCESS(
-      VerifyNetworkListResource(callback_data_2.list_resource));
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data_2.list_resource));
 
   PASS();
 }
@@ -224,15 +198,7 @@ std::string TestNetworkMonitorPrivate::TestDeleteInCallback() {
   ASSERT_EQ(callback_data.completion_callback.WaitForResult(), PP_OK);
   ASSERT_EQ(callback_data.call_counter, 1);
 
-  ASSERT_SUBTEST_SUCCESS(
-      VerifyNetworkListResource(callback_data.list_resource));
+  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(callback_data.list_resource));
 
-  PASS();
-}
-
-std::string TestNetworkMonitorPrivate::TestListObserver() {
-  TestNetworkListObserver observer(instance_);
-  ASSERT_EQ(observer.completion_callback.WaitForResult(), PP_OK);
-  ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(observer.current_list));
   PASS();
 }
