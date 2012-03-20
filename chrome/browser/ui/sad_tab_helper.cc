@@ -57,6 +57,10 @@ void SadTabHelper::Observe(int type,
         sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
 #elif defined(TOOLKIT_VIEWS)
         sad_tab_->Close();
+        // See http://crbug.com/117668. When the Widget is being destructed, we
+        // want calls to sad_tab() to return NULL.
+        scoped_ptr<views::Widget> local_sad_tab;
+        local_sad_tab.swap(sad_tab_);
 #elif defined(TOOLKIT_GTK)
         GtkWidget* expanded_container =
             ChromeWebContentsViewDelegateGtk::GetFor(web_contents())->
