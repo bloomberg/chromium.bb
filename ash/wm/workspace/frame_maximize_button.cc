@@ -143,6 +143,9 @@ void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
   is_snap_enabled_ = false;
   if (should_snap && snap_type_ != SNAP_NONE) {
     SetState(BS_NORMAL);
+    // SetState will not call SchedulePaint() if state was already set to
+    // BS_NORMAL during a drag.
+    SchedulePaint();
     phantom_window_.reset();
     Snap();
   } else {
