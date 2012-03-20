@@ -21,7 +21,7 @@ const int kRoundedCornerSize = 4;
 
 // Metrics for the indicator text.
 const int kTextFontSize = 10 * PANGO_SCALE;
-const GdkColor kTextColor = ui::kGdkWhite;
+const GdkColor& kTextColor = ui::kGdkWhite;
 
 // Gradient colors used to draw the background in normal mode.
 const GdkColor kNormalBackgroundColorStart =
