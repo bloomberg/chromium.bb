@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_WEBUI_BIDI_CHECKER_WEB_UI_TEST_H_
 #define CHROME_BROWSER_UI_WEBUI_BIDI_CHECKER_WEB_UI_TEST_H_
 #pragma once
+
+#include <string>
 
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -18,9 +20,9 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  protected:
   WebUIBidiCheckerBrowserTest();
 
-  // Runs the Bidi Checker on the given page URL. |isRTL| should be true when
+  // Runs the Bidi Checker on the given page URL. |is_rtl| should be true when
   // the active page locale is RTL.
-  void RunBidiCheckerOnPage(const char pageURL[], bool isRTL);
+  void RunBidiCheckerOnPage(const std::string& page_url, bool is_rtl);
 
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
@@ -29,13 +31,13 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
 // Base class for BidiChecker-based tests that run with an LTR UI.
 class WebUIBidiCheckerBrowserTestLTR : public WebUIBidiCheckerBrowserTest {
  public:
-  void RunBidiCheckerOnPage(const char pageURL[]);
+  void RunBidiCheckerOnPage(const std::string& page_url);
 };
 
 // Base class for BidiChecker-based tests that run with an RTL UI.
 class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
  public:
-  void RunBidiCheckerOnPage(const char pageURL[]);
+  void RunBidiCheckerOnPage(const std::string& page_url);
 
  protected:
   virtual void SetUpOnMainThread() OVERRIDE;
