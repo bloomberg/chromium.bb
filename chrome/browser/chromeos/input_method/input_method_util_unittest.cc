@@ -34,6 +34,14 @@ namespace input_method {
 
 namespace {
 
+InputMethodDescriptor GetDesc(IBusController* controller,
+                              const std::string& id,
+                              const std::string& raw_layout,
+                              const std::string& language_code) {
+  return controller->CreateInputMethodDescriptor(id, "", raw_layout,
+                                                 language_code);
+}
+
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
   explicit TestableInputMethodUtil(InputMethodDescriptors* methods)
@@ -57,6 +65,110 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodWhitelist whitelist_;
   TestableInputMethodUtil util_;
 };
+
+TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
+  scoped_ptr<IBusController> controller(IBusController::Create());
+
+  // Test normal cases. Two-letter language code should be returned.
+  {
+    InputMethodDescriptor desc = GetDesc(controller.get(),
+                                         "m17n:fa:isiri",  // input method id
+                                         "us",  // keyboard layout name
+                                         "fa");  // language name
+    EXPECT_EQ(ASCIIToUTF16("FA"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "mozc-hangul", "us", "ko");
+    EXPECT_EQ(UTF8ToUTF16("\xed\x95\x9c"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "invalid-id", "us", "xx");
+    // Upper-case string of the unknown language code, "xx", should be returned.
+    EXPECT_EQ(ASCIIToUTF16("XX"), util_.GetInputMethodShortName(desc));
+  }
+
+  // Test special cases.
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("DV"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:us:colemak:eng", "us", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("CO"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:us:altgr-intl:eng", "us", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("EXTD"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:us:intl:eng", "us", "en-US");
+    EXPECT_EQ(ASCIIToUTF16("INTL"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:de:neo:ger", "de(neo)", "de");
+    EXPECT_EQ(ASCIIToUTF16("NEO"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "xkb:es:cat:cat", "es(cat)", "ca");
+    EXPECT_EQ(ASCIIToUTF16("CAS"), util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc = GetDesc(controller.get(), "mozc", "us", "ja");
+    EXPECT_EQ(UTF8ToUTF16("\xe3\x81\x82"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "mozc-jp", "jp", "ja");
+    EXPECT_EQ(UTF8ToUTF16("\xe3\x81\x82"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "zinnia-japanese", "us", "ja");
+    EXPECT_EQ(UTF8ToUTF16("\xe6\x89\x8b"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "pinyin", "us", "zh-CN");
+    EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "pinyin-dv", "us(dvorak)", "zh-CN");
+    EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "mozc-chewing", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToUTF16("\xe9\x85\xb7"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:zh:cangjie", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToUTF16("\xe5\x80\x89"),
+              util_.GetInputMethodShortName(desc));
+  }
+  {
+    InputMethodDescriptor desc =
+        GetDesc(controller.get(), "m17n:zh:quick", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToUTF16("\xe9\x80\x9f"),
+              util_.GetInputMethodShortName(desc));
+  }
+}
 
 TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
   EXPECT_EQ(UTF8ToUTF16("Pinyin input method"),

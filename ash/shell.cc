@@ -21,6 +21,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/brightness/tray_brightness.h"
+#include "ash/system/ime/tray_ime.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
@@ -314,6 +315,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual void RequestLockScreen() OVERRIDE {}
 
+  virtual IMEInfoList GetAvailableIMEList() {
+    return IMEInfoList();
+  }
+
   virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
     return NetworkIconInfo();
   }
@@ -568,12 +573,14 @@ void Shell::Init() {
     internal::TrayAccessibility* tray_accessibility =
         new internal::TrayAccessibility;
     internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
+    internal::TrayIME* tray_ime = new internal::TrayIME;
 
     tray_->accessibility_observer_ = tray_accessibility;
     tray_->audio_observer_ = tray_volume;
     tray_->brightness_observer_ = tray_brightness;
     tray_->caps_lock_observer_ = tray_caps_lock;
     tray_->clock_observer_ = tray_power_date;
+    tray_->ime_observer_ = tray_ime;
     tray_->network_observer_ = tray_network;
     tray_->power_status_observer_ = tray_power_date;
     tray_->update_observer_ = tray_user;
@@ -583,6 +590,7 @@ void Shell::Init() {
     tray_->AddTrayItem(new internal::TrayEmpty());
     tray_->AddTrayItem(tray_power_date);
     tray_->AddTrayItem(tray_network);
+    tray_->AddTrayItem(tray_ime);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());

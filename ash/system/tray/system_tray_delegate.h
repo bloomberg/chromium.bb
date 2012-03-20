@@ -30,6 +30,18 @@ struct ASH_EXPORT NetworkIconInfo {
   std::string service_path;
 };
 
+struct ASH_EXPORT IMEInfo {
+  IMEInfo();
+  ~IMEInfo();
+
+  bool selected;
+  std::string id;
+  string16 name;
+  string16 short_name;
+};
+
+typedef std::vector<IMEInfo> IMEInfoList;
+
 struct PowerSupplyStatus;
 
 class SystemTrayDelegate {
@@ -92,6 +104,9 @@ class SystemTrayDelegate {
 
   // Attempts to lock the screen.
   virtual void RequestLockScreen() = 0;
+
+  // Returns a list of availble IMEs.
+  virtual IMEInfoList GetAvailableIMEList() = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more
