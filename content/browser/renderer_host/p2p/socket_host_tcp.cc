@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,9 +59,6 @@ bool P2PSocketHostTcp::Init(const net::IPEndPoint& local_address,
   }
   socket_.reset(tcp_socket.release());
 
-  if (socket_->SetSendBufferSize(kMaxSendBufferSize))
-    LOG(WARNING) << "Failed to set send buffer size for TCP socket.";
-
   int result = socket_->Connect(
       base::Bind(&P2PSocketHostTcp::OnConnected, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING) {
@@ -75,8 +72,9 @@ void P2PSocketHostTcp::OnError() {
   socket_.reset();
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_CONNECTING ||
-      state_ == STATE_OPEN)
+      state_ == STATE_OPEN) {
     message_sender_->Send(new P2PMsg_OnError(routing_id_, id_));
+  }
 
   state_ = STATE_ERROR;
 }
@@ -88,6 +86,10 @@ void P2PSocketHostTcp::OnConnected(int result) {
   if (result != net::OK) {
     OnError();
     return;
+  }
+
+  if (socket_->SetSendBufferSize(kMaxSendBufferSize)) {
+    LOG(WARNING) << "Failed to set send buffer size for TCP socket.";
   }
 
   net::IPEndPoint address;
