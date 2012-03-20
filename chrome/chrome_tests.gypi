@@ -1329,6 +1329,8 @@
         'browser/chromeos/gdata/gdata_util_unittest.cc',
         'browser/chromeos/gdata/mock_gdata_documents_service.cc',
         'browser/chromeos/gdata/mock_gdata_documents_service.h',
+        'browser/chromeos/gdata/mock_gdata_file_system.cc',
+        'browser/chromeos/gdata/mock_gdata_file_system.h',
         'browser/chromeos/gdata/mock_gdata_sync_client.cc',
         'browser/chromeos/gdata/mock_gdata_sync_client.h',
         'browser/chromeos/gview_request_interceptor_unittest.cc',

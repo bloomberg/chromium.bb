@@ -111,9 +111,11 @@ class ReadOnlyFindFileDelegate : public FindFileDelegate {
 };
 
 // GData file system abstraction layer.
-// GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
-class GDataFileSystem : public ProfileKeyedService {
+// The interface is defined to make GDataFileSystem mockable.
+class GDataFileSystemInterface {
  public:
+  virtual ~GDataFileSystemInterface() {}
+
   // Used to notify events on the file system.
   class Observer {
    public:
@@ -127,8 +129,8 @@ class GDataFileSystem : public ProfileKeyedService {
   };
 
   // Adds and removes the observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Enum defining GCache subdirectory location.
   enum CacheSubdir {  // This indexes into |cache_paths_| vector.
@@ -139,30 +141,27 @@ class GDataFileSystem : public ProfileKeyedService {
     CACHE_TYPE_TMP,
   };
 
-  // ProfileKeyedService override:
-  virtual void Shutdown() OVERRIDE;
-
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   //
   // Must be called on UI thread.
-  void Authenticate(const AuthStatusCallback& callback);
+  virtual void Authenticate(const AuthStatusCallback& callback) = 0;
 
   // Finds file info by using virtual |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //
   // Can be called from any thread.
-  void FindFileByPathAsync(const FilePath& file_path,
-                           const FindFileCallback& callback);
+  virtual void FindFileByPathAsync(const FilePath& file_path,
+                                   const FindFileCallback& callback) = 0;
 
   // Finds file info by using virtual |file_path|. This call does not initiate
   // content refreshing and will invoke one of |delegate| methods directly as
   // it executes.
   //
   // Can be called from any thread.
-  void FindFileByPathSync(const FilePath& file_path,
-                          FindFileDelegate* delegate);
+  virtual void FindFileByPathSync(const FilePath& file_path,
+                                  FindFileDelegate* delegate) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -182,9 +181,9 @@ class GDataFileSystem : public ProfileKeyedService {
   // of the file system.
   //
   // Can be called from any thread.
-  void Copy(const FilePath& src_file_path,
-            const FilePath& dest_file_path,
-            const FileOperationCallback& callback);
+  virtual void Copy(const FilePath& src_file_path,
+                    const FilePath& dest_file_path,
+                    const FileOperationCallback& callback) = 0;
 
   // Moves |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a file (regular or hosted document) or a directory.
@@ -202,9 +201,9 @@ class GDataFileSystem : public ProfileKeyedService {
   // of the file system.
   //
   // Can be called from any thread.
-  void Move(const FilePath& src_file_path,
-            const FilePath& dest_file_path,
-            const FileOperationCallback& callback);
+  virtual void Move(const FilePath& src_file_path,
+                    const FilePath& dest_file_path,
+                    const FileOperationCallback& callback) = 0;
 
   // Removes |file_path| from the file system.  If |is_recursive| is set and
   // |file_path| represents a directory, we will also delete all of its
@@ -216,9 +215,9 @@ class GDataFileSystem : public ProfileKeyedService {
   // (find appropriate calls for it).
   //
   // Can be called from any thread. |callback| is run on the calling thread.
-  void Remove(const FilePath& file_path,
-              bool is_recursive,
-              const FileOperationCallback& callback);
+  virtual void Remove(const FilePath& file_path,
+                      bool is_recursive,
+                      const FileOperationCallback& callback) = 0;
 
   // Creates new directory under |directory_path|. If |is_exclusive| is true,
   // an error is raised in case a directory is already present at the
@@ -226,10 +225,10 @@ class GDataFileSystem : public ProfileKeyedService {
   // directories as needed just like mkdir -p does.
   //
   // Can be called from any thread. |callback| is run on the calling thread.
-  void CreateDirectory(const FilePath& directory_path,
-                       bool is_exclusive,
-                       bool is_recursive,
-                       const FileOperationCallback& callback);
+  virtual void CreateDirectory(const FilePath& directory_path,
+                               bool is_exclusive,
+                               bool is_recursive,
+                               const FileOperationCallback& callback) = 0;
 
   // Gets |file_path| from the file system. The file entry represented by
   // |file_path| needs to be present in in-memory representation of the file
@@ -237,27 +236,31 @@ class GDataFileSystem : public ProfileKeyedService {
   // will be downloaded through gdata api.
   //
   // Can be called from any thread. |callback| is run on the calling thread.
-  void GetFile(const FilePath& file_path, const GetFileCallback& callback);
+  virtual void GetFile(const FilePath& file_path,
+                       const GetFileCallback& callback) = 0;
 
   // Gets absolute path of cache file corresponding to |gdata_file_path|.
   // Upon completion, |callback| is invoked on the same thread where this method
   // was called, with path if it exists and is accessible or empty FilePath
   // otherwise.
-  void GetFromCacheForPath(const FilePath& gdata_file_path,
-                           const GetFromCacheCallback& callback);
+  virtual void GetFromCacheForPath(const FilePath& gdata_file_path,
+                                   const GetFromCacheCallback& callback) = 0;
 
   // Obtains the list of currently active operations.
-  std::vector<GDataOperationRegistry::ProgressStatus> GetProgressStatusList();
+  virtual std::vector<GDataOperationRegistry::ProgressStatus>
+  GetProgressStatusList() = 0;
 
   // Cancels ongoing operation for a given |file_path|. Returns true if
   // the operation was found and canceled.
-  bool CancelOperation(const FilePath& file_path);
+  virtual bool CancelOperation(const FilePath& file_path) = 0;
 
   // Add operation observer.
-  void AddOperationObserver(GDataOperationRegistry::Observer* observer);
+  virtual void AddOperationObserver(
+      GDataOperationRegistry::Observer* observer) = 0;
 
   // Remove operation observer.
-  void RemoveOperationObserver(GDataOperationRegistry::Observer* observer);
+  virtual void RemoveOperationObserver(
+      GDataOperationRegistry::Observer* observer) = 0;
 
   // Gets the cache state of file corresponding to |resource_id| and |md5| if it
   // exists on disk.
@@ -265,24 +268,72 @@ class GDataFileSystem : public ProfileKeyedService {
   // Upon completion, |callback| is invoked on the thread where this method was
   // called with the cache state if file exists in cache or CACHE_STATE_NONE
   // otherwise.
-  void GetCacheState(const std::string& resource_id,
-                     const std::string& md5,
-                     const GetCacheStateCallback& callback);
+  virtual void GetCacheState(const std::string& resource_id,
+                             const std::string& md5,
+                             const GetCacheStateCallback& callback) = 0;
 
   // Finds file object by |file_path| and returns its |file_info|.
   // Returns true if file was found.
-  bool GetFileInfoFromPath(const FilePath& gdata_file_path,
-                           base::PlatformFileInfo* file_info);
+  virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
+                                   base::PlatformFileInfo* file_info) = 0;
 
   // Returns the tmp sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/tmp
-  FilePath GetGDataCacheTmpDirectory() {
-    return cache_paths_[CACHE_TYPE_TMP];
-  }
+  virtual FilePath GetGDataCacheTmpDirectory() = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
-  void GetAvailableSpace(const GetAvailableSpaceCallback& callback);
+  virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
+};
+
+// The production implementation of GDataFileSystemInterface.
+class GDataFileSystem : public GDataFileSystemInterface,
+                        public ProfileKeyedService {
+ public:
+  // ProfileKeyedService override:
+  virtual void Shutdown() OVERRIDE;
+
+  // GDataFileSystem overrides.
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
+  virtual void FindFileByPathAsync(const FilePath& file_path,
+                                   const FindFileCallback& callback) OVERRIDE;
+  virtual void FindFileByPathSync(const FilePath& file_path,
+                                  FindFileDelegate* delegate) OVERRIDE;
+  virtual void Copy(const FilePath& src_file_path,
+                    const FilePath& dest_file_path,
+                    const FileOperationCallback& callback) OVERRIDE;
+  virtual void Move(const FilePath& src_file_path,
+                    const FilePath& dest_file_path,
+                    const FileOperationCallback& callback) OVERRIDE;
+  virtual void Remove(const FilePath& file_path,
+                      bool is_recursive,
+                      const FileOperationCallback& callback) OVERRIDE;
+  virtual void CreateDirectory(const FilePath& directory_path,
+                               bool is_exclusive,
+                               bool is_recursive,
+                               const FileOperationCallback& callback) OVERRIDE;
+  virtual void GetFile(const FilePath& file_path,
+                       const GetFileCallback& callback) OVERRIDE;
+  virtual void GetFromCacheForPath(
+      const FilePath& gdata_file_path,
+      const GetFromCacheCallback& callback) OVERRIDE;
+  virtual std::vector<GDataOperationRegistry::ProgressStatus>
+  GetProgressStatusList() OVERRIDE;
+  virtual bool CancelOperation(const FilePath& file_path) OVERRIDE;
+  virtual void AddOperationObserver(
+      GDataOperationRegistry::Observer* observer) OVERRIDE;
+  virtual void RemoveOperationObserver(
+      GDataOperationRegistry::Observer* observer) OVERRIDE;
+  virtual void GetCacheState(const std::string& resource_id,
+                             const std::string& md5,
+                             const GetCacheStateCallback& callback) OVERRIDE;
+  virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
+                                   base::PlatformFileInfo* file_info) OVERRIDE;
+  virtual FilePath GetGDataCacheTmpDirectory() OVERRIDE;
+  virtual void GetAvailableSpace(
+      const GetAvailableSpaceCallback& callback) OVERRIDE;
 
  private:
   friend class GDataUploader;

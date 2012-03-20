@@ -1205,6 +1205,10 @@ bool GDataFileSystem::GetFileInfoFromPath(
   return true;
 }
 
+FilePath GDataFileSystem::GetGDataCacheTmpDirectory() {
+    return cache_paths_[CACHE_TYPE_TMP];
+}
+
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
