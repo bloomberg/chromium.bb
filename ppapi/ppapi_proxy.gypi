@@ -105,6 +105,8 @@
         'proxy/ppb_instance_proxy.h',
         'proxy/ppb_message_loop_proxy.cc',
         'proxy/ppb_message_loop_proxy.h',
+        'proxy/ppb_network_monitor_private_proxy.cc',
+        'proxy/ppb_network_monitor_private_proxy.h',
         'proxy/ppb_pdf_proxy.cc',
         'proxy/ppb_pdf_proxy.h',
         'proxy/ppb_talk_private_proxy.cc',

@@ -14,26 +14,45 @@
 
 namespace ppapi {
 
+struct PPAPI_SHARED_EXPORT NetworkInfo {
+  NetworkInfo();
+  ~NetworkInfo();
+
+  std::string name;
+  PP_NetworkListType_Private type;
+  PP_NetworkListState_Private state;
+  std::vector<PP_NetAddress_Private> addresses;
+  std::string display_name;
+  int mtu;
+};
+typedef std::vector<NetworkInfo> NetworkList;
+
+// NetworkListStorage is refcounted container for NetworkList. It
+// allows sharing of one NetworkList object between multiple
+// NetworkList resources.
+class PPAPI_SHARED_EXPORT NetworkListStorage
+    : public base::RefCountedThreadSafe<NetworkListStorage> {
+ public:
+  NetworkListStorage(const NetworkList& list);
+
+  const NetworkList& list() { return list_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<NetworkListStorage>;
+  ~NetworkListStorage();
+
+  NetworkList list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkListStorage);
+};
+
 class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
     : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_NetworkList_Private_API {
  public:
-  struct PPAPI_SHARED_EXPORT NetworkInfo {
-    NetworkInfo();
-    ~NetworkInfo();
-
-    std::string name;
-    PP_NetworkListType_Private type;
-    PP_NetworkListState_Private state;
-    std::vector<PP_NetAddress_Private> addresses;
-    std::string display_name;
-    int mtu;
-  };
-  typedef std::vector<NetworkInfo> NetworkList;
-
   static PP_Resource Create(ResourceObjectType type,
                             PP_Instance instance,
-                            scoped_ptr<NetworkList> list);
+                            const scoped_refptr<NetworkListStorage>& list);
 
   virtual ~PPB_NetworkList_Private_Shared();
 
@@ -42,6 +61,7 @@ class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
       AsPPB_NetworkList_Private_API() OVERRIDE;
 
   // PPB_NetworkList_Private_API implementation.
+  virtual const NetworkList& GetNetworkListData() const OVERRIDE;
   virtual uint32_t GetCount() OVERRIDE;
   virtual PP_Var GetName(uint32_t index) OVERRIDE;
   virtual PP_NetworkListType_Private GetType(uint32_t index) OVERRIDE;
@@ -55,9 +75,9 @@ class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
  private:
   PPB_NetworkList_Private_Shared(ResourceObjectType type,
                                  PP_Instance instance,
-                                 scoped_ptr<NetworkList> list);
+                                 const scoped_refptr<NetworkListStorage>& list);
 
-  scoped_ptr<NetworkList> list_;
+  scoped_refptr<NetworkListStorage> list_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_NetworkList_Private_Shared);
 };

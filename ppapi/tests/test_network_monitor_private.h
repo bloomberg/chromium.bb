@@ -21,6 +21,7 @@ class TestNetworkMonitorPrivate : public TestCase {
  private:
   std::string TestBasic();
   std::string Test2Monitors();
+  std::string TestDeleteInCallback();
 
   std::string VerifyNetworkList(PP_Resource network_resource);
 };

@@ -25,6 +25,7 @@
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_host_resolver_private_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/proxy/ppb_network_monitor_private_proxy.h"
 #include "ppapi/proxy/ppb_talk_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
@@ -249,8 +250,8 @@ PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
       void* user_data) {
-  NOTIMPLEMENTED();  // Not proxied yet.
-  return 0;
+  return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
+      instance, callback, user_data);
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics3D(

@@ -13,6 +13,8 @@ PROXIED_API(PPB_Talk_Private)
 PROXIED_API(PPB_TCPServerSocket_Private)
 PROXIED_API(PPB_TCPSocket_Private)
 PROXIED_API(PPB_UDPSocket_Private)
+UNPROXIED_API(PPB_NetworkList_Private)
+PROXIED_API(PPB_NetworkMonitor_Private)
 
 PROXIED_IFACE(PPB_Broker, PPB_BROKER_TRUSTED_INTERFACE_0_2,
               PPB_BrokerTrusted_0_2)
@@ -45,11 +47,11 @@ PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_3,
               PPB_UDPSocket_Private_0_3)
 
-UNPROXIED_IFACE(PPB_NetworkList_Private, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
-                PPB_NetworkList_Private_0_2)
-UNPROXIED_IFACE(PPB_NetworkMonitor_Private,
-                PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_2,
-                PPB_NetworkMonitor_Private_0_2)
+PROXIED_IFACE(NoAPIName, PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
+              PPB_NetworkList_Private_0_2)
+PROXIED_IFACE(PPB_NetworkMonitor_Private,
+              PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_2,
+              PPB_NetworkMonitor_Private_0_2)
 
 // Hack to keep font working. The Font 0.6 API is binary compatible with
 // BrowserFont 1.0, so just map the string to the same thing.

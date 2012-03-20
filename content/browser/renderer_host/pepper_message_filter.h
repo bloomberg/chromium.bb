@@ -15,6 +15,8 @@
 #include "base/process.h"
 #include "base/time.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "net/base/network_change_notifier.h"
+#include "net/base/net_util.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_resource.h"
@@ -49,7 +51,9 @@ struct HostPortPair;
 // PPAPI plugins and any requests that the PPAPI implementation code in the
 // renderer needs to make. The second is on the plugin->browser channel to
 // handle requests that out-of-process plugins send directly to the browser.
-class PepperMessageFilter : public content::BrowserMessageFilter {
+class PepperMessageFilter
+    : public content::BrowserMessageFilter,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   enum ProcessType { PLUGIN, RENDERER };
 
@@ -72,6 +76,9 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
       content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+  // net::NetworkChangeNotifier::IPAddressObserver interface.
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // Returns the host resolver (it may come from the resource context or the
   // host_resolver_ member).
@@ -101,6 +108,16 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
     uint32 plugin_dispatcher_id;
     uint32 host_resolver_id;
   };
+
+  // Containers for sockets keyed by socked_id.
+  typedef std::map<uint32, linked_ptr<PepperTCPSocket> > TCPSocketMap;
+  typedef std::map<uint32, linked_ptr<PepperUDPSocket> > UDPSocketMap;
+  typedef std::map<uint32,
+                   linked_ptr<PepperTCPServerSocket> > TCPServerSocketMap;
+
+  // Set of disptachers ID's that have subscribed for NetworkMonitor
+  // notifications.
+  typedef std::set<uint32> NetworkMonitorIdSet;
 
 #if defined(ENABLE_FLAPPER_HACKS)
   // Message handlers.
@@ -184,6 +201,9 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
                                        uint32 plugin_dispatcher_id,
                                        uint32 host_resolver_id);
 
+  void OnNetworkMonitorStart(uint32 plugin_dispatcher_id);
+  void OnNetworkMonitorStop(uint32 plugin_dispatcher_id);
+
   void DoTCPConnect(bool allowed,
                     int32 routing_id,
                     uint32 socket_id,
@@ -219,6 +239,10 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
   // Return true if render with given ID can use socket APIs.
   bool CanUseSocketAPIs(int32 render_id);
 
+  void GetAndSendNetworkList();
+  void DoGetNetworkList();
+  void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
+
   ProcessType process_type_;
 
   // Render process ID.
@@ -239,15 +263,11 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
 
   uint32 next_socket_id_;
 
-  typedef std::map<uint32, linked_ptr<PepperTCPSocket> > TCPSocketMap;
   TCPSocketMap tcp_sockets_;
-
-  typedef std::map<uint32, linked_ptr<PepperUDPSocket> > UDPSocketMap;
   UDPSocketMap udp_sockets_;
-
-  typedef std::map<uint32,
-                   linked_ptr<PepperTCPServerSocket> > TCPServerSocketMap;
   TCPServerSocketMap tcp_server_sockets_;
+
+  NetworkMonitorIdSet network_monitor_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };

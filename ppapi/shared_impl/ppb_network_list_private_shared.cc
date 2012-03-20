@@ -11,21 +11,28 @@
 
 namespace ppapi {
 
-PPB_NetworkList_Private_Shared::NetworkInfo::NetworkInfo()
+NetworkInfo::NetworkInfo()
     : type(PP_NETWORKLIST_UNKNOWN),
       state(PP_NETWORKLIST_DOWN),
       mtu(0) {
 }
 
-PPB_NetworkList_Private_Shared::NetworkInfo::~NetworkInfo() {
+NetworkInfo::~NetworkInfo() {
+}
+
+NetworkListStorage::NetworkListStorage(const NetworkList& list)
+    : list_(list) {
+}
+
+NetworkListStorage::~NetworkListStorage() {
 }
 
 PPB_NetworkList_Private_Shared::PPB_NetworkList_Private_Shared(
     ResourceObjectType type,
     PP_Instance instance,
-    scoped_ptr<NetworkList> list)
+    const scoped_refptr<NetworkListStorage>& list)
     : Resource(type, instance),
-      list_(list.Pass()) {
+      list_(list) {
 }
 
 PPB_NetworkList_Private_Shared::~PPB_NetworkList_Private_Shared() {
@@ -35,9 +42,9 @@ PPB_NetworkList_Private_Shared::~PPB_NetworkList_Private_Shared() {
 PP_Resource PPB_NetworkList_Private_Shared::Create(
     ResourceObjectType type,
     PP_Instance instance,
-    scoped_ptr<NetworkList> list) {
+    const scoped_refptr<NetworkListStorage>& list) {
   scoped_refptr<PPB_NetworkList_Private_Shared> object(
-      new PPB_NetworkList_Private_Shared(type, instance, list.Pass()));
+      new PPB_NetworkList_Private_Shared(type, instance, list));
   return object->GetReference();
 }
 
@@ -46,53 +53,57 @@ PPB_NetworkList_Private_Shared::AsPPB_NetworkList_Private_API() {
   return this;
 }
 
+const NetworkList& PPB_NetworkList_Private_Shared::GetNetworkListData() const {
+  return list_->list();
+}
+
 uint32_t PPB_NetworkList_Private_Shared::GetCount() {
-  return list_->size();
+  return list_->list().size();
 }
 
 PP_Var PPB_NetworkList_Private_Shared::GetName(uint32_t index) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(list_->at(index).name);
+  return StringVar::StringToPPVar(list_->list().at(index).name);
 }
 
 PP_NetworkListType_Private PPB_NetworkList_Private_Shared::GetType(
     uint32_t index) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return PP_NETWORKLIST_UNKNOWN;
-  return list_->at(index).type;
+  return list_->list().at(index).type;
 }
 
 PP_NetworkListState_Private PPB_NetworkList_Private_Shared::GetState(
     uint32_t index) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return PP_NETWORKLIST_DOWN;
-  return list_->at(index).state;
+  return list_->list().at(index).state;
 }
 
 int32_t PPB_NetworkList_Private_Shared::GetIpAddresses(
     uint32_t index,
     struct PP_NetAddress_Private addresses[],
     uint32_t count) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return PP_ERROR_FAILED;
   count = std::min(
-      count, static_cast<uint32_t>(list_->at(index).addresses.size()));
-  memcpy(addresses, &(list_->at(index).addresses[0]),
+      count, static_cast<uint32_t>(list_->list().at(index).addresses.size()));
+  memcpy(addresses, &(list_->list().at(index).addresses[0]),
          sizeof(PP_NetAddress_Private) * count);
-  return list_->at(index).addresses.size();
+  return list_->list().at(index).addresses.size();
 }
 
 PP_Var PPB_NetworkList_Private_Shared::GetDisplayName(uint32_t index) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(list_->at(index).display_name);
+  return StringVar::StringToPPVar(list_->list().at(index).display_name);
 }
 
 uint32_t PPB_NetworkList_Private_Shared::GetMTU(uint32_t index) {
-  if (index >= list_->size())
+  if (index >= list_->list().size())
     return 0;
-  return list_->at(index).mtu;
+  return list_->list().at(index).mtu;
 }
 
 }  // namespace thunk

@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
+#include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -56,18 +58,16 @@ bool PPB_NetworkMonitor_Private_Impl::Start() {
 
 void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
     const net::NetworkInterfaceList& list) {
-  scoped_ptr< ::ppapi::PPB_NetworkList_Private_Shared::NetworkList> list_copy(
-      new ::ppapi::PPB_NetworkList_Private_Shared::NetworkList(list.size()));
+  ::ppapi::NetworkList list_copy(list.size());
   for (size_t i = 0; i < list.size(); ++i) {
-    ::ppapi::PPB_NetworkList_Private_Shared::NetworkInfo& network =
-        list_copy->at(i);
+    ::ppapi::NetworkInfo& network = list_copy.at(i);
     network.name = list[i].name;
 
-    network.addresses.resize(1);
-    CHECK_LE(list[i].address.size(), sizeof(network.addresses[0].data));
-    network.addresses[0].size = list[i].address.size();
-    memcpy(network.addresses[0].data, &(list[i].address.front()),
-           list[i].address.size());
+    network.addresses.resize(
+        1, ::ppapi::NetAddressPrivateImpl::kInvalidNetAddress);
+    bool result = ::ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
+        net::IPEndPoint(list[i].address, 0), &(network.addresses[0]));
+    DCHECK(result);
 
     // TODO(sergeyu): Currently net::NetworkInterfaceList provides
     // only name and one IP address. Add all other fields and copy
@@ -77,9 +77,11 @@ void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
     network.display_name = list[i].name;
     network.mtu = 0;
   }
+  scoped_refptr< ::ppapi::NetworkListStorage> list_storage(
+      new ::ppapi::NetworkListStorage(list_copy));
   PP_Resource list_resource =
       ::ppapi::PPB_NetworkList_Private_Shared::Create(
-          ::ppapi::OBJECT_IS_IMPL, pp_instance(), list_copy.Pass());
+          ::ppapi::OBJECT_IS_IMPL, pp_instance(), list_storage);
   callback_(user_data_, list_resource);
 }
 

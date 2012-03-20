@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/pepper_lookup_request.h"
@@ -37,6 +38,7 @@
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
@@ -84,7 +86,10 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
   DCHECK(host_resolver);
 }
 
-PepperMessageFilter::~PepperMessageFilter() {}
+PepperMessageFilter::~PepperMessageFilter() {
+  if (!network_monitor_ids_.empty())
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
 
 void PepperMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
@@ -140,9 +145,19 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBHostResolver_Resolve,
                         OnHostResolverResolve)
 
+    // NetworkMonitor messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBNetworkMonitor_Start,
+                        OnNetworkMonitorStart)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBNetworkMonitor_Stop,
+                        OnNetworkMonitorStop)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
+}
+
+void PepperMessageFilter::OnIPAddressChanged() {
+  GetAndSendNetworkList();
 }
 
 net::HostResolver* PepperMessageFilter::GetHostResolver() {
@@ -738,6 +753,20 @@ bool PepperMessageFilter::SendHostResolverResolveACKError(
       ppapi::NetAddressList()));
 }
 
+void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
+  if (network_monitor_ids_.empty())
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+
+  network_monitor_ids_.insert(plugin_dispatcher_id);
+  GetAndSendNetworkList();
+}
+
+void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
+  network_monitor_ids_.erase(plugin_dispatcher_id);
+  if (network_monitor_ids_.empty())
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
 void PepperMessageFilter::GetFontFamiliesComplete(
     IPC::Message* reply_msg,
     scoped_ptr<base::ListValue> result) {
@@ -817,4 +846,51 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
   }
 
   return true;
+}
+
+void PepperMessageFilter::GetAndSendNetworkList() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&PepperMessageFilter::DoGetNetworkList, this));
+}
+
+void PepperMessageFilter::DoGetNetworkList() {
+  scoped_ptr<net::NetworkInterfaceList> list(new net::NetworkInterfaceList());
+  net::GetNetworkList(list.get());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PepperMessageFilter::SendNetworkList,
+                 this, base::Passed(list.Pass())));
+}
+
+void PepperMessageFilter::SendNetworkList(
+    scoped_ptr<net::NetworkInterfaceList> list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  scoped_ptr< ::ppapi::NetworkList> list_copy(
+      new ::ppapi::NetworkList(list->size()));
+  for (size_t i = 0; i < list->size(); ++i) {
+    const net::NetworkInterface& network = list->at(i);
+    ::ppapi::NetworkInfo& network_copy = list_copy->at(i);
+    network_copy.name = network.name;
+
+    network_copy.addresses.resize(1, NetAddressPrivateImpl::kInvalidNetAddress);
+    bool result = NetAddressPrivateImpl::IPEndPointToNetAddress(
+        net::IPEndPoint(network.address, 0), &(network_copy.addresses[0]));
+    DCHECK(result);
+
+    // TODO(sergeyu): Currently net::NetworkInterfaceList provides
+    // only name and one IP address. Add all other fields and copy
+    // them here.
+    network_copy.type = PP_NETWORKLIST_UNKNOWN;
+    network_copy.state = PP_NETWORKLIST_UP;
+    network_copy.display_name = network.name;
+    network_copy.mtu = 0;
+  }
+  for (NetworkMonitorIdSet::iterator it = network_monitor_ids_.begin();
+       it != network_monitor_ids_.end(); ++it) {
+    Send(new PpapiMsg_PPBNetworkMonitor_NetworkList(
+        ppapi::API_ID_PPB_NETWORKMANAGER_PRIVATE, *it, *list_copy));
+  }
 }
