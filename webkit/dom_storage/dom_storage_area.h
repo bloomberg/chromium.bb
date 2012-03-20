@@ -27,6 +27,9 @@ class DomStorageArea
     : public base::RefCountedThreadSafe<DomStorageArea> {
 
  public:
+  static const FilePath::CharType kDatabaseFileExtension[];
+  static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
+
   DomStorageArea(int64 namespace_id,
                  const GURL& origin,
                  const FilePath& directory,
@@ -59,8 +62,6 @@ class DomStorageArea
   // Posts a task to write the set of changed values to disk.
   void ScheduleCommitChanges();
   void CommitChanges();
-
-  static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
 
   ~DomStorageArea();
 

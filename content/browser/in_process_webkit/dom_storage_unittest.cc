@@ -8,7 +8,12 @@
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/quota/mock_special_storage_policy.h"
+
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+// No longer applicable.
+#else
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -108,7 +113,7 @@ TEST_F(DOMStorageTest, SaveSessionState) {
           BrowserContext::GetDOMStorageContext(browser_context.get()));
   dom_storage_context->special_storage_policy_ = special_storage_policy;
 
-  dom_storage_context->set_clear_local_state_on_exit(true);
+  dom_storage_context->SetClearLocalState(true);
 
   // Save session state. This should bypass the destruction-time deletion.
   dom_storage_context->SaveSessionState();
@@ -126,3 +131,5 @@ TEST_F(DOMStorageTest, SaveSessionState) {
   EXPECT_TRUE(file_util::PathExists(session_only_database_path));
   EXPECT_TRUE(file_util::PathExists(permanent_database_path));
 }
+
+#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

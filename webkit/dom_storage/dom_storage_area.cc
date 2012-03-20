@@ -16,6 +16,20 @@
 
 namespace dom_storage {
 
+// static
+const FilePath::CharType DomStorageArea::kDatabaseFileExtension[] =
+    FILE_PATH_LITERAL(".localstorage");
+
+// static
+FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
+  std::string filename = fileapi::GetOriginIdentifierFromURL(origin);
+  // There is no FilePath.AppendExtension() method, so start with just the
+  // extension as the filename, and then InsertBeforeExtension the desired
+  // name.
+  return FilePath().Append(kDatabaseFileExtension).
+      InsertBeforeExtensionASCII(filename);
+}
+
 DomStorageArea::DomStorageArea(
     int64 namespace_id, const GURL& origin,
     const FilePath& directory, DomStorageTaskRunner* task_runner)
@@ -162,13 +176,6 @@ void DomStorageArea::CommitChanges() {
     changed_values_.clear();
   }
   commit_in_flight_ = false;
-}
-
-// static
-FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
-  std::string filename = fileapi::GetOriginIdentifierFromURL(origin)
-      + ".localstorage";
-  return FilePath().AppendASCII(filename);
 }
 
 }  // namespace dom_storage

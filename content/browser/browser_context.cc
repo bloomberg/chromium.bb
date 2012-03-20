@@ -34,6 +34,8 @@ static const char* kQuotaManagerKeyName = "content_quota_manager";
 
 namespace content {
 
+namespace {
+
 void CreateQuotaManagerAndClients(BrowserContext* context) {
   if (context->GetUserData(kQuotaManagerKeyName)) {
     DCHECK(context->GetUserData(kDatabaseTrackerKeyName));
@@ -115,9 +117,7 @@ void SaveSessionStateOnIOThread(ResourceContext* resource_context) {
 }
 
 void SaveSessionStateOnWebkitThread(
-    scoped_refptr<DOMStorageContextImpl> dom_storage_context,
     scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
-  dom_storage_context->SaveSessionState();
   indexed_db_context->SaveSessionState();
 }
 
@@ -125,10 +125,12 @@ void PurgeMemoryOnIOThread(ResourceContext* resource_context) {
   ResourceContext::GetAppCacheService(resource_context)->PurgeMemory();
 }
 
-void PurgeMemoryOnWebkitThread(
-    scoped_refptr<DOMStorageContextImpl> dom_storage_context) {
-  dom_storage_context->PurgeMemory();
+DOMStorageContextImpl* GetDOMStorageContextImpl(BrowserContext* context) {
+  return static_cast<DOMStorageContextImpl*>(
+      BrowserContext::GetDOMStorageContext(context));
 }
+
+}  // namespace
 
 QuotaManager* BrowserContext::GetQuotaManager(BrowserContext* context) {
   CreateQuotaManagerAndClients(context);
@@ -188,23 +190,20 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                    browser_context->GetResourceContext()));
   }
 
+  GetDOMStorageContextImpl(browser_context)->SaveSessionState();
+
   if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-        GetDOMStorageContext(browser_context));
     IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
         GetIndexedDBContext(browser_context));
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(&SaveSessionStateOnWebkitThread,
-                   make_scoped_refptr(dom_context),
                    make_scoped_refptr(indexed_db)));
   }
 }
 
 void BrowserContext::ClearLocalOnDestruction(BrowserContext* browser_context) {
-  DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-      GetDOMStorageContext(browser_context));
-  dom_context->set_clear_local_state_on_exit(true);
+  GetDOMStorageContextImpl(browser_context)->SetClearLocalState(true);
 
   IndexedDBContextImpl* indexed_db = static_cast<IndexedDBContextImpl*>(
       GetIndexedDBContext(browser_context));
@@ -228,14 +227,7 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
                    browser_context->GetResourceContext()));
   }
 
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    DOMStorageContextImpl* dom_context = static_cast<DOMStorageContextImpl*>(
-        GetDOMStorageContext(browser_context));
-    BrowserThread::PostTask(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-        base::Bind(&PurgeMemoryOnWebkitThread,
-                   make_scoped_refptr(dom_context)));
-  }
+  GetDOMStorageContextImpl(browser_context)->PurgeMemory();
 }
 
 BrowserContext::~BrowserContext() {
@@ -248,6 +240,10 @@ BrowserContext::~BrowserContext() {
                    GetDatabaseTracker(this)));
   }
 
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  if (GetUserData(kDOMStorageContextKeyName))
+    GetDOMStorageContextImpl(this)->Shutdown();
+#else
   if (GetUserData(kDOMStorageContextKeyName) &&
       BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
     DOMStorageContextImpl* dom_storage_context =
@@ -256,6 +252,7 @@ BrowserContext::~BrowserContext() {
     BrowserThread::ReleaseSoon(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context);
   }
+#endif
 }
 
 }  // namespace content

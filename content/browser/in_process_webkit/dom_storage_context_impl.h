@@ -105,14 +105,10 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   // The local storage file extension.
   static const FilePath::CharType kLocalStorageExtension[];
 
-  void set_clear_local_state_on_exit(bool clear_local_state) {
-    clear_local_state_on_exit_ = clear_local_state;
-  }
+  void SetClearLocalState(bool clear_local_state);
 
   // Disables the exit-time deletion for all data (also session-only data).
-  void SaveSessionState() {
-    save_session_state_ = true;
-  }
+  void SaveSessionState();
 
   void set_data_path_for_testing(const FilePath& data_path) {
     data_path_ = data_path;
