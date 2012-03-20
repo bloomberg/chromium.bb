@@ -143,28 +143,28 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
   if (!source->GetStatus().is_success() ||
       ((source->GetResponseCode() != -1) &&
         (source->GetResponseCode() != 200)) ||
-      !source->GetResponseAsString(&data) ||
-      !TemplateURLParser::Parse(
-          reinterpret_cast<const unsigned char*>(data.c_str()),
-          data.length(),
-          NULL,
-          template_url_.get()) ||
-      !template_url_->url() || !template_url_->url()->SupportsReplacement()) {
+      !source->GetResponseAsString(&data)) {
+    fetcher_->RequestCompleted(this);
+    // WARNING: RequestCompleted deletes us.
+    return;
+  }
+
+  template_url_.reset(TemplateURLParser::Parse(fetcher_->profile(), data.data(),
+                                               data.length(), NULL));
+  if (!template_url_.get() || !template_url_->url()->SupportsReplacement()) {
     fetcher_->RequestCompleted(this);
     // WARNING: RequestCompleted deletes us.
     return;
   }
 
   if (provider_type_ != AUTODETECTED_PROVIDER || keyword_.empty()) {
-    // Generate new keyword from URL in OSDD for non-autodetected case.
-    // Previous keyword was generated from URL where OSDD was placed and
-    // it gives wrong result when OSDD is located on third party site that
-    // has nothing in common with search engine in OSDD.
-    GURL keyword_url(template_url_->url()->url());
-    string16 new_keyword = TemplateURLService::GenerateKeyword(
-        keyword_url, false);
-    if (!new_keyword.empty())
-      keyword_ = new_keyword;
+    // Use the parser-generated new keyword from the URL in the OSDD for the
+    // non-autodetected case.  The existing |keyword_| was generated from the
+    // URL that hosted the OSDD, which results in the wrong keyword when the
+    // OSDD was located on a third-party site that has nothing in common with
+    // search engine described by OSDD.
+    keyword_ = template_url_->keyword();
+    DCHECK(!keyword_.empty());
   }
 
   // Wait for the model to be loaded before adding the provider.

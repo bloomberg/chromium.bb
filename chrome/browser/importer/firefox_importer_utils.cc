@@ -200,11 +200,9 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
        file_iter != xml_files.end(); ++file_iter) {
     file_util::ReadFileToString(*file_iter, &content);
     FirefoxURLParameterFilter param_filter;
-    TemplateURL* template_url = new TemplateURL();
-    if (TemplateURLParser::Parse(
-        reinterpret_cast<const unsigned char*>(content.data()),
-        content.length(), &param_filter, template_url) &&
-        template_url->url()) {
+    TemplateURL* template_url = TemplateURLParser::Parse(NULL, content.data(),
+        content.length(), &param_filter);
+    if (template_url) {
       std::string url = template_url->url()->url();
       SearchEnginesMap::iterator iter = search_engine_for_url.find(url);
       if (iter == search_engine_for_url.end()) {
@@ -218,14 +216,9 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
         delete iter->second;
         iter->second = template_url;
       }
-      // Give this a keyword to facilitate tab-to-search, if possible.
-      template_url->set_keyword(
-          TemplateURLService::GenerateKeyword(GURL(url), false));
       iter->second->set_show_in_default_list(true);
       if (default_turl == search_engine_for_url.end())
         default_turl = iter;
-    } else {
-      delete template_url;
     }
     content.clear();
   }

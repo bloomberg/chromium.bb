@@ -167,7 +167,11 @@ string16 TemplateURLService::GenerateKeyword(const GURL& url,
 
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
-  return net::StripWWW(UTF8ToUTF16(url.host()));
+  // Special case: if the host was exactly "www." (not sure this can happen but
+  // perhaps with some weird intranet and custom DNS server?), ensure we at
+  // least don't return the empty string.
+  string16 keyword(net::StripWWW(UTF8ToUTF16(url.host())));
+  return keyword.empty() ? ASCIIToUTF16("www") : keyword;
 }
 
 // static

@@ -434,9 +434,6 @@ class TemplateURL {
   GURL GetFaviconURL() const;
 
   // Set of languages supported. This may be empty.
-  void add_language(const string16& language) {
-    languages_.push_back(language);
-  }
   std::vector<string16> languages() const { return languages_; }
 
   // Date this keyword was created.

@@ -318,7 +318,7 @@ struct ParamTraits<TemplateURL> {
     for (lang_iter = languages.begin();
          lang_iter != languages.end();
          ++lang_iter) {
-      p->add_language(*lang_iter);
+      p->languages_.push_back(*lang_iter);
     }
     p->set_input_encodings(input_encodings);
     p->set_date_created(date_created);
