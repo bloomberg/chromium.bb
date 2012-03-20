@@ -238,6 +238,13 @@ const PPB_Graphics3DTrusted* PPBGraphics3DTrustedInterface() {
   return ppb;
 }
 
+const PPB_HostResolver_Private* PPBHostResolverPrivateInterface() {
+  static const PPB_HostResolver_Private* ppb =
+      static_cast<const PPB_HostResolver_Private*>(
+          GetBrowserInterfaceSafe(PPB_HOSTRESOLVER_PRIVATE_INTERFACE));
+  return ppb;
+}
+
 const PPB_ImageData* PPBImageDataInterface() {
   static const PPB_ImageData* ppb = static_cast<const PPB_ImageData*>(
       GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
