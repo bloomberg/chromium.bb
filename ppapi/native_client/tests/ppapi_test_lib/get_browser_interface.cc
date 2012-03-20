@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_ref.h"
@@ -45,6 +47,16 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
 }
 
 // Stable interfaces.
+
+const PPB_Audio* PPBAudio() {
+  return reinterpret_cast<const PPB_Audio*>(
+      GetBrowserInterfaceSafe(PPB_AUDIO_INTERFACE));
+}
+
+const PPB_AudioConfig* PPBAudioConfig() {
+  return reinterpret_cast<const PPB_AudioConfig*>(
+      GetBrowserInterfaceSafe(PPB_AUDIO_CONFIG_INTERFACE));
+}
 
 const PPB_Core* PPBCore() {
   return reinterpret_cast<const PPB_Core*>(

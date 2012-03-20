@@ -8,6 +8,8 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H
 
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/ppb_file_ref.h"
@@ -42,6 +44,8 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 // Lookup guarantees that the interface is available by using NULL CHECKs.
 //
 
+const PPB_Audio* PPBAudio();
+const PPB_AudioConfig* PPBAudioConfig();
 const PPB_Core* PPBCore();
 const PPB_FileIO* PPBFileIO();
 const PPB_FileRef* PPBFileRef();

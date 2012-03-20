@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -41,6 +41,7 @@ example_nexes = [
     #TODO(polina): follow ppapi_bad's example to pull in all nexes
     #'ppapi_crash'               # ppapi_crash.html
     # PPAPI Proxy Tests
+    'ppapi_ppb_audio',             # ppapi_ppb_audio.html
     'ppapi_ppb_core',              # ppapi_ppb_core.html
     'ppapi_ppb_graphics2d',        # ppapi_ppb_graphics2d.html
     'ppapi_ppb_file_system',       # ppapi_ppb_file_system.html
