@@ -14,8 +14,6 @@ ray
 SIBsim4
 
 # runtime errors
-# crash
-spirit x86-32
 
 # crash, works on ARM
 aha x86-64
