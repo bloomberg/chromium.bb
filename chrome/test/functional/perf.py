@@ -809,6 +809,8 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
   def testNetflixDroppedFrames(self):
     """Measures the Netflix video dropped frames/second. Runs for 60 secs."""
     self._LoginAndStartPlaying()
+    self._CheckNetflixPlaying(self.IS_PLAYING,
+                              'Player did not start playing the title.')
     # Ignore first 10 seconds of video playing so we get smooth videoplayback.
     time.sleep(10)
     init_dropped_frames = self._GetVideoDroppedFrames()
@@ -829,6 +831,8 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
   def testNetflixCPU(self):
     """Measures the Netflix video CPU usage. Runs for 60 seconds."""
     self._LoginAndStartPlaying()
+    self._CheckNetflixPlaying(self.IS_PLAYING,
+                              'Player did not start playing the title.')
     # Ignore first 10 seconds of video playing so we get smooth videoplayback.
     time.sleep(10)
     init_dropped_frames = self._GetVideoDroppedFrames()
