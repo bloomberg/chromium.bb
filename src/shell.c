@@ -1092,7 +1092,7 @@ get_shell_surface_type(struct weston_surface *surface)
 
 static void
 move_binding(struct wl_input_device *device, uint32_t time,
-	     uint32_t key, uint32_t button, uint32_t state, void *data)
+	     uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -1115,7 +1115,7 @@ move_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 resize_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -1163,7 +1163,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 zoom_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
@@ -1194,7 +1194,7 @@ zoom_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 terminate_binding(struct wl_input_device *device, uint32_t time,
-		  uint32_t key, uint32_t button, uint32_t state, void *data)
+		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_compositor *compositor = data;
 
@@ -1278,7 +1278,7 @@ static const struct wl_pointer_grab_interface rotate_grab_interface = {
 
 static void
 rotate_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_surface *base_surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -1389,7 +1389,7 @@ activate(struct weston_shell *base, struct weston_surface *es,
 static void
 click_to_activate_binding(struct wl_input_device *device,
 			  uint32_t time, uint32_t key,
-			  uint32_t button, uint32_t state, void *data)
+			  uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = data;
@@ -1916,8 +1916,8 @@ static const struct wl_keyboard_grab_interface switcher_grab = {
 
 static void
 switcher_binding(struct wl_input_device *device, uint32_t time,
-		 uint32_t key, uint32_t button,
-		 uint32_t state, void *data)
+		 uint32_t key, uint32_t button, uint32_t axis,
+		 int32_t state, void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct switcher *switcher;
@@ -1937,7 +1937,7 @@ switcher_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 backlight_binding(struct wl_input_device *device, uint32_t time,
-		  uint32_t key, uint32_t button, uint32_t state, void *data)
+		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct weston_output *output;
@@ -1970,7 +1970,7 @@ backlight_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 debug_repaint_binding(struct wl_input_device *device, uint32_t time,
-		      uint32_t key, uint32_t button, uint32_t state, void *data)
+		      uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct wl_shell *shell =
@@ -2065,37 +2065,37 @@ shell_init(struct weston_compositor *ec)
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
 
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,
-				    move_binding, shell);
-	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, MODIFIER_SUPER,
-				    resize_binding, shell);
-	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0,
-				    MODIFIER_CTRL | MODIFIER_ALT,
-				    terminate_binding, ec);
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, MODIFIER_SUPER,
+					move_binding, shell);
+	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, 0, MODIFIER_SUPER,
+					resize_binding, shell);
+	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0, 0,
+					MODIFIER_CTRL | MODIFIER_ALT,
+					terminate_binding, ec);
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
+					click_to_activate_binding, ec);
+	weston_compositor_add_binding(ec, KEY_UP, 0, 0, MODIFIER_SUPER,
+					zoom_binding, shell);
+	weston_compositor_add_binding(ec, KEY_DOWN, 0, 0, MODIFIER_SUPER,
+					zoom_binding, shell);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
-				    click_to_activate_binding, ec);
-	weston_compositor_add_binding(ec, KEY_UP, 0, MODIFIER_SUPER,
-				    zoom_binding, shell);
-	weston_compositor_add_binding(ec, KEY_DOWN, 0, MODIFIER_SUPER,
-				    zoom_binding, shell);
-	weston_compositor_add_binding(ec, 0, BTN_LEFT,
-				      MODIFIER_SUPER | MODIFIER_ALT,
-				      rotate_binding, NULL);
-	weston_compositor_add_binding(ec, KEY_TAB, 0, MODIFIER_SUPER,
-				      switcher_binding, ec);
+					MODIFIER_SUPER | MODIFIER_ALT,
+					rotate_binding, NULL);
+	weston_compositor_add_binding(ec, KEY_TAB, 0, 0, MODIFIER_SUPER,
+					switcher_binding, ec);
 
 	/* brightness */
-	weston_compositor_add_binding(ec, KEY_F9, 0, MODIFIER_CTRL,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_F10, 0, MODIFIER_CTRL,
-				      backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0,
-				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_F9, 0, 0, MODIFIER_CTRL,
+					backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0, 0,
+					backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_F10, 0, 0, MODIFIER_CTRL,
+					backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0, 0,
+					backlight_binding, ec);
 
-	weston_compositor_add_binding(ec, KEY_SPACE, 0, MODIFIER_SUPER,
-				    debug_repaint_binding, ec);
+	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, MODIFIER_SUPER,
+					debug_repaint_binding, ec);
 
 	ec->shell = &shell->shell;
 

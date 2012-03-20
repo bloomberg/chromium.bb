@@ -433,7 +433,7 @@ long_press_handler(void *data)
 
 static void
 menu_key_binding(struct wl_input_device *device, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t state, void *data)
+		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct tablet_shell *shell = data;
 
@@ -446,7 +446,7 @@ menu_key_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 home_key_binding(struct wl_input_device *device, uint32_t time,
-		 uint32_t key, uint32_t button, uint32_t state, void *data)
+		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct tablet_shell *shell = data;
 
@@ -534,15 +534,15 @@ shell_init(struct weston_compositor *compositor)
 	shell->long_press_source =
 		wl_event_loop_add_timer(loop, long_press_handler, shell);
 
+	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0, 0,
+				    home_key_binding, shell);
+	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0, 0,
+				    home_key_binding, shell);
 	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0, 0,
-				    home_key_binding, shell);
+				    MODIFIER_SUPER, home_key_binding, shell);
 	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0, 0,
-				    home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_LEFTMETA, 0,
 				    MODIFIER_SUPER, home_key_binding, shell);
-	weston_compositor_add_binding(compositor, KEY_RIGHTMETA, 0,
-				    MODIFIER_SUPER, home_key_binding, shell);
- 	weston_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0,
+	weston_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0, 0,
 				    menu_key_binding, shell);
 
 	compositor->shell = &shell->shell;

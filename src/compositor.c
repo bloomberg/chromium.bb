@@ -1543,7 +1543,7 @@ notify_button(struct wl_input_device *device,
 		device->button_count--;
 	}
 
-	weston_compositor_run_binding(compositor, wd, time, 0, button, state);
+	weston_compositor_run_binding(compositor, wd, time, 0, button, 0, state);
 
 	device->pointer_grab->interface->button(device->pointer_grab, time, button, state);
 
@@ -1557,6 +1557,12 @@ notify_axis(struct wl_input_device *device,
 	struct weston_compositor *compositor = wd->compositor;
 
 	weston_compositor_activity(compositor);
+
+	if (value)
+		weston_compositor_run_binding(compositor, wd,
+						time, 0, 0, axis, value);
+	else
+		return;
 
 	if (device->pointer_focus_resource)
 		wl_resource_post_event(device->pointer_focus_resource,
@@ -1626,7 +1632,7 @@ notify_key(struct wl_input_device *device,
 
 	if (device->keyboard_grab == &device->default_keyboard_grab)
 		weston_compositor_run_binding(compositor, wd,
-					      time, key, 0, state);
+					      time, key, 0, 0, state);
 
 	device->keyboard_grab->interface->key(device->keyboard_grab,
 					      time, key, state);
