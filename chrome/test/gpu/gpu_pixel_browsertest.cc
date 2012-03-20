@@ -419,12 +419,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-#if defined(USE_AURA)
-#define MAYBE_WebGLGreenTriangle DISABLED_WebGLGreenTriangle
-#else
-#define MAYBE_WebGLGreenTriangle WebGLGreenTriangle
-#endif
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
@@ -435,12 +430,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
   RunPixelTest(container_size, url, ref_img_revision_update);
 }
 
-#if defined(USE_AURA)
-#define MAYBE_CSS3DBlueBox DISABLED_CSS3DBlueBox
-#else
-#define MAYBE_CSS3DBlueBox CSS3DBlueBox
-#endif
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
@@ -459,12 +449,7 @@ class Canvas2DPixelTestHD : public GpuPixelBrowserTest {
   }
 };
 
-#if defined(USE_AURA)
-#define MAYBE_Canvas2DRedBoxHD DISABLED_Canvas2DRedBoxHD
-#else
-#define MAYBE_Canvas2DRedBoxHD Canvas2DRedBoxHD
-#endif
-IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, MAYBE_Canvas2DRedBoxHD) {
+IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestHD, Canvas2DRedBoxHD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
@@ -483,12 +468,7 @@ class Canvas2DPixelTestSD : public GpuPixelBrowserTest {
   }
 };
 
-#if defined(USE_AURA)
-#define MAYBE_Canvas2DRedBoxSD DISABLED_Canvas2DRedBoxSD
-#else
-#define MAYBE_Canvas2DRedBoxSD Canvas2DRedBoxSD
-#endif
-IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, MAYBE_Canvas2DRedBoxSD) {
+IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, Canvas2DRedBoxSD) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
