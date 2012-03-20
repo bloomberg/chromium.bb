@@ -925,8 +925,12 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   } else if (event->type() == ui::ET_SCROLL) {
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         content::MakeWebMouseWheelEvent(static_cast<aura::ScrollEvent*>(event));
-    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
-      host_->ForwardWheelEvent(mouse_wheel_event);
+    host_->ForwardWheelEvent(mouse_wheel_event);
+  } else if (event->type() == ui::ET_SCROLL_FLING_START ||
+      event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+    WebKit::WebGestureEvent gesture_event =
+        content::MakeWebGestureEvent(static_cast<aura::ScrollEvent*>(event));
+    host_->ForwardGestureEvent(gesture_event);
   } else if (CanRendererHandleEvent(event)) {
     WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);

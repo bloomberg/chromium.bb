@@ -40,7 +40,6 @@ enum EventType {
   ET_TOUCH_CANCELLED,
   ET_DROP_TARGET_EVENT,
   ET_FOCUS_CHANGE,
-  ET_SCROLL,
   ET_TRANSLATED_KEY_PRESS,
   ET_TRANSLATED_KEY_RELEASE,
 
@@ -55,6 +54,12 @@ enum EventType {
   ET_GESTURE_PINCH_END,
   ET_GESTURE_PINCH_UPDATE,
   ET_GESTURE_LONG_PRESS,
+
+  // Scroll support.
+  // TODO[davemoore] we need to unify these events w/ touch and gestures.
+  ET_SCROLL,
+  ET_SCROLL_FLING_START,
+  ET_SCROLL_FLING_CANCEL,
 };
 
 // Event flags currently supported
@@ -159,6 +164,13 @@ UI_EXPORT float GetTouchAngle(const base::NativeEvent& native_event);
 
 // Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
 UI_EXPORT float GetTouchForce(const base::NativeEvent& native_event);
+
+// Gets the fling velocity from a native event. is_cancel is set to true if
+// this was a tap down, intended to stop an ongoing fling.
+UI_EXPORT bool GetFlingData(const base::NativeEvent& native_event,
+                            float* vx,
+                            float* vy,
+                            bool* is_cancel);
 
 // Returns whether this is a scroll event and optionally gets the amount to be
 // scrolled. |x_offset| and |y_offset| can be NULL.
