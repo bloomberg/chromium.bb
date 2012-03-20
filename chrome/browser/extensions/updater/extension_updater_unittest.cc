@@ -77,9 +77,10 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
  public:
   MOCK_METHOD3(OnExtensionDownloadFailed,
                void(const std::string&, Error, const PingResult&));
-  MOCK_METHOD4(OnExtensionDownloadFinished, void(const std::string&,
+  MOCK_METHOD5(OnExtensionDownloadFinished, void(const std::string&,
                                                  const FilePath&,
                                                  const GURL&,
+                                                 const std::string&,
                                                  const PingResult&));
   MOCK_METHOD4(OnBlacklistDownloadFinished, void(const std::string&,
                                                  const std::string&,

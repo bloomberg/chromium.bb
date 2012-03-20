@@ -25,6 +25,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/policy/app_pack_updater.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -371,5 +377,23 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::EXTERNAL_PREF,
               Extension::INVALID,
               Extension::FROM_BOOKMARK)));
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  if (user_manager && user_manager->IsLoggedInAsDemoUser() &&
+      connector->GetDeviceMode() == policy::DEVICE_MODE_KIOSK &&
+      connector->GetAppPackUpdater()) {
+    provider_list->push_back(
+        linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              connector->GetAppPackUpdater()->CreateExternalExtensionLoader(),
+              Extension::EXTERNAL_PREF,
+              Extension::INVALID,
+              Extension::NO_FLAGS)));
+  }
 #endif
 }

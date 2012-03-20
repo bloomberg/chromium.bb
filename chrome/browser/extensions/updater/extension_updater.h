@@ -123,6 +123,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   virtual void OnExtensionDownloadFinished(const std::string& id,
                                            const FilePath& path,
                                            const GURL& download_url,
+                                           const std::string& version,
                                            const PingResult& ping) OVERRIDE;
 
   virtual void OnBlacklistDownloadFinished(const std::string& data,

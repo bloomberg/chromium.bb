@@ -65,8 +65,6 @@ class ExternalExtensionProviderImpl
   virtual bool IsReady() const OVERRIDE;
   virtual int GetCreationFlags() const OVERRIDE;
 
-  static const char kLocation[];
-  static const char kState[];
   static const char kExternalCrx[];
   static const char kExternalVersion[];
   static const char kExternalUpdateUrl[];

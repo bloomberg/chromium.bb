@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
@@ -39,6 +40,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #endif
 
@@ -90,6 +92,9 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
 #if defined(OS_CHROMEOS)
   if (device_cloud_policy_subsystem_.get())
     device_cloud_policy_subsystem_->Shutdown();
+  // The AppPackUpdater may be observing the |device_cloud_policy_subsystem_|.
+  // Delete it first.
+  app_pack_updater_.reset();
   device_cloud_policy_subsystem_.reset();
   device_data_store_.reset();
 #endif
@@ -132,6 +137,14 @@ void BrowserPolicyConnector::Init() {
             managed_cloud_provider_.get(),
             chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
   }
+
+  // Create the AppPackUpdater to start updating the cache. It requires the
+  // system request context, which isn't available yet; therefore it is
+  // created only once the loops are running.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&BrowserPolicyConnector::GetAppPackUpdater),
+                 weak_ptr_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -387,6 +400,21 @@ UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
 #endif
 
   return USER_AFFILIATION_NONE;
+}
+
+AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
+#if defined(OS_CHROMEOS)
+  if (!app_pack_updater_.get()) {
+    // system_request_context() is NULL in unit tests.
+    net::URLRequestContextGetter* request_context =
+        g_browser_process->system_request_context();
+    if (request_context)
+      app_pack_updater_.reset(new AppPackUpdater(request_context, this));
+  }
+  return app_pack_updater_.get();
+#else
+  return NULL;
+#endif
 }
 
 void BrowserPolicyConnector::Observe(

@@ -432,10 +432,6 @@ void DeviceSettingsProvider::DecodeKioskPolicies(
       }
       if (it->has_update_url())
         entry->SetString(policy::AppPackUpdater::kUpdateUrl, it->update_url());
-      if (it->has_online_only()) {
-        entry->SetBoolean(policy::AppPackUpdater::kOnlineOnly,
-                          it->online_only());
-      }
       list->Append(entry);
     }
     new_values_cache->SetValue(kAppPack, list);

@@ -343,6 +343,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(const std::string& id,
 void ExtensionUpdater::OnExtensionDownloadFinished(const std::string& id,
                                                    const FilePath& path,
                                                    const GURL& download_url,
+                                                   const std::string& version,
                                                    const PingResult& ping) {
   DCHECK(alive_);
   UpdatePingData(id, ping);

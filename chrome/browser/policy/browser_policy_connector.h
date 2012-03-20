@@ -21,6 +21,7 @@ class TokenService;
 
 namespace policy {
 
+class AppPackUpdater;
 class CloudPolicyDataStore;
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
@@ -141,6 +142,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // the installation attributes.
   UserAffiliation GetUserAffiliation(const std::string& user_name);
 
+  AppPackUpdater* GetAppPackUpdater();
+
  private:
   // content::NotificationObserver method overrides:
   virtual void Observe(int type,
@@ -190,6 +193,10 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   // Used to convert policies to preferences.
   ConfigurationPolicyHandlerList handler_list_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<AppPackUpdater> app_pack_updater_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnector);
 };

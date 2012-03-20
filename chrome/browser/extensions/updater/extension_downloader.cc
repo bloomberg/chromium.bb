@@ -605,7 +605,9 @@ void ExtensionDownloader::OnCRXFetchComplete(
       // Take ownership of the file at |crx_path|.
       CHECK(source->GetResponseAsFilePath(true, &crx_path));
       RecordCRXWriteHistogram(true, crx_path);
-      delegate_->OnExtensionDownloadFinished(id, crx_path, url, ping);
+      delegate_->OnExtensionDownloadFinished(id, crx_path, url,
+                                             current_extension_fetch_.version,
+                                             ping);
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling

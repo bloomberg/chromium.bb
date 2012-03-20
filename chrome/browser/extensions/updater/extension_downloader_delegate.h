@@ -66,11 +66,12 @@ class ExtensionDownloaderDelegate {
                                          const PingResult& ping_result);
 
   // Invoked if the extension had an update available and its crx was
-  // successfully downloaded to |path|. Ownership if that file is transferred
+  // successfully downloaded to |path|. Ownership of that file is transferred
   // to the delegate.
   virtual void OnExtensionDownloadFinished(const std::string& id,
                                            const FilePath& path,
                                            const GURL& download_url,
+                                           const std::string& version,
                                            const PingResult& ping_result) = 0;
 
   // Same as OnExtensionDownloadFinished() but only for the kBlacklistAppID

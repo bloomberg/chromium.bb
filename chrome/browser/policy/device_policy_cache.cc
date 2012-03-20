@@ -425,8 +425,6 @@ void DevicePolicyCache::DecodeKioskPolicies(
         base::DictionaryValue* dict = new base::DictionaryValue();
         dict->SetString(AppPackUpdater::kExtensionId, entry.extension_id());
         dict->SetString(AppPackUpdater::kUpdateUrl, entry.update_url());
-        if (entry.has_online_only())
-          dict->SetBoolean(AppPackUpdater::kOnlineOnly, entry.online_only());
         app_pack_list->Append(dict);
       }
     }
