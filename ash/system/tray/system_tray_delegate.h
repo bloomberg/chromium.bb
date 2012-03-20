@@ -26,7 +26,7 @@ struct ASH_EXPORT NetworkIconInfo {
   SkBitmap image;
   string16 name;
   string16 description;
-  std::string unique_id;
+  std::string service_path;
 };
 
 struct PowerSupplyStatus;

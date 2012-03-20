@@ -54,7 +54,7 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   ash::NetworkIconInfo info;
   info.name = UTF8ToUTF16(network->name());
   info.image = network_icon->GetBitmap(network, NetworkMenuIcon::SIZE_SMALL);
-  info.unique_id = network->unique_id();
+  info.service_path = network->service_path();
   return info;
 }
 
@@ -241,7 +241,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         else
           info.name =
               l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-        info.unique_id = ethernet_network->unique_id();
+        info.service_path = ethernet_network->service_path();
         list->push_back(info);
       }
     }
@@ -276,7 +276,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    Network* network = crosnet->FindNetworkByUniqueId(network_id);
+    Network* network = crosnet->FindNetworkByPath(network_id);
     if (network)
       network_menu_->ConnectToNetwork(network);
   }

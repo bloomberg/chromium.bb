@@ -312,7 +312,7 @@ class NetworkDetailedView : public views::View,
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddIconAndLabel(list[i].image, list[i].name);
       networks->AddChildView(container);
-      network_map_[container] = list[i].unique_id;
+      network_map_[container] = list[i].service_path;
     }
     scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
         SkColorSetARGB(25, 0, 0, 0)));
