@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrEq;
+using ::testing::AnyNumber;
 
 namespace chromeos {
 
@@ -216,5 +217,71 @@ TEST(FileBrowserMountNotificationsTest, MulitpleFail) {
   notifications->ManageNotificationsOnMountCompleted(notification_path,
       device_label, false, false, false);
 }
+
+TEST(FileBrowserGDataNotificationsTest, GDataSyncSuccess) {
+  MockFileBrowserNotificationsOnMount* mocked_notifications =
+      new MockFileBrowserNotificationsOnMount(NULL);
+  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC, _)).Times(AnyNumber());
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC_SUCCESS, _)).Times(AnyNumber());
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC_FAIL, _)).Times(AnyNumber());
+  {
+    InSequence s;
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC, _,
+        String16Equals(IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE, "2")));
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC, _,
+        String16Equals(IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE, "1")));
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC_SUCCESS, _,
+        l10n_util::GetStringUTF16(
+            IDS_CHROMEOS_GDATA_SYNC_FINISHED_SUCCESS_MESSAGE)));
+  }
+
+  notifications->ManageNotificationOnGDataSyncProgress(2);
+  notifications->ManageNotificationOnGDataSyncProgress(1);
+  notifications->ManageNotificationOnGDataSyncFinish(true);
+};
+
+
+TEST(FileBrowserGDataNotificationsTest, GDataSyncFailAndSuccess) {
+  MockFileBrowserNotificationsOnMount* mocked_notifications =
+      new MockFileBrowserNotificationsOnMount(NULL);
+  scoped_ptr<FileBrowserNotifications> notifications(mocked_notifications);
+
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC, _)).Times(AnyNumber());
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC_SUCCESS, _)).Times(AnyNumber());
+  EXPECT_CALL(*mocked_notifications, HideNotification(
+      FileBrowserNotifications::GDATA_SYNC_FAIL, _)).Times(AnyNumber());
+  {
+    InSequence s;
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC, _,
+        String16Equals(IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE, "5")));
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC_FAIL, _,
+        l10n_util::GetStringUTF16(
+            IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_MESSAGE)));
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC, _,
+        String16Equals(IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE, "2")));
+    EXPECT_CALL(*mocked_notifications, ShowNotificationWithMessage(
+        FileBrowserNotifications::GDATA_SYNC_SUCCESS, _,
+        l10n_util::GetStringUTF16(
+            IDS_CHROMEOS_GDATA_SYNC_FINISHED_SUCCESS_MESSAGE)));
+  }
+
+  notifications->ManageNotificationOnGDataSyncProgress(5);
+  notifications->ManageNotificationOnGDataSyncFinish(false);
+  notifications->ManageNotificationOnGDataSyncProgress(2);
+  notifications->ManageNotificationOnGDataSyncFinish(true);
+};
 
 }  // namespace chromeos.

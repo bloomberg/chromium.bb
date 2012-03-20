@@ -464,6 +464,7 @@
         <include name="IDR_NOTIFICATION_3G" file="notification_3g.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_EMPTY" file="notification_bars_empty.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_BARS_CRITICAL" file="notification_bars_critical.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_GDATA" file="notification_gdata.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_LOCALE_CHANGE" file="notification_locale_change.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_battery_low.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_MENU" file="notification_menu.png" type="BINDATA" />
