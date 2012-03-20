@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ using base::TimeDelta;
 const int64 ThumbnailScore::kUpdateThumbnailTimeDays = 1;
 const double ThumbnailScore::kThumbnailMaximumBoringness = 0.94;
 const double ThumbnailScore::kThumbnailDegradePerHour = 0.01;
+const double ThumbnailScore::kTooWideAspectRatio = 2.0;
 
 // Calculates a numeric score from traits about where a snapshot was
 // taken. The lower the better. We store the raw components in the

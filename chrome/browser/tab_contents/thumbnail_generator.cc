@@ -446,8 +446,11 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
       S16CPU new_width = static_cast<S16CPU>(bitmap.height() * dest_aspect);
       S16CPU x_offset = (bitmap.width() - new_width) / 2;
       src_rect.set(x_offset, 0, new_width + x_offset, bitmap.height());
-      if (clip_result)
-        *clip_result = ThumbnailGenerator::kWiderThanTall;
+      if (clip_result) {
+        *clip_result = (src_aspect >= ThumbnailScore::kTooWideAspectRatio) ?
+            ThumbnailGenerator::kTooWiderThanTall :
+            ThumbnailGenerator::kWiderThanTall;
+      }
     } else if (src_aspect < dest_aspect) {
       src_rect.set(0, 0, bitmap.width(),
                    static_cast<S16CPU>(bitmap.width() / dest_aspect));
@@ -502,7 +505,8 @@ void ThumbnailGenerator::UpdateThumbnail(
       (web_contents->GetRenderViewHost()->GetLastScrollOffset().y() == 0);
   score.boring_score = ThumbnailGenerator::CalculateBoringScore(thumbnail);
   score.good_clipping =
-      (clip_result == ThumbnailGenerator::kTallerThanWide ||
+      (clip_result == ThumbnailGenerator::kWiderThanTall ||
+       clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);
   score.load_completed = (!load_interrupted_ && !web_contents->IsLoading());
 

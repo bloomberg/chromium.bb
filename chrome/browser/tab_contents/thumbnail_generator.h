@@ -43,6 +43,8 @@ class ThumbnailGenerator : public content::NotificationObserver,
   enum ClipResult {
     // The source image is smaller.
     kSourceIsSmaller,
+    // Wider than tall by twice or more, clip horizontally.
+    kTooWiderThanTall,
     // Wider than tall, clip horizontally.
     kWiderThanTall,
     // Taller than wide, clip vertically.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,9 +44,10 @@ struct ThumbnailScore {
   // browser window size.
   double boring_score;
 
-  // Whether the thumbnail was taken with height greater then
-  // width. In cases where we don't have |good_clipping|, the
-  // thumbnails are either clipped from the horizontal center of the
+  // Whether the thumbnail was taken with height greater than
+  // width or width greater than height and the aspect ratio less than
+  // kTooWideAspectRatio. In cases where we don't have |good_clipping|,
+  // the thumbnails are either clipped from the horizontal center of the
   // window, or are otherwise weirdly stretched.
   bool good_clipping;
 
@@ -94,6 +95,10 @@ struct ThumbnailScore {
 
   // Penalty of how much more boring a thumbnail should be per hour.
   static const double kThumbnailDegradePerHour;
+
+  // If a thumbnail is taken with the aspect ratio greater than or equal to
+  // this value, |good_clipping| is to false.
+  static const double kTooWideAspectRatio;
 
   // Checks whether we should consider updating a new thumbnail based on
   // this score. For instance, we don't have to update a new thumbnail

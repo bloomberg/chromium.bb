@@ -76,7 +76,7 @@ TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_TallerThanWide) {
 
 TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_WiderThanTall) {
   // The input bitmap is horizontally long.
-  gfx::Canvas canvas(gfx::Size(90, 40), true);
+  gfx::Canvas canvas(gfx::Size(70, 40), true);
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
 
@@ -89,6 +89,23 @@ TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_WiderThanTall) {
   EXPECT_EQ(40, clipped_bitmap.height());
   // The input was wider than tall.
   EXPECT_EQ(ThumbnailGenerator::kWiderThanTall, clip_result);
+}
+
+TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_TooWiderThanTall) {
+  // The input bitmap is horizontally very long.
+  gfx::Canvas canvas(gfx::Size(90, 40), true);
+  SkBitmap bitmap =
+      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+
+  // The desired size is square.
+  ThumbnailGenerator::ClipResult clip_result = ThumbnailGenerator::kNotClipped;
+  SkBitmap clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
+      bitmap, 10, 10, &clip_result);
+  // The clipped bitmap should be square.
+  EXPECT_EQ(40, clipped_bitmap.width());
+  EXPECT_EQ(40, clipped_bitmap.height());
+  // The input was wider than tall.
+  EXPECT_EQ(ThumbnailGenerator::kTooWiderThanTall, clip_result);
 }
 
 TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_NotClipped) {
