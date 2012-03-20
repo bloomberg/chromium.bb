@@ -382,7 +382,6 @@ SystemTray::SystemTray()
       brightness_observer_(NULL),
       caps_lock_observer_(NULL),
       clock_observer_(NULL),
-      ime_observer_(NULL),
       network_observer_(NULL),
       power_status_observer_(NULL),
       update_observer_(NULL),

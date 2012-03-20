@@ -129,8 +129,7 @@ class InputMethodManager {
 
   // Returns the list of input methods we can select (i.e. active). If the cros
   // library is not found or IBus/DBus daemon is not alive, this function
-  // returns a fallback input method list (and never returns NULL). Caller has
-  // to delete the returned list.
+  // returns a fallback input method list (and never returns NULL).
   virtual InputMethodDescriptors* GetActiveInputMethods() = 0;
 
   // Returns the number of active input methods.

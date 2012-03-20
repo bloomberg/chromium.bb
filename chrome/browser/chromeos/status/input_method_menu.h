@@ -112,6 +112,11 @@ class InputMethodMenu
   // Registers input method preferences for the login screen.
   static void RegisterPrefs(PrefService* local_state);
 
+  // Returns a string for the indicator on top right corner of the Chrome
+  // window. The method is public for unit tests.
+  static string16 GetTextForIndicator(
+      const input_method::InputMethodDescriptor& input_method);
+
   // Returns a string for the drop-down menu and the tooltip for the indicator.
   // The method is public for unit tests.
   static string16 GetTextForMenu(

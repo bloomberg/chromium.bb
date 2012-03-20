@@ -147,8 +147,7 @@ void InputMethodMenuButton::UpdateUIFromCurrentInputMethod() {
       input_method::InputMethodManager::GetInstance();
   const input_method::InputMethodDescriptor& input_method =
       input_method_manager->GetCurrentInputMethod();
-  const string16 name = input_method_manager->GetInputMethodUtil()->
-      GetInputMethodShortName(input_method);
+  const string16 name = InputMethodMenu::GetTextForIndicator(input_method);
   const string16 tooltip = InputMethodMenu::GetTextForMenu(input_method);
   const size_t num_active_input_methods =
       input_method_manager->GetNumActiveInputMethods();

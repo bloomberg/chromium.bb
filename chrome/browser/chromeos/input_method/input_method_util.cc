@@ -24,46 +24,6 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/uloc.h"
 
-namespace {
-
-// A mapping from an input method id to a string for the language indicator. The
-// mapping is necessary since some input methods belong to the same language.
-// For example, both "xkb:us::eng" and "xkb:us:dvorak:eng" are for US English.
-const struct {
-  const char* input_method_id;
-  const char* indicator_text;
-} kMappingFromIdToIndicatorText[] = {
-  // To distinguish from "xkb:us::eng"
-  { "xkb:us:altgr-intl:eng", "EXTD" },
-  { "xkb:us:dvorak:eng", "DV" },
-  { "xkb:us:intl:eng", "INTL" },
-  { "xkb:us:colemak:eng", "CO" },
-  { "english-m", "??" },
-  { "xkb:de:neo:ger", "NEO" },
-  // To distinguish from "xkb:es::spa"
-  { "xkb:es:cat:cat", "CAS" },
-  // To distinguish from "xkb:gb::eng"
-  { "xkb:gb:dvorak:eng", "DV" },
-  // To distinguish from "xkb:jp::jpn"
-  { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
-  { "mozc-dv", "\xe3\x81\x82" },
-  { "mozc-jp", "\xe3\x81\x82" },
-  { "zinnia-japanese", "\xe6\x89\x8b" },  // U+624B, "hand"
-  // For simplified Chinese input methods
-  { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
-  { "pinyin-dv", "\xe6\x8b\xbc" },
-  // For traditional Chinese input methods
-  { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
-  { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
-  { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
-  // For Hangul input method.
-  { "mozc-hangul", "\xed\x95\x9c" },  // U+D55C
-};
-
-const size_t kMappingFromIdToIndicatorTextLen =
-    ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
-}
-
 namespace chromeos {
 namespace input_method {
 
@@ -357,46 +317,6 @@ std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
   }
   // Return an empty string if the display name is not found.
   return "";
-}
-
-string16 InputMethodUtil::GetInputMethodShortName(
-    const InputMethodDescriptor& input_method) const {
-  // For the status area, we use two-letter, upper-case language code like
-  // "US" and "JP".
-  string16 text;
-
-  // Check special cases first.
-  for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
-    if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id()) {
-      text = UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
-      break;
-    }
-  }
-
-  // Display the keyboard layout name when using a keyboard layout.
-  if (text.empty() &&
-      IsKeyboardLayout(input_method.id())) {
-    const size_t kMaxKeyboardLayoutNameLen = 2;
-    const string16 keyboard_layout =
-        UTF8ToUTF16(GetKeyboardLayoutName(input_method.id()));
-    text = StringToUpperASCII(keyboard_layout).substr(
-        0, kMaxKeyboardLayoutNameLen);
-  }
-
-  // TODO(yusukes): Some languages have two or more input methods. For example,
-  // Thai has 3, Vietnamese has 4. If these input methods could be activated at
-  // the same time, we should do either of the following:
-  //   (1) Add mappings to |kMappingFromIdToIndicatorText|
-  //   (2) Add suffix (1, 2, ...) to |text| when ambiguous.
-
-  if (text.empty()) {
-    const size_t kMaxLanguageNameLen = 2;
-    const std::string language_code = input_method.language_code();
-    text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
-        0, kMaxLanguageNameLen);
-  }
-  DCHECK(!text.empty());
-  return text;
 }
 
 const InputMethodDescriptor* InputMethodUtil::GetInputMethodDescriptorFromId(
