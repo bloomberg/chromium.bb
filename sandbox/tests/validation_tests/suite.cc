@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,19 @@ TEST(ValidationSuite, TestWindows) {
 TEST(ValidationSuite, TestProcess) {
   TestRunner runner;
   wchar_t command[1024] = {0};
+
+  wsprintf(command, L"OpenProcessCmd %d", ::GetCurrentProcessId());
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
+}
+
+// Tests that sandboxed processes are explicitly denied access to the broker
+// (and, transitively, each other).
+TEST(ValidationSuite, TestProcessDenyAces) {
+  TestRunner runner;
+  wchar_t command[1024] = {0};
+
+  runner.GetPolicy()->SetTokenLevel(USER_INTERACTIVE, USER_INTERACTIVE);
+  runner.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_MEDIUM);
 
   wsprintf(command, L"OpenProcessCmd %d", ::GetCurrentProcessId());
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
