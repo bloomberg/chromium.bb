@@ -582,13 +582,16 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       cache_initialization_started_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       sync_client_(sync_client) {
+}
+
+void GDataFileSystem::Initialize() {
   documents_service_->Initialize(profile_);
-  sync_client->Start(this);
+  sync_client_->Start(this);
 
   // download_manager will be NULL for unit tests.
   content::DownloadManager* download_manager =
     g_browser_process->download_status_updater() ?
-        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager() :
+        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
         NULL;
   gdata_download_observer_->Initialize(gdata_uploader_.get(), download_manager);
   root_.reset(new GDataRootDirectory(this));
@@ -598,7 +601,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath cache_base_path;
-  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
+  chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
   gdata_cache_path_ = gdata_cache_path_.Append(kGDataCacheVersionDir);
   // Insert into |cache_paths_| in the order defined in enum CacheSubdir.
@@ -2487,9 +2490,11 @@ GDataFileSystemFactory::~GDataFileSystemFactory() {
 
 ProfileKeyedService* GDataFileSystemFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new GDataFileSystem(profile,
-                             new DocumentsService,
-                             new GDataSyncClient);
+  GDataFileSystem* file_system = new GDataFileSystem(profile,
+                                                     new DocumentsService,
+                                                     new GDataSyncClient);
+  file_system->Initialize();
+  return file_system;
 }
 
 }  // namespace gdata

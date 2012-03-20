@@ -18,6 +18,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   virtual ~MockGDataFileSystem();
 
   // GDataFileSystemInterface overrides.
+  MOCK_METHOD0(Initialize, void());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));

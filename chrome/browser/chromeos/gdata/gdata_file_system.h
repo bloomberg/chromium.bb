@@ -141,6 +141,10 @@ class GDataFileSystemInterface {
     virtual ~Observer() {}
   };
 
+  // Initializes the object. This function should be called before any
+  // other functions.
+  virtual void Initialize() = 0;
+
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -313,6 +317,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void Shutdown() OVERRIDE;
 
   // GDataFileSystem overrides.
+  virtual void Initialize() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
