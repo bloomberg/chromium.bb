@@ -143,6 +143,13 @@ class ProfileImpl : public Profile,
  private:
   friend class Profile;
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, ProfilesLaunchedAfterCrash);
+  FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, ProfileReadmeCreated);
+  FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest,
+                           ProfileDeletedBeforeReadmeCreated);
+
+  // Delay, in milliseconds, before README file is created for a new profile.
+  // This is non-const for testing purposes.
+  static int create_readme_delay_ms;
 
   ProfileImpl(const FilePath& path,
               Delegate* delegate,

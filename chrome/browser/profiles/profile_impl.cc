@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -96,11 +97,13 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/database/database_tracker.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/instant/promo_counter.h"
@@ -144,6 +147,14 @@ COMPILE_ASSERT(sizeof(ProfileImpl) <= 720u, profile_impl_size_unexpected);
 // Delay, in milliseconds, before we explicitly create the SessionService.
 static const int kCreateSessionServiceDelayMS = 500;
 
+// Text content of README file created in each profile directory. Both %s
+// placeholders must contain the product name. This is not localizable and hence
+// not in resources.
+static const char kReadmeText[] =
+    "%s settings and storage represent user-selected preferences and "
+    "information and MUST not be extracted, overwritten or modified except "
+    "through %s defined APIs.";
+
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
 // TODO(jhawkins): Remove once IgnoreResult is fixed.
@@ -157,6 +168,19 @@ FilePath GetCachePath(const FilePath& base) {
 
 FilePath GetMediaCachePath(const FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
+}
+
+void EnsureReadmeFile(const FilePath& base) {
+  FilePath readme_path = base.Append(chrome::kReadmeFilename);
+  if (file_util::PathExists(readme_path))
+    return;
+  std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  std::string readme_text = base::StringPrintf(
+      kReadmeText, product_name.c_str(), product_name.c_str());
+  if (file_util::WriteFile(
+          readme_path, readme_text.data(), readme_text.size()) == -1) {
+    LOG(ERROR) << "Could not create README file.";
+  }
 }
 
 }  // namespace
@@ -185,6 +209,9 @@ Profile* Profile::CreateProfile(const FilePath& path,
 
   return new ProfileImpl(path, delegate, create_mode);
 }
+
+// static
+int ProfileImpl::create_readme_delay_ms = 60000;
 
 // static
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
@@ -372,6 +399,12 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this),
       io_data_.GetResourceContextNoInit());
+
+  // Delay README creation to not impact startup performance.
+  BrowserThread::PostDelayedTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&EnsureReadmeFile, GetPath()),
+        create_readme_delay_ms);
 
   // Creation has been finished.
   if (delegate_)

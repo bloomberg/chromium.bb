@@ -4,10 +4,12 @@
 
 #include "chrome/browser/profiles/profile.h"
 
+#include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "base/version.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
@@ -123,4 +125,60 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
       content::Source<Profile>(profile.get()));
   observer.Wait();
   CheckChromeVersion(profile.get(), false);
+}
+
+// Fails on Win under some circumstances, see http://crbug.com/119059.
+#if defined(OS_WIN)
+#define MAYBE_ProfileReadmeCreated FAILS_ProfileReadmeCreated
+#else
+#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
+#endif
+
+// Test that a README file is created for profiles that didn't have it.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
+
+  // No delay before README creation.
+  ProfileImpl::create_readme_delay_ms = 0;
+
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_ASYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+
+  // Wait for the profile to be created.
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_PROFILE_CREATED,
+      content::Source<Profile>(profile.get()));
+  observer.Wait();
+
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  // Verify that README exists.
+  EXPECT_TRUE(file_util::PathExists(
+      temp_dir.path().Append(chrome::kReadmeFilename)));
+}
+
+// Test that Profile can be deleted before README file is created.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  MockProfileDelegate delegate;
+  EXPECT_CALL(delegate, OnProfileCreated(testing::NotNull(), true, true));
+
+  // No delay before README creation.
+  ProfileImpl::create_readme_delay_ms = 0;
+
+  scoped_ptr<Profile> profile(Profile::CreateProfile(
+      temp_dir.path(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
+  ASSERT_TRUE(profile.get());
+
+  // Delete the Profile instance and run pending tasks (this includes the task
+  // for README creation).
+  profile.reset();
+  ui_test_utils::RunAllPendingInMessageLoop();
 }
