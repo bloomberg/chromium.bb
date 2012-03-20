@@ -68,6 +68,25 @@ body {
   background-color: $2;  /* COLOR_NTP_BACKGROUND */
 }
 
+.bare-minimum #footer {
+  color: $8;  /* COLOR_NTP_TEXT */
+}
+
+.bare-minimum .disclosure-triangle {
+  background-color: $8;  /* COLOR_NTP_TEXT */
+}
+
+.bare-minimum .footer-menu-button:hover,
+.bare-minimum .footer-menu-button[menu-shown],
+.bare-minimum #chrome-web-store-href:hover {
+  color: rgba($23, 0.85);  /* COLOR_NTP_TEXT */
+}
+
+.bare-minimum .footer-menu-button:hover .disclosure-triangle,
+.bare-minimum .footer-menu-button[menu-shown] .disclosure-triangle {
+  background-color: rgba($23, 0.85);  /* COLOR_NTP_TEXT */
+}
+
 /* Most Visited ***************************************************************/
 
 .most-visited,

@@ -129,8 +129,10 @@ body.bare-minimum #card-slider-frame {
 }
 
 /* For themes that right-align their images, we flip the attribution to the
- * left to avoid conflicts.  */
+ * left to avoid conflicts. We also do this for bare-minimum mode since there
+ * can be conflicts with the recently closed menu. */
 html[themegravity='right'] #attribution,
+body.bare-minimum #attribution,
 html[dir='rtl'] #attribution {
   left: 0;
   right: auto;
@@ -145,6 +147,7 @@ html[dir='rtl'] #attribution {
   background-image: -webkit-linear-gradient(
       rgba(242, 242, 242, 0.9), rgba(222, 222, 222, 0.9));
   bottom: 0;
+  color: #7F7F7F;
   font-size: 0.9em;
   font-weight: bold;
   overflow: hidden;
@@ -177,6 +180,7 @@ html[dir='rtl'] #attribution {
 body.bare-minimum #footer {
   background: transparent;
   bottom: auto;
+  font-weight: normal;
   position: absolute;
   right: 0;
 }
@@ -190,11 +194,6 @@ body.bare-minimum #footer-border,
 body.bare-minimum #logo-img,
 body.bare-minimum #dot-list {
   visibility: hidden;
-}
-
-html[dir='ltr'] body.bare-minimum .footer-menu-button:last-of-type {
-  /* Scrollbar pushes us left; push back. */
-  -webkit-padding-end: 0;
 }
 
 .starting-up * {
@@ -356,7 +355,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   -webkit-padding-end: 12px;
   /* Match transition delay of recently closed button. */
   -webkit-transition-delay: 100ms;
-  color: #7F7F7F;
+  color: inherit;
   cursor: pointer;
   display: none;
   margin: 0;
@@ -379,7 +378,7 @@ html[dir='rtl'] #chrome-web-store-title {
   background-position-x: left;
 }
 
-/* Show the chrome-web-store button when the experiment is turned on. */
+/* Show the chrome web store footer link when the experiment is turned on. */
 .enable-cws-experiment #chrome-web-store-href {
   display: inline-block;
 }
