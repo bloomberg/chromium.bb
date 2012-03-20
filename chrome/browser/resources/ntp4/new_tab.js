@@ -291,7 +291,8 @@ cr.define('ntp', function() {
   function measureNavDots() {
     var measuringDiv = $('fontMeasuringDiv');
     measuringDiv.textContent = localStrings.getString('mostvisited');
-    var pxWidth = Math.max(measuringDiv.clientWidth * 1.15, 80);
+    // The 4 is for border and padding.
+    var pxWidth = Math.max(measuringDiv.clientWidth * 1.15 + 4, 80);
 
     var styleElement = document.createElement('style');
     styleElement.type = 'text/css';

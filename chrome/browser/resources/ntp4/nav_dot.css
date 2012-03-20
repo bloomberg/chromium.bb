@@ -51,11 +51,14 @@ html.starting-up #dot-list {
 
 .dot input {
   -webkit-appearance: caret;
+  -webkit-margin-start: 2px;
   -webkit-transition: color 200ms;
   background-color: transparent;
   cursor: inherit;
   font: inherit;
-  padding-top: 0;
+  height: auto;
+  margin-top: 2px;
+  padding: 1px 0;
   width: 90%;
 }
 
