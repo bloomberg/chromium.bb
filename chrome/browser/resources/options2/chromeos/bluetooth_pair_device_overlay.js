@@ -120,6 +120,10 @@ cr.define('options', function() {
         $('bluetooth-pair-device-connect-button').disabled =
             $('bluetooth-pincode').value.length == 0;
       }
+      $('bluetooth-passkey').addEventListener('keydown',
+          this.keyDownEventHandler_.bind(this));
+      $('bluetooth-pincode').addEventListener('keydown',
+          this.keyDownEventHandler_.bind(this));
     },
 
     /**
@@ -185,6 +189,20 @@ cr.define('options', function() {
       // button can be enabled.  The 'oninput' methods for the input fields
       // determine when the connect button becomes active.
       $('bluetooth-pair-device-connect-button').disabled = true;
+    },
+
+    /**
+     * Handles the ENTER key for the passkey or pincode entry field.
+     * @return {Event} a keydown event.
+     * @private
+     */
+    keyDownEventHandler_: function(event) {
+      /** @const */ var ENTER_KEY_CODE = 13;
+      if (event.keyCode == ENTER_KEY_CODE) {
+        var button = $('bluetooth-pair-device-connect-button');
+        if (!button.hidden)
+          button.click();
+      }
     },
 
     /**
