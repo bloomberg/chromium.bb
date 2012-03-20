@@ -20,8 +20,7 @@ namespace ash {
 namespace internal {
 
 TabbedLauncherButton::IconView::IconView(
-    TabbedLauncherButton* host,
-    TabbedLauncherButton::IncognitoState is_incognito)
+    TabbedLauncherButton* host)
     : host_(host),
       show_image_(true) {
   if (!browser_image_) {
@@ -38,7 +37,7 @@ TabbedLauncherButton::IconView::IconView(
             IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL).ToSkBitmap());
   }
   set_icon_size(0);
-  if (is_incognito == STATE_NOT_INCOGNITO)
+  if (host->is_incognito() == STATE_NOT_INCOGNITO)
     LauncherButton::IconView::SetImage(*browser_image_);
   else
     LauncherButton::IconView::SetImage(*incognito_browser_image_);
@@ -77,7 +76,8 @@ void TabbedLauncherButton::IconView::PrepareForImageChange() {
 
 void TabbedLauncherButton::IconView::SetTabImage(const SkBitmap& image) {
   animation_.reset();
-  show_image_ = true;
+  // Only non incognito icons show the tab image.
+  show_image_ = host_->is_incognito() == STATE_NOT_INCOGNITO;
   image_ = image;
   SchedulePaint();
 }
@@ -142,7 +142,7 @@ void TabbedLauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 LauncherButton::IconView* TabbedLauncherButton::CreateIconView() {
-  return new IconView(this, is_incognito_);
+  return new IconView(this);
 }
 
 }  // namespace internal

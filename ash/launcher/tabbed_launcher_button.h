@@ -43,6 +43,8 @@ class TabbedLauncherButton : public LauncherButton {
   // Sets the images to display for this entry.
   void SetTabImage(const SkBitmap& image);
 
+  IncognitoState is_incognito() const { return is_incognito_; }
+
  protected:
   TabbedLauncherButton(views::ButtonListener* listener,
                        LauncherButtonHost* host,
@@ -58,7 +60,7 @@ class TabbedLauncherButton : public LauncherButton {
   class IconView : public LauncherButton::IconView,
                    public ui::AnimationDelegate {
    public:
-    IconView(TabbedLauncherButton* host, IncognitoState is_incognito);
+    explicit IconView(TabbedLauncherButton* host);
     virtual ~IconView();
 
     // ui::AnimationDelegateImpl overrides:
