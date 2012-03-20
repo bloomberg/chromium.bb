@@ -9,11 +9,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/cws_intents_registry.h"
@@ -29,7 +27,6 @@ class GURL;
 class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerModel;
-class WebstoreInstaller;
 
 namespace content {
 class WebContents;
@@ -44,7 +41,7 @@ struct WebIntentServiceData;
 // intent handler choice back to the TabContents object.
 class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate,
-                                  public WebstoreInstaller::Delegate {
+                                  public WebIntentsRegistry::Consumer {
  public:
   // Takes ownership of |factory|.
   explicit WebIntentPickerController(TabContentsWrapper* wrapper);
@@ -72,14 +69,8 @@ class WebIntentPickerController : public content::NotificationObserver,
                                Disposition disposition) OVERRIDE;
   virtual void OnInlineDispositionWebContentsCreated(
       content::WebContents* web_contents) OVERRIDE;
-  virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
   virtual void OnCancelled() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
-
-  // WebstoreInstaller::Delegate implementation.
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
-  virtual void OnExtensionInstallFailure(const std::string& id,
-                                         const std::string& error) OVERRIDE;
 
  private:
   friend class WebIntentPickerControllerTest;
@@ -99,8 +90,14 @@ class WebIntentPickerController : public content::NotificationObserver,
   }
 
   // Called when WebIntentServiceData is returned from the WebIntentsRegistry.
-  void OnWebIntentServicesAvailable(
-      const std::vector<webkit_glue::WebIntentServiceData>& services);
+  virtual void OnIntentsQueryDone(
+      WebIntentsRegistry::QueryID,
+      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
+
+  // Called when the WebIntentsRegistry returns responses to a defaults request.
+  virtual void OnIntentsDefaultsQueryDone(
+      WebIntentsRegistry::QueryID,
+      const DefaultWebIntentService& default_service) OVERRIDE;
 
   // Called when FaviconData is returned from the FaviconService.
   void OnFaviconDataAvailable(FaviconService::Handle handle,
@@ -128,12 +125,6 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Called when an extension's icon failed to be decoded or resized.
   void OnExtensionIconUnavailable(const string16& extension_id);
-
-  // When an extension is installed, all that is known is the extension id.
-  // This callback receives the intent service data for that extension.
-  // |services| must be a non-empty list.
-  void OnExtensionInstallServiceAvailable(
-      const std::vector<webkit_glue::WebIntentServiceData>& services);
 
   // Decrements the |pending_async_count_| and notifies the picker if it
   // reaches zero.
@@ -175,9 +166,6 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Request consumer used when asynchronously loading favicons.
   CancelableRequestConsumerTSimple<size_t> favicon_consumer_;
-
-  // Used to install extensions from the Chrome Web Store.
-  scoped_refptr<WebstoreInstaller> webstore_installer_;
 
   base::WeakPtrFactory<WebIntentPickerController> weak_ptr_factory_;
 

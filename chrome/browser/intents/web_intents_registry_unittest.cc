@@ -25,8 +25,6 @@ class MockExtensionService: public TestExtensionService {
  public:
   virtual ~MockExtensionService() {}
   MOCK_CONST_METHOD0(extensions, const ExtensionSet*());
-  MOCK_CONST_METHOD2(GetExtensionById,
-                     const Extension*(const std::string&, bool));
 };
 
 namespace {
@@ -95,9 +93,6 @@ class WebIntentsRegistryTest : public testing::Test {
     registry_.Initialize(wds_, &extension_service_);
     EXPECT_CALL(extension_service_, extensions()).
         WillRepeatedly(testing::Return(&extensions_));
-    EXPECT_CALL(extension_service_, GetExtensionById(testing::_, testing::_)).
-        WillRepeatedly(
-            testing::Invoke(this, &WebIntentsRegistryTest::GetExtensionById));
   }
 
   virtual void TearDown() {
@@ -107,17 +102,6 @@ class WebIntentsRegistryTest : public testing::Test {
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
-  }
-
-  const Extension* GetExtensionById(const std::string& extension_id,
-                                    testing::Unused) {
-    for (ExtensionSet::const_iterator iter = extensions_.begin();
-         iter != extensions_.end(); ++iter) {
-      if ((*iter)->id() == extension_id)
-        return &**iter;
-    }
-
-    return NULL;
   }
 
   MessageLoopForUI message_loop_;
@@ -208,21 +192,6 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
                                                        &consumer);
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.services_.size());
-}
-
-TEST_F(WebIntentsRegistryTest, GetIntentServicesForExtensionFilter) {
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid.json"));
-  extensions_.Insert(LoadAndExpectSuccess("intent_valid_2.json"));
-  ASSERT_EQ(2U, extensions_.size());
-
-  TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServicesForExtensionFilter(
-      ASCIIToUTF16("http://webintents.org/edit"),
-      ASCIIToUTF16("image/*"),
-      (*extensions_.begin())->id(),
-      &consumer);
-  consumer.WaitForData();
-  ASSERT_EQ(1U, consumer.services_.size());
 }
 
 TEST_F(WebIntentsRegistryTest, GetAllIntents) {

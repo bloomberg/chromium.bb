@@ -4,20 +4,15 @@
 
 #include "chrome/browser/intents/web_intents_registry.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 
 namespace {
-
-typedef WebIntentsRegistry::IntentServiceList IntentServiceList;
 
 // Compares two mime types for equality. Supports wild cards in both
 // |type1| and |type2|. Wild cards are of the form '<type>/*' or '*'.
@@ -28,33 +23,6 @@ bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
   if (net::MatchesMimeType(UTF16ToUTF8(type1), UTF16ToUTF8(type2)))
     return true;
   return net::MatchesMimeType(UTF16ToUTF8(type2), UTF16ToUTF8(type1));
-}
-
-// Adds any intent services of |extension| that match |action| to
-// |matching_services|.
-void AddMatchingServicesForExtension(const Extension& extension,
-                                     const string16& action,
-                                     IntentServiceList* matching_services) {
-  const IntentServiceList& services = extension.intents_services();
-  for (IntentServiceList::const_iterator i = services.begin();
-       i != services.end(); ++i) {
-    if (action.empty() || action == i->action)
-      matching_services->push_back(*i);
-  }
-}
-
-// Removes all services from |matching_services| that do not match |mimetype|.
-// Wildcards are supported, of the form '<type>/*' or '*'.
-void FilterServicesByMimetype(const string16& mimetype,
-                              IntentServiceList* matching_services) {
-  // Filter out all services not matching the query type.
-  IntentServiceList::iterator iter(matching_services->begin());
-  while (iter != matching_services->end()) {
-    if (MimeTypesAreEqual(iter->type, mimetype))
-      ++iter;
-    else
-      iter = matching_services->erase(iter);
-  }
 }
 
 }  // namespace
@@ -143,14 +111,24 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
     if (extensions) {
       for (ExtensionSet::const_iterator i(extensions->begin());
            i != extensions->end(); ++i) {
-        AddMatchingServicesForExtension(**i, query->action_,
-                                        &matching_services);
+        const IntentServiceList& services((*i)->intents_services());
+        for (IntentServiceList::const_iterator j(services.begin());
+             j != services.end(); ++j) {
+          if (query->action_.empty() || query->action_ == j->action)
+            matching_services.push_back(*j);
+        }
       }
     }
   }
 
   // Filter out all services not matching the query type.
-  FilterServicesByMimetype(query->type_, &matching_services);
+  IntentServiceList::iterator iter(matching_services.begin());
+  while (iter != matching_services.end()) {
+    if (MimeTypesAreEqual(iter->type, query->type_))
+      ++iter;
+    else
+      iter = matching_services.erase(iter);
+  }
 
   query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
   delete query;
@@ -289,45 +267,6 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::IntentServiceExists(
   queries_[query->pending_query_] = query;
 
   return query->query_id_;
-}
-
-WebIntentsRegistry::QueryID
-    WebIntentsRegistry::GetIntentServicesForExtensionFilter(
-        const string16& action,
-        const string16& mimetype,
-        const std::string& extension_id,
-        Consumer* consumer) {
-  DCHECK(consumer);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  scoped_ptr<IntentsQuery> query(
-      new IntentsQuery(next_query_id_++, consumer, action, mimetype));
-  int query_id = query->query_id_;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebIntentsRegistry::DoGetIntentServicesForExtensionFilter,
-                 base::Unretained(this),
-                 base::Passed(&query), extension_id));
-
-  return query_id;
-}
-
-void WebIntentsRegistry::DoGetIntentServicesForExtensionFilter(
-    scoped_ptr<IntentsQuery> query,
-    const std::string& extension_id) {
-  IntentServiceList matching_services;
-
-  if (extension_service_) {
-    const Extension* extension =
-        extension_service_->GetExtensionById(extension_id, false);
-    AddMatchingServicesForExtension(*extension,
-                                    query->action_,
-                                    &matching_services);
-    FilterServicesByMimetype(query->type_, &matching_services);
-  }
-
-  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
 }
 
 void WebIntentsRegistry::RegisterDefaultIntentService(
