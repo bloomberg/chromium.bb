@@ -3355,7 +3355,7 @@ irt_variant_tests = [
     #### ALPHABETICALLY SORTED ####
     ]
 
-# These are tests that are not worthwhile to run in an IRT variant.
+# These are tests that are NOT worthwhile to run in an IRT variant.
 # In some cases, that's because they are browser tests which always
 # use the IRT.  In others, it's because they are special-case tests
 # that are incompatible with having an IRT loaded.
@@ -3411,6 +3411,7 @@ nonvariant_tests = [
     'tests/ppapi_test_lib/nacl.scons',
     'tests/ppapi_tests/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
+    'tests/translator_size_limits/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
     'tests/trusted_crash/win_crash_in_syscall/nacl.scons',
