@@ -645,11 +645,6 @@ internal_paladin.add_config('link-paladin',
   paladin_builder_name='link paladin',
 )
 
-internal_paladin.add_config('kiev-paladin',
-  boards=['kiev'],
-  paladin_builder_name='kiev paladin',
-)
-
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
 )
@@ -733,10 +728,6 @@ _release.add_config('link-release',
   boards=['link'],
   prebuilts=False,
   vm_tests=None,
-)
-
-_release.add_config('kiev-release',
-  boards=['kiev'],
 )
 
 _arm_release = _release.derive(arm)
