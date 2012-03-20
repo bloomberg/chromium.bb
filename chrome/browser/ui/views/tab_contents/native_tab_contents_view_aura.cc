@@ -18,8 +18,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
@@ -92,15 +90,7 @@ void PrepareDragData(const WebDropData& drop_data,
     provider->SetString(drop_data.plain_text);
   if (drop_data.url.is_valid())
     provider->SetURL(drop_data.url, drop_data.url_title);
-  if (!drop_data.text_html.empty())
-    provider->SetHtml(drop_data.text_html, drop_data.html_base_url);
-  if (!drop_data.custom_data.empty()) {
-    Pickle pickle;
-    ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-    provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
-                             pickle);
-  }
-  // TODO(varunjain): support files. http://crbug.com/118471
+  // TODO(varunjain): support other formats.
 }
 
 // Utility to fill a WebDropData object from ui::OSExchangeData.
@@ -108,26 +98,15 @@ void PrepareWebDropData(WebDropData* drop_data,
                         const ui::OSExchangeData& data) {
   string16 plain_text, url_title;
   GURL url;
-
   data.GetString(&plain_text);
   if (!plain_text.empty())
     drop_data->plain_text = plain_text;
-
   data.GetURLAndTitle(&url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;
   }
-
-  data.GetHtml(&drop_data->text_html, &drop_data->html_base_url);
-
-  Pickle pickle;
-  if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
-                          &pickle))
-    ui::ReadCustomDataIntoMap(pickle.data(), pickle.size(),
-                              &drop_data->custom_data);
-
-  // TODO(varunjain): support files. http://crbug.com/118471
+  // TODO(varunjain): support other formats.
 }
 
 // Utilities to convert between WebKit::WebDragOperationsMask and
