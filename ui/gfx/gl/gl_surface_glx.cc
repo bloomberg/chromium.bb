@@ -118,6 +118,12 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
 }
 
 bool NativeViewGLSurfaceGLX::Initialize() {
+  XWindowAttributes attributes;
+  if (!XGetWindowAttributes(g_display, window_, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+    return false;
+  }
+  size_ = gfx::Size(attributes.width, attributes.height);
   return true;
 }
 
@@ -128,8 +134,9 @@ bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
   // On Intel drivers, the frame buffer won't be resize until the next swap. If
   // we only do PostSubBuffer, then we're stuck in the old size. Force a swap
   // now.
-  if (gfx::g_GLX_MESA_copy_sub_buffer)
+  if (gfx::g_GLX_MESA_copy_sub_buffer && size_ != size)
     SwapBuffers();
+  size_ = size;
   return true;
 }
 
@@ -143,12 +150,7 @@ bool NativeViewGLSurfaceGLX::SwapBuffers() {
 }
 
 gfx::Size NativeViewGLSurfaceGLX::GetSize() {
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(g_display, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
-    return gfx::Size();
-  }
-  return gfx::Size(attributes.width, attributes.height);
+  return size_;
 }
 
 void* NativeViewGLSurfaceGLX::GetHandle() {

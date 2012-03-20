@@ -65,6 +65,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
  private:
   void* config_;
+  gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceGLX);
 };
 
