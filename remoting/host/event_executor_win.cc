@@ -100,7 +100,7 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   // Calculate scan code from key event.
   int scancode = INVALID_KEYCODE;
   if (event.has_usb_keycode() && event.usb_keycode() != 0) {
-    int scancode = UsbKeycodeToWinScancode(event.usb_keycode());
+    scancode = UsbKeycodeToWinScancode(event.usb_keycode());
     LOG(INFO) << std::hex << "Host received keycode: " << event.keycode()
             << " usb_keycode: " << event.usb_keycode()
             << " to scancode: " << scancode
