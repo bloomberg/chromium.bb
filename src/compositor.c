@@ -1660,7 +1660,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 	struct weston_input_device *wd =
 		(struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
-	struct weston_surface *es;
+	struct wl_surface *surface;
 	uint32_t *k;
 
 	if (output) {
@@ -1671,12 +1671,12 @@ notify_keyboard_focus(struct wl_input_device *device,
 			update_modifier_state(wd, *k, 1);
 		}
 
-		es = wd->saved_kbd_focus;
+		surface = wd->saved_kbd_focus;
 
-		if (es) {
+		if (surface) {
 			wl_list_remove(&wd->saved_kbd_focus_listener.link);
 			wl_input_device_set_keyboard_focus(&wd->input_device,
-							   &es->surface, time);
+							   surface, time);
 			wd->saved_kbd_focus = NULL;
 		}
 	} else {
@@ -1685,13 +1685,13 @@ notify_keyboard_focus(struct wl_input_device *device,
 
 		wd->modifier_state = 0;
 
-		es = wd->input_device.keyboard_focus;
+		surface = wd->input_device.keyboard_focus;
 
-		if (es) {
-			wd->saved_kbd_focus = es;
+		if (surface) {
+			wd->saved_kbd_focus = surface;
 			wd->saved_kbd_focus_listener.func =
 				destroy_device_saved_kbd_focus;
-			wl_list_insert(es->surface.resource.destroy_listener_list.prev,
+			wl_list_insert(surface->resource.destroy_listener_list.prev,
 				       &wd->saved_kbd_focus_listener.link);
 		}
 
