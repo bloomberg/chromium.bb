@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -106,7 +107,9 @@ class UserView : public views::View,
           0, 0, 0));
     set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
-    if (status != ash::user::LOGGED_IN_GUEST)
+    bool guest = status == ash::user::LOGGED_IN_GUEST;
+    bool kiosk = status == ash::user::LOGGED_IN_KIOSK;
+    if (!guest && !kiosk)
       AddUserInfo();
 
     views::View* button_container = new views::View;
@@ -120,20 +123,29 @@ class UserView : public views::View,
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_SHUT_DOWN));
-    shutdown_->set_border(views::Border::CreateSolidSidedBorder(0, 0, 0, 1,
-        kButtonStrokeColor));
-    button_container->AddChildView(shutdown_);
+    if (!kiosk) {
+      shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_SHUT_DOWN));
+      button_container->AddChildView(shutdown_);
+    } else {
+      views::Label* label = new views::Label;
+      label->SetText(
+          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
+      label->set_border(views::Border::CreateEmptyBorder(
+            0, kTrayPopupPaddingHorizontal, 0, 1));
+      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      button_container->AddChildView(label);
+    }
 
     signout_ = new TrayButton(this, bundle.GetLocalizedString(
-        status == ash::user::LOGGED_IN_GUEST ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
-                                               IDS_ASH_STATUS_TRAY_SIGN_OUT));
+        guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
+        kiosk ? IDS_ASH_STATUS_TRAY_EXIT_KIOSK :
+                IDS_ASH_STATUS_TRAY_SIGN_OUT));
+    signout_->set_border(views::Border::CreateSolidSidedBorder(
+          kiosk, 1, kiosk, kiosk || !guest, kButtonStrokeColor));
     button_container->AddChildView(signout_);
 
-    if (status != ash::user::LOGGED_IN_GUEST) {
-      signout_->set_border(views::Border::CreateSolidSidedBorder(0, 0, 0, 1,
-          kButtonStrokeColor));
+    if (!guest && !kiosk) {
       lock_ = new TrayButton(this, bundle.GetLocalizedString(
             IDS_ASH_STATUS_TRAY_LOCK));
       button_container->AddChildView(lock_);
