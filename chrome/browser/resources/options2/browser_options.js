@@ -508,6 +508,13 @@ cr.define('options', function() {
         section.classList.add('sliding');
         section.style.height =
             container.offsetHeight + 'px';
+        // Items added to the Bluetooth list while hidden are often not
+        // properly rendered once the list becomes visible.  Force the list to
+        // refresh.
+        // TODO(kevers): Fix underlying bug in cr.ui.list so the refresh can be
+        // removed.
+        if (cr.isChromeOS)
+          $('bluetooth-paired-devices-list').refresh();
       }, 0);
     },
 
@@ -563,16 +570,10 @@ cr.define('options', function() {
 
     updateAdvancedSettingsExpander_: function() {
       var expander = $('advanced-settings-expander');
-      if ($('advanced-settings').style.height == '') {
+      if ($('advanced-settings').style.height == '')
         expander.textContent = localStrings.getString('showAdvancedSettings');
-      } else {
+      else
         expander.textContent = localStrings.getString('hideAdvancedSettings');
-
-        // Items added to the Bluetooth list while hidden are often not properly
-        // rendered once the list becomes visible.  Force the list to refresh.
-        if (cr.isChromeOS)
-          $('bluetooth-paired-devices-list').refresh();
-      }
     },
 
     /**
@@ -948,7 +949,7 @@ cr.define('options', function() {
     handleAddBluetoothDevice_: function() {
       $('bluetooth-unpaired-devices-list').clear();
       chrome.send('findBluetoothDevices');
-      OptionsPage.navigateToPage('bluetooth');
+      OptionsPage.showPageByName('bluetooth', false);
     },
 
     /**

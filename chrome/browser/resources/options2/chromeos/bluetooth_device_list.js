@@ -184,7 +184,7 @@ cr.define('options.system.bluetooth', function() {
         return;
 
       var target = e.target;
-      if (!target.classList.contains('close-button'))
+      if (!target.classList.contains('row-delete-button'))
         return;
 
       var listItem = this.getListItemAncestor(target);
