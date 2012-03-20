@@ -32,6 +32,12 @@ class WebIntentPicker {
   // Hides the UI for this picker, and destroys its UI.
   virtual void Close() = 0;
 
+  // Called when an extension is successfully installed via the picker.
+  virtual void OnExtensionInstallSuccess(const std::string& id) {}
+
+  // Called when an extension installation started via the picker has failed.
+  virtual void OnExtensionInstallFailure(const std::string& id) {}
+
   // Called when the controller has finished all pending asynchronous
   // activities.
   virtual void OnPendingAsyncCompleted() {}
