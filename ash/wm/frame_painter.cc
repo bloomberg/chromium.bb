@@ -311,7 +311,8 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
                           view->GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
-                          title_bounds.height());
+                          title_bounds.height(),
+                          gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
 }
 

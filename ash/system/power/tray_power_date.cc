@@ -88,6 +88,7 @@ class DateView : public views::View {
     SetLayoutManager(new views::FillLayout());
     label_ = new views::Label;
     label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    label_->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
     UpdateText();
     AddChildView(label_);
   }
