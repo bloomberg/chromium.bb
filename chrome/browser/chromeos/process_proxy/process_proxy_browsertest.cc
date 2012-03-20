@@ -23,8 +23,10 @@ using content::BrowserThread;
 
 namespace {
 
-const char kTestLineToSend[] = "testline\n";
-const char kTestLineExpected[] = "testline\r\n";
+// The test line must have all distinct characters.
+const char kTestLineToSend[] = "abcdefgh\n";
+const char kTestLineExpected[] = "abcdefgh\r\n";
+
 const char kCatCommand[] = "cat";
 const char kStdoutType[] = "stdout";
 const int kTestLineNum = 100;
@@ -47,30 +49,39 @@ class RegistryTestRunner : public TestRunner {
 
   virtual void SetupExpectations(pid_t pid) OVERRIDE {
     pid_ = pid;
-    expected_output_.clear();
-    left_to_check_index_ = 0;
-    // Each line will be echoed twice:
-    //   once as a result of terminal default functionality;
-    //   once by cat command.
-    for (int i = 0; i < kTestLineNum * 2; i++)
-      expected_output_.append(kTestLineExpected);
+    left_to_check_index_[0] = 0;
+    left_to_check_index_[1] = 0;
+    // We consider that a line processing has started if a value in
+    // left_to_check__[index] is set to 0, thus -2.
+    lines_left_ = 2 * kTestLineNum - 2;
+    expected_line_ = kTestLineExpected;
   }
 
+  // Method to test validity of received input. We will receive two streams of
+  // the same data. (input will be echoed twice by the testing process). Each
+  // stream will contain the same string repeated |kTestLineNum| times. So we
+  // have to match 2 * |kTestLineNum| lines. The problem is the received lines
+  // from different streams may be interleaved (e.g. we may receive
+  // abc|abcdef|defgh|gh). To deal with that, we allow to test received text
+  // against two lines. The lines MUST NOT have two same characters for this
+  // algorithm to work.
   virtual void OnSomeRead(pid_t pid, const std::string& type,
                           const std::string& output) OVERRIDE {
     EXPECT_EQ(type, kStdoutType);
     EXPECT_EQ(pid_, pid);
 
-    size_t find_result = expected_output_.find(output, left_to_check_index_);
-    EXPECT_EQ(left_to_check_index_, find_result);
+    bool valid = true;
+    for (size_t i = 0; i < output.length(); i++) {
+      // The character output[i] should be next in at least one of the lines we
+      // are testing.
+      valid = (ProcessReceivedCharacter(output[i], 0) ||
+               ProcessReceivedCharacter(output[i], 1));
+      EXPECT_TRUE(valid) << "Received: " << output;
+    }
 
-    size_t new_left_to_check_index = left_to_check_index_ + output.length();
-    if (find_result != left_to_check_index_ ||
-        new_left_to_check_index >= expected_output_.length()) {
+    if (!valid || TestSucceeded()) {
       content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                        MessageLoop::QuitClosure());
-    } else {
-      left_to_check_index_ = new_left_to_check_index;
     }
   }
 
@@ -81,8 +92,32 @@ class RegistryTestRunner : public TestRunner {
   }
 
  private:
-  std::string expected_output_;
-  size_t left_to_check_index_;
+  bool ProcessReceivedCharacter(char received, size_t stream) {
+    if (stream < 0 || stream >= arraysize(left_to_check_index_))
+      return false;
+    bool success = left_to_check_index_[stream] < expected_line_.length() &&
+                   expected_line_[left_to_check_index_[stream]] == received;
+    if (success)
+      left_to_check_index_[stream]++;
+    if (left_to_check_index_[stream] == expected_line_.length() &&
+        lines_left_ > 0) {
+      // Take another line to test for this stream, if there are any lines left.
+      // If not, this stream is done.
+      left_to_check_index_[stream] = 0;
+      lines_left_--;
+    }
+    return success;
+  }
+
+  bool TestSucceeded() {
+    return left_to_check_index_[0] == expected_line_.length() &&
+           left_to_check_index_[1] == expected_line_.length() &&
+           lines_left_ == 0;
+  }
+
+  size_t left_to_check_index_[2];
+  size_t lines_left_;
+  std::string expected_line_;
 };
 
 class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {

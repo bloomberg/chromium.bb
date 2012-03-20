@@ -14,7 +14,7 @@ class ExtensionTerminalPrivateApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionTerminalPrivateApiTest, FLAKY_TerminalTest) {
+IN_PROC_BROWSER_TEST_F(ExtensionTerminalPrivateApiTest, TerminalTest) {
   EXPECT_TRUE(RunExtensionSubtest("terminal/component_extension", "test.html"))
       << message_;
 };

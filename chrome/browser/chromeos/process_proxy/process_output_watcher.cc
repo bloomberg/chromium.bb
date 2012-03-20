@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstring>
 
 #include <sys/ioctl.h>
 #include <sys/select.h>
@@ -101,7 +102,11 @@ void ProcessOutputWatcher::ReadFromFd(ProcessOutputType type, int* fd) {
     // get overflown.
     read_buffer_[bytes_read] = 0;
     on_read_callback_.Run(type, std::string(read_buffer_));
-  } else {
+  }
+  // If there is nothing on the output or received data contains \0, we assume
+  // the watched process has exited (slave end of pty is closed).
+  if (bytes_read <= 0 ||
+      static_cast<size_t>(bytes_read) > strlen(read_buffer_)) {
     // Slave pseudo terminal has been closed, we won't need master fd anymore.
     CloseFd(fd);
 

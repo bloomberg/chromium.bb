@@ -5,7 +5,9 @@
 var shellCommand = 'shell\n';
 var catCommand = 'cat\n';
 var catErrCommand = 'cat 1>&2\n';
-var testLine = 'testline\n';
+
+// Ensure this has all distinct characters.
+var testLine = 'abcdefgh\n';
 
 var startCharacter = '#';
 
@@ -23,24 +25,58 @@ var testProcesses = [];
 function TestProcess(pid, type) {
   this.pid_ = pid;
   this.type_= type;
-  this.expectation_ = '';
+
+  this.lineExpectation_ = '';
+  this.linesLeftToCheck_ = -1;
+  // We receive two streams from the process.
+  this.checkedStreamEnd_ = [0, 0];
+
   this.closed_ = false;
   this.startCharactersFound_ = 0;
   this.started_ = false;
 };
 
+// Method to test validity of received input. We will receive two streams of
+// the same data. (input will be echoed twice by the testing process). Each
+// stream will contain the same string repeated |kTestLineNum| times. So we
+// have to match 2 * |kTestLineNum| lines. The problem is the received lines
+// from different streams may be interleaved (e.g. we may receive
+// abc|abcdef|defgh|gh). To deal with that, we allow to test received text
+// against two lines. The lines MUST NOT have two same characters for this
+// algorithm to work.
 TestProcess.prototype.testExpectation = function(text) {
-  var textPosition = this.expectation_.indexOf(text);
-  chrome.test.assertEq(0, textPosition, "Received: " + text);
-  if (this.expectation_.lenght == text.length)
-    this.expectation_.clear();
-  else
-    this.expectation_ = this.expectation_.substring(text.length);
+  chrome.test.assertTrue(this.linesLeftToCheck_ >= 0,
+                         "Test expectations not set.")
+  for (var i = 0; i < text.length; i++) {
+    if (this.processReceivedCharacter_(text[i], 0))
+      continue;
+    if (this.processReceivedCharacter_(text[i], 1))
+      continue;
+    chrome.test.fail("Received: " + text);
+  }
 };
+
+TestProcess.prototype.processReceivedCharacter_ = function(char, stream) {
+  if (this.checkedStreamEnd_[stream] >= this.lineExpectation_.length)
+    return false;
+
+  var expectedChar = this.lineExpectation_[this.checkedStreamEnd_[stream]];
+  if (expectedChar != char)
+    return false
+
+  this.checkedStreamEnd_[stream]++;
+
+  if (this.checkedStreamEnd_[stream] == this.lineExpectation_.length &&
+      this.linesLeftToCheck_ > 0) {
+    this.checkedStreamEnd_[stream] = 0;
+    this.linesLeftToCheck_--;
+  }
+  return true;
+}
 
 TestProcess.prototype.testOutputType = function(receivedType) {
   if (receivedType == 'exit')
-    chrome.test.assertEq(this.expectation.length, 0);
+    chrome.test.assertTrue(this.done());
   else
     chrome.test.assertEq('stdout', receivedType);
 };
@@ -54,7 +90,9 @@ TestProcess.prototype.started = function() {
 };
 
 TestProcess.prototype.done = function() {
-  return this.expectation_.length == 0;
+  return this.checkedStreamEnd_[0] == this.lineExpectation_.length &&
+         this.checkedStreamEnd_[1] == this.lineExpectation_.length &&
+         this.linesLeftToCheck_ == 0;
 };
 
 TestProcess.prototype.isClosed = function() {
@@ -79,8 +117,9 @@ TestProcess.prototype.getCatCommand = function() {
   return catErrCommand;
 };
 
-TestProcess.prototype.addExpectationLine = function(line) {
-  this.expectation_ = this.expectation_.concat(line);
+TestProcess.prototype.addLineExpectation = function(line, times) {
+  this.lineExpectation_ = line.replace(/\n/g, "\r\n");
+  this.linesLeftToCheck_ = times - 2;
 };
 
 // Set of commands we use to setup terminal for testing (start cat) will produce
@@ -106,9 +145,7 @@ TestProcess.prototype.maybeKickOffTest = function(text) {
 TestProcess.prototype.kickOffTest_ = function(line, lineNum) {
   this.started_ = true;
   // Each line will be echoed twice.
-  for (var i = 0; i < lineNum * 2; i++) {
-    this.addExpectationLine(line);
-  }
+  this.addLineExpectation(line, lineNum * 2);
 
   for (var i = 0; i < lineNum; i++)
     chrome.terminalPrivate.sendInput(this.pid_, line,
@@ -127,8 +164,7 @@ function getProcessIndexForPid(pid) {
   return undefined;
 };
 
-function processOutputListener(pid, type, textReceived) {
-  var text = textReceived.replace(/\r/g, '');
+function processOutputListener(pid, type, text) {
   var processIndex = getProcessIndexForPid(pid);
   if (processIndex == undefined)
     return;
