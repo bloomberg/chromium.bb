@@ -31,6 +31,10 @@ handle-error() {
   echo "@@@STEP_FAILURE@@@"
 }
 
+handle-error-warn() {
+  echo "@@@STEP_WARNINGS@@@"
+}
+
 #### Support for running arm sbtc tests on this bot, since we have
 # less coverage on the main waterfall now:
 # http://code.google.com/p/nativeclient/issues/detail?id=2581
@@ -48,9 +52,9 @@ scons-tests-translator() {
   build-sbtc-prerequisites ${platform}
   local use_sbtc="use_sandboxed_translator=1"
   local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} ${use_sbtc} -k"
-  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error
-  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error
-  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error
+  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error-warn
+  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error-warn
+  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error-warn
 }
 ####
 
@@ -73,7 +77,7 @@ tc-test-bot() {
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
-  for arch in x86-64 x86-32 arm; do
+  for arch in x86-64 x86-32; do
     echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
     ${LLVM_TESTSUITE} testsuite-prereq ${arch}
     ${LLVM_TESTSUITE} testsuite-clean
@@ -82,6 +86,17 @@ tc-test-bot() {
       ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
   done
+
+  # Do arm separately and warn rather than erroring, until we can move this
+  # a hw bot
+  echo "@@@BUILD_STEP llvm-test-suite arm @@@"
+    ${LLVM_TESTSUITE} testsuite-prereq arm
+    ${LLVM_TESTSUITE} testsuite-clean
+    { ${LLVM_TESTSUITE} testsuite-configure arm &&
+      ${LLVM_TESTSUITE} testsuite-run arm &&
+      ${LLVM_TESTSUITE} testsuite-report arm -v -c
+    } || handle-error-warn
+
 
   scons-tests-translator "arm"
 }
