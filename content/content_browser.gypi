@@ -781,7 +781,7 @@
         }],
       ],
     }],
-    ['OS=="linux" and toolkit_uses_gtk==0', {
+    ['OS=="linux" and use_aura==1', {
       'dependencies': [
         '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:fontconfig',

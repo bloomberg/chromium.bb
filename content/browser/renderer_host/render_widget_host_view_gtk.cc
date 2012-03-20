@@ -278,6 +278,7 @@ class RenderWidgetHostViewGtkWidget {
       GtkWidget* widget,
       GdkEventButton* event,
       RenderWidgetHostViewGtk* host_view) {
+
     if (event->type != GDK_BUTTON_RELEASE)
       host_view->set_last_mouse_down(event);
 
