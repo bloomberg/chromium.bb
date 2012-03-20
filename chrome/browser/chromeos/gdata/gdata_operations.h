@@ -138,6 +138,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   scoped_refptr<base::MessageLoopProxy> relay_proxy_;
   int re_authenticate_count_;
   bool save_temp_file_;
+  FilePath output_file_path_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
 };
 
@@ -244,7 +245,8 @@ class DownloadFileOperation : public UrlFetchOperationBase {
                         Profile* profile,
                         const DownloadActionCallback& callback,
                         const GURL& document_url,
-                        const FilePath& virtual_path);
+                        const FilePath& virtual_path,
+                        const FilePath& output_file_path);
   virtual ~DownloadFileOperation();
 
  protected:

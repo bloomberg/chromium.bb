@@ -520,6 +520,14 @@ void ReadOnlyFindFileDelegate::OnDone(base::PlatformFileError error,
     file_ = NULL;
 }
 
+// GDataFileProperties struct implementation.
+
+GDataFileProperties::GDataFileProperties() : is_hosted_document(false) {
+}
+
+GDataFileProperties::~GDataFileProperties() {
+}
+
 // GDataFileSystem::CreateDirectoryParams struct implementation.
 
 GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
@@ -536,6 +544,28 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
 }
 
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
+}
+
+//=================== GetFileFromCacheParams implementation ===================
+
+GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
+    const FilePath& virtual_file_path,
+    const FilePath& local_tmp_path,
+    const GURL& content_url,
+    const std::string& resource_id,
+    const std::string& md5,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const GetFileCallback& callback)
+    : virtual_file_path(virtual_file_path),
+      local_tmp_path(local_tmp_path),
+      content_url(content_url),
+      resource_id(resource_id),
+      md5(md5),
+      proxy(proxy),
+      callback(callback) {
+}
+
+GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
 }
 
 // GDataFileSystem class implementatsion.
@@ -1031,9 +1061,8 @@ void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
 
 void GDataFileSystem::GetFile(const FilePath& file_path,
                               const GetFileCallback& callback) {
-  base::AutoLock lock(lock_);
-  GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
-  if (!file_info) {
+  GDataFileProperties file_properties;
+  if (!GetFileInfoFromPath(file_path, &file_properties)) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1049,26 +1078,61 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  GDataFile* gdata_file = file_info->AsGDataFile();
-  if (gdata_file && gdata_file->is_hosted_document()) {
+  if (file_properties.is_hosted_document) {
     BrowserThread::PostBlockingPoolTask(FROM_HERE,
         base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
-                   gdata_file->edit_url(),
-                   gdata_file->resource_id(),
+                   file_properties.edit_url,
+                   file_properties.resource_id,
                    callback,
                    base::MessageLoopProxy::current()));
     return;
   }
 
-  // TODO(satorux): We should get a file from the cache if it's present, but
-  // the caching layer is not implemented yet. For now, always download from
-  // the cloud.
+  // Returns absolute path of the file if it were cached or to be cached.
+  FilePath local_tmp_path = GetCacheFilePath(file_properties.resource_id,
+                                             file_properties.file_md5,
+                                             CACHE_TYPE_TMP,
+                                             CACHED_FILE_FROM_SERVER);
+  GetFromCache(file_properties.resource_id, file_properties.file_md5,
+               base::Bind(
+                   &GDataFileSystem::OnGetFileFromCache,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   GetFileFromCacheParams(file_path,
+                                          local_tmp_path,
+                                          file_properties.content_url,
+                                          file_properties.resource_id,
+                                          file_properties.file_md5,
+                                          base::MessageLoopProxy::current(),
+                                          callback)));
+}
+
+void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
+                                         base::PlatformFileError error,
+                                         const std::string& resource_id,
+                                         const std::string& md5,
+                                         const FilePath& gdata_file_path,
+                                         const FilePath& cache_file_path) {
+  // Have we found the file in cache? If so, return it back to the caller.
+  if (error == base::PLATFORM_FILE_OK) {
+    if (!params.callback.is_null()) {
+      params.proxy->PostTask(FROM_HERE,
+                             base::Bind(params.callback,
+                                        error,
+                                        cache_file_path,
+                                        REGULAR_FILE));
+    }
+
+    return;
+  }
+
+  // If cache file is not found, try to download it from the server instead.
   documents_service_->DownloadFile(
-      file_info->GetFilePath(),
-      file_info->content_url(),
+      params.virtual_file_path,
+      params.local_tmp_path,
+      params.content_url,
       base::Bind(&GDataFileSystem::OnFileDownloaded,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 params));
 }
 
 void GDataFileSystem::InitiateUpload(
@@ -1195,13 +1259,23 @@ void GDataFileSystem::UnsafeFindFileByPath(
 }
 
 bool GDataFileSystem::GetFileInfoFromPath(
-    const FilePath& file_path, base::PlatformFileInfo* file_info) {
+    const FilePath& file_path, GDataFileProperties* properties) {
+  DCHECK(properties);
   base::AutoLock lock(lock_);
   GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
   if (!file)
     return false;
 
-  *file_info = file->file_info();
+  properties->file_info = file->file_info();
+  properties->resource_id = file->resource_id();
+
+  GDataFile* regular_file = file->AsGDataFile();
+  if (regular_file) {
+    properties->file_md5 = regular_file->file_md5();
+    properties->content_url = regular_file->content_url();
+    properties->edit_url = regular_file->edit_url();
+    properties->is_hosted_document = regular_file->is_hosted_document();
+  }
   return true;
 }
 
@@ -1704,15 +1778,36 @@ void GDataFileSystem::OnRemovedDocument(
 }
 
 void GDataFileSystem::OnFileDownloaded(
-    const GetFileCallback& callback,
+    const GetFileFromCacheParams& params,
     GDataErrorCode status,
     const GURL& content_url,
-    const FilePath& file_path) {
+    const FilePath& downloaded_file_path) {
   base::PlatformFileError error = GDataToPlatformError(status);
 
-  if (!callback.is_null()) {
-    callback.Run(error, file_path, REGULAR_FILE);
+  // Make sure that downloaded file is properly stored in cache. We don't have
+  // to wait for this operation to finish since the user can already use the
+  // downloaded file.
+  if (error == base::PLATFORM_FILE_OK) {
+    StoreToCache(params.resource_id,
+                 params.md5,
+                 downloaded_file_path,
+                 base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
+
+  if (!params.callback.is_null()) {
+    params.proxy->PostTask(FROM_HERE,
+                           base::Bind(params.callback,
+                                      error,
+                                      downloaded_file_path,
+                                      REGULAR_FILE));
+  }
+}
+
+void GDataFileSystem::OnDownloadStoredToCache(base::PlatformFileError error,
+                                              const std::string& resource_id,
+                                              const std::string& md5) {
+  // Nothing much to do here for now.
 }
 
 base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
@@ -2024,13 +2119,13 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
 FilePath GDataFileSystem::GetCacheFilePath(const std::string& resource_id,
                                            const std::string& md5,
                                            CacheSubdir subdir_id,
-                                           bool is_local) {
+                                           CachedFileOrigin file_origin) {
   DCHECK(subdir_id != CACHE_TYPE_META);
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
   std::string base_name = GDataFileBase::EscapeUtf8FileName(resource_id);
-  if (is_local) {
+  if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
     DCHECK(subdir_id == CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
     base_name += kLocallyModifiedFileExtension;
@@ -2065,7 +2160,7 @@ void GDataFileSystem::StoreToCache(const std::string& resource_id,
                      GetCacheFilePath(resource_id,
                                       md5,
                                       CACHE_TYPE_TMP,
-                                      false  /* is_local */),
+                                      CACHED_FILE_FROM_SERVER),
                      base::Bind(&GDataFileSystem::OnStoredToCache,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2091,7 +2186,7 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
   FilePath files_to_delete = GetCacheFilePath(resource_id,
                                               kWildCard,
                                               CACHE_TYPE_TMP,
-                                              false  /* is_local */);
+                                              CACHED_FILE_FROM_SERVER);
   BrowserThread::PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
@@ -2118,10 +2213,10 @@ void GDataFileSystem::Pin(const std::string& resource_id,
                      callback,
                      GDataRootDirectory::CACHE_PINNED,
                      true,
-    GetCacheFilePath(resource_id,
-                     md5,
-                     CACHE_TYPE_TMP,
-                     false  /* is_local */),
+                     GetCacheFilePath(resource_id,
+                                      md5,
+                                      CACHE_TYPE_TMP,
+                                      CACHED_FILE_FROM_SERVER),
                      base::Bind(&GDataFileSystem::OnFilePinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2145,7 +2240,7 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                      GetCacheFilePath(resource_id,
                                       md5,
                                       CACHE_TYPE_TMP,
-                                      false  /* is_local */),
+                                      CACHED_FILE_FROM_SERVER),
                      base::Bind(&GDataFileSystem::OnFileUnpinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2241,7 +2336,7 @@ void GDataFileSystem::OnGetFromCache(const std::string& resource_id,
     path = GetCacheFilePath(resource_id,
                             md5,
                             CACHE_TYPE_TMP,
-                            false  /* is_local */);
+                            CACHED_FILE_FROM_SERVER);
   } else {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }

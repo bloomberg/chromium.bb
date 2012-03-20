@@ -110,11 +110,13 @@ void DocumentsService::GetAccountMetadata(const GetDataCallback& callback) {
 
 void DocumentsService::DownloadDocument(
     const FilePath& virtual_path,
+    const FilePath& local_cache_path,
     const GURL& document_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
   DownloadFile(
       virtual_path,
+      local_cache_path,
       chrome_browser_net::AppendQueryParameter(document_url,
                                                "exportFormat",
                                                GetExportFormatParam(format)),
@@ -122,11 +124,12 @@ void DocumentsService::DownloadDocument(
 }
 
 void DocumentsService::DownloadFile(const FilePath& virtual_path,
+                                    const FilePath& local_cache_path,
                                     const GURL& document_url,
                                     const DownloadActionCallback& callback) {
   StartOperationOnUIThread(
       new DownloadFileOperation(operation_registry_.get(), profile_, callback,
-                                document_url, virtual_path));
+                                document_url, virtual_path, local_cache_path));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,

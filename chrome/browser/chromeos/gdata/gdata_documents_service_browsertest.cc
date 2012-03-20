@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,6 +35,10 @@ class GDataTest : public InProcessBrowserTest {
   }
 
  protected:
+  FilePath GetTestCachedFilePath(const FilePath& file_name) {
+    return browser()->profile()->GetPath().Append(file_name);
+  }
+
   net::TestServer gdata_test_server_;
   scoped_ptr<gdata::DocumentsService> service_;
 };
@@ -67,6 +72,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
   std::string contents;
   service_->DownloadFile(
       FilePath("/dummy/gdata/testfile.txt"),
+      GetTestCachedFilePath(FilePath("cached_testfile.txt")),
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents));
   ui_test_utils::RunMessageLoop();
@@ -84,6 +90,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
   std::string dummy_contents;
   service_->DownloadFile(
       FilePath("/dummy/gdata/no-such-file.txt"),
+      GetTestCachedFilePath(FilePath("cache_no-such-file.txt")),
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents));
   ui_test_utils::RunMessageLoop();

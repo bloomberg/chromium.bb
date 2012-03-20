@@ -183,9 +183,13 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   url_fetcher_->SetRequestContext(profile_->GetRequestContext());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DISABLE_CACHE);
   if (save_temp_file_) {
     url_fetcher_->SaveResponseToTemporaryFile(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  } else if (!output_file_path_.empty()){
+    url_fetcher_->SaveResponseToFileAtPath(output_file_path_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
@@ -427,7 +431,8 @@ DownloadFileOperation::DownloadFileOperation(
     Profile* profile,
     const DownloadActionCallback& callback,
     const GURL& document_url,
-    const FilePath& virtual_path)
+    const FilePath& virtual_path,
+    const FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
                             GDataOperationRegistry::OPERATION_DOWNLOAD,
                             virtual_path,
@@ -435,7 +440,10 @@ DownloadFileOperation::DownloadFileOperation(
       callback_(callback),
       document_url_(document_url) {
   // Make sure we download the content into a temp file.
-  save_temp_file_ = true;
+  if (output_file_path.empty())
+    save_temp_file_ = true;
+  else
+    output_file_path_ = output_file_path;
 }
 
 DownloadFileOperation::~DownloadFileOperation() {}

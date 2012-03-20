@@ -165,6 +165,14 @@ class GDataFileSystemTest : public testing::Test {
         base::PLATFORM_FILE_OK;
   }
 
+  FilePath GetCachePathForFile(GDataFile* file) {
+    return file_system_->GetCacheFilePath(
+        file->resource_id(),
+        file->file_md5(),
+        GDataFileSystem::CACHE_TYPE_TMP,
+        GDataFileSystem::CACHED_FILE_FROM_SERVER);
+  }
+
   GDataFileBase* FindFile(const FilePath& file_path) {
     ReadOnlyFindFileDelegate search_delegate;
     file_system_->FindFileByPathSync(file_path, &search_delegate);
@@ -187,7 +195,7 @@ class GDataFileSystemTest : public testing::Test {
         res_id,
         md5,
         GDataFileSystem::CACHE_TYPE_TMP,
-        false  /* is_local */);
+        GDataFileSystem::CACHED_FILE_FROM_SERVER);
     FilePath expected_path =
         file_system_->cache_paths_[GDataFileSystem::CACHE_TYPE_TMP];
     expected_path = expected_path.Append(expected_filename);
@@ -305,7 +313,7 @@ class GDataFileSystemTest : public testing::Test {
         res_id,
         "*",
         GDataFileSystem::CACHE_TYPE_TMP,
-        false  /* is_local*/);
+        GDataFileSystem::CACHED_FILE_FROM_SERVER);
     std::string all_res_id = res_id + FilePath::kExtensionSeparator + "*";
     file_util::FileEnumerator traversal(path.DirName(), false,
                                         file_util::FileEnumerator::FILES,
@@ -405,7 +413,7 @@ class GDataFileSystemTest : public testing::Test {
           init_cache_table[i].resource,
           init_cache_table[i].md5,
           GDataFileSystem::CACHE_TYPE_TMP,
-          false  /* is_local */);
+          GDataFileSystem::CACHED_FILE_FROM_SERVER);
       ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
 
       // Change mode of cached file.
@@ -446,7 +454,7 @@ class GDataFileSystemTest : public testing::Test {
         res_id,
         md5,
         GDataFileSystem::CACHE_TYPE_TMP,
-        false  /* is_local */);
+        GDataFileSystem::CACHED_FILE_FROM_SERVER);
     struct stat64 stat_buf;
     EXPECT_EQ(0, stat64(path.value().c_str(), &stat_buf));
     EXPECT_TRUE(stat_buf.st_mode & expected_mode_bits);
@@ -1499,21 +1507,64 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   // EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFile) {
+TEST_F(GDataFileSystemTest, GetFileFromDownloads) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+
   EXPECT_CALL(*mock_doc_service_,
-              DownloadFile(_, GURL("https://file_content_url/"), _));
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url/"),
+                           _))
+      .Times(1);
+
+  file_system_->GetFile(file_in_root, callback);
+  RunAllPendingForCache();
+
+  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
+  EXPECT_STREQ(downloaded_file.value().c_str(),
+               callback_helper_->download_path_.value().c_str());
+}
+
+TEST_F(GDataFileSystemTest, GetFileFromCache) {
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFileBase* file_base = FindFile(file_in_root);
+  GDataFile* file = file_base->AsGDataFile();
+  FilePath downloaded_file = GetCachePathForFile(file);
+
+  // Store something as cached version of this file.
+  TestStoreToCache(file->resource_id(),
+                   file->file_md5(),
+                   GetTestFilePath("root_feed.json"),
+                   base::PLATFORM_FILE_OK);
+
+  // Make sure we don't call downloads at all.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(file_in_root,
+                           downloaded_file,
+                           GURL("https://file_content_url/"),
+                           _))
+      .Times(0);
+
   file_system_->GetFile(file_in_root, callback);
-  message_loop_.RunAllPending();  // Wait to get our result.
+  RunAllPendingForCache();
+
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_STREQ("file_content_url/",
+  EXPECT_STREQ(downloaded_file.value().c_str(),
                callback_helper_->download_path_.value().c_str());
 }
 

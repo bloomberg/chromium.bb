@@ -110,6 +110,19 @@ class ReadOnlyFindFileDelegate : public FindFileDelegate {
   GDataFileBase* file_;
 };
 
+// Helper structure used for extracting key properties from GDataFile object.
+struct GDataFileProperties {
+  GDataFileProperties();
+  ~GDataFileProperties();
+
+  base::PlatformFileInfo file_info;
+  std::string resource_id;
+  std::string file_md5;
+  GURL content_url;
+  GURL edit_url;
+  bool is_hosted_document;
+};
+
 // GData file system abstraction layer.
 // The interface is defined to make GDataFileSystem mockable.
 class GDataFileSystemInterface {
@@ -139,6 +152,12 @@ class GDataFileSystemInterface {
     CACHE_TYPE_OUTGOING,
     CACHE_TYPE_PERSISTENT,
     CACHE_TYPE_TMP,
+  };
+
+  // Enum defining origin of a cached file.
+  enum CachedFileOrigin {
+    CACHED_FILE_FROM_SERVER = 0,
+    CACHED_FILE_LOCALLY_MODIFIED,
   };
 
   // Authenticates the user by fetching the auth token as
@@ -272,10 +291,10 @@ class GDataFileSystemInterface {
                              const std::string& md5,
                              const GetCacheStateCallback& callback) = 0;
 
-  // Finds file object by |file_path| and returns its |file_info|.
+  // Finds file object by |file_path| and returns its key |properties|.
   // Returns true if file was found.
   virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
-                                   base::PlatformFileInfo* file_info) = 0;
+                                   GDataFileProperties* properties) = 0;
 
   // Returns the tmp sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/tmp
@@ -330,7 +349,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;
   virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
-                                   base::PlatformFileInfo* file_info) OVERRIDE;
+                                   GDataFileProperties* properties) OVERRIDE;
   virtual FilePath GetGDataCacheTmpDirectory() OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
@@ -371,6 +390,27 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const bool is_exclusive;
     const bool is_recursive;
     FileOperationCallback callback;
+  };
+
+  // Defines set of parameters passed to intermediate callbacks during
+  // execution of GetFile() method.
+  struct GetFileFromCacheParams {
+    GetFileFromCacheParams(const FilePath& virtual_file_path,
+        const FilePath& local_tmp_path,
+        const GURL& content_url,
+        const std::string& resource_id,
+        const std::string& md5,
+        scoped_refptr<base::MessageLoopProxy> proxy,
+        const GetFileCallback& callback);
+    ~GetFileFromCacheParams();
+
+    FilePath virtual_file_path;
+    FilePath local_tmp_path;
+    GURL content_url;
+    std::string resource_id;
+    std::string md5;
+    scoped_refptr<base::MessageLoopProxy> proxy;
+    const GetFileCallback callback;
   };
 
   // Callback similar to FileOperationCallback but with a given
@@ -519,10 +559,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(
-    const GetFileCallback& callback,
+    const GetFileFromCacheParams& params,
     GDataErrorCode status,
     const GURL& content_url,
-    const FilePath& temp_file);
+    const FilePath& downloaded_file_path);
+
+  // Callback for handling internal StoreToCache() calls after downloading
+  // file content.
+  void OnDownloadStoredToCache(base::PlatformFileError error,
+                               const std::string& resource_id,
+                               const std::string& md5);
 
   // Callback for handling file upload initialization requests.
   void OnUploadLocationReceived(
@@ -642,14 +688,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
   FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
                             CacheSubdir subdir_id,
-                            bool is_local);
+                            CachedFileOrigin file_orign);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
   // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
-  // TODO(kuan): When URLFetcher can save response to a specified file (as
-  // opposed to only temporary file currently), remove |source_path| parameter.
   void StoreToCache(const std::string& resource_id,
                     const std::string& md5,
                     const FilePath& source_path,
@@ -755,6 +799,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
                              mode_t mode_bits,
                              const CacheOperationCallback& callback);
 
+  // Helper function for internally handling responses from GetFromCache()
+  // calls during processing of GetFile() request.
+  void OnGetFileFromCache(const GetFileFromCacheParams& params,
+                          base::PlatformFileError error,
+                          const std::string& resource_id,
+                          const std::string& md5,
+                          const FilePath& gdata_file_path,
+                          const FilePath& cache_file_path);
+
   // Callback for GetCacheState that gets cache state of file corresponding to
   // |resource_id| and |md5|.
   void OnGetCacheState(const std::string& resource_id,
@@ -776,7 +829,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void FindFileByPathOnCallingThread(const FilePath& search_file_path,
                                      const FindFileCallback& callback);
 
-    scoped_ptr<GDataRootDirectory> root_;
+  scoped_ptr<GDataRootDirectory> root_;
 
   base::Lock lock_;
 

@@ -51,7 +51,7 @@ MockDocumentsService::MockDocumentsService() {
                             &MockDocumentsService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteDocument(_, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DeleteDocumentStub));
-  ON_CALL(*this, DownloadDocument(_, _, _, _))
+  ON_CALL(*this, DownloadDocument(_, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadDocumentStub));
   ON_CALL(*this, CopyDocument(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CopyDocumentStub));
@@ -65,7 +65,7 @@ MockDocumentsService::MockDocumentsService() {
           Invoke(this, &MockDocumentsService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, CreateDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CreateDirectoryStub));
-  ON_CALL(*this, DownloadFile(_, _, _))
+  ON_CALL(*this, DownloadFile(_, _, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
@@ -108,13 +108,13 @@ void MockDocumentsService::DeleteDocumentStub(
 
 void MockDocumentsService::DownloadDocumentStub(
     const FilePath& virtual_path,
+    const FilePath& local_tmp_path,
     const GURL& content_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, content_url,
-                 FilePath(content_url.host() + content_url.path())));
+      base::Bind(callback, HTTP_SUCCESS, content_url, local_tmp_path));
 }
 
 void MockDocumentsService::CopyDocumentStub(
@@ -165,12 +165,12 @@ void MockDocumentsService::CreateDirectoryStub(
 
 void MockDocumentsService::DownloadFileStub(
     const FilePath& virtual_path,
+    const FilePath& local_tmp_path,
     const GURL& content_url,
     const DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, content_url, FilePath(
-          content_url.host() + content_url.path())));
+      base::Bind(callback, HTTP_SUCCESS, content_url, local_tmp_path));
 }
 
 }  // namespace gdata
