@@ -7,28 +7,12 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace ui {
 
 OSExchangeDataProviderAura::OSExchangeDataProviderAura() : formats_(0) {}
 
 OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
-
-void OSExchangeDataProviderAura::WriteDataToClipboard(
-    Clipboard* clipboard) const {
-  ScopedClipboardWriter scw(clipboard, Clipboard::BUFFER_STANDARD);
-  if (HasString())
-    scw.WriteText(string_);
-  if (HasURL())
-    scw.WriteHyperlink(title_, url_.spec());
-  if (HasFile()) {
-    Pickle filename_pickle;
-    filename_pickle.WriteString(net::FilePathToFileURL(filename_).spec());
-    scw.WritePickledData(filename_pickle, Clipboard::GetFilenameFormatType());
-  }
-  // TODO(varunjain): support pickle format.
-}
 
 void OSExchangeDataProviderAura::SetString(const string16& data) {
   string_ = data;

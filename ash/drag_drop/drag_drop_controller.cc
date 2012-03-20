@@ -65,8 +65,6 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   drag_operation_ = operation;
   const ui::OSExchangeDataProviderAura& provider =
       static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
-  provider.WriteDataToClipboard(
-      views::ViewsDelegate::views_delegate->GetClipboard());
 
   drag_image_.reset(new DragImageView);
   drag_image_->SetImage(provider.drag_image());

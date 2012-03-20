@@ -24,9 +24,6 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   OSExchangeDataProviderAura();
   virtual ~OSExchangeDataProviderAura();
 
-  // Writes interchange data on to the |clipboard|.
-  void WriteDataToClipboard(Clipboard* clipboard) const;
-
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;

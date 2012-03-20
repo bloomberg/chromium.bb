@@ -457,18 +457,16 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
+TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
   ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
+  std::string clip_str("I am on the clipboard");
   {
-    // We first clear the clipboard.
+    // We first copy some text to the clipboard.
     ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
-    scw.WriteWebSmartPaste();
+    scw.WriteText(ASCIIToUTF16(clip_str));
   }
-  EXPECT_FALSE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+  EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::Clipboard::BUFFER_STANDARD));
-  std::string result;
-  cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
-  EXPECT_EQ("", result);
 
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
@@ -486,10 +484,12 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
   // Execute any scheduled draws to process deferred mouse events.
   RunAllPendingInMessageLoop();
 
+  // Verify the clipboard contents haven't changed
+  std::string result;
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::Clipboard::BUFFER_STANDARD));
   cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
-  EXPECT_EQ(data_str, result);
+  EXPECT_EQ(clip_str, result);
 }
 
 TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
