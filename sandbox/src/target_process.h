@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,9 @@ class TargetProcess {
 
   // Creates the new target process. The process is created suspended.
   DWORD Create(const wchar_t* exe_path, const wchar_t* command_line,
-               const wchar_t* desktop, PROCESS_INFORMATION* target_info);
+               const wchar_t* desktop,
+               PSECURITY_ATTRIBUTES security_attributes,
+               PROCESS_INFORMATION* target_info);
 
   // Destroys the target process.
   void Terminate();
