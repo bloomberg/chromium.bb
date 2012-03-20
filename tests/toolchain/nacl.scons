@@ -172,8 +172,20 @@ for tag, e in ENVIRONMENTS_TO_TRY:
       #  __builtin_eh_return
       continue
 
+    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2665
+    # CFA is not always 0 mod 8 for x86-32 with glibc (could be 4):
+    if (env.Bit('bitcode') and
+        env.Bit('target_x86_32') and
+        env.Bit('nacl_glibc') and
+        src in ['stack_frame.cc']):
+      is_broken = True
+
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2644
-    if env.Bit('bitcode') and not env.Bit('target_x86_64'):
+    # Broken on x86-64 with glibc.
+    if (env.Bit('bitcode') and
+        env.Bit('target_x86_64') and
+        env.Bit('nacl_glibc') and
+        src in ['eh_return.c']):
       is_broken = True
 
     name = src.split('.')[0] + '_' + tag
