@@ -42,19 +42,7 @@ generator_default_variables = {
     'SHARED_INTERMEDIATE_DIR': '$(OutDir)/obj/global_intermediate',
     'OS': 'win',
     'PRODUCT_DIR': '$(OutDir)',
-
-    # TODO(jeanluc) The way we currently generate libraries makes Visual
-    # Studio 2010 unhappy.  We get a lot of warnings like:
-    #   warning MSB8012: TargetPath(...\Debug\gles2_c_lib.lib) does not match
-    #   the Library's OutputFile property value (...\Debug\lib\gles2_c_lib.lib).
-    #   This may cause your project to build incorrectly. To correct this,
-    #   please make sure that $(OutDir), $(TargetName) and $(TargetExt) property
-    #   values match the value specified in %(Lib.OutputFile).
-    # Despite the warnings, this compile correctly.  It would be nice to get rid
-    # of the warnings.
-
-    # TODO(jeanluc)  I had:  'LIB_DIR': '$(OutDir)lib',
-    'LIB_DIR': '$(OutDir)/lib',
+    'LIB_DIR': '$(OutDir)\\lib',
     'RULE_INPUT_ROOT': '$(InputName)',
     'RULE_INPUT_DIRNAME': '$(InputDir)',
     'RULE_INPUT_EXT': '$(InputExt)',
@@ -1135,9 +1123,6 @@ def _GetOutputFilePathAndTool(spec):
       'executable': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.exe'),
       'shared_library': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.dll'),
       'loadable_module': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.dll'),
-      # TODO(jeanluc) If we want to avoid the MSB8012 warnings in
-      # VisualStudio 2010, we will have to change the value of $(OutDir)
-      # to contain the \lib suffix, rather than doing it as below.
       'static_library': ('VCLibrarianTool', 'Lib', '$(OutDir)\\lib\\', '.lib'),
   }
   output_file_props = output_file_map.get(spec['type'])
@@ -1251,10 +1236,6 @@ def _GetMSVSAttributes(spec, config, config_type):
   prepared_attrs['ConfigurationType'] = config_type
   output_dir = prepared_attrs.get('OutputDirectory',
                                   '$(SolutionDir)$(ConfigurationName)')
-  # TODO(jeanluc) If we want to avoid the MSB8012 warning, we should
-  # add code like the following to place libraries in their own directory.
-  # if config_type == '4':
-  #   output_dir = spec.get('product_dir', output_dir + '\\lib')
   prepared_attrs['OutputDirectory'] = output_dir
   if 'IntermediateDirectory' not in prepared_attrs:
     intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
@@ -2540,6 +2521,21 @@ def _GetMSBuildAttributes(spec, config, build_file):
     target_name = prefix + product_name
     msbuild_attributes['TargetName'] = target_name
 
+  # Make sure that 'TargetPath' matches 'Lib.OutputFile' or 'Link.OutputFile'
+  # (depending on the tool used) to avoid MSB8012 warning.
+  msbuild_tool_map = {
+      'executable': 'Link',
+      'shared_library': 'Link',
+      'loadable_module': 'Link',
+      'static_library': 'Lib',
+  }
+  msbuild_tool = msbuild_tool_map.get(spec['type'])
+  if msbuild_tool:
+    msbuild_settings = config['finalized_msbuild_settings']
+    out_file = msbuild_settings[msbuild_tool].get('OutputFile')
+    if out_file:
+      msbuild_attributes['TargetPath'] = out_file
+
   return msbuild_attributes
 
 
@@ -2570,6 +2566,11 @@ def _GetMSBuildConfigurationGlobalProperties(spec, configurations, build_file):
                             attributes['OutputDirectory'])
     _AddConditionalProperty(properties, condition, 'TargetName',
                             attributes['TargetName'])
+
+    if attributes.get('TargetPath'):
+      _AddConditionalProperty(properties, condition, 'TargetPath',
+                              attributes['TargetPath'])
+
     if new_paths:
       _AddConditionalProperty(properties, condition, 'ExecutablePath',
                               new_paths)
