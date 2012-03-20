@@ -120,6 +120,18 @@ std::string ValueTypeToString(Value::Type type) {
   return std::string(strings[type]);
 }
 
+// Utility function that returns a JSON representation of the given |dict| as
+// a StringValue. The caller owns the returned object.
+base::StringValue* DictionaryToJSONString(const base::DictionaryValue* dict) {
+  std::string json_string;
+  base::JSONWriter::WriteWithOptions(
+      dict,
+      base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &json_string);
+  return Value::CreateStringValue(json_string);
+}
+
 
 }  // namespace
 
@@ -136,19 +148,20 @@ void ConfigurationPolicyHandler::PrepareForDisplaying(
     PolicyMap* policies) const {
   // jstemplate can't render DictionaryValues/objects. Convert those values to
   // a string representation.
+  base::DictionaryValue* dict;
+  base::ListValue* list;
   for (PolicyMap::const_iterator it = policies->begin();
        it != policies->end(); ++it) {
     const PolicyMap::Entry& entry = it->second;
-    DictionaryValue* value;
-    if (entry.value->GetAsDictionary(&value)) {
-      std::string json_string;
-      base::JSONWriter::WriteWithOptions(
-          value,
-          base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
-              base::JSONWriter::OPTIONS_PRETTY_PRINT,
-          &json_string);
-      StringValue* string_value = Value::CreateStringValue(json_string);
-      policies->Set(it->first, entry.level, entry.scope, string_value);
+    if (entry.value->GetAsDictionary(&dict)) {
+      base::StringValue* value = DictionaryToJSONString(dict);
+      policies->Set(it->first, entry.level, entry.scope, value);
+    } else if (entry.value->GetAsList(&list)) {
+      for (size_t i = 0; i < list->GetSize(); ++i) {
+        if (list->GetDictionary(i, &dict)) {
+          list->Set(i, DictionaryToJSONString(dict));
+        }
+      }
     }
   }
 }
