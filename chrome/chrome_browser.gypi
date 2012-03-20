@@ -1521,6 +1521,8 @@
         'browser/password_manager/password_store_x.h',
         'browser/password_manager_delegate_impl.cc',
         'browser/password_manager_delegate_impl.h',
+        'browser/pepper_gtalk_message_filter.cc',
+        'browser/pepper_gtalk_message_filter.h',
         'browser/platform_util.h',
         'browser/platform_util_android.cc',
         'browser/platform_util_aura.cc',

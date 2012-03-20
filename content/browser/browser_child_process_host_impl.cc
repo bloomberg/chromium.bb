@@ -93,6 +93,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   child_process_host_->AddFilter(new ProfilerMessageFilter);
 
   g_child_process_list.Get().push_back(this);
+  content::GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {

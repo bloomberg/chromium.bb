@@ -60,6 +60,7 @@ class Clipboard;
 namespace content {
 
 class AccessTokenStore;
+class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
 class RenderProcessHost;
@@ -116,6 +117,10 @@ class ContentBrowserClient {
   // embedder's IPC filters have priority.
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) = 0;
+
+  // Notifies that a BrowserChildProcessHost has been created.
+  virtual void BrowserChildProcessHostCreated(
+      content::BrowserChildProcessHost* host) {}
 
   // Gets the WebUIControllerFactory which will be responsible for generating
   // WebUIs. Can return NULL if the embedder doesn't need WebUI support.

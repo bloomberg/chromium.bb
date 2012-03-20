@@ -39,6 +39,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/pepper_gtalk_message_filter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -72,6 +73,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -81,6 +83,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/child_process_host.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/ssl_cert_request_info.h"
@@ -417,6 +420,11 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   RendererContentSettingRules rules;
   GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
+}
+
+void ChromeContentBrowserClient::BrowserChildProcessHostCreated(
+    content::BrowserChildProcessHost* host) {
+  host->GetHost()->AddFilter(new PepperGtalkMessageFilter());
 }
 
 content::WebUIControllerFactory*

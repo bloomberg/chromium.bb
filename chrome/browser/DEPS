@@ -13,6 +13,7 @@ include_rules = [
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",
+  "+ppapi/shared_impl/api_id.h",
   "+rlz",
   "+sandbox/linux",
   "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.
