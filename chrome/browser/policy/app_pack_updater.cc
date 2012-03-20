@@ -33,7 +33,7 @@ namespace policy {
 namespace {
 
 // Directory where the AppPack extensions are cached.
-const char kAppPackCacheDir[] = "/home/chronos/AppPack";
+const char kAppPackCacheDir[] = "/var/cache/app_pack";
 
 // File name extension for CRX files (not case sensitive).
 const char kCRXFileExtension[] = ".crx";
