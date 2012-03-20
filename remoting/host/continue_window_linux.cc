@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,8 +102,8 @@ void ContinueWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
   Hide();
 }
 
-ContinueWindow* ContinueWindow::Create() {
-  return new ContinueWindowLinux();
+scoped_ptr<ContinueWindow> ContinueWindow::Create() {
+  return scoped_ptr<ContinueWindow>(new ContinueWindowLinux());
 }
 
 }  // namespace remoting

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,8 +275,8 @@ gboolean DisconnectWindowLinux::OnButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-DisconnectWindow* DisconnectWindow::Create() {
-  return new DisconnectWindowLinux;
+scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
+  return scoped_ptr<DisconnectWindow>(new DisconnectWindowLinux());
 }
 
 }  // namespace remoting

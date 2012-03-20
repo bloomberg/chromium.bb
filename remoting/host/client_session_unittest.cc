@@ -38,9 +38,10 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
     EXPECT_CALL(*session, SetStateChangeCallback(_));
 
+    scoped_ptr<protocol::ConnectionToClient> connection(
+        new protocol::ConnectionToClient(session));
     client_session_.reset(new ClientSession(
-        &session_event_handler_,
-        new protocol::ConnectionToClient(session),
+        &session_event_handler_, connection.Pass(),
         &host_event_stub_, &capturer_));
   }
 

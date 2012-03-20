@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,9 +125,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Network thread -----------------------------------------------------------
 
-  // DoSendVideoPacket takes ownership of the |packet| and is responsible
-  // for deleting it.
-  void DoSendVideoPacket(VideoPacket* packet);
+  void DoSendVideoPacket(scoped_ptr<VideoPacket> packet);
 
   void DoSendInit(scoped_refptr<protocol::ConnectionToClient> connection,
                   int width, int height);
@@ -135,9 +133,8 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Signal network thread to cease activities.
   void DoStopOnNetworkThread(const base::Closure& done_task);
 
-  // Callback for the last packet in one update. Deletes |packet| and
-  // schedules next screen capture.
-  void FrameSentCallback(VideoPacket* packet);
+  // Callback for VideoStub::ProcessVideoPacket().
+  void VideoPacketSentCallback(scoped_ptr<VideoPacket> packet);
 
   // Encoder thread -----------------------------------------------------------
 
@@ -146,8 +143,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   // Perform stop operations on encode thread.
   void DoStopOnEncodeThread(const base::Closure& done_task);
 
-  // EncodedDataAvailableCallback takes ownership of |packet|.
-  void EncodedDataAvailableCallback(VideoPacket* packet);
+  void EncodedDataAvailableCallback(scoped_ptr<VideoPacket> packet);
   void SendVideoPacket(VideoPacket* packet);
 
   // Message loops used by this class.

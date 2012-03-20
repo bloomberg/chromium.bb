@@ -102,14 +102,14 @@ const char* ServerLogEntry::GetValueMode(ServerLogEntry::Mode mode) {
   }
 }
 
-XmlElement* ServerLogEntry::ToStanza() const {
-  XmlElement* stanza = new XmlElement(QName(
-      kChromotingXmlNamespace, kLogEntry));
+scoped_ptr<XmlElement> ServerLogEntry::ToStanza() const {
+  scoped_ptr<XmlElement> stanza(new XmlElement(QName(
+      kChromotingXmlNamespace, kLogEntry)));
   ValuesMap::const_iterator iter;
   for (iter = values_map_.begin(); iter != values_map_.end(); ++iter) {
     stanza->AddAttr(QName("", iter->first), iter->second);
   }
-  return stanza;
+  return stanza.Pass();
 }
 
 const char* ServerLogEntry::GetValueSessionState(bool connected) {

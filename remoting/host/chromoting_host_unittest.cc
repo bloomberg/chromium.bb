@@ -104,8 +104,10 @@ class ChromotingHostTest : public testing::Test {
     local_input_monitor_ = new MockLocalInputMonitor();
     it2me_host_user_interface_.reset(new It2MeHostUserInterface(host_,
                                                                 &context_));
-    it2me_host_user_interface_->InitFrom(disconnect_window_, continue_window_,
-                                         local_input_monitor_);
+    it2me_host_user_interface_->InitFrom(
+        scoped_ptr<DisconnectWindow>(disconnect_window_),
+        scoped_ptr<ContinueWindow>(continue_window_),
+        scoped_ptr<LocalInputMonitor>(local_input_monitor_));
 
     session_ = new MockSession();
     session2_ = new MockSession();
@@ -178,10 +180,12 @@ class ChromotingHostTest : public testing::Test {
 
   // Helper method to pretend a client is connected to ChromotingHost.
   void SimulateClientConnection(int connection_index, bool authenticate) {
-    protocol::ConnectionToClient* connection = (connection_index == 0) ?
-        owned_connection_.release() : owned_connection2_.release();
+    scoped_ptr<protocol::ConnectionToClient> connection =
+        ((connection_index == 0) ? owned_connection_ : owned_connection2_).
+        PassAs<protocol::ConnectionToClient>();
+    protocol::ConnectionToClient* connection_ptr = connection.get();
     ClientSession* client = new ClientSession(
-        host_.get(), connection, event_executor_,
+        host_.get(), connection.Pass(), event_executor_,
         desktop_environment_->capturer());
     connection->set_host_stub(client);
 
@@ -191,7 +195,7 @@ class ChromotingHostTest : public testing::Test {
     if (authenticate) {
       context_.network_message_loop()->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionOpened,
-                                base::Unretained(client), connection));
+                                base::Unretained(client), connection_ptr));
     }
 
     if (connection_index == 0) {

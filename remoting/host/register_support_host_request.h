@@ -41,7 +41,6 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   typedef base::Callback<void(bool, const std::string&,
                               const base::TimeDelta&)> RegisterCallback;
 
-  // Doesn't take ownership of |signal_strategy| or |key_pair|. Both
   // |signal_strategy| and |key_pair| must outlive this
   // object. |callback| is called when registration response is
   // received from the server. Callback is never called if the bot

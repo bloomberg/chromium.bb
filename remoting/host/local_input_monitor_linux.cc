@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,22 +8,21 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 
+namespace remoting {
+
 namespace {
 
-class LocalInputMonitorLinux : public remoting::LocalInputMonitor {
+class LocalInputMonitorLinux : public LocalInputMonitor {
  public:
   LocalInputMonitorLinux();
   ~LocalInputMonitorLinux();
 
-  virtual void Start(remoting::ChromotingHost* host) OVERRIDE;
+  virtual void Start(ChromotingHost* host) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  private:
-  remoting::LocalInputMonitorThread* thread_;
+  LocalInputMonitorThread* thread_;
 };
-
-}  // namespace
-
 
 LocalInputMonitorLinux::LocalInputMonitorLinux()
     : thread_(NULL) {
@@ -33,9 +32,9 @@ LocalInputMonitorLinux::~LocalInputMonitorLinux() {
   CHECK(!thread_);
 }
 
-void LocalInputMonitorLinux::Start(remoting::ChromotingHost* host) {
+void LocalInputMonitorLinux::Start(ChromotingHost* host) {
   CHECK(!thread_);
-  thread_ = new remoting::LocalInputMonitorThread(host);
+  thread_ = new LocalInputMonitorThread(host);
   thread_->Start();
 }
 
@@ -47,6 +46,10 @@ void LocalInputMonitorLinux::Stop() {
   thread_ = 0;
 }
 
-remoting::LocalInputMonitor* remoting::LocalInputMonitor::Create() {
-  return new LocalInputMonitorLinux;
+}  // namespace
+
+scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
+  return scoped_ptr<LocalInputMonitor>(new LocalInputMonitorLinux());
 }
+
+}  // namespace remoting

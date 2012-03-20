@@ -44,12 +44,13 @@ void It2MeHostUserInterface::Init() {
            LocalInputMonitor::Create());
 }
 
-void It2MeHostUserInterface::InitFrom(DisconnectWindow* disconnect_window,
-                                      ContinueWindow* continue_window,
-                                      LocalInputMonitor* monitor) {
-  disconnect_window_.reset(disconnect_window);
-  continue_window_.reset(continue_window);
-  local_input_monitor_.reset(monitor);
+void It2MeHostUserInterface::InitFrom(
+    scoped_ptr<DisconnectWindow> disconnect_window,
+    scoped_ptr<ContinueWindow> continue_window,
+    scoped_ptr<LocalInputMonitor> monitor) {
+  disconnect_window_ = disconnect_window.Pass();
+  continue_window_ = continue_window.Pass();
+  local_input_monitor_ = monitor.Pass();
   host_->AddStatusObserver(this);
 }
 

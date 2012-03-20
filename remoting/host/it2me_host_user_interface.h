@@ -58,11 +58,10 @@ class It2MeHostUserInterface : public HostStatusObserver {
   friend class ChromotingHostTest;
 
   // Used by unit-tests as an alternative to Init() so that mock versions of
-  // internal objects can be used.  This takes ownership of all objects passed
-  // in.
-  void InitFrom(DisconnectWindow* disconnect_window,
-                ContinueWindow* continue_window,
-                LocalInputMonitor* monitor);
+  // internal objects can be used.
+  void InitFrom(scoped_ptr<DisconnectWindow> disconnect_window,
+                scoped_ptr<ContinueWindow> continue_window,
+                scoped_ptr<LocalInputMonitor> monitor);
 
   void ProcessOnClientAuthenticated(const std::string& username);
   void ProcessOnClientDisconnected();

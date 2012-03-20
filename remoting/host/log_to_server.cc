@@ -97,7 +97,7 @@ void LogToServer::SendPendingEntries() {
       kChromotingXmlNamespace, kLogCommand)));
   while (!pending_entries_.empty()) {
     ServerLogEntry& entry = pending_entries_.front();
-    stanza->AddElement(entry.ToStanza());
+    stanza->AddElement(entry.ToStanza().release());
     pending_entries_.pop_front();
   }
   // Send the stanza to the server.

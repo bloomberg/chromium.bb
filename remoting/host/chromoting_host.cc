@@ -261,10 +261,10 @@ void ChromotingHost::OnIncomingSession(
   LOG(INFO) << "Client connected: " << session->jid();
 
   // Create a client object.
-  protocol::ConnectionToClient* connection =
-      new protocol::ConnectionToClient(session);
+  scoped_ptr<protocol::ConnectionToClient> connection(
+      new protocol::ConnectionToClient(session));
   ClientSession* client = new ClientSession(
-      this, connection, desktop_environment_->event_executor(),
+      this, connection.Pass(), desktop_environment_->event_executor(),
       desktop_environment_->capturer());
   clients_.push_back(client);
 }

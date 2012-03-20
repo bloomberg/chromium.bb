@@ -79,9 +79,9 @@ class IqSender;
 //  </iq>
 class HeartbeatSender : public SignalStrategy::Listener {
  public:
-  // Doesn't take ownership of |signal_strategy| or |key_pair|. Both
-  // parameters must outlive this object. Heartbeats will start when
-  // the supplied SignalStrategy enters the CONNECTED state.
+  // |signal_strategy| and |key_pair| must outlive this
+  // object. Heartbeats will start when the supplied SignalStrategy
+  // enters the CONNECTED state.
   HeartbeatSender(const std::string& host_id,
                   SignalStrategy* signal_strategy,
                   HostKeyPair* key_pair);

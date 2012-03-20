@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,7 @@ class Encoder {
   // DataAvailableCallback is called as blocks of data are made available
   // from the encoder. Data made available by the encoder is in the form
   // of HostMessage to reduce the amount of memory copies.
-  // The callback takes ownership of the HostMessage and is responsible for
-  // deleting it.
-  typedef base::Callback<void(VideoPacket*)> DataAvailableCallback;
+  typedef base::Callback<void(scoped_ptr<VideoPacket>)> DataAvailableCallback;
 
   virtual ~Encoder() {}
 

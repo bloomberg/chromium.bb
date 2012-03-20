@@ -27,12 +27,12 @@ using protocol::MouseEvent;
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
-    protocol::ConnectionToClient* connection,
+    scoped_ptr<protocol::ConnectionToClient> connection,
     protocol::HostEventStub* host_event_stub,
     Capturer* capturer)
     : event_handler_(event_handler),
-      connection_(connection),
-      client_jid_(connection->session()->jid()),
+      connection_(connection.Pass()),
+      client_jid_(connection_->session()->jid()),
       host_event_stub_(host_event_stub),
       capturer_(capturer),
       authenticated_(false),

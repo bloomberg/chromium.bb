@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 #define REMOTING_HOST_DISCONNECT_WINDOW_H
 
 #include <string>
+
+#include "base/memory/scoped_ptr.h"
 
 namespace remoting {
 
@@ -26,7 +28,7 @@ class DisconnectWindow {
   // Hide the disconnect window.
   virtual void Hide() = 0;
 
-  static DisconnectWindow* Create();
+  static scoped_ptr<DisconnectWindow> Create();
 };
 
 }

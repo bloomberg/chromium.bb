@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,21 +86,21 @@ void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
 
   compressor_->Reset();
 
-  VideoPacket* packet = new VideoPacket();
-  PrepareUpdateStart(rect, packet);
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
+  PrepareUpdateStart(rect, packet.get());
   const uint8* in = capture_data_->data_planes().data[0] +
       rect.fTop * strides + rect.fLeft * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
-  uint8* out = GetOutputBuffer(packet, packet_size_);
+  uint8* out = GetOutputBuffer(packet.get(), packet_size_);
   int filled = 0;
   int row_pos = 0;  // Position in the current row in bytes.
   int row_y = 0;  // Current row.
   bool compress_again = true;
   while (compress_again) {
     // Prepare a message for sending out.
-    if (!packet) {
-      packet = new VideoPacket();
-      out = GetOutputBuffer(packet, packet_size_);
+    if (!packet.get()) {
+      packet.reset(new VideoPacket());
+      out = GetOutputBuffer(packet.get(), packet_size_);
       filled = 0;
     }
 
@@ -132,8 +132,7 @@ void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
     // If we have filled the message or we have reached the end of stream.
     if (filled == packet_size_ || !compress_again) {
       packet->mutable_data()->resize(filled);
-      callback_.Run(packet);
-      packet = NULL;
+      callback_.Run(packet.Pass());
     }
 
     // Reached the end of input row and we're not at the last row.
@@ -168,6 +167,5 @@ uint8* EncoderRowBased::GetOutputBuffer(VideoPacket* packet, size_t size) {
   return const_cast<uint8*>(reinterpret_cast<const uint8*>(
       packet->mutable_data()->data()));
 }
-
 
 }  // namespace remoting

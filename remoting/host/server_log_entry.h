@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+
 namespace buzz {
 class XmlElement;
 }  // namespace buzz
@@ -35,8 +37,7 @@ class ServerLogEntry {
   void AddModeField(Mode mode);
 
   // Converts this object to an XML stanza.
-  // The caller takes ownership of the stanza.
-  buzz::XmlElement* ToStanza() const;
+  scoped_ptr<buzz::XmlElement> ToStanza() const;
 
  private:
   typedef std::map<std::string, std::string> ValuesMap;

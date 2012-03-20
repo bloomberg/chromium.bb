@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,41 +259,41 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
 
   // TODO(hclam): Make sure we get exactly one frame from the packet.
   // TODO(hclam): We should provide the output buffer to avoid one copy.
-  VideoPacket* message = new VideoPacket();
+  scoped_ptr<VideoPacket> packet(new VideoPacket());
 
   while (!got_data) {
-    const vpx_codec_cx_pkt_t* packet = vpx_codec_get_cx_data(codec_.get(),
-                                                             &iter);
-    if (!packet)
+    const vpx_codec_cx_pkt_t* vpx_packet = vpx_codec_get_cx_data(codec_.get(),
+                                                                 &iter);
+    if (!vpx_packet)
       continue;
 
-    switch (packet->kind) {
+    switch (vpx_packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
         // TODO(sergeyu): Split each frame into multiple partitions.
-        message->set_data(packet->data.frame.buf, packet->data.frame.sz);
+        packet->set_data(vpx_packet->data.frame.buf, vpx_packet->data.frame.sz);
         break;
       default:
         break;
     }
   }
 
-  message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
-  message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
+  packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
+  packet->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET |
                      VideoPacket::LAST_PARTITION);
-  message->mutable_format()->set_screen_width(capture_data->size().width());
-  message->mutable_format()->set_screen_height(capture_data->size().height());
-  message->set_capture_time_ms(capture_data->capture_time_ms());
-  message->set_client_sequence_number(capture_data->client_sequence_number());
+  packet->mutable_format()->set_screen_width(capture_data->size().width());
+  packet->mutable_format()->set_screen_height(capture_data->size().height());
+  packet->set_capture_time_ms(capture_data->capture_time_ms());
+  packet->set_client_sequence_number(capture_data->client_sequence_number());
   for (size_t i = 0; i < updated_rects.size(); ++i) {
-    Rect* rect = message->add_dirty_rects();
+    Rect* rect = packet->add_dirty_rects();
     rect->set_x(updated_rects[i].fLeft);
     rect->set_y(updated_rects[i].fTop);
     rect->set_width(updated_rects[i].width());
     rect->set_height(updated_rects[i].height());
   }
 
-  data_available_callback.Run(message);
+  data_available_callback.Run(packet.Pass());
 }
 
 }  // namespace remoting

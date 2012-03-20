@@ -63,7 +63,7 @@ class ServerLogEntryTest : public testing::Test {
 TEST_F(ServerLogEntryTest, MakeSessionStateChange) {
   scoped_ptr<ServerLogEntry> entry(
       ServerLogEntry::MakeSessionStateChange(true));
-  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -78,7 +78,7 @@ TEST_F(ServerLogEntryTest, AddHostFields) {
   scoped_ptr<ServerLogEntry> entry(
       ServerLogEntry::MakeSessionStateChange(true));
   entry->AddHostFields();
-  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -106,7 +106,7 @@ TEST_F(ServerLogEntryTest, AddModeField1) {
   scoped_ptr<ServerLogEntry> entry(
       ServerLogEntry::MakeSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::IT2ME);
-  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";
@@ -122,7 +122,7 @@ TEST_F(ServerLogEntryTest, AddModeField2) {
   scoped_ptr<ServerLogEntry> entry(
       ServerLogEntry::MakeSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::ME2ME);
-  scoped_ptr<XmlElement> stanza(entry->ToStanza());
+  scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
   key_value_pairs["role"] = "host";

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,8 +54,8 @@ void DisconnectWindowMac::Hide() {
   window_controller_ = nil;
 }
 
-remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
-  return new DisconnectWindowMac;
+scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
+  return scoped_ptr<DisconnectWindow>(new DisconnectWindowMac());
 }
 
 }  // namespace remoting

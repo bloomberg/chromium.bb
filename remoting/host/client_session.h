@@ -57,10 +57,8 @@ class ClientSession : public protocol::HostEventStub,
         const net::IPEndPoint& local_end_point) = 0;
   };
 
-  // Takes ownership of |connection|. Does not take ownership of
-  // |event_handler|, |host_event_stub|, or |capturer|.
   ClientSession(EventHandler* event_handler,
-                protocol::ConnectionToClient* connection,
+                scoped_ptr<protocol::ConnectionToClient> connection,
                 protocol::HostEventStub* host_event_stub,
                 Capturer* capturer);
   virtual ~ClientSession();

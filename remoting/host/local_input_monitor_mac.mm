@@ -143,17 +143,19 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
 
 @end
 
+namespace remoting {
+
 namespace {
 
-class LocalInputMonitorMac : public remoting::LocalInputMonitor {
+class LocalInputMonitorMac : public LocalInputMonitor {
  public:
   LocalInputMonitorMac() : host_(NULL) {}
   virtual ~LocalInputMonitorMac();
-  virtual void Start(remoting::ChromotingHost* host) OVERRIDE;
+  virtual void Start(ChromotingHost* host) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  private:
-  remoting::ChromotingHost* host_;
+  ChromotingHost* host_;
   DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorMac);
 };
 
@@ -166,7 +168,7 @@ LocalInputMonitorMac::~LocalInputMonitorMac() {
   Stop();
 }
 
-void LocalInputMonitorMac::Start(remoting::ChromotingHost* host) {
+void LocalInputMonitorMac::Start(ChromotingHost* host) {
   base::AutoLock lock(monitor_lock.Get());
   if (!local_input_monitor)
     local_input_monitor = [[LocalInputMonitorImpl alloc] init];
@@ -184,6 +186,8 @@ void LocalInputMonitorMac::Stop() {
   }
 }
 
-remoting::LocalInputMonitor* remoting::LocalInputMonitor::Create() {
-  return new LocalInputMonitorMac;
+scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
+  return scoped_ptr<LocalInputMonitor>(new LocalInputMonitorMac());
 }
+
+}  // namespace remoting

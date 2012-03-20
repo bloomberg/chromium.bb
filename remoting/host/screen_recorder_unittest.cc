@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ ACTION_P2(RunCallback, region, data) {
 ACTION(FinishEncode) {
   scoped_ptr<VideoPacket> packet(new VideoPacket());
   packet->set_flags(VideoPacket::LAST_PACKET | VideoPacket::LAST_PARTITION);
-  arg2.Run(packet.release());
+  arg2.Run(packet.Pass());
 }
 
 ACTION(FinishSend) {

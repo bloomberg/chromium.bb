@@ -211,16 +211,14 @@ class EncoderTester {
     EXPECT_GT(data_available_, 0);
   }
 
-  void DataAvailable(VideoPacket *packet) {
+  void DataAvailable(scoped_ptr<VideoPacket> packet) {
     ++data_available_;
-    message_tester_->ReceivedPacket(packet);
+    message_tester_->ReceivedPacket(packet.get());
 
     // Send the message to the DecoderTester.
     if (decoder_tester_) {
-      decoder_tester_->ReceivedPacket(packet);
+      decoder_tester_->ReceivedPacket(packet.get());
     }
-
-    delete packet;
   }
 
   void AddRects(const SkIRect* rects, int count) {
