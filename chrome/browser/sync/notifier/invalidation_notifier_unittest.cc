@@ -54,7 +54,7 @@ class InvalidationNotifierTest : public testing::Test {
     invalidation_notifier_.reset();
   }
 
-  MessageLoop message_loop_;
+  MessageLoopForIO message_loop_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
