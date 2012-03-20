@@ -60,80 +60,64 @@ BluetoothOptionsHandler::~BluetoothOptionsHandler() {
 void BluetoothOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString("bluetooth",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH));
-  localized_strings->SetString("disableBluetooth",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE));
-  localized_strings->SetString("enableBluetooth",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE));
-  localized_strings->SetString("addBluetoothDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE));
-  localized_strings->SetString("bluetoothAddDeviceTitle",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
-  localized_strings->SetString("bluetoothOptionsPageTabTitle",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE));
-  localized_strings->SetString("findBluetoothDevices",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES));
-  localized_strings->SetString("bluetoothNoDevices",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES));
-  localized_strings->SetString("bluetoothNoDevicesFound",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND));
-  localized_strings->SetString("bluetoothScanning",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING));
-  localized_strings->SetString("bluetoothDeviceConnected",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED));
-  localized_strings->SetString("bluetoothDeviceNotConnected",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED));
-  localized_strings->SetString("bluetoothConnectDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT));
-  localized_strings->SetString("bluetoothDisconnectDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT));
-  localized_strings->SetString("bluetoothForgetDevice",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET));
-  localized_strings->SetString("bluetoothCancel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL));
-  localized_strings->SetString("bluetoothEnterKey",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY));
-  localized_strings->SetString("bluetoothAcceptPasskey",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY));
-  localized_strings->SetString("bluetoothRejectPasskey",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY));
-  localized_strings->SetString("bluetoothEnterPinCode",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST));
-  localized_strings->SetString("bluetoothEnterPasskey",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST));
-  localized_strings->SetString("bluetoothRemotePinCode",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST));
-  localized_strings->SetString("bluetoothRemotePasskey",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST));
-  localized_strings->SetString("bluetoothConfirmPasskey",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST));
-  localized_strings->SetString("bluetoothDismissError",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR));
-  localized_strings->SetString("bluetoothErrorNoDevice",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE));
-  localized_strings->SetString("bluetoothErrorIncorrectPin",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_INCORRECT_PIN));
-  localized_strings->SetString("bluetoothErrorTimeout",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_TIMEOUT));
-  localized_strings->SetString("bluetoothErrorConnectionFailed",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED));
+
+  static OptionsStringResource resources[] = {
+    { "bluetooth", IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH },
+    { "disableBluetooth", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE },
+    { "enableBluetooth", IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE },
+    { "addBluetoothDevice", IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE },
+    { "bluetoothAddDeviceTitle",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE },
+    { "bluetoothOptionsPageTabTitle",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE },
+    { "findBluetoothDevices", IDS_OPTIONS_SETTINGS_FIND_BLUETOOTH_DEVICES },
+    { "bluetoothNoDevices", IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES },
+    { "bluetoothNoDevicesFound",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND },
+    {"bluetoothScanning", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING },
+    {"bluetoothDeviceConnected", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED },
+    { "bluetoothDeviceNotConnected",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED },
+    { "bluetoothConnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT },
+    { "bluetoothDisconnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT },
+    { "bluetoothForgetDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET },
+    { "bluetoothCancel", IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL },
+    { "bluetoothEnterKey", IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY },
+    { "bluetoothDismissError", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR },
+
+    // Device connecting and pairing.
+    { "bluetoothStartConnecting",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_START_CONNECTING },
+    { "bluetoothAcceptPasskey",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY },
+    { "bluetoothRejectPasskey",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY },
+    { "bluetoothEnterPinCode",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST },
+    { "bluetoothEnterPasskey",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST },
+    { "bluetoothRemotePinCode",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST },
+    { "bluetoothRemotePasskey",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST },
+    { "bluetoothConfirmPasskey",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST },
+
+    // Error messages.
+    { "bluetoothStartDiscoveryFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_START_DISCOVERY_FAILED },
+    { "bluetoothStopDiscoveryFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_STOP_DISCOVERY_FAILED },
+    { "bluetoothChangePowerFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED },
+    { "bluetoothConnectFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED },
+    { "bluetoothDisconnectFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED },
+    { "bluetoothForgetFailed",
+        IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET_FAILED }};
+
+  RegisterStrings(localized_strings, resources, arraysize(resources));
 }
 
 // TODO(kevers): Reorder methods to match ordering in the header file.
@@ -163,9 +147,6 @@ void BluetoothOptionsHandler::AdapterPoweredChanged(BluetoothAdapter* adapter,
 }
 
 void BluetoothOptionsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initializeBluetoothStatus",
-      base::Bind(&BluetoothOptionsHandler::InitializeBluetoothStatusCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("bluetoothEnableChange",
       base::Bind(&BluetoothOptionsHandler::EnableChangeCallback,
                  base::Unretained(this)));
@@ -183,10 +164,12 @@ void BluetoothOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void BluetoothOptionsHandler::InitializeBluetoothStatusCallback(
-    const ListValue* args) {
+void BluetoothOptionsHandler::InitializeHandler() {
   adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
   adapter_->AddObserver(this);
+}
+
+void BluetoothOptionsHandler::InitializePage() {
   // Show or hide the bluetooth settings and update the checkbox based
   // on the current present/powered state.
   AdapterPresentChanged(adapter_.get(), adapter_->IsPresent());
@@ -203,8 +186,8 @@ void BluetoothOptionsHandler::EnableChangeCallback(
 }
 
 void BluetoothOptionsHandler::EnableChangeError() {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to change power state.";
+  ReportError("bluetoothChangePowerFailed", std::string());
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
@@ -216,8 +199,8 @@ void BluetoothOptionsHandler::FindDevicesCallback(
 }
 
 void BluetoothOptionsHandler::FindDevicesError() {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to start discovery.";
+  ReportError("bluetoothStartDiscoveryFailed", std::string());
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
@@ -299,18 +282,18 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
 }
 
 void BluetoothOptionsHandler::ConnectError(const std::string& address) {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to connect to device: " << address;
+  ReportError("bluetoothConnectFailed", address);
 }
 
 void BluetoothOptionsHandler::DisconnectError(const std::string& address) {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to disconnect from device: " << address;
+  ReportError("bluetoothDisconnectFailed", address);
 }
 
 void BluetoothOptionsHandler::ForgetError(const std::string& address) {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to disconnect and unpair device: " << address;
+  ReportError("bluetoothForgetFailed", address);
 }
 
 void BluetoothOptionsHandler::StopDiscoveryCallback(
@@ -322,8 +305,8 @@ void BluetoothOptionsHandler::StopDiscoveryCallback(
 }
 
 void BluetoothOptionsHandler::StopDiscoveryError() {
-  // TODO(kevers): display an error in the UI.
   DVLOG(1) << "Failed to stop discovery.";
+  ReportError("bluetoothStopDiscoveryFailed", std::string());
 }
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(
@@ -389,31 +372,19 @@ void BluetoothOptionsHandler::ConfirmPasskey(BluetoothDevice* device,
 }
 
 void BluetoothOptionsHandler::DismissDisplayOrConfirm() {
-  // TODO(kevers): please fill this in
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothPairing.dismissDialog");
 }
 
 void BluetoothOptionsHandler::ReportError(
-    const BluetoothDevice* device,
-    ConnectionError error) {
-  // TODO(keybuk): not called from anywhere
-  std::string errorCode;
-  switch (error) {
-  case DEVICE_NOT_FOUND:
-    errorCode = "bluetoothErrorNoDevice";
-    break;
-  case INCORRECT_PIN:
-    errorCode = "bluetoothErrorIncorrectPin";
-    break;
-  case CONNECTION_TIMEOUT:
-    errorCode = "bluetoothErrorTimeout";
-    break;
-  case CONNECTION_REJECTED:
-    errorCode = "bluetoothErrorConnectionFailed";
-    break;
-  }
-  DictionaryValue params;
-  params.SetString("pairing", errorCode);
-  SendDeviceNotification(device, &params);
+    const std::string& error,
+    const std::string& address) {
+  base::DictionaryValue properties;
+  properties.SetString("label", error);
+  properties.SetString("address", address);
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothPairing.showMessage",
+      properties);
 }
 
 void BluetoothOptionsHandler::DeviceAdded(BluetoothAdapter* adapter,

@@ -97,18 +97,6 @@ void BluetoothOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("bluetoothDismissError",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR));
-  localized_strings->SetString("bluetoothErrorNoDevice",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE));
-  localized_strings->SetString("bluetoothErrorIncorrectPin",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_INCORRECT_PIN));
-  localized_strings->SetString("bluetoothErrorTimeout",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_TIMEOUT));
-  localized_strings->SetString("bluetoothErrorConnectionFailed",
-      l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED));
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {

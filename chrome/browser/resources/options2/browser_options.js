@@ -441,12 +441,6 @@ cr.define('options', function() {
               [String($('backgroundModeCheckbox').checked)]);
         };
       }
-
-      // Update Bluetooth controls.  If no Bluetooth adapter is available then
-      // the Bluetooth section is hidden.  If the adapter is found and powered
-      // then the list of known and connected devices is populated.
-      if (cr.isChromeOS)
-        chrome.send('initializeBluetoothStatus');
     },
 
     /**

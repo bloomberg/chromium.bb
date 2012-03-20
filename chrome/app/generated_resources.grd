@@ -12546,17 +12546,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
         Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE">
-        Unable to connect. Please check that "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" is powered and in range.
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_CONNECTING">
+        Connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_INCORRECT_PIN">
-        Unable to connect. Incorrect PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_DISCOVERY_FAILED">
+        Failed to start Bluetooth device discovery.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_TIMEOUT">
-        Connection timeout while attempting to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_STOP_DISCOVERY_FAILED">
+        Failed to stop Bluetooth device discovery.
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED">
-        Unable to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED">
+        Failed to change the power state of the Bluetooth adapter.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
+        Failed to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
+        Failed to disconnect from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET_FAILED">
+        Failed to disconnect and unpair from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
         Enable spoken feedback

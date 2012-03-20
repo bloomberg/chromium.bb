@@ -30,20 +30,12 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   BluetoothOptionsHandler();
   virtual ~BluetoothOptionsHandler();
 
-  // Potential errors during the process of pairing or connecting to a
-  // Bluetooth device.  Each enumerated value is associated with an i18n
-  // label for display in the Bluetooth UI.
-  enum ConnectionError {
-    DEVICE_NOT_FOUND,
-    INCORRECT_PIN,
-    CONNECTION_TIMEOUT,
-    CONNECTION_REJECTED
-  };
-
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
+  virtual void InitializeHandler() OVERRIDE;
+  virtual void InitializePage() OVERRIDE;
 
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
@@ -121,10 +113,11 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   // and removed from the user.
   virtual void DismissDisplayOrConfirm() OVERRIDE;
 
-  // Displays an error that occurred during the pairing or connection process.
-  // |device| is the Bluetooth device being paired or connected.
-  // |error| is the type of error that occurred.
-  void ReportError(const BluetoothDevice* device, ConnectionError error);
+  // Displays a Bluetooth error.
+  // |error| maps to a localized resource for the error message.
+  // |address| is the address of the Bluetooth device.  May be an empty
+  // string if the error is not specific to a single device.
+  void ReportError(const std::string& error, const std::string& address);
 
   // BluetoothAdapter::Observer implementation.
   virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
@@ -162,11 +155,6 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   // Called by BluetoothDevice in response to a failure to disconnect and
   // unpair the device with bluetooth address |address|.
   void ForgetError(const std::string& address);
-
-  // Called on completion of initialization of the settings page to update
-  // the Bluetooth controls.
-  // |args| will be and empty list.
-  void InitializeBluetoothStatusCallback(const base::ListValue* args);
 
   // Called when the 'Enable bluetooth' checkbox value is changed.
   // |args| will contain the checkbox checked state as a string
