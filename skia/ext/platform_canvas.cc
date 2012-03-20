@@ -44,8 +44,7 @@ SkCanvas* TryCreateBitmapCanvas(int width, int height, bool is_opaque) {
 }
 
 SkDevice* GetTopDevice(const SkCanvas& canvas) {
-  SkCanvas::LayerIter iter(const_cast<SkCanvas*>(&canvas), false);
-  return iter.device();
+  return canvas.getTopDevice(true);
 }
 
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
