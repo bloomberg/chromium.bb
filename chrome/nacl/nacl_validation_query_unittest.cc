@@ -99,16 +99,16 @@ class NaClValidationQueryTest : public ::testing::Test {
   }
 
   void AssertQuerySame() {
-    ASSERT_EQ(true, query1->db->did_query_);
-    ASSERT_EQ(true, query2->db->did_query_);
+    ASSERT_TRUE(query1->db->did_query_);
+    ASSERT_TRUE(query2->db->did_query_);
     ASSERT_EQ(0, memcmp(query1->db->query_signature_,
                         query2->db->query_signature_,
                         NaClValidationQuery::kDigestLength));
   }
 
   void AssertQueryDifferent() {
-    ASSERT_EQ(true, query1->db->did_query_);
-    ASSERT_EQ(true, query2->db->did_query_);
+    ASSERT_TRUE(query1->db->did_query_);
+    ASSERT_TRUE(query2->db->did_query_);
     ASSERT_NE(0, memcmp(query1->db->query_signature_,
                         query2->db->query_signature_,
                         NaClValidationQuery::kDigestLength));
@@ -117,14 +117,14 @@ class NaClValidationQueryTest : public ::testing::Test {
 
 TEST_F(NaClValidationQueryTest, Sanity) {
   query1->query->AddData(kShortData, sizeof(kShortData));
-  ASSERT_EQ(false, query1->db->did_query_);
-  ASSERT_EQ(false, query1->db->did_set_);
+  ASSERT_FALSE(query1->db->did_query_);
+  ASSERT_FALSE(query1->db->did_set_);
   ASSERT_EQ(1, query1->query->QueryKnownToValidate());
-  ASSERT_EQ(true, query1->db->did_query_);
-  ASSERT_EQ(false, query1->db->did_set_);
+  ASSERT_TRUE(query1->db->did_query_);
+  ASSERT_FALSE(query1->db->did_set_);
   query1->query->SetKnownToValidate();
-  ASSERT_EQ(true, query1->db->did_query_);
-  ASSERT_EQ(true, query1->db->did_set_);
+  ASSERT_TRUE(query1->db->did_query_);
+  ASSERT_TRUE(query1->db->did_set_);
 }
 
 TEST_F(NaClValidationQueryTest, ConsistentShort) {
