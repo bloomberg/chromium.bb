@@ -670,6 +670,22 @@
       <arg name="state" type="uint"/>
     </event>
 
+    <enum name="axis">
+      <description summary="axis types"/>
+      <entry name="vertical_scroll" value="0"/>
+      <entry name="horizontal_scroll" value="1"/>
+    </enum>
+
+    <event name="axis">
+      <description summary="axis event">
+	Scroll and other axis notifications.
+      </description>
+
+      <arg name="time" type="uint"/>
+      <arg name="axis" type="uint"/>
+      <arg name="value" type="int"/>
+    </event>
+
     <event name="key">
       <description summary="key event">
 	A key was pressed or released.
