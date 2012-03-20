@@ -97,6 +97,7 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
 
   // From MenuModel via BookmarkNodeMenuModel, SimpleMenuModel.
   virtual void MenuWillShow() OVERRIDE;
+  virtual void MenuClosed() OVERRIDE;
   virtual void ActivatedAt(int index) OVERRIDE;
   virtual void ActivatedAt(int index, int event_flags) OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;
@@ -113,10 +114,15 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
   // The index of the first non-bookmark item after the bookmarks.
   int bookmark_end_;
 
-  // We need to be able to call Cancel() on the menu when bookmarks change. This
-  // is a bit of an abstraction violation but it could be converted to an
-  // interface with just a Cancel() method if necessary.
+  // We need to be able to call Cancel() on the wrench menu when bookmarks
+  // change. This is a bit of an abstraction violation but it could be converted
+  // to an interface with just a Cancel() method if necessary.
   MenuGtk* menu_;
+
+  // We keep track of whether the bookmark submenu is currently showing. If it's
+  // not showing, then we don't need to forcibly close the entire wrench menu
+  // when the bookmark model loads.
+  bool menu_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkSubMenuModel);
 };

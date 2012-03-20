@@ -121,7 +121,8 @@ BookmarkSubMenuModel::BookmarkSubMenuModel(
       browser_(browser),
       fixed_items_(0),
       bookmark_end_(0),
-      menu_(NULL) {
+      menu_(NULL),
+      menu_showing_(false) {
 }
 
 BookmarkSubMenuModel::~BookmarkSubMenuModel() {
@@ -136,7 +137,7 @@ void BookmarkSubMenuModel::Loaded(BookmarkModel* model, bool ids_reassigned) {
 }
 
 void BookmarkSubMenuModel::BookmarkModelChanged() {
-  if (menu_)
+  if (menu_showing_ && menu_)
     menu_->Cancel();
 }
 
@@ -149,6 +150,7 @@ void BookmarkSubMenuModel::BookmarkModelBeingDeleted(
 }
 
 void BookmarkSubMenuModel::MenuWillShow() {
+  menu_showing_ = true;
   Clear();
   AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
@@ -186,6 +188,11 @@ void BookmarkSubMenuModel::MenuWillShow() {
       AddSeparator();
     AddSubMenuForNode(model()->mobile_node());
   }
+}
+
+void BookmarkSubMenuModel::MenuClosed() {
+  menu_showing_ = false;
+  BookmarkNodeMenuModel::MenuClosed();
 }
 
 void BookmarkSubMenuModel::ActivatedAt(int index) {

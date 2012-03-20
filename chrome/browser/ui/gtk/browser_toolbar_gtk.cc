@@ -658,6 +658,8 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 void BrowserToolbarGtk::RebuildWrenchMenu() {
   wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
   wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.get()));
+  // The bookmark menu model needs to be able to force the wrench menu to close.
+  wrench_menu_model_->bookmark_sub_menu_model()->SetMenuGtk(wrench_menu_.get());
   is_wrench_menu_model_valid_ = true;
 }
 
