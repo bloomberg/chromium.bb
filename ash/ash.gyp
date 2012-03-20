@@ -48,7 +48,6 @@
         'accelerators/accelerator_table.h',
         'accelerators/nested_dispatcher_controller.cc',
         'accelerators/nested_dispatcher_controller.h',
-        'animation_timings.h',
         'app_list/app_list.cc',
         'app_list/app_list.h',
         'app_list/app_list_item_model.cc',
