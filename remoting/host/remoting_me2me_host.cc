@@ -36,6 +36,7 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
+#include "remoting/host/oauth_client.h"
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -95,7 +96,7 @@ FilePath GetDefaultConfigDir() {
 
 namespace remoting {
 
-class HostProcess {
+class HostProcess : public OAuthClient::Delegate {
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
@@ -132,23 +133,56 @@ class HostProcess {
   }
 
   int Run() {
-    if (!LoadConfig(file_io_thread_.message_loop_proxy())) {
+    bool tokens_pending = false;
+    if (!LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
       return 1;
     }
-
-    nat_policy_.reset(
-        policy_hack::NatPolicy::Create(file_io_thread_.message_loop_proxy()));
-    nat_policy_->StartWatching(
-        base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
+    if (tokens_pending) {
+      // If we have an OAuth refresh token, then XmppSignalStrategy can't
+      // handle it directly, so refresh it asynchronously. A task will be
+      // posted on the message loop to start watching the NAT policy when
+      // the access token is available.
+      oauth_client_.Start(oauth_refresh_token_, this,
+                          message_loop_.message_loop_proxy());
+    } else {
+      StartWatchingNatPolicy();
+    }
 
     message_loop_.Run();
 
     return 0;
   }
 
+  // Overridden from OAuthClient::Delegate
+  virtual void OnRefreshTokenResponse(const std::string& access_token,
+                                      int expires) OVERRIDE {
+    xmpp_auth_token_ = access_token;
+    // If there's already a signal strategy object, update it ready for the
+    // next time it calls Connect. If not, then this is the initial token
+    // exchange, so proceed to the next stage of connection.
+    if (signal_strategy_.get()) {
+      signal_strategy_->SetAuthInfo(xmpp_login_, xmpp_auth_token_,
+                                    xmpp_auth_service_);
+    } else {
+      StartWatchingNatPolicy();
+    }
+  }
+
+  virtual void OnOAuthError() OVERRIDE {
+    LOG(ERROR) << "OAuth: invalid credentials.";
+  }
+
  private:
+  void StartWatchingNatPolicy() {
+    nat_policy_.reset(
+        policy_hack::NatPolicy::Create(file_io_thread_.message_loop_proxy()));
+    nat_policy_->StartWatching(
+        base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
+  }
+
   // Read Host config from disk, returning true if successful.
-  bool LoadConfig(base::MessageLoopProxy* io_message_loop) {
+  bool LoadConfig(base::MessageLoopProxy* io_message_loop,
+                  bool* tokens_pending) {
     scoped_refptr<JsonHostConfig> host_config =
         new JsonHostConfig(host_config_path_, io_message_loop);
     scoped_refptr<JsonHostConfig> auth_config =
@@ -187,20 +221,24 @@ class HostProcess {
 
     // Use an XMPP connection to the Talk network for session signalling.
     if (!auth_config->GetString(kXmppLoginConfigPath, &xmpp_login_) ||
-        !auth_config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_)) {
+        !(auth_config->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token_) ||
+          auth_config->GetString(kOAuthRefreshTokenConfigPath,
+                                 &oauth_refresh_token_))) {
       LOG(ERROR) << "XMPP credentials are not defined in the config.";
       return false;
     }
 
-    if (!auth_config->GetString(kXmppAuthServiceConfigPath,
+    *tokens_pending = oauth_refresh_token_ != "";
+    if (*tokens_pending) {
+      xmpp_auth_token_ = "";  // This will be set to the access token later.
+      xmpp_auth_service_ = "oauth2";
+    } else if (!auth_config->GetString(kXmppAuthServiceConfigPath,
                                 &xmpp_auth_service_)) {
-      // For the me2me host, we assume we use the ClientLogin token for
-      // chromiumsync because we do not have an HTTP stack with which we can
-      // easily request an OAuth2 access token even if we had a RefreshToken for
-      // the account.
+      // For the me2me host, we default to ClientLogin token for chromiumsync
+      // because earlier versions of the host had no HTTP stack with which to
+      // request an OAuth2 access token.
       xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
     }
-
     return true;
   }
 
@@ -307,12 +345,15 @@ class HostProcess {
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
 
+  std::string oauth_refresh_token_;
+  OAuthClient oauth_client_;
+
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
   bool allow_nat_traversal_;
 
   bool restarting_;
 
-  scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;

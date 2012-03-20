@@ -9,6 +9,7 @@ namespace remoting {
 const char kHostEnabledConfigPath[] = "enabled";
 const char kXmppLoginConfigPath[] = "xmpp_login";
 const char kXmppAuthTokenConfigPath[] = "xmpp_auth_token";
+const char kOAuthRefreshTokenConfigPath[] = "oauth_refresh_token";
 const char kXmppAuthServiceConfigPath[] = "xmpp_auth_service";
 const char kHostIdConfigPath[] = "host_id";
 const char kHostNameConfigPath[] = "host_name";

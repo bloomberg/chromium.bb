@@ -4,6 +4,7 @@
 
 #include "remoting/host/oauth_client.h"
 
+#include "base/bind.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/url_request_context.h"
 
@@ -11,7 +12,8 @@ namespace remoting {
 
 OAuthClient::OAuthClient()
     : network_thread_("OAuthNetworkThread"),
-      file_thread_("OAuthFileThread") {
+      file_thread_("OAuthFileThread"),
+      delegate_(NULL) {
   network_thread_.StartWithOptions(
       base::Thread::Options(MessageLoop::TYPE_IO, 0));
   file_thread_.StartWithOptions(
@@ -25,8 +27,50 @@ OAuthClient::OAuthClient()
 OAuthClient::~OAuthClient() {
 }
 
-void OAuthClient::GetAccessToken(const std::string& refresh_token,
-                                 GaiaOAuthClient::Delegate* delegate) {
+void OAuthClient::Start(const std::string& refresh_token,
+                        OAuthClient::Delegate* delegate,
+                        base::MessageLoopProxy* message_loop) {
+  refresh_token_ = refresh_token;
+  delegate_ = delegate;
+  message_loop_ = message_loop;
+  RefreshToken();
+}
+
+void OAuthClient::OnGetTokensResponse(const std::string& refresh_token,
+                                      const std::string& access_token,
+                                      int expires_in_seconds) {
+  NOTREACHED();
+}
+
+void OAuthClient::OnRefreshTokenResponse(const std::string& access_token,
+                                         int expires_in_seconds) {
+  message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&OAuthClient::Delegate::OnRefreshTokenResponse,
+                 base::Unretained(delegate_),
+                 access_token, expires_in_seconds));
+  // Queue a token exchange for 1 minute before this one expires.
+  message_loop_->PostDelayedTask(FROM_HERE,
+                                 base::Bind(&OAuthClient::RefreshToken,
+                                            base::Unretained(this)),
+                                 base::TimeDelta::FromSeconds(
+                                     expires_in_seconds - 60));
+}
+
+void OAuthClient::OnOAuthError() {
+  message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&OAuthClient::Delegate::OnOAuthError,
+                 base::Unretained(delegate_)));
+}
+
+void OAuthClient::OnNetworkError(int response_code) {
+  // TODO(jamiewalch): Set a sensible retry limit and integrate with
+  // SignalingConnector to restart the reconnection process (crbug.com/118928).
+  NOTREACHED();
+}
+
+void OAuthClient::RefreshToken() {
 #ifdef OFFICIAL_BUILD
   OAuthClientInfo client_info = {
     "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com",
@@ -38,7 +82,7 @@ void OAuthClient::GetAccessToken(const std::string& refresh_token,
     "W2ieEsG-R1gIA4MMurGrgMc_"
   };
 #endif
-  gaia_oauth_client_->RefreshToken(client_info, refresh_token, -1, delegate);
+  gaia_oauth_client_->RefreshToken(client_info, refresh_token_, -1, this);
 }
 
 }  // namespace remoting
