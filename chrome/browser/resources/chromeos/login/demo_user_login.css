@@ -18,7 +18,7 @@ body {
 #page {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  background: -webkit-linear-gradient(top, #dadada, white);
+  background: white;
   display: -webkit-box;
   height: 100%;
   position: absolute;
@@ -34,8 +34,6 @@ body {
 }
 
 #demo-login-text {
-  font-family: 'Open Sans';
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 24px;
   padding-top: 80px;
 }

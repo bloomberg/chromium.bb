@@ -12261,7 +12261,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Remove
       </message>
       <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
-        Click anywhere to start your experience
+        Click to start the demo
       </message>
       <message name="IDS_LOGIN_CHANGE_PHOTO">
         Change picture
