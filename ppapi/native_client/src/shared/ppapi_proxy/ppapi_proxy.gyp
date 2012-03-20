@@ -3,9 +3,26 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,  # Use higher warning level.
+  },
   'includes': [
     '../../../../../native_client/build/common.gypi',
   ],
+  'target_defaults': {
+    'conditions': [
+      ['OS=="linux"', {
+        'cflags!': [
+          '-Wno-unused-parameter', # be a bit stricter to match NaCl flags.
+        ],
+      }],
+      ['OS=="mac"', {
+        'cflags!': [
+          '-Wno-unused-parameter', # be a bit stricter to match NaCl flags.
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'nacl_ppapi_browser',
