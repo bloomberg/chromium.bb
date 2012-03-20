@@ -19,7 +19,7 @@ using ::base::SharedMemory;
 namespace gpu {
 
 namespace {
-const int64 kRescheduleTimeOutDelay = 100;
+const int64 kRescheduleTimeOutDelay = 1000;
 }
 
 GpuScheduler::GpuScheduler(
