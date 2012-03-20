@@ -38,9 +38,9 @@ html[dir=rtl] #account-picture-wrapper {
 }
 
 #account-picture {
-  height: 72px;
+  height: 56px;
   vertical-align: middle;
-  width: 72px;
+  width: 56px;
 }
 
 #change-picture-caption {
@@ -52,7 +52,7 @@ html[dir=rtl] #account-picture-wrapper {
   position: absolute;
   text-align: center;
   /* Width of #account-picture. */
-  width: 72px;
+  width: 56px;
 }
 
 #account-picture-wrapper:not(:hover) #change-picture-caption {
@@ -60,7 +60,7 @@ html[dir=rtl] #account-picture-wrapper {
 }
 
 #sync-general {
-  -webkit-margin-start: 100px;
+  -webkit-margin-start: 76px;
   margin-bottom: 10px;
 }
 
@@ -102,10 +102,6 @@ html[dir=rtl] #account-picture-wrapper {
 .sync-error .link-button {
   margin: 0 1ex;
   padding: 0;
-}
-
-#enable-auto-login-checkbox {
-  margin-top: 10px;
 }
 
 #mac-passwords-warning {
