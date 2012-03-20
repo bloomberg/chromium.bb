@@ -45,13 +45,14 @@ function AudioPlayer(container, filesystemRootURL) {
       'click', this.onExpandCollapse_.bind(this));
 
   this.audioControls_ = new AudioControls(
-      createChild(), this.advance_.bind(this));
+      createChild(), this.advance_.bind(this), this.onError_.bind(this));
 
   this.audioControls_.attachMedia(createChild('', 'audio'));
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
-  })
+    this.errorString_ = strings['AUDIO_ERROR'];
+  }.bind(this));
 }
 
 AudioPlayer.load = function() {
@@ -77,6 +78,9 @@ AudioPlayer.prototype.load = function(playlist) {
   this.currentTrack_ = -1;
 
   this.urls_ = playlist.items;
+
+  this.invalidTracks_ = {};
+  this.cancelAutoAdvance_();
 
   if (this.urls_.length == 1)
     this.container_.classList.add('single-track');
@@ -106,23 +110,24 @@ AudioPlayer.prototype.load = function(playlist) {
   this.container_.classList.add('noart');
 
   // Load the selected track metadata first, then load the rest.
-  this.displayMetadata_(playlist.position);
+  this.loadMetadata_(playlist.position);
   for (i = 0; i != this.urls_.length; i++) {
     if (i != playlist.position)
-      this.displayMetadata_(i);
+      this.loadMetadata_(i);
   }
 };
 
-AudioPlayer.prototype.displayMetadata_ = function(track) {
+AudioPlayer.prototype.loadMetadata_ = function(track) {
   this.fetchMetadata_(
-      this.urls_[track],
-      function(metadata) {
-        if (metadata.thumbnailURL) {
-          this.container_.classList.remove('noart');
-        }
-        this.trackListItems_[track].setMetadata(metadata);
-        this.trackStackItems_[track].setMetadata(metadata);
-      }.bind(this));
+      this.urls_[track], this.displayMetadata_.bind(this, track));
+};
+
+AudioPlayer.prototype.displayMetadata_ = function(track, metadata) {
+  if (metadata.thumbnailURL || metadata.error) {
+    this.container_.classList.remove('noart');
+  }
+  this.trackListItems_[track].setMetadata(metadata);
+  this.trackStackItems_[track].setMetadata(metadata);
 };
 
 AudioPlayer.prototype.select_ = function(newTrack) {
@@ -197,12 +202,51 @@ AudioPlayer.prototype.isCompact_ = function() {
          this.container_.classList.contains('single-track');
 };
 
-AudioPlayer.prototype.advance_ = function(forward) {
+AudioPlayer.prototype.advance_ = function(forward, opt_onlyIfValid) {
+  this.cancelAutoAdvance_();
+
   var newTrack = this.currentTrack_ + (forward ? 1 : -1);
   if (newTrack < 0) newTrack = this.urls_.length - 1;
   if (newTrack == this.urls_.length) newTrack = 0;
+  if (opt_onlyIfValid && this.invalidTracks_[newTrack])
+    return;
   this.select_(newTrack);
 };
+
+AudioPlayer.prototype.onError_ = function() {
+  var track = this.currentTrack_;
+
+  this.invalidTracks_[track] = true;
+
+  this.fetchMetadata_(
+      this.urls_[track],
+      function(metadata) {
+        metadata.error = true;
+        metadata.artist = this.errorString_;
+        this.displayMetadata_(track, metadata);
+        this.scheduleAutoAdvance_();
+      }.bind(this));
+};
+
+AudioPlayer.prototype.scheduleAutoAdvance_ = function() {
+  this.cancelAutoAdvance_();
+  this.autoAdvanceTimer_ = setTimeout(
+      function() {
+        this.autoAdvanceTimer_ = null;
+        // We are advancing only if the next track is not known to be invalid.
+        // This prevents an endless auto-advancing in the case when all tracks
+        // are invalid (we will only visit each track once).
+        this.advance_(true /* forward */, true /* only if valid */);
+      }.bind(this),
+      3000);
+};
+
+AudioPlayer.prototype.cancelAutoAdvance_ = function() {
+  if (this.autoAdvanceTimer_) {
+    clearTimeout(this.autoAdvanceTimer_);
+    this.autoAdvanceTimer_ = null;
+  }
+}
 
 AudioPlayer.prototype.onExpandCollapse_ = function() {
   this.container_.classList.toggle('collapsed');
@@ -282,7 +326,10 @@ AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
 };
 
 AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata) {
-  if (metadata.thumbnailURL) {
+  if (metadata.error) {
+    this.art_.classList.add('blank');
+    this.art_.classList.add('error');
+  } else if (metadata.thumbnailURL) {
     this.art_.classList.remove('blank');
     this.img_.src = metadata.thumbnailURL;
   }

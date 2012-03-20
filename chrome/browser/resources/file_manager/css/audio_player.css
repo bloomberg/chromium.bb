@@ -177,6 +177,13 @@ body {
   display: none;
 }
 
+.track .art.error {
+  /* TODO(kaznacheev): This is a stopgap. Replace with the warning icon */
+  background-image: url(../images/media/media_pause_audio.png);
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
 .noart .track .art {
   display: none;
 }

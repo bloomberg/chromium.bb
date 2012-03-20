@@ -896,10 +896,11 @@ TimeLimitedMap.prototype.cleanup_ = function(map) {
  *
  * @param {HTMLElement} container
  * @param {function(boolean)} advanceTrack Parameter: true=forward.
+ * @param {function} onError
  * @constructor
  */
-function AudioControls(container, advanceTrack) {
-  MediaControls.call(this, container, null /* onError */);
+function AudioControls(container, advanceTrack, onError) {
+  MediaControls.call(this, container, onError);
 
   this.container_.classList.add('audio-controls');
 

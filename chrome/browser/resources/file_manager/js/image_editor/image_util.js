@@ -179,6 +179,10 @@ Rect.prototype.contains = function(rect) {
          (rect.top + rect.height) <= (this.top + this.height);
 };
 
+Rect.prototype.isEmpty = function() {
+  return this.width == 0 || this.height == 0;
+};
+
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.
@@ -223,6 +227,8 @@ Rect.prototype.toString = function() {
 Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
   opt_dstRect = opt_dstRect || new Rect(context.canvas);
   opt_srcRect = opt_srcRect || new Rect(image);
+  if (opt_dstRect.isEmpty() || opt_srcRect.isEmpty())
+    return;
   context.drawImage(image,
       opt_srcRect.left, opt_srcRect.top, opt_srcRect.width, opt_srcRect.height,
       opt_dstRect.left, opt_dstRect.top, opt_dstRect.width, opt_dstRect.height);
@@ -372,6 +378,14 @@ ImageUtil.ImageLoader.prototype.load = function(
     self.image_.onload = function(e) {
       self.image_ = null;
       self.convertImage_(e.target);
+    };
+    self.image_.onerror = function(e) {
+      self.image_ = null;
+      self.callback_ = null;
+      var emptyCanvas = self.document_.createElement('canvas');
+      emptyCanvas.width = 0;
+      emptyCanvas.height = 0;
+      callback(emptyCanvas);
     };
     self.image_.src = url;
   }

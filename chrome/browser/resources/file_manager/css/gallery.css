@@ -532,6 +532,12 @@ body {
   background-image: url(../images/gallery/icon_share_selected.png);
 }
 
+.gallery[error] > .toolbar .button.edit,
+.gallery[error] > .toolbar .button.share {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
 .gallery > .toolbar > .button:last-child {
   margin-right: 8px;
 }
@@ -810,6 +816,54 @@ body {
 .gallery .share-menu > div > img {
   margin-right: 5px;
   display: block;
+}
+
+/* Load spinner and error banner */
+
+.gallery .spinner {
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -11px;
+  margin-top: -11px;
+  opacity: 0.5;
+  background-size: 100%;
+
+  background-image: url(../images/spinner.svg);
+  /* TODO(kaznacheev): The above spinner is black. Replace it with white
+   and remove the hacky lines below. */
+  background-color: white;
+  border: 3px solid white;
+  -webkit-border-radius: 13px;
+}
+
+.gallery:not([spinner]) .spinner {
+  display: none;
+}
+
+.gallery .error-banner {
+  color: white;
+  background-color: rgba(24, 24, 24, 1);
+  height: 54px;
+  padding-left: 60px;
+  padding-right: 30px;
+
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+
+  /* TODO(kaznacheev): This is a stopgap. Replace with the warning icon
+    and correct the position*/
+  background-image: url(../images/media/media_pause_audio.png);
+  background-repeat: no-repeat;
+  background-position: 20px 13px;
+}
+
+.gallery:not([error]) .error-banner {
+  display: none;
 }
 
 /* Video playback support. */

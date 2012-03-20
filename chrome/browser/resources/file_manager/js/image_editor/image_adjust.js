@@ -150,7 +150,8 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
 };
 
 ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
-  return filter.autofix.isApplicable(this.getHistogram());
+  return this.getImageView().hasValidImage() &&
+      filter.autofix.isApplicable(this.getHistogram());
 };
 
 ImageEditor.Mode.Autofix.prototype.apply = function() {

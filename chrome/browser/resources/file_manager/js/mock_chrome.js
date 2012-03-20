@@ -378,6 +378,9 @@ chrome.fileBrowserPrivate = {
       GALLERY_KEEP_ORIGINAL: 'Keep original',
       GALLERY_UNSAVED_CHANGES: 'Changes are not saved yet.',
       GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
+      GALLERY_IMAGE_ERROR: 'This file could not be displayed',
+      GALLERY_VIDEO_ERROR: 'This file could not be played',
+      AUDIO_ERROR: 'This file could not be played',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
