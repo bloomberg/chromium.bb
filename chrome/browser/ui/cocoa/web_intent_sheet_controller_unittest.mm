@@ -193,3 +193,41 @@ TEST_F(WebIntentPickerSheetControllerTest, DontCancelAfterServiceInvokation) {
 
   ignore_result(picker_.release());  // Closing |picker_| will destruct it.
 }
+
+TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
+  CreateBubble();
+
+  WebIntentPickerModel model;
+
+  model.AddSuggestedExtension(string16(), string16(), 2.5);
+  [controller_ performLayoutWithModel:&model];
+
+  // Get subviews.
+  NSArray* flip_views = [[window_ contentView] subviews];
+  NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
+
+  // 4th object should be the suggestion view.
+  ASSERT_TRUE([main_views count] > 3);
+  ASSERT_TRUE([[main_views objectAtIndex:3] isKindOfClass:[NSView class]]);
+  NSView* suggest_view = [main_views objectAtIndex:3];
+
+  // There is exactly one subview, which contains the suggested item.
+  ASSERT_EQ(1U, [[suggest_view subviews] count]);
+  ASSERT_TRUE([[[suggest_view subviews] objectAtIndex:0]
+      isKindOfClass:[NSView class]]);
+  NSView* item_view = [[suggest_view subviews] objectAtIndex:0];
+
+  // 8 subobject - Icon, title, star rating (5 objects), add button.
+  ASSERT_EQ(8U, [[item_view subviews] count]);
+
+  // Verify title button is hooked up properly
+  ASSERT_TRUE([[[item_view subviews] objectAtIndex:1]
+      isKindOfClass:[NSButton class]]);
+  NSButton* title_button = [[item_view subviews] objectAtIndex:1];
+  CheckButton(title_button, @selector(openExtensionLink:));
+
+  ASSERT_TRUE([[[item_view subviews] objectAtIndex:7]
+      isKindOfClass:[NSButton class]]);
+  NSButton* add_button = [[item_view subviews] objectAtIndex:7];
+  CheckButton(add_button, @selector(invokeService:));
+}

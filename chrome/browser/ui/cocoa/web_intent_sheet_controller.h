@@ -25,6 +25,9 @@ class WebIntentPickerModel;
 
   // Inline disposition tab contents. Weak reference.
   TabContentsWrapper* contents_;
+
+  // The intent picker data to be rendered. Weak reference.
+  WebIntentPickerModel* model_;
 }
 
 // Initialize the constrained dialog, and connect to picker.

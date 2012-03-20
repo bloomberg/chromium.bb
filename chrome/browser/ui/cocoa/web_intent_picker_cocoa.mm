@@ -149,7 +149,8 @@ void WebIntentPickerCocoa::OnFaviconChanged(WebIntentPickerModel* model,
 void WebIntentPickerCocoa::OnExtensionIconChanged(
     WebIntentPickerModel* model,
     const string16& extension_id) {
-  // TODO(binji): implement.
+  // We don't handle individual icon changes - just redo the whole model.
+  PerformLayout();
 }
 
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
