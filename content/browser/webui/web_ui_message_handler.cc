@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,10 +54,12 @@ bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
 }
 
 bool WebUIMessageHandler::ExtractDoubleValue(const ListValue* value,
-                                            double* out_value) {
+                                             double* out_value) {
   std::string string_value;
   if (value->GetString(0, &string_value))
     return base::StringToDouble(string_value, out_value);
+  if (value->GetDouble(0, out_value))
+    return true;
   NOTREACHED();
   return false;
 }

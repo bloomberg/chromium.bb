@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -33,6 +34,10 @@ class CONTENT_EXPORT WebUIMessageHandler {
   virtual ~WebUIMessageHandler() {}
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractIntegerValue);
+  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractDoubleValue);
+  FRIEND_TEST_ALL_PREFIXES(WebUIMessageHandlerTest, ExtractStringValue);
+
   // Helper methods:
 
   // Adds "url" and "title" keys on incoming dictionary, setting title
