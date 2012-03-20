@@ -79,7 +79,7 @@ remoting.init = function() {
 };
 
 // initDaemonUi is called if the app is not starting up in session mode, and
-// also if the user cancels the connection in session mode.
+// also if the user cancels pin entry or the connection in session mode.
 remoting.initDaemonUi = function () {
   remoting.daemonPlugin = new remoting.DaemonPlugin();
   remoting.daemonPlugin.updateDom();
