@@ -22,6 +22,7 @@ class AudioObserver;
 class BrightnessObserver;
 class CapsLockObserver;
 class ClockObserver;
+class IMEObserver;
 class NetworkObserver;
 class PowerStatusObserver;
 class UpdateObserver;
@@ -74,6 +75,9 @@ class ASH_EXPORT SystemTray : public views::View,
   ClockObserver* clock_observer() const {
     return clock_observer_;
   }
+  IMEObserver* ime_observer() const {
+    return ime_observer_;
+  }
   NetworkObserver* network_observer() const {
     return network_observer_;
   }
@@ -114,6 +118,7 @@ class ASH_EXPORT SystemTray : public views::View,
   BrightnessObserver* brightness_observer_;
   CapsLockObserver* caps_lock_observer_;
   ClockObserver* clock_observer_;
+  IMEObserver* ime_observer_;
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;
   UpdateObserver* update_observer_;

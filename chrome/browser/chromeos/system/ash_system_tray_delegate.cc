@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/audio_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
+#include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/power/clock_observer.h"
 #include "ash/system/power/power_status_observer.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -69,6 +72,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
                            public content::NotificationObserver,
+                           public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
                            public SystemKeyEventListener::CapsLockObserver {
  public:
@@ -89,6 +93,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     crosnet->AddNetworkManagerObserver(this);
     OnNetworkManagerChanged(crosnet);
     crosnet->AddCellularDataPlanObserver(this);
+
+    input_method::InputMethodManager::GetInstance()->AddObserver(this);
 
     system::TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -121,6 +127,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (audiohandler)
       audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+    input_method::InputMethodManager::GetInstance()->RemoveObserver(this);
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
@@ -225,6 +232,26 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void RequestLockScreen() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->
         NotifyScreenLockRequested();
+  }
+
+  virtual ash::IMEInfoList GetAvailableIMEList() OVERRIDE {
+    ash::IMEInfoList list;
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+    scoped_ptr<input_method::InputMethodDescriptors> ime_descriptors(
+        manager->GetActiveInputMethods());
+    std::string current = manager->GetCurrentInputMethod().id();
+    for (size_t i = 0; i < ime_descriptors->size(); i++) {
+      input_method::InputMethodDescriptor& ime = ime_descriptors->at(i);
+      ash::IMEInfo info;
+      info.id = ime.id();
+      info.name = UTF8ToUTF16(util->GetInputMethodDisplayNameFromId(info.id));
+      info.short_name = util->GetInputMethodShortName(ime);
+      info.selected = ime.id() == current;
+      list.push_back(info);
+    }
+    return list;
   }
 
   virtual ash::NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
@@ -367,6 +394,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       info.image = network_icon_->GetIconAndText(&info.description);
       observer->OnNetworkRefresh(info);
     }
+  }
+
+  void NotifyRefreshIME() {
+    ash::IMEObserver* observer =
+        ash::Shell::GetInstance()->tray()->ime_observer();
+    if (observer)
+      observer->OnIMERefresh();
   }
 
   void RefreshNetworkObserver(NetworkLibrary* crosnet) {
@@ -518,6 +552,27 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       default:
         NOTREACHED();
     }
+  }
+
+  // Overridden from InputMethodManager::Observer.
+  virtual void InputMethodChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodDescriptor& current_method,
+      size_t num_active_input_methods) OVERRIDE {
+    NotifyRefreshIME();
+  }
+
+  virtual void ActiveInputMethodsChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods) OVERRIDE {
+    NotifyRefreshIME();
+  }
+
+  virtual void PropertyListChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodPropertyList& properties) OVERRIDE {
+    NotifyRefreshIME();
   }
 
   // Overridden from system::TimezoneSettings::Observer.

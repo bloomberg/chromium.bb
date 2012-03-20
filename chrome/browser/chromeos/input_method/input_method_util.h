@@ -72,6 +72,9 @@ class InputMethodUtil {
   std::string GetInputMethodDisplayNameFromId(
       const std::string& input_method_id) const;
 
+  string16 GetInputMethodShortName(
+      const InputMethodDescriptor& input_method) const;
+
   // Converts an input method ID to an input method descriptor. Returns NULL
   // when |input_method_id| is unknown.
   // Example: "pinyin" => { id: "pinyin", display_name: "Pinyin",
