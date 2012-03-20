@@ -1994,16 +1994,28 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
 
   for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
        it != file_by_url.end(); ++it) {
-    GDataFileBase* file = it->second.first;
+    scoped_ptr<GDataFileBase> file(it->second.first);
     GURL parent_url = it->second.second;
     GDataDirectory* dir = root_.get();
     if (!parent_url.is_empty()) {
-      DCHECK(file_by_url.find(parent_url) != file_by_url.end());
-      dir = file_by_url[parent_url].first->AsGDataDirectory();
+      UrlToFileAndParentMap::iterator find_iter = file_by_url.find(parent_url);
+      if (find_iter == file_by_url.end()) {
+        LOG(WARNING) << "Found orphaned file '" << file->file_name()
+                     << "' with non-existing parent folder of "
+                     << parent_url.spec();
+      } else {
+        dir = find_iter->second.first->AsGDataDirectory();
+        if (!dir) {
+          LOG(WARNING) << "Found orphaned file '" << file->file_name()
+                       << "' pointing to non directory parent "
+                       << parent_url.spec();
+          dir = root_.get();
+        }
+      }
     }
     DCHECK(dir);
 
-    dir->AddFile(file);
+    dir->AddFile(file.release());
   }
 
   NotifyDirectoryChanged(root_->GetFilePath());
