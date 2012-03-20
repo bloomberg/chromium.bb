@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -171,7 +172,11 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
           ProfilesToDelete().begin();
        it != ProfilesToDelete().end();
        ++it) {
+    // Delete both the profile directory and its corresponding cache.
+    FilePath cache_path;
+    chrome::GetUserCacheDirectory(*it, &cache_path);
     file_util::Delete(*it, true);
+    file_util::Delete(cache_path, true);
   }
   ProfilesToDelete().clear();
 }
