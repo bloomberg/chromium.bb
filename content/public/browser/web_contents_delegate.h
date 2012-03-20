@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -29,6 +30,7 @@ class ListValue;
 
 namespace content {
 class BrowserContext;
+class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogCreator;
 class RenderViewHost;
@@ -309,6 +311,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns a pointer to a service to create JavaScript dialogs. May return
   // NULL in which case dialogs aren't shown.
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator();
+
+  // Called when color chooser should open. Returns the opened color chooser.
+  virtual content::ColorChooser* OpenColorChooser(WebContents* tab,
+                                                  int color_chooser_id,
+                                                  const SkColor& color);
+
+  virtual void DidEndColorChooser() {}
 
   // Called when a file selection is to be done.
   virtual void RunFileChooser(WebContents* tab,

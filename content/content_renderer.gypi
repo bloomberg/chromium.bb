@@ -177,6 +177,8 @@
     'renderer/renderer_webapplicationcachehost_impl.h',
     'renderer/renderer_webcookiejar_impl.cc',
     'renderer/renderer_webcookiejar_impl.h',
+    'renderer/renderer_webcolorchooser_impl.cc',
+    'renderer/renderer_webcolorchooser_impl.h',
     'renderer/renderer_webkitplatformsupport_impl.cc',
     'renderer/renderer_webkitplatformsupport_impl.h',
     'renderer/renderer_webstoragearea_impl.cc',
