@@ -41,10 +41,6 @@ class HtmlDialogUIDelegate {
   // Returns the title of the dialog.
   virtual string16 GetDialogTitle() const = 0;
 
-  // Returns the dialog's name identifier. Used to identify this dialog for
-  // state restoration.
-  virtual std::string GetDialogName() const;
-
   // Get the HTML file path for the content to load in the dialog.
   virtual GURL GetDialogContentURL() const = 0;
 
@@ -57,9 +53,6 @@ class HtmlDialogUIDelegate {
 
   // Get the size of the dialog.
   virtual void GetDialogSize(gfx::Size* size) const = 0;
-
-  // Get the size of the dialog.
-  virtual void GetMinimumDialogSize(gfx::Size* size) const;
 
   // Gets the JSON string input to use when showing the dialog.
   virtual std::string GetDialogArgs() const = 0;

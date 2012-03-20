@@ -45,7 +45,6 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(content::WebContents* source,

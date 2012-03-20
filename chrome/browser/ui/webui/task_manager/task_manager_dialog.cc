@@ -29,14 +29,6 @@
 #include "ui/views/widget/widget.h"
 #endif
 
-namespace {
-
-// The minimum size of task manager window in px.
-const int kMinimumTaskManagerWidth = 640;
-const int kMinimumTaskManagerHeight = 480;
-
-}  // namespace
-
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -61,9 +53,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   virtual string16 GetDialogTitle() const OVERRIDE {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
   }
-  virtual std::string GetDialogName() const OVERRIDE {
-    return prefs::kTaskManagerWindowPlacement;
-  }
   virtual GURL GetDialogContentURL() const OVERRIDE {
     std::string url_string(chrome::kChromeUITaskManagerURL);
     url_string += "?";
@@ -79,7 +68,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE {
   }
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE {
-#if !defined(TOOLKIT_VIEWS)
     // If dialog's bounds are previously saved, use them.
     if (g_browser_process->local_state()) {
       const DictionaryValue* placement_pref =
@@ -95,11 +83,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
     }
 
     // Otherwise set default size.
-    size->SetSize(kMinimumTaskManagerWidth, kMinimumTaskManagerHeight);
-#endif
-  }
-  virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE {
-    size->SetSize(kMinimumTaskManagerWidth, kMinimumTaskManagerHeight);
+    size->SetSize(640, 480);
   }
   virtual std::string GetDialogArgs() const OVERRIDE {
     return std::string();
@@ -118,7 +102,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
       const content::ContextMenuParams& params) OVERRIDE {
     return true;
   }
-#if !defined(TOOLKIT_VIEWS)
   virtual void StoreDialogSize(const gfx::Size& dialog_size) OVERRIDE {
    // Store the dialog's bounds so that it can be restored with the same bounds
    // the next time it's opened.
@@ -130,7 +113,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
      placement_pref->SetInteger("height", dialog_size.height());
    }
  }
-#endif
 
  private:
   void ShowDialog(bool is_background_page_mode);

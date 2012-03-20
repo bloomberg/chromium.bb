@@ -114,13 +114,6 @@ void HtmlDialogGtk::GetDialogSize(gfx::Size* size) const {
     *size = gfx::Size();
 }
 
-void HtmlDialogGtk::GetMinimumDialogSize(gfx::Size* size) const {
-  if (delegate_)
-    delegate_->GetMinimumDialogSize(size);
-  else
-    *size = gfx::Size();
-}
-
 std::string HtmlDialogGtk::GetDialogArgs() const {
   if (delegate_)
     return delegate_->GetDialogArgs();
@@ -252,18 +245,10 @@ gfx::NativeWindow HtmlDialogGtk::InitDialog() {
 
   gfx::Size dialog_size;
   delegate_->GetDialogSize(&dialog_size);
-  if (!dialog_size.IsEmpty()) {
-    gtk_window_set_default_size(GTK_WINDOW(dialog_),
-                                dialog_size.width(),
-                                dialog_size.height());
-  }
-  gfx::Size minimum_dialog_size;
-  delegate_->GetMinimumDialogSize(&minimum_dialog_size);
-  if (!minimum_dialog_size.IsEmpty()) {
-    gtk_widget_set_size_request(GTK_WIDGET(tab_contents_container_->widget()),
-                                minimum_dialog_size.width(),
-                                minimum_dialog_size.height());
-  }
+
+  gtk_widget_set_size_request(GTK_WIDGET(tab_contents_container_->widget()),
+                              dialog_size.width(),
+                              dialog_size.height());
 
   gtk_widget_show_all(dialog_);
 

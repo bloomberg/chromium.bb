@@ -51,7 +51,6 @@ public:
   virtual void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
-  virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(WebContents* source,
@@ -180,18 +179,11 @@ void HtmlDialogWindowDelegateBridge::GetWebUIMessageHandlers(
 }
 
 void HtmlDialogWindowDelegateBridge::GetDialogSize(gfx::Size* size) const {
-  if (delegate_)
+  if (delegate_) {
     delegate_->GetDialogSize(size);
-  else
+  } else {
     *size = gfx::Size();
-}
-
-void HtmlDialogWindowDelegateBridge::GetMinimumDialogSize(
-    gfx::Size* size) const {
-  if (delegate_)
-    delegate_->GetMinimumDialogSize(size);
-  else
-    *size = gfx::Size();
+  }
 }
 
 std::string HtmlDialogWindowDelegateBridge::GetDialogArgs() const {
