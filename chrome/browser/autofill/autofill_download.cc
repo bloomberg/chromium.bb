@@ -178,7 +178,8 @@ bool AutofillDownloadManager::StartRequest(
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
   fetcher->SetUploadData("text/plain", form_xml);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->Start();
   return true;
 }
