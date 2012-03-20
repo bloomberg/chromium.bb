@@ -101,12 +101,10 @@ set -x
 RETCODE=0
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out compiler ../xcodebuild ../sconsbuild ../out \
-    src/third_party/nacl_sdk/arm-newlib
+rm -rf scons-out ../xcodebuild ../sconsbuild ../out
 # Try to clobber /tmp/ contents to clear temporary chrome files.
 rm -rf /tmp/.org.chromium.Chromium.*
 rm -rf toolchain/${TOOLCHAIN_LABEL}
-rm -rf toolchain/hg*
 rm -rf toolchain/test-log
 rm -rf pnacl*.tgz pnacl/pnacl*.tgz
 if ${TRANSLATOR_BOT}; then

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,7 +30,7 @@ RETCODE=0
 clobber() {
   if [ "${CLOBBER}" == "yes" ] ; then
     echo "@@@BUILD_STEP clobber@@@"
-    rm -rf scons-out toolchain
+    rm -rf scons-out
 
     echo "@@@BUILD_STEP gclient_runhooks@@@"
     gclient runhooks --force

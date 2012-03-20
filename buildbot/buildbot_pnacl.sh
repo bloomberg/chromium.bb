@@ -61,11 +61,10 @@ handle-error() {
   fi
 }
 
-# clear out object, temporary, and toolchain directories
+# Clear out object, and temporary directories.
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
-  rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
-    src/third_party/nacl_sdk/arm-newlib
+  rm -rf scons-out ../xcodebuild ../sconsbuild ../out
   # Try to clobber /tmp/ contents to clear temporary chrome files.
   rm -rf /tmp/.org.chromium.Chromium.*
 }

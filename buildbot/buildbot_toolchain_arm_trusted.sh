@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,9 +20,7 @@ set -u
 
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
-    src/third_party/nacl_sdk/arm-newlib
-rm -rf ../toolchain ../hg
+rm -rf scons-out toolchain ../xcodebuild ../sconsbuild ../out
 
 echo @@@BUILD_STEP compile_toolchain@@@
 tools/llvm/trusted-toolchain-creator.sh trusted_sdk arm-trusted.tgz
