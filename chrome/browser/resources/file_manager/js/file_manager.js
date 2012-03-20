@@ -2636,17 +2636,25 @@ FileManager.prototype = {
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
 
-      galleryFrame.contentWindow.Gallery.open(
-          self.directoryModel_.currentEntry,
-          urls,
-          selectedUrl,
-          function(name) {
-            self.updateLocation_(true /*replace*/, dirPath + '/' + name);
-          },
-          function () { history.back(1) },
-          self.getMetadataProvider(),
-          shareActions,
-          str);
+      var readonly = self.directoryModel_.readonly;
+      var currentDir = self.directoryModel_.currentEntry;
+      var downloadsDir = self.directoryModel_.rootsList.item(0);
+
+      var context = {
+        // We show the root name in readonly warning (e.g. archive name).
+        readonlyDirName: readonly ? self.directoryModel_.rootName : null,
+        saveDirEntry: readonly ? downloadsDir : currentDir,
+        metadataProvider: self.getMetadataProvider(),
+        shareActions: shareActions,
+        onNameChange: function(name) {
+          self.updateLocation_(true /*replace*/, dirPath + '/' + name);
+        },
+        onClose: function() {
+          history.back(1);
+        },
+        displayStringFunction: strf
+      };
+      galleryFrame.contentWindow.Gallery.open(context, urls, selectedUrl);
     };
 
     galleryFrame.src = 'gallery.html';
@@ -3348,17 +3356,20 @@ FileManager.prototype = {
 
   FileManager.prototype.updateVolumeMetadata_ = function() {
     var dm = this.directoryModel_;
+    if (!dm) return;
+
     // Only request metadata for removable devices and archives.
-    if (!dm ||
-        (dm.rootPath != '/' + DirectoryModel.REMOVABLE_DIRECTORY &&
-         dm.rootPath != '/' + DirectoryModel.ARCHIVE_DIRECTORY))
+    var rootType = dm.rootType;
+    if (rootType != DirectoryModel.RootType.REMOVABLE &&
+        rootType != DirectoryModel.RootType.ARCHIVE)
       return;
 
     dm.readonly = true;
-    var current = dm.currentEntry;
-    chrome.fileBrowserPrivate.getVolumeMetadata(current.toURL(),
+    var rootEntry = dm.rootEntry;
+    if (!rootEntry) return;
+    chrome.fileBrowserPrivate.getVolumeMetadata(rootEntry.toURL(),
                                                 function(metadata) {
-      if (metadata && dm.currentEntry == current)
+      if (metadata && dm.rootEntry == rootEntry)
         dm.readonly = metadata.isReadOnly;
     });
   };

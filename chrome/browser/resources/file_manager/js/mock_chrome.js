@@ -203,7 +203,12 @@ chrome.fileBrowserPrivate = {
     }
   ],
 
-  fsPrefix_: 'filesystem:file:///persistent',
+  fsRe_: new RegExp('^filesystem:[^/]*://[^/]*/persistent(.*)'),
+
+  fileUrlToLocalPath_: function(fileUrl) {
+    var match = chrome.fileBrowserPrivate.fsRe_.exec(fileUrl);
+    return match && match[1];
+  },
 
   archiveCount_: 0,
 
@@ -239,8 +244,8 @@ chrome.fileBrowserPrivate = {
 
   removeMount: function(mountPoint) {
     for (var i = 0; i != chrome.fileBrowserPrivate.mountPoints_.length; i++) {
-      if (mountPoint == (chrome.fileBrowserPrivate.fsPrefix_ +
-          chrome.fileBrowserPrivate.mountPoints_[i].mountPath)) {
+      if (chrome.fileBrowserPrivate.fileUrlToLocalPath_(mountPoint) ==
+          chrome.fileBrowserPrivate.mountPoints_[i].mountPath) {
         chrome.fileBrowserPrivate.mountPoints_.splice(i, 1);
         break;
       }
@@ -264,8 +269,9 @@ chrome.fileBrowserPrivate = {
 
   getVolumeMetadata: function(url, callback) {
     var metadata = {};
+    var urlLocalPath = chrome.fileBrowserPrivate.fileUrlToLocalPath_(url);
     function urlStartsWith(path) {
-      return url.indexOf(chrome.fileBrowserPrivate.fsPrefix_ + path) == 0;
+      return urlLocalPath && urlLocalPath.indexOf(path) == 0;
     }
     if (urlStartsWith('/removable')) {
       metadata.deviceType = 'usb';
@@ -371,6 +377,7 @@ chrome.fileBrowserPrivate = {
       GALLERY_SAVED: 'Saved',
       GALLERY_KEEP_ORIGINAL: 'Keep original',
       GALLERY_UNSAVED_CHANGES: 'Changes are not saved yet.',
+      GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',

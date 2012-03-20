@@ -10160,6 +10160,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_UNSAVED_CHANGES" desc="In the Gallery, message informing about unsaved changes, when user tries to close the tab.">
         Changes are not saved yet.
       </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_READONLY_WARNING" desc="In the Gallery, message informing that directory is readonly, and edited files will be saved to Downloads directory.">
+        $1 is read only. Edited images will be saved in the Downloads folder.
+      </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
         A file named "$1" already exists. Do you want to replace it?

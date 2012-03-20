@@ -123,6 +123,14 @@ DirectoryModel.prototype = {
     return DirectoryModel.getRootType(this.currentEntry.fullPath);
   },
 
+  get rootName() {
+    return DirectoryModel.getRootName(this.currentEntry.fullPath);
+  },
+
+  get rootEntry() {
+    return this.rootsList.item(this.rootsListSelection.selectedIndex);
+  },
+
   /**
    * True if current directory is read only. Value may be set
    * for directories on a removable device.
@@ -842,6 +850,12 @@ DirectoryModel.getRootPath = function(path) {
   if (type == DirectoryModel.REMOVABLE_DIRECTORY)
     return subdir(DirectoryModel.REMOVABLE_DIRECTORY);
   return '/';
+};
+
+DirectoryModel.getRootName = function(path) {
+  var root = DirectoryModel.getRootPath(path);
+  var index = root.lastIndexOf('/');
+  return index == -1 ? root : root.substring(index + 1);
 };
 
 DirectoryModel.getRootType = function(path) {

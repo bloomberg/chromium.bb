@@ -19,22 +19,26 @@ RibbonClient.prototype.closeImage = function(item) {};
  * Image gallery for viewing and editing image files.
  *
  * @param {HTMLDivElement} container
- * @param {function(string)} nameChangeCallback Called every time a selected
- *   item name changes (on rename and on selection change).
- * @param {function} closeCallback
- * @param {MetadataProvider} metadataProvider
- * @param {Array.<Object>} shareActions
+ * @param {Object} context Object containing the following:
+ *     {function(string)} onNameChange Called every time a selected
+ *         item name changes (on rename and on selection change).
+ *     {function} onClose
+ *     {MetadataProvider} metadataProvider
+ *     {Array.<Object>} shareActions
+ *     {string} readonlyDirName Directory name for readonly warning or null.
+ *     {DirEntry} saveDirEntry Directory to save to.
+ *     {function(string)} displayStringFunction
  */
-function Gallery(container, nameChangeCallback, closeCallback, metadataProvider,
-                 shareActions, displayStringFunction) {
+function Gallery(container, context) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
-  this.nameChangeCallback_ = nameChangeCallback;
-  this.closeCallback_ = closeCallback;
-  this.metadataProvider_ = metadataProvider;
+  this.context_ = context;
 
-  this.displayStringFunction_ = function(id) {
-    return displayStringFunction('GALLERY_' + id.toUpperCase());
+  var strf = context.displayStringFunction;
+  this.displayStringFunction_ = function(id, formatArgs) {
+    var args = Array.prototype.slice.call(arguments);
+    args[0] = 'GALLERY_' + id.toUpperCase();
+    return strf.apply(null, args);
   };
 
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
@@ -42,18 +46,16 @@ function Gallery(container, nameChangeCallback, closeCallback, metadataProvider,
   this.mouseOverTool_ = false;
   this.imageChanges_ = 0;
 
-  this.initDom_(shareActions);
+  this.initDom_();
 }
 
 Gallery.prototype = { __proto__: RibbonClient.prototype };
 
-Gallery.open = function(parentDirEntry, items, selectedItem, nameChangeCallback,
-   closeCallback, metadataProvider, shareActions, displayStringFunction) {
+Gallery.open = function(context, items, selectedItem) {
   var container = document.querySelector('.gallery');
   ImageUtil.removeChildren(container);
-  var gallery = new Gallery(container, nameChangeCallback, closeCallback,
-      metadataProvider, shareActions, displayStringFunction);
-  gallery.load(parentDirEntry, items, selectedItem);
+  var gallery = new Gallery(container, context);
+  gallery.load(items, selectedItem);
 };
 
 Gallery.editorModes = [
@@ -67,7 +69,7 @@ Gallery.editorModes = [
 Gallery.FADE_TIMEOUT = 3000;
 Gallery.FIRST_FADE_TIMEOUT = 1000;
 
-Gallery.prototype.initDom_ = function(shareActions) {
+Gallery.prototype.initDom_ = function() {
   var doc = this.document_;
 
   doc.oncontextmenu = function(e) { e.preventDefault(); };
@@ -203,7 +205,7 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.arrowBox_.appendChild(this.arrowRight_);
 
   this.ribbon_ = new Ribbon(this.ribbonSpacer_,
-      this, this.metadataProvider_, this.arrowLeft_, this.arrowRight_);
+      this, this.context_.metadataProvider, this.arrowLeft_, this.arrowRight_);
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
@@ -241,9 +243,9 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   this.editor_.trackWindow(doc.defaultView);
 
-  if (shareActions.length > 0) {
-    this.shareMode_ = new ShareMode(
-        this.editor_, this.container_, this.toolbar_, shareActions,
+  if (this.context_.shareActions.length > 0) {
+    this.shareMode_ = new ShareMode(this.editor_, this.container_,
+        this.toolbar_, this.context_.shareActions,
         this.onShare_.bind(this), this.onActionExecute_.bind(this),
         this.displayStringFunction_);
   } else {
@@ -273,9 +275,7 @@ Gallery.prototype.onBeforeUnload_ = function(event) {
   return null;
 };
 
-Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
-  this.parentDirEntry_ = parentDirEntry;
-
+Gallery.prototype.load = function(items, selectedItem) {
   var urls = [];
   var selectedIndex = -1;
 
@@ -326,7 +326,7 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
 
   // Show the selected item ASAP, then complete the initialization (populating
   // the ribbon can take especially long time).
-  this.metadataProvider_.fetch(selectedURL, function (metadata) {
+  this.context_.metadataProvider.fetch(selectedURL, function (metadata) {
     self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
 };
@@ -346,14 +346,14 @@ Gallery.prototype.onImageContentChanged_ = function() {
 
 Gallery.prototype.onKeepOriginalClick_ = function() {
   this.keepOriginal_.removeAttribute('visible');
-  this.ribbon_.getSelectedItem().setCopyName(this.parentDirEntry_,
+  this.ribbon_.getSelectedItem().setCopyName(this.context_.saveDirEntry,
     this.updateFilename_.bind(this));
 };
 
 Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
   if (modified) {
-    item.save(
-        this.parentDirEntry_, this.metadataProvider_, canvas, callback);
+    item.save(this.context_.saveDirEntry, this.context_.metadataProvider,
+        canvas, callback);
   } else {
     if (callback) callback();
   }
@@ -390,7 +390,7 @@ Gallery.prototype.updateFilename_ = function(opt_url) {
     return;
   }
 
-  this.nameChangeCallback_(fullName);
+  this.context_.onNameChange(fullName);
 
   var displayName = ImageUtil.getFileNameFromFullName(fullName);
   this.filenameEdit_.value = displayName;
@@ -434,7 +434,7 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
 };
 
 Gallery.prototype.renameItem_ = function(item, name) {
-  var dir = this.parentDirEntry_;
+  var dir = this.context_.saveDirEntry;
   var self = this;
   var originalName = item.getNameAfterSaving();
   if (ImageUtil.getExtensionFromFullName(name) ==
@@ -499,7 +499,7 @@ Gallery.prototype.close_ = function() {
     if (this.originalFullscreen_ != fullscreen) {
       Gallery.getFileBrowserPrivate().toggleFullscreen();
     }
-    this.closeCallback_();
+    this.context_.onClose();
   }.bind(this));
 };
 
@@ -605,8 +605,13 @@ Gallery.prototype.onEdit_ = function() {
 
   // isEditing_ has just been flipped to a new value.
   if (this.isEditing_()) {
+    if (this.context_.readonlyDirName) {
+      this.editor_.getPrompt().showAt(
+          'top', 'readonly_warning', 0, this.context_.readonlyDirName);
+    }
     this.cancelFading_();
   } else {
+    this.editor_.getPrompt().hide();
     if (!this.isShowingVideo_()) {
       var item = this.ribbon_.getSelectedItem();
       this.editor_.requestImage(item.updateThumbnail.bind(item));

@@ -692,8 +692,19 @@ body {
 
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
   -webkit-box-pack: center;
+}
+
+.gallery .prompt-wrapper[pos=top] {
+  -webkit-box-align: start;
+}
+
+.gallery .prompt-wrapper[pos=center] {
+  -webkit-box-align: center;
+}
+
+.gallery .prompt-wrapper[pos=center] .close {
+  display: none;
 }
 
 .gallery .prompt-wrapper > div.dimmable {
@@ -727,6 +738,27 @@ body {
   top: 0;
   opacity: 0;
 }
+
+.gallery .prompt-wrapper[pos=top] .prompt {
+  padding-right: 10px;
+}
+
+.gallery .prompt .close {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  margin-left: 16px;
+  opacity: 0.65;
+  background-image: url(../images/gallery/butterbar_close_x.png);
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.gallery .prompt .close:hover {
+  opacity: 1.0;
+  background-color: rgba(81,81,81,1);
+}
+
 
 .gallery .share-menu {
   position: absolute;

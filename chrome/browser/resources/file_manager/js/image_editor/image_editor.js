@@ -831,13 +831,19 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
   }, timeout);
 };
 
-ImageEditor.Prompt.prototype.show = function(text, timeout) {
+ImageEditor.Prompt.prototype.show = function(text, timeout, formatArgs) {
+  this.showAt.apply(this,
+      ['center'].concat(Array.prototype.slice.call(arguments)));
+};
+
+ImageEditor.Prompt.prototype.showAt = function(pos, text, timeout, formatArgs) {
   this.reset();
   if (!text) return;
 
   var document = this.container_.ownerDocument;
   this.wrapper_ = document.createElement('div');
   this.wrapper_.className = 'prompt-wrapper';
+  this.wrapper_.setAttribute('pos', pos);
   this.container_.appendChild(this.wrapper_);
 
   this.prompt_ = document.createElement('div');
@@ -849,7 +855,13 @@ ImageEditor.Prompt.prototype.show = function(text, timeout) {
   this.wrapper_.appendChild(tool);
   tool.appendChild(this.prompt_);
 
-  this.prompt_.textContent = this.displayStringFunction_(text);
+  var args = [text].concat(Array.prototype.slice.call(arguments, 3));
+  this.prompt_.textContent = this.displayStringFunction_.apply(null, args);
+
+  var close = document.createElement('div');
+  close.className = 'close';
+  close.addEventListener('click', this.hide.bind(this));
+  this.prompt_.appendChild(close);
 
   setTimeout(
       this.prompt_.setAttribute.bind(this.prompt_, 'state', 'fadein'), 0);
