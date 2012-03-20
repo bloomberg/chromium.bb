@@ -82,7 +82,12 @@ html[dir='rtl'] .overlay .page > .close-button {
   /* 120% of the body's font-size of 84% is 16px. This will keep the relative
    * size between the body and these titles consistent. */
   font-size: 120%;
-  margin: 14px 17px 14px;
+  /* TODO(flackr): Pages like sync-setup and delete user collapse the margin
+   * above the top of the page. Use padding instead to make sure that the
+   * headers of these pages have the correct spacing, but this should not be
+   * necessary. See http://crbug.com/119029. */
+  margin: 0;
+  padding: 14px 17px 14px;
   text-shadow: white 0 1px 2px;
 }
 
