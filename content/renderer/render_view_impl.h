@@ -8,7 +8,6 @@
 
 #include <deque>
 #include <map>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -391,8 +390,6 @@ class RenderViewImpl : public RenderWidget,
                                           const WebKit::WebString& message);
   virtual void showContextMenu(WebKit::WebFrame* frame,
                                const WebKit::WebContextMenuData& data);
-  virtual void enterFullscreen();
-  virtual void exitFullscreen();
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);
@@ -591,14 +588,14 @@ class RenderViewImpl : public RenderWidget,
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   bool IsGuest() const;
-  virtual int GetPageId() OVERRIDE;
-  virtual gfx::Size GetSize() OVERRIDE;
-  virtual gfx::NativeViewId GetHostWindow() OVERRIDE;
+  virtual int GetPageId() const OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual gfx::NativeViewId GetHostWindow() const OVERRIDE;
   virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual WebKit::WebView* GetWebView() OVERRIDE;
   virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;
   virtual WebKit::WebNode GetContextMenuNode() const OVERRIDE;
-  virtual bool IsEditableNode(const WebKit::WebNode& node) OVERRIDE;
+  virtual bool IsEditableNode(const WebKit::WebNode& node) const OVERRIDE;
   virtual WebKit::WebPlugin* CreatePlugin(
       WebKit::WebFrame* frame,
       const webkit::WebPluginInfo& info,
@@ -608,9 +605,9 @@ class RenderViewImpl : public RenderWidget,
                               int id,
                               bool notify_result) OVERRIDE;
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
-  virtual int GetEnabledBindings() OVERRIDE;
-  virtual bool GetContentStateImmediately() OVERRIDE;
-  virtual float GetFilteredTimePerFrame() OVERRIDE;
+  virtual int GetEnabledBindings() const OVERRIDE;
+  virtual bool GetContentStateImmediately() const OVERRIDE;
+  virtual float GetFilteredTimePerFrame() const OVERRIDE;
   virtual void ShowContextMenu(WebKit::WebFrame* frame,
                                const WebKit::WebContextMenuData& data) OVERRIDE;
   virtual WebKit::WebPageVisibilityState GetVisibilityState() const OVERRIDE;

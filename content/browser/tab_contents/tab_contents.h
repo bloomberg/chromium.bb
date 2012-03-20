@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_H_
 #pragma once
 
-#include <deque>
 #include <map>
 #include <string>
 

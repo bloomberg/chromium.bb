@@ -57,13 +57,13 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   // "regular" navigations that go into session history. In particular, client
   // redirects, like the page cycler uses (document.location.href="foo") do not
   // count as regular navigations and do not increment the page id.
-  virtual int GetPageId() = 0;
+  virtual int GetPageId() const = 0;
 
   // Returns the size of the view.
-  virtual gfx::Size GetSize() = 0;
+  virtual gfx::Size GetSize() const = 0;
 
   // Returns the window we are embedded within.
-  virtual gfx::NativeViewId GetHostWindow() = 0;
+  virtual gfx::NativeViewId GetHostWindow() const = 0;
 
   // Gets WebKit related preferences associated with this view.
   virtual WebPreferences& GetWebkitPreferences() = 0;
@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
 
   // Returns true if the parameter node is a textfield, text area or a content
   // editable div.
-  virtual bool IsEditableNode(const WebKit::WebNode& node) = 0;
+  virtual bool IsEditableNode(const WebKit::WebNode& node) const = 0;
 
   // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
   // plugin was found.
@@ -100,15 +100,15 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
-  virtual int GetEnabledBindings() = 0;
+  virtual int GetEnabledBindings() const = 0;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
   // false, but set to true by some tests.
-  virtual bool GetContentStateImmediately() = 0;
+  virtual bool GetContentStateImmediately() const = 0;
 
   // Filtered time per frame based on UpdateRect messages.
-  virtual float GetFilteredTimePerFrame() = 0;
+  virtual float GetFilteredTimePerFrame() const = 0;
 
   // Shows a context menu with commands relevant to a specific element on
   // the given frame. Additional context data is supplied.

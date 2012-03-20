@@ -4,7 +4,6 @@
 
 #include "content/browser/tab_contents/tab_contents.h"
 
-#include <cmath>
 #include <utility>
 
 #include "base/command_line.h"
@@ -62,7 +61,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -156,7 +154,7 @@ const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
 
-static const char kDotGoogleDotCom[] = ".google.com";
+const char kDotGoogleDotCom[] = ".google.com";
 
 #if defined(OS_WIN)
 
@@ -635,10 +633,8 @@ void TabContents::SetDelegate(content::WebContentsDelegate* delegate) {
 }
 
 content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
-  if (render_manager_.current_host())
-    return render_manager_.current_host()->GetProcess();
-  else
-    return NULL;
+  RenderViewHostImpl* host = render_manager_.current_host();
+  return host ? host->GetProcess() : NULL;
 }
 
 RenderViewHost* TabContents::GetRenderViewHost() const {
@@ -1409,9 +1405,7 @@ bool TabContents::FocusLocationBarByDefault() {
   if (web_ui)
     return web_ui->ShouldFocusLocationBarByDefault();
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL))
-    return true;
-  return false;
+  return (entry && entry->GetURL() == GURL(chrome::kAboutBlankURL));
 }
 
 void TabContents::SetFocusToLocationBar(bool select_all) {
@@ -1579,10 +1573,8 @@ void TabContents::OnDidRunInsecureContent(
   LOG(INFO) << security_origin << " ran insecure content from "
             << target_url.possibly_invalid_spec();
   content::RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
-  if (EndsWith(security_origin, kDotGoogleDotCom, false)) {
-    content::RecordAction(
-        UserMetricsAction("SSL.RanInsecureContentGoogle"));
-  }
+  if (EndsWith(security_origin, kDotGoogleDotCom, false))
+    content::RecordAction(UserMetricsAction("SSL.RanInsecureContentGoogle"));
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(&GetControllerImpl());
@@ -2179,10 +2171,8 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
 
-  if (delegate_ && content_restrictions_) {
-      content_restrictions_ = 0;
-      delegate_->ContentRestrictionsChanged(this);
-  }
+  if (delegate_ && content_restrictions_)
+    OnUpdateContentRestrictions(0);
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStartLoading());

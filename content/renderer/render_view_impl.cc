@@ -378,7 +378,7 @@ namespace {
 
 class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
  public:
-  WebWidgetLockTarget (WebKit::WebWidget* webwidget)
+  explicit WebWidgetLockTarget(WebKit::WebWidget* webwidget)
       : webwidget_(webwidget) {}
 
   virtual void OnLockMouseACK(bool succeeded) OVERRIDE {
@@ -1840,16 +1840,6 @@ void RenderViewImpl::showContextMenu(
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
-void RenderViewImpl::enterFullscreen() {
-  // TODO(darin): Remove once WebKit roll is complete.
-  enterFullScreen();
-}
-
-void RenderViewImpl::exitFullscreen() {
-  // TODO(darin): Remove once WebKit roll is complete.
-  exitFullScreen();
-}
-
 void RenderViewImpl::setStatusText(const WebString& text) {
 }
 
@@ -2546,7 +2536,7 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
       if (!referrer.is_empty() &&
           DocumentState::FromDataSource(
               old_frame->dataSource())->was_prefetcher()) {
-        for (;old_frame;old_frame = old_frame->traverseNext(false)) {
+        for (; old_frame; old_frame = old_frame->traverseNext(false)) {
           WebDataSource* old_frame_ds = old_frame->dataSource();
           if (old_frame_ds && referrer == GURL(old_frame_ds->request().url())) {
             document_state->set_was_referred_by_prefetcher(true);
@@ -3427,7 +3417,7 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
 }
 
-int RenderViewImpl::GetRoutingID() const  {
+int RenderViewImpl::GetRoutingID() const {
   return routing_id_;
 }
 
@@ -3435,27 +3425,27 @@ bool RenderViewImpl::IsGuest() const {
   return guest_;
 }
 
-int RenderViewImpl::GetPageId()  {
+int RenderViewImpl::GetPageId() const {
   return page_id_;
 }
 
-gfx::Size RenderViewImpl::GetSize() {
+gfx::Size RenderViewImpl::GetSize() const {
   return size();
 }
 
-gfx::NativeViewId RenderViewImpl::GetHostWindow() {
+gfx::NativeViewId RenderViewImpl::GetHostWindow() const {
   return host_window();
 }
 
-WebPreferences& RenderViewImpl::GetWebkitPreferences()  {
+WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }
 
-WebKit::WebView* RenderViewImpl::GetWebView()  {
+WebKit::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-WebKit::WebNode RenderViewImpl::GetFocusedNode() const  {
+WebKit::WebNode RenderViewImpl::GetFocusedNode() const {
   if (!webview())
     return WebNode();
   WebFrame* focused_frame = webview()->focusedFrame();
@@ -3468,11 +3458,11 @@ WebKit::WebNode RenderViewImpl::GetFocusedNode() const  {
   return WebNode();
 }
 
-WebKit::WebNode RenderViewImpl::GetContextMenuNode() const  {
+WebKit::WebNode RenderViewImpl::GetContextMenuNode() const {
   return context_menu_node_;
 }
 
-bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node)  {
+bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node) const {
   bool is_editable_node = false;
   if (!node.isNull()) {
     if (node.isContentEditable()) {
@@ -3488,7 +3478,7 @@ bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node)  {
 WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
     WebKit::WebFrame* frame,
     const webkit::WebPluginInfo& info,
-    const WebKit::WebPluginParams& params)  {
+    const WebKit::WebPluginParams& params) {
   bool pepper_plugin_was_registered = false;
   scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
       pepper_delegate_.CreatePepperPluginModule(info,
@@ -3539,24 +3529,24 @@ bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
            disable_scrollbars_size_limit_.height() <= height));
 }
 
-int RenderViewImpl::GetEnabledBindings() {
+int RenderViewImpl::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
-bool RenderViewImpl::GetContentStateImmediately() {
+bool RenderViewImpl::GetContentStateImmediately() const {
   return send_content_state_immediately_;
 }
 
-float RenderViewImpl::GetFilteredTimePerFrame() {
+float RenderViewImpl::GetFilteredTimePerFrame() const {
   return filtered_time_per_frame();
 }
 
 void RenderViewImpl::ShowContextMenu(WebKit::WebFrame* frame,
-                                     const WebKit::WebContextMenuData& data)  {
+                                     const WebKit::WebContextMenuData& data) {
   showContextMenu(frame, data);
 }
 
-WebKit::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const  {
+WebKit::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
   return visibilityState();
 }
 
@@ -3672,7 +3662,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
 
   if (pepper_delegate_.IsPluginFocused()) {
     pepper_delegate_.GetSurroundingText(&text, &range);
-    offset = 0; // Pepper API does not support offset reporting.
+    offset = 0;  // Pepper API does not support offset reporting.
     // TODO(kinaba): cut as needed.
   } else {
     size_t location, length;
@@ -3742,7 +3732,7 @@ GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
   std::string spec_to_send = url_to_send.spec();
   // Notify link doctor of the url truncation by sending of "?" at the end.
   if (failed_url.has_query())
-      spec_to_send.append("?");
+    spec_to_send.append("?");
 
   // Construct the query params to send to link doctor.
   std::string params(alternate_error_page_url_.query());
@@ -4444,8 +4434,9 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
       ec != net::ERR_CONNECTION_FAILED &&
       ec != net::ERR_CONNECTION_REFUSED &&
       ec != net::ERR_ADDRESS_UNREACHABLE &&
-      ec != net::ERR_CONNECTION_TIMED_OUT)
+      ec != net::ERR_CONNECTION_TIMED_OUT) {
     return false;
+  }
 
   const GURL& error_page_url = GetAlternateErrorPageURL(error.unreachableURL,
       ec == net::ERR_NAME_NOT_RESOLVED ? DNS_ERROR : CONNECTION_ERROR);
@@ -4912,9 +4903,7 @@ void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
-  IPC::Message* msg = new ViewHostMsg_PluginFocusChanged(routing_id(),
-                                                         focused, plugin_id);
-  Send(msg);
+  Send(new ViewHostMsg_PluginFocusChanged(routing_id(), focused, plugin_id));
 }
 
 void RenderViewImpl::StartPluginIme() {
@@ -4983,7 +4972,7 @@ void RenderViewImpl::AcceleratedSurfaceBuffersSwapped(
   Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(
       routing_id(), window, surface_handle));
 }
-#endif
+#endif  // defined(OS_MACOSX)
 
 bool RenderViewImpl::ScheduleFileChooser(
     const content::FileChooserParams& params,
