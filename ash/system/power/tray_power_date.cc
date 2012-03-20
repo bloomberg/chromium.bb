@@ -26,6 +26,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
 #include "unicode/fieldpos.h"
 #include "unicode/fmtable.h"
@@ -108,11 +109,17 @@ class DateView : public views::View {
 
   void UpdateText() {
     base::Time now = base::Time::Now();
+    gfx::Size old_size = label_->GetPreferredSize();
     if (type_ == DATE) {
       label_->SetText(FormatNicely(now));
     } else {
       label_->SetText(base::TimeFormatTimeOfDayWithHourClockType(
           now, hour_type_, base::kDropAmPm));
+    }
+    if (label_->GetPreferredSize() != old_size && GetWidget()) {
+      // Forcing the widget to the new size is sufficient. The positing is taken
+      // care of by the layout manager (ShelfLayoutManager).
+      GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
     }
 
     label_->SetTooltipText(base::TimeFormatFriendlyDate(now));

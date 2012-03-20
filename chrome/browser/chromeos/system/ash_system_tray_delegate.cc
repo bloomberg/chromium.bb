@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -68,6 +69,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
                            public content::NotificationObserver,
+                           public system::TimezoneSettings::Observer,
                            public SystemKeyEventListener::CapsLockObserver {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
@@ -87,6 +89,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     crosnet->AddNetworkManagerObserver(this);
     OnNetworkManagerChanged(crosnet);
     crosnet->AddCellularDataPlanObserver(this);
+
+    system::TimezoneSettings::GetInstance()->AddObserver(this);
 
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
@@ -117,6 +121,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (audiohandler)
       audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+    system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
   }
@@ -347,6 +352,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnDateFormatChanged();
   }
 
+  void NotifyRefreshClock() {
+    ash::ClockObserver* observer =
+        ash::Shell::GetInstance()->tray()->clock_observer();
+    if (observer)
+      observer->Refresh();
+  }
+
   void NotifyRefreshNetwork() {
     ash::NetworkObserver* observer =
         ash::Shell::GetInstance()->tray()->network_observer();
@@ -399,10 +411,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void SystemResumed() OVERRIDE {
-    ash::ClockObserver* observer =
-        ash::Shell::GetInstance()->tray()->clock_observer();
-    if (observer)
-      observer->Refresh();
+    NotifyRefreshClock();
   }
 
   virtual void LockScreen() OVERRIDE {
@@ -509,6 +518,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       default:
         NOTREACHED();
     }
+  }
+
+  // Overridden from system::TimezoneSettings::Observer.
+  virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE {
+    NotifyRefreshClock();
   }
 
   // Overridden from SystemKeyEventListener::CapsLockObserver.
