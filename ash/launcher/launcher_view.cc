@@ -46,7 +46,7 @@ static const int kMinimumDragDistance = 8;
 // Size given to the buttons on the launcher.
 static const int kButtonWidth = 48;
 static const int kButtonHeight = 48;
-static const int kButtonSpacing = 8;
+static const int kButtonSpacing = 4;
 
 namespace {
 

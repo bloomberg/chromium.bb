@@ -91,7 +91,7 @@ class LauncherButton : public views::CustomButton {
   LauncherButtonHost* host_;
   IconView* icon_view_;
   // Draws a bar underneath the image to represent the state of the application.
-  views::View* bar_;
+  views::ImageView* bar_;
   // The current state of the application, multiple values of AppState are or'd
   // together.
   int state_;

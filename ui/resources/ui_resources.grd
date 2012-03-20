@@ -128,6 +128,9 @@
         <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="aura/launcher_overflow.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="aura/launcher_overflow_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="aura/launcher_overflow_p.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="aura/launcher_underline_active.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="aura/launcher_underline_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="aura/launcher_underline_running.png" type="BINDATA" />
         <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="aura/multi_window_resize_h.png" type="BINDATA" />
         <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="aura/multi_window_resize_v.png" type="BINDATA" />
         <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="aura/resize_shadow_top_left.png" type="BINDATA" />

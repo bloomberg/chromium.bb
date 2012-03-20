@@ -7,10 +7,13 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
+#include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/image/image.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -21,11 +24,11 @@ const int kIconWidth = 48;
 const int kHopSpacing = 2;
 const int kActiveBarColor = 0xe6ffffff;
 const int kInactiveBarColor = 0x80ffffff;
-const int kHopUpMS = 130;
-const int kHopDownMS = 260;
+const int kHopUpMS = 200;
+const int kHopDownMS = 200;
 
 // Used to allow Mouse...() messages to go to the parent view.
-class MouseIgnoredView : public views::View {
+class MouseIgnoredImageView : public views::ImageView {
  public:
   bool HitTest(const gfx::Point& l) const OVERRIDE {
     return false;
@@ -65,14 +68,15 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
-      bar_(new MouseIgnoredView),
+      bar_(new MouseIgnoredImageView),
       state_(STATE_NORMAL) {
   set_accessibility_focusable(true);
+  bar_->SetHorizontalAlignment(views::ImageView::CENTER);
+  bar_->SetVerticalAlignment(views::ImageView::TRAILING);
+  AddChildView(bar_);
 }
 
 LauncherButton::~LauncherButton() {
-  if (!bar_->parent())
-    delete bar_;
 }
 
 void LauncherButton::SetImage(const SkBitmap& image) {
@@ -129,6 +133,7 @@ void LauncherButton::ClearState(State state) {
     if (!ShouldHop(state) || ShouldHop(state_)) {
       ui::ScopedLayerAnimationSettings scoped_setter(
           icon_view_->layer()->GetAnimator());
+      scoped_setter.SetTweenType(ui::Tween::LINEAR);
       scoped_setter.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kHopDownMS));
       state_ &= ~state;
@@ -192,7 +197,7 @@ void LauncherButton::Layout() {
     image_y -= kHopSpacing;
 
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
-  bar_->SetBounds(0, height() - kBarHeight, width(), kBarHeight);
+  bar_->SetBounds(0, 0, width(), height());
 }
 
 bool LauncherButton::GetTooltipText(
@@ -219,18 +224,20 @@ LauncherButton::IconView* LauncherButton::CreateIconView() {
 
 void LauncherButton::UpdateState() {
   if (state_ == STATE_NORMAL) {
-    if (bar_->parent())
-      RemoveChildView(bar_);
+    bar_->SetVisible(false);
   } else {
-    if (!bar_->parent())
-      AddChildView(bar_);
-    if (state_ & STATE_HOVERED || state_ & STATE_ACTIVE) {
-      bar_->set_background(views::Background::CreateSolidBackground(
-          kActiveBarColor));
-    } else if (state_ & STATE_RUNNING) {
-      bar_->set_background(views::Background::CreateSolidBackground(
-          kInactiveBarColor));
-    }
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    int bar_id;
+    bar_->SetVisible(true);
+
+    if (state_ & STATE_HOVERED)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+    else if (state_ & STATE_ACTIVE)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+    else
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+
+    bar_->SetImage(rb.GetImageNamed(bar_id).ToSkBitmap());
   }
 
   Layout();

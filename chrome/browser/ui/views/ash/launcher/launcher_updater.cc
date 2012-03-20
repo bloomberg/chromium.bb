@@ -155,7 +155,8 @@ void LauncherUpdater::TabChangedAt(
     return;
   }
 
-  if (tab->favicon_tab_helper()->FaviconIsValid()) {
+  if (tab->favicon_tab_helper()->FaviconIsValid() ||
+      !tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
     // We have the favicon, update immediately.
     UpdateLauncher(tab);
   } else {
@@ -257,6 +258,9 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
         item.image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_DEFAULT_FAVICON);
       }
+    } else {
+      item.image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_DEFAULT_FAVICON);
     }
   }
   launcher_model()->Set(item_index, item);
