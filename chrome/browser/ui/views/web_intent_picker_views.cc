@@ -579,6 +579,7 @@ void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
         l10n_util::GetStringUTF16(IDS_INTENT_PICKER_GET_MORE_SERVICES));
   }
 
+  service_buttons_->Update();
   extensions_->Update();
   contents_->Layout();
   SizeToContents();
