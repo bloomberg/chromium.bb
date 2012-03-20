@@ -267,13 +267,10 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
     // Must not proceed without signature verification or valid user list.
-    bool trusted_settings_available =
-        cros_settings->GetTrusted(
-            kAccountsPrefAllowNewUser,
+    if (!cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::CompleteLogin,
                        weak_factory_.GetWeakPtr(),
-                       username, password));
-    if (!trusted_settings_available) {
+                       username, password))) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
@@ -305,13 +302,10 @@ void LoginPerformer::Login(const std::string& username,
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
     // Must not proceed without signature verification.
-    bool trusted_settings_available =
-        cros_settings->GetTrusted(
-            kAccountsPrefAllowNewUser,
+    if (!cros_settings->PrepareTrustedValues(
             base::Bind(&LoginPerformer::Login,
                        weak_factory_.GetWeakPtr(),
-                       username, password));
-    if (!trusted_settings_available) {
+                       username, password))) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;

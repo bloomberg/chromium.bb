@@ -390,8 +390,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
   if (pref_service->FindPreference(prefs::kUseSharedProxies))
     use_shared_proxies_.Init(prefs::kUseSharedProxies, pref_service, this);
 
-  if (CrosSettings::Get()->GetTrusted(
-          kSettingProxyEverywhere,
+  if (CrosSettings::Get()->PrepareTrustedValues(
           base::Bind(&ProxyConfigServiceImpl::FetchProxyPolicy,
                      pointer_factory_.GetWeakPtr()))) {
     FetchProxyPolicy();

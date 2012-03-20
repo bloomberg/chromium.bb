@@ -32,12 +32,12 @@ class CrosSettingsProvider {
   // Gets settings value of given |path| to |out_value|.
   virtual const base::Value* Get(const std::string& path) const = 0;
 
-  // Starts a fetch from the trusted store for the value of |path| if not loaded
-  // yet. It will call the |callback| function upon completion if a new fetch
-  // was needed in which case the return value is false. Else it will return
-  // true and won't call the |callback|.
-  virtual bool GetTrusted(const std::string& path,
-                          const base::Closure& callback) = 0;
+  // Requests the provider to fetch its values from a trusted store, if it
+  // hasn't done so yet. Returns true if the values returned by this provider
+  // are trusted during the current loop cycle; otherwise returns false, and
+  // |callback| will be invoked later when trusted values become available.
+  // PrepareTrustedValues() should be tried again in that case.
+  virtual bool PrepareTrustedValues(const base::Closure& callback) = 0;
 
   // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;

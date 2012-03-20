@@ -218,14 +218,13 @@ const base::Value* CrosSettings::GetPref(const std::string& path) const {
   return NULL;
 }
 
-bool CrosSettings::GetTrusted(const std::string& path,
-                              const base::Closure& callback) const {
+bool CrosSettings::PrepareTrustedValues(const base::Closure& callback) const {
   DCHECK(CalledOnValidThread());
-  CrosSettingsProvider* provider = GetProvider(path);
-  if (provider)
-    return provider->GetTrusted(path, callback);
-  NOTREACHED() << "CrosSettings::GetTrusted called for unknown pref : " << path;
-  return false;
+  for (size_t i = 0; i < providers_.size(); ++i) {
+    if (!providers_[i]->PrepareTrustedValues(callback))
+      return false;
+  }
+  return true;
 }
 
 bool CrosSettings::GetBoolean(const std::string& path,

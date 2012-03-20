@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,6 @@
 namespace chromeos {
 
 namespace {
-
-const Value* kTrueValue = base::Value::CreateBooleanValue(true);
-const Value* kFalseValue = base::Value::CreateBooleanValue(false);
 
 void Fail() {
   // Should never be called.
@@ -68,9 +65,10 @@ TEST_F(StubCrosSettingsProviderTest, HandlesSettings) {
 
 TEST_F(StubCrosSettingsProviderTest, Defaults) {
   // Verify default values.
-  AssertPref(kAccountsPrefAllowGuest, kTrueValue);
-  AssertPref(kAccountsPrefAllowNewUser, kTrueValue);
-  AssertPref(kAccountsPrefShowUserNamesOnSignIn, kTrueValue);
+  const base::FundamentalValue kTrueValue(true);
+  AssertPref(kAccountsPrefAllowGuest, &kTrueValue);
+  AssertPref(kAccountsPrefAllowNewUser, &kTrueValue);
+  AssertPref(kAccountsPrefShowUserNamesOnSignIn, &kTrueValue);
 }
 
 TEST_F(StubCrosSettingsProviderTest, Set) {
@@ -90,9 +88,9 @@ TEST_F(StubCrosSettingsProviderTest, SetMissing) {
   ExpectObservers(kReleaseChannel, 1);
 }
 
-TEST_F(StubCrosSettingsProviderTest, GetTrusted) {
+TEST_F(StubCrosSettingsProviderTest, PrepareTrustedValues) {
   // Should return immediately without invoking the callback.
-  bool trusted = provider_->GetTrusted(kDeviceOwner, base::Bind(&Fail));
+  bool trusted = provider_->PrepareTrustedValues(base::Bind(&Fail));
   EXPECT_TRUE(trusted);
 }
 

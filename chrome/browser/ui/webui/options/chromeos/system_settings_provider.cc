@@ -225,8 +225,7 @@ const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
 }
 
 // The timezone is always trusted.
-bool SystemSettingsProvider::GetTrusted(const std::string& path,
-                                        const base::Closure& callback) {
+bool SystemSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,21 +28,20 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
   virtual ~SystemSettingsProvider();
 
-  // CrosSettingsProvider overrides.
+  // CrosSettingsProvider implementation.
   virtual const base::Value* Get(const std::string& path) const OVERRIDE;
-  virtual bool GetTrusted(const std::string& path,
-                          const base::Closure& callback) OVERRIDE;
+  virtual bool PrepareTrustedValues(const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
   virtual void Reload() OVERRIDE;
 
-  // Overridden from TimezoneSettings::Observer:
+  // TimezoneSettings::Observer implementation.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
   // Creates the map of timezones used by the options page.
   base::ListValue* GetTimezoneList();
 
  private:
-  // CrosSettingsProvider overrides.
+  // CrosSettingsProvider implementation.
   virtual void DoSet(const std::string& path,
                      const base::Value& in_value) OVERRIDE;
 

@@ -114,18 +114,17 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
   // back when they are available.
-  bool is_trusted = cros_settings_->GetTrusted(
-      chromeos::kReportDeviceVersionInfo,
+  if (!cros_settings_->PrepareTrustedValues(
       base::Bind(&DeviceStatusCollector::UpdateReportingSettings,
-                 base::Unretained(this)));
-  if (is_trusted) {
-    cros_settings_->GetBoolean(
-        chromeos::kReportDeviceVersionInfo, &report_version_info_);
-    cros_settings_->GetBoolean(
-        chromeos::kReportDeviceActivityTimes, &report_activity_times_);
-    cros_settings_->GetBoolean(
-        chromeos::kReportDeviceBootMode, &report_boot_mode_);
+                 base::Unretained(this)))) {
+    return;
   }
+  cros_settings_->GetBoolean(
+      chromeos::kReportDeviceVersionInfo, &report_version_info_);
+  cros_settings_->GetBoolean(
+      chromeos::kReportDeviceActivityTimes, &report_activity_times_);
+  cros_settings_->GetBoolean(
+      chromeos::kReportDeviceBootMode, &report_boot_mode_);
 }
 
 Time DeviceStatusCollector::GetCurrentTime() {

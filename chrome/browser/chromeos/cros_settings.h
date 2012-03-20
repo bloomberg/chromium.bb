@@ -41,12 +41,12 @@ class CrosSettings : public base::NonThreadSafe {
   // Returns setting value for the given |path|.
   const base::Value* GetPref(const std::string& path) const;
 
-  // Starts a fetch from the trusted store for the value of |path| if not loaded
-  // yet. It will call the |callback| function upon completion if a new fetch
-  // was needed in which case the return value is false. Else it will return
-  // true and won't call the |callback|.
-  bool GetTrusted(const std::string& path,
-                  const base::Closure& callback) const;
+  // Requests all providers to fetch their values from a trusted store, if they
+  // haven't done so yet. Returns true if the cros settings returned by |this|
+  // are trusted during the current loop cycle; otherwise returns false, and
+  // |callback| will be invoked later when trusted values become available.
+  // PrepareTrustedValues() should be tried again in that case.
+  virtual bool PrepareTrustedValues(const base::Closure& callback) const;
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that |path|, even if it has a different type.

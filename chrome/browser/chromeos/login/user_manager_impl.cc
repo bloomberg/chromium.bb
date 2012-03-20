@@ -158,8 +158,7 @@ void RemoveUserInternal(const std::string& user_email,
   CrosSettings* cros_settings = CrosSettings::Get();
 
   // Ensure the value of owner email has been fetched.
-  if (!cros_settings->GetTrusted(
-          kDeviceOwner,
+  if (!cros_settings->PrepareTrustedValues(
           base::Bind(&RemoveUserInternal, user_email, delegate))) {
     // Value of owner email is not fetched yet.  RemoveUserInternal will be
     // called again after fetch completion.
@@ -783,8 +782,7 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   CrosSettings* cros_settings = CrosSettings::Get();
   // Schedule a callback if device policy has not yet been verified.
-  if (!cros_settings->GetTrusted(
-      kAccountsPrefEphemeralUsersEnabled,
+  if (!cros_settings->PrepareTrustedValues(
       base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
                  base::Unretained(this)))) {
     return;

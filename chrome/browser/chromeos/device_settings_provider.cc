@@ -650,20 +650,12 @@ const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
   return NULL;
 }
 
-bool DeviceSettingsProvider::GetTrusted(const std::string& path,
-                                        const base::Closure& callback) {
-  if (!IsControlledSetting(path)) {
-    NOTREACHED();
+bool DeviceSettingsProvider::PrepareTrustedValues(const base::Closure& cb) {
+  if (RequestTrustedEntity())
     return true;
-  }
-
-  if (RequestTrustedEntity()) {
-    return true;
-  } else {
-    if (!callback.is_null())
-      callbacks_.push_back(callback);
-    return false;
-  }
+  if (!cb.is_null())
+    callbacks_.push_back(cb);
+  return false;
 }
 
 bool DeviceSettingsProvider::HandlesSetting(const std::string& path) const {
