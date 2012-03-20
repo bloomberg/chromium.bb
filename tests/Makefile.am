@@ -48,10 +48,14 @@ dist_check_SCRIPTS = \
 	check_tables_against_corpus.pl \
 	multiple_table_path.pl
 
+# if we have Python and liblouis is configured with ucs4 then we can
+# invoke the python based tests
 if HAVE_PYTHON
+if HAVE_UCS4
 dist_check_SCRIPTS += \
 	check_doctests.py \
 	runHarness.py
+endif
 endif
 
 # The present_progressive should not really fail but for the moment

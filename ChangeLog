@@ -1,3 +1,9 @@
+2012-03-20  Christian Egli  <christian.egli@sbs.ch>
+
+	* configure.ac:
+	* tests/Makefile.am: Only enable the Python based tests if
+	configured with ucs4.
+
 2012-03-02  Mesar Hameed <mesar.hameed@gmail.com>
 
 	* configure.ac:

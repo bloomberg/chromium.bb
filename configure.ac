@@ -98,6 +98,7 @@ yes) WIDECHAR_TYPE='unsigned int';;
 *) WIDECHAR_TYPE='unsigned short int';;
 esac
 AC_SUBST(WIDECHAR_TYPE)
+AM_CONDITIONAL([HAVE_UCS4], [test x$enable_ucs4 = xyes])
 
 case $host in
   *mingw* | *cygwin*)
