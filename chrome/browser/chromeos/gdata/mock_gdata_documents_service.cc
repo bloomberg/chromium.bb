@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_mock.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"

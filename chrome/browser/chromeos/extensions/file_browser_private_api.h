@@ -13,7 +13,6 @@
 
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
-#include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/url_util.h"
 

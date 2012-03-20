@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains mocks for classes in gdata.h
+// This file contains mocks for classes in gdata_documents_service.h
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
 #pragma once
 
 #include <string>
 
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -157,4 +157,4 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
