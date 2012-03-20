@@ -322,35 +322,18 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 		device->type &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
-#define NUM_EVENTS 8
 
-static int
-evdev_input_device_data(int fd, uint32_t mask, void *data)
+static void
+evdev_process_events(struct evdev_input_device *device,
+		     struct input_event *ev, int count)
 {
-	struct weston_compositor *ec;
-	struct evdev_input_device *device = data;
-	struct input_event ev[NUM_EVENTS], *e, *end;
-	int len;
+	struct input_event *e, *end;
 	uint32_t time = 0;
-
-	ec = device->master->base.compositor;
-	if (!ec->focus)
-		return 1;
-
-	if (device->mtdev)
-		len = mtdev_get(device->mtdev, fd, ev, NUM_EVENTS) *
-		      sizeof (struct input_event);
-	else
-		len = read(fd, &ev, sizeof ev);
-	if (len < 0 || len % sizeof e[0] != 0) {
-		/* FIXME: call device_removed when errno is ENODEV. */;
-		return 1;
-	}
 
 	device->type = 0;
 
 	e = ev;
-	end = (void *) ev + len;
+	end = e + count;
 	for (e = ev; e < end; e++) {
 		time = e->time.tv_sec * 1000 + e->time.tv_usec / 1000;
 
@@ -373,10 +356,42 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	}
 
 	evdev_flush_motion(device, time);
+}
+
+static int
+evdev_input_device_data(int fd, uint32_t mask, void *data)
+{
+	struct weston_compositor *ec;
+	struct evdev_input_device *device = data;
+	struct input_event ev[32];
+	int len;
+
+	ec = device->master->base.compositor;
+	if (!ec->focus)
+		return 1;
+
+	/* If the compositor is repainting, this function is called only once
+	 * per frame and we have to process all the events available on the
+	 * fd, otherwise there will be input lag. */
+	do {
+		if (device->mtdev)
+			len = mtdev_get(device->mtdev, fd, ev,
+					ARRAY_LENGTH(ev)) *
+				sizeof (struct input_event);
+		else
+			len = read(fd, &ev, sizeof ev);
+
+		if (len < 0 || len % sizeof ev[0] != 0) {
+			/* FIXME: call device_removed when errno is ENODEV. */
+			return 1;
+		}
+
+		evdev_process_events(device, ev, len / sizeof ev[0]);
+
+	} while (len > 0);
 
 	return 1;
 }
-
 
 /* copied from udev/extras/input_id/input_id.c */
 /* we must use this kernel-compatible implementation */
@@ -463,7 +478,9 @@ evdev_input_device_create(struct evdev_input *master,
 	device->rel.dx = 0;
 	device->rel.dy = 0;
 
-	/* if O_NONBLOCK is not set, mtdev_get() blocks */
+	/* Use non-blocking mode so that we can loop on read on
+	 * evdev_input_device_data() until all events on the fd are
+	 * read.  mtdev_get() also expects this. */
 	device->fd = open(path, O_RDONLY | O_NONBLOCK);
 	if (device->fd < 0)
 		goto err0;
