@@ -541,7 +541,8 @@ GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 // GDataFileSystem class implementatsion.
 
 GDataFileSystem::GDataFileSystem(Profile* profile,
-                                 DocumentsServiceInterface* documents_service)
+                                 DocumentsServiceInterface* documents_service,
+                                 GDataSyncClientInterface* sync_client)
     : profile_(profile),
       documents_service_(documents_service),
       gdata_uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
@@ -550,8 +551,9 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
           true /* manual reset*/, false /* initially not signaled*/)),
       cache_initialization_started_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      sync_client_(new GDataSyncClient(ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
+      sync_client_(sync_client) {
   documents_service_->Initialize(profile_);
+  sync_client->Start(this);
 
   // download_manager will be NULL for unit tests.
   content::DownloadManager* download_manager =
@@ -2341,7 +2343,9 @@ GDataFileSystemFactory::~GDataFileSystemFactory() {
 
 ProfileKeyedService* GDataFileSystemFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new GDataFileSystem(profile, new DocumentsService);
+  return new GDataFileSystem(profile,
+                             new DocumentsService,
+                             new GDataSyncClient);
 }
 
 }  // namespace gdata

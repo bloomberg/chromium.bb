@@ -25,14 +25,30 @@ namespace gdata {
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
 //
-class GDataSyncClient : public GDataFileSystem::Observer {
+
+// The interface class is defined to make GDataSyncClient mockable.
+class GDataSyncClientInterface : public GDataFileSystem::Observer {
  public:
-  explicit GDataSyncClient(GDataFileSystem* file_system);
+  // Starts the GDataSyncClient. |file_system| is used to access to the cache
+  // (ex. store a file to the cache when the file is downloaded).
+  virtual void Start(GDataFileSystem* file_system) = 0;
+
+  virtual ~GDataSyncClientInterface() {}
+};
+
+// The production implementation of GDataSyncClientInterface.
+class GDataSyncClient : public GDataSyncClientInterface {
+ public:
+  GDataSyncClient();
   virtual ~GDataSyncClient();
+
+  // GDataSyncClientInterface overrides.
+  virtual void Start(GDataFileSystem* file_system) OVERRIDE;
 
   // GDataFileSystem::Observer overrides.
   virtual void OnFilePinned(const std::string& resource_id,
                             const std::string& md5) OVERRIDE;
+
  private:
   GDataFileSystem* file_system_;
   DISALLOW_COPY_AND_ASSIGN(GDataSyncClient);

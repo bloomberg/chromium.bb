@@ -8,13 +8,18 @@
 
 namespace gdata {
 
-GDataSyncClient::GDataSyncClient(GDataFileSystem* file_system)
-    : file_system_(file_system)  {
-  file_system_->AddObserver(this);
+GDataSyncClient::GDataSyncClient()
+    : file_system_(NULL)  {
 }
 
 GDataSyncClient::~GDataSyncClient() {
-  file_system_->RemoveObserver(this);
+  if (file_system_)
+    file_system_->RemoveObserver(this);
+}
+
+void GDataSyncClient::Start(GDataFileSystem* file_system) {
+  file_system_ = file_system;
+  file_system_->AddObserver(this);
 }
 
 void GDataSyncClient::OnFilePinned(const std::string& resource_id,

@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_mock.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_sync_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
@@ -77,6 +78,8 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_system_(NULL),
+        mock_doc_service_(NULL),
+        mock_sync_client_(NULL),
         num_callback_invocations_(0),
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
@@ -88,14 +91,17 @@ class GDataFileSystemTest : public testing::Test {
 
     callback_helper_ = new CallbackHelper;
 
-    // Allocate and keep a weak pointer to the mock, and inject it into the
-    // GDataFileSystem object.
+    // Allocate and keep pointers to the mocks, and inject them into the
+    // GDataFileSystem object, which will own the mock objects.
     mock_doc_service_ = new MockDocumentsService;
+    mock_sync_client_ = new MockGDataSyncClient;
 
     EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
 
     ASSERT_FALSE(file_system_);
-    file_system_ = new GDataFileSystem(profile_.get(), mock_doc_service_);
+    file_system_ = new GDataFileSystem(profile_.get(),
+                                       mock_doc_service_,
+                                       mock_sync_client_);
 
     RunAllPendingForCache();
   }
@@ -548,6 +554,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
+  MockGDataSyncClient* mock_sync_client_;
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;

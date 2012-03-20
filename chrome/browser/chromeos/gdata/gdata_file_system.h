@@ -34,7 +34,7 @@ namespace gdata {
 
 class DocumentsServiceInterface;
 class GDataDownloadObserver;
-class GDataSyncClient;
+class GDataSyncClientInterface;
 
 // Callback for completion of cache operation.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -328,7 +328,8 @@ class GDataFileSystem : public ProfileKeyedService {
       FilePathUpdateCallback;
 
   GDataFileSystem(Profile* profile,
-                  DocumentsServiceInterface* documents_service);
+                  DocumentsServiceInterface* documents_service,
+                  GDataSyncClientInterface* sync_client);
   virtual ~GDataFileSystem();
 
   // Finds file object by |file_path| and returns the file info.
@@ -744,7 +745,7 @@ class GDataFileSystem : public ProfileKeyedService {
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 
   ObserverList<Observer> observers_;
-  scoped_ptr<GDataSyncClient> sync_client_;
+  scoped_ptr<GDataSyncClientInterface> sync_client_;
 };
 
 // Singleton that owns all GDataFileSystems and associates them with

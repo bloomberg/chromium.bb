@@ -1323,6 +1323,8 @@
         'browser/chromeos/gdata/gdata_operation_registry_unittest.cc',
         'browser/chromeos/gdata/gdata_parser_unittest.cc',
         'browser/chromeos/gdata/gdata_util_unittest.cc',
+        'browser/chromeos/gdata/mock_gdata_sync_client.cc',
+        'browser/chromeos/gdata/mock_gdata_sync_client.h',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',
