@@ -43,6 +43,8 @@ class Link {
     ALTERNATE,
     EDIT,
     EDIT_MEDIA,
+    ALT_EDIT_MEDIA,
+    ALT_POST,
     FEED,
     POST,
     BATCH,
