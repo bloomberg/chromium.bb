@@ -811,10 +811,10 @@ For details on calling <code>getAcceptLanguages()</code>, see the
               <div class="summary"><span>string</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.i18n.getMessage</span>(<span class="null"><span>string</span>
-                      <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>boolean or number or string or array of boolean or number or string</span>
+                      <var><span>messageName</span></var></span><span class="optional"><span>, </span><span>any</span>
                       <var><span>substitutions</span></var></span>)</div>
               <div class="description">
-                <p>Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong — for example, <em>messageName</em> is not a string or the <em>substitutions</em> array is empty or has more than 9 elements — this method returns <code>undefined</code>.</p>
+                <p>Gets the localized string for the specified message. If the message is missing, this method returns an empty string (''). If the format of the <code>getMessage()</code> call is wrong — for example, <em>messageName</em> is not a string or the <em>substitutions</em> array has more than 9 elements — this method returns <code>undefined</code>.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -852,7 +852,7 @@ For details on calling <code>getAcceptLanguages()</code>, see the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>boolean or number or string or array of boolean or number or string</span>
+                        <span>any</span>
                       </span>
                     </span>
                   )

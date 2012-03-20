@@ -64,10 +64,6 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     // chrome.i18n.getMessage("message_name");
     // chrome.i18n.getMessage("message_name", null);
     return v8::String::New(message.c_str());
-  } else if (args[1]->IsString()) {
-    // chrome.i18n.getMessage("message_name", "one param");
-    std::string substitute = *v8::String::Utf8Value(args[1]->ToString());
-    substitutions.push_back(substitute);
   } else if (args[1]->IsArray()) {
     // chrome.i18n.getMessage("message_name", ["more", "params"]);
     v8::Local<v8::Array> placeholders = v8::Local<v8::Array>::Cast(args[1]);
@@ -75,14 +71,13 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     if (count > 9)
       return v8::Undefined();
     for (uint32_t i = 0; i < count; ++i) {
-      std::string substitute =
+      substitutions.push_back(
           *v8::String::Utf8Value(
-              placeholders->Get(v8::Integer::New(i))->ToString());
-      substitutions.push_back(substitute);
+              placeholders->Get(v8::Integer::New(i))->ToString()));
     }
   } else {
-    NOTREACHED() << "Couldn't parse second parameter.";
-    return v8::Undefined();
+    // chrome.i18n.getMessage("message_name", "one param");
+    substitutions.push_back(*v8::String::Utf8Value(args[1]->ToString()));
   }
 
   return v8::String::New(ReplaceStringPlaceholders(
