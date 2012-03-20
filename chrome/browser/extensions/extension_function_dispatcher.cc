@@ -126,7 +126,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   function->set_include_incognito(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
-  ExtensionsQuotaService* quota = extension_info_map->quota_service();
+  ExtensionsQuotaService* quota = extension_info_map->GetQuotaService();
   if (quota->Assess(extension->id(), function, &params.arguments,
                     base::TimeTicks::Now())) {
     function->Run();

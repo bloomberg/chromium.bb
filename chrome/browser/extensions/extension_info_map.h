@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -70,7 +71,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
       const GURL& origin, int process_id,
       ExtensionAPIPermission::ID permission) const;
 
-  ExtensionsQuotaService* quota_service() { return &quota_service_; }
+  ExtensionsQuotaService* GetQuotaService();
 
  private:
   // Extra dynamic data related to an extension.
@@ -85,7 +86,9 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   ExtraDataMap extra_data_;
 
   // Used by dispatchers to limit API quota for individual extensions.
-  ExtensionsQuotaService quota_service_;
+  // The ExtensionQutoaService is not thread safe. We need to create and destroy
+  // it on the IO thread.
+  scoped_ptr<ExtensionsQuotaService> quota_service_;
 
   // Assignment of extensions to processes.
   extensions::ProcessMap process_map_;

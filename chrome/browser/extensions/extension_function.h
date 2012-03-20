@@ -84,7 +84,9 @@ class ExtensionFunction
   // NULL-check.
   virtual void Run();
 
-  // Returns a quota limit heuristic suitable for this function.
+  // Optionally adds one or multiple QuotaLimitHeuristic instances suitable for
+  // this function to |heuristics|. The ownership of the new QuotaLimitHeuristic
+  // instances is passed to the owner of |heuristics|.
   // No quota limiting by default.
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const {}

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,10 @@ ExtensionInfoMap::ExtensionInfoMap() {
 }
 
 ExtensionInfoMap::~ExtensionInfoMap() {
+  if (quota_service_.get()) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                              quota_service_.release());
+  }
 }
 
 const extensions::ProcessMap& ExtensionInfoMap::process_map() const {
@@ -147,4 +151,11 @@ bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
     }
   }
   return false;
+}
+
+ExtensionsQuotaService* ExtensionInfoMap::GetQuotaService() {
+  CheckOnValidThread();
+  if (!quota_service_.get())
+    quota_service_.reset(new ExtensionsQuotaService());
+  return quota_service_.get();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ ExtensionsQuotaService::ExtensionsQuotaService() {
 }
 
 ExtensionsQuotaService::~ExtensionsQuotaService() {
+  DCHECK(CalledOnValidThread());
   purge_timer_.Stop();
   Purge();
 }
@@ -32,6 +33,8 @@ ExtensionsQuotaService::~ExtensionsQuotaService() {
 bool ExtensionsQuotaService::Assess(const std::string& extension_id,
     ExtensionFunction* function, const ListValue* args,
     const base::TimeTicks& event_time) {
+  DCHECK(CalledOnValidThread());
+
   // Lookup function list for extension.
   FunctionHeuristicsMap& functions = function_heuristics_[extension_id];
 
@@ -72,6 +75,7 @@ void ExtensionsQuotaService::PurgeFunctionHeuristicsMap(
 }
 
 void ExtensionsQuotaService::Purge() {
+  DCHECK(CalledOnValidThread());
   std::map<std::string, FunctionHeuristicsMap>::iterator it =
       function_heuristics_.begin();
   for (; it != function_heuristics_.end(); function_heuristics_.erase(it++))
