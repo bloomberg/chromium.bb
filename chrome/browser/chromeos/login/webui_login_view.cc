@@ -327,8 +327,6 @@ void WebUILoginView::OnTabMainFrameRender() {
 #endif
 
   if (should_emit_login_prompt_visible_) {
-    // crosbug.com/26646.
-    LOG(ERROR) << "EmitLoginPromptVisible:";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         EmitLoginPromptVisible();
   }

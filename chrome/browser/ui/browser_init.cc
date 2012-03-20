@@ -630,10 +630,6 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
     RegisterPnaclComponent(cus);
   }
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26446.
-  LOG(ERROR) << "RegisterComponentsForUpdate Start";
-#endif
   cus->Start();
 }
 
@@ -1691,27 +1687,9 @@ bool BrowserInit::ProcessCmdLineImpl(
     int* return_code,
     BrowserInit* browser_init) {
   DCHECK(last_used_profile);
-#if defined(OS_CHROMEOS)
-  const CommandLine::StringVector argv = command_line.argv();
-  std::string cmd;
-  for (CommandLine::StringVector::const_iterator iter = argv.begin();
-       iter != argv.end();
-       ++iter) {
-    cmd += *iter + " ";
-  }
-  // crosbug.com/26446.
-  LOG(ERROR) << "ProcessCmdLineImpl: process_startup=" << process_startup
-             << ", cmd=" << cmd;
-#endif
-
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       content::NavigationController::DisablePromptOnRepost();
-
-#if defined(OS_CHROMEOS)
-    // crosbug.com/26446.
-    LOG(ERROR) << "RegisterComponentsForUpdate";
-#endif
     RegisterComponentsForUpdate(command_line);
   }
 
@@ -1746,10 +1724,6 @@ bool BrowserInit::ProcessCmdLineImpl(
       expected_tab_count =
           std::max(1, static_cast<int>(urls_to_open.size()));
     }
-#if defined(OS_CHROMEOS)
-    // crosbug.com/26446.
-    LOG(ERROR) << "CreatingAutomationProvider";
-#endif
     if (!CreateAutomationProvider<TestingAutomationProvider>(
         testing_channel_id,
         last_used_profile,
@@ -1905,10 +1879,6 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
 #if defined(ENABLE_AUTOMATION)
   scoped_refptr<AutomationProviderClass> automation =
       new AutomationProviderClass(profile);
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26446.
-  LOG(ERROR) << "CreateAutomationProvider: channel=" << channel_id;
-#endif
   if (!automation->InitializeChannel(channel_id))
     return false;
   automation->SetExpectedTabCount(expected_tabs);

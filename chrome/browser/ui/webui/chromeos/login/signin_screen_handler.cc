@@ -369,9 +369,6 @@ void SigninScreenHandler::GetLocalizedStrings(
 
 void SigninScreenHandler::Show(bool oobe_ui) {
   CHECK(delegate_);
-  LOG(ERROR) << "Show: oobe=" << oobe_ui
-             << ", page_is_ready=" << page_is_ready();
-
   oobe_ui_ = oobe_ui;
   if (!page_is_ready()) {
     show_on_init_ = true;
@@ -401,14 +398,12 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
 }
 
 void SigninScreenHandler::OnNetworkReady() {
-  LOG(ERROR) << "network: " << network_state_informer_->active_network_id();
   MaybePreloadAuthExtension();
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::Initialize() {
-  LOG(ERROR) << "Initialize:" << delegate_;
   // If delegate_ is NULL here (e.g. WebUIScreenLocker has been destroyed),
   // don't do anything, just return.
   if (!delegate_)
@@ -426,7 +421,6 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
-  LOG(ERROR) << "RegisterMessages";
   network_state_informer_.reset(new NetworkStateInformer(this, web_ui()));
   network_state_informer_->Init();
 
@@ -526,7 +520,6 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
-  LOG(ERROR) << "OnPreferenceChanged:" << delegate_;
   if (delegate_ && !delegate_->IsShowUsers())
     HandleShowAddUser(NULL);
   else
@@ -786,9 +779,6 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email_);
-  LOG(ERROR) << "HandleShowAddUser: email=" << email_ << ", gaia_sielnt_load="
-             << gaia_silent_load_;
-
   is_account_picker_showing_first_time_ = false;
 
   if (gaia_silent_load_ && email_.empty()) {
@@ -899,10 +889,6 @@ void SigninScreenHandler::HandleAccountPickerReady(
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
-  // crosbug.com/26646.
-  LOG(ERROR) << "HandleLoginWebuiReady: focus_stolen=" << focus_stolen_
-             << ", gaia_silent_load=" << gaia_silent_load_;
-
   if (focus_stolen_) {
     // Set focus to the Gaia page.
     // TODO(altimofeev): temporary solution, until focus parameters are
@@ -992,8 +978,6 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {
-  LOG(ERROR) << "StartClearingDnsCache: cond:"
-             << (dns_clear_task_running_ || !g_browser_process->io_thread());
   if (dns_clear_task_running_ || !g_browser_process->io_thread())
     return;
 
@@ -1007,7 +991,6 @@ void SigninScreenHandler::StartClearingDnsCache() {
 }
 
 void SigninScreenHandler::StartClearingCookies() {
-  LOG(ERROR) << "StartClearingCookies";
   cookies_cleared_ = false;
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);

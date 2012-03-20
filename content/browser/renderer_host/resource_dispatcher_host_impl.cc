@@ -467,10 +467,6 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
 
   const GURL& url = request->original_url();
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  VLOG(1) << "BeginDownload: " << request->url().spec();
-#endif
   const net::URLRequestContext* request_context = context->GetRequestContext();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
   request->set_context(request_context);

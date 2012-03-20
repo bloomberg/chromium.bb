@@ -1820,10 +1820,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "MainMessageLoopRun";
-#endif
   // Set the result code set in PreMainMessageLoopRun or set above.
   *result_code = result_code_;
 

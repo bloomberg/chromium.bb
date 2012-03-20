@@ -934,10 +934,6 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
                                    WebString::fromUTF8(i.values()));
       }
     }
-#if defined(OS_CHROMEOS)
-    // crosbug.com/26646.
-    LOG(ERROR) << " FrameLoader::loadRequest()";
-#endif
     main_frame->loadRequest(request);
   }
 
@@ -1638,10 +1634,6 @@ bool RenderViewImpl::enumerateChosenDirectory(
 }
 
 void RenderViewImpl::didStartLoading() {
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  LOG(ERROR) << "didStartLoading is_loading=" << is_loading_;
-#endif
   if (is_loading_) {
     DVLOG(1) << "didStartLoading called while loading";
     return;
