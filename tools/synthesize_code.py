@@ -17,10 +17,10 @@ OPERATORS = ["+", "-", "*", "/"]
 NUM_CALLS = 100
 
 def EmitProlog(n, out):
-  print >>out, "/* n == %d */" % n
+  out.write("/* n == %d */\n" % n)
 
   for i in range(n):
-    print >>out, "int func_%d(int x);" % i
+    out.write("int func_%d(int x);\n" % i)
 
 def EmitFunctions(n, out):
   for i in range(n):
@@ -46,7 +46,7 @@ def main(argv):
     return 1
   n = int(argv[1])
   out = sys.stdout
-
+  out.write("/* This code was generated using %s */\n" % repr(argv))
   EmitProlog(n, out)
   EmitFunctions(n, out)
   EmitMain(n, out)
