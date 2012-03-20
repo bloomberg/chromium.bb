@@ -131,11 +131,12 @@ class SyncBackendHost::Core
   // Called to cleanup disabled types.
   void DoRequestCleanupDisabledTypes();
 
-  // Called to set the passphrase on behalf of
-  // SyncBackendHost::SupplyPassphrase.
-  void DoSetPassphrase(const std::string& passphrase,
-                       bool is_explicit,
-                       bool user_provided);
+  // Called to set the passphrase for encryption.
+  void DoSetEncryptionPassphrase(const std::string& passphrase,
+                                 bool is_explicit);
+
+  // Called to decrypt the pending keys.
+  void DoSetDecryptionPassphrase(const std::string& passphrase);
 
   // Called to turn on encryption of all sync data as well as
   // reencrypt everything.
@@ -383,21 +384,57 @@ void SyncBackendHost::StartSyncingWithServer() {
       base::Bind(&SyncBackendHost::Core::DoStartSyncing, core_.get()));
 }
 
-void SyncBackendHost::SetPassphrase(const std::string& passphrase,
-                                    bool is_explicit,
-                                    bool user_provided) {
+void SyncBackendHost::SetEncryptionPassphrase(const std::string& passphrase,
+                                              bool is_explicit) {
   if (!IsNigoriEnabled()) {
-    SLOG(WARNING) << "Silently dropping SetPassphrase request.";
+    NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"
+                    " is disabled.";
     return;
   }
+
+  // We should never be called with an empty passphrase.
+  DCHECK(!passphrase.empty());
 
   // This should only be called by the frontend.
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
 
-  // If encryption is enabled and we've got a SetPassphrase
+  // SetEncryptionPassphrase should never be called if we are currently
+  // encrypted with an explicit passphrase.
+  DCHECK(!IsUsingExplicitPassphrase());
+
+  // Post an encryption task on the syncer thread.
   sync_thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&SyncBackendHost::Core::DoSetPassphrase, core_.get(),
-                 passphrase, is_explicit, user_provided));
+      base::Bind(&SyncBackendHost::Core::DoSetEncryptionPassphrase, core_.get(),
+                 passphrase, is_explicit));
+}
+
+bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
+  if (!IsNigoriEnabled()) {
+    NOTREACHED() << "SetDecryptionPassphrase must never be called when nigori"
+                    " is disabled.";
+    return false;
+  }
+
+  // We should never be called with an empty passphrase.
+  DCHECK(!passphrase.empty());
+
+  // This should only be called by the frontend.
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+
+  // This should only be called when we have cached pending keys.
+  DCHECK(cached_pending_keys_.has_blob());
+
+  // Check the passphrase that was provided against our local cache of the
+  // cryptographer's pending keys. If this was unsuccessful, the UI layer can
+  // immediately call OnPassphraseRequired without showing the user a spinner.
+  if (!CheckPassphraseAgainstCachedPendingKeys(passphrase))
+    return false;
+
+  // Post a decryption task on the syncer thread.
+  sync_thread_.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHost::Core::DoSetDecryptionPassphrase, core_.get(),
+                 passphrase));
+  return true;
 }
 
 void SyncBackendHost::StopSyncManagerForShutdown(
@@ -1069,11 +1106,17 @@ void SyncBackendHost::Core::DoRequestCleanupDisabledTypes() {
   sync_manager_->RequestCleanupDisabledTypes();
 }
 
-void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
-                                            bool is_explicit,
-                                            bool user_provided) {
+void SyncBackendHost::Core::DoSetEncryptionPassphrase(
+    const std::string& passphrase,
+    bool is_explicit) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->SetPassphrase(passphrase, is_explicit, user_provided);
+  sync_manager_->SetEncryptionPassphrase(passphrase, is_explicit);
+}
+
+void SyncBackendHost::Core::DoSetDecryptionPassphrase(
+    const std::string& passphrase) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  sync_manager_->SetDecryptionPassphrase(passphrase);
 }
 
 void SyncBackendHost::Core::DoEnableEncryptEverything() {
@@ -1255,6 +1298,7 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
 bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(
     const std::string& passphrase) const {
   DCHECK(cached_pending_keys_.has_blob());
+  DCHECK(!passphrase.empty());
   browser_sync::Nigori nigori;
   nigori.InitByDerivation("localhost", "dummy", passphrase);
   std::string plaintext;

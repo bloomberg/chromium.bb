@@ -957,14 +957,18 @@ void LoginUtilsImpl::StartSignedInServices(
   static bool initialized = false;
   if (!initialized) {
     initialized = true;
-    // Pass the updated passphrase to the sync service for use in decrypting
-    // data encrypted with the user's GAIA password.
+    // Notify the sync service that signin was successful. Note: Since the sync
+    // service is lazy-initialized, we need to make sure it has been created.
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(user_profile);
     if (sync_service) {
-      sync_service->SetPassphrase(password_,
-          ProfileSyncService::IMPLICIT,
-          ProfileSyncService::INTERNAL);
+      GoogleServiceSigninSuccessDetails details(
+          signin->GetAuthenticatedUsername(),
+          password_);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+          content::Source<Profile>(user_profile),
+          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
     }
   }
   password_.clear();

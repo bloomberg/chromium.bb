@@ -856,10 +856,8 @@ void ProfileSyncService::OnPassphraseRequired(
     cached_passphrases_.gaia_passphrase.clear();
     DVLOG(1) << "Attempting gaia passphrase.";
     if (!backend_->IsUsingExplicitPassphrase()) {
-      // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-      SetPassphrase(gaia_passphrase, IMPLICIT,
-                    (cached_passphrases_.user_provided_gaia ?
-                         USER_PROVIDED : INTERNAL));
+      // The passphrase will be re-cached if the syncer isn't ready.
+      SetEncryptionPassphrase(gaia_passphrase, IMPLICIT);
       return;
     }
   }
@@ -867,12 +865,15 @@ void ProfileSyncService::OnPassphraseRequired(
   // If the above failed then try the custom passphrase the user might have
   // entered in setup.
   if (!cached_passphrases_.explicit_passphrase.empty()) {
+    // TODO(atwilson): Remove the cached explicit passphrase. Setup will not let
+    // you specify a passphrase until after the nigori node is downloaded.
+    // See http://crbug.com/95269
     std::string explicit_passphrase = cached_passphrases_.explicit_passphrase;
     cached_passphrases_.explicit_passphrase.clear();
     if (backend_->IsUsingExplicitPassphrase()) {
       DVLOG(1) << "Attempting explicit passphrase.";
-      // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
-      SetPassphrase(explicit_passphrase, EXPLICIT, USER_PROVIDED);
+      // The passphrase will be re-cached if the syncer isn't ready.
+      SetDecryptionPassphrase(explicit_passphrase);
       return;
     }
   }
@@ -917,10 +918,18 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::ResolvePassphraseRequired() {
   DCHECK(!IsPassphraseRequiredForDecryption());
+
+  // If we are not using an explicit passphrase, and we have a cache of the gaia
+  // password, use it for encryption at this point.
+  if (!IsUsingSecondaryPassphrase() &&
+      !cached_passphrases_.gaia_passphrase.empty()) {
+    SetEncryptionPassphrase(cached_passphrases_.gaia_passphrase, IMPLICIT);
+  }
+
   // Don't hold on to a passphrase in raw form longer than needed.
   cached_passphrases_ = CachedPassphrases();
 
-  // If No encryption is pending and our passphrase has been accepted, tell the
+  // If no encryption is pending and our passphrase has been accepted, tell the
   // wizard we're done (no need to hang around waiting for the sync to
   // complete). If encryption is pending, its successful completion will trigger
   // the done step.
@@ -1203,14 +1212,6 @@ syncable::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  // Should never be called when the backend is not initialized, since at that
-  // time we have no idea whether we have an explicit passphrase or not because
-  // the nigori node has not been downloaded yet.
-  if (!sync_initialized()) {
-    NOTREACHED() << "Cannot call IsUsingSecondaryPassphrase() before the sync "
-                 << "backend has downloaded the nigori node";
-    return false;
-  }
   return backend_->IsUsingExplicitPassphrase();
 }
 
@@ -1325,10 +1326,8 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
   backend_->DeactivateDataType(type);
 }
 
-void ProfileSyncService::SetPassphrase(const std::string& passphrase,
-                                       PassphraseType type,
-                                       PassphraseSource source) {
-  DCHECK(source == USER_PROVIDED || type == IMPLICIT);
+void ProfileSyncService::SetEncryptionPassphrase(const std::string& passphrase,
+                                                 PassphraseType type) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
     if (type == IMPLICIT && backend_->IsUsingExplicitPassphrase()) {
       // This should only happen when you re-auth (or when you log in on
@@ -1338,23 +1337,27 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
       return;
     }
     DVLOG(1) << "Setting " << (type == EXPLICIT ? "explicit" : "implicit")
-             << " passphrase.";
-    backend_->SetPassphrase(passphrase,
-                            type == EXPLICIT,
-                            source == USER_PROVIDED);
+             << " passphrase for encryption.";
+    backend_->SetEncryptionPassphrase(passphrase, type == EXPLICIT);
   } else {
-    if (type == EXPLICIT) {
-      NOTREACHED() << "SetPassphrase should only be called after the backend "
-                   << "is initialized.";
-      cached_passphrases_.explicit_passphrase = passphrase;
-    } else {
+    if (type == IMPLICIT) {
+      DVLOG(1) << "Caching gaia passphrase.";
       cached_passphrases_.gaia_passphrase = passphrase;
-      cached_passphrases_.user_provided_gaia = (source == USER_PROVIDED);
-      DVLOG(1) << "Caching "
-               << (cached_passphrases_.user_provided_gaia ? "user provided" :
-                       "internal")
-               << " gaia passphrase.";
+    } else {
+      NOTREACHED();
     }
+  }
+}
+
+bool ProfileSyncService::SetDecryptionPassphrase(
+    const std::string& passphrase) {
+  if (ShouldPushChanges() || IsPassphraseRequired()) {
+    DVLOG(1) << "Setting passphrase for decryption.";
+    return backend_->SetDecryptionPassphrase(passphrase);
+  } else {
+    NOTREACHED() << "SetDecryptionPassphrase must not be called when both "
+                    "ShouldPushChanges() and IsPassphraseRequired() are false.";
+    return false;
   }
 }
 
@@ -1464,15 +1467,13 @@ void ProfileSyncService::Observe(int type,
                !IsEncryptedDatatypeEnabled()));
 
       // Ensure we consume any cached gaia passphrase now that we've finished
-      // setting up. SetPassphrase will drop any implicit passphrases if an
-      // explicit passphrase has already been set, so this is safe.
+      // setting up. SetEncryptionPassphrase will drop any implicit passphrases
+      // if an explicit passphrase has already been set, so this is safe.
       if (!cached_passphrases_.gaia_passphrase.empty()) {
         std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
         cached_passphrases_.gaia_passphrase.clear();
         DVLOG(1) << "Consuming cached gaia passphrase.";
-        SetPassphrase(gaia_passphrase, IMPLICIT,
-                      (cached_passphrases_.user_provided_gaia ?
-                           USER_PROVIDED : INTERNAL));
+        SetEncryptionPassphrase(gaia_passphrase, IMPLICIT);
       }
 
       // This must be done before we start syncing with the server to avoid
@@ -1495,18 +1496,14 @@ void ProfileSyncService::Observe(int type,
       const GoogleServiceSigninSuccessDetails* successful =
           content::Details<const GoogleServiceSigninSuccessDetails>(
               details).ptr();
-      // The user has submitted credentials, which indicates they don't
-      // want to suppress start up anymore.
-      // TODO(sync): Remove this when sync is no longer tied to browser signin.
-      // http://crbug/com/95269.
-      sync_prefs_.SetStartSuppressed(false);
-
-      // Because we specify IMPLICIT to SetPassphrase, we know it won't override
-      // an explicit one.  Thus, we either update the implicit passphrase
-      // (idempotent if the passphrase didn't actually change), or the user has
-      // an explicit passphrase set so this becomes a no-op.
+      // We cannot override a previously set explicit passphrase with an
+      // implicit one.
+      // TODO(sync): This is the only place where SetEncryptionPassphrase may be
+      // called before the backend is initialized. It makes sense for this to be
+      // the place where we cache the gaia password, rather than in
+      // SetEncryptionPassphrase. http://crbug.com/95269.
       if (!successful->password.empty())
-        SetPassphrase(successful->password, IMPLICIT, INTERNAL);
+        SetEncryptionPassphrase(successful->password, IMPLICIT);
 
       if (!sync_initialized() ||
           GetAuthError().state() != GoogleServiceAuthError::NONE) {
@@ -1619,9 +1616,8 @@ void ProfileSyncService::UnsuppressAndStart() {
   sync_prefs_.SetStartSuppressed(false);
   // Set username in SigninManager, as SigninManager::OnGetUserInfoSuccess
   // is never called for some clients.
-  if (signin_->GetAuthenticatedUsername().empty()) {
-    signin_->SetAuthenticatedUsername(
-        sync_prefs_.GetGoogleServicesUsername());
+  if (signin_ && signin_->GetAuthenticatedUsername().empty()) {
+    signin_->SetAuthenticatedUsername(sync_prefs_.GetGoogleServicesUsername());
   }
   TryStart();
 }

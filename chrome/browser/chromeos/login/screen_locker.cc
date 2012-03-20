@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -273,10 +274,15 @@ void ScreenLocker::OnLoginSuccess(
     ProfileSyncService* service(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
     if (service && !service->HasSyncSetupCompleted()) {
-      // If sync has failed somehow, try setting the sync passphrase here.
-      service->SetPassphrase(password,
-                             ProfileSyncService::IMPLICIT,
-                             ProfileSyncService::INTERNAL);
+      SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+      DCHECK(signin);
+      GoogleServiceSigninSuccessDetails details(
+          signin->GetAuthenticatedUsername(),
+          password);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+          content::Source<Profile>(profile),
+          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
     }
   }
   DBusThreadManager::Get()->GetPowerManagerClient()->

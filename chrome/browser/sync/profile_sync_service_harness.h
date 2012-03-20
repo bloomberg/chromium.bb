@@ -136,7 +136,7 @@ class ProfileSyncServiceHarness
   bool AwaitPassphraseRequired();
 
   // Blocks the caller until |service_| indicates that the passphrase set by
-  // calling SetPassphrase has been accepted.
+  // calling SetDecryptionPassphrase has been accepted.
   bool AwaitPassphraseAccepted();
 
   // Returns the ProfileSyncService member of the sync client.

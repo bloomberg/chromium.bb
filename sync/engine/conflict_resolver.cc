@@ -100,8 +100,8 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   // a) We can decrypt both the local and server data (else we'd be in
   //    conflict encryption and not attempting to resolve).
   // b) All unsynced changes have been re-encrypted with the default key (
-  //    occurs either in AttemptToUpdateEntry, SetPassphrase, or
-  //    RefreshEncryption).
+  //    occurs either in AttemptToUpdateEntry, SetEncryptionPassphrase,
+  //    SetDecryptionPassphrase, or RefreshEncryption).
   // c) Base_server_specifics having a valid datatype means that we received
   //    an undecryptable update that only changed specifics, and since then have
   //    not received any further non-specifics-only or decryptable updates.
@@ -235,7 +235,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       // the cryptographer. If we don't have pending keys we can store the
       // merged set back immediately. Else we preserve the server keys and will
       // update the nigori when the user provides the pending passphrase via
-      // SetPassphrase(..).
+      // SetDecryptionPassphrase(..).
       if (cryptographer->is_ready()) {
         cryptographer->GetKeys(server_nigori->mutable_encrypted());
       }

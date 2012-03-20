@@ -108,12 +108,16 @@ void RemoveLogins(PasswordStore* store) {
   }
 }
 
-void SetPassphrase(int index, const std::string& passphrase) {
-  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      test()->GetProfile(index))->SetPassphrase(
-      passphrase,
-      ProfileSyncService::EXPLICIT,
-      ProfileSyncService::USER_PROVIDED);
+void SetEncryptionPassphrase(int index,
+                             const std::string& passphrase,
+                             ProfileSyncService::PassphraseType type) {
+  ProfileSyncServiceFactory::GetForProfile(
+      test()->GetProfile(index))->SetEncryptionPassphrase(passphrase, type);
+}
+
+bool SetDecryptionPassphrase(int index, const std::string& passphrase) {
+  return ProfileSyncServiceFactory::GetForProfile(
+      test()->GetProfile(index))->SetDecryptionPassphrase(passphrase);
 }
 
 PasswordStore* GetPasswordStore(int index) {

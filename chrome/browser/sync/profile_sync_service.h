@@ -155,14 +155,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MANUAL_START,
   };
 
+  // Used to specify the kind of passphrase with which sync data is encrypted.
   enum PassphraseType {
-    IMPLICIT,
-    EXPLICIT,
-  };
-
-  enum PassphraseSource {
-    INTERNAL,
-    USER_PROVIDED,
+    IMPLICIT,  // The user did not provide a custom passphrase for encryption.
+               // We implicitly use the GAIA password in such cases.
+    EXPLICIT,  // The user selected the "use custom passphrase" radio button
+               // during sync setup and provided a passphrase.
   };
 
   // Default sync server URL.
@@ -451,23 +449,25 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // to call this method before the backend is initialized.
   virtual bool IsUsingSecondaryPassphrase() const;
 
-  // Sets the Cryptographer's passphrase, or caches it until that is possible.
-  // This will check asynchronously whether the passphrase is valid and notify
-  // ProfileSyncServiceObservers via the NotificationService when the outcome
-  // is known.
-  // |type| == EXPLICIT if the call is in response to the user setting a
-  // custom explicit passphrase as opposed to implicitly (from the users'
-  // perspective) using their Google Account password. Once an explicit
-  // passphrase is set, it can never be overwritten (not even by another
-  // explicit passphrase).
-  // |source| == USER_PROVIDED corresponds to the user having manually provided
-  // this passphrase. It should only be INTERNAL for passphrases intercepted
-  // from the Google Sign-in Success notification. Note that if the data is
-  // encrypted with an old Google Account password, the user may still have to
-  // provide an "implicit" passphrase.
-  virtual void SetPassphrase(const std::string& passphrase,
-                             PassphraseType type,
-                             PassphraseSource source);
+  // Note about setting passphrases: There are different scenarios under which
+  // we might want to apply a passphrase. It could be for first-time encryption,
+  // re-encryption, or for decryption by clients that sign in at a later time.
+  // In addition, encryption can either be done using a custom passphrase, or by
+  // reusing the GAIA password. Depending on what is happening in the system,
+  // callers should determine which of the two methods below must be used.
+
+  // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
+  // specifies whether the passphrase is a custom passphrase or the GAIA
+  // password being reused as a passphrase.
+  // TODO(atwilson): Change this so external callers can only set an EXPLICIT
+  // passphrase with this API.
+  virtual void SetEncryptionPassphrase(const std::string& passphrase,
+                                       PassphraseType type);
+
+  // Asynchronously decrypts pending keys using |passphrase|. Returns false
+  // immediately if the passphrase could not be used to decrypt a locally cached
+  // copy of encrypted keys; returns true otherwise.
+  virtual bool SetDecryptionPassphrase(const std::string& passphrase);
 
   // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
   // after calling this to force the encryption to occur.
@@ -615,7 +615,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Note: Does not initialize the backend if it is not already initialized.
   // This function needs to be called only after sync has been initialized
   // (i.e.,only for reconfigurations). The reason we don't initialize the
-  // backend is because if we had encountered an unrecoverable error we dont
+  // backend is because if we had encountered an unrecoverable error we don't
   // want to startup once more.
   virtual void ReconfigureDatatypeManager();
 
@@ -685,9 +685,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   struct CachedPassphrases {
     std::string explicit_passphrase;
     std::string gaia_passphrase;
-    // This distinguishes from GAIA passphrases intercepted by the signin code
-    // (which will always be the most recent GAIA passphrase).
-    bool user_provided_gaia;
   };
   CachedPassphrases cached_passphrases_;
 

@@ -354,9 +354,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
     DCHECK(!service_->IsUsingSecondaryPassphrase());
-    service_->SetPassphrase(configuration.gaia_passphrase,
-                            ProfileSyncService::IMPLICIT,
-                            ProfileSyncService::USER_PROVIDED);
+    service_->SetDecryptionPassphrase(configuration.gaia_passphrase);
     // Since the user entered the passphrase manually, set this flag so we can
     // report an error if the passphrase setting failed.
     user_tried_setting_passphrase_ = true;
@@ -367,9 +365,23 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // as an attempt to encrypt the user's data using this new passphrase.
   if (configuration.set_secondary_passphrase &&
       !configuration.secondary_passphrase.empty()) {
-    service_->SetPassphrase(configuration.secondary_passphrase,
-                            ProfileSyncService::EXPLICIT,
-                            ProfileSyncService::USER_PROVIDED);
+    // If we are signing in when an explicit password has already been set,
+    // we must call SetDecryptionPassphrase, which will first try decrypting
+    // the cached pending keys with the passphrase on the UI thread. If
+    // decryption fails, we can immediately show an error and go back to the
+    // "enter passphrase" dialog without sending the passphrase to the syncer
+    // thread.
+    if (service_->IsPassphraseRequiredForDecryption()) {
+      if (!service_->SetDecryptionPassphrase(
+          configuration.secondary_passphrase)) {
+        user_tried_setting_passphrase_ = true;
+        Advance(SyncSetupWizard::ENTER_PASSPHRASE);
+        return;
+      }
+    } else {
+      service_->SetEncryptionPassphrase(configuration.secondary_passphrase,
+                                        ProfileSyncService::EXPLICIT);
+    }
     if (service_->IsUsingSecondaryPassphrase()) {
       user_tried_setting_passphrase_ = true;
       set_new_decryption_passphrase = true;
@@ -400,9 +412,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
-  service_->SetPassphrase(passphrase,
-                          ProfileSyncService::EXPLICIT,
-                          ProfileSyncService::USER_PROVIDED);
+  service_->SetDecryptionPassphrase(passphrase);
   user_tried_setting_passphrase_ = true;
 }
 

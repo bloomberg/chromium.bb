@@ -516,25 +516,22 @@ class SyncManager {
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally();
 
-  // Attempt to set the passphrase. If the passphrase is valid,
-  // OnPassphraseAccepted will be fired to notify the ProfileSyncService and the
-  // syncer will be nudged so that any update that was waiting for this
-  // passphrase gets applied as soon as possible.
-  // If the passphrase in invalid, OnPassphraseRequired will be fired.
-  // Calling this metdod again is the appropriate course of action to "retry"
-  // with a new passphrase.
-  // |is_explicit| is true if the call is in response to the user setting a
-  // custom explicit passphrase as opposed to implicitly (from the users'
-  // perspective) using their Google Account password. An implicit SetPassphrase
-  // will *not* override an explicit passphrase set previously. Note that
-  // if the data is encrypted with an old Google Account password, the user
-  // may still have to provide a "implicit" passphrase.
-  // |user_provided| corresponds to the user having manually provided this
-  // passphrase. It should only be false for passphrases intercepted from the
-  // Google Sign-in Success notification and true otherwise.
-  void SetPassphrase(const std::string& passphrase,
-                     bool is_explicit,
-                     bool user_provided);
+  // Attempts to re-encrypt encrypted data types using the passphrase provided.
+  // Notifies observers of the result of the operation via OnPassphraseAccepted
+  // or OnPassphraseRequired, updates the nigori node, and does re-encryption as
+  // appropriate. If an explicit password has been set previously, we drop
+  // subsequent requests to set a passphrase. If the cryptographer has pending
+  // keys, and a new implicit passphrase is provided, we try decrypting the
+  // pending keys with it, and if that fails, we cache the passphrase for
+  // re-encryption once the pending keys are decrypted.
+  void SetEncryptionPassphrase(const std::string& passphrase, bool is_explicit);
+
+  // Provides a passphrase for decrypting the user's existing sync data.
+  // Notifies observers of the result of the operation via OnPassphraseAccepted
+  // or OnPassphraseRequired, updates the nigori node, and does re-encryption as
+  // appropriate if there is a previously cached encryption passphrase. It is an
+  // error to call this when we don't have pending keys.
+  void SetDecryptionPassphrase(const std::string& passphrase);
 
   // Puts the SyncScheduler into a mode where no normal nudge or poll traffic
   // will occur, but calls to RequestConfig will be supported.  If |callback|

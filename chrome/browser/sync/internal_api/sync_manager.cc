@@ -238,22 +238,45 @@ class SyncManager::SyncInternal
   // OnPassphraseRequired if the cryptographer isn't ready.
   void RefreshEncryption();
 
-  // Try to set the current passphrase to |passphrase|, and record whether
-  // it is an explicit passphrase or implicitly using gaia in the Nigori
-  // node.
-  // |is_explicit| is true if the call is in response to the user setting a
-  // custom explicit passphrase as opposed to implicitly (from the users'
-  // perspective) using their Google Account password. Once an explicit
-  // passphrase is set, it can never be overwritten (not even by another
-  // explicit passphrase).
-  // |user_provided| is true corresponds to the user having manually provided
-  // this passphrase. It should only be false for passphrases intercepted
-  // from the Google Sign-in Success notification. Note that if the data is
-  // encrypted with an old Google Account password, the user may still have to
-  // provide an "implicit" passphrase.
-  void SetPassphrase(const std::string& passphrase,
-                     bool is_explicit,
-                     bool user_provided);
+  // Re-encrypts the encrypted data types using the passed passphrase, and sets
+  // a flag in the nigori node specifying whether the current passphrase is
+  // explicit (custom passphrase) or non-explicit (GAIA). If the existing
+  // encryption passphrase is "explicit", the data cannot be re-encrypted and
+  // OnPassphraseRequired is triggered with REASON_SET_PASSPHRASE_FAILED.
+  // If !is_explicit and there are pending keys, we will attempt to decrypt them
+  // using this passphrase. If this fails, we will save this encryption key to
+  // be applied later after the pending keys are resolved.
+  // Calls FinishSetPassphrase at the end, which notifies observers of the
+  // result of the set passphrase operation, updates the nigori node, and does
+  // re-encryption.
+  void SetEncryptionPassphrase(const std::string& passphrase, bool is_explicit);
+
+  // Provides a passphrase for decrypting the user's existing sync data. Calls
+  // FinishSetPassphrase at the end, which notifies observers of the result of
+  // the set passphrase operation, updates the nigori node, and does
+  // re-encryption.
+  void SetDecryptionPassphrase(const std::string& passphrase);
+
+  // The final step of SetEncryptionPassphrase and SetDecryptionPassphrase that
+  // notifies observers of the result of the set passphrase operation, updates
+  // the nigori node, and does re-encryption.
+  // |success|: true if the operation was successful and false otherwise. If
+  //            success == false, we send an OnPassphraseRequired notification.
+  // |bootstrap_token|: used to inform observers if the cryptographer's
+  //                    bootstrap token was updated.
+  // |pending_keys|: used to pass on the cryptographer's pending keys to the UI
+  //                 thread so they can be cached. Ignored if |success| == true.
+  // |is_explicit|: used to differentiate between a custom passphrase (true) and
+  //                a GAIA passphrase that is implicitly used for encryption
+  //                (false).
+  // |trans| and |nigori_node|: used to access data in the cryptographer.
+  void FinishSetPassphrase(
+      bool success,
+      const std::string& bootstrap_token,
+      const sync_pb::EncryptedData& pending_keys,
+      bool is_explicit,
+      WriteTransaction* trans,
+      WriteNode* nigori_node);
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
@@ -390,25 +413,6 @@ class SyncManager::SyncInternal
       (SyncManager::SyncInternal::*UnboundJsMessageHandler)(const JsArgList&);
   typedef base::Callback<JsArgList(const JsArgList&)> JsMessageHandler;
   typedef std::map<std::string, JsMessageHandler> JsMessageHandlerMap;
-
-  // Helpers for SetPassphrase. TODO(rsimha): make these the public methods
-  // eventually and have them replace SetPassphrase(..).
-  // These correspond to setting a passphrase for decryption (when we have
-  // pending keys) or setting a passphrase for encryption (we do not have
-  // pending keys).
-  bool SetDecryptionPassphrase(
-      const KeyParams& key_params,
-      bool nigori_has_explicit_passphrase,
-      bool is_explicit,
-      bool user_provided,
-      Cryptographer* cryptographer,
-      std::string *new_bootstrap_token);
-  bool SetEncryptionPassphrase(
-      const KeyParams& key_params,
-      bool nigori_has_explicit_passphrase,
-      bool is_explicit,
-      Cryptographer* cryptographer,
-      std::string *new_bootstrap_token);
 
   // Internal callback of UpdateCryptographerAndNigoriCallback.
   void UpdateCryptographerAndNigoriCallback(
@@ -794,11 +798,15 @@ void SyncManager::StartSyncingNormally() {
   data_->StartSyncingNormally();
 }
 
-void SyncManager::SetPassphrase(const std::string& passphrase,
-                                bool is_explicit,
-                                bool user_provided) {
+void SyncManager::SetEncryptionPassphrase(const std::string& passphrase,
+                                          bool is_explicit) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_->SetPassphrase(passphrase, is_explicit, user_provided);
+  data_->SetEncryptionPassphrase(passphrase, is_explicit);
+}
+
+void SyncManager::SetDecryptionPassphrase(const std::string& passphrase) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  data_->SetDecryptionPassphrase(passphrase);
 }
 
 void SyncManager::EnableEncryptEverything() {
@@ -1195,20 +1203,12 @@ void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
   }
 }
 
-void SyncManager::SyncInternal::SetPassphrase(
-    const std::string& passphrase, bool is_explicit, bool user_provided) {
-  DCHECK(user_provided || !is_explicit);
+void SyncManager::SyncInternal::SetEncryptionPassphrase(
+    const std::string& passphrase,
+    bool is_explicit) {
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
-    DVLOG(1) << "Rejecting empty passphrase.";
-    WriteTransaction trans(FROM_HERE, GetUserShare());
-    Cryptographer* cryptographer = trans.GetCryptographer();
-    sync_pb::EncryptedData pending_keys;
-    if (cryptographer->has_pending_keys())
-      pending_keys = cryptographer->GetPendingKeys();
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-        OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED,
-                             pending_keys));
+    NOTREACHED() << "Cannot encrypt with an empty passphrase.";
     return;
   }
 
@@ -1216,71 +1216,258 @@ void SyncManager::SyncInternal::SetPassphrase(
   WriteTransaction trans(FROM_HERE, GetUserShare());
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
-
   WriteNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return;
   }
+
   bool nigori_has_explicit_passphrase =
       node.GetNigoriSpecifics().using_explicit_passphrase();
+  std::string bootstrap_token;
+  sync_pb::EncryptedData pending_keys;
+  if (cryptographer->has_pending_keys())
+    pending_keys = cryptographer->GetPendingKeys();
+  bool success = false;
 
-  // There are five cases to handle here:
+
+  // There are six cases to handle here:
   // 1. The user has no pending keys and is setting their current GAIA password
   //    as the encryption passphrase. This happens either during first time sync
   //    with a clean profile, or after re-authenticating on a profile that was
   //    already signed in with the cryptographer ready.
-  // 2. The user is overwriting an (already provided) implicit passphrase with
-  //    an explicit (custom) passphrase. There are no pending keys.
-  // 3. We're using the current GAIA password to decrypt the pending keys. This
-  //    happens when signing in to an account with a previously set implicit
-  //    passphrase, where the data is already encrypted with the newest GAIA
-  //    password.
-  // 4. The user is providing an old GAIA password to decrypt the pending keys.
-  //    In this case, the user is using an implicit passphrase, but has changed
-  //    their password since they last encrypted their data, and therefore
-  //    their current GAIA password was unable to decrypt the data. This will
-  //    happen when the user is setting up a new profile with a previously
-  //    encrypted account (after changing passwords).
-  // 5. The user is providing a previously set explicit passphrase to decrypt
-  //    the pending keys.
-  // Note: android always has a user-provided passphrase.
-  // Furthermore, we enforce the following: The bootstrap encryption token will
+  // 2. The user has no pending keys, and is overwriting an (already provided)
+  //    implicit passphrase with an explicit (custom) passphrase.
+  // 3. The user has pending keys for an explicit passphrase that is somehow set
+  //    to their current GAIA passphrase.
+  // 4. The user has pending keys encrypted with their current GAIA passphrase
+  //    and the caller passes in the current GAIA passphrase.
+  // 5. The user has pending keys encrypted with an older GAIA passphrase
+  //    and the caller passes in the current GAIA passphrase.
+  // 6. The user has previously done encryption with an explicit passphrase.
+  // Furthermore, we enforce the fact that the bootstrap encryption token will
   // always be derived from the newest GAIA password if the account is using
   // an implicit passphrase (even if the data is encrypted with an old GAIA
   // password). If the account is using an explicit (custom) passphrase, the
   // bootstrap token will be derived from the most recently provided explicit
   // passphrase (that was able to decrypt the data).
-  // TODO(rsimha): Fix the plumbing so we call these two methods separately and
-  // directly from the PSS API. It may also make sense to embed this logic
-  // within the cryptographer itself. http://crbug.com/108718
-  std::string bootstrap_token;
-  bool success = false;
-  sync_pb::EncryptedData pending_keys;
-  if (cryptographer->has_pending_keys()) {
-    pending_keys = cryptographer->GetPendingKeys();
-    // Handles cases 3, 4, and 5.
-    success = SetDecryptionPassphrase(key_params,
-                                      nigori_has_explicit_passphrase,
-                                      is_explicit,
-                                      user_provided,
-                                      cryptographer,
-                                      &bootstrap_token);
-    if (success) {
-      // Nudge the syncer so that encrypted datatype updates that were waiting
-      // for this passphrase get applied as soon as possible.
-      RequestNudge(FROM_HERE);
-    }
-  } else {
-    // Handles cases 1 and 2.
-    success = SetEncryptionPassphrase(key_params,
-                                      nigori_has_explicit_passphrase,
-                                      is_explicit,
-                                      cryptographer,
-                                      &bootstrap_token);
+  if (!nigori_has_explicit_passphrase) {
+    if (!cryptographer->has_pending_keys()) {
+      if (cryptographer->AddKey(key_params)) {
+        // Case 1 and 2. We set a new GAIA passphrase when there are no pending
+        // keys (1), or overwriting an implicit passphrase with a new explicit
+        // one (2) when there are no pending keys.
+        DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit" )
+                 << " passphrase for encryption.";
+        cryptographer->GetBootstrapToken(&bootstrap_token);
+        success = true;
+      } else {
+        NOTREACHED() << "Failed to add key to cryptographer.";
+        success = false;
+      }
+    } else {  // cryptographer->has_pending_keys() == true
+      if (is_explicit) {
+        // This can only happen if the nigori node is updated with a new
+        // implicit passphrase while a client is attempting to set a new custom
+        // passphrase (race condition).
+        DVLOG(1) << "Failing because an implicit passphrase is already set.";
+        success = false;
+      } else {  // is_explicit == false
+        if (cryptographer->DecryptPendingKeys(key_params)) {
+          // Case 4. We successfully decrypted with the implicit GAIA passphrase
+          // passed in.
+          DVLOG(1) << "Implicit internal passphrase accepted for decryption.";
+          cryptographer->GetBootstrapToken(&bootstrap_token);
+          success = true;
+        } else {
+          // Case 5. Encryption was done with an old GAIA password, but we were
+          // provided with the current GAIA password. We need to generate a new
+          // bootstrap token to preserve it. We build a temporary cryptographer
+          // to allow us to extract these params without polluting our current
+          // cryptographer.
+          DVLOG(1) << "Implicit internal passphrase failed to decrypt, adding "
+                   << "anyways as default passphrase and persisting via "
+                   << "bootstrap token.";
+          Cryptographer temp_cryptographer(encryptor_);
+          temp_cryptographer.AddKey(key_params);
+          temp_cryptographer.GetBootstrapToken(&bootstrap_token);
+          // We then set the new passphrase as the default passphrase of the
+          // real cryptographer, even though we have pending keys. This is safe,
+          // as although Cryptographer::is_initialized() will now be true,
+          // is_ready() will remain false due to having pending keys.
+          cryptographer->AddKey(key_params);
+          success = false;
+        }
+      }  // is_explicit
+    }  // cryptographer->has_pending_keys()
+  } else {  // nigori_has_explicit_passphrase == true
+    // Case 6. We do not want to override a previously set explicit passphrase,
+    // so we return a failure.
+    DVLOG(1) << "Failing because an explicit passphrase is already set.";
+    success = false;
   }
 
+  DVLOG_IF(1, success)
+      << "Failure in SetEncryptionPassphrase; notifying and returning.";
+  DVLOG_IF(1, !success)
+      << "Successfully set encryption passphrase; updating nigori and "
+         "reencrypting.";
+
+  FinishSetPassphrase(
+      success, bootstrap_token, pending_keys, is_explicit, &trans, &node);
+}
+
+void SyncManager::SyncInternal::SetDecryptionPassphrase(
+    const std::string& passphrase) {
+  // We do not accept empty passphrases.
+  if (passphrase.empty()) {
+    NOTREACHED() << "Cannot decrypt with an empty passphrase.";
+    return;
+  }
+
+  // All accesses to the cryptographer are protected by a transaction.
+  WriteTransaction trans(FROM_HERE, GetUserShare());
+  Cryptographer* cryptographer = trans.GetCryptographer();
+  KeyParams key_params = {"localhost", "dummy", passphrase};
+  WriteNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
+    NOTREACHED();
+    return;
+  }
+
+  if (!cryptographer->has_pending_keys()) {
+    // Note that this *can* happen in a rare situation where data is
+    // re-encrypted on another client while a SetDecryptionPassphrase() call is
+    // in-flight on this client. It is rare enough that we choose to do nothing.
+    NOTREACHED() << "Attempt to set decryption passphrase failed because there "
+                 << "were no pending keys.";
+    return;
+  }
+
+  bool nigori_has_explicit_passphrase =
+      node.GetNigoriSpecifics().using_explicit_passphrase();
+  std::string bootstrap_token;
+  sync_pb::EncryptedData pending_keys;
+  pending_keys = cryptographer->GetPendingKeys();
+  bool success = false;
+
+  // There are three cases to handle here:
+  // 7. We're using the current GAIA password to decrypt the pending keys. This
+  //    happens when signing in to an account with a previously set implicit
+  //    passphrase, where the data is already encrypted with the newest GAIA
+  //    password.
+  // 8. The user is providing an old GAIA password to decrypt the pending keys.
+  //    In this case, the user is using an implicit passphrase, but has changed
+  //    their password since they last encrypted their data, and therefore
+  //    their current GAIA password was unable to decrypt the data. This will
+  //    happen when the user is setting up a new profile with a previously
+  //    encrypted account (after changing passwords).
+  // 9. The user is providing a previously set explicit passphrase to decrypt
+  //    the pending keys.
+  if (!nigori_has_explicit_passphrase) {
+    if (cryptographer->is_initialized()) {
+      // We only want to change the default encryption key to the pending
+      // one if the pending keybag already contains the current default.
+      // This covers the case where a different client re-encrypted
+      // everything with a newer gaia passphrase (and hence the keybag
+      // contains keys from all previously used gaia passphrases).
+      // Otherwise, we're in a situation where the pending keys are
+      // encrypted with an old gaia passphrase, while the default is the
+      // current gaia passphrase. In that case, we preserve the default.
+      Cryptographer temp_cryptographer(encryptor_);
+      temp_cryptographer.SetPendingKeys(cryptographer->GetPendingKeys());
+      if (temp_cryptographer.DecryptPendingKeys(key_params)) {
+        // Check to see if the pending bag of keys contains the current
+        // default key.
+        sync_pb::EncryptedData encrypted;
+        cryptographer->GetKeys(&encrypted);
+        if (temp_cryptographer.CanDecrypt(encrypted)) {
+          DVLOG(1) << "Implicit user provided passphrase accepted for "
+                   << "decryption, overwriting default.";
+          // Case 7. The pending keybag contains the current default. Go ahead
+          // and update the cryptographer, letting the default change.
+          cryptographer->DecryptPendingKeys(key_params);
+          cryptographer->GetBootstrapToken(&bootstrap_token);
+          success = true;
+        } else {
+          // Case 8. The pending keybag does not contain the current default
+          // encryption key. We decrypt the pending keys here, and in
+          // FinishSetPassphrase, re-encrypt everything with the current GAIA
+          // passphrase instead of the passphrase just provided by the user.
+          DVLOG(1) << "Implicit user provided passphrase accepted for "
+                   << "decryption, restoring implicit internal passphrase "
+                   << "as default.";
+          std::string bootstrap_token_from_current_key;
+          cryptographer->GetBootstrapToken(
+              &bootstrap_token_from_current_key);
+          cryptographer->DecryptPendingKeys(key_params);
+          // Overwrite the default from the pending keys.
+          cryptographer->AddKeyFromBootstrapToken(
+              bootstrap_token_from_current_key);
+          success = true;
+        }
+      } else {  // !temp_cryptographer.DecryptPendingKeys(..)
+        DVLOG(1) << "Implicit user provided passphrase failed to decrypt.";
+        success = false;
+      }  // temp_cryptographer.DecryptPendingKeys(...)
+    } else {  // cryptographer->is_initialized() == false
+      if (cryptographer->DecryptPendingKeys(key_params)) {
+        // This can happpen in two cases:
+        // - First time sync on android, where we'll never have a
+        //   !user_provided passphrase.
+        // - This is a restart for a client that lost their bootstrap token.
+        // In both cases, we should go ahead and initialize the cryptographer
+        // and persist the new bootstrap token.
+        //
+        // Note: at this point, we cannot distinguish between cases 7 and 8
+        // above. This user provided passphrase could be the current or the
+        // old. But, as long as we persist the token, there's nothing more
+        // we can do.
+        cryptographer->GetBootstrapToken(&bootstrap_token);
+        DVLOG(1) << "Implicit user provided passphrase accepted, initializing"
+                 << " cryptographer.";
+        success = true;
+      } else {
+        DVLOG(1) << "Implicit user provided passphrase failed to decrypt.";
+        success = false;
+      }
+    }  // cryptographer->is_initialized()
+  } else {  // nigori_has_explicit_passphrase == true
+    // Case 9. Encryption was done with an explicit passphrase, and we decrypt
+    // with the passphrase provided by the user.
+    if (cryptographer->DecryptPendingKeys(key_params)) {
+      DVLOG(1) << "Explicit passphrase accepted for decryption.";
+      cryptographer->GetBootstrapToken(&bootstrap_token);
+      success = true;
+    } else {
+      DVLOG(1) << "Explicit passphrase failed to decrypt.";
+      success = false;
+    }
+  }  // nigori_has_explicit_passphrase
+
+  DVLOG_IF(1, success)
+      << "Failure in SetDecryptionPassphrase; notifying and returning.";
+  DVLOG_IF(1, !success)
+      << "Successfully set decryption passphrase; updating nigori and "
+         "reencrypting.";
+
+  FinishSetPassphrase(success,
+                      bootstrap_token,
+                      pending_keys,
+                      nigori_has_explicit_passphrase,
+                      &trans,
+                      &node);
+}
+
+void SyncManager::SyncInternal::FinishSetPassphrase(
+    bool success,
+    const std::string& bootstrap_token,
+    const sync_pb::EncryptedData& pending_keys,
+    bool is_explicit,
+    WriteTransaction* trans,
+    WriteNode* nigori_node) {
   // It's possible we need to change the bootstrap token even if we failed to
   // set the passphrase (for example if we need to preserve the new GAIA
   // passphrase).
@@ -1291,22 +1478,23 @@ void SyncManager::SyncInternal::SetPassphrase(
   }
 
   if (!success) {
-    DVLOG(1) << "SetPassphrase failure, notifying and returning.";
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-    OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED,
-                         pending_keys));
+                      OnPassphraseRequired(
+                          sync_api::REASON_SET_PASSPHRASE_FAILED,
+                          pending_keys));
     return;
   }
-  DVLOG(1) << "SetPassphrase success, updating nigori and reencrypting.";
+
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnPassphraseAccepted());
+  Cryptographer* cryptographer = trans->GetCryptographer();
   DCHECK(cryptographer->is_ready());
 
-  // TODO(tim): Bug 58231. It would be nice if SetPassphrase didn't require
-  // messing with the Nigori node, because we can't call SetPassphrase until
-  // download conditions are met vs Cryptographer init.  It seems like it's
-  // safe to defer this work.
-  sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
+  // TODO(tim): Bug 58231. It would be nice if setting a passphrase didn't
+  // require messing with the Nigori node, because we can't set a passphrase
+  // until download conditions are met vs Cryptographer init.  It seems like
+  // it's safe to defer this work.
+  sync_pb::NigoriSpecifics specifics(nigori_node->GetNigoriSpecifics());
   // Does not modify specifics.encrypted() if the original decrypted data was
   // the same.
   if (!cryptographer->GetKeys(specifics.mutable_encrypted())) {
@@ -1314,185 +1502,11 @@ void SyncManager::SyncInternal::SetPassphrase(
     return;
   }
   specifics.set_using_explicit_passphrase(is_explicit);
-  node.SetNigoriSpecifics(specifics);
+  nigori_node->SetNigoriSpecifics(specifics);
 
   // Does nothing if everything is already encrypted or the cryptographer has
   // pending keys.
-  ReEncryptEverything(&trans);
-}
-
-bool SyncManager::SyncInternal::SetEncryptionPassphrase(
-    const KeyParams& key_params,
-    bool nigori_has_explicit_passphrase,
-    bool is_explicit,
-    Cryptographer* cryptographer,
-    std::string *bootstrap_token) {
-  if (cryptographer->has_pending_keys()) {
-    LOG(ERROR) << "Attempt to set encryption passphrase failed because there "
-               << "were pending keys.";
-    return false;
-  }
-  if (!nigori_has_explicit_passphrase) {
-    // Case 1 and 2. Setting a new GAIA passphrase when there are no pending
-    // keys (1), or overwriting an implicit passphrase with a new explicit one
-    // (2) when there are no pending keys.
-    if (cryptographer->AddKey(key_params)) {
-      DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit" )
-               << " passphrase for encryption.";
-      cryptographer->GetBootstrapToken(bootstrap_token);
-      return true;
-    } else {
-      NOTREACHED() << "Failed to add key to cryptographer.";
-      return false;
-    }
-  } else {  // nigori_has_explicit_passphrase == true
-    if (is_explicit) {
-      NOTREACHED() << "Attempting to change explicit passphrase when one has "
-                   << "already been set.";
-    } else {
-      DVLOG(1) << "Ignoring implicit passphrase for encryption, explicit "
-               << " passphrase already set.";
-    }
-    return false;
-  }  // nigori_has_explicit_passphrase
-  NOTREACHED();
-  return false;
-}
-
-bool SyncManager::SyncInternal::SetDecryptionPassphrase(
-    const KeyParams& key_params,
-    bool nigori_has_explicit_passphrase,
-    bool is_explicit,
-    bool user_provided,
-    Cryptographer* cryptographer,
-    std::string *bootstrap_token) {
-  if (!cryptographer->has_pending_keys()) {
-    NOTREACHED() << "Attempt to set decryption passphrase failed because there "
-                 << "were no pending keys.";
-    return false;
-
-  }
-  if (!nigori_has_explicit_passphrase) {
-    if (!is_explicit) {
-      if (!user_provided) {
-        // Case 3.
-        if (cryptographer->DecryptPendingKeys(key_params)) {
-          DVLOG(1) << "Implicit internal passphrase accepted for decryption.";
-          cryptographer->GetBootstrapToken(bootstrap_token);
-          return true;
-        } else {
-          DVLOG(1) << "Implicit internal passphrase failed to decrypt, adding "
-                   << "anyways as default passphrase and persisting via "
-                   << "bootstrap token.";
-          // Turns out we're encrypted with an old GAIA password, and we're
-          // actually in case 3. But, because this is the current GAIA
-          // password, we need to generate a new bootstrap token to preserve it.
-          // We build a temporary cryptographer to allow us to extract these
-          // params without polluting our current cryptographer.
-          Cryptographer temp_cryptographer(encryptor_);
-          temp_cryptographer.AddKey(key_params);
-          temp_cryptographer.GetBootstrapToken(bootstrap_token);
-          // We then set the new passphrase as the default passphrase of the
-          // real cryptographer, even though we have pending keys. This is safe,
-          // as although Cryptographer::is_initialized() will now be true,
-          // is_ready() will remain false due to having pending keys.
-          cryptographer->AddKey(key_params);
-          return false;
-        }
-      } else {  // user_provided == true
-        if (cryptographer->is_initialized()) {
-          // We only want to change the default encryption key to the pending
-          // one if the pending keybag already contains the current default.
-          // This covers the case where a different client re-encrypted
-          // everything with a newer gaia passphrase (and hence the keybag
-          // contains keys from all previously used gaia passphrases).
-          // Otherwise, we're in a situation where the pending keys are
-          // encrypted with an old gaia passphrase, while the default is the
-          // current gaia passphrase. In that case, we preserve the default.
-          Cryptographer temp_cryptographer(encryptor_);
-          temp_cryptographer.SetPendingKeys(cryptographer->GetPendingKeys());
-          if (temp_cryptographer.DecryptPendingKeys(key_params)) {
-            // Check to see if the pending bag of keys contains the current
-            // default key.
-            sync_pb::EncryptedData encrypted;
-            cryptographer->GetKeys(&encrypted);
-            if (temp_cryptographer.CanDecrypt(encrypted)) {
-              DVLOG(1) << "Implicit user provided passphrase accepted for "
-                       << "decryption, overwriting default.";
-              // The pending keybag contains the current default. Go ahead
-              // and update the cryptographer, letting the default change.
-              // Case 3.
-              cryptographer->DecryptPendingKeys(key_params);
-              cryptographer->GetBootstrapToken(bootstrap_token);
-              return true;
-            } else {
-              // The pending keybag does not contain the current default
-              // encryption key. We want to restore the current default
-              // after decrypting the pending keys.
-              // Case 4.
-              DVLOG(1) << "Implicit user provided passphrase accepted for "
-                       << "decryption, restoring implicit internal passphrase "
-                       << "as default.";
-              std::string bootstrap_token_from_current_key;
-              cryptographer->GetBootstrapToken(
-                  &bootstrap_token_from_current_key);
-              cryptographer->DecryptPendingKeys(key_params);
-              // Overwrite the default from the pending keys.
-              cryptographer->AddKeyFromBootstrapToken(
-                  bootstrap_token_from_current_key);
-              return true;
-            }
-          } else {  // !temp_cryptographer.DecryptPendingKeys(..)
-            DVLOG(1) << "Implicit user provided passphrase failed to decrypt.";
-            return false;
-          }
-        } else if (cryptographer->DecryptPendingKeys(key_params)) {
-          // This can happpen in two cases:
-          // - First time sync on android, where we'll never have a
-          //   !user_provided passphrase.
-          // - This is a restart for a client that lost their bootstrap token.
-          // In both cases, we should go ahead and initialize the cryptographer
-          // and persist the new bootstrap token.
-          //
-          // Note: at this point, we cannot distinguish between cases 3 and 4
-          // above. This user provided passphrase could be the current or the
-          // old. But, as long as we persist the token, there's nothing more
-          // we can do.
-          cryptographer->GetBootstrapToken(bootstrap_token);
-          DVLOG(1) << "Implicit user provided passphrase accepted, initializing"
-                   << " cryptographer.";
-          return true;
-        } else {
-          DVLOG(1) << "Implicit user provided passphrase failed to decrypt.";
-          return false;
-        }
-      }  // user_provided
-    } else {  // is_explicit == true
-      // This can happen if the client changes their password, re-authed on
-      // another machine, and we only just now received the updated nigori.
-      DVLOG(1) << "Explicit passphrase failed to decrypt because nigori had "
-               << "implicit passphrase.";
-      return false;
-    }  // is_explicit
-  } else {  // nigori_has_explicit_passphrase == true
-    if (!is_explicit) {
-      DVLOG(1) << "Implicit passphrase rejected because nigori had explicit "
-               << "passphrase.";
-      return false;
-    } else {  // is_explicit == true
-      // Case 5.
-      if (cryptographer->DecryptPendingKeys(key_params)) {
-        DVLOG(1) << "Explicit passphrase accepted for decryption.";
-        cryptographer->GetBootstrapToken(bootstrap_token);
-        return true;
-      } else {
-        DVLOG(1) << "Explicit passphrase failed to decrypt.";
-        return false;
-      }
-    }  // is_explicit
-  }  // nigori_has_explicit_passphrase
-  NOTREACHED();
-  return false;
+  ReEncryptEverything(trans);
 }
 
 bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
@@ -1605,7 +1619,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
     std::string passwords_tag =
         syncable::ModelTypeToRootTag(syncable::PASSWORDS);
     // It's possible we'll have the password routing info and not the password
-    // root if we attempted to SetPassphrase before passwords was enabled.
+    // root if we attempted to set a passphrase before passwords was enabled.
     if (passwords_root.InitByTagLookup(passwords_tag)) {
       int64 child_id = passwords_root.GetFirstChildId();
       while (child_id != kInvalidId) {

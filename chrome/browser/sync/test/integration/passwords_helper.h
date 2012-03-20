@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "webkit/forms/password_form.h"
 
@@ -39,9 +40,16 @@ void RemoveLogin(PasswordStore* store, const webkit::forms::PasswordForm& form);
 // Removes all password forms from the password store |store|.
 void RemoveLogins(PasswordStore* store);
 
-// Sets the cryptographer's passphrase for the profile at index |index| to
-// |passphrase|.
-void SetPassphrase(int index, const std::string& passphrase);
+// Sets the cryptographer's encryption passphrase for the profile at index
+// |index| to |passphrase|, and passphrase type |type|.
+void SetEncryptionPassphrase(int index,
+                             const std::string& passphrase,
+                             ProfileSyncService::PassphraseType type);
+
+// Sets the cryptographer's decryption passphrase for the profile at index
+// |index| to |passphrase|. Returns false if the operation failed, and true
+// otherwise.
+bool SetDecryptionPassphrase(int index, const std::string& passphrase);
 
 // Gets the password store of the profile with index |index|.
 PasswordStore* GetPasswordStore(int index);

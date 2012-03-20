@@ -6,6 +6,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
+#include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "sync/sessions/session_state.h"
 
@@ -33,6 +34,8 @@ using bookmarks_helper::SetFavicon;
 using bookmarks_helper::SetTitle;
 using bookmarks_helper::SetURL;
 using bookmarks_helper::SortChildren;
+using passwords_helper::SetDecryptionPassphrase;
+using passwords_helper::SetEncryptionPassphrase;
 
 const std::string kGenericURL = "http://www.host.ext:1234/path/filename";
 const std::wstring kGenericURLTitle = L"URL Title";
@@ -1805,10 +1808,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
-  GetClient(0)->service()->SetPassphrase(
-      kValidPassphrase,
-      ProfileSyncService::EXPLICIT,
-      ProfileSyncService::USER_PROVIDED);
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
@@ -1825,13 +1825,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_FALSE(AllModelsMatch());
 
   // Set the passphrase. Everything should resolve.
-  GetClient(1)->service()->SetPassphrase(
-      kValidPassphrase,
-      ProfileSyncService::EXPLICIT,
-      ProfileSyncService::USER_PROVIDED);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  EXPECT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllModelsMatch());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_encryption_conflicts);
@@ -1839,7 +1836,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   // Ensure everything is syncing normally by appending a final bookmark.
   ASSERT_TRUE(AddURL(1, 5, IndexedURLTitle(5), GURL(IndexedURL(5))) != NULL);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  EXPECT_TRUE(AllModelsMatchVerifier());
   EXPECT_TRUE(AllModelsMatch());
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_encryption_conflicts);

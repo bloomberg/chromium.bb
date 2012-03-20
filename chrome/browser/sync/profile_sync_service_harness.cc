@@ -193,14 +193,20 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Make sure that a partner client hasn't already set an explicit passphrase.
   if (wait_state_ == SET_PASSPHRASE_FAILED) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetPassphrase is called.";
+                  " until SetDecryptionPassphrase is called.";
     return false;
   }
 
-  // Set our implicit passphrase.
-  service_->SetPassphrase(password_,
-                          ProfileSyncService::IMPLICIT,
-                          ProfileSyncService::USER_PROVIDED);
+  // Set an implicit passphrase for encryption if an explicit one hasn't already
+  // been set. If an explicit passphrase has been set, immediately return false,
+  // since a decryption passphrase is required.
+  if (!service_->IsUsingSecondaryPassphrase()) {
+    service_->SetEncryptionPassphrase(password_, ProfileSyncService::IMPLICIT);
+  } else {
+    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
+                  " until SetDecryptionPassphrase is called.";
+    return false;
+  }
 
   // Wait for initial sync cycle to be completed.
   DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
@@ -215,7 +221,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Make sure that initial sync wasn't blocked by a missing passphrase.
   if (wait_state_ == SET_PASSPHRASE_FAILED) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetPassphrase is called.";
+                  " until SetDecryptionPassphrase is called.";
     return false;
   }
 
@@ -388,7 +394,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case SET_PASSPHRASE_FAILED: {
       // A passphrase is required for decryption. There is nothing the sync
-      // client can do until SetPassphrase() is called.
+      // client can do until SetDecryptionPassphrase() is called.
       DVLOG(1) << GetClientInfoString("SET_PASSPHRASE_FAILED");
       break;
     }

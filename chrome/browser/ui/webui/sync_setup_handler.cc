@@ -585,6 +585,10 @@ void SyncSetupHandler::TryLogin(const std::string& username,
 
 void SyncSetupHandler::GaiaCredentialsValid() {
   DCHECK(IsActiveLogin());
+  // The user has submitted credentials, which indicates they don't want to
+  // suppress start up anymore.
+  GetSyncService()->UnsuppressAndStart();
+
   // Gaia credentials are valid - update the UI.
   DisplayGaiaSuccessAndSettingUp();
 }

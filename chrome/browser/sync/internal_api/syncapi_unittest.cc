@@ -1433,7 +1433,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
   EXPECT_TRUE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1467,13 +1467,13 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
 // Test that when there are no pending keys and the cryptographer is not
 // initialized, we add a key based on the current GAIA password.
-// (case 1 in SyncManager::SyncInternalSetPassphrase)
+// (case 1 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, SetInitialGaiaPass) {
   EXPECT_FALSE(SetUpEncryption(DONT_WRITE_NIGORI, UNINITIALIZED));
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", false, false);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", false);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1488,7 +1488,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
 
 // Test that when there are no pending keys and we have on the old GAIA
 // password, we update and re-encrypt everything with the new GAIA password.
-// (case 1 in SyncManager::SyncInternalSetPassphrase)
+// (case 1 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, UpdateGaiaPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   Cryptographer verifier(&encryptor_);
@@ -1502,7 +1502,7 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", false, false);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", false);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1517,7 +1517,7 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
 
 // Sets a new explicit passphrase. This should update the bootstrap token
 // and re-encrypt everything.
-// (case 2 in SyncManager::SyncInternalSetPassphrase)
+// (case 2 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   Cryptographer verifier(&encryptor_);
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
@@ -1542,7 +1542,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1565,7 +1565,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
 // Manually set the pending keys in the cryptographer/nigori to reflect the data
 // being encrypted with a new (unprovided) GAIA password, then supply the
 // password.
-// (case 3 in SyncManager::SyncInternalSetPassphrase)
+// (case 7 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   Cryptographer other_cryptographer(&encryptor_);
@@ -1591,7 +1591,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("passphrase2", false, false);
+  sync_manager_.SetDecryptionPassphrase("passphrase2");
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1609,7 +1609,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
 // the current GAIA password and verify the bootstrap token is updated. Then
 // supply the old GAIA password, and verify we re-encrypt all data with the
 // new GAIA password.
-// (case 4 in SyncManager::SyncInternalSetPassphrase)
+// (cases 4 and 5 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   Cryptographer other_cryptographer(&encryptor_);
@@ -1642,7 +1642,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_))
       .WillOnce(SaveArg<0>(&bootstrap_token));
   EXPECT_CALL(observer_, OnPassphraseRequired(_,_));
-  sync_manager_.SetPassphrase("new_gaia", false, false);
+  sync_manager_.SetEncryptionPassphrase("new_gaia", false);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   testing::Mock::VerifyAndClearExpectations(&observer_);
   {
@@ -1656,9 +1656,10 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
     other_cryptographer.GetKeys(&encrypted);
     EXPECT_TRUE(cryptographer->CanDecrypt(encrypted));
   }
+  EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("old_gaia", false, true);
+  sync_manager_.SetEncryptionPassphrase("old_gaia", false);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1679,7 +1680,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
 // Manually set the pending keys in the cryptographer/nigori to reflect the data
 // being encrypted with an explicit (unprovided) passphrase, then supply the
 // passphrase.
-// (case 5 in SyncManager::SyncInternalSetPassphrase)
+// (case 9 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   Cryptographer other_cryptographer(&encryptor_);
@@ -1706,7 +1707,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("explicit", true, true);
+  sync_manager_.SetDecryptionPassphrase("explicit");
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1722,10 +1723,10 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
 // Manually set the pending keys in the cryptographer/nigori to reflect the data
 // being encrypted with a new (unprovided) GAIA password, then supply the
 // password as a user-provided password.
-// This is the android case 3/4.
+// This is the android case 7/8.
 TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
   EXPECT_FALSE(SetUpEncryption(DONT_WRITE_NIGORI, UNINITIALIZED));
-    Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer(&encryptor_);
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1744,7 +1745,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("passphrase", false, true);
+  sync_manager_.SetEncryptionPassphrase("passphrase", false);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1770,7 +1771,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
   EXPECT_FALSE(sync_manager_.EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1986,7 +1987,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
@@ -2170,7 +2171,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_CALL(observer_, OnBootstrapTokenUpdated(_));
   EXPECT_CALL(observer_, OnPassphraseAccepted());
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.SetPassphrase("new_passphrase", true, true);
+  sync_manager_.SetEncryptionPassphrase("new_passphrase", true);
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
 }
 

@@ -20,7 +20,8 @@ using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 using passwords_helper::RemoveLogin;
 using passwords_helper::RemoveLogins;
-using passwords_helper::SetPassphrase;
+using passwords_helper::SetDecryptionPassphrase;
+using passwords_helper::SetEncryptionPassphrase;
 using passwords_helper::UpdateLogin;
 
 using webkit::forms::PasswordForm;
@@ -114,11 +115,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisableSync) {
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetPassphrase(0, kValidPassphrase);
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  SetPassphrase(1, kValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Set passphrase."));
 }
@@ -127,11 +129,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetPassphrase(0, kValidPassphrase);
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  SetPassphrase(1, kValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -226,19 +229,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 }
 
-// Disabled due to being temporarily obsolete while we change how passphrases
-// are handled. TODO(rsimha): re-enable once refactor complete.
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       DISABLED_SetPassphraseAndThenSetupSync) {
+                       SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetPassphrase(0, kValidPassphrase);
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
 
   ASSERT_FALSE(GetClient(1)->SetupSync());
-  SetPassphrase(1, kValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitFullSyncCompletion("Initial sync."));
 
@@ -251,20 +253,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_EQ(browser_sync::GROUP_PASSWORD, routes[syncable::PASSWORDS]);
 }
 
-// Disabled due to being temporarily obsolete while we change how passphrases
-// are handled. TODO(rsimha): re-enable once refactor complete.
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       DISABLED_SetDifferentPassphraseAndThenSetupSync) {
+                       SetDifferentPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetPassphrase(0, kValidPassphrase);
+  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Initial sync."));
 
   // Setup 1 with a different passphrase, so that it fails to sync.
   ASSERT_FALSE(GetClient(1)->SetupSync());
-  SetPassphrase(1, kAnotherValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_FALSE(SetDecryptionPassphrase(1, kAnotherValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
 
   // Add a password on 0 while clients have different passphrases.
@@ -278,7 +279,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_FALSE(AllProfilesContainSamePasswordFormsAsVerifier());
 
   // Update 1 with the correct passphrase, the password should now sync over.
-  SetPassphrase(1, kValidPassphrase);
+  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
+  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

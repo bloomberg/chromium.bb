@@ -184,19 +184,26 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called on |frontend_loop_|.
   virtual void StartSyncingWithServer();
 
-  // Called on |frontend_loop_| to asynchronously set the passphrase.
-  // |is_explicit| is true if the call is in response to the user setting a
-  // custom explicit passphrase as opposed to implicitly (from the users'
-  // perspective) using their Google Account password. An implicit SetPassphrase
-  // will *not* override an explicit passphrase set previously. Note that
-  // if the data is encrypted with an old Google Account password, the user
-  // may still have to provide a "implicit" passphrase.
-  // |user_provided| corresponds to the user having manually provided this
-  // passphrase. It should only be false for passphrases intercepted from the
-  // Google Sign-in Success notification and true otherwise.
-  void SetPassphrase(const std::string& passphrase,
-                     bool is_explicit,
-                     bool user_provided);
+  // Called on |frontend_loop_| to asynchronously set a new passphrase for
+  // encryption. Note that it is an error to call SetEncryptionPassphrase under
+  // the following circumstances:
+  // - An explicit passphrase has already been set
+  // - |is_explicit| is true and we have pending keys.
+  // When |is_explicit| is false, a couple of things could happen:
+  // - If there are pending keys, we try to decrypt them. If decryption works,
+  //   this acts like a call to SetDecryptionPassphrase. If not, the GAIA
+  //   passphrase passed in is cached so we can re-encrypt with it in future.
+  // - If there are no pending keys, data is encrypted with |passphrase| (this
+  //   is a no-op if data was already encrypted with |passphrase|.)
+  void SetEncryptionPassphrase(const std::string& passphrase, bool is_explicit);
+
+  // Called on |frontend_loop_| to use the provided passphrase to asynchronously
+  // attempt decryption. Returns false immediately if the passphrase could not
+  // be used to decrypt a locally cached copy of encrypted keys; returns true
+  // otherwise. If new encrypted keys arrive during the asynchronous call,
+  // OnPassphraseRequired may be triggered at a later time. It is an error to
+  // call this when there are no pending keys.
+  bool SetDecryptionPassphrase(const std::string& passphrase);
 
   // Called on |frontend_loop_| to kick off shutdown procedure. After this,
   // no further sync activity will occur with the sync server and no further
@@ -409,9 +416,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // keys that were cached during NotifyPassphraseRequired. Returns true if
   // decryption was successful. Returns false otherwise. Must be called with a
   // non-empty pending keys cache.
-  // TODO(sync): Have the UI layer first call this method before calling
-  // SetPassphrase, and if the result is false, directly bubble up an error to
-  // the user.
   bool CheckPassphraseAgainstCachedPendingKeys(
       const std::string& passphrase) const;
 
@@ -502,10 +506,13 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   scoped_ptr<PendingConfigureDataTypesState> pending_config_mode_state_;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
-  // is called. This way, before the UI calls SetPassphrase on the frontend, it
-  // can avoid the overhead of an asynchronous decryption call and give the user
-  // immediate feedback about the passphrase entered by first trying to decrypt
-  // the cached pending keys on the UI thread.
+  // is called. This way, before the UI calls SetDecryptionPassphrase on the
+  // syncer, it can avoid the overhead of an asynchronous decryption call and
+  // give the user immediate feedback about the passphrase entered by first
+  // trying to decrypt the cached pending keys on the UI thread. Note that
+  // SetDecryptionPassphrase can still fail after the cached pending keys are
+  // successfully decrypted if the pending keys have changed since the time they
+  // were cached.
   sync_pb::EncryptedData cached_pending_keys_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.

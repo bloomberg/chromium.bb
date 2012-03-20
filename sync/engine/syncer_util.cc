@@ -286,9 +286,9 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
 
     // Make sure any unsynced changes are properly encrypted as necessary.
     // We only perform this if the cryptographer is ready. If not, these are
-    // re-encrypted at SetPassphrase time (via ReEncryptEverything). This logic
-    // covers the case where the nigori updated marked new datatypes for
-    // encryption, but didn't change the passphrase.
+    // re-encrypted at SetDecryptionPassphrase time (via ReEncryptEverything).
+    // This logic covers the case where the nigori update marked new datatypes
+    // for encryption, but didn't change the passphrase.
     if (cryptographer->is_ready()) {
       // Note that we don't bother to encrypt any data for which IS_UNSYNCED
       // == false here. The machine that turned on encryption should know about

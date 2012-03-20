@@ -116,10 +116,14 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     user_cancelled_dialog_ = true;
   }
 
-  virtual void SetPassphrase(const std::string& passphrase,
-                             PassphraseType type,
-                             PassphraseSource source) OVERRIDE {
+  virtual void SetEncryptionPassphrase(const std::string& passphrase,
+                                       PassphraseType type) OVERRIDE {
     passphrase_ = passphrase;
+  }
+
+  virtual bool SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE {
+    passphrase_ = passphrase;
+    return true;
   }
 
   virtual bool IsUsingSecondaryPassphrase() const OVERRIDE {
