@@ -8,6 +8,8 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
+const size_t kMinimumCachedCodeSize = 40000;
+
 /* Translate validation status to values wanted by sel_ldr. */
 static int NaClValidateStatus(NaClValidationStatus status) {
   switch (status) {
@@ -31,6 +33,25 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
 
   struct NaClValidationCache *cache = nap->validation_cache;
+
+  if (size < kMinimumCachedCodeSize) {
+    /*
+     * Don't cache the validation of small code chunks for three reasons:
+     * 1) The size of the validation cache will be bounded.  Cache entries are
+     *    better used for bigger code.
+     * 2) The per-transaction overhead of validation caching is more noticeable
+     *    for small code.
+     * 3) JITs tend to generate a lot of small code chunks, and JITed code may
+     *    never be seen again.  Currently code size is the best mechanism we
+     *    have for heuristically distinguishing between JIT and static code.
+     *    (In practice most Mono JIT blocks are less than 1k, and a quick look
+     *    didn't show any above 35k.)
+     * The choice of what constitutes "small" is arbitrary, and should be
+     * empirically tuned.
+     * TODO(ncbray) let the syscall specify if the code is cached or not.
+     */
+    cache = NULL;
+  }
 
   if (nap->validator_stub_out_mode) {
     /* Validation caching is currently incompatible with stubout. */
