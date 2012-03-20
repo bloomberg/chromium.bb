@@ -5615,8 +5615,6 @@
    fun:vp8_get_compressed_data
    fun:vp8e_encode
    fun:vpx_codec_encode
-   fun:_ZN8remoting10EncoderVp86EncodeE13scoped_refptrINS_11CaptureDataEEbRKN4base8CallbackIFvPNS_11VideoPacketEEEE
-   fun:_ZN8remoting40EncoderVp8Test_TestSizeChangeNoLeak_Test8TestBodyEv
 }
 {
    bug_115294
