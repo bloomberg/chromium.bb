@@ -135,12 +135,13 @@ class ChromeToMobileService : public ProfileKeyedService,
       RequestObserverMap;
   RequestObserverMap request_observer_map_;
 
-  // The pending URL requests.
+  // The pending OAuth access token request and a timer for retrying on failure.
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
-  scoped_ptr<content::URLFetcher> search_request_;
+  base::OneShotTimer<ChromeToMobileService> auth_retry_timer_;
 
-  // A timer for authentication retries and mobile device list updates.
-  base::OneShotTimer<ChromeToMobileService> request_timer_;
+  // The pending mobile device search request; and the time of the last request.
+  scoped_ptr<content::URLFetcher> search_request_;
+  base::TimeTicks previous_search_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeToMobileService);
 };

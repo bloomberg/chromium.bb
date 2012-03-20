@@ -34,13 +34,19 @@
 namespace {
 
 // The maximum number of retries for the URLFetcher requests.
-size_t kMaxRetries = 10;
+const size_t kMaxRetries = 1;
 
-// The number of seconds between automated URLFetcher requests.
-size_t kRetryDelay = 300;
+// The number of hours to delay before retrying authentication on failure.
+const size_t kAuthRetryDelayHours = 6;
+
+// The number of hours before subsequent search requests are allowed.
+// This value is used to throttle expensive cloud print search requests.
+// Note that this limitation does not hold across application restarts.
+const int kSearchRequestDelayHours = 24;
 
 // The cloud print OAuth2 scope and 'printer' type of compatible mobile devices.
-const char kOAuthScope[] = "https://www.googleapis.com/auth/cloudprint";
+const char kCloudPrintOAuthScope[] =
+    "https://www.googleapis.com/auth/cloudprint";
 const char kTypeAndroidChromeSnapshot[] = "ANDROID_CHROME_SNAPSHOT";
 
 // The Chrome To Mobile requestor type; used by the service for filtering.
@@ -231,7 +237,7 @@ void ChromeToMobileService::OnGetTokenSuccess(
     const std::string& access_token) {
   DCHECK(!access_token.empty());
   access_token_fetcher_.reset();
-  request_timer_.Stop();
+  auth_retry_timer_.Stop();
   access_token_ = access_token;
   RequestMobileListUpdate();
 }
@@ -239,9 +245,10 @@ void ChromeToMobileService::OnGetTokenSuccess(
 void ChromeToMobileService::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   access_token_fetcher_.reset();
-  request_timer_.Stop();
-  request_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRetryDelay),
-                       this, &ChromeToMobileService::RefreshAccessToken);
+  auth_retry_timer_.Stop();
+  auth_retry_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromHours(kAuthRetryDelayHours),
+      this, &ChromeToMobileService::RefreshAccessToken);
 }
 
 void ChromeToMobileService::CreateUniqueTempDir() {
@@ -275,10 +282,10 @@ void ChromeToMobileService::RefreshAccessToken() {
   if (token.empty())
     return;
 
-  request_timer_.Stop();
+  auth_retry_timer_.Stop();
   access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, profile_->GetRequestContext()));
-  std::vector<std::string> scopes(1, kOAuthScope);
+  std::vector<std::string> scopes(1, kCloudPrintOAuthScope);
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   access_token_fetcher_->Start(gaia_urls->oauth2_chrome_client_id(),
       gaia_urls->oauth2_chrome_client_secret(), token, scopes);
@@ -286,13 +293,21 @@ void ChromeToMobileService::RefreshAccessToken() {
 
 void ChromeToMobileService::RequestSearch() {
   DCHECK(!access_token_.empty());
+
+  // Deny requests while another request is currently pending.
   if (search_request_.get())
+    return;
+
+  // Deny requests before the delay period has passed since the last request.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - previous_search_time_;
+  if (elapsed_time.InHours() < kSearchRequestDelayHours)
     return;
 
   RequestData data;
   data.type = SEARCH;
   search_request_.reset(CreateRequest(data));
   search_request_->Start();
+  previous_search_time_ = base::TimeTicks::Now();
 }
 
 void ChromeToMobileService::HandleSearchResponse() {
@@ -324,10 +339,6 @@ void ChromeToMobileService::HandleSearchResponse() {
       browser->command_updater()->UpdateCommandEnabled(
           IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());
   }
-
-  request_timer_.Stop();
-  request_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRetryDelay),
-                       this, &ChromeToMobileService::RequestSearch);
 }
 
 void ChromeToMobileService::HandleSubmitResponse(
