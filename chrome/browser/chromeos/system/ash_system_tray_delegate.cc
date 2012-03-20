@@ -52,11 +52,13 @@ namespace chromeos {
 namespace {
 
 ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
-                                           NetworkMenuIcon* network_icon) {
+                                           NetworkMenuIcon* network_icon,
+                                           NetworkMenu* network_menu) {
   ash::NetworkIconInfo info;
   info.name = UTF8ToUTF16(network->name());
   info.image = network_icon->GetBitmap(network, NetworkMenuIcon::SIZE_SMALL);
   info.service_path = network->service_path();
+  info.highlight = network_menu->ShouldHighlightNetwork(network);
   return info;
 }
 
@@ -251,6 +253,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
           info.name =
               l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
         info.service_path = ethernet_network->service_path();
+        info.highlight =
+            network_menu_->ShouldHighlightNetwork(ethernet_network);
         list->push_back(info);
       }
     }
@@ -258,8 +262,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // Wifi.
     if (crosnet->wifi_available() && crosnet->wifi_enabled()) {
       const WifiNetworkVector& wifi = crosnet->wifi_networks();
-      for (size_t i = 0; i < wifi.size(); ++i)
-        list->push_back(CreateNetworkIconInfo(wifi[i], network_icon_.get()));
+      for (size_t i = 0; i < wifi.size(); ++i) {
+        list->push_back(CreateNetworkIconInfo(wifi[i], network_icon_.get(),
+            network_menu_.get()));
+      }
     }
 
     // Cellular.
@@ -269,8 +275,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       // networks with top-up URLs etc. All of these need to be handled
       // properly.
       const CellularNetworkVector& cell = crosnet->cellular_networks();
-      for (size_t i = 0; i < cell.size(); ++i)
-        list->push_back(CreateNetworkIconInfo(cell[i], network_icon_.get()));
+      for (size_t i = 0; i < cell.size(); ++i) {
+        list->push_back(CreateNetworkIconInfo(cell[i], network_icon_.get(),
+            network_menu_.get()));
+      }
     }
 
     // VPN (only if logged in).
@@ -278,8 +286,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
     if (crosnet->connected_network() || crosnet->virtual_network_connected()) {
       const VirtualNetworkVector& vpns = crosnet->virtual_networks();
-      for (size_t i = 0; i < vpns.size(); ++i)
-        list->push_back(CreateNetworkIconInfo(vpns[i], network_icon_.get()));
+      for (size_t i = 0; i < vpns.size(); ++i) {
+        list->push_back(CreateNetworkIconInfo(vpns[i], network_icon_.get(),
+              network_menu_.get()));
+      }
     }
   }
 

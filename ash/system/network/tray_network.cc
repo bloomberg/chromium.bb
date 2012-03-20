@@ -69,13 +69,18 @@ class HoverHighlightView : public views::View {
   virtual ~HoverHighlightView() {}
 
   // Convenience function for adding an icon and a label.
-  void AddIconAndLabel(const SkBitmap& image, const string16& label) {
+  void AddIconAndLabel(const SkBitmap& image,
+                       const string16& text,
+                       gfx::Font::FontStyle style) {
     SetLayoutManager(new views::BoxLayout(
           views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
     views::ImageView* image_view = new FixedWidthImageView;
     image_view->SetImage(image);
     AddChildView(image_view);
-    AddChildView(new views::Label(label));
+
+    views::Label* label = new views::Label(text);
+    label->SetFont(label->font().DeriveFont(0, style));
+    AddChildView(label);
   }
 
   void AddLabel(const string16& text) {
@@ -310,7 +315,8 @@ class NetworkDetailedView : public views::View,
         views::BoxLayout::kVertical, 0, 0, 1));
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
-      container->AddIconAndLabel(list[i].image, list[i].name);
+      container->AddIconAndLabel(list[i].image, list[i].name,
+          list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
       networks->AddChildView(container);
       network_map_[container] = list[i].service_path;
     }
@@ -352,7 +358,8 @@ class NetworkDetailedView : public views::View,
     HoverHighlightView* container = new HoverHighlightView(this);
     container->AddIconAndLabel(
         *rb.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE).ToSkBitmap(),
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_AIRPLANE_MODE));
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_AIRPLANE_MODE),
+        gfx::Font::NORMAL);
     AddChildView(container);
     airplane_ = container;
   }

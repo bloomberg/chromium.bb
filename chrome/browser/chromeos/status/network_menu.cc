@@ -96,6 +96,14 @@ void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   browser->OpenMobilePlanTabAndActivate();
 }
 
+// Decides whether a network should be highlighted in the UI.
+bool ShouldHighlightNetwork(const chromeos::Network* network) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  return cros->connected_network() ? network == cros->connected_network() :
+                                     network == cros->connecting_network();
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -538,7 +546,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   bool ethernet_enabled = cros->ethernet_enabled();
   const chromeos::EthernetNetwork* ethernet_network = cros->ethernet_network();
   if (ethernet_enabled && ethernet_network) {
-    bool ethernet_connected = cros->ethernet_connected();
     bool ethernet_connecting = cros->ethernet_connecting();
 
     if (ethernet_connecting) {
@@ -550,7 +557,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       label = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     }
     int flag = FLAG_ETHERNET;
-    if (ethernet_connecting || ethernet_connected)
+    if (ShouldHighlightNetwork(ethernet_network))
       flag |= FLAG_ASSOCIATED;
     SkBitmap icon;
     icon = NetworkMenuIcon::GetBitmap(ethernet_network,
@@ -564,7 +571,6 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   bool wifi_enabled = cros->wifi_enabled();
   if (wifi_available && wifi_enabled) {
     const WifiNetworkVector& wifi_networks = cros->wifi_networks();
-    const WifiNetwork* active_wifi = cros->wifi_network();
 
     bool separator_added = false;
     // List Wifi networks.
@@ -594,8 +600,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       // the user is not logged in), we disable it.
       if (!cros->CanConnectToNetwork(wifi_networks[i]))
         flag |= FLAG_DISABLED;
-      if (active_wifi
-          && wifi_networks[i]->service_path() == active_wifi->service_path())
+      if (ShouldHighlightNetwork(wifi_networks[i]))
         flag |= FLAG_ASSOCIATED;
       const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_networks[i],
           NetworkMenuIcon::SIZE_SMALL);
@@ -663,9 +668,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
 
       int flag = FLAG_CELLULAR;
       // If wifi is associated, then cellular is not active.
-      bool isActive = !cros->wifi_network() && active_cellular &&
-          cell_networks[i]->service_path() == active_cellular->service_path() &&
-          (cell_networks[i]->connecting() || cell_networks[i]->connected());
+      bool isActive = ShouldHighlightNetwork(cell_networks[i]);
       bool supports_data_plan =
           active_cellular && active_cellular->SupportsDataPlan();
       if (isActive)
@@ -878,7 +881,7 @@ void VPNMenuModel::InitMenuItems(bool should_open_button_options) {
     int flag = FLAG_VPN;
     if (!cros->CanConnectToNetwork(vpn))
       flag |= FLAG_DISABLED;
-    if (active_vpn && vpn->service_path() == active_vpn->service_path())
+    if (ShouldHighlightNetwork(vpn))
       flag |= FLAG_ASSOCIATED;
     const SkBitmap icon = NetworkMenuIcon::GetBitmap(vpn,
         NetworkMenuIcon::SIZE_SMALL);
@@ -1126,6 +1129,10 @@ void NetworkMenu::ToggleCellular() {
     SimDialogDelegate::ShowDialog(delegate()->GetNativeWindow(),
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
+}
+
+bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
+  return ::ShouldHighlightNetwork(network);
 }
 
 }  // namespace chromeos

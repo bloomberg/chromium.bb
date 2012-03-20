@@ -106,6 +106,9 @@ class NetworkMenu {
   void ToggleWifi();
   void ToggleCellular();
 
+  // Decides whether a network should be highlighted in the UI.
+  bool ShouldHighlightNetwork(const Network* network);
+
  private:
   friend class NetworkMenuModel;
 
