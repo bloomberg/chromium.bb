@@ -46,7 +46,6 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
       Err("Due: %f%s", it->due_, it->completed_ ? " (c)" : "");
     return NULL;
   }
-  Log("LookaheadFilterInterpreter::SyncInterpret %f", hwstate->timestamp);
   QState* node = free_list_.PopFront();
   node->set_state(*hwstate);
   double delay = max(0.0, min(kMaxDelay, delay_.val_));
@@ -225,22 +224,12 @@ Gesture LookaheadFilterInterpreter::TapDownOccurringGesture(stime_t now) const {
   HardwareState& prev_hs = queue_.Tail()->prev_->state_;
   if (hs.finger_cnt > prev_hs.finger_cnt) {
     // Finger was added.
-    Err("finger added tapdown");
     return Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp, 0, 0,
                    GESTURES_FLING_TAP_DOWN);
   }
   // Go finger by finger for a final check
-  for (size_t i = 0; i < hs.finger_cnt; i++) {
-    Err("NEW F %zu/%d: %d", i, hs.finger_cnt, hs.fingers[i].tracking_id);
-  }
-  for (size_t i = 0; i < prev_hs.finger_cnt; i++) {
-    Err("OLD F %zu/%d: %d", i,
-        prev_hs.finger_cnt, prev_hs.fingers[i].tracking_id);
-  }
-
   for (size_t i = 0; i < hs.finger_cnt; i++)
     if (!prev_hs.GetFingerState(hs.fingers[i].tracking_id)) {
-      Err("finger added tapdown (case 2)");
       return Gesture(kGestureFling, prev_hs.timestamp, hs.timestamp, 0, 0,
                      GESTURES_FLING_TAP_DOWN);
     }
