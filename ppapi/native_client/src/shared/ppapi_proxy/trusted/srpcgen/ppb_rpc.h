@@ -671,51 +671,6 @@ class PpbGraphics3DRpcServer {
   void operator=(const PpbGraphics3DRpcServer);
 };  // class PpbGraphics3DRpcServer
 
-class PpbHostResolverPrivateRpcServer {
- public:
-  static void PPB_HostResolver_Private_Create(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      PP_Resource* resource);
-  static void PPB_HostResolver_Private_IsHostResolver(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource resource,
-      int32_t* is_host_resolver);
-  static void PPB_HostResolver_Private_Resolve(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource host_resolver,
-      const char* host,
-      int32_t port,
-      nacl_abi_size_t hint_bytes, char* hint,
-      int32_t callback_id,
-      int32_t* pp_error);
-  static void PPB_HostResolver_Private_GetCanonicalName(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource host_resolver,
-      nacl_abi_size_t* canonical_name_bytes, char* canonical_name);
-  static void PPB_HostResolver_Private_GetSize(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource host_resolver,
-      int32_t* size);
-  static void PPB_HostResolver_Private_GetNetAddress(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource host_resolver,
-      int32_t index,
-      nacl_abi_size_t* addr_bytes, char* addr,
-      int32_t* success);
-
- private:
-  PpbHostResolverPrivateRpcServer();
-  PpbHostResolverPrivateRpcServer(const PpbHostResolverPrivateRpcServer&);
-  void operator=(const PpbHostResolverPrivateRpcServer);
-};  // class PpbHostResolverPrivateRpcServer
-
 class PpbImageDataRpcServer {
  public:
   static void PPB_ImageData_GetNativeImageDataFormat(

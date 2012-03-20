@@ -21,7 +21,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_gamepad.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_host_resolver_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_input_event.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
@@ -74,8 +73,6 @@ InterfaceMapElement interface_map[] = {
   { PPB_GAMEPAD_INTERFACE, PluginGamepad::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_GRAPHICS_3D_INTERFACE, PluginGraphics3D::GetInterface(), true },
-  { PPB_HOSTRESOLVER_PRIVATE_INTERFACE,
-    PluginHostResolverPrivate::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },
   { PPB_INPUT_EVENT_INTERFACE, PluginInputEvent::GetInterface(), true },
   { PPB_INSTANCE_INTERFACE, PluginInstance::GetInterface(), true },
