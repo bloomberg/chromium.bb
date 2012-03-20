@@ -323,6 +323,7 @@ static void MigratePreferences(PrefService* prefs) {
     if (!pref->IsDefaultValue()) {
       prefs->Set(kPrefNamesToMigrate[i].to, *pref->GetValue()->DeepCopy());
     }
+    prefs->ClearPref(kPrefNamesToMigrate[i].from);
     prefs->UnregisterPreference(kPrefNamesToMigrate[i].from);
   }
 }
