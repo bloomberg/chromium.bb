@@ -94,6 +94,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/115534
       '-gtalk.test_basic',
+      # crbug.com/119110
+      '-https.SSLTest.testSSLCertOK',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
       # crbug.com/71715
@@ -192,6 +194,8 @@
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
+      # crbug.com/119110
+      '-https.SSLTest.testSSLCertAuthorityOK',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
@@ -227,6 +231,8 @@
       # Permanently-disabled tests.
       # ===========================
       '-browser.BrowserTest.testWindowResize',  # Details at: crbug.com/44963
+      # crbug.com/119110
+      '-https.SSLTest.testSSLCertAuthorityOK',
       # crbug.com/104206
       '-notifications.NotificationsTest.testKillNotificationProcess',
       # Several omnibox tests do not show omnibox results when run
