@@ -1282,8 +1282,12 @@ bool GDataFileSystem::GetFileInfoFromPath(
   return true;
 }
 
-FilePath GDataFileSystem::GetGDataCacheTmpDirectory() {
-    return cache_paths_[CACHE_TYPE_TMP];
+FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
+  return cache_paths_[CACHE_TYPE_TMP];
+}
+
+FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
+  return cache_paths_[CACHE_TYPE_PINNED];
 }
 
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(

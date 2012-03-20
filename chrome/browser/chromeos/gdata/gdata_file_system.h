@@ -302,7 +302,11 @@ class GDataFileSystemInterface {
 
   // Returns the tmp sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/tmp
-  virtual FilePath GetGDataCacheTmpDirectory() = 0;
+  virtual FilePath GetGDataCacheTmpDirectory() const = 0;
+
+  // Returns the pinned sub-directory under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1/pinned
+  virtual FilePath GetGDataCachePinnedDirectory() const = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
@@ -355,7 +359,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
                              const GetCacheStateCallback& callback) OVERRIDE;
   virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
                                    GDataFileProperties* properties) OVERRIDE;
-  virtual FilePath GetGDataCacheTmpDirectory() OVERRIDE;
+  virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
+  virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
 
