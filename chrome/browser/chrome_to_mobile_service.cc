@@ -43,6 +43,9 @@ size_t kRetryDelay = 300;
 const char kOAuthScope[] = "https://www.googleapis.com/auth/cloudprint";
 const char kTypeAndroidChromeSnapshot[] = "ANDROID_CHROME_SNAPSHOT";
 
+// The Chrome To Mobile requestor type; used by the service for filtering.
+const char kChromeToMobileRequestor[] = "requestor=chrome-to-mobile";
+
 // The types of Chrome To Mobile requests sent to the cloud print service.
 const char kRequestTypeURL[] = "url";
 const char kRequestTypeDelayedSnapshot[] = "url_with_delayed_snapshot";
@@ -66,6 +69,15 @@ std::string GetJobString(const ChromeToMobileService::RequestData& data) {
   std::string job_string;
   base::JSONWriter::Write(job.get(), &job_string);
   return job_string;
+}
+
+// Get the URL for cloud print device search; appends a requestor query param.
+GURL GetSearchURL(const GURL& service_url) {
+  GURL search_url = cloud_print::GetUrlForSearch(service_url);
+  GURL::Replacements replacements;
+  std::string query(kChromeToMobileRequestor);
+  replacements.SetQueryStr(query);
+  return search_url.ReplaceComponents(replacements);
 }
 
 // Get the URL for cloud print job submission; appends query params if needed.
@@ -242,7 +254,7 @@ content::URLFetcher* ChromeToMobileService::CreateRequest(
   bool get = data.type != SNAPSHOT;
   GURL service_url(cloud_print_url_->GetCloudPrintServiceURL());
   content::URLFetcher* request = content::URLFetcher::Create(
-      data.type == SEARCH ? cloud_print::GetUrlForSearch(service_url) :
+      data.type == SEARCH ? GetSearchURL(service_url) :
                             GetSubmitURL(service_url, data),
       get ? content::URLFetcher::GET : content::URLFetcher::POST, this);
   request->SetRequestContext(profile_->GetRequestContext());
