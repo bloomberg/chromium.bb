@@ -42,7 +42,7 @@ class Strace(object):
   @staticmethod
   def gen_trace(cmd, cwd, logname):
     """Runs strace on an executable."""
-    silent = not isEnabledFor(logging.DEBUG)
+    silent = not isEnabledFor(logging.INFO)
     stdout = stderr = None
     if silent:
       stdout = subprocess.PIPE
@@ -55,8 +55,10 @@ class Strace(object):
     if p.returncode != 0:
       print 'Failure: %d' % p.returncode
       # pylint: disable=E1103
-      print ''.join(out.splitlines(True)[-100:])
-      print ''.join(err.splitlines(True)[-100:])
+      if out:
+        print ''.join(out.splitlines(True)[-100:])
+      if err:
+        print ''.join(err.splitlines(True)[-100:])
     return p.returncode
 
   @staticmethod
@@ -156,7 +158,7 @@ class Dtrace(object):
   @classmethod
   def gen_trace(cls, cmd, cwd, logname):
     """Runs dtrace on an executable."""
-    silent = not isEnabledFor(logging.DEBUG)
+    silent = not isEnabledFor(logging.INFO)
     print 'Running: %s' % cmd
     signal = 'Go!'
     logging.debug('Our pid: %d' % os.getpid())
@@ -286,11 +288,15 @@ def extract_directories(files, root):
   return sorted(files)
 
 
-def trace_inputs(log, cmd, api):
+def trace_inputs(log, cmd, api, gyp_proj_dir, product_dir):
   """Tries to load the logs if available. If not, trace the test."""
+  def print_if(txt):
+    if not gyp_proj_dir:
+      print(txt)
+
   logname = os.path.join(BASE_DIR, os.path.basename(log))
   if not os.path.isfile(logname):
-    print 'Tracing... %s' % cmd
+    print_if('Tracing... %s' % cmd)
     returncode = api.gen_trace(cmd, ROOT_DIR, logname)
     if returncode:
       return returncode
@@ -299,24 +305,48 @@ def trace_inputs(log, cmd, api):
     """Strips ignored paths."""
     return f.startswith(api.IGNORED) or f.endswith('.pyc')
 
-  print 'Loading traces... %s' % logname
+  print_if('Loading traces... %s' % logname)
   files, non_existent = api.parse_log(logname, blacklist)
-  print('Total: %d' % len(files))
-  print('Non existent: %d' % len(non_existent))
+
+  print_if('Total: %d' % len(files))
+  print_if('Non existent: %d' % len(non_existent))
   for f in non_existent:
-    print('  %s' % f)
+    print_if('  %s' % f)
 
   expected, unexpected = relevant_files(files, ROOT_DIR + '/')
   if unexpected:
-    print('Unexpected: %d' % len(unexpected))
+    print_if('Unexpected: %d' % len(unexpected))
     for f in unexpected:
-      print('  %s' % f)
+      print_if('  %s' % f)
 
   simplified = extract_directories(expected, ROOT_DIR)
-  print('Interesting: %d reduced to %d' % (len(expected), len(simplified)))
+  print_if('Interesting: %d reduced to %d' % (len(expected), len(simplified)))
   for f in simplified:
-    print('  %s' % f)
+    print_if('  %s' % f)
 
+  if gyp_proj_dir:
+    def fix(f):
+      if f.startswith(product_dir):
+        return '<(PRODUCT_DIR)%s' % f[len(product_dir):]
+      elif f.startswith(gyp_proj_dir):
+        return f[len(gyp_proj_dir)+1:]
+      else:
+        return '<(DEPTH)/%s' % f
+    corrected = [fix(f) for f in simplified]
+    files = [f for f in corrected if not f.endswith('/')]
+    dirs = [f for f in corrected if f.endswith('/')]
+    # Constructs the python code manually.
+    print(
+        '{\n'
+        '  \'variables\': {\n'
+        '    \'isolate_files\': [\n') + (
+            ''.join('      \'%s\',\n' % f for f in files)) + (
+        '    ],\n'
+        '    \'isolate_dirs\': [\n') + (
+            ''.join('      \'%s\',\n' % f for f in dirs)) + (
+        '    ],\n'
+        '  },\n'
+        '},')
   return 0
 
 
@@ -327,6 +357,14 @@ def main():
   parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option('-l', '--log', help='Log file')
+  parser.add_option(
+      '-g', '--gyp',
+      help='When specified, outputs the inputs files in a way compatible for '
+           'gyp processing. Should be set to the relative path containing the '
+           'gyp file, e.g. \'chrome\' or \'net\'')
+  parser.add_option(
+      '-p', '--product-dir', default='out/Release',
+      help='Directory for PRODUCT_DIR')
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
@@ -347,7 +385,7 @@ def main():
     print >> sys.stderr, 'Unsupported platform'
     return 1
 
-  return trace_inputs(options.log, args, api)
+  return trace_inputs(options.log, args, api, options.gyp, options.product_dir)
 
 
 if __name__ == '__main__':

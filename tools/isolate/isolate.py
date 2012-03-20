@@ -104,9 +104,9 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   dictfiles = tree_creator.process_inputs(
       indir, infiles, mode == 'hashtable', read_only)
 
-  if not outdir:
-    outdir = os.path.dirname(resultfile)
-  result = mode_fn(outdir, indir, dictfiles, read_only, cmd, relative_cwd)
+  result = mode_fn(
+      outdir, indir, dictfiles, read_only, cmd, relative_cwd,
+      os.path.dirname(resultfile))
 
   if result == 0:
     # Saves the resulting file.
@@ -120,13 +120,16 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   return result
 
 
-def MODEcheck(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
+def MODEcheck(
+    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
   """No-op."""
   return 0
 
 
-def MODEhashtable(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
+def MODEhashtable(
+    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
   """Ignores read_only, cmd and relative_cwd."""
+  outdir = outdir or result_path
   for relfile, properties in dictfiles.iteritems():
     infile = os.path.join(indir, relfile)
     outfile = os.path.join(outdir, properties['sha-1'])
@@ -139,10 +142,15 @@ def MODEhashtable(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
   return 0
 
 
-def MODEremap(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
-  """Ignores cmd and relative_cwd."""
+def MODEremap(
+    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
+  """Ignores outdir, cmd and relative_cwd."""
   if not outdir:
     outdir = tempfile.mkdtemp(prefix='isolate')
+  print 'Remapping into %s' % outdir
+  if len(os.listdir(outdir)):
+    print 'Can\'t remap in a non-empty directory'
+    return 1
   tree_creator.recreate_tree(
       outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
   if read_only:
@@ -150,9 +158,9 @@ def MODEremap(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
   return 0
 
 
-def MODErun(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
-  """Ignores outdir and always uses a temporary directory."""
-  outdir = None
+def MODErun(
+    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
+  """Always uses a temporary directory."""
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
     tree_creator.recreate_tree(
