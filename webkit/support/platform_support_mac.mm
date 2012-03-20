@@ -5,6 +5,7 @@
 #include "webkit/support/platform_support.h"
 
 #import <AppKit/AppKit.h>
+#include <AvailabilityMacros.h>
 #import <Foundation/Foundation.h>
 #import <objc/objc-runtime.h>
 
@@ -118,6 +119,25 @@ void AfterInitialize(bool unit_test_mode) {
       // webkit.org/b/50709.
   };
 
+#if defined(MAC_OS_X_VERSION_10_6) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+  NSMutableArray* font_urls = [NSMutableArray array];
+  NSURL* resources_directory = [[NSBundle mainBundle] resourceURL];
+  for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
+    NSURL* font_url = [resources_directory
+        URLByAppendingPathComponent:[NSString
+            stringWithUTF8String:fontFileNames[i]]];
+    [font_urls addObject:[font_url absoluteURL]];
+  }
+
+  CFArrayRef errors = 0;
+  if (!CTFontManagerRegisterFontsForURLs((CFArrayRef)font_urls,
+                                         kCTFontManagerScopeProcess,
+                                         &errors)) {
+    DLOG(FATAL) << "Fail to activate fonts.";
+    CFRelease(errors);
+  }
+#else
   NSString* resources = [[NSBundle mainBundle] resourcePath];
   for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
     const char* resource_path = [[resources stringByAppendingPathComponent:
@@ -133,6 +153,7 @@ void AfterInitialize(bool unit_test_mode) {
       DLOG(FATAL) << "Fail to activate font: " << resource_path;
     }
   }
+#endif
 
   SwizzleNSPasteboard();
 
