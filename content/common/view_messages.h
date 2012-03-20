@@ -643,6 +643,10 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The properties of the screen associated with the view.
   IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
+
+  // Indicates whether this newly created RenderView will be hosted by another
+  // RenderView.
+  IPC_STRUCT_MEMBER(bool, guest)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.

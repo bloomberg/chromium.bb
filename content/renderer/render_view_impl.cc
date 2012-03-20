@@ -424,7 +424,8 @@ RenderViewImpl::RenderViewImpl(
     int64 session_storage_namespace_id,
     const string16& frame_name,
     int32 next_page_id,
-    const WebKit::WebScreenInfo& screen_info)
+    const WebKit::WebScreenInfo& screen_info,
+    bool guest)
     : RenderWidget(WebKit::WebPopupTypeNone, screen_info),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
@@ -462,6 +463,7 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
+      guest_(guest),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
   surface_id_ = surface_id;
@@ -625,7 +627,8 @@ RenderViewImpl* RenderViewImpl::Create(
     int64 session_storage_namespace_id,
     const string16& frame_name,
     int32 next_page_id,
-    const WebKit::WebScreenInfo& screen_info) {
+    const WebKit::WebScreenInfo& screen_info,
+    bool guest) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
       parent_hwnd,
@@ -638,7 +641,8 @@ RenderViewImpl* RenderViewImpl::Create(
       session_storage_namespace_id,
       frame_name,
       next_page_id,
-      screen_info);
+      screen_info,
+      guest);
 }
 
 WebKit::WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
@@ -1482,6 +1486,9 @@ WebView* RenderViewImpl::createView(
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
+  // TODO(fsamuel): The host renderer needs to be able to control whether
+  // the guest renderer is allowed to do this or not. This current
+  // behavior is not well defined.
   RenderViewImpl* view = RenderViewImpl::Create(
       0,
       routing_id_,
@@ -1493,7 +1500,8 @@ WebView* RenderViewImpl::createView(
       cloned_session_storage_namespace_id,
       frame_name,
       1,
-      screen_info_);
+      screen_info_,
+      guest_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -3419,6 +3427,10 @@ bool RenderViewImpl::Send(IPC::Message* message) {
 
 int RenderViewImpl::GetRoutingID() const  {
   return routing_id_;
+}
+
+bool RenderViewImpl::IsGuest() const {
+  return guest_;
 }
 
 int RenderViewImpl::GetPageId()  {

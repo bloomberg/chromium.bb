@@ -870,7 +870,8 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.session_storage_namespace_id,
       params.frame_name,
       params.next_page_id,
-      params.screen_info);
+      params.screen_info,
+      params.guest);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

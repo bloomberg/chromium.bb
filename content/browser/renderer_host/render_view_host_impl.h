@@ -211,6 +211,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;
   virtual void SetAltErrorPageURL(const GURL& url) OVERRIDE;
+  void SetGuest(bool guest);
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
   virtual void SetZoomLevel(double level) OVERRIDE;
@@ -538,6 +539,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // A bitwise OR of bindings types that have been enabled for this RenderView.
   // See BindingsPolicy for details.
   int enabled_bindings_;
+
+  // Indicates whether or not this RenderViewHost refers to a guest RenderView.
+  bool guest_;
 
   // The request_id for the pending cross-site request. Set to -1 if
   // there is a pending request, but we have not yet started the unload

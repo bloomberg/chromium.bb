@@ -160,7 +160,8 @@ void RenderViewTest::SetUp() {
       kInvalidSessionStorageNamespaceId,
       string16(),
       1,
-      WebKit::WebScreenInfo());
+      WebKit::WebScreenInfo(),
+      false);
   view->AddRef();
   view_ = view;
 

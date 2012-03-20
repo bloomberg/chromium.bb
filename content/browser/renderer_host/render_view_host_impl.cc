@@ -134,6 +134,7 @@ RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
+      guest_(false),
       pending_request_id_(-1),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
@@ -242,6 +243,7 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
       WebKit::WebScreenInfoFactory::screenInfo(
           gfx::NativeViewFromId(GetNativeViewId()));
 #endif
+  params.guest = guest_;
 
   Send(new ViewMsg_New(params));
 
@@ -1483,6 +1485,10 @@ void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
 
 void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
   Send(new ViewMsg_SetAltErrorPageURL(GetRoutingID(), url));
+}
+
+void RenderViewHostImpl::SetGuest(bool guest) {
+  guest_ = guest;
 }
 
 void RenderViewHostImpl::ExitFullscreen() {

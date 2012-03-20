@@ -186,7 +186,8 @@ class RenderViewImpl : public RenderWidget,
       int64 session_storage_namespace_id,
       const string16& frame_name,
       int32 next_page_id,
-      const WebKit::WebScreenInfo& screen_info);
+      const WebKit::WebScreenInfo& screen_info,
+      bool guest);
 
   // Returns the RenderViewImpl containing the given WebView.
   CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
@@ -586,6 +587,7 @@ class RenderViewImpl : public RenderWidget,
 
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
+  bool IsGuest() const;
   virtual int GetPageId() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual gfx::NativeViewId GetHostWindow() OVERRIDE;
@@ -727,7 +729,8 @@ class RenderViewImpl : public RenderWidget,
                  int64 session_storage_namespace_id,
                  const string16& frame_name,
                  int32 next_page_id,
-                 const WebKit::WebScreenInfo& screen_info);
+                 const WebKit::WebScreenInfo& screen_info,
+                 bool guest);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
@@ -1294,6 +1297,9 @@ class RenderViewImpl : public RenderWidget,
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
+
+  // Indicates whether this RenderView is a guest of another RenderView.
+  bool guest_;
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.
