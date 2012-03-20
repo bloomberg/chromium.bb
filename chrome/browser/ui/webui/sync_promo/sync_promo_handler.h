@@ -41,9 +41,6 @@ class SyncPromoHandler : public SyncSetupHandler {
   // JavaScript callback handler to close the sync promo.
   void HandleCloseSyncPromo(const base::ListValue* args);
 
-  // Gets the sync promo layout for the current sync promo version.
-  int GetPromoVersion();
-
   // JavaScript callback handler to initialize the sync promo.
   void HandleInitializeSyncPromo(const base::ListValue* args);
 

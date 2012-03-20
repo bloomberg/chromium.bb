@@ -3944,8 +3944,6 @@
         'browser/ui/webui/signin/login_ui_service_factory.h',
         'browser/ui/webui/sync_internals_ui.cc',
         'browser/ui/webui/sync_internals_ui.h',
-        'browser/ui/webui/sync_promo/sync_promo_dialog.cc',
-        'browser/ui/webui/sync_promo/sync_promo_dialog.h',
         'browser/ui/webui/sync_promo/sync_promo_handler.cc',
         'browser/ui/webui/sync_promo/sync_promo_handler.h',
         'browser/ui/webui/sync_promo/sync_promo_trial.cc',

@@ -1100,9 +1100,6 @@ const char kSyncNotificationMethod[]        = "sync-notification-method";
 // Overrides the default host:port used for sync notifications.
 const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 
-// Specifies the sync promo version to display.
-const char kSyncPromoVersion[] = "sync-promo-version";
-
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 

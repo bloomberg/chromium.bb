@@ -173,11 +173,8 @@ void SyncPromoUI::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
-                                               bool is_new_profile,
-                                               bool* promo_suppressed) {
+                                               bool is_new_profile) {
   DCHECK(profile);
-  DCHECK(promo_suppressed);
-  *promo_suppressed = false;
 
   if (!ShouldShowSyncPromo(profile))
     return false;
@@ -202,19 +199,6 @@ bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
   int show_count = prefs->GetInteger(prefs::kSyncPromoStartupCount);
   if (show_count >= kSyncPromoShowAtStartupMaximum)
     return false;
-
-  // If the current install is part of trial then let the trial determine if we
-  // should show the promo or not.
-  switch (sync_promo_trial::GetStartupOverrideForCurrentTrial()) {
-    case sync_promo_trial::STARTUP_OVERRIDE_NONE:
-      // No override so simply continue.
-      break;
-    case sync_promo_trial::STARTUP_OVERRIDE_SHOW:
-      return true;
-    case sync_promo_trial::STARTUP_OVERRIDE_HIDE:
-      *promo_suppressed = true;
-      return false;
-  }
 
   // This pref can be set in the master preferences file to allow or disallow
   // showing the sync promo at startup.
@@ -297,26 +281,4 @@ std::string SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
   std::string value;
   return GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value) ?
       value : std::string();
-}
-
-// static
-SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
-  Version version;
-  if (sync_promo_trial::GetSyncPromoVersionForCurrentTrial(&version)) {
-    // Currently the sync promo dialog has two problems. First, it's not modal
-    // so the user can interact with other browser windows. Second, it uses
-    // a nested message loop that can cause the sync promo page not to render.
-    // To work around these problems the sync promo dialog is only shown for
-    // the first profile. TODO(sail): Fix these issues if the sync promo dialog
-    // is more widely deployed.
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    if (cache.GetNumberOfProfiles() > 1 &&
-        version == SyncPromoUI::VERSION_DIALOG) {
-      return SyncPromoUI::VERSION_SIMPLE;
-    }
-    return version;
-  }
-
-  return VERSION_SIMPLE;
 }

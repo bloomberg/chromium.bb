@@ -68,14 +68,11 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_dialog.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -1246,19 +1243,14 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
 Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
         Browser* browser,
         bool process_startup,
-        const std::vector<Tab>& in_tabs) {
-  DCHECK(!in_tabs.empty());
+        const std::vector<Tab>& tabs) {
+  DCHECK(!tabs.empty());
 
   // If we don't yet have a profile, try to use the one we're given from
   // |browser|. While we may not end up actually using |browser| (since it
   // could be a popup window), we can at least use the profile.
   if (!profile_ && browser)
     profile_ = browser->profile();
-
-  std::vector<Tab> tabs(in_tabs);
-  size_t active_tab_index =
-      ShowSyncPromoDialog(process_startup, &browser, &tabs);
-  bool first_tab = active_tab_index == std::string::npos;
 
   if (!browser || !browser->is_type_tabbed()) {
     browser = Browser::Create(profile_);
@@ -1277,6 +1269,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     browser->ToggleFullscreenMode();
 #endif
 
+  bool first_tab = true;
   for (size_t i = 0; i < tabs.size(); ++i) {
     // We skip URLs that we'd have to launch an external protocol handler for.
     // This avoids us getting into an infinite loop asking ourselves to open
@@ -1288,27 +1281,17 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     if (!process_startup && !handled_by_chrome)
       continue;
 
-    size_t index;
-    if (tabs[i].url.SchemeIs(chrome::kChromeUIScheme) &&
-        tabs[i].url.host() == chrome::kChromeUISyncPromoHost) {
-      // The sync promo must always be the first tab. If the browser window
-      // was spawned from the sync promo dialog then it might have other tabs
-      // in it already. Explicilty set it to 0 to ensure that it's first.
-      index = 0;
-    } else {
-      index = browser->GetIndexForInsertionDuringRestore(i);
-    }
-
-    int add_types = (first_tab || index == active_tab_index) ?
-        TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
+    int add_types = first_tab ? TabStripModel::ADD_ACTIVE :
+                                TabStripModel::ADD_NONE;
     add_types |= TabStripModel::ADD_FORCE_INDEX;
     if (tabs[i].is_pinned)
       add_types |= TabStripModel::ADD_PINNED;
+    int index = browser->GetIndexForInsertionDuringRestore(i);
 
     browser::NavigateParams params(browser, tabs[i].url,
                                    content::PAGE_TRANSITION_START_PAGE);
-    params.disposition = (first_tab || index == active_tab_index) ?
-        NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+    params.disposition = first_tab ? NEW_FOREGROUND_TAB :
+                                     NEW_BACKGROUND_TAB;
     params.tabstrip_index = index;
     params.tabstrip_add_types = add_types;
     params.extension_app_id = tabs[i].app_id;
@@ -1516,9 +1499,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
 
   // If the sync promo page is going to be displayed then insert it at the front
   // of the list.
-  bool promo_suppressed = false;
-  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_,
-                                                &promo_suppressed)) {
+  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
     SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
     GURL old_url = (*startup_urls)[0];
     (*startup_urls)[0] =
@@ -1542,8 +1523,6 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
       if (it != startup_urls->end())
         startup_urls->erase(it);
     }
-  } else if (promo_suppressed) {
-    sync_promo_trial::RecordSyncPromoSuppressedForCurrentTrial();
   }
 }
 
@@ -1602,49 +1581,6 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
   }
 #endif
   return false;
-}
-
-size_t BrowserInit::LaunchWithProfile::ShowSyncPromoDialog(
-    bool process_startup,
-    Browser** browser,
-    std::vector<Tab>* tabs) {
-  DCHECK(browser);
-  DCHECK(tabs);
-
-  // The dialog is only shown on process startup if no browser window is already
-  // being displayed.
-  if (!profile_ || profile_->IsOffTheRecord() || *browser || !process_startup ||
-      SyncPromoUI::GetSyncPromoVersion() != SyncPromoUI::VERSION_DIALOG) {
-    return std::string::npos;
-  }
-
-  for (size_t i = 0; i < tabs->size(); ++i) {
-    GURL url((*tabs)[i].url);
-    if (url.SchemeIs(chrome::kChromeUIScheme) &&
-        url.host() == chrome::kChromeUISyncPromoHost) {
-      SyncPromoDialog dialog(profile_, url);
-      dialog.ShowDialog();
-      *browser = dialog.spawned_browser();
-      if (!*browser) {
-        // If no browser window was spawned then just replace the sync promo
-        // with the next URL.
-        (*tabs)[i].url = SyncPromoUI::GetNextPageURLForSyncPromoURL(url);
-        return i;
-      } else if (dialog.sync_promo_was_closed()) {
-        tabs->erase(tabs->begin() + i);
-        // The tab spawned by the dialog is at tab index 0 so return 0 to make
-        // it the active tab.
-        return 0;
-      } else {
-        // Since the sync promo is not closed it will be inserted at tab
-        // index 0. The tab spawned by the dialog will be at index 1 so return
-        // 0 to make it the active tab.
-        return 1;
-      }
-    }
-  }
-
-  return std::string::npos;
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(

@@ -80,7 +80,6 @@
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1028,7 +1027,6 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
   AutocompleteFieldTrial::Activate();
-  sync_promo_trial::Activate();
   NewTabUI::SetupFieldTrials();
 }
 

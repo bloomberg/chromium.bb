@@ -201,27 +201,9 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   }
 }
 
-int SyncPromoHandler::GetPromoVersion() {
-  switch (SyncPromoUI::GetSyncPromoVersion()) {
-    case SyncPromoUI::VERSION_DEFAULT:
-      return 0;
-    case SyncPromoUI::VERSION_DEVICES:
-      return 1;
-    case SyncPromoUI::VERSION_VERBOSE:
-      return 2;
-    case SyncPromoUI::VERSION_SIMPLE:
-      return 3;
-    case SyncPromoUI::VERSION_DIALOG:
-      // Use the simple sync promo layout for the dialog version.
-      return 3;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
-  base::FundamentalValue version(GetPromoVersion());
+  // TODO(sail): The version argument is going away, remove this.
+  base::FundamentalValue version(3);
   web_ui()->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
                                    version);
 

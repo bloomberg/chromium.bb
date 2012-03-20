@@ -14,15 +14,6 @@ class PrefService;
 // The Web UI handler for chrome://signin.
 class SyncPromoUI : public content::WebUIController {
  public:
-  enum Version {
-    VERSION_DEFAULT = 0,
-    VERSION_DEVICES,
-    VERSION_VERBOSE,
-    VERSION_SIMPLE,
-    VERSION_DIALOG,
-    VERSION_COUNT,
-  };
-
   // Constructs a SyncPromoUI.
   explicit SyncPromoUI(content::WebUI* web_ui);
 
@@ -31,11 +22,8 @@ class SyncPromoUI : public content::WebUIController {
   static bool ShouldShowSyncPromo(Profile* profile);
 
   // Returns true if we should show the sync promo at startup.
-  // On return |promo_suppressed| is true if a sync promo would normally
-  // have been shown but was suppressed due to a experiment.
   static bool ShouldShowSyncPromoAtStartup(Profile* profile,
-                                           bool is_new_profile,
-                                           bool* promo_suppressed);
+                                           bool is_new_profile);
 
   // Called when the sync promo has been shown so that we can keep track
   // of the number of times we've displayed it.
@@ -72,11 +60,6 @@ class SyncPromoUI : public content::WebUIController {
 
   // Gets the source from the query portion of the sync promo URL.
   static std::string GetSourceForSyncPromoURL(const GURL& url);
-
-  // Returns the version of the sync promo UI that we should display.
-  // Each version changes the UI slightly (for example, replacing text with
-  // an infographic).
-  static Version GetSyncPromoVersion();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);
