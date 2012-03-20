@@ -36,7 +36,8 @@ class ASH_EXPORT LauncherModel {
   // of the model *after* the item at |index| is removed.
   void Move(int index, int target_index);
 
-  // Reset the item at the specified index. The item maintains its existing id.
+  // Resets the item at the specified index. The item maintains its existing
+  // id.
   void Set(int index, const LauncherItem& item);
 
   // Sends LauncherItemWillChange() to the observers. Used when the images are

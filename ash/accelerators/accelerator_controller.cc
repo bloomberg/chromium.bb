@@ -282,6 +282,33 @@ bool AcceleratorController::AcceleratorPressed(
       if (ime_control_delegate_.get())
         return ime_control_delegate_->HandleSwitchIme(accelerator);
       break;
+    case SELECT_WIN_0:
+      SwitchToWindow(0);
+      break;
+    case SELECT_WIN_1:
+      SwitchToWindow(1);
+      break;
+    case SELECT_WIN_2:
+      SwitchToWindow(2);
+      break;
+    case SELECT_WIN_3:
+      SwitchToWindow(3);
+      break;
+    case SELECT_WIN_4:
+      SwitchToWindow(4);
+      break;
+    case SELECT_WIN_5:
+      SwitchToWindow(5);
+      break;
+    case SELECT_WIN_6:
+      SwitchToWindow(6);
+      break;
+    case SELECT_WIN_7:
+      SwitchToWindow(7);
+      break;
+    case SELECT_LAST_WIN:
+      SwitchToWindow(-1);
+      break;
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
@@ -298,6 +325,36 @@ bool AcceleratorController::AcceleratorPressed(
       NOTREACHED() << "Unhandled action " << it->second;
   }
   return false;
+}
+
+void AcceleratorController::SwitchToWindow(int window) {
+  const LauncherItems& items =
+      Shell::GetInstance()->launcher()->model()->items();
+  int item_count =
+      Shell::GetInstance()->launcher()->model()->item_count();
+  int indexes_left = window >= 0 ? window : item_count;
+  int found_index = -1;
+
+  // Iterating until we have hit the index we are interested in which
+  // is true once indexes_left becomes negative.
+  for (int i = 0; i < item_count && indexes_left >= 0; i++) {
+    if (items[i].type != TYPE_APP_LIST &&
+        items[i].type != TYPE_BROWSER_SHORTCUT) {
+      found_index = i;
+      indexes_left--;
+    }
+  }
+
+  // There are two ways how found_index can be valid: a.) the nth item was
+  // found (which is true when indexes_left is -1) or b.) the last item was
+  // requested (which is true when index was passed in as a negative number).
+  if (found_index >= 0 && (indexes_left == -1 || window < 0) &&
+      items[found_index].status == ash::STATUS_RUNNING) {
+    // Then set this one as active.
+    LauncherItem new_item(items[found_index]);
+    new_item.status = STATUS_ACTIVE;
+    Shell::GetInstance()->launcher()->model()->Set(found_index, new_item);
+  }
 }
 
 bool AcceleratorController::CanHandleAccelerators() const {

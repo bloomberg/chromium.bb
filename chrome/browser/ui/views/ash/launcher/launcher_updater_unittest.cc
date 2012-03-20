@@ -753,3 +753,33 @@ TEST_F(LauncherUpdaterTest, ActivateApps) {
   EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
 }
 
+// Confirm that window activation works through the model.
+TEST_F(LauncherUpdaterTest, SwitchDirectlyToApp) {
+  State state1(this, "1", LauncherUpdater::TYPE_APP);
+  int index1 = launcher_model_->ItemIndexByID(state1.GetUpdaterItem().id);
+
+  // Second app is active and first is inactive.
+  State state2(this, "2", LauncherUpdater::TYPE_APP);
+  int index2 = launcher_model_->ItemIndexByID(state2.GetUpdaterItem().id);
+
+  EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
+  EXPECT_EQ(&state2.window, activation_client_->GetActiveWindow());
+
+  // Test that we can properly switch to the first item.
+  ash::LauncherItem new_item1(launcher_model_->items()[index1]);
+  new_item1.status = ash::STATUS_ACTIVE;
+  launcher_model_->Set(index1, new_item1);
+  EXPECT_EQ(ash::STATUS_ACTIVE, launcher_model_->items()[index1].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, launcher_model_->items()[index2].status);
+  EXPECT_EQ(&state1.window, activation_client_->GetActiveWindow());
+
+  // And to the second item active.
+  ash::LauncherItem new_item2(launcher_model_->items()[index2]);
+  new_item2.status = ash::STATUS_ACTIVE;
+  launcher_model_->Set(index2, new_item2);
+  EXPECT_EQ(ash::STATUS_RUNNING, launcher_model_->items()[index1].status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, launcher_model_->items()[index2].status);
+  EXPECT_EQ(&state2.window, activation_client_->GetActiveWindow());
+}
+

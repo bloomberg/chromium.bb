@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -464,6 +466,17 @@ void ChromeLauncherDelegate::LauncherItemMoved(
 void ChromeLauncherDelegate::LauncherItemChanged(
     int index,
     const ash::LauncherItem& old_item) {
+  if (model_->items()[index].status == ash::STATUS_ACTIVE &&
+      old_item.status == ash::STATUS_RUNNING) {
+    ash::LauncherID id = model_->items()[index].id;
+    if (id_to_item_map_[id].updater) {
+      aura::Window* window_to_activate = id_to_item_map_[id].updater->window();
+      if (window_to_activate && ash::wm::IsActiveWindow(window_to_activate))
+        return;
+      window_to_activate->Show();
+      ash::wm::ActivateWindow(window_to_activate);
+    }
+  }
 }
 
 void ChromeLauncherDelegate::LauncherItemWillChange(int index) {
