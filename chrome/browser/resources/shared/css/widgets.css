@@ -96,6 +96,7 @@ input:not([type]) {
   border: 1px solid #bfbfbf;
   border-radius: 2px;
   box-sizing: border-box;
+  color: #444;
   font: inherit;
   height: 2em;
   margin: 0;
@@ -206,22 +207,23 @@ input[type='search']:disabled,
 input[type='text']:disabled,
 input[type='url']:disabled,
 input:not([type]):disabled {
-  color: #888;
+  color: #999;
 }
 
 /* Focus **********************************************************************/
 
-button:not(.custom-appearance):not(.link-button):focus,
-input[type='button']:not(.custom-appearance):focus,
-input[type='checkbox']:focus,
-input[type='password']:focus,
-input[type='radio']:focus,
-input[type='search']:focus,
-input[type='submit']:not(.custom-appearance):focus,
-input[type='text']:focus,
-input[type='url']:focus,
-input:not([type]):focus,
-select:focus {
+button:not(.custom-appearance):not(.link-button):enabled:focus,
+input[type='button']:not(.custom-appearance):enabled:focus,
+input[type='checkbox']:enabled:focus,
+input[type='password']:enabled:focus,
+input[type='radio']:enabled:focus,
+input[type='search']:enabled:focus,
+input[type='submit']:not(.custom-appearance):enabled:focus,
+input[type='text']:enabled:focus,
+input[type='url']:enabled:focus,
+input:not([type]):enabled:focus,
+select:enabled:focus {
+  /* OVERRIDE */
   -webkit-transition: border-color 200ms;
   /* We use border color because it follows the border radius (unlike outline).
    * This is particularly noticeable on mac. */
@@ -254,7 +256,7 @@ select:focus {
 }
 
 .link-button[disabled] {
-  color: #888;
+  color: #999;
   cursor: default;
   text-decoration: none;
 }
@@ -279,7 +281,6 @@ select:focus {
 
 .checkbox label,
 .radio label {
-  color: #444;
   /* Don't expand horizontally: <http://crbug.com/112091>. */
   display: -webkit-inline-box;
 }

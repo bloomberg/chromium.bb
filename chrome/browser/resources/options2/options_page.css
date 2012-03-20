@@ -38,7 +38,7 @@ body {
 }
 
 div.disabled {
-  color: #888;
+  color: #999;
 }
 
 .settings-row {
@@ -439,10 +439,6 @@ list[hasElementFocus] {
 
 .suboption {
   -webkit-margin-start: 23px;
-}
-
-.informational-text {
-  color: grey;
 }
 
 list.autocomplete-suggestions {

@@ -4,6 +4,7 @@
 
 body.uber-frame {
   -webkit-margin-start: 155px;
+  color: rgb(48, 57, 66);
 }
 
 html[dir='rtl'] body.uber-frame {
