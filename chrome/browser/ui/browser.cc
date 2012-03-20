@@ -2976,6 +2976,10 @@ bool Browser::IsReservedCommandOrKey(int command_id,
   }
 #endif
 
+  // In Apps mode, no keys are reserved.
+  if (is_app())
+    return false;
+
   if (window_->IsFullscreen() && command_id == IDC_FULLSCREEN)
     return true;
   return command_id == IDC_CLOSE_TAB ||
