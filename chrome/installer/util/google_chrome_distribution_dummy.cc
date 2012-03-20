@@ -86,11 +86,6 @@ std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
   return std::string();
 }
 
-std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
-  NOTREACHED();
-  return std::string();
-}
-
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   NOTREACHED();
   return std::wstring();

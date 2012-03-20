@@ -298,24 +298,25 @@ void CollectPipeliningCapabilityStatsOnIOThread(
   }
 
   const base::FieldTrial::Probability kDivisor = 100;
-  base::FieldTrial::Probability probability_to_run_test = 0;
+  base::FieldTrial::Probability probability_per_group = 0;
 
   const char* kTrialName = "HttpPipeliningCompatibility";
   base::FieldTrial* trial = base::FieldTrialList::Find(kTrialName);
   if (trial) {
     return;
   }
-  // After April 1, 2012, the trial will disable itself.
+  // After October 30, 2012 builds, it will always be in default group
+  // (disable_network_stats).
   trial = new base::FieldTrial(kTrialName, kDivisor,
-                               "disable_test", 2012, 4, 1);
+                               "disable_test", 2012, 10, 30);
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    probability_to_run_test = 1;
+    // TODO(simonjam): Enable this: probability_per_group = 1;
   }
 
   int collect_stats_group = trial->AppendGroup("enable_test",
-                                               probability_to_run_test);
+                                               probability_per_group);
   if (trial->group() != collect_stats_group) {
     return;
   }

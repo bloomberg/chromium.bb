@@ -93,10 +93,6 @@ std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
   return "chrome.googleechotest.com";
 }
 
-std::string ChromeFrameDistribution::GetHttpPipeliningTestServer() const {
-  return "http://70.32.157.92/";
-}
-
 std::wstring ChromeFrameDistribution::GetUninstallLinkName() {
   return L"Uninstall Chrome Frame";
 }

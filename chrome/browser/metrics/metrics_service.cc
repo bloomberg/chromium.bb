@@ -220,9 +220,6 @@ const char kServerUrlXml[] =
     "https://clients4.google.com/firefox/metrics/collect";
 const char kServerUrlProto[] = "https://clients4.google.com/uma/v2";
 
-const char kEchoTestServer[] = "chrome.googleechotest.com";
-const char kPipelineTestServer[] = "http://70.32.157.92/";
-
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 const int kInitializationDelaySeconds = 30;
@@ -654,8 +651,9 @@ void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
   server_url_xml_ = ASCIIToUTF16(kServerUrlXml);
   server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
-  network_stats_server_ = kEchoTestServer;
-  http_pipelining_test_server_ = kPipelineTestServer;
+  network_stats_server_ = "chrome.googleechotest.com";
+  // TODO(simonjam): Figure out where this will be hosted.
+  http_pipelining_test_server_ = "";
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   server_url_xml_ = dist->GetStatsServerURL();
