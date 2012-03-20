@@ -343,10 +343,12 @@ void ScreenLocker::Show() {
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
+  // For a demo user, we should never show the lock screen (crosbug.com/27647).
   // TODO(flackr): We can allow lock screen for guest accounts when
   // unlock_on_input is supported by the WebUI screen locker.
-  if (UserManager::Get()->GetLoggedInUser().email().empty()) {
-    DVLOG(1) << "Show: Refusing to lock screen for guest account.";
+  if (UserManager::Get()->GetLoggedInUser().is_guest() ||
+      UserManager::Get()->GetLoggedInUser().is_demo_user()) {
+    DVLOG(1) << "Show: Refusing to lock screen for guest/demo account.";
     return;
   }
 
@@ -376,6 +378,13 @@ void ScreenLocker::Show() {
 // static
 void ScreenLocker::Hide() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  // For a guest/demo user, screen_locker_ would have never been initialized.
+  if (UserManager::Get()->GetLoggedInUser().is_guest() ||
+      UserManager::Get()->GetLoggedInUser().is_demo_user()) {
+    DVLOG(1) << "Hide: Nothing to do for guest/demo account.";
+    return;
+  }
+
   DCHECK(screen_locker_);
   VLOG(1) << "Hide: Deleting ScreenLocker: " << screen_locker_;
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);

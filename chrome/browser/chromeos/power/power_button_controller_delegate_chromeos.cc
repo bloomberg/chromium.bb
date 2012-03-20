@@ -7,10 +7,21 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/ui/browser_list.h"
 
 namespace chromeos {
 
 void PowerButtonControllerDelegateChromeos::RequestLockScreen() {
+  // If KioskMode is enabled, if the user attempts to lock the screen via
+  // the power button, we instead want to log the user out. This seemed to
+  // be the most acceptable replacement for the lock action of the power
+  // button for Kiosk mode users.
+  if (KioskModeHelper::IsKioskModeEnabled()) {
+    BrowserList::AttemptUserExit();
+    return;
+  }
+
   DBusThreadManager::Get()->GetPowerManagerClient()->
       NotifyScreenLockRequested();
 }

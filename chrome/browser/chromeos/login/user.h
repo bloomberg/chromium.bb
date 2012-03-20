@@ -67,6 +67,7 @@ class User {
   // The displayed (non-canonical) user email.
   std::string display_email() const { return display_email_; }
 
+  bool is_demo_user() const { return is_demo_user_; }
   bool is_guest() const { return is_guest_; }
 
  private:
@@ -105,6 +106,9 @@ class User {
 
   // Is this a guest account?
   bool is_guest_;
+
+  // Is this a demo user account?
+  bool is_demo_user_;
 
   DISALLOW_COPY_AND_ASSIGN(User);
 };

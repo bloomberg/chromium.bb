@@ -206,6 +206,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #if defined(USE_AURA)
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #endif
@@ -2504,6 +2505,9 @@ void Browser::OpenFileManager() {
 #if defined(OS_CHROMEOS)
 void Browser::LockScreen() {
   content::RecordAction(UserMetricsAction("LockScreen"));
+  // Never lock the screen for kiosk mode.
+  if (chromeos::KioskModeHelper::IsKioskModeEnabled())
+    return;
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       NotifyScreenLockRequested();
 }

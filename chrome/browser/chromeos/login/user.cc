@@ -36,8 +36,12 @@ User::User(const std::string& email, bool is_guest)
       is_guest_(is_guest) {
   // The email address of a demo user is for internal purposes only,
   // never meant for display.
-  if (email != kDemoUser)
+  if (email != kDemoUser) {
     display_email_ = email;
+    is_demo_user_ = false;
+  } else {
+    is_demo_user_ = true;
+  }
   image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       kDefaultImageResources[0]);
 }
