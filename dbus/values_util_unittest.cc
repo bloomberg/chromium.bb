@@ -282,6 +282,49 @@ TEST(ValuesUtilTest, PopStringToVariantDictionary) {
   EXPECT_TRUE(value->Equals(&dictionary_value));
 }
 
+TEST(ValuesUtilTest, PopDictionaryWithDottedStringKey) {
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  // Append a dictionary.
+  dbus::MessageWriter writer(response.get());
+  dbus::MessageWriter sub_writer(NULL);
+  dbus::MessageWriter entry_writer(NULL);
+  writer.OpenArray("{sv}", &sub_writer);
+  sub_writer.OpenDictEntry(&entry_writer);
+  const std::string kKey1 = "www.example.com";  // String including dots.
+  entry_writer.AppendString(kKey1);
+  const bool kBoolValue = true;
+  entry_writer.AppendVariantOfBool(kBoolValue);
+  sub_writer.CloseContainer(&entry_writer);
+  sub_writer.OpenDictEntry(&entry_writer);
+  const std::string kKey2 = ".example";  // String starting with a dot.
+  entry_writer.AppendString(kKey2);
+  const int32 kInt32Value = -45;
+  entry_writer.AppendVariantOfInt32(kInt32Value);
+  sub_writer.CloseContainer(&entry_writer);
+  sub_writer.OpenDictEntry(&entry_writer);
+  const std::string kKey3 = "example.";  // String ending with a dot.
+  entry_writer.AppendString(kKey3);
+  const double kDoubleValue = 4.9;
+  entry_writer.AppendVariantOfDouble(kDoubleValue);
+  sub_writer.CloseContainer(&entry_writer);
+  writer.CloseContainer(&sub_writer);
+
+  // Create the expected value.
+  DictionaryValue dictionary_value;
+  dictionary_value.SetWithoutPathExpansion(
+      kKey1, Value::CreateBooleanValue(kBoolValue));
+  dictionary_value.SetWithoutPathExpansion(
+      kKey2, Value::CreateIntegerValue(kInt32Value));
+  dictionary_value.SetWithoutPathExpansion(
+      kKey3, Value::CreateDoubleValue(kDoubleValue));
+
+  // Pop a dictinoary.
+  dbus::MessageReader reader(response.get());
+  scoped_ptr<Value> value(dbus::PopDataAsValue(&reader));
+  EXPECT_TRUE(value.get() != NULL);
+  EXPECT_TRUE(value->Equals(&dictionary_value));
+}
+
 TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
   // Create test data.
   const int32 kValues[] = {0, 1, 1, 2, 3, 5, 8, 13, 21};
@@ -310,7 +353,8 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
     scoped_ptr<Value> key_value(Value::CreateDoubleValue(keys[i]));
     std::string key_string;
     base::JSONWriter::Write(key_value.get(), &key_string);
-    dictionary_value.SetInteger(key_string, values[i]);
+    dictionary_value.SetWithoutPathExpansion(
+        key_string, Value::CreateIntegerValue(values[i]));
   }
 
   // Pop a dictionary.

@@ -57,7 +57,7 @@ bool PopDictionaryEntries(MessageReader* reader,
     Value* value = PopDataAsValue(&entry_reader);
     if (!value)
       return false;
-    dictionary_value->Set(key_string, value);
+    dictionary_value->SetWithoutPathExpansion(key_string, value);
   }
   return true;
 }
