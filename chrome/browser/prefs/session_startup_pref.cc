@@ -11,6 +11,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/protector/protected_prefs_watcher.h"
+#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/common/pref_names.h"
 
 #if defined(OS_MACOSX)
@@ -35,11 +38,24 @@ int TypeToPrefValue(SessionStartupPref::Type type) {
   }
 }
 
-void SetNewUrlList(PrefService* prefs) {
+void SetNewURLList(PrefService* prefs) {
   ListValue new_url_pref_list;
   StringValue* home_page = new StringValue(prefs->GetString(prefs::kHomePage));
   new_url_pref_list.Append(home_page);
   prefs->Set(prefs::kURLsToRestoreOnStartup, new_url_pref_list);
+}
+
+void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
+  pref->urls.clear();
+  for (size_t i = 0; i < url_list->GetSize(); ++i) {
+    Value* value = NULL;
+    CHECK(url_list->Get(i, &value));
+    std::string url_text;
+    if (value->GetAsString(&url_text)) {
+      GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
+      pref->urls.push_back(fixed_url);
+    }
+  }
 }
 
 }  // namespace
@@ -115,25 +131,14 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   if (pref.type == SessionStartupPref::HOMEPAGE) {
     prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueURLs);
     pref.type = SessionStartupPref::URLS;
-    SetNewUrlList(prefs);
+    SetNewURLList(prefs);
   }
 
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.
-  const ListValue* url_pref_list = prefs->GetList(
-      prefs::kURLsToRestoreOnStartup);
-  if (url_pref_list) {
-    for (size_t i = 0; i < url_pref_list->GetSize(); ++i) {
-      Value* value = NULL;
-      if (url_pref_list->Get(i, &value)) {
-        std::string url_text;
-        if (value->GetAsString(&url_text)) {
-          GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
-          pref.urls.push_back(fixed_url);
-        }
-      }
-    }
-  }
+  const ListValue* url_list = prefs->GetList(prefs::kURLsToRestoreOnStartup);
+  URLListToPref(url_list, &pref);
+
   return pref;
 }
 
@@ -163,6 +168,42 @@ SessionStartupPref::Type SessionStartupPref::PrefValueToType(int pref_value) {
     case kPrefValueHomePage: return SessionStartupPref::HOMEPAGE;
     default:                 return SessionStartupPref::DEFAULT;
   }
+}
+
+// static
+bool SessionStartupPref::DidStartupPrefChange(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  protector::ProtectedPrefsWatcher* prefs_watcher =
+      protector::ProtectorServiceFactory::GetForProfile(profile)->
+          GetPrefsWatcher();
+  if (!TypeIsManaged(prefs) &&
+      prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup)) {
+    return true;
+  }
+  if (!URLsAreManaged(prefs) &&
+      prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup)) {
+    return true;
+  }
+  return false;
+}
+
+// static
+SessionStartupPref SessionStartupPref::GetStartupPrefBackup(Profile* profile) {
+  protector::ProtectedPrefsWatcher* prefs_watcher =
+      protector::ProtectorServiceFactory::GetForProfile(profile)->
+          GetPrefsWatcher();
+
+  int type;
+  CHECK(prefs_watcher->GetBackupForPref(
+            prefs::kRestoreOnStartup)->GetAsInteger(&type));
+  SessionStartupPref backup_pref(PrefValueToType(type));
+
+  const ListValue* url_list;
+  CHECK(prefs_watcher->GetBackupForPref(
+            prefs::kURLsToRestoreOnStartup)->GetAsList(&url_list));
+  URLListToPref(url_list, &backup_pref);
+
+  return backup_pref;
 }
 
 SessionStartupPref::SessionStartupPref(Type type) : type(type) {}

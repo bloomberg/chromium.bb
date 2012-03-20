@@ -72,6 +72,16 @@ void ProtectedPrefsWatcher::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 }
 
+bool ProtectedPrefsWatcher::DidPrefChange(const std::string& path) const {
+  const base::Value* backup_value = GetBackupForPref(path);
+  if (!backup_value)
+    return false;
+  const PrefService::Preference* new_pref =
+      profile_->GetPrefs()->FindPreference(path.c_str());
+  DCHECK(new_pref);
+  return !backup_value->Equals(new_pref->GetValue());
+}
+
 const base::Value* ProtectedPrefsWatcher::GetBackupForPref(
     const std::string& path) const {
   if (!is_backup_valid_)

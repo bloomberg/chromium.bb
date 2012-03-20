@@ -54,6 +54,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -796,6 +799,28 @@ bool BrowserInit::WasRestarted() {
 SessionStartupPref BrowserInit::GetSessionStartupPref(
     const CommandLine& command_line,
     Profile* profile) {
+  // Check for external changes to this pref.
+  if (SessionStartupPref::DidStartupPrefChange(profile)) {
+    LOG(WARNING) << "Session startup settings have changed";
+    SessionStartupPref new_pref = SessionStartupPref::GetStartupPref(profile);
+    // The histograms should be reported even when Protector is disabled.
+    scoped_ptr<protector::BaseSettingChange> change(
+        protector::CreateSessionStartupChange(
+            new_pref, SessionStartupPref::GetStartupPrefBackup(profile)));
+    if (protector::IsEnabled()) {
+      protector::ProtectorService* protector_service =
+          protector::ProtectorServiceFactory::GetForProfile(profile);
+      DCHECK(protector_service);
+      protector_service->ShowChange(change.release());
+    } else {
+      // Protector is turned off: set the startup pref to itself to update the
+      // backup and sign it. Otherwise, change will be reported every time on
+      // startup.
+      SessionStartupPref::SetStartupPref(profile, new_pref);
+    }
+  }
+
+  // Now the actual pref value is correct so we read it again.
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
 
   // Session restore should be avoided on the first run.

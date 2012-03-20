@@ -31,9 +31,12 @@ class ProtectedPrefsWatcher : public content::NotificationObserver {
   // Registers prefs on a new Profile instance.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the backup value for pref named |path| or |NULL| if the pref is
-  // not protected or does not exist. The returned Value instance is owned by
-  // the PrefService.
+  // Returns true if pref named |path| has changed and the backup is valid.
+  bool DidPrefChange(const std::string& path) const;
+
+  // Returns the backup value for pref named |path| or |NULL| if the pref is not
+  // protected, does not exist or the backup is invalid. The returned Value
+  // instance is owned by the PrefService.
   const base::Value* GetBackupForPref(const std::string& path) const;
 
   // True if the backup was valid at the profile load time.
