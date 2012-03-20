@@ -57,6 +57,8 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
   float last_move_dy = 0.0;
   float last_scroll_dx = 0.0;
   float last_scroll_dy = 0.0;
+  float last_fling_vx = 0.0;
+  float last_fling_vy = 0.0;
 
   for (int i = 1; i <= 5; ++i) {
     interpreter.sensitivity_.val_ = i;
@@ -72,6 +74,12 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
                                                        2.001,  // end time
                                                        4.1,  // dx
                                                        -10.3));  // dy
+    base_interpreter->return_values_.push_back(Gesture(kGestureFling,
+                                                       3,  // start time
+                                                       3.001,  // end time
+                                                       400.1,  // vx
+                                                       -1000.3,  // vy
+                                                       0));  // state
 
     Gesture* out = interpreter.SyncInterpret(NULL, NULL);
     ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), out);
@@ -104,6 +112,20 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
     }
     last_scroll_dx = out->details.scroll.dx;
     last_scroll_dy = out->details.scroll.dy;
+    out = interpreter.SyncInterpret(NULL, NULL);
+    ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+    EXPECT_EQ(kGestureTypeFling, out->type);
+    if (i == 1) {
+      // Expect no acceleration
+      EXPECT_FLOAT_EQ(400.1, out->details.fling.vx);
+      EXPECT_FLOAT_EQ(-1000.3, out->details.fling.vy);
+    } else {
+      // Expect increasing acceleration
+      EXPECT_GT(fabsf(out->details.fling.vx), fabsf(last_fling_vx));
+      EXPECT_GT(fabsf(out->details.fling.vy), fabsf(last_fling_vy));
+    }
+    last_fling_vx = out->details.fling.vx;
+    last_fling_vy = out->details.fling.vy;
   }
 }
 

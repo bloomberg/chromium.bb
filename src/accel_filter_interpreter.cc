@@ -116,11 +116,14 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
   float x_scale = 1.0;
   float y_scale = 1.0;
   float mag = 0.0;
+  // The quantities to scale:
+  float* scale_out_x = NULL;
+  float* scale_out_y = NULL;
 
   switch (gs->type) {
     case kGestureTypeMove:
-      dx = &gs->details.move.dx;
-      dy = &gs->details.move.dy;
+      scale_out_x = dx = &gs->details.move.dx;
+      scale_out_y = dy = &gs->details.move.dy;
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
         segs = curves_[sensitivity_.val_ - 1];
       } else {
@@ -139,9 +142,11 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
         float vx = gs->details.fling.vx;
         float vy = gs->details.fling.vy;
         mag = sqrtf(vx * vx + vy * vy);
+        scale_out_x = &gs->details.fling.vx;
+        scale_out_y = &gs->details.fling.vy;
       } else {
-        dx = &gs->details.scroll.dx;
-        dy = &gs->details.scroll.dy;
+        scale_out_x = dx = &gs->details.scroll.dx;
+        scale_out_y = dy = &gs->details.scroll.dy;
       }
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
         segs = curves_[sensitivity_.val_ - 1];
@@ -170,8 +175,8 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
     if (mag > segs[i].x_)
       continue;
     float ratio = segs[i].sqr_ * mag + segs[i].mul_ + segs[i].int_ / mag;
-    *dx *= ratio * x_scale;
-    *dy *= ratio * y_scale;
+    *scale_out_x *= ratio * x_scale;
+    *scale_out_y *= ratio * y_scale;
 
     return;
   }
