@@ -7,6 +7,9 @@
  */
 
 cr.define('login', function() {
+  // Gaia loading time after which portal check should be fired.
+  const GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 5;
+
   // Maximum Gaia loading time in seconds.
   const MAX_GAIA_LOADING_TIME_SEC = 60;
 
@@ -91,6 +94,20 @@ cr.define('login', function() {
     },
 
     /**
+     * Handler for Gaia loading suspiciously long timeout.
+     * @private
+     */
+    onLoadingSuspiciouslyLong_: function() {
+      if (this != Oobe.getInstance().currentScreen)
+        return;
+      chrome.send('fixCaptivePortal');
+      this.loadingTimer_ = window.setTimeout(
+          this.onLoadingTimeOut_.bind(this),
+          (MAX_GAIA_LOADING_TIME_SEC - GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC)
+              * 1000);
+    },
+
+    /**
      * Handler for Gaia loading timeout.
      * @private
      */
@@ -118,8 +135,8 @@ cr.define('login', function() {
     startLoadingTimer_: function() {
       this.clearLoadingTimer_();
       this.loadingTimer_ = window.setTimeout(
-          this.onLoadingTimeOut_.bind(this),
-          MAX_GAIA_LOADING_TIME_SEC * 1000);
+          this.onLoadingSuspiciouslyLong_.bind(this),
+          GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC * 1000);
     },
 
     /**

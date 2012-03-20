@@ -27,6 +27,7 @@ class ListValue;
 
 namespace chromeos {
 
+class CaptivePortalWindowProxy;
 class NetworkStateInformer;
 class User;
 
@@ -186,6 +187,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleLaunchDemoUser(const base::ListValue* args);
   void HandleLaunchIncognito(const base::ListValue* args);
   void HandleFixCaptivePortal(const base::ListValue* args);
+  void HandleHideCaptivePortal(const base::ListValue* args);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
@@ -256,6 +258,9 @@ class SigninScreenHandler : public BaseScreenHandler,
   std::string email_;
   // Emails of the users, whose passwords have recently been changed.
   std::set<std::string> password_changed_for_;
+
+  // Proxy which manages showing of the window for captive portal entering.
+  scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
 
   // Test credentials.
   std::string test_user_;

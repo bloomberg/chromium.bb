@@ -58,6 +58,7 @@ cr.define('login', function() {
      * @param data {string} Screen init payload.
      */
     onBeforeShow: function(data) {
+      chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
       podRow.handleShow();
 

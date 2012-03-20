@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -76,6 +77,7 @@ const int kMaxUsers = 5;
 
 const char kReasonNetworkChanged[] = "network changed";
 const char kReasonProxyChanged[] = "proxy changed";
+const char kReasonPortalDetected[] = "portal detected";
 
 // Sanitize emails. Currently, it only ensures all emails have a domain.
 std::string SanitizeEmail(const std::string& email) {
@@ -122,7 +124,8 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
 // changed. Also, it answers to the requests about current network state.
 class NetworkStateInformer
     : public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public CaptivePortalWindowProxyDelegate {
  public:
   NetworkStateInformer(SigninScreenHandler* handler, content::WebUI* web_ui);
   virtual ~NetworkStateInformer();
@@ -146,6 +149,9 @@ class NetworkStateInformer
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // CaptivePortalWindowProxyDelegate implementation:
+  virtual void OnPortalDetected() OVERRIDE;
 
   // Returns active network id.
   std::string active_network_id() { return active_network_; }
@@ -223,6 +229,10 @@ void NetworkStateInformer::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
   SendStateToObservers(kReasonProxyChanged);
+}
+
+void NetworkStateInformer::OnPortalDetected() {
+  SendStateToObservers(kReasonPortalDetected);
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
@@ -437,6 +447,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("fixCaptivePortal",
       base::Bind(&SigninScreenHandler::HandleFixCaptivePortal,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("hideCaptivePortal",
+      base::Bind(&SigninScreenHandler::HandleHideCaptivePortal,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("offlineLogin",
       base::Bind(&SigninScreenHandler::HandleOfflineLogin,
@@ -717,9 +730,19 @@ void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleFixCaptivePortal(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->FixCaptivePortal();
+  // TODO(altimofeev): move error page and captive portal window showing logic
+  // to C++ (currenly most of it is done on the JS side).
+  if (!captive_portal_window_proxy_.get()) {
+    captive_portal_window_proxy_.reset(
+        new CaptivePortalWindowProxy(network_state_informer_.get(),
+                                     GetNativeWindow()));
+  }
+  captive_portal_window_proxy_->ShowIfRedirected();
+}
+
+void SigninScreenHandler::HandleHideCaptivePortal(const base::ListValue* args) {
+  if (captive_portal_window_proxy_.get())
+    captive_portal_window_proxy_->Close();
 }
 
 void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {

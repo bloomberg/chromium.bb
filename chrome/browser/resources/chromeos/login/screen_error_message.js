@@ -22,7 +22,8 @@ cr.define('login', function() {
     PROXY_AUTH_CANCELLED: 'frame error:111',
     PROXY_CONNECTION_FAILED: 'frame error:130',
     PROXY_CONFIG_CHANGED: 'proxy changed',
-    LOADING_TIMEOUT: 'loading timeout'
+    LOADING_TIMEOUT: 'loading timeout',
+    PORTAL_DETECTED: 'portal detected'
   };
 
   // Frame loading errors.
@@ -161,11 +162,23 @@ cr.define('login', function() {
         isUnderCaptivePortal = true;
       }
 
+      if (reason == ERROR_REASONS.PORTAL_DETECTED) {
+        isOnline = false;
+        isUnderCaptivePortal = true;
+      }
+
       if (!isOnline && shouldOverlay) {
         console.log('Show offline message: state=' + state +
-                    ', network=' + network +
+                    ', network=' + network + ', reason=' + reason,
                     ', isUnderCaptivePortal=' + isUnderCaptivePortal);
+
+
         offlineMessage.onBeforeShow(lastNetworkType);
+
+        if (isUnderCaptivePortal && !isProxyError)
+          chrome.send('fixCaptivePortal');
+        else
+          chrome.send('hideCaptivePortal');
 
         if (isUnderCaptivePortal) {
           if (isProxyError) {
@@ -198,6 +211,8 @@ cr.define('login', function() {
         }
         chrome.send('networkErrorShown');
       } else {
+        chrome.send('hideCaptivePortal');
+
         if (!offlineMessage.classList.contains('faded')) {
           console.log('Hide offline message.');
           offlineMessage.onBeforeHide();
