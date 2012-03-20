@@ -741,9 +741,9 @@ DirectoryModel.prototype = {
           return;
 
       callback(groups.downloads.
+               concat(groups.gdata).
                concat(groups.archives).
-               concat(groups.removables).
-               concat(groups.gdata));
+               concat(groups.removables));
       metrics.recordInterval('Load.Roots');
     }
 
