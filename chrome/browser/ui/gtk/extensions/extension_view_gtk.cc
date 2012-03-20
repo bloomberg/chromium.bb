@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -38,9 +39,9 @@ void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
   }
 }
 
-void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
+void ExtensionViewGtk::ResizeDueToAutoResize(const gfx::Size& new_size) {
   if (container_)
-    container_->OnExtensionPreferredSizeChanged(this, new_size);
+    container_->OnExtensionSizeChanged(this, new_size);
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {
@@ -53,9 +54,12 @@ void ExtensionViewGtk::RenderViewCreated() {
     pending_background_.reset();
   }
 
-  // Tell the renderer not to draw scrollbars in popups unless the
-  // popups are at the maximum allowed size.
-  gfx::Size largest_popup_size(ExtensionPopupGtk::kMaxWidth,
-                               ExtensionPopupGtk::kMaxHeight);
-  extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
+  content::ViewType host_type = extension_host_->extension_host_type();
+  if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+    gfx::Size min_size(ExtensionPopupGtk::kMinWidth,
+                       ExtensionPopupGtk::kMinHeight);
+    gfx::Size max_size(ExtensionPopupGtk::kMaxWidth,
+                       ExtensionPopupGtk::kMaxHeight);
+    render_view_host()->EnableAutoResize(min_size, max_size);
+  }
 }

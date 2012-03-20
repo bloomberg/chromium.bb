@@ -15,7 +15,7 @@ class ExtensionViewAndroid {
  public:
   Browser* browser() const { return NULL; }
 
-  void UpdatePreferredSize(const gfx::Size& new_size);
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
   void RenderViewCreated();
 
  private:

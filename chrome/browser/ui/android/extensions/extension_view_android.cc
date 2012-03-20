@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-void ExtensionViewAndroid::UpdatePreferredSize(const gfx::Size& new_size) {
+void ExtensionViewAndroid::ResizeDueToAutoResize(const gfx::Size& new_size) {
   NOTIMPLEMENTED();
 }
 

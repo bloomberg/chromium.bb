@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -89,7 +90,7 @@ void ExtensionView::ShowIfCompletelyLoaded() {
   // actually been created. These can happen in different orders.
   if (host_->did_stop_loading()) {
     SetVisible(true);
-    UpdatePreferredSize(pending_preferred_size_);
+    ResizeDueToAutoResize(pending_preferred_size_);
   }
 }
 
@@ -110,7 +111,7 @@ void ExtensionView::SetBackground(const SkBitmap& background) {
   ShowIfCompletelyLoaded();
 }
 
-void ExtensionView::UpdatePreferredSize(const gfx::Size& new_size) {
+void ExtensionView::ResizeDueToAutoResize(const gfx::Size& new_size) {
   // Don't actually do anything with this information until we have been shown.
   // Size changes will not be honored by lower layers while we are hidden.
   if (!visible()) {
@@ -134,7 +135,7 @@ void ExtensionView::ViewHierarchyChanged(bool is_add,
 void ExtensionView::PreferredSizeChanged() {
   View::PreferredSizeChanged();
   if (container_)
-    container_->OnExtensionPreferredSizeChanged(this);
+    container_->OnExtensionSizeChanged(this);
 }
 
 bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
@@ -163,11 +164,14 @@ void ExtensionView::RenderViewCreated() {
     pending_background_.reset();
   }
 
-  // Tell the renderer not to draw scroll bars in popups unless the
-  // popups are at the maximum allowed size.
-  gfx::Size largest_popup_size(ExtensionPopup::kMaxWidth,
-                               ExtensionPopup::kMaxHeight);
-  host_->DisableScrollbarsForSmallWindows(largest_popup_size);
+  content::ViewType host_type = host_->extension_host_type();
+  if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+    gfx::Size min_size(ExtensionPopup::kMinWidth,
+                       ExtensionPopup::kMinHeight);
+    gfx::Size max_size(ExtensionPopup::kMaxWidth,
+                       ExtensionPopup::kMaxHeight);
+    render_view_host()->EnableAutoResize(min_size, max_size);
+  }
 
   if (container_)
     container_->OnViewWasResized();

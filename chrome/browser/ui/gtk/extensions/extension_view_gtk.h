@@ -26,8 +26,8 @@ class ExtensionViewGtk {
   class Container {
    public:
     virtual ~Container() {}
-    virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
-                                                 const gfx::Size& new_size) {}
+    virtual void OnExtensionSizeChanged(ExtensionViewGtk* view,
+                                        const gfx::Size& new_size) {}
   };
 
   void Init();
@@ -42,7 +42,7 @@ class ExtensionViewGtk {
 
   // Method for the ExtensionHost to notify us about the correct size for
   // extension contents.
-  void UpdatePreferredSize(const gfx::Size& new_size);
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.

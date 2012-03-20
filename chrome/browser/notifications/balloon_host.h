@@ -59,8 +59,8 @@ class BalloonHost : public content::WebContentsDelegate,
   // content::WebContentsDelegate implementation:
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
-  virtual void UpdatePreferredSize(content::WebContents* source,
-                                   const gfx::Size& pref_size) OVERRIDE;
+  virtual void ResizeDueToAutoResize(content::WebContents* source,
+                                     const gfx::Size& pref_size) OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,

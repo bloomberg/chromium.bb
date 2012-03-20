@@ -141,10 +141,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
 
-  // Tell the renderer not to draw scrollbars on windows smaller than
-  // |size_limit| in both width and height.
-  void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
-
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewCreated(
@@ -165,8 +161,8 @@ class ExtensionHost : public content::WebContentsDelegate,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;
-  virtual void UpdatePreferredSize(content::WebContents* source,
-                                   const gfx::Size& pref_size) OVERRIDE;
+  virtual void ResizeDueToAutoResize(content::WebContents* source,
+                                     const gfx::Size& new_size) OVERRIDE;
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
       OVERRIDE;
   virtual void RunFileChooser(

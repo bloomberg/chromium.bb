@@ -31,7 +31,7 @@ class ExtensionView : public views::NativeViewHost {
   class Container {
    public:
     virtual ~Container() {}
-    virtual void OnExtensionPreferredSizeChanged(ExtensionView* view) {}
+    virtual void OnExtensionSizeChanged(ExtensionView* view) {}
     virtual void OnViewWasResized() {}
   };
 
@@ -43,7 +43,7 @@ class ExtensionView : public views::NativeViewHost {
   void SetIsClipped(bool is_clipped);
 
   // Notification from ExtensionHost.
-  void UpdatePreferredSize(const gfx::Size& new_size);
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.

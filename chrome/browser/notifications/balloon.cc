@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void Balloon::SetPosition(const gfx::Point& upper_left, bool reposition) {
     balloon_view_->RepositionToBalloon();
 }
 
-void Balloon::SetContentPreferredSize(const gfx::Size& size) {
+void Balloon::ResizeDueToAutoResize(const gfx::Size& size) {
   collection_->ResizeBalloon(this, size);
 }
 

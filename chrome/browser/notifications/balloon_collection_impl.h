@@ -76,6 +76,11 @@ class BalloonCollectionImpl : public BalloonCollection,
   // balloons in the collection.
   int count() const { return base_.count(); }
 
+  static int min_balloon_width() { return Layout::min_balloon_width(); }
+  static int max_balloon_width() { return Layout::max_balloon_width(); }
+  static int min_balloon_height() { return Layout::min_balloon_height(); }
+  static int max_balloon_height() { return Layout::max_balloon_height(); }
+
  protected:
   // Calculates layout values for the balloons including
   // the scaling, the max/min sizes, and the upper left corner of each.

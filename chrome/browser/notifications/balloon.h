@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,7 @@ class Balloon {
   // Request a new content size for this balloon.  This will get passed
   // to the balloon collection for checking against available space and
   // min/max restrictions.
-  void SetContentPreferredSize(const gfx::Size& size);
+  void ResizeDueToAutoResize(const gfx::Size& size);
 
   // Provides a view for this balloon.  Ownership transfers
   // to this object.

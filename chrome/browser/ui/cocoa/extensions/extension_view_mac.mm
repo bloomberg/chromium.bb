@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -55,23 +56,24 @@ void ExtensionViewMac::SetBackground(const SkBitmap& background) {
   ShowIfCompletelyLoaded();
 }
 
-void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
+void ExtensionViewMac::ResizeDueToAutoResize(const gfx::Size& new_size) {
   if (container_)
-    container_->OnExtensionPreferredSizeChanged(this, new_size);
+    container_->OnExtensionSizeChanged(this, new_size);
 }
 
 void ExtensionViewMac::RenderViewCreated() {
-  // Do not allow webkit to draw scroll bars on views smaller than
-  // the largest size view allowed.  The view will be resized to make
-  // scroll bars unnecessary.  Scroll bars change the height of the
-  // view, so not drawing them is necessary to avoid infinite resizing.
-  gfx::Size largest_popup_size(
-      CGSizeMake(ExtensionViewMac::kMaxWidth, ExtensionViewMac::kMaxHeight));
-  extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
-
   if (!pending_background_.empty() && render_view_host()->GetView()) {
     render_view_host()->GetView()->SetBackground(pending_background_);
     pending_background_.reset();
+  }
+
+  content::ViewType host_type = extension_host_->extension_host_type();
+  if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+    gfx::Size min_size(ExtensionViewMac::kMinWidth,
+                       ExtensionViewMac::kMinHeight);
+    gfx::Size max_size(ExtensionViewMac::kMaxWidth,
+                       ExtensionViewMac::kMaxHeight);
+    render_view_host()->EnableAutoResize(min_size, max_size);
   }
 }
 

@@ -48,8 +48,8 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 // Called when the extension's hosted NSView has been resized.
 - (void)extensionViewFrameChanged;
 
-// Called when the extension's preferred size changes.
-- (void)onPreferredSizeChanged:(NSSize)newSize;
+// Called when the extension's size changes.
+- (void)onSizeChanged:(NSSize)newSize;
 
 // Called when the extension view is shown.
 - (void)onViewDidShow;
@@ -61,10 +61,10 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
       : controller_(controller) {
   }
 
-  virtual void OnExtensionPreferredSizeChanged(
+  virtual void OnExtensionSizeChanged(
       ExtensionViewMac* view,
       const gfx::Size& new_size) OVERRIDE {
-    [controller_ onPreferredSizeChanged:
+    [controller_ onSizeChanged:
         NSMakeSize(new_size.width(), new_size.height())];
   }
 
@@ -300,10 +300,10 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   }
 }
 
-- (void)onPreferredSizeChanged:(NSSize)newSize {
+- (void)onSizeChanged:(NSSize)newSize {
   // When we update the size, the window will become visible. Stay hidden until
   // the host is loaded.
-  pendingPreferredSize_ = newSize;
+  pendingSize_ = newSize;
   if (!host_->did_stop_loading())
     return;
 
@@ -315,20 +315,12 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // |new_size| is in pixels. Convert to view units.
   frame.size = [extensionView_ convertSize:frame.size fromView:nil];
 
-  // On first display of some extensions, this function is called with zero
-  // width after the correct size has been set. Bail if zero is seen, assuming
-  // that an extension's view doesn't want any dimensions to ever be zero.
-  // http://crbug.com/112810 - Verify this assumption and look into WebCore's
-  // |contentsPreferredWidth| to see why this is occurring.
-  if (NSIsEmptyRect(frame))
-    return;
-
   [extensionView_ setFrame:frame];
   [extensionView_ setNeedsDisplay:YES];
 }
 
 - (void)onViewDidShow {
-  [self onPreferredSizeChanged:pendingPreferredSize_];
+  [self onSizeChanged:pendingSize_];
 }
 
 - (void)windowDidResize:(NSNotification*)notification {

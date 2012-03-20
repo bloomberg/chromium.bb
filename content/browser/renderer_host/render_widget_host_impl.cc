@@ -1186,7 +1186,14 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
   }
 
   if (should_auto_resize_) {
-    OnRenderAutoResized(params.view_size);
+    bool post_callback = new_auto_size_.IsEmpty();
+    new_auto_size_ = params.view_size;
+    if (post_callback) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&RenderWidgetHostImpl::DelayedAutoResized,
+                     weak_factory_.GetWeakPtr()));
+    }
   }
 
   // Log the time delta for processing a paint message. On platforms that don't
@@ -1687,6 +1694,18 @@ void RenderWidgetHostImpl::AcknowledgePostSubBuffer(int32 route_id,
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim)
     ui_shim->Send(new AcceleratedSurfaceMsg_PostSubBufferACK(route_id));
+}
+
+void RenderWidgetHostImpl::DelayedAutoResized() {
+  gfx::Size new_size = new_auto_size_;
+  // Clear the new_auto_size_ since the empty value is used as a flag to
+  // indicate that no callback is in progress (i.e. without this line
+  // DelayedAutoResized will not get called again).
+  new_auto_size_.SetSize(0, 0);
+  if (!should_auto_resize_)
+    return;
+
+  OnRenderAutoResized(new_size);
 }
 
 }  // namespace content

@@ -51,8 +51,8 @@ class NotificationRegistrar;
   // Whether the popup has a devtools window attached to it.
   BOOL beingInspected_;
 
-  // The preferred size once the ExtensionView has loaded.
-  NSSize pendingPreferredSize_;
+  // The size once the ExtensionView has loaded.
+  NSSize pendingSize_;
 }
 
 // Returns the ExtensionHost object associated with this popup.

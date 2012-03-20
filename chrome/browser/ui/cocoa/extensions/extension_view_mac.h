@@ -27,8 +27,8 @@ class ExtensionViewMac {
   class Container {
    public:
     virtual ~Container() {}
-    virtual void OnExtensionPreferredSizeChanged(ExtensionViewMac* view,
-                                                 const gfx::Size& new_size) {}
+    virtual void OnExtensionSizeChanged(ExtensionViewMac* view,
+                                        const gfx::Size& new_size) {}
     virtual void OnExtensionViewDidShow(ExtensionViewMac* view) {};
   };
 
@@ -57,7 +57,7 @@ class ExtensionViewMac {
 
   // Method for the ExtensionHost to notify us about the correct size for
   // extension contents.
-  void UpdatePreferredSize(const gfx::Size& new_size);
+  void ResizeDueToAutoResize(const gfx::Size& new_size);
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.

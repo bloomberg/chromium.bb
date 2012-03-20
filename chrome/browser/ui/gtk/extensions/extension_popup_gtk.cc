@@ -136,7 +136,7 @@ void ExtensionPopupGtk::BubbleClosing(BubbleGtk* bubble,
   delete this;
 }
 
-void ExtensionPopupGtk::OnExtensionPreferredSizeChanged(
+void ExtensionPopupGtk::OnExtensionSizeChanged(
     ExtensionViewGtk* view,
     const gfx::Size& new_size) {
   int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));

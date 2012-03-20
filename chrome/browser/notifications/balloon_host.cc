@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_host.h"
+
+#include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -68,9 +70,9 @@ void BalloonHost::HandleMouseDown() {
   balloon_->OnClick();
 }
 
-void BalloonHost::UpdatePreferredSize(WebContents* source,
-                                      const gfx::Size& pref_size) {
-  balloon_->SetContentPreferredSize(pref_size);
+void BalloonHost::ResizeDueToAutoResize(WebContents* source,
+                                        const gfx::Size& pref_size) {
+  balloon_->ResizeDueToAutoResize(pref_size);
 }
 
 void BalloonHost::AddNewContents(WebContents* source,
@@ -86,10 +88,11 @@ void BalloonHost::AddNewContents(WebContents* source,
 }
 
 void BalloonHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
-  render_view_host->DisableScrollbarsForThreshold(
-      balloon_->min_scrollbar_size());
-  render_view_host->WasResized();
-  render_view_host->EnablePreferredSizeMode();
+  gfx::Size min_size(BalloonCollectionImpl::min_balloon_width(),
+                     BalloonCollectionImpl::min_balloon_height());
+  gfx::Size max_size(BalloonCollectionImpl::max_balloon_width(),
+                     BalloonCollectionImpl::max_balloon_height());
+  render_view_host->EnableAutoResize(min_size, max_size);
 
   if (enable_web_ui_)
     render_view_host->AllowBindings(content::BINDINGS_POLICY_WEB_UI);

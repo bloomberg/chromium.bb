@@ -533,6 +533,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // renderer.
   void ProcessTouchAck(WebKit::WebInputEvent::Type type, bool processed);
 
+  // Called when there is a new auto resize (using a post to avoid a stack
+  // which may get in recursive loops).
+  void DelayedAutoResized();
+
   // Created during construction but initialized during Init*(). Therefore, it
   // is guaranteed never to be NULL, but its channel may be NULL if the
   // renderer crashed, so you must always check that.
@@ -578,6 +582,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // |resize_ack_pending_|, but the latter is not set if the new size has width
   // or height zero, which is why we need this too.
   gfx::Size in_flight_size_;
+
+  // The next auto resize to send.
+  gfx::Size new_auto_size_;
 
   // True if the render widget host should track the render widget's size as
   // opposed to visa versa.
