@@ -118,9 +118,7 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
 
 bool BluetoothDevice::IsSupported() const {
   DeviceType device_type = GetDeviceType();
-  return (device_type == DEVICE_COMPUTER ||
-          device_type == DEVICE_PHONE ||
-          device_type == DEVICE_KEYBOARD ||
+  return (device_type == DEVICE_KEYBOARD ||
           device_type == DEVICE_MOUSE ||
           device_type == DEVICE_TABLET ||
           device_type == DEVICE_KEYBOARD_MOUSE_COMBO);
