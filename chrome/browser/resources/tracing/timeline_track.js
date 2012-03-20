@@ -111,7 +111,7 @@ cr.define('tracing', function() {
     }
   };
 
-  function addCloseButtonElement(el) {
+  function addControlButtonElements(el, canCollapse) {
     var closeEl = document.createElement('div');
     closeEl.classList.add('timeline-track-button');
     closeEl.classList.add('timeline-track-close-button');
@@ -120,6 +120,22 @@ cr.define('tracing', function() {
       el.style.display = 'None';
     });
     el.appendChild(closeEl);
+
+    if (canCollapse) {
+      var collapseEl = document.createElement('div');
+      collapseEl.classList.add('timeline-track-button');
+      collapseEl.classList.add('timeline-track-collapse-button');
+      var minus = "\u2212"; // minus sign;
+      var plus = "\u002b"; // plus sign;
+      collapseEl.textContent = minus;
+      var collapsed = false;
+      collapseEl.addEventListener('click', function() {
+        collapsed = !collapsed;
+        el.collapsedDidChange(collapsed);
+        collapseEl.textContent = collapsed ? plus : minus;
+      });
+      el.appendChild(collapseEl);
+    }
   }
 
   /**
@@ -214,7 +230,26 @@ cr.define('tracing', function() {
           }
         }
       }
-      addCloseButtonElement(this);
+      addControlButtonElements(this, this.tracks_.length >= 4);
+    },
+
+    collapsedDidChange: function(collapsed) {
+      if (collapsed) {
+        var h = parseInt(this.tracks_[0].height);
+        for (var i = 0; i < this.tracks_.length; ++i) {
+          if (h > 2) {
+            this.tracks_[i].height = Math.floor(h) + 'px';
+          } else {
+            this.tracks_[i].style.display = 'None';
+          }
+          h = h * 0.5;
+        }
+      } else {
+        for (var i = 0; i < this.tracks_.length; ++i) {
+          this.tracks_[i].height = this.tracks_[0].height;
+          this.tracks_[i].style.display = "";
+        }
+      }
     }
   };
 
@@ -282,7 +317,7 @@ cr.define('tracing', function() {
         this.tracks_[0].heading = this.heading_;
         this.tracks_[0].tooltip = this.tooltip_;
       }
-      addCloseButtonElement(this);
+      addControlButtonElements(this, false);
     }
   };
 
@@ -369,10 +404,13 @@ cr.define('tracing', function() {
         if (!this.viewport_)
           return;
 
-        if (this.canvas_.width != this.canvasContainer_.clientWidth)
-          this.canvas_.width = this.canvasContainer_.clientWidth;
-        if (this.canvas_.height != this.canvasContainer_.clientHeight)
-          this.canvas_.height = this.canvasContainer_.clientHeight;
+        var style = window.getComputedStyle(this.canvasContainer_);
+        var style_width = parseInt(style.width);
+        var style_height = parseInt(style.height);
+        if (this.canvas_.width != style_width)
+          this.canvas_.width = style_width;
+        if (this.canvas_.height != style_height)
+          this.canvas_.height = style_height;
 
         this.redraw();
       }.bind(this), this);
@@ -488,8 +526,13 @@ cr.define('tracing', function() {
       this.invalidate();
     },
 
+    get height() {
+      return window.getComputedStyle(this).height;
+    },
+
     set height(height) {
       this.style.height = height;
+      this.invalidate();
     },
 
     labelWidth: function(title) {
@@ -877,7 +920,7 @@ cr.define('tracing', function() {
 
     decorate: function() {
       this.classList.add('timeline-counter-track');
-      addCloseButtonElement(this);
+      addControlButtonElements(this, false);
     },
 
     get counter() {

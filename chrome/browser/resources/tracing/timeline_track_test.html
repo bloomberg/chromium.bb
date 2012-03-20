@@ -321,7 +321,32 @@ found in the LICENSE file.
     track.thread = thread;
     track.viewport = new TimelineViewport(testEl);
     track.viewport.setPanAndScale(0,
-        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp));
+        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
+  }
+
+  function testTimelineThreadTrackWithTallSlices() {
+    var testEl = getTestDiv('testTimelineThreadTrackWithTallSlices');
+    var track = TimelineThreadTrack();
+    testEl.appendChild(track);
+    track.heading = 'testTimelineThreadTrackWithTallSlices';
+    var thread = new TimelineThread(new TimelineProcess(7), 1);
+    thread.subRows = [
+      [new TimelineThreadSlice('a', 1, 0, {}, 1)],
+      [new TimelineThreadSlice('b', 2, 0.1, {}, 0.8)],
+      [new TimelineThreadSlice('c', 3, 0.15, {}, 0.70)],
+      [new TimelineThreadSlice('d', 4, 0.20, {}, 0.50)],
+      [new TimelineThreadSlice('e', 5, 0.30, {}, 0.28)],
+      [new TimelineThreadSlice('e', 6, 0.35, {}, 0.20)],
+      [new TimelineThreadSlice('f', 7, 0.40, {}, 0.10)]
+    ];
+    thread.updateBounds();
+    track.heading = 'thread tall';
+    track.headingWidth = '150px';
+    track.toolTip = thread.userFriendlyDetails + ':';
+    track.thread = thread;
+    track.viewport = new TimelineViewport(testEl);
+    track.viewport.setPanAndScale(0,
+        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
   }
 
   function testTimelineThreadTrackWithRegularAndAsyncSlices() {
