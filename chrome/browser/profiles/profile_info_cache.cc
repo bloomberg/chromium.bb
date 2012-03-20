@@ -324,8 +324,11 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
   std::string key = CacheKeyFromProfilePath(path);
 
   // If the picture is already loaded then use it.
-  if (gaia_pictures_.count(key))
+  if (gaia_pictures_.count(key)) {
+    if (gaia_pictures_[key]->IsEmpty())
+      return NULL;
     return gaia_pictures_[key];
+  }
 
   std::string file_name;
   GetInfoForProfileAtIndex(index)->GetString(
@@ -357,6 +360,9 @@ void ProfileInfoCache::OnGAIAPictureLoaded(const FilePath& path,
   if (*image) {
     delete gaia_pictures_[key];
     gaia_pictures_[key] = *image;
+  } else {
+    // Place an empty image in the cache to avoid reloading it again.
+    gaia_pictures_[key] = new gfx::Image();
   }
   delete image;
 
