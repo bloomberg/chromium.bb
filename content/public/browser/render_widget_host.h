@@ -170,14 +170,20 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
 
   virtual void Blur() = 0;
 
-  // Copies the contents of the backing store into the given (uninitialized)
-  // PlatformCanvas. Returns true on success, false otherwise. When accelerated
-  // compositing is active, the contents is copied from the compositing surface.
-  // If non empty |dest_size| is given, the content is shrinked so that it fits
-  // in |dest_size|. If |dest_size| is larger than the contens size, the
-  // content is not resized. If |dest_size| is empty, the original size of the
-  // contents is copied.
-  virtual bool CopyFromBackingStore(const gfx::Size& dest_size,
+  // Copies the given subset of the backing store into the given (uninitialized)
+  // PlatformCanvas. If |src_rect| is empty, the whole contents is copied.
+  // Returns true on success, false otherwise. When accelerated compositing is
+  // active, the contents is copied from the compositing surface.
+  // If non empty |accelerated_dest_size| is given and accelerated compositing
+  // is active, the content is shrinked so that it fits in
+  // |accelerated_dest_size|. If |accelerated_dest_size| is larger than the
+  // contens size, the content is not resized. If |accelerated_dest_size| is
+  // empty, the size copied from the source contents is used.
+  // NOTE: |src_rect| is not supported yet when accelerated compositing is
+  // active (http://crbug.com/118571) and the whole content is always copied
+  // regardless of |src_rect|.
+  virtual bool CopyFromBackingStore(const gfx::Rect& src_rect,
+                                    const gfx::Size& accelerated_dest_size,
                                     skia::PlatformCanvas* output) = 0;
 
 #if defined(TOOLKIT_GTK)

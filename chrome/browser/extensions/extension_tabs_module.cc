@@ -1653,7 +1653,8 @@ bool CaptureVisibleTabFunction::RunImpl() {
   // For example, some uncommon X11 visual modes are not supported by
   // CopyFromBackingStore().
   skia::PlatformCanvas temp_canvas;
-  if (render_view_host->CopyFromBackingStore(gfx::Size(), &temp_canvas)) {
+  if (render_view_host->CopyFromBackingStore(
+          gfx::Rect(), gfx::Size(), &temp_canvas)) {
     VLOG(1) << "captureVisibleTab() got image from backing store.";
     SendResultFromBitmap(skia::GetTopDevice(temp_canvas)->accessBitmap(false));
     return true;

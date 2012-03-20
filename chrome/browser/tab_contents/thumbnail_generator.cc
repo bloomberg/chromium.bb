@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
@@ -60,7 +61,30 @@ namespace {
 static const int kThumbnailWidth = 212;
 static const int kThumbnailHeight = 132;
 
+// This factor determines the number of pixels to be copied by
+// RenderWidgetHost::CopyFromBackingStore for generating thumbnail.
+// Smaller scale is good for performance, but too small scale causes aliasing
+// because the resampling method is not good enough to retain the image quality.
+// TODO(mazda): the Improve resampling method and use a smaller scale
+// (http://crbug.com/118571).
+static const double kThumbnailCopyScale = 2.0;
+
 static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
+
+// Calculates the size used by RenderWidgetHost::CopyFromBackingStore.
+// The result is computed as the minimum size that satisfies the following
+// conditions.
+//   result.width : result.height == view_size.width : view_size.height
+//   result.width >= kThumbnailCopyScale * desired_size.width
+//   result.height >= kThumbnailCopyScale * desired_size.height
+gfx::Size GetCopySizeForThumbnail(const gfx::Size& view_size,
+                                  const gfx::Size& desired_size) {
+  const double scale = kThumbnailCopyScale *
+      std::max(static_cast<double>(desired_size.width()) / view_size.width(),
+               static_cast<double>(desired_size.height()) / view_size.height());
+  return gfx::Size(static_cast<int>(scale * view_size.width()),
+                   static_cast<int>(scale * view_size.height()));
+}
 
 // Creates a downsampled thumbnail for the given RenderWidgetHost's backing
 // store. The returned bitmap will be isNull if there was an error creating it.
@@ -77,9 +101,15 @@ SkBitmap GetBitmapForRenderWidgetHost(
   // Get the bitmap as a Skia object so we can resample it. This is a large
   // allocation and we can tolerate failure here, so give up if the allocation
   // fails.
-  // TODO(mazda): Copy a shrinked size of image instead of the whole view size.
   skia::PlatformCanvas temp_canvas;
-  if (!render_widget_host->CopyFromBackingStore(gfx::Size(), &temp_canvas))
+  content::RenderWidgetHostView* view = render_widget_host->GetView();
+  if (!view)
+    return result;
+  const gfx::Size copy_size =
+      GetCopySizeForThumbnail(view->GetViewBounds().size(),
+                              gfx::Size(desired_width, desired_height));
+  if (!render_widget_host->CopyFromBackingStore(
+          gfx::Rect(), copy_size, &temp_canvas))
     return result;
   const SkBitmap& bmp_with_scrollbars =
       skia::GetTopDevice(temp_canvas)->accessBitmap(false);
