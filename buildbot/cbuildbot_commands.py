@@ -108,14 +108,14 @@ def _GetVMConstants(buildroot):
   return (vdisk_size, statefulfs_size)
 
 
-def _WipeOldOutput(buildroot, board):
-  """Wipes out build output directories for the specified board.
+def _WipeOldOutput(buildroot):
+  """Wipes out build output directories for all boards.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Delete image directories for this board name.
   """
-  image_dir = os.path.join('src', 'build', 'images', board)
+  image_dir = os.path.join('src', 'build', 'images')
   cros_lib.RunCommand(['rm', '-rf', image_dir], cwd=buildroot)
 
 
@@ -253,7 +253,7 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
 
 
 def BuildImage(buildroot, board, images_to_build, extra_env=None):
-  _WipeOldOutput(buildroot, board)
+  _WipeOldOutput(buildroot)
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']
