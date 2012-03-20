@@ -125,7 +125,8 @@ bool P2PTransportImpl::AddRemoteCandidate(const std::string& address) {
   return true;
 }
 
-void P2PTransportImpl::OnRequestSignaling() {
+void P2PTransportImpl::OnRequestSignaling(
+    cricket::TransportChannelImpl* channel) {
   channel_->OnSignalingReady();
 }
 

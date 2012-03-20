@@ -50,7 +50,7 @@ class LibjingleStreamTransport : public StreamTransport,
   virtual bool is_connected() const OVERRIDE;
 
  private:
-  void OnRequestSignaling();
+  void OnRequestSignaling(cricket::TransportChannelImpl* channel);
   void OnCandidateReady(cricket::TransportChannelImpl* channel,
                         const cricket::Candidate& candidate);
   void OnRouteChange(cricket::TransportChannel* channel,
@@ -207,7 +207,8 @@ bool LibjingleStreamTransport::is_connected() const {
   return callback_.is_null();
 }
 
-void LibjingleStreamTransport::OnRequestSignaling() {
+void LibjingleStreamTransport::OnRequestSignaling(
+    cricket::TransportChannelImpl* channel) {
   DCHECK(CalledOnValidThread());
   channel_->OnSignalingReady();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ class CONTENT_EXPORT P2PTransportImpl
  private:
   class ChannelAdapter;
 
-  void OnRequestSignaling();
+  void OnRequestSignaling(cricket::TransportChannelImpl* channel);
   void OnCandidateReady(cricket::TransportChannelImpl* channel,
                         const cricket::Candidate& candidate);
   void OnReadableState(cricket::TransportChannel* channel);

@@ -91,8 +91,9 @@ MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
   return kSdpNew;
 }
 
-void MockPeerConnectionImpl::StartIce(IceOptions options) {
+bool MockPeerConnectionImpl::StartIce(IceOptions options) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateOffer(
