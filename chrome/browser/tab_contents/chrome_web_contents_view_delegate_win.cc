@@ -81,6 +81,8 @@ void ChromeWebContentsViewDelegateWin::StoreFocus() {
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
 
+  if (!GetFocusManager())
+    return;
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (focused_view)
     view_storage->StoreView(last_focused_view_storage_id_, focused_view);
