@@ -2,11 +2,39 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#wallpaper-title {
+  margin: 40px 34px;
+}
+
+#wallpaper-title h1 {
+  margin: 0;
+  padding: 0 0 10px 0;
+}
+
 #wallpaper-grid {
-  width: 470px;
+  margin: 0;
+  width: 640px;
 }
 
 #wallpaper-grid img {
   height: 80px;
   width: 128px;
+}
+
+.bottom-bar {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.bottom-bar .spacer {
+  -webkit-box-flex: 1;
+}
+
+.image-attr {
+  line-height: 26px;
+  padding: 14px 0 14px 34px;
+}
+
+#author-website {
+  -webkit-padding-start: 5px;
 }

@@ -11,10 +11,20 @@ class SkBitmap;
 
 namespace ash {
 
+struct ASH_EXPORT WallpaperInfo {
+  int id;
+  int thumb_id;
+  // TODO(bshe): author member should be encoded to UTF16. We need to use i18n
+  // string for this member after M19.
+  const char* author;
+  const char* website;
+};
+
 ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const SkBitmap& GetWallpaper(int index);
 ASH_EXPORT const SkBitmap& GetWallpaperThumbnail(int index);
+ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);
 
 }  // namespace ash
 

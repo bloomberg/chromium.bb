@@ -49,6 +49,9 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
       };
 
+      // @type {Array.<author: string, url: string, website: string>}
+      this.wallpapers_ = [];
+
       chrome.send('onSetWallpaperPageInitialized');
     },
 
@@ -80,6 +83,9 @@ cr.define('options', function() {
     handleImageSelected_: function() {
       var wallpaperGrid = $('wallpaper-grid');
       var index = wallpaperGrid.selectionModel.selectedIndex;
+      $('author-name').innerText = this.wallpapers_[index].author;
+      $('author-website').innerText = this.wallpapers_[index].website;
+
       // Ignore deselection, selection change caused by program itself and
       // selection of one of the action buttons.
       if (index != -1 &&
@@ -107,17 +113,26 @@ cr.define('options', function() {
       var wallpaperGrid = $('wallpaper-grid');
       wallpaperGrid.selectionModel.selectedIndex = index;
       wallpaperGrid.selectionModel.leadIndex = index;
+      $('author-name').innerText = this.wallpapers_[index].author;
+      $('author-website').innerText = this.wallpapers_[index].website;
     },
 
     /**
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<string>} images An array of URLs to default images.
+     * @param {Array.<{author: string, url: string, website: string}>}
+     * wallpapers An array of wallpaper objects.
      * @private
      */
-    setDefaultImages_: function(images) {
+    setDefaultImages_: function(wallpapers) {
       var wallpaperGrid = $('wallpaper-grid');
-      for (var i = 0, url; url = images[i]; i++)
-        wallpaperGrid.addItem(url);
+      // TODO(bshe): Ideally we should save author and website with the actual
+      // image (URL) and not use index related storage. This way this data is
+      // stored in one place rather than depending on the index to be
+      // consistent.
+      for (var i = 0, wallpaper; wallpaper = wallpapers[i]; i++) {
+        this.wallpapers_.push(wallpaper);
+        wallpaperGrid.addItem(wallpaper.url);
+      }
     },
 
   };

@@ -1,12 +1,23 @@
 <div id="set-wallpaper-page" class="page" hidden>
-  <h1 i18n-content="setWallpaperPage"></h1>
-  <div class="content-area">
+  <div class="close-button"></div>
+  <div id="wallpaper-title">
+    <h1 i18n-content="setWallpaperPage"></h1>
     <span i18n-content="setWallpaperPageDescription"></span>
+  </div>
+  <div class="content-area">
     <grid id="wallpaper-grid" class="image-picker"></grid>
   </div>
-  <div class="action-area">
-    <div class="button-strip">
-      <button id="set-wallpaper-overlay-confirm" i18n-content="ok"></button>
+  <div class="bottom-bar">
+    <div class="image-attr">
+      <span i18n-content="setWallpaperAuthor"></span>
+      <strong id="author-name"></strong>
+      <span id="author-website"></span>
+    </div>
+    <div class="spacer"></div>
+    <div class="action-area">
+      <div class="button-strip">
+        <button id="set-wallpaper-overlay-confirm" i18n-content="ok"></button>
+      </div>
     </div>
   </div>
 </div>

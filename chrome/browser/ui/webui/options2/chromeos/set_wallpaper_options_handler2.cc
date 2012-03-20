@@ -43,6 +43,8 @@ void SetWallpaperOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_DIALOG_TITLE));
   localized_strings->SetString("setWallpaperPageDescription",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT));
+  localized_strings->SetString("setWallpaperAuthor",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
 }
 
 void SetWallpaperOptionsHandler::RegisterMessages() {
@@ -58,15 +60,21 @@ void SetWallpaperOptionsHandler::RegisterMessages() {
 }
 
 void SetWallpaperOptionsHandler::SendDefaultImages() {
-  ListValue image_urls;
+  ListValue images;
+  DictionaryValue* image_detail;
+  ash::WallpaperInfo image_info;
 
   for (int i = 0; i < ash::GetWallpaperCount(); ++i) {
-    image_urls.Append(Value::CreateStringValue(
-        web_ui_util::GetImageDataUrl(ash::GetWallpaperThumbnail(i))));
+    images.Append(image_detail = new DictionaryValue());
+    image_info = ash::GetWallpaperInfo(i);
+    image_detail->SetString("url", web_ui_util::GetImageDataUrl(
+        ash::GetWallpaperThumbnail(i)));
+    image_detail->SetString("author", image_info.author);
+    image_detail->SetString("website", image_info.website);
   }
 
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setDefaultImages",
-                                   image_urls);
+                                   images);
 }
 
 void SetWallpaperOptionsHandler::HandlePageInitialized(

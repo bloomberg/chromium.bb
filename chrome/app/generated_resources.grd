@@ -12669,6 +12669,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT" desc="Text with description of what to do on Change Wallpaper dialog.">
         Choose a picture to display on your background.
       </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
+        Attribution:
+      </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
         Change picture...
       </message>
