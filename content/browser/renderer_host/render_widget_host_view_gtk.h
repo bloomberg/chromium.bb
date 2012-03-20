@@ -34,13 +34,7 @@ class RenderWidgetHost;
 class RenderWidgetHostImpl;
 }
 
-#if defined(OS_CHROMEOS)
-namespace ui {
-class TooltipWindowGtk;
-}
-#else
 class GtkKeyBindingsHandler;
-#endif  // defined(OS_CHROMEOS)
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
@@ -66,9 +60,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
-#if !defined(TOOLKIT_VIEWS)
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-#endif  // !defined(TOOLKIT_VIEWS)
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
@@ -260,11 +252,9 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   // A convenience wrapper object for GtkIMContext;
   scoped_ptr<GtkIMContextWrapper> im_context_;
 
-#if !defined(OS_CHROMEOS)
   // A convenience object for handling editor key bindings defined in gtk
   // keyboard theme.
   scoped_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
-#endif
 
   // Helper class that lets us allocate plugin containers and move them.
   webkit::npapi::GtkPluginContainerManager plugin_container_manager_;
@@ -293,11 +283,6 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   // The event for the last mouse down we handled. We need this for context
   // menus and drags.
   GdkEventButton* last_mouse_down_;
-
-#if defined(OS_CHROMEOS)
-  // Custimized tooltip window.
-  scoped_ptr<ui::TooltipWindowGtk> tooltip_window_;
-#endif  // defined(OS_CHROMEOS)
 
   ui::GtkSignalRegistrar signals_;
 };

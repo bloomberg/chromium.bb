@@ -29,6 +29,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/gtk_im_context_wrapper.h"
+#include "content/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -48,27 +49,14 @@
 #include "webkit/glue/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/gtk/tooltip_window_gtk.h"
-#else
-#include "content/browser/renderer_host/gtk_key_bindings_handler.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace {
 
 const int kMaxWindowWidth = 4000;
 const int kMaxWindowHeight = 4000;
 
-#if defined(OS_CHROMEOS)
-// TODO(davemoore) Under Chromeos we are increasing the rate that the trackpad
-// generates events to get better precisions. Eventually we will coordinate the
-// driver and this setting to ensure they match.
-const float kDefaultScrollPixelsPerTick = 20;
-#else
 // See WebInputEventFactor.cpp for a reason for this being the default
 // scroll size for linux.
 const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
-#endif
 
 const GdkColor kBGColor =
 #if defined(NDEBUG)
@@ -290,39 +278,6 @@ class RenderWidgetHostViewGtkWidget {
       GtkWidget* widget,
       GdkEventButton* event,
       RenderWidgetHostViewGtk* host_view) {
-#if defined (OS_CHROMEOS)
-    // We support buttons 8 & 9 for scrolling with an attached USB mouse
-    // in ChromeOS. We do this separately from the builtin scrolling support
-    // because we want to support the user's expectations about the amount
-    // scrolled on each event. xorg.conf on chromeos specifies buttons
-    // 8 & 9 for the scroll wheel for the attached USB mouse.
-    if (event->type == GDK_BUTTON_RELEASE &&
-        (event->button == 8 || event->button == 9)) {
-      GdkEventScroll scroll_event;
-      scroll_event.type = GDK_SCROLL;
-      scroll_event.window = event->window;
-      scroll_event.send_event = event->send_event;
-      scroll_event.time = event->time;
-      scroll_event.x = event->x;
-      scroll_event.y = event->y;
-      scroll_event.state = event->state;
-      if (event->state & GDK_SHIFT_MASK) {
-        scroll_event.direction =
-            event->button == 8 ? GDK_SCROLL_LEFT : GDK_SCROLL_RIGHT;
-      } else {
-        scroll_event.direction =
-            event->button == 8 ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
-      }
-      scroll_event.device = event->device;
-      scroll_event.x_root = event->x_root;
-      scroll_event.y_root = event->y_root;
-      WebMouseWheelEvent web_event =
-          WebInputEventFactory::mouseWheelEvent(&scroll_event);
-      RenderWidgetHostImpl::From(
-          host_view->GetRenderWidgetHost())->ForwardWheelEvent(web_event);
-    }
-#endif
-
     if (event->type != GDK_BUTTON_RELEASE)
       host_view->set_last_mouse_down(event);
 
@@ -712,13 +667,6 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
   if (IsPopup()) {
     // We're a popup, honor the size request.
     gtk_widget_set_size_request(view_.get(), width, height);
-  } else {
-#if defined(TOOLKIT_VIEWS)
-    // TOOLKIT_VIEWS' resize logic flow matches windows. so we go ahead and
-    // size the widget.  In GTK+, the size of the widget is determined by its
-    // children.
-    gtk_widget_set_size_request(view_.get(), width, height);
-#endif
   }
 
   // Update the size of the RWH.
@@ -915,9 +863,6 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
   } else {
     gtk_widget_set_tooltip_text(view_.get(),
                                 UTF16ToUTF8(clamped_tooltip).c_str());
-#if defined(OS_CHROMEOS)
-    tooltip_window_->SetTooltipText(clamped_tooltip);
-#endif  // defined(OS_CHROMEOS)
   }
 }
 
@@ -953,11 +898,9 @@ GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {
   return last_mouse_down_;
 }
 
-#if !defined(TOOLKIT_VIEWS)
 gfx::NativeView RenderWidgetHostViewGtk::BuildInputMethodsGtkMenu() {
   return im_context_->BuildInputMethodsGtkMenu();
 }
-#endif
 
 gboolean RenderWidgetHostViewGtk::OnWindowStateEvent(
     GtkWidget* widget,
@@ -994,11 +937,7 @@ void RenderWidgetHostViewGtk::DoSharedInit() {
   view_.Own(RenderWidgetHostViewGtkWidget::CreateNewWidget(this));
   im_context_.reset(new GtkIMContextWrapper(this));
   plugin_container_manager_.set_host_widget(view_.get());
-#if defined(OS_CHROMEOS)
-  tooltip_window_.reset(new ui::TooltipWindowGtk(view_.get()));
-#else
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
-#endif
 }
 
 void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
@@ -1329,7 +1268,6 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   if (!host_)
     return;
 
-#if !defined(OS_CHROMEOS)
   EditCommands edit_commands;
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
@@ -1340,7 +1278,6 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     host_->ForwardKeyboardEvent(copy_event);
     return;
   }
-#endif
 
   host_->ForwardKeyboardEvent(event);
 }
