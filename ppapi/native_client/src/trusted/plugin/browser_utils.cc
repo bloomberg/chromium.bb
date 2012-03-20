@@ -6,6 +6,7 @@
 
 
 // Portable interface for browser interaction - API invariant portions.
+#define BASE_IMPLEMENTATION
 
 #include "base/rand_util_c.h"
 
