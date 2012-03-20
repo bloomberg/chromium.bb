@@ -530,6 +530,7 @@ cr.define('tracing', function() {
           if (slice.start >= lastSliceInSubRow.end) {
             found = true;
             subRow.push(slice);
+            break;
           }
         }
         if (!found) {

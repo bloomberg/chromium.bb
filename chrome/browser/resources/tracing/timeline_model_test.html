@@ -201,6 +201,23 @@ function testAsyncSliceGroup_rebuildSubRows_threePartlyOverlappingSlices() {
   assertEquals(g.slices[1], g.subRows[1][0]);
 }
 
+function testAsyncSliceGroup_rebuildSubRows_twoOverlappingSlices() {
+  var p1 = new TimelineProcess(1);
+  var t1 = new TimelineThread(p1, 1);
+  var g = new TimelineAsyncSliceGroup('a');
+  g.slices.push(newAsyncSlice(0, 1, t1, t1));
+  g.slices.push(newAsyncSlice(0, 1.5, t1, t1));
+  g.slices.push(newAsyncSlice(2, 1, t1, t1));
+  g.updateBounds();
+
+  assertEquals(2, g.subRows.length);
+  assertEquals(2, g.subRows[0].length);
+  assertEquals(g.slices[0], g.subRows[0][0]);
+  assertEquals(g.slices[2], g.subRows[0][1]);
+  assertEquals(1, g.subRows[1].length);
+  assertEquals(g.slices[1], g.subRows[1][0]);
+}
+
 function testAsyncSliceGroup_computeSubGroups_twoThreadSpecificSlices() {
   var p1 = new TimelineProcess(1);
   var t1 = new TimelineThread(p1, 1);
