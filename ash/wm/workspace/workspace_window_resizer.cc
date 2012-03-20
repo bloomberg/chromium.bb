@@ -14,14 +14,11 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
-
-DECLARE_WINDOW_PROPERTY_TYPE(int)
 
 namespace ash {
 namespace internal {
@@ -34,26 +31,13 @@ const int kSnapDurationMS = 100;
 // Delay before the phantom window is shown (in milliseconds).
 const int kPhantomDelayMS = 400;
 
-const aura::WindowProperty<int> kHeightBeforeObscuredProp = {0};
-const aura::WindowProperty<int>* const kHeightBeforeObscuredKey =
-    &kHeightBeforeObscuredProp;
-
-void SetHeightBeforeObscured(aura::Window* window, int height) {
-  window->SetProperty(kHeightBeforeObscuredKey, height);
-}
-
-int GetHeightBeforeObscured(aura::Window* window) {
-  return window->GetProperty(kHeightBeforeObscuredKey);
-}
-
-void ClearHeightBeforeObscured(aura::Window* window) {
-  window->SetProperty(kHeightBeforeObscuredKey, 0);
-}
-
 }  // namespace
 
 // static
 const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
+
+// static
+const int WorkspaceWindowResizer::kMinOnscreenHeight = 34;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (root_filter_)
@@ -74,7 +58,7 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
 
 void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
   gfx::Rect bounds = CalculateBoundsForDrag(details_, location);
-  if (constrain_size_)
+  if (wm::IsWindowNormal(details_.window))
     AdjustBoundsForMainWindow(&bounds);
   if (bounds != details_.window->bounds()) {
     if (!did_move_or_resize_)
@@ -158,7 +142,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     const Details& details,
     const std::vector<aura::Window*>& attached_windows)
     : details_(details),
-      constrain_size_(wm::IsWindowNormal(details.window)),
       attached_windows_(attached_windows),
       did_move_or_resize_(false),
       root_filter_(NULL),
@@ -171,10 +154,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   if (root_filter_)
     root_filter_->LockCursor();
 
-  // We should never be in a situation where we have an attached window and not
-  // constrain the size. The only case we don't constrain size is for dragging
-  // tabs, which should never have an attached window.
-  DCHECK(attached_windows_.empty() || constrain_size_);
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
          (details.window_component == HTRIGHT ||
@@ -187,13 +166,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   for (size_t i = 0; i < attached_windows_.size(); ++i) {
     gfx::Size min(attached_windows_[i]->delegate()->GetMinimumSize());
     int initial_size = PrimaryAxisSize(attached_windows_[i]->bounds().size());
-    if (details.window_component == HTBOTTOM) {
-      int cached_size = GetHeightBeforeObscured(attached_windows_[i]);
-      if (initial_size > cached_size)
-        ClearHeightBeforeObscured(attached_windows_[i]);
-      else if (cached_size)
-        initial_size = cached_size;
-    }
     initial_size_.push_back(initial_size);
     // If current size is smaller than the min, use the current size as the min.
     // This way we don't snap on resize.
@@ -220,12 +192,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       compress_fraction_.push_back(0.0f);
     }
   }
-
-  if (is_resizable() && constrain_size_ &&
-      (!TouchesBottomOfScreen() ||
-       details_.bounds_change != kBoundsChange_Repositions)) {
-    ClearCachedHeights();
-  }
 }
 
 gfx::Rect WorkspaceWindowResizer::GetFinalBounds() const {
@@ -235,25 +201,7 @@ gfx::Rect WorkspaceWindowResizer::GetFinalBounds() const {
       PhantomWindowController::TYPE_EDGE) {
     return phantom_window_controller_->bounds();
   }
-  gfx::Rect bounds(AdjustBoundsToGrid(details_));
-  if (GetHeightBeforeObscured(window()) || constrain_size_) {
-    // Two things can happen:
-    // . We'll snap to the grid, which may result in different bounds. When
-    //   dragging we only snap on release.
-    // . If the bounds are different, and the windows height was truncated
-    //   because it touched the bottom, than snapping to the grid may cause the
-    //   window to no longer touch the bottom. Push it back up.
-    gfx::Rect initial_bounds(window()->bounds());
-    bool at_bottom = TouchesBottomOfScreen();
-    if (at_bottom && bounds.y() != initial_bounds.y()) {
-      if (bounds.y() < initial_bounds.y()) {
-        bounds.set_height(bounds.height() + details_.grid_size -
-                              (initial_bounds.y() - bounds.y()));
-      }
-      AdjustBoundsForMainWindow(&bounds);
-    }
-  }
-  return bounds;
+  return AdjustBoundsToGrid(details_);
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(
@@ -325,48 +273,21 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds) const {
   gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
-  if (!attached_windows_.empty() && details_.window_component == HTBOTTOM)
-    work_area.set_height(work_area.height() - total_min_);
-  AdjustBoundsForWindow(work_area, window(), bounds);
+  if (bounds->y() + kMinOnscreenHeight > work_area.bottom())
+    bounds->set_y(work_area.bottom() - kMinOnscreenHeight);
+  if (bounds->y() <= work_area.y())
+    bounds->set_y(work_area.y());
+  if (attached_windows_.empty())
+    return;
 
-  if (!attached_windows_.empty() && details_.window_component == HTRIGHT) {
+  if (details_.window_component == HTRIGHT) {
     bounds->set_width(std::min(bounds->width(),
                                work_area.right() - total_min_ - bounds->x()));
+  } else {
+    DCHECK_EQ(HTBOTTOM, details_.window_component);
+    bounds->set_height(std::min(bounds->height(),
+                                work_area.bottom() - total_min_ - bounds->y()));
   }
-}
-
-void WorkspaceWindowResizer::AdjustBoundsForWindow(
-    const gfx::Rect& work_area,
-    aura::Window* window,
-    gfx::Rect* bounds) const {
-  if (bounds->bottom() < work_area.bottom()) {
-    int height = GetHeightBeforeObscured(window);
-    if (!height)
-      return;
-    height = std::max(bounds->height(), height);
-    bounds->set_height(std::min(work_area.bottom() - bounds->y(), height));
-    return;
-  }
-
-  if (bounds->bottom() == work_area.bottom())
-    return;
-
-  if (!GetHeightBeforeObscured(window))
-    SetHeightBeforeObscured(window, window->bounds().height());
-
-  gfx::Size min_size = window->delegate()->GetMinimumSize();
-  bounds->set_height(
-      std::max(0, work_area.bottom() - bounds->y()));
-  if (bounds->height() < min_size.height()) {
-    bounds->set_height(min_size.height());
-    bounds->set_y(work_area.bottom() - min_size.height());
-  }
-}
-
-void WorkspaceWindowResizer::ClearCachedHeights() {
-  ClearHeightBeforeObscured(details_.window);
-  for (size_t i = 0; i < attached_windows_.size(); ++i)
-    ClearHeightBeforeObscured(attached_windows_[i]);
 }
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {

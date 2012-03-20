@@ -31,6 +31,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // the delegate.
   static const int kMinOnscreenSize;
 
+  // Min height we'll force on screen when dragging the caption.
+  // TODO: this should come from a property on the window.
+  static const int kMinOnscreenHeight;
+
   virtual ~WorkspaceWindowResizer();
 
   static WorkspaceWindowResizer* Create(
@@ -91,12 +95,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Adjusts the bounds to enforce that windows are vertically contained in the
   // work area.
   void AdjustBoundsForMainWindow(gfx::Rect* bounds) const;
-  void AdjustBoundsForWindow(const gfx::Rect& work_area,
-                             aura::Window* window,
-                             gfx::Rect* bounds) const;
-
-  // Clears the cached height of the window being dragged.
-  void ClearCachedHeights();
 
   // Returns true if the window touches the bottom edge of the work area.
   bool TouchesBottomOfScreen() const;
@@ -120,9 +118,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   aura::Window* window() const { return details_.window; }
 
   const Details details_;
-
-  // True if the window size (height) should be constrained.
-  const bool constrain_size_;
 
   const std::vector<aura::Window*> attached_windows_;
 
