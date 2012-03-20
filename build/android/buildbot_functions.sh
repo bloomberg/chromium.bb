@@ -115,29 +115,6 @@ function bb_setup_goma_internal {
   export PATH=$GOMA_DIR:$PATH
 }
 
-# Temporarily added back when goma disabled
-function old_make {
-  # TODO(michaelbai): how to use ccache in NDK.
-  if [ -n "${USE_CCACHE}" ]; then
-    if [ -e "${PREBUILT_CCACHE_PATH}" ]; then
-      use_ccache_var="$PREBUILT_CCACHE_PATH "
-    else
-      use_ccache_var=""
-    fi
-  fi
-  # Only cross-compile if the build is being done either from Chromium's src/
-  # directory, or through WebKit, in which case the WEBKIT_ANDROID_BUILD
-  # environment variable will be defined. WebKit uses a different directory.
-  if [ -f "$PWD/build/android/envsetup.sh" ] ||
-     [ -n "${WEBKIT_ANDROID_BUILD}" ]; then
-    CC="${use_ccache_var}${CROSS_CC}" CXX="${use_ccache_var}${CROSS_CXX}" \
-    LINK="${CROSS_LINK}" AR="${CROSS_AR}" RANLIB="${CROSS_RANLIB}" \
-      command make $*
-  else
-    command make $*
-  fi
-}
-
 # $@: make args.
 # Use goma if possible; degrades to non-Goma if needed.
 function bb_goma_make {
@@ -148,9 +125,12 @@ function bb_goma_make {
   #  http://build.chromium.org/p/chromium/builders/Linux%20x64/builds/23995/steps/compile/logs/stdio
   # But not on Android trybots?
   #  http://build.chromium.org/p/tryserver.chromium/builders/android/builds/2136/steps/Compile/logs/stdio
-  old_make -j${JOBS} "$@"
+  make -j${JOBS} "$@"
   return
 
+  # TODO(bulach): to use goma, we need to:
+  # GOMA_DIR=... android_gyp
+  # PATH=$GOMA_DIR:$PATH make -j${JOBS} "$@"
   bb_setup_goma_internal
 
   if [ "${GOMA_DIR}" = "" ]; then
