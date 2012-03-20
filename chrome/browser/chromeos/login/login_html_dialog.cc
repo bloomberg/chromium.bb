@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/frame/bubble_frame_view.h"
-#include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"

@@ -16,10 +16,6 @@
 #include "ui/aura/window.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/frame/bubble_window.h"
-#endif  // OS_CHROMEOS
-
 // Note: This file should be removed after the old ChromeOS frontend is removed.
 //       It is not needed for Aura.
 //       The visual style implemented by BubbleFrameView/BubbleWindow for
@@ -34,21 +30,13 @@ namespace browser {
 views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
                                  views::WidgetDelegate* delegate,
                                  DialogStyle style) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  return chromeos::BubbleWindow::Create(parent, style, delegate);
-#else
   return views::Widget::CreateWindowWithParent(delegate, parent);
-#endif
 }
 
 views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
                                           views::WidgetDelegate* delegate) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  return chromeos::BubbleWindow::Create(parent, STYLE_FLUSH, delegate);
-#else
   return CreateFramelessWindowWithParentAndBounds(delegate,
       parent, gfx::Rect());
-#endif
 }
 
 views::Widget* CreateFramelessWindowWithParentAndBounds(
