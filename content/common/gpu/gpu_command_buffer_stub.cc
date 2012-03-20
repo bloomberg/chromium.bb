@@ -623,8 +623,6 @@ void GpuCommandBufferStub::SetMemoryAllocation(
 
   SendMemoryAllocationToProxy(allocation);
 
-  DCHECK(surface_);
-
   if (!surface_)
     return;
   if (allocation.suggest_have_frontbuffer && allocation.suggest_have_backbuffer)
