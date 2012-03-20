@@ -319,12 +319,19 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
   if (network->type() == TYPE_WIFI) {
     WifiNetwork* remembered_wifi = new WifiNetwork(network->service_path());
     remembered_wifi->set_encryption(remembered_wifi->encryption());
+    NetworkUIData wifi_ui_data;
+    wifi_ui_data.set_onc_source(
+        NetworkUIData::GetONCSource(network->ui_data()));
+    wifi_ui_data.FillDictionary(remembered_wifi->ui_data());
     remembered = remembered_wifi;
   } else if (network->type() == TYPE_VPN) {
     VirtualNetwork* remembered_vpn =
         new VirtualNetwork(network->service_path());
     remembered_vpn->set_server_hostname("vpnserver.fake.com");
     remembered_vpn->set_provider_type(PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
+    NetworkUIData vpn_ui_data;
+    vpn_ui_data.set_onc_source(NetworkUIData::GetONCSource(network->ui_data()));
+    vpn_ui_data.FillDictionary(remembered_vpn->ui_data());
     remembered = remembered_vpn;
   }
   if (remembered) {
