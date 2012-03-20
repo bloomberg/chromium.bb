@@ -577,6 +577,7 @@ void Shell::Init() {
     tray_->network_observer_ = tray_network;
     tray_->power_status_observer_ = tray_power_date;
     tray_->update_observer_ = tray_user;
+    tray_->user_observer_ = tray_user;
 
     tray_->AddTrayItem(tray_user);
     tray_->AddTrayItem(new internal::TrayEmpty());

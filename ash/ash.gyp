@@ -150,6 +150,7 @@
         'system/user/tray_user.cc',
         'system/user/tray_user.h',
         'system/user/update_observer.h',
+        'system/user/user_observer.h',
         'tooltips/tooltip_controller.cc',
         'tooltips/tooltip_controller.h',
         'volume_control_delegate.h',

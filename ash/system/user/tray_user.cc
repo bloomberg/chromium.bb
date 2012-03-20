@@ -28,6 +28,8 @@ const int kUserInfoHorizontalPadding = 14;
 const int kUserInfoVerticalPadding = 10;
 const int kUserInfoPaddingBetweenItems = 3;
 
+const int kUserIconSize = 32;
+
 const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 // A custom textbutton with some extra vertical padding, and custom border,
@@ -267,13 +269,15 @@ TrayUser::~TrayUser() {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  views::ImageView* avatar = new views::ImageView;
+  avatar_.reset(new views::ImageView);
   if (status == user::LOGGED_IN_USER || status == user::LOGGED_IN_OWNER) {
-    avatar->SetImage(
+    avatar_->SetImage(
         ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
-    avatar->SetImageSize(gfx::Size(32, 32));
+    avatar_->SetImageSize(gfx::Size(kUserIconSize, kUserIconSize));
+  } else {
+    avatar_->SetVisible(false);
   }
-  return avatar;
+  return avatar_.get();
 }
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
@@ -289,6 +293,7 @@ views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayUser::DestroyTrayView() {
+  avatar_.reset();
 }
 
 void TrayUser::DestroyDefaultView() {
@@ -301,6 +306,11 @@ void TrayUser::DestroyDetailedView() {
 void TrayUser::OnUpdateRecommended() {
   if (user_.get())
     user_->RefreshForUpdate();
+}
+
+void TrayUser::OnUserUpdate() {
+  avatar_->SetImage(
+      ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
 }
 
 }  // namespace internal

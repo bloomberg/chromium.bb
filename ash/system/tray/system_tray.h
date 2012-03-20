@@ -25,6 +25,7 @@ class ClockObserver;
 class NetworkObserver;
 class PowerStatusObserver;
 class UpdateObserver;
+class UserObserver;
 
 class SystemTrayItem;
 
@@ -82,6 +83,9 @@ class ASH_EXPORT SystemTray : public views::View,
   UpdateObserver* update_observer() const {
     return update_observer_;
   }
+  UserObserver* user_observer() const {
+    return user_observer_;
+  }
 
  private:
   friend class Shell;
@@ -113,6 +117,7 @@ class ASH_EXPORT SystemTray : public views::View,
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;
   UpdateObserver* update_observer_;
+  UserObserver* user_observer_;
 
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;

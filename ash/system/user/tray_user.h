@@ -8,6 +8,11 @@
 
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/update_observer.h"
+#include "ash/system/user/user_observer.h"
+
+namespace views {
+class ImageView;
+}
 
 namespace ash {
 namespace internal {
@@ -17,7 +22,8 @@ class UserView;
 }
 
 class TrayUser : public SystemTrayItem,
-                 public UpdateObserver {
+                 public UpdateObserver,
+                 public UserObserver {
  public:
   TrayUser();
   virtual ~TrayUser();
@@ -34,7 +40,11 @@ class TrayUser : public SystemTrayItem,
   // Overridden from UpdateObserver.
   virtual void OnUpdateRecommended() OVERRIDE;
 
+  // Overridden from UserObserver.
+  virtual void OnUserUpdate() OVERRIDE;
+
   scoped_ptr<tray::UserView> user_;
+  scoped_ptr<views::ImageView> avatar_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };

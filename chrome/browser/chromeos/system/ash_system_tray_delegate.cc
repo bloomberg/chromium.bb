@@ -16,6 +16,7 @@
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
+#include "ash/system/user/user_observer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -95,6 +96,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
                    chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
                    chrome::NOTIFICATION_SESSION_STARTED,
@@ -472,6 +476,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             ash::Shell::GetInstance()->tray()->update_observer();
         if (observer)
           observer->OnUpdateRecommended();
+        break;
+      }
+      case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
+        ash::UserObserver* observer =
+            ash::Shell::GetInstance()->tray()->user_observer();
+        if (observer)
+          observer->OnUserUpdate();
         break;
       }
       case chrome::NOTIFICATION_PREF_CHANGED: {

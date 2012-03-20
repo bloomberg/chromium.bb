@@ -385,6 +385,7 @@ SystemTray::SystemTray()
       network_observer_(NULL),
       power_status_observer_(NULL),
       update_observer_(NULL),
+      user_observer_(NULL),
       bubble_(NULL),
       popup_(NULL) {
   container_ = new views::View;
