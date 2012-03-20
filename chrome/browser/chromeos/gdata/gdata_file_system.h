@@ -64,7 +64,8 @@ typedef base::Callback<void(base::PlatformFileError error)>
 
 // Used to get files from the file system.
 typedef base::Callback<void(base::PlatformFileError error,
-                            const FilePath& file_path)>
+                            const FilePath& file_path,
+                            GDataFileType file_type)>
     GetFileCallback;
 
 // Used for file operations like removing files.
@@ -363,6 +364,16 @@ class GDataFileSystem : public ProfileKeyedService {
   GDataDirectory* ParseGDataFeed(GDataErrorCode status,
                                  base::Value* data,
                                  base::PlatformFileError *error);
+
+  // Creates a temporary JSON file representing a document with |edit_url|
+  // and |resource_id| on IO thread pool. Upon completion it will invoke
+  // |callback| with the path of the created temporary file on thread
+  // represented by |relay_proxy|.
+  static void CreateDocumentJsonFileOnIOThreadPool(
+      const GURL& edit_url,
+      const std::string& resource_id,
+      const GetFileCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
   // Renames a file or directory at |file_path| to |new_name|.
   void Rename(const FilePath& file_path,

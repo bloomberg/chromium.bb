@@ -1731,12 +1731,19 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
 
 void GetGDataFilesFunction::OnFileReady(
     base::PlatformFileError error,
-    const FilePath& local_path) {
+    const FilePath& local_path,
+    gdata::GDataFileType file_type) {
   FilePath gdata_path = remaining_gdata_paths_.front();
 
   if (error == base::PLATFORM_FILE_OK) {
     local_paths_->Append(Value::CreateStringValue(local_path.value()));
     DVLOG(1) << "Got " << gdata_path.value() << " as " << local_path.value();
+
+    // TODO(benchan): If the file is a hosted document, a temporary JSON file
+    // is created to represent the document. The JSON file is not cached and
+    // should be deleted after use. We need to somehow communicate with
+    // file_manager.js to manage the lifetime of the temporary file.
+    // See crosbug.com/28058.
   } else {
     local_paths_->Append(Value::CreateStringValue(""));
     DVLOG(1) << "Failed to get " << gdata_path.value()

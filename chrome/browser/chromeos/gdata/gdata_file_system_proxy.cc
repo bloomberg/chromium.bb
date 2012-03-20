@@ -19,6 +19,7 @@
 using base::MessageLoopProxy;
 using content::BrowserThread;
 using fileapi::FileSystemOperationInterface;
+using webkit_blob::ShareableFileReference;
 
 namespace {
 
@@ -31,12 +32,20 @@ void CallSnapshotFileCallback(
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     base::PlatformFileInfo file_info,
     base::PlatformFileError error,
-    const FilePath& local_path) {
-  // TODO(satorux): We should use the last parameter
-  // (webkit_blob::ShareableFileReference) to create temporary JSON files
-  // on-the-fly for hosted documents so users can attach hosted files to web
-  // apps via File API. crosbug.com/27690
-  callback.Run(error, file_info, local_path, NULL);
+    const FilePath& local_path,
+    gdata::GDataFileType file_type) {
+  scoped_refptr<ShareableFileReference> file_ref;
+
+  // If the file is a hosted document, a temporary JSON file is created to
+  // represent the document. The JSON file is not cached and its lifetime
+  // is managed by ShareableFileReference.
+  if (error == base::PLATFORM_FILE_OK && file_type == gdata::HOSTED_DOCUMENT) {
+    file_ref = ShareableFileReference::GetOrCreate(
+        local_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+        base::MessageLoopProxy::current());
+  }
+
+  callback.Run(error, file_info, local_path, file_ref);
 }
 
 }  // namespace
@@ -180,25 +189,15 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     const GURL& file_url,
     const FileSystemOperationInterface::SnapshotFileCallback& callback) {
   FilePath file_path;
-  if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::PlatformFileInfo(),
-                    FilePath(),
-                    scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
-    return;
-  }
-
-
   base::PlatformFileInfo file_info;
-  if (!file_system_->GetFileInfoFromPath(file_path, &file_info)) {
+  if (!ValidateUrl(file_url, &file_path) ||
+      !file_system_->GetFileInfoFromPath(file_path, &file_info)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
                     base::PlatformFileInfo(),
                     FilePath(),
-                    scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
+                    scoped_refptr<ShareableFileReference>(NULL)));
     return;
   }
 

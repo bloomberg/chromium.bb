@@ -44,6 +44,13 @@ enum ContentOrigin {
   FROM_SERVER,
 };
 
+// File type on the gdata file system can be either a regular file or
+// a hosted document.
+enum GDataFileType {
+  REGULAR_FILE,
+  HOSTED_DOCUMENT,
+};
+
 // Base class for representing files and directories in gdata virtual file
 // system.
 class GDataFileBase {

@@ -525,9 +525,11 @@ class GDataFileSystemTest : public testing::Test {
           quota_bytes_used_(0) {}
     virtual ~CallbackHelper() {}
     virtual void GetFileCallback(base::PlatformFileError error,
-                                 const FilePath& file_path) {
+                                 const FilePath& file_path,
+                                 GDataFileType file_type) {
       last_error_ = error;
       download_path_ = file_path;
+      file_type_ = file_type;
     }
     virtual void FileOperationCallback(base::PlatformFileError error) {
       DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -544,6 +546,7 @@ class GDataFileSystemTest : public testing::Test {
 
     base::PlatformFileError last_error_;
     FilePath download_path_;
+    GDataFileType file_type_;
     int quota_bytes_total_;
     int quota_bytes_used_;
   };
@@ -1509,8 +1512,43 @@ TEST_F(GDataFileSystemTest, GetFile) {
   FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
   file_system_->GetFile(file_in_root, callback);
   message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_STREQ("file_content_url/",
                callback_helper_->download_path_.value().c_str());
+}
+
+TEST_F(GDataFileSystemTest, GetFileForHostedDocument) {
+  LoadRootFeedDocument("root_feed.json");
+
+  GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  GDataFileBase* file = NULL;
+  EXPECT_TRUE((file = FindFile(file_in_root)) != NULL);
+
+  file_system_->GetFile(file_in_root, callback);
+  RunAllPendingForCache();  // Wait to get our result.
+
+  EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
+  EXPECT_FALSE(callback_helper_->download_path_.empty());
+
+  std::string error;
+  JSONFileValueSerializer serializer(callback_helper_->download_path_);
+  scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
+  ASSERT_TRUE(value.get()) << "Parse error "
+                           << callback_helper_->download_path_.value()
+                           << ": " << error;
+  DictionaryValue* dict_value = NULL;
+  ASSERT_TRUE(value->GetAsDictionary(&dict_value));
+
+  std::string edit_url, resource_id;
+  EXPECT_TRUE(dict_value->GetString("url", &edit_url));
+  EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
+
+  EXPECT_EQ(file->AsGDataFile()->edit_url().spec(), edit_url);
+  EXPECT_EQ(file->resource_id(), resource_id);
 }
 
 TEST_F(GDataFileSystemTest, GetAvailableSpace) {

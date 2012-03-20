@@ -1000,6 +1000,35 @@ void GDataFileSystem::CreateDirectory(
                      callback)));
 }
 
+// static
+void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
+    const GURL& edit_url,
+    const std::string& resource_id,
+    const GetFileCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  FilePath temp_file;
+
+  if (file_util::CreateTemporaryFile(&temp_file)) {
+    std::string document_content = base::StringPrintf(
+        "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
+        edit_url.spec().c_str(), resource_id.c_str());
+    int document_size = static_cast<int>(document_content.size());
+    if (file_util::WriteFile(temp_file, document_content.data(),
+                             document_size) == document_size) {
+      error = base::PLATFORM_FILE_OK;
+    }
+  }
+
+  if (!callback.is_null()) {
+    if (error != base::PLATFORM_FILE_OK)
+      temp_file.clear();
+
+    relay_proxy->PostTask(FROM_HERE,
+        base::Bind(callback, error, temp_file, HOSTED_DOCUMENT));
+  }
+}
+
 void GDataFileSystem::GetFile(const FilePath& file_path,
                               const GetFileCallback& callback) {
   base::AutoLock lock(lock_);
@@ -1010,8 +1039,24 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
           FROM_HERE,
           base::Bind(callback,
                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                     FilePath()));
+                     FilePath(),
+                     REGULAR_FILE));
     }
+    return;
+  }
+
+  // For a hosted document, we create a special JSON file to represent the
+  // document instead of fetching the document content in one of the exported
+  // formats. The JSON file contains the edit URL and resource ID of the
+  // document.
+  GDataFile* gdata_file = file_info->AsGDataFile();
+  if (gdata_file && gdata_file->is_hosted_document()) {
+    BrowserThread::PostBlockingPoolTask(FROM_HERE,
+        base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
+                   gdata_file->edit_url(),
+                   gdata_file->resource_id(),
+                   callback,
+                   base::MessageLoopProxy::current()));
     return;
   }
 
@@ -1662,7 +1707,7 @@ void GDataFileSystem::OnFileDownloaded(
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (!callback.is_null()) {
-    callback.Run(error, file_path);
+    callback.Run(error, file_path, REGULAR_FILE);
   }
 }
 
