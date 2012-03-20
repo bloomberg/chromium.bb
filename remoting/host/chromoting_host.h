@@ -113,8 +113,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void OnSessionRouteChange(
       ClientSession* session,
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point) OVERRIDE;
+      const protocol::TransportRoute& route) OVERRIDE;
 
   // SessionManager::Listener implementation.
   virtual void OnSessionManagerReady() OVERRIDE;

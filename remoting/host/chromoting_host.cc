@@ -222,12 +222,11 @@ void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
 void ChromotingHost::OnSessionRouteChange(
     ClientSession* session,
     const std::string& channel_name,
-    const net::IPEndPoint& remote_end_point,
-    const net::IPEndPoint& local_end_point) {
+    const protocol::TransportRoute& route) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientRouteChange(session->client_jid(), channel_name,
-                                        remote_end_point, local_end_point));
+                                        route));
 }
 
 void ChromotingHost::OnSessionManagerReady() {

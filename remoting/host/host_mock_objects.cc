@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/transport.h"
 
 namespace remoting {
 

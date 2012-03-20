@@ -22,6 +22,8 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+struct TransportRoute;
+
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
@@ -63,8 +65,7 @@ class Session : public base::NonThreadSafe {
   // single interface.
   typedef base::Callback<void(
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point)> RouteChangeCallback;
+      const TransportRoute& route)> RouteChangeCallback;
 
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.

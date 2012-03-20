@@ -136,10 +136,8 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
 
 void ConnectionToClient::OnSessionRouteChange(
     const std::string& channel_name,
-    const net::IPEndPoint& remote_end_point,
-    const net::IPEndPoint& local_end_point) {
-  handler_->OnRouteChange(this, channel_name, remote_end_point,
-                          local_end_point);
+    const TransportRoute& route) {
+  handler_->OnRouteChange(this, channel_name, route);
 }
 
 void ConnectionToClient::OnChannelInitialized(bool successful) {

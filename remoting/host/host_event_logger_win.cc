@@ -15,6 +15,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/protocol/transport.h"
 
 #include "remoting_host_messages.h"
 
@@ -37,8 +38,7 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point) OVERRIDE;
+      const protocol::TransportRoute& route) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -56,7 +56,7 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
 } //namespace
 
 HostEventLoggerWin::HostEventLoggerWin(ChromotingHost* host,
-                                           const std::string& application_name)
+                                       const std::string& application_name)
     : host_(host),
       event_log_(NULL) {
   event_log_ = RegisterEventSourceW(NULL,
@@ -91,13 +91,14 @@ void HostEventLoggerWin::OnAccessDenied(const std::string& jid) {
 void HostEventLoggerWin::OnClientRouteChange(
     const std::string& jid,
     const std::string& channel_name,
-    const net::IPEndPoint& remote_end_point,
-    const net::IPEndPoint& local_end_point) {
+    const protocol::TransportRoute& route) {
   std::vector<string16> strings(4);
   strings[0] = ASCIIToUTF16(jid);
-  strings[1] = ASCIIToUTF16(remote_end_point.ToString());
-  strings[2] = ASCIIToUTF16(local_end_point.ToString());
+  strings[1] = ASCIIToUTF16(route.remote_address.ToString());
+  strings[2] = ASCIIToUTF16(route.local_address.ToString());
   strings[3] = ASCIIToUTF16(channel_name);
+  strings[4] = ASCIIToUTF16(
+      protocol::TransportRoute::GetTypeString(route.type));
   Log(EVENTLOG_INFORMATION_TYPE, MSG_HOST_CLIENT_ROUTING_CHANGED, strings);
 }
 

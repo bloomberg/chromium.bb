@@ -53,8 +53,7 @@ class ClientSession : public protocol::HostEventStub,
     virtual void OnSessionRouteChange(
         ClientSession* client,
         const std::string& channel_name,
-        const net::IPEndPoint& remote_end_point,
-        const net::IPEndPoint& local_end_point) = 0;
+        const protocol::TransportRoute& route) = 0;
   };
 
   ClientSession(EventHandler* event_handler,
@@ -83,8 +82,7 @@ class ClientSession : public protocol::HostEventStub,
   virtual void OnRouteChange(
       protocol::ConnectionToClient* connection,
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point) OVERRIDE;
+      const protocol::TransportRoute& route) OVERRIDE;
 
   // Disconnects the session and destroys the transport. Event handler
   // is guaranteed not to be called after this method is called. Can

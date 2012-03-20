@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/transport.h"
 
 namespace buzz {
 class XmlElement;
@@ -36,6 +37,9 @@ class ServerLogEntry {
   // Adds a field describing the mode of a connection to this log entry.
   void AddModeField(Mode mode);
 
+  // Adds a field describing connection type (direct/stun/relay).
+  void AddConnectionTypeField(protocol::TransportRoute::RouteType type);
+
   // Converts this object to an XML stanza.
   scoped_ptr<buzz::XmlElement> ToStanza() const;
 
@@ -43,7 +47,7 @@ class ServerLogEntry {
   typedef std::map<std::string, std::string> ValuesMap;
 
   ServerLogEntry();
-  void Set(const char* key, const char* value);
+  void Set(const std::string& key, const std::string& value);
 
   static const char* GetValueSessionState(bool connected);
   static const char* GetValueMode(Mode mode);

@@ -58,12 +58,18 @@ TEST_F(LogToServerTest, SendNow) {
         .RetiresOnSaturation();
   }
   log_to_server_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  protocol::TransportRoute route;
+  route.type = protocol::TransportRoute::DIRECT;
+  log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
 
 TEST_F(LogToServerTest, SendLater) {
+  protocol::TransportRoute route;
+  route.type = protocol::TransportRoute::DIRECT;
+  log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   {
     InSequence s;
@@ -83,6 +89,9 @@ TEST_F(LogToServerTest, SendLater) {
 }
 
 TEST_F(LogToServerTest, SendTwoEntriesLater) {
+  protocol::TransportRoute route;
+  route.type = protocol::TransportRoute::DIRECT;
+  log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
   log_to_server_->OnClientAuthenticated("client2@domain.com/6789");
   {

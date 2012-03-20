@@ -42,6 +42,9 @@ const char kValueOsNameChromeOS[] = "ChromeOS";
 const char kKeyOsVersion[] = "os-version";
 
 const char kKeyCpu[] = "cpu";
+
+const char kKeyConnectionType[] = "connection-type";
+
 }  // namespace
 
 ServerLogEntry::ServerLogEntry() {
@@ -80,14 +83,19 @@ void ServerLogEntry::AddHostFields() {
                                          &os_bugfix_version);
   os_version << os_major_version << "." << os_minor_version << "."
              << os_bugfix_version;
-  Set(kKeyOsVersion, os_version.str().c_str());
+  Set(kKeyOsVersion, os_version.str());
 #endif
 
-  Set(kKeyCpu, SysInfo::CPUArchitecture().c_str());
+  Set(kKeyCpu, SysInfo::CPUArchitecture());
 };
 
 void ServerLogEntry::AddModeField(ServerLogEntry::Mode mode) {
   Set(kKeyMode, GetValueMode(mode));
+}
+
+void ServerLogEntry::AddConnectionTypeField(
+    protocol::TransportRoute::RouteType type) {
+  Set(kKeyConnectionType, protocol::TransportRoute::GetTypeString(type));
 }
 
 const char* ServerLogEntry::GetValueMode(ServerLogEntry::Mode mode) {
@@ -116,7 +124,7 @@ const char* ServerLogEntry::GetValueSessionState(bool connected) {
   return connected ? kValueSessionStateConnected : kValueSessionStateClosed;
 }
 
-void ServerLogEntry::Set(const char* key, const char* value) {
+void ServerLogEntry::Set(const std::string& key, const std::string& value) {
   values_map_[key] = value;
 }
 

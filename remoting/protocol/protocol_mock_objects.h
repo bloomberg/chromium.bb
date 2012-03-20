@@ -16,6 +16,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/transport.h"
 #include "remoting/protocol/video_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -51,11 +52,9 @@ class MockConnectionToClientEventHandler :
                                         ErrorCode error));
   MOCK_METHOD2(OnSequenceNumberUpdated, void(ConnectionToClient* connection,
                                              int64 sequence_number));
-  MOCK_METHOD4(OnRouteChange, void(
-      ConnectionToClient* connection,
-      const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point));
+  MOCK_METHOD3(OnRouteChange, void(ConnectionToClient* connection,
+                                   const std::string& channel_name,
+                                   const TransportRoute& route));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);

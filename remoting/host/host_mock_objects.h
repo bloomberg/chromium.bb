@@ -105,11 +105,10 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   MOCK_METHOD1(OnSessionFailed, void(ClientSession* client));
   MOCK_METHOD2(OnSessionSequenceNumber, void(ClientSession* client,
                                              int64 sequence_number));
-  MOCK_METHOD4(OnSessionRouteChange, void(
+  MOCK_METHOD3(OnSessionRouteChange, void(
       ClientSession* client,
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point));
+      const protocol::TransportRoute& route));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSessionEventHandler);

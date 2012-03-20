@@ -49,5 +49,5 @@ Severity=Informational
 Facility=Host
 SymbolicName=MSG_HOST_CLIENT_ROUTING_CHANGED
 Language=English
-Channel IP for client: %1 ip='%2' host_ip='%3' channel='%4'.
+Channel IP for client: %1 ip='%2' host_ip='%3' channel='%4' connection='%5'.
 .

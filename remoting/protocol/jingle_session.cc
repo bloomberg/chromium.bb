@@ -259,10 +259,8 @@ void JingleSession::OnTransportCandidate(Transport* transport,
 
 void JingleSession::OnTransportRouteChange(Transport* transport,
                                            const TransportRoute& route) {
-  if (!route_change_callback_.is_null()) {
-    route_change_callback_.Run(transport->name(), route.remote_address,
-                               route.local_address);
-  }
+  if (!route_change_callback_.is_null())
+    route_change_callback_.Run(transport->name(), route);
 }
 
 void JingleSession::OnTransportDeleted(Transport* transport) {

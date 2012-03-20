@@ -931,6 +931,7 @@
         'protocol/socket_reader_base.h',
         'protocol/ssl_hmac_channel_authenticator.cc',
         'protocol/ssl_hmac_channel_authenticator.h',
+        'protocol/transport.cc',
         'protocol/transport.h',
         'protocol/transport_config.cc',
         'protocol/transport_config.h',

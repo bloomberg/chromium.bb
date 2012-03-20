@@ -10,6 +10,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/protocol/transport.h"
 
 // Included here, since the #define for LOG_USER in syslog.h conflicts with the
 // constants in base/logging.h, and this source file should use the version in
@@ -35,8 +36,7 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point) OVERRIDE;
+      const protocol::TransportRoute& route) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -78,12 +78,13 @@ void HostEventLoggerPosix::OnAccessDenied(const std::string& jid) {
 void HostEventLoggerPosix::OnClientRouteChange(
     const std::string& jid,
     const std::string& channel_name,
-    const net::IPEndPoint& remote_end_point,
-    const net::IPEndPoint& local_end_point) {
+    const protocol::TransportRoute& route) {
   Log(base::StringPrintf(
-      "Channel IP for client: %s ip='%s' host_ip='%s' channel='%s'",
-      jid.c_str(), remote_end_point.ToString().c_str(),
-      local_end_point.ToString().c_str(), channel_name.c_str()));
+      "Channel IP for client: %s ip='%s' host_ip='%s' channel='%s' "
+      "connection='%s'",
+      jid.c_str(), route.remote_address.ToString().c_str(),
+      route.local_address.ToString().c_str(), channel_name.c_str(),
+      protocol::TransportRoute::GetTypeString(route.type).c_str()));
 }
 
 void HostEventLoggerPosix::OnShutdown() {

@@ -13,6 +13,7 @@
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/transport.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -51,6 +52,10 @@ class LogToServer : public base::NonThreadSafe,
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
   virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
+  virtual void OnClientRouteChange(
+      const std::string& jid,
+      const std::string& channel_name,
+      const protocol::TransportRoute& route) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -61,6 +66,8 @@ class LogToServer : public base::NonThreadSafe,
   ServerLogEntry::Mode mode_;
   SignalStrategy* signal_strategy_;
   scoped_ptr<IqSender> iq_sender_;
+  protocol::TransportRoute::RouteType connection_type_;
+  bool connection_type_set_;
   std::deque<ServerLogEntry> pending_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LogToServer);

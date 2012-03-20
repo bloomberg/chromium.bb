@@ -56,8 +56,7 @@ class ConnectionToClient : public base::NonThreadSafe {
     // channel is connected.
     virtual void OnRouteChange(ConnectionToClient* connection,
                                const std::string& channel_name,
-                               const net::IPEndPoint& remote_end_point,
-                               const net::IPEndPoint& local_end_point) = 0;
+                               const TransportRoute& route) = 0;
   };
 
   // Constructs a ConnectionToClient object for the |session|. Takes
@@ -95,8 +94,7 @@ class ConnectionToClient : public base::NonThreadSafe {
   void OnSessionStateChange(Session::State state);
 
   void OnSessionRouteChange(const std::string& channel_name,
-                            const net::IPEndPoint& remote_end_point,
-                            const net::IPEndPoint& local_end_point);
+                            const TransportRoute& route);
 
   // Callback for channel initialization.
   void OnChannelInitialized(bool successful);

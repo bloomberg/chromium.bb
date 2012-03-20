@@ -138,12 +138,10 @@ void ClientSession::OnSequenceNumberUpdated(
 void ClientSession::OnRouteChange(
     protocol::ConnectionToClient* connection,
     const std::string& channel_name,
-    const net::IPEndPoint& remote_end_point,
-    const net::IPEndPoint& local_end_point) {
+    const protocol::TransportRoute& route) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  event_handler_->OnSessionRouteChange(this, channel_name, remote_end_point,
-                                       local_end_point);
+  event_handler_->OnSessionRouteChange(this, channel_name, route);
 }
 
 void ClientSession::Disconnect() {

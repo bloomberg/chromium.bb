@@ -12,6 +12,7 @@
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
@@ -29,7 +30,8 @@ LogToServer::LogToServer(ChromotingHost* host,
                          SignalStrategy* signal_strategy)
     : host_(host),
       mode_(mode),
-      signal_strategy_(signal_strategy) {
+      signal_strategy_(signal_strategy),
+      connection_type_set_(false) {
   signal_strategy_->AddListener(this);
 
   // |host| may be NULL in tests.
@@ -46,10 +48,15 @@ LogToServer::~LogToServer() {
 void LogToServer::LogSessionStateChange(bool connected) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<ServerLogEntry> entry(ServerLogEntry::MakeSessionStateChange(
-      connected));
+  scoped_ptr<ServerLogEntry> entry(
+      ServerLogEntry::MakeSessionStateChange(connected));
   entry->AddHostFields();
   entry->AddModeField(mode_);
+
+  if (connected) {
+    DCHECK(connection_type_set_);
+    entry->AddConnectionTypeField(connection_type_);
+  }
   Log(*entry.get());
 }
 
@@ -72,9 +79,21 @@ void LogToServer::OnClientAuthenticated(const std::string& jid) {
 void LogToServer::OnClientDisconnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
   LogSessionStateChange(false);
+  connection_type_set_ = false;
 }
 
 void LogToServer::OnAccessDenied(const std::string& jid) {
+}
+
+void LogToServer::OnClientRouteChange(const std::string& jid,
+                                      const std::string& channel_name,
+                                      const protocol::TransportRoute& route) {
+  // Store connection type for the video channel. It is logged later
+  // when client authentication is finished.
+  if (channel_name == kVideoChannelName) {
+    connection_type_ = route.type;
+    connection_type_set_ = true;
+  }
 }
 
 void LogToServer::OnShutdown() {

@@ -52,6 +52,12 @@ struct TransportRoute {
     RELAY,
   };
 
+  // Helper method to get string representation of the type.
+  static std::string GetTypeString(RouteType type);
+
+  TransportRoute();
+  ~TransportRoute();
+
   RouteType type;
   net::IPEndPoint remote_address;
   net::IPEndPoint local_address;

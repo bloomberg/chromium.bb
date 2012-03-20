@@ -14,6 +14,10 @@ class IPEndPoint;
 namespace remoting {
 class SignalStrategy;
 
+namespace protocol {
+struct TransportRoute;
+};
+
 // Interface for host status observer. All methods are invoked on the
 // network thread.
 class HostStatusObserver {
@@ -34,8 +38,7 @@ class HostStatusObserver {
   // connected.
   virtual void OnClientRouteChange(const std::string& jid,
                                    const std::string& channel_name,
-                                   const net::IPEndPoint& remote_end_point,
-                                   const net::IPEndPoint& local_end_point) { }
+                                   const protocol::TransportRoute& route) { }
 
   // Called when the host shuts down.
   virtual void OnShutdown() = 0;
