@@ -419,8 +419,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
           handled = root_window_->DispatchMouseEvent(&mouseev);
           break;
         }
-        case ui::ET_SCROLL_FLING_START:
-        case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ScrollEvent scrollev(xev);
           handled = root_window_->DispatchScrollEvent(&scrollev);

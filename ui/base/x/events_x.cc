@@ -27,11 +27,6 @@
 #define AXIS_LABEL_PROP_ABS_START_TIME "Abs Start Timestamp"
 #define AXIS_LABEL_PROP_ABS_END_TIME "Abs End Timestamp"
 
-// Fling properties
-#define AXIS_LABEL_PROP_ABS_FLING_X       "Abs Fling X Velocity"
-#define AXIS_LABEL_PROP_ABS_FLING_Y       "Abs Fling Y Velocity"
-#define AXIS_LABEL_PROP_ABS_FLING_STATE   "Abs Fling State"
-
 namespace {
 
 // Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
@@ -69,10 +64,6 @@ class UI_EXPORT CMTEventData {
     Atom start_time =
         XInternAtom(display, AXIS_LABEL_PROP_ABS_START_TIME, false);
     Atom end_time = XInternAtom(display, AXIS_LABEL_PROP_ABS_END_TIME, false);
-    Atom fling_vx = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_X, false);
-    Atom fling_vy = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_Y, false);
-    Atom fling_state =
-        XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_STATE, false);
 
     for (int i = 0; i < count; ++i) {
       XIDeviceInfo* info = info_list + i;
@@ -81,7 +72,6 @@ class UI_EXPORT CMTEventData {
         continue;
 
       Valuators valuators;
-      bool is_cmt = false;
       for (int j = 0; j < info->num_classes; ++j) {
         if (info->classes[j]->type != XIValuatorClass)
           continue;
@@ -91,30 +81,19 @@ class UI_EXPORT CMTEventData {
         int number = v->number;
         if (number > valuators.max)
           valuators.max = number;
-        if (v->label == x_axis) {
-          valuators.scroll_x = number;
-          is_cmt = true;
-        } else if (v->label == y_axis) {
-          valuators.scroll_y = number;
-          is_cmt = true;
-        } else if (v->label == start_time) {
+        if (v->label == x_axis)
+          valuators.x_scroll = number;
+        else if (v->label == y_axis)
+          valuators.y_scroll = number;
+        else if (v->label == start_time)
           valuators.start_time = number;
-          is_cmt = true;
-        } else if (v->label == end_time) {
+        else if (v->label == end_time)
           valuators.end_time = number;
-          is_cmt = true;
-        } else if (v->label == fling_vx) {
-          valuators.fling_vx = number;
-          is_cmt = true;
-        } else if (v->label == fling_vy) {
-          valuators.fling_vy = number;
-          is_cmt = true;
-        } else if (v->label == fling_state) {
-          valuators.fling_state = number;
-          is_cmt = true;
-        }
       }
-      if (is_cmt) {
+      if (valuators.x_scroll >= 0 ||
+          valuators.y_scroll >= 0 ||
+          valuators.start_time >= 0 ||
+          valuators.end_time >= 0) {
         device_to_valuators_[info->deviceid] = valuators;
         cmt_devices_[info->deviceid] = true;
       }
@@ -137,8 +116,8 @@ class UI_EXPORT CMTEventData {
       return false;
 
     const Valuators v = device_to_valuators_[xiev->deviceid];
-    bool has_x_offset = XIMaskIsSet(xiev->valuators.mask, v.scroll_x);
-    bool has_y_offset = XIMaskIsSet(xiev->valuators.mask, v.scroll_y);
+    bool has_x_offset = XIMaskIsSet(xiev->valuators.mask, v.x_scroll);
+    bool has_y_offset = XIMaskIsSet(xiev->valuators.mask, v.y_scroll);
     bool is_scroll = has_x_offset || has_y_offset;
 
     if (!is_scroll || (!x_offset && !y_offset))
@@ -147,48 +126,10 @@ class UI_EXPORT CMTEventData {
     double* valuators = xiev->valuators.values;
     for (int i = 0; i <= v.max; ++i) {
       if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        if (x_offset && v.scroll_x == i)
+        if (x_offset && v.x_scroll == i)
           *x_offset = -(*valuators);
-        else if (y_offset && v.scroll_y == i)
+        else if (y_offset && v.y_scroll == i)
           *y_offset = -(*valuators);
-        valuators++;
-      }
-    }
-
-    return true;
-  }
-
-  bool GetFlingData(const XEvent& xev,
-                    float* vx, float* vy,
-                    bool* is_cancel) {
-    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-
-    *vx = 0;
-    *vy = 0;
-    *is_cancel = false;
-
-    if (!cmt_devices_[xiev->deviceid])
-      return false;
-
-    const Valuators v = device_to_valuators_[xiev->deviceid];
-    if (!XIMaskIsSet(xiev->valuators.mask, v.fling_vx) ||
-        !XIMaskIsSet(xiev->valuators.mask, v.fling_vy) ||
-        !XIMaskIsSet(xiev->valuators.mask, v.fling_state))
-      return false;
-
-    double* valuators = xiev->valuators.values;
-    for (int i = 0; i <= v.max; ++i) {
-      if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        // Convert values to unsigned ints represending ms before storing them,
-        // as that is how they were encoded before conversion to doubles.
-        if (v.fling_vx == i)
-          *vx =
-              -static_cast<double>(static_cast<int>(*valuators)) / 1000;
-        else if (v.fling_vy == i)
-          *vy =
-              -static_cast<double>(static_cast<int>(*valuators)) / 1000;
-        else if (v.fling_state == i)
-          *is_cancel = !!static_cast<unsigned int>(*valuators);
         valuators++;
       }
     }
@@ -235,25 +176,13 @@ class UI_EXPORT CMTEventData {
 
   struct Valuators {
     int max;
-    int scroll_x;
-    int scroll_y;
+    int x_scroll;
+    int y_scroll;
     int start_time;
     int end_time;
-    int fling_vx;
-    int fling_vy;
-    int fling_state;
 
     Valuators()
-        : max(-1),
-          scroll_x(-1),
-          scroll_y(-1),
-          start_time(-1),
-          end_time(-1),
-          fling_vx(-1),
-          fling_vy(-1),
-          fling_state(-1) {
-
-    }
+        : max(-1), x_scroll(-1), y_scroll(-1), start_time(-1), end_time(-1) {}
 
   };
 
@@ -531,18 +460,13 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           return xievent->evtype == XI_ButtonPress ?
               ET_MOUSE_PRESSED : ET_MOUSE_RELEASED;
         }
-        case XI_Motion: {
-          float vx, vy;
-          bool is_cancel;
-          if (GetFlingData(native_event, &vx, &vy, &is_cancel)) {
-            return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          } else if (GetScrollOffsets(native_event, NULL, NULL))
+        case XI_Motion:
+          if (GetScrollOffsets(native_event, NULL, NULL))
             return ET_SCROLL;
           else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
           } else
             return ET_MOUSE_MOVED;
-        }
       }
     }
     default:
@@ -795,14 +719,6 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* y_offset) {
   return CMTEventData::GetInstance()->GetScrollOffsets(
       *native_event, x_offset, y_offset);
-}
-
-bool GetFlingData(const base::NativeEvent& native_event,
-                  float* vx,
-                  float* vy,
-                  bool* is_cancel) {
-  return CMTEventData::GetInstance()->GetFlingData(
-      *native_event, vx, vy, is_cancel);
 }
 
 bool GetGestureTimes(const base::NativeEvent& native_event,

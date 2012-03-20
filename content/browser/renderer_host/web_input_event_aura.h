@@ -23,7 +23,6 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
 WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event);
-WebKit::WebGestureEvent MakeWebGestureEvent(aura::ScrollEvent* event);
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
