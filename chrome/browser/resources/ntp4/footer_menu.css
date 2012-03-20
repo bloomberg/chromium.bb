@@ -91,10 +91,18 @@
   margin-bottom: 4px;
 }
 
+.footer-menu section {
+  padding: 0;
+}
+
 .footer-menu section h3 {
   color: black;
   font-weight: bold;
   margin-bottom: 8px;
+}
+
+.footer-menu section h3:first-of-type {
+  margin-top: 4px;
 }
 
 html[dir='rtl'] .footer-menu-item {
