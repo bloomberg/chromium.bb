@@ -316,6 +316,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetBounds(const gfx::Rect& bounds);
   void SetSize(const gfx::Size& size);
 
+  // Sizes the window to the specified size and centerizes it.
+  void CenterWindow(const gfx::Size& size);
+
   // Like SetBounds(), but ensures the Widget is fully visible on screen,
   // resizing and/or repositioning as necessary. This is only useful for
   // non-child widgets.
