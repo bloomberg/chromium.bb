@@ -84,10 +84,10 @@ bool CreateTemporarySurface(IDirect3DDevice9* device,
 
 // A PresentThread is a thread that is dedicated to presenting surfaces to a
 // window. It owns a Direct3D device and a Direct3D query for this purpose.
-class PresentThread : public base::Thread {
+class PresentThread : public base::Thread,
+                      public base::RefCountedThreadSafe<PresentThread> {
  public:
-  PresentThread(const char* name);
-  ~PresentThread();
+  explicit PresentThread(const char* name);
 
   IDirect3DDevice9* device() { return device_.get(); }
   IDirect3DQuery9* query() { return query_.get(); }
@@ -99,6 +99,10 @@ class PresentThread : public base::Thread {
   virtual void CleanUp();
 
  private:
+  friend class base::RefCountedThreadSafe<PresentThread>;
+
+  ~PresentThread();
+
   base::ScopedNativeLibrary d3d_module_;
   base::win::ScopedComPtr<IDirect3DDevice9Ex> device_;
 
@@ -121,19 +125,33 @@ class PresentThreadPool {
 
  private:
   int next_thread_;
-  scoped_ptr<PresentThread> present_threads_[kNumPresentThreads];
+  scoped_refptr<PresentThread> present_threads_[kNumPresentThreads];
 
   DISALLOW_COPY_AND_ASSIGN(PresentThreadPool);
+};
+
+// A thread safe map of presenters by surface ID that returns presenters via
+// a scoped_refptr to keep them alive while they are referenced.
+class AcceleratedPresenterMap {
+ public:
+  AcceleratedPresenterMap();
+  scoped_refptr<AcceleratedPresenter> CreatePresenter(gfx::NativeWindow window);
+  void RemovePresenter(const scoped_refptr<AcceleratedPresenter>& presenter);
+  scoped_refptr<AcceleratedPresenter> GetPresenter(gfx::NativeWindow window);
+ private:
+  base::Lock lock_;
+  typedef std::map<gfx::NativeWindow, AcceleratedPresenter*> PresenterMap;
+  PresenterMap presenters_;
+  DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenterMap);
 };
 
 base::LazyInstance<PresentThreadPool>
     g_present_thread_pool = LAZY_INSTANCE_INITIALIZER;
 
-PresentThread::PresentThread(const char* name) : base::Thread(name) {
-}
+base::LazyInstance<AcceleratedPresenterMap>
+    g_accelerated_presenter_map = LAZY_INSTANCE_INITIALIZER;
 
-PresentThread::~PresentThread() {
-  Stop();
+PresentThread::PresentThread(const char* name) : base::Thread(name) {
 }
 
 void PresentThread::InitDevice() {
@@ -202,12 +220,16 @@ void PresentThread::CleanUp() {
   query_.Detach();
 }
 
+PresentThread::~PresentThread() {
+  Stop();
+}
+
 PresentThreadPool::PresentThreadPool() : next_thread_(0) {
   // Do this in the constructor so present_threads_ is initialized before any
   // other thread sees it. See LazyInstance documentation.
   for (int i = 0; i < kNumPresentThreads; ++i) {
-    present_threads_[i].reset(new PresentThread(
-        base::StringPrintf("PresentThread #%d", i).c_str()));
+    present_threads_[i] = new PresentThread(
+        base::StringPrintf("PresentThread #%d", i).c_str());
     present_threads_[i]->Start();
   }
 }
@@ -217,26 +239,75 @@ PresentThread* PresentThreadPool::NextThread() {
   return present_threads_[next_thread_].get();
 }
 
-AcceleratedPresenter::AcceleratedPresenter()
-    : present_thread_(g_present_thread_pool.Pointer()->NextThread()) {
+AcceleratedPresenterMap::AcceleratedPresenterMap() {
+}
+
+scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::CreatePresenter(
+    gfx::NativeWindow window) {
+  scoped_refptr<AcceleratedPresenter> presenter(
+      new AcceleratedPresenter(window));
+
+  base::AutoLock locked(lock_);
+  DCHECK(presenters_.find(window) == presenters_.end());
+  presenters_[window] = presenter.get();
+
+  return presenter;
+}
+
+void AcceleratedPresenterMap::RemovePresenter(
+    const scoped_refptr<AcceleratedPresenter>& presenter) {
+  base::AutoLock locked(lock_);
+  for (PresenterMap::iterator it = presenters_.begin();
+      it != presenters_.end();
+      ++it) {
+    if (it->second == presenter.get()) {
+      presenters_.erase(it);
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
+    gfx::NativeWindow window) {
+  base::AutoLock locked(lock_);
+  PresenterMap::iterator it = presenters_.find(window);
+  if (it == presenters_.end())
+    return scoped_refptr<AcceleratedPresenter>();
+
+  return it->second;
+}
+
+AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
+    : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
+      window_(window) {
+}
+
+scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
+    gfx::NativeWindow window) {
+  return g_accelerated_presenter_map.Pointer()->GetPresenter(window);
 }
 
 void AcceleratedPresenter::AsyncPresentAndAcknowledge(
-    gfx::NativeWindow window,
     const gfx::Size& size,
-    int64 surface_id,
+    int64 surface_handle,
     const base::Callback<void(bool)>& completion_task) {
+  if (!surface_handle) {
+    completion_task.Run(true);
+    return;
+  }
+
   present_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoPresentAndAcknowledge,
                  this,
-                 window,
                  size,
-                 surface_id,
+                 surface_handle,
                  completion_task));
 }
 
-bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
+bool AcceleratedPresenter::Present() {
   TRACE_EVENT0("surface", "Present");
 
   HRESULT hr;
@@ -248,6 +319,10 @@ bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
   if (!swap_chain_)
     return false;
 
+  // If invalidated, do nothing. The window is gone.
+  if (!window_)
+    return true;
+
   RECT rect = {
     0, 0,
     size_.width(), size_.height()
@@ -257,7 +332,7 @@ bool AcceleratedPresenter::Present(gfx::NativeWindow window) {
     TRACE_EVENT0("surface", "PresentEx");
     hr = swap_chain_->Present(&rect,
                               &rect,
-                              window,
+                              window_,
                               NULL,
                               D3DPRESENT_INTERVAL_IMMEDIATE);
     if (FAILED(hr))
@@ -389,26 +464,24 @@ void AcceleratedPresenter::Suspend() {
                  this));
 }
 
-void AcceleratedPresenter::WaitForPendingTasks() {
-  base::WaitableEvent event(true, false);
-  present_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
-  event.Wait();
+void AcceleratedPresenter::Invalidate() {
+  // Make any pending or future presentation tasks do nothing. Once the last
+  // last pending task has been ignored, the reference count on the presenter
+  // will go to zero and the presenter, and potentially also the present thread
+  // it has a reference count on, will be destroyed.
+  base::AutoLock locked(lock_);
+  window_ = NULL;
 }
 
 AcceleratedPresenter::~AcceleratedPresenter() {
-  // The presenter should have been suspended on the PresentThread prior to
-  // destruction.
-  DCHECK(!swap_chain_.get());
 }
 
 void AcceleratedPresenter::DoPresentAndAcknowledge(
-    gfx::NativeWindow window,
     const gfx::Size& size,
-    int64 surface_id,
+    int64 surface_handle,
     const base::Callback<void(bool)>& completion_task) {
-  TRACE_EVENT1("surface", "DoPresentAndAcknowledge", "surface_id", surface_id);
+  TRACE_EVENT1(
+      "surface", "DoPresentAndAcknowledge", "surface_handle", surface_handle);
 
   HRESULT hr;
 
@@ -416,14 +489,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   // Initialize the device lazily since calling Direct3D can crash bots.
   present_thread_->InitDevice();
-
-  // A surface with ID zero is presented even when shared surfaces are not in
-  // use for synchronization purposes. In that case, just acknowledge.
-  if (!surface_id) {
-    if (!completion_task.is_null())
-      completion_task.Run(true);
-    return;
-  }
 
   if (!present_thread_->device()) {
     if (!completion_task.is_null())
@@ -434,6 +499,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // Ensure the task is always run and while the lock is taken.
   base::ScopedClosureRunner scoped_completion_runner(base::Bind(completion_task,
                                                                 true));
+
+  // If invalidated, do nothing, the window is gone.
+  if (!window_)
+    return;
 
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.
@@ -470,7 +539,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   base::win::ScopedComPtr<IDirect3DTexture9> source_texture;
   {
     TRACE_EVENT0("surface", "CreateTexture");
-    HANDLE handle = reinterpret_cast<HANDLE>(surface_id);
+    HANDLE handle = reinterpret_cast<HANDLE>(surface_handle);
     hr = present_thread_->device()->CreateTexture(size.width(),
                                                   size.height(),
                                                   1,
@@ -520,7 +589,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
   ::SetWindowPos(
-      window,
+      window_,
       NULL,
       0, 0,
       size.width(), size.height(),
@@ -546,7 +615,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   {
     TRACE_EVENT0("surface", "Present");
-    hr = swap_chain_->Present(&rect, &rect, window, NULL, 0);
+    hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
     if (FAILED(hr))
       present_thread_->ResetDevice();
   }
@@ -557,35 +626,18 @@ void AcceleratedPresenter::DoSuspend() {
   swap_chain_ = NULL;
 }
 
-AcceleratedSurface::AcceleratedSurface()
-    : presenter_(new AcceleratedPresenter) {
+AcceleratedSurface::AcceleratedSurface(gfx::NativeWindow window)
+    : presenter_(g_accelerated_presenter_map.Pointer()->CreatePresenter(
+          window)) {
 }
 
 AcceleratedSurface::~AcceleratedSurface() {
-  // Ensure that the swap chain is destroyed on the PresentThread in case
-  // there are still pending presents.
-  presenter_->Suspend();
-  presenter_->WaitForPendingTasks();
+  g_accelerated_presenter_map.Pointer()->RemovePresenter(presenter_);
+  presenter_->Invalidate();
 }
 
-void AcceleratedSurface::AsyncPresentAndAcknowledge(
-    HWND window,
-    const gfx::Size& size,
-    int64 surface_id,
-    const base::Callback<void(bool)>& completion_task) {
-  if (!surface_id) {
-    completion_task.Run(true);
-    return;
-  }
-
-  presenter_->AsyncPresentAndAcknowledge(window,
-                                         size,
-                                         surface_id,
-                                         completion_task);
-}
-
-bool AcceleratedSurface::Present(HWND window) {
-  return presenter_->Present(window);
+bool AcceleratedSurface::Present() {
+  return presenter_->Present();
 }
 
 bool AcceleratedSurface::CopyTo(const gfx::Size& size, void* buf) {

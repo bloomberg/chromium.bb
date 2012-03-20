@@ -58,20 +58,9 @@ class GpuSurfaceTracker {
   // Note: This is an O(log N) lookup.
   gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // These are members of GpuSurfaceTracker because they hold the lock for their
-  // duration. This prevents the AcceleratedSurface that it posts to from being
-  // destroyed by the main thread during that time. This function is only called
-  // on the IO thread. This function only posts tasks asynchronously. If it
-  // were to synchronously call the UI thread, there would be a possiblity of
-  // deadlock.
-  void AsyncPresentAndAcknowledge(
-      int surface_id,
-      const gfx::Size& size,
-      int64 surface_handle,
-      const base::Callback<void(bool)>& completion_task);
-  void Suspend(int surface_id);
-#endif
+  // Gets the native window handle for the given surface or NULL if the surface
+  // does not exist. This is an O(log N) lookup.
+  gfx::PluginWindowHandle GetSurfaceWindowHandle(int surface_id);
 
   // Gets the global instance of the surface tracker. Identical to Get(), but
   // named that way for the implementation of Singleton.

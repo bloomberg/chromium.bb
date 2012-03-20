@@ -2109,7 +2109,7 @@ void RenderWidgetHostViewWin::ScheduleComposite() {
   // If we have a previous frame then present it immediately. Otherwise request
   // a new frame be composited.
   if (!accelerated_surface_.get() ||
-      !accelerated_surface_->Present(compositor_host_window_)) {
+      !accelerated_surface_->Present()) {
     if (render_widget_host_)
       render_widget_host_->ScheduleComposite();
   }
@@ -2166,8 +2166,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   base::win::OSInfo *os_info = base::win::OSInfo::GetInstance();
   if (os_info->version() >= base::win::VERSION_VISTA) {
-    accelerated_surface_.reset(new AcceleratedSurface);
-    surface_handle.accelerated_surface = accelerated_surface_.get();
+    accelerated_surface_.reset(new AcceleratedSurface(compositor_host_window_));
   }
 
   return surface_handle;

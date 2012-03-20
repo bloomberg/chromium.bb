@@ -39,6 +39,10 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/gfx/surface/accelerated_surface_win.h"
+#endif
+
 using content::BrowserThread;
 using content::ChildProcessHost;
 
@@ -555,8 +559,24 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
   TRACE_EVENT0("renderer",
       "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
 
-  GpuSurfaceTracker::Get()->AsyncPresentAndAcknowledge(
-      params.surface_id,
+  base::ScopedClosureRunner scoped_completion_runner(
+      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
+                 host_id_,
+                 params.route_id,
+                 true));
+
+  gfx::PluginWindowHandle handle =
+      GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
+  if (!handle)
+    return;
+
+  scoped_refptr<AcceleratedPresenter> presenter(
+      AcceleratedPresenter::GetForWindow(handle));
+  if (!presenter)
+    return;
+
+  scoped_completion_runner.Release();
+  presenter->AsyncPresentAndAcknowledge(
       params.size,
       params.surface_handle,
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
@@ -576,7 +596,17 @@ void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
   TRACE_EVENT0("renderer",
       "GpuProcessHost::OnAcceleratedSurfaceSuspend");
 
-  GpuSurfaceTracker::Get()->Suspend(surface_id);
+  gfx::GLSurfaceHandle handle = GpuSurfaceTracker::Get()->GetSurfaceHandle(
+      surface_id);
+  if (!handle.handle)
+    return;
+
+  scoped_refptr<AcceleratedPresenter> presenter(
+      AcceleratedPresenter::GetForWindow(handle.handle));
+  if (!presenter)
+    return;
+
+  presenter->Suspend();
 }
 
 #endif  // OS_WIN && !USE_AURA

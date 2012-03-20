@@ -18,23 +18,36 @@
 
 class PresentThread;
 
-class AcceleratedPresenter
+class SURFACE_EXPORT AcceleratedPresenter
     : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
   typedef base::Callback<void(bool)> CompletionTaskl;
 
-  AcceleratedPresenter();
+  explicit AcceleratedPresenter(gfx::NativeWindow window);
+
+  // Returns a thread safe reference to the presenter for the given window or
+  // null is no such presenter exists. The thread safe refptr ensures the
+  // presenter will not be destroyed. This can be called on any thread.
+  static scoped_refptr<AcceleratedPresenter> GetForWindow(
+      gfx::NativeWindow window);
+
+  // Schedule a frame to be presented. The completion callback will be invoked
+  // when it is safe to write to the surface on another thread. The lock for
+  // this surface will be held while the completion callback runs. This can be
+  // called on any thread.
+  void AsyncPresentAndAcknowledge(
+      const gfx::Size& size,
+      int64 surface_handle,
+      const base::Callback<void(bool)>& completion_task);
+
+  // Schedule the presenter to free all its resources. This can be called on any
+  // thread.
+  void Suspend();
 
   // The public member functions are called on the main thread.
-  void AsyncPresentAndAcknowledge(
-      gfx::NativeWindow window,
-      const gfx::Size& size,
-      int64 surface_id,
-      const base::Callback<void(bool)>& completion_task);
-  bool Present(gfx::NativeWindow window);
+  bool Present();
   bool CopyTo(const gfx::Size& size, void* buf);
-  void Suspend();
-  void WaitForPendingTasks();
+  void Invalidate();
 
  private:
   friend class base::RefCountedThreadSafe<AcceleratedPresenter>;
@@ -44,14 +57,16 @@ class AcceleratedPresenter
   // These member functions are called on the PresentThread with which the
   // presenter has affinity.
   void DoPresentAndAcknowledge(
-      gfx::NativeWindow window,
       const gfx::Size& size,
-      int64 surface_id,
+      int64 surface_handle,
       const base::Callback<void(bool)>& completion_task);
   void DoSuspend();
 
   // The thread with which this presenter has affinity.
   PresentThread* const present_thread_;
+
+  // The window that is presented to.
+  gfx::NativeWindow window_;
 
   // The lock is taken while any thread is calling the object, except those that
   // simply post from the main thread to the present thread via the immutable
@@ -71,20 +86,11 @@ class AcceleratedPresenter
 
 class SURFACE_EXPORT AcceleratedSurface {
  public:
-  AcceleratedSurface();
+  AcceleratedSurface(gfx::NativeWindow window);
   ~AcceleratedSurface();
 
-  // Schedule a frame to be presented. The completion callback will be invoked
-  // when it is safe to write to the surface on another thread. The lock for
-  // this surface will be held while the completion callback runs.
-  void AsyncPresentAndAcknowledge(
-      gfx::NativeWindow window,
-      const gfx::Size& size,
-      int64 surface_id,
-      const base::Callback<void(bool)>& completion_task);
-
   // Synchronously present a frame with no acknowledgement.
-  bool Present(gfx::NativeWindow window);
+  bool Present();
 
   // Copies the surface data to |buf|. The image data is transformed so that it
   // fits in |size|.
@@ -98,7 +104,6 @@ class SURFACE_EXPORT AcceleratedSurface {
   void Suspend();
 
  private:
-  // Immutable and accessible on any thread.
   const scoped_refptr<AcceleratedPresenter> presenter_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurface);
 };

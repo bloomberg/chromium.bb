@@ -6,10 +6,6 @@
 
 #include "base/logging.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/surface/accelerated_surface_win.h"
-#endif
-
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_id_(1) {
 }
@@ -90,37 +86,11 @@ gfx::GLSurfaceHandle GpuSurfaceTracker::GetSurfaceHandle(int surface_id) {
   return surface_map_[surface_id].handle;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-
-void GpuSurfaceTracker::AsyncPresentAndAcknowledge(
-    int surface_id,
-    const gfx::Size& size,
-    int64 surface_handle,
-    const base::Callback<void(bool)>& completion_task) {
+gfx::PluginWindowHandle GpuSurfaceTracker::GetSurfaceWindowHandle(
+    int surface_id) {
   base::AutoLock lock(lock_);
-
   SurfaceMap::iterator it = surface_map_.find(surface_id);
-  if (it == surface_map_.end() || !it->second.handle.accelerated_surface) {
-    completion_task.Run(true);
-    return;
-  }
-
-  it->second.handle.accelerated_surface->AsyncPresentAndAcknowledge(
-      it->second.handle.handle,
-      size,
-      surface_handle,
-      completion_task);
+  if (it == surface_map_.end())
+    return gfx::kNullPluginWindow;
+  return it->second.handle.handle;
 }
-
-void GpuSurfaceTracker::Suspend(int surface_id) {
-  base::AutoLock lock(lock_);
-
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
-  if (it == surface_map_.end() || !it->second.handle.accelerated_surface)
-    return;
-
-  it->second.handle.accelerated_surface->Suspend();
-}
-
-#endif  // OS_WIN
-
