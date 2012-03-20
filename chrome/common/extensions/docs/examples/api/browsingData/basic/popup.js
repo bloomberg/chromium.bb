@@ -119,7 +119,7 @@ PopupController.prototype = {
         "history": true,
         "indexedDB": true,
         "localStorage": true,
-        "originBoundCertificates": true,
+        "serverBoundCertificates": true,
         "pluginData": true,
         "passwords": true,
         "webSQL": true

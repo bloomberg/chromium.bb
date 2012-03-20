@@ -212,8 +212,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_ftp_transaction_factory(
       globals->proxy_script_fetcher_ftp_transaction_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_origin_bound_cert_service(
-      globals->system_origin_bound_cert_service.get());
+  context->set_server_bound_cert_service(
+      globals->system_server_bound_cert_service.get());
   context->set_network_delegate(globals->system_network_delegate.get());
   // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
   // system URLRequestContext too. There's no reason this should be tied to a
@@ -239,8 +239,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_ftp_transaction_factory(
       globals->system_ftp_transaction_factory.get());
   context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_origin_bound_cert_service(
-      globals->system_origin_bound_cert_service.get());
+  context->set_server_bound_cert_service(
+      globals->system_server_bound_cert_service.get());
   return context;
 }
 
@@ -404,15 +404,15 @@ void IOThread::Init() {
       net::ProxyService::CreateDirectWithNetLog(net_log_));
   // In-memory cookie store.
   globals_->system_cookie_store = new net::CookieMonster(NULL, NULL);
-  // In-memory origin-bound cert store.
-  globals_->system_origin_bound_cert_service.reset(
-      new net::OriginBoundCertService(
-          new net::DefaultOriginBoundCertStore(NULL)));
+  // In-memory server bound cert store.
+  globals_->system_server_bound_cert_service.reset(
+      new net::ServerBoundCertService(
+          new net::DefaultServerBoundCertStore(NULL)));
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = globals_->host_resolver.get();
   session_params.cert_verifier = globals_->cert_verifier.get();
-  session_params.origin_bound_cert_service =
-      globals_->system_origin_bound_cert_service.get();
+  session_params.server_bound_cert_service =
+      globals_->system_server_bound_cert_service.get();
   session_params.transport_security_state =
       globals_->transport_security_state.get();
   session_params.proxy_service =
@@ -586,8 +586,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   net::HttpNetworkSession::Params system_params;
   system_params.host_resolver = globals_->host_resolver.get();
   system_params.cert_verifier = globals_->cert_verifier.get();
-  system_params.origin_bound_cert_service =
-      globals_->system_origin_bound_cert_service.get();
+  system_params.server_bound_cert_service =
+      globals_->system_server_bound_cert_service.get();
   system_params.transport_security_state =
       globals_->transport_security_state.get();
   system_params.ssl_host_info_factory = NULL;

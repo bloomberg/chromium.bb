@@ -52,8 +52,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_.reset(new net::URLRequestContextStorage(url_request_context_));
 
     storage_->set_cookie_store(new net::CookieMonster(NULL, NULL));
-    storage_->set_origin_bound_cert_service(new net::OriginBoundCertService(
-        new net::DefaultOriginBoundCertStore(NULL)));
+    storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
+        new net::DefaultServerBoundCertStore(NULL)));
     url_request_context_->set_accept_language("en-us,en");
     url_request_context_->set_accept_charset("iso-8859-1,*,utf-8");
 
@@ -86,7 +86,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     net::HttpCache* main_cache = new net::HttpCache(
         url_request_context_->host_resolver(),
         url_request_context_->cert_verifier(),
-        url_request_context_->origin_bound_cert_service(),
+        url_request_context_->server_bound_cert_service(),
         NULL, // tranport_security_state
         url_request_context_->proxy_service(),
         "", // ssl_session_cache_shard

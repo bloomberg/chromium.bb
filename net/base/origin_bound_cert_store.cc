@@ -6,24 +6,24 @@
 
 namespace net {
 
-OriginBoundCertStore::OriginBoundCert::OriginBoundCert()
+ServerBoundCertStore::ServerBoundCert::ServerBoundCert()
     : type_(CLIENT_CERT_INVALID_TYPE) {
 }
 
-OriginBoundCertStore::OriginBoundCert::OriginBoundCert(
-    const std::string& origin,
+ServerBoundCertStore::ServerBoundCert::ServerBoundCert(
+    const std::string& server_identifier,
     SSLClientCertType type,
     base::Time creation_time,
     base::Time expiration_time,
     const std::string& private_key,
     const std::string& cert)
-    : origin_(origin),
+    : server_identifier_(server_identifier),
       type_(type),
       creation_time_(creation_time),
       expiration_time_(expiration_time),
       private_key_(private_key),
       cert_(cert) {}
 
-OriginBoundCertStore::OriginBoundCert::~OriginBoundCert() {}
+ServerBoundCertStore::ServerBoundCert::~ServerBoundCert() {}
 
 }  // namespace net

@@ -28,7 +28,7 @@ const char kRemoveEverythingArguments[] = "[{\"since\": 1000}, {"
     "\"appcache\": true, \"cache\": true, \"cookies\": true, "
     "\"downloads\": true, \"fileSystems\": true, \"formData\": true, "
     "\"history\": true, \"indexedDB\": true, \"localStorage\": true, "
-    "\"originBoundCerts\": true, \"passwords\": true, \"pluginData\": true, "
+    "\"serverBoundCerts\": true, \"passwords\": true, \"pluginData\": true, "
     "\"webSQL\": true"
     "}]";
 
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataMask) {
   RunRemoveBrowsingDataFunctionAndCompareMask(
       "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
   RunRemoveBrowsingDataFunctionAndCompareMask(
-      "originBoundCerts", BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS);
+      "serverBoundCerts", BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
   RunRemoveBrowsingDataFunctionAndCompareMask(
       "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
   // We can't remove plugin data inside a test profile.

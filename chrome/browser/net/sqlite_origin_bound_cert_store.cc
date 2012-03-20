@@ -27,8 +27,8 @@ using content::BrowserThread;
 
 // This class is designed to be shared between any calling threads and the
 // database thread.  It batches operations and commits them on a timer.
-class SQLiteOriginBoundCertStore::Backend
-    : public base::RefCountedThreadSafe<SQLiteOriginBoundCertStore::Backend> {
+class SQLiteServerBoundCertStore::Backend
+    : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
   explicit Backend(const FilePath& path)
       : path_(path),
@@ -39,15 +39,15 @@ class SQLiteOriginBoundCertStore::Backend
 
   // Creates or load the SQLite database.
   bool Load(
-      std::vector<net::DefaultOriginBoundCertStore::OriginBoundCert*>* certs);
+      std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs);
 
-  // Batch an origin bound cert addition.
-  void AddOriginBoundCert(
-      const net::DefaultOriginBoundCertStore::OriginBoundCert& cert);
+  // Batch a server bound cert addition.
+  void AddServerBoundCert(
+      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
 
-  // Batch an origin bound cert deletion.
-  void DeleteOriginBoundCert(
-      const net::DefaultOriginBoundCertStore::OriginBoundCert& cert);
+  // Batch a server bound cert deletion.
+  void DeleteServerBoundCert(
+      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
 
   // Commit pending operations as soon as possible.
   void Flush(const base::Closure& completion_task);
@@ -59,7 +59,7 @@ class SQLiteOriginBoundCertStore::Backend
   void SetClearLocalStateOnExit(bool clear_local_state);
 
  private:
-  friend class base::RefCountedThreadSafe<SQLiteOriginBoundCertStore::Backend>;
+  friend class base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend>;
 
   // You should call Close() before destructing this object.
   ~Backend() {
@@ -79,24 +79,24 @@ class SQLiteOriginBoundCertStore::Backend
 
     PendingOperation(
         OperationType op,
-        const net::DefaultOriginBoundCertStore::OriginBoundCert& cert)
+        const net::DefaultServerBoundCertStore::ServerBoundCert& cert)
         : op_(op), cert_(cert) {}
 
     OperationType op() const { return op_; }
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert() const {
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert() const {
         return cert_;
     }
 
    private:
     OperationType op_;
-    net::DefaultOriginBoundCertStore::OriginBoundCert cert_;
+    net::DefaultServerBoundCertStore::ServerBoundCert cert_;
   };
 
  private:
-  // Batch an origin bound cert operation (add or delete)
+  // Batch a server bound cert operation (add or delete)
   void BatchOperation(
       PendingOperation::OperationType op,
-      const net::DefaultOriginBoundCertStore::OriginBoundCert& cert);
+      const net::DefaultServerBoundCertStore::ServerBoundCert& cert);
   // Commit our pending operations to the database.
   void Commit();
   // Close() executed on the background thread.
@@ -125,6 +125,9 @@ namespace {
 
 // Initializes the certs table, returning true on success.
 bool InitTable(sql::Connection* db) {
+  // The table is named "origin_bound_certs" for backwards compatability before
+  // we renamed this class to SQLiteServerBoundCertStore.  Likewise, the primary
+  // key is "origin", but now can be other things like a plain domain.
   if (!db->DoesTableExist("origin_bound_certs")) {
     if (!db->Execute("CREATE TABLE origin_bound_certs ("
                      "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
@@ -141,8 +144,8 @@ bool InitTable(sql::Connection* db) {
 
 }  // namespace
 
-bool SQLiteOriginBoundCertStore::Backend::Load(
-    std::vector<net::DefaultOriginBoundCertStore::OriginBoundCert*>* certs) {
+bool SQLiteServerBoundCertStore::Backend::Load(
+    std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs) {
   // This function should be called only once per instance.
   DCHECK(!db_.get());
 
@@ -185,8 +188,8 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
     std::string private_key_from_db, cert_from_db;
     smt.ColumnBlobAsString(1, &private_key_from_db);
     smt.ColumnBlobAsString(2, &cert_from_db);
-    scoped_ptr<net::DefaultOriginBoundCertStore::OriginBoundCert> cert(
-        new net::DefaultOriginBoundCertStore::OriginBoundCert(
+    scoped_ptr<net::DefaultServerBoundCertStore::ServerBoundCert> cert(
+        new net::DefaultServerBoundCertStore::ServerBoundCert(
             smt.ColumnString(0),  // origin
             static_cast<net::SSLClientCertType>(smt.ColumnInt(3)),
             base::Time::FromInternalValue(smt.ColumnInt64(5)),
@@ -199,7 +202,7 @@ bool SQLiteOriginBoundCertStore::Backend::Load(
   return true;
 }
 
-bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
+bool SQLiteServerBoundCertStore::Backend::EnsureDatabaseVersion() {
   // Version check.
   if (!meta_table_.Init(
       db_.get(), kCurrentVersionNumber, kCompatibleVersionNumber)) {
@@ -207,7 +210,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
   }
 
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
-    LOG(WARNING) << "Origin bound cert database is too new.";
+    LOG(WARNING) << "Server bound cert database is too new.";
     return false;
   }
 
@@ -218,13 +221,13 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
       return false;
     if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN cert_type "
                       "INTEGER")) {
-      LOG(WARNING) << "Unable to update origin bound cert database to "
+      LOG(WARNING) << "Unable to update server bound cert database to "
                    << "version 2.";
       return false;
     }
     // All certs in version 1 database are rsa_sign, which has a value of 1.
     if (!db_->Execute("UPDATE origin_bound_certs SET cert_type = 1")) {
-      LOG(WARNING) << "Unable to update origin bound cert database to "
+      LOG(WARNING) << "Unable to update server bound cert database to "
                    << "version 2.";
       return false;
     }
@@ -243,7 +246,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
     if (cur_version == 2) {
       if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN "
                         "expiration_time INTEGER")) {
-        LOG(WARNING) << "Unable to update origin bound cert database to "
+        LOG(WARNING) << "Unable to update server bound cert database to "
                      << "version 4.";
         return false;
       }
@@ -251,7 +254,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
 
     if (!db_->Execute("ALTER TABLE origin_bound_certs ADD COLUMN "
                       "creation_time INTEGER")) {
-      LOG(WARNING) << "Unable to update origin bound cert database to "
+      LOG(WARNING) << "Unable to update server bound cert database to "
                    << "version 4.";
       return false;
     }
@@ -265,7 +268,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
     if (!smt.is_valid() ||
         !update_expires_smt.is_valid() ||
         !update_creation_smt.is_valid()) {
-      LOG(WARNING) << "Unable to update origin bound cert database to "
+      LOG(WARNING) << "Unable to update server bound cert database to "
                    << "version 4.";
       return false;
     }
@@ -285,7 +288,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
                                        cert->valid_expiry().ToInternalValue());
           update_expires_smt.BindString(1, origin);
           if (!update_expires_smt.Run()) {
-            LOG(WARNING) << "Unable to update origin bound cert database to "
+            LOG(WARNING) << "Unable to update server bound cert database to "
                          << "version 4.";
             return false;
           }
@@ -295,7 +298,7 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
         update_creation_smt.BindInt64(0, cert->valid_start().ToInternalValue());
         update_creation_smt.BindString(1, origin);
         if (!update_creation_smt.Run()) {
-          LOG(WARNING) << "Unable to update origin bound cert database to "
+          LOG(WARNING) << "Unable to update server bound cert database to "
                        << "version 4.";
           return false;
         }
@@ -319,25 +322,25 @@ bool SQLiteOriginBoundCertStore::Backend::EnsureDatabaseVersion() {
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
-      "Origin bound cert database version " << cur_version <<
+      "Server bound cert database version " << cur_version <<
       " is too old to handle.";
 
   return true;
 }
 
-void SQLiteOriginBoundCertStore::Backend::AddOriginBoundCert(
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) {
+void SQLiteServerBoundCertStore::Backend::AddServerBoundCert(
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
   BatchOperation(PendingOperation::CERT_ADD, cert);
 }
 
-void SQLiteOriginBoundCertStore::Backend::DeleteOriginBoundCert(
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) {
+void SQLiteServerBoundCertStore::Backend::DeleteServerBoundCert(
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
   BatchOperation(PendingOperation::CERT_DELETE, cert);
 }
 
-void SQLiteOriginBoundCertStore::Backend::BatchOperation(
+void SQLiteServerBoundCertStore::Backend::BatchOperation(
     PendingOperation::OperationType op,
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) {
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
   // Commit every 30 seconds.
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
@@ -368,7 +371,7 @@ void SQLiteOriginBoundCertStore::Backend::BatchOperation(
   }
 }
 
-void SQLiteOriginBoundCertStore::Backend::Commit() {
+void SQLiteServerBoundCertStore::Backend::Commit() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   PendingOperationsList ops;
@@ -404,7 +407,7 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
     switch (po->op()) {
       case PendingOperation::CERT_ADD: {
         add_smt.Reset();
-        add_smt.BindString(0, po->cert().origin());
+        add_smt.BindString(0, po->cert().server_identifier());
         const std::string& private_key = po->cert().private_key();
         add_smt.BindBlob(1, private_key.data(), private_key.size());
         const std::string& cert = po->cert().cert();
@@ -413,14 +416,14 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
         add_smt.BindInt64(4, po->cert().expiration_time().ToInternalValue());
         add_smt.BindInt64(5, po->cert().creation_time().ToInternalValue());
         if (!add_smt.Run())
-          NOTREACHED() << "Could not add an origin bound cert to the DB.";
+          NOTREACHED() << "Could not add a server bound cert to the DB.";
         break;
       }
       case PendingOperation::CERT_DELETE:
         del_smt.Reset();
-        del_smt.BindString(0, po->cert().origin());
+        del_smt.BindString(0, po->cert().server_identifier());
         if (!del_smt.Run())
-          NOTREACHED() << "Could not delete an origin bound cert from the DB.";
+          NOTREACHED() << "Could not delete a server bound cert from the DB.";
         break;
 
       default:
@@ -431,7 +434,7 @@ void SQLiteOriginBoundCertStore::Backend::Commit() {
   transaction.Commit();
 }
 
-void SQLiteOriginBoundCertStore::Backend::Flush(
+void SQLiteServerBoundCertStore::Backend::Flush(
     const base::Closure& completion_task) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
   BrowserThread::PostTask(
@@ -447,7 +450,7 @@ void SQLiteOriginBoundCertStore::Backend::Flush(
 // Fire off a close message to the background thread. We could still have a
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
-void SQLiteOriginBoundCertStore::Backend::Close() {
+void SQLiteServerBoundCertStore::Backend::Close() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Must close the backend on the background thread.
   BrowserThread::PostTask(
@@ -455,7 +458,7 @@ void SQLiteOriginBoundCertStore::Backend::Close() {
       base::Bind(&Backend::InternalBackgroundClose, this));
 }
 
-void SQLiteOriginBoundCertStore::Backend::InternalBackgroundClose() {
+void SQLiteServerBoundCertStore::Backend::InternalBackgroundClose() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Commit any pending operations
   Commit();
@@ -466,17 +469,17 @@ void SQLiteOriginBoundCertStore::Backend::InternalBackgroundClose() {
     file_util::Delete(path_, false);
 }
 
-void SQLiteOriginBoundCertStore::Backend::SetClearLocalStateOnExit(
+void SQLiteServerBoundCertStore::Backend::SetClearLocalStateOnExit(
     bool clear_local_state) {
   base::AutoLock locked(lock_);
   clear_local_state_on_exit_ = clear_local_state;
 }
 
-SQLiteOriginBoundCertStore::SQLiteOriginBoundCertStore(const FilePath& path)
+SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(const FilePath& path)
     : backend_(new Backend(path)) {
 }
 
-SQLiteOriginBoundCertStore::~SQLiteOriginBoundCertStore() {
+SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
   if (backend_.get()) {
     backend_->Close();
     // Release our reference, it will probably still have a reference if the
@@ -485,30 +488,30 @@ SQLiteOriginBoundCertStore::~SQLiteOriginBoundCertStore() {
   }
 }
 
-bool SQLiteOriginBoundCertStore::Load(
-    std::vector<net::DefaultOriginBoundCertStore::OriginBoundCert*>* certs) {
+bool SQLiteServerBoundCertStore::Load(
+    std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs) {
   return backend_->Load(certs);
 }
 
-void SQLiteOriginBoundCertStore::AddOriginBoundCert(
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) {
+void SQLiteServerBoundCertStore::AddServerBoundCert(
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
   if (backend_.get())
-    backend_->AddOriginBoundCert(cert);
+    backend_->AddServerBoundCert(cert);
 }
 
-void SQLiteOriginBoundCertStore::DeleteOriginBoundCert(
-    const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) {
+void SQLiteServerBoundCertStore::DeleteServerBoundCert(
+    const net::DefaultServerBoundCertStore::ServerBoundCert& cert) {
   if (backend_.get())
-    backend_->DeleteOriginBoundCert(cert);
+    backend_->DeleteServerBoundCert(cert);
 }
 
-void SQLiteOriginBoundCertStore::SetClearLocalStateOnExit(
+void SQLiteServerBoundCertStore::SetClearLocalStateOnExit(
     bool clear_local_state) {
   if (backend_.get())
     backend_->SetClearLocalStateOnExit(clear_local_state);
 }
 
-void SQLiteOriginBoundCertStore::Flush(const base::Closure& completion_task) {
+void SQLiteServerBoundCertStore::Flush(const base::Closure& completion_task) {
   if (backend_.get())
     backend_->Flush(completion_task);
   else if (!completion_task.is_null())

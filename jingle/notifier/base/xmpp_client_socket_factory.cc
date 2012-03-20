@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,8 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
   net::SSLClientSocketContext context;
   context.cert_verifier =
       request_context_getter_->GetURLRequestContext()->cert_verifier();
-  // TODO(rkn): context.origin_bound_cert_service is NULL because the
-  // OriginBoundCertService class is not thread safe.
+  // TODO(rkn): context.server_bound_cert_service is NULL because the
+  // ServerBoundCertService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
       transport_socket, host_and_port, ssl_config_, NULL, context);
 }

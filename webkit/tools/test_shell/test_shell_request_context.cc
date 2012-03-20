@@ -49,8 +49,8 @@ void TestShellRequestContext::Init(
     net::HttpCache::Mode cache_mode,
     bool no_proxy) {
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
-  storage_.set_origin_bound_cert_service(new net::OriginBoundCertService(
-      new net::DefaultOriginBoundCertStore(NULL)));
+  storage_.set_server_bound_cert_service(new net::ServerBoundCertService(
+      new net::DefaultServerBoundCertStore(NULL)));
 
   // hard-code A-L and A-C for test shells
   set_accept_language("en-us,en");
@@ -95,7 +95,7 @@ void TestShellRequestContext::Init(
   net::HttpCache* cache =
       new net::HttpCache(host_resolver(),
                          cert_verifier(),
-                         origin_bound_cert_service(),
+                         server_bound_cert_service(),
                          NULL, // transport_security_state
                          proxy_service(),
                          "",  // ssl_session_cache_shard

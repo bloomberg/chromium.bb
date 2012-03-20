@@ -21,4 +21,4 @@ HttpNetworkTransactionTest.KeepAliveConnectionEOF
 URLRequestTest.FileTest
 
 # http://crbug.com/92439
-OriginBoundCertServiceTest.*
+ServerBoundCertServiceTest.*

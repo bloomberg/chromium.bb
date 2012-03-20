@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,24 +13,24 @@
 
 class FilePath;
 
-// Implements the net::DefaultOriginBoundCertStore::PersistentStore interface
+// Implements the net::DefaultServerBoundCertStore::PersistentStore interface
 // in terms of a SQLite database. For documentation about the actual member
 // functions consult the documentation of the parent class
-// |net::DefaultOriginBoundCertStore::PersistentCertStore|.
-class SQLiteOriginBoundCertStore
-    : public net::DefaultOriginBoundCertStore::PersistentStore {
+// |net::DefaultServerBoundCertStore::PersistentCertStore|.
+class SQLiteServerBoundCertStore
+    : public net::DefaultServerBoundCertStore::PersistentStore {
  public:
-  explicit SQLiteOriginBoundCertStore(const FilePath& path);
-  virtual ~SQLiteOriginBoundCertStore();
+  explicit SQLiteServerBoundCertStore(const FilePath& path);
+  virtual ~SQLiteServerBoundCertStore();
 
-  // net::DefaultOriginBoundCertStore::PersistentStore implementation.
+  // net::DefaultServerBoundCertStore::PersistentStore implementation.
   virtual bool Load(
-      std::vector<net::DefaultOriginBoundCertStore::OriginBoundCert*>* certs)
+      std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs)
           OVERRIDE;
-  virtual void AddOriginBoundCert(
-      const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) OVERRIDE;
-  virtual void DeleteOriginBoundCert(
-      const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) OVERRIDE;
+  virtual void AddServerBoundCert(
+      const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
+  virtual void DeleteServerBoundCert(
+      const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
   virtual void Flush(const base::Closure& completion_task) OVERRIDE;
 
@@ -39,7 +39,7 @@ class SQLiteOriginBoundCertStore
 
   scoped_refptr<Backend> backend_;
 
-  DISALLOW_COPY_AND_ASSIGN(SQLiteOriginBoundCertStore);
+  DISALLOW_COPY_AND_ASSIGN(SQLiteServerBoundCertStore);
 };
 
 #endif  // CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_

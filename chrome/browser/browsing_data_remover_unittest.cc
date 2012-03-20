@@ -196,49 +196,49 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 };
 #endif
 
-class RemoveOriginBoundCertTester : public BrowsingDataRemoverTester {
+class RemoveServerBoundCertTester : public BrowsingDataRemoverTester {
  public:
-  explicit RemoveOriginBoundCertTester(TestingProfile* profile) {
+  explicit RemoveServerBoundCertTester(TestingProfile* profile) {
     profile->CreateRequestContext();
-    ob_cert_service_ = profile->GetRequestContext()->GetURLRequestContext()->
-        origin_bound_cert_service();
+    server_bound_cert_service_ = profile->GetRequestContext()->
+        GetURLRequestContext()->server_bound_cert_service();
   }
 
-  int OriginBoundCertCount() {
-    return ob_cert_service_->cert_count();
+  int ServerBoundCertCount() {
+    return server_bound_cert_service_->cert_count();
   }
 
-  // Add an origin bound cert for |origin| with specific creation and expiry
+  // Add a server bound cert for |server| with specific creation and expiry
   // times.  The cert and key data will be filled with dummy values.
-  void AddOriginBoundCertWithTimes(const std::string& origin,
+  void AddServerBoundCertWithTimes(const std::string& server_identifier,
                                    base::Time creation_time,
                                    base::Time expiration_time) {
-    GetCertStore()->SetOriginBoundCert(origin, net::CLIENT_CERT_RSA_SIGN,
-                                       creation_time, expiration_time,
-                                       "a", "b");
+    GetCertStore()->SetServerBoundCert(server_identifier,
+                                       net::CLIENT_CERT_RSA_SIGN, creation_time,
+                                       expiration_time, "a", "b");
   }
 
-  // Add an origin bound cert for |origin|, with the current time as the
+  // Add a server bound cert for |server|, with the current time as the
   // creation time.  The cert and key data will be filled with dummy values.
-  void AddOriginBoundCert(const std::string& origin) {
+  void AddServerBoundCert(const std::string& server_identifier) {
     base::Time now = base::Time::Now();
-    AddOriginBoundCertWithTimes(origin,
+    AddServerBoundCertWithTimes(server_identifier,
                                 now,
                                 now + base::TimeDelta::FromDays(1));
   }
 
-  net::OriginBoundCertStore* GetCertStore() {
-    return ob_cert_service_->GetCertStore();
+  net::ServerBoundCertStore* GetCertStore() {
+    return server_bound_cert_service_->GetCertStore();
   }
 
  private:
-  net::OriginBoundCertService* ob_cert_service_;
+  net::ServerBoundCertService* server_bound_cert_service_;
 
   net::SSLClientCertType type_;
   std::string key_;
   std::string cert_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoveOriginBoundCertTester);
+  DISALLOW_COPY_AND_ASSIGN(RemoveServerBoundCertTester);
 };
 
 class RemoveHistoryTester : public BrowsingDataRemoverTester {
@@ -511,39 +511,39 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
 }
 #endif
 
-TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertForever) {
-  scoped_ptr<RemoveOriginBoundCertTester> tester(
-      new RemoveOriginBoundCertTester(GetProfile()));
+TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
+  scoped_ptr<RemoveServerBoundCertTester> tester(
+      new RemoveServerBoundCertTester(GetProfile()));
 
-  tester->AddOriginBoundCert(kTestkOrigin1);
-  EXPECT_EQ(1, tester->OriginBoundCertCount());
+  tester->AddServerBoundCert(kTestkOrigin1);
+  EXPECT_EQ(1, tester->ServerBoundCertCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
-      BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, tester.get());
+      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, tester.get());
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, GetRemovalMask());
-  EXPECT_EQ(0, tester->OriginBoundCertCount());
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(0, tester->ServerBoundCertCount());
 }
 
-TEST_F(BrowsingDataRemoverTest, RemoveOriginBoundCertLastHour) {
-  scoped_ptr<RemoveOriginBoundCertTester> tester(
-      new RemoveOriginBoundCertTester(GetProfile()));
+TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
+  scoped_ptr<RemoveServerBoundCertTester> tester(
+      new RemoveServerBoundCertTester(GetProfile()));
 
   base::Time now = base::Time::Now();
-  tester->AddOriginBoundCert(kTestkOrigin1);
-  tester->AddOriginBoundCertWithTimes(kTestkOrigin2,
+  tester->AddServerBoundCert(kTestkOrigin1);
+  tester->AddServerBoundCertWithTimes(kTestkOrigin2,
                                       now - base::TimeDelta::FromHours(2),
                                       now);
-  EXPECT_EQ(2, tester->OriginBoundCertCount());
+  EXPECT_EQ(2, tester->ServerBoundCertCount());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
-      BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, tester.get());
+      BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, tester.get());
 
-  EXPECT_EQ(BrowsingDataRemover::REMOVE_ORIGIN_BOUND_CERTS, GetRemovalMask());
-  EXPECT_EQ(1, tester->OriginBoundCertCount());
-  std::vector<net::OriginBoundCertStore::OriginBoundCert> certs;
-  tester->GetCertStore()->GetAllOriginBoundCerts(&certs);
-  EXPECT_EQ(kTestkOrigin2, certs[0].origin());
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(1, tester->ServerBoundCertCount());
+  std::vector<net::ServerBoundCertStore::ServerBoundCert> certs;
+  tester->GetCertStore()->GetAllServerBoundCerts(&certs);
+  EXPECT_EQ(kTestkOrigin2, certs[0].server_identifier());
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {

@@ -79,10 +79,10 @@
                 "optional": true,
                 "description": "Should websites' local storage data be cleared?"
               },
-              "originBoundCertificates": {
+              "serverBoundCertificates": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Should origin-bound certificates be removed?"
+                "description": "Should server-bound certificates be removed?"
               },
               "pluginData": {
                 "type": "boolean",

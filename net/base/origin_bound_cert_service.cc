@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/ec_private_key.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/origin_bound_cert_store.h"
 #include "net/base/registry_controlled_domain.h"
@@ -48,9 +49,9 @@ bool IsSupportedCertType(uint8 type) {
 }  // namespace
 
 // Represents the output and result callback of a request.
-class OriginBoundCertServiceRequest {
+class ServerBoundCertServiceRequest {
  public:
-  OriginBoundCertServiceRequest(const CompletionCallback& callback,
+  ServerBoundCertServiceRequest(const CompletionCallback& callback,
                                 SSLClientCertType* type,
                                 std::string* private_key,
                                 std::string* cert)
@@ -92,20 +93,20 @@ class OriginBoundCertServiceRequest {
   std::string* cert_;
 };
 
-// OriginBoundCertServiceWorker runs on a worker thread and takes care of the
+// ServerBoundCertServiceWorker runs on a worker thread and takes care of the
 // blocking process of performing key generation. Deletes itself eventually
 // if Start() succeeds.
-class OriginBoundCertServiceWorker {
+class ServerBoundCertServiceWorker {
  public:
-  OriginBoundCertServiceWorker(
-      const std::string& origin,
+  ServerBoundCertServiceWorker(
+      const std::string& server_identifier,
       SSLClientCertType type,
-      OriginBoundCertService* origin_bound_cert_service)
-      : origin_(origin),
+      ServerBoundCertService* server_bound_cert_service)
+      : server_identifier_(server_identifier),
         type_(type),
         serial_number_(base::RandInt(0, std::numeric_limits<int>::max())),
         origin_loop_(MessageLoop::current()),
-        origin_bound_cert_service_(origin_bound_cert_service),
+        server_bound_cert_service_(server_bound_cert_service),
         canceled_(false),
         error_(ERR_FAILED) {
   }
@@ -115,11 +116,11 @@ class OriginBoundCertServiceWorker {
 
     return base::WorkerPool::PostTask(
         FROM_HERE,
-        base::Bind(&OriginBoundCertServiceWorker::Run, base::Unretained(this)),
+        base::Bind(&ServerBoundCertServiceWorker::Run, base::Unretained(this)),
         true /* task is slow */);
   }
 
-  // Cancel is called from the origin loop when the OriginBoundCertService is
+  // Cancel is called from the origin loop when the ServerBoundCertService is
   // getting deleted.
   void Cancel() {
     DCHECK_EQ(MessageLoop::current(), origin_loop_);
@@ -130,7 +131,7 @@ class OriginBoundCertServiceWorker {
  private:
   void Run() {
     // Runs on a worker thread.
-    error_ = OriginBoundCertService::GenerateCert(origin_,
+    error_ = ServerBoundCertService::GenerateCert(server_identifier_,
                                                   type_,
                                                   serial_number_,
                                                   &creation_time_,
@@ -160,8 +161,8 @@ class OriginBoundCertServiceWorker {
       // memory leaks or worse errors.
       base::AutoLock locked(lock_);
       if (!canceled_) {
-        origin_bound_cert_service_->HandleResult(
-            origin_, error_, type_, creation_time_, expiration_time_,
+        server_bound_cert_service_->HandleResult(
+            server_identifier_, error_, type_, creation_time_, expiration_time_,
             private_key_, cert_);
       }
     }
@@ -170,11 +171,11 @@ class OriginBoundCertServiceWorker {
 
   void Finish() {
     // Runs on the worker thread.
-    // We assume that the origin loop outlives the OriginBoundCertService. If
-    // the OriginBoundCertService is deleted, it will call Cancel on us. If it
+    // We assume that the origin loop outlives the ServerBoundCertService. If
+    // the ServerBoundCertService is deleted, it will call Cancel on us. If it
     // does so before the Acquire, we'll delete ourselves and return. If it's
     // trying to do so concurrently, then it'll block on the lock and we'll
-    // call PostTask while the OriginBoundCertService (and therefore the
+    // call PostTask while the ServerBoundCertService (and therefore the
     // MessageLoop) is still alive. If it does so after this function, we
     // assume that the MessageLoop will process pending tasks. In which case
     // we'll notice the |canceled_| flag in DoReply.
@@ -185,7 +186,7 @@ class OriginBoundCertServiceWorker {
       canceled = canceled_;
       if (!canceled) {
         origin_loop_->PostTask(
-            FROM_HERE, base::Bind(&OriginBoundCertServiceWorker::DoReply,
+            FROM_HERE, base::Bind(&ServerBoundCertServiceWorker::DoReply,
                                   base::Unretained(this)));
       }
     }
@@ -193,20 +194,20 @@ class OriginBoundCertServiceWorker {
       delete this;
   }
 
-  const std::string origin_;
+  const std::string server_identifier_;
   const SSLClientCertType type_;
   // Note that serial_number_ must be initialized on a non-worker thread
-  // (see documentation for OriginBoundCertService::GenerateCert).
+  // (see documentation for ServerBoundCertService::GenerateCert).
   uint32 serial_number_;
   MessageLoop* const origin_loop_;
-  OriginBoundCertService* const origin_bound_cert_service_;
+  ServerBoundCertService* const server_bound_cert_service_;
 
   // lock_ protects canceled_.
   base::Lock lock_;
 
   // If canceled_ is true,
   // * origin_loop_ cannot be accessed by the worker thread,
-  // * origin_bound_cert_service_ cannot be accessed by any thread.
+  // * server_bound_cert_service_ cannot be accessed by any thread.
   bool canceled_;
 
   int error_;
@@ -215,20 +216,20 @@ class OriginBoundCertServiceWorker {
   std::string private_key_;
   std::string cert_;
 
-  DISALLOW_COPY_AND_ASSIGN(OriginBoundCertServiceWorker);
+  DISALLOW_COPY_AND_ASSIGN(ServerBoundCertServiceWorker);
 };
 
-// An OriginBoundCertServiceJob is a one-to-one counterpart of an
-// OriginBoundCertServiceWorker. It lives only on the OriginBoundCertService's
+// A ServerBoundCertServiceJob is a one-to-one counterpart of an
+// ServerBoundCertServiceWorker. It lives only on the ServerBoundCertService's
 // origin message loop.
-class OriginBoundCertServiceJob {
+class ServerBoundCertServiceJob {
  public:
-  OriginBoundCertServiceJob(OriginBoundCertServiceWorker* worker,
+  ServerBoundCertServiceJob(ServerBoundCertServiceWorker* worker,
                             SSLClientCertType type)
       : worker_(worker), type_(type) {
   }
 
-  ~OriginBoundCertServiceJob() {
+  ~ServerBoundCertServiceJob() {
     if (worker_) {
       worker_->Cancel();
       DeleteAllCanceled();
@@ -237,7 +238,7 @@ class OriginBoundCertServiceJob {
 
   SSLClientCertType type() const { return type_; }
 
-  void AddRequest(OriginBoundCertServiceRequest* request) {
+  void AddRequest(ServerBoundCertServiceRequest* request) {
     requests_.push_back(request);
   }
 
@@ -254,48 +255,48 @@ class OriginBoundCertServiceJob {
                SSLClientCertType type,
                const std::string& private_key,
                const std::string& cert) {
-    std::vector<OriginBoundCertServiceRequest*> requests;
+    std::vector<ServerBoundCertServiceRequest*> requests;
     requests_.swap(requests);
 
-    for (std::vector<OriginBoundCertServiceRequest*>::iterator
+    for (std::vector<ServerBoundCertServiceRequest*>::iterator
          i = requests.begin(); i != requests.end(); i++) {
       (*i)->Post(error, type, private_key, cert);
-      // Post() causes the OriginBoundCertServiceRequest to delete itself.
+      // Post() causes the ServerBoundCertServiceRequest to delete itself.
     }
   }
 
   void DeleteAllCanceled() {
-    for (std::vector<OriginBoundCertServiceRequest*>::iterator
+    for (std::vector<ServerBoundCertServiceRequest*>::iterator
          i = requests_.begin(); i != requests_.end(); i++) {
       if ((*i)->canceled()) {
         delete *i;
       } else {
-        LOG(DFATAL) << "OriginBoundCertServiceRequest leaked!";
+        LOG(DFATAL) << "ServerBoundCertServiceRequest leaked!";
       }
     }
   }
 
-  std::vector<OriginBoundCertServiceRequest*> requests_;
-  OriginBoundCertServiceWorker* worker_;
+  std::vector<ServerBoundCertServiceRequest*> requests_;
+  ServerBoundCertServiceWorker* worker_;
   SSLClientCertType type_;
 };
 
 // static
-const char OriginBoundCertService::kEPKIPassword[] = "";
+const char ServerBoundCertService::kEPKIPassword[] = "";
 
-OriginBoundCertService::OriginBoundCertService(
-    OriginBoundCertStore* origin_bound_cert_store)
-    : origin_bound_cert_store_(origin_bound_cert_store),
+ServerBoundCertService::ServerBoundCertService(
+    ServerBoundCertStore* server_bound_cert_store)
+    : server_bound_cert_store_(server_bound_cert_store),
       requests_(0),
       cert_store_hits_(0),
       inflight_joins_(0) {}
 
-OriginBoundCertService::~OriginBoundCertService() {
+ServerBoundCertService::~ServerBoundCertService() {
   STLDeleteValues(&inflight_);
 }
 
 //static
-std::string OriginBoundCertService::GetDomainForHost(const std::string& host) {
+std::string ServerBoundCertService::GetDomainForHost(const std::string& host) {
   std::string domain =
       RegistryControlledDomainService::GetDomainAndRegistry(host);
   if (domain.empty())
@@ -303,7 +304,7 @@ std::string OriginBoundCertService::GetDomainForHost(const std::string& host) {
   return domain;
 }
 
-int OriginBoundCertService::GetOriginBoundCert(
+int ServerBoundCertService::GetDomainBoundCert(
     const std::string& origin,
     const std::vector<uint8>& requested_types,
     SSLClientCertType* type,
@@ -320,6 +321,10 @@ int OriginBoundCertService::GetOriginBoundCert(
     return ERR_INVALID_ARGUMENT;
   }
 
+  std::string domain = GetDomainForHost(GURL(origin).host());
+  if (domain.empty())
+    return ERR_INVALID_ARGUMENT;
+
   SSLClientCertType preferred_type = CLIENT_CERT_INVALID_TYPE;
   for (size_t i = 0; i < requested_types.size(); ++i) {
     if (IsSupportedCertType(requested_types[i])) {
@@ -334,35 +339,35 @@ int OriginBoundCertService::GetOriginBoundCert(
 
   requests_++;
 
-  // Check if an origin bound cert of an acceptable type already exists for this
-  // origin, and that it has not expired.
+  // Check if a domain bound cert of an acceptable type already exists for this
+  // domain, and that it has not expired.
   base::Time now = base::Time::Now();
   base::Time creation_time;
   base::Time expiration_time;
-  if (origin_bound_cert_store_->GetOriginBoundCert(origin,
+  if (server_bound_cert_store_->GetServerBoundCert(domain,
                                                    type,
                                                    &creation_time,
                                                    &expiration_time,
                                                    private_key,
                                                    cert)) {
     if (expiration_time < now) {
-      DVLOG(1) << "Cert store had expired cert for " << origin;
+      DVLOG(1) << "Cert store had expired cert for " << domain;
     } else if (!IsSupportedCertType(*type) ||
                std::find(requested_types.begin(), requested_types.end(),
                          *type) == requested_types.end()) {
       DVLOG(1) << "Cert store had cert of wrong type " << *type << " for "
-               << origin;
+               << domain;
     } else {
       cert_store_hits_++;
       return OK;
     }
   }
 
-  // |origin_bound_cert_store_| has no cert for this origin. See if an
+  // |server_bound_cert_store_| has no cert for this domain. See if an
   // identical request is currently in flight.
-  OriginBoundCertServiceJob* job = NULL;
-  std::map<std::string, OriginBoundCertServiceJob*>::const_iterator j;
-  j = inflight_.find(origin);
+  ServerBoundCertServiceJob* job = NULL;
+  std::map<std::string, ServerBoundCertServiceJob*>::const_iterator j;
+  j = inflight_.find(domain);
   if (j != inflight_.end()) {
     // An identical request is in flight already. We'll just attach our
     // callback.
@@ -371,10 +376,10 @@ int OriginBoundCertService::GetOriginBoundCert(
     if (std::find(requested_types.begin(), requested_types.end(), job->type())
         == requested_types.end()) {
       DVLOG(1) << "Found inflight job of wrong type " << job->type()
-               << " for " << origin;
+               << " for " << domain;
       // If we get here, the server is asking for different types of certs in
       // short succession.  This probably means the server is broken or
-      // misconfigured.  Since we only store one type of cert per origin, we
+      // misconfigured.  Since we only store one type of cert per domain, we
       // are unable to handle this well.  Just return an error and let the first
       // job finish.
       return ERR_ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH;
@@ -382,34 +387,34 @@ int OriginBoundCertService::GetOriginBoundCert(
     inflight_joins_++;
   } else {
     // Need to make a new request.
-    OriginBoundCertServiceWorker* worker = new OriginBoundCertServiceWorker(
-            origin,
+    ServerBoundCertServiceWorker* worker = new ServerBoundCertServiceWorker(
+            domain,
             preferred_type,
             this);
-    job = new OriginBoundCertServiceJob(worker, preferred_type);
+    job = new ServerBoundCertServiceJob(worker, preferred_type);
     if (!worker->Start()) {
       delete job;
       delete worker;
       // TODO(rkn): Log to the NetLog.
-      LOG(ERROR) << "OriginBoundCertServiceWorker couldn't be started.";
+      LOG(ERROR) << "ServerBoundCertServiceWorker couldn't be started.";
       return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
     }
-    inflight_[origin] = job;
+    inflight_[domain] = job;
   }
 
-  OriginBoundCertServiceRequest* request =
-      new OriginBoundCertServiceRequest(callback, type, private_key, cert);
+  ServerBoundCertServiceRequest* request =
+      new ServerBoundCertServiceRequest(callback, type, private_key, cert);
   job->AddRequest(request);
   *out_req = request;
   return ERR_IO_PENDING;
 }
 
-OriginBoundCertStore* OriginBoundCertService::GetCertStore() {
-  return origin_bound_cert_store_.get();
+ServerBoundCertStore* ServerBoundCertService::GetCertStore() {
+  return server_bound_cert_store_.get();
 }
 
 // static
-int OriginBoundCertService::GenerateCert(const std::string& origin,
+int ServerBoundCertService::GenerateCert(const std::string& server_identifier,
                                          SSLClientCertType type,
                                          uint32 serial_number,
                                          base::Time* creation_time,
@@ -428,9 +433,9 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
         DLOG(ERROR) << "Unable to create key pair for client";
         return ERR_KEY_GENERATION_FAILED;
       }
-      if (!x509_util::CreateOriginBoundCertEC(
+      if (!x509_util::CreateDomainBoundCertEC(
           key.get(),
-          origin,
+          server_identifier,
           serial_number,
           now,
           not_valid_after,
@@ -462,16 +467,16 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
   return OK;
 }
 
-void OriginBoundCertService::CancelRequest(RequestHandle req) {
+void ServerBoundCertService::CancelRequest(RequestHandle req) {
   DCHECK(CalledOnValidThread());
-  OriginBoundCertServiceRequest* request =
-      reinterpret_cast<OriginBoundCertServiceRequest*>(req);
+  ServerBoundCertServiceRequest* request =
+      reinterpret_cast<ServerBoundCertServiceRequest*>(req);
   request->Cancel();
 }
 
-// HandleResult is called by OriginBoundCertServiceWorker on the origin message
-// loop. It deletes OriginBoundCertServiceJob.
-void OriginBoundCertService::HandleResult(const std::string& origin,
+// HandleResult is called by ServerBoundCertServiceWorker on the origin message
+// loop. It deletes ServerBoundCertServiceJob.
+void ServerBoundCertService::HandleResult(const std::string& server_identifier,
                                           int error,
                                           SSLClientCertType type,
                                           base::Time creation_time,
@@ -480,24 +485,25 @@ void OriginBoundCertService::HandleResult(const std::string& origin,
                                           const std::string& cert) {
   DCHECK(CalledOnValidThread());
 
-  origin_bound_cert_store_->SetOriginBoundCert(
-      origin, type, creation_time, expiration_time, private_key, cert);
+  server_bound_cert_store_->SetServerBoundCert(
+      server_identifier, type, creation_time, expiration_time, private_key,
+      cert);
 
-  std::map<std::string, OriginBoundCertServiceJob*>::iterator j;
-  j = inflight_.find(origin);
+  std::map<std::string, ServerBoundCertServiceJob*>::iterator j;
+  j = inflight_.find(server_identifier);
   if (j == inflight_.end()) {
     NOTREACHED();
     return;
   }
-  OriginBoundCertServiceJob* job = j->second;
+  ServerBoundCertServiceJob* job = j->second;
   inflight_.erase(j);
 
   job->HandleResult(error, type, private_key, cert);
   delete job;
 }
 
-int OriginBoundCertService::cert_count() {
-  return origin_bound_cert_store_->GetCertCount();
+int ServerBoundCertService::cert_count() {
+  return server_bound_cert_store_->GetCertCount();
 }
 
 }  // namespace net

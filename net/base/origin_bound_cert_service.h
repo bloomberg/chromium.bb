@@ -20,14 +20,14 @@
 
 namespace net {
 
-class OriginBoundCertServiceJob;
-class OriginBoundCertServiceWorker;
-class OriginBoundCertStore;
+class ServerBoundCertServiceJob;
+class ServerBoundCertServiceWorker;
+class ServerBoundCertStore;
 
-// A class for creating and fetching origin bound certs.
+// A class for creating and fetching server bound certs.
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
-class NET_EXPORT OriginBoundCertService
+class NET_EXPORT ServerBoundCertService
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // Opaque type used to cancel a request.
@@ -38,18 +38,18 @@ class NET_EXPORT OriginBoundCertService
   // being unable to import unencrypted PrivateKeyInfo for EC keys.)
   static const char kEPKIPassword[];
 
-  // This object owns origin_bound_cert_store.
-  explicit OriginBoundCertService(
-      OriginBoundCertStore* origin_bound_cert_store);
+  // This object owns server_bound_cert_store.
+  explicit ServerBoundCertService(
+      ServerBoundCertStore* server_bound_cert_store);
 
-  ~OriginBoundCertService();
+  ~ServerBoundCertService();
 
   // Returns the domain to be used for |host|.  The domain is the
   // "registry controlled domain", or the "ETLD + 1" where one exists, or
   // the origin otherwise.
   static std::string GetDomainForHost(const std::string& host);
 
-  // Fetches the origin bound cert for the specified origin of the specified
+  // Fetches the domain bound cert for the specified origin of the specified
   // type if one exists and creates one otherwise. Returns OK if successful or
   // an error code upon failure.
   //
@@ -67,7 +67,7 @@ class NET_EXPORT OriginBoundCertService
   //
   // |*out_req| will be filled with a handle to the async request. This handle
   // is not valid after the request has completed.
-  int GetOriginBoundCert(
+  int GetDomainBoundCert(
       const std::string& origin,
       const std::vector<uint8>& requested_types,
       SSLClientCertType* type,
@@ -77,12 +77,12 @@ class NET_EXPORT OriginBoundCertService
       RequestHandle* out_req);
 
   // Cancels the specified request. |req| is the handle returned by
-  // GetOriginBoundCert(). After a request is canceled, its completion
+  // GetDomainBoundCert(). After a request is canceled, its completion
   // callback will not be called.
   void CancelRequest(RequestHandle req);
 
-  // Returns the backing OriginBoundCertStore.
-  OriginBoundCertStore* GetCertStore();
+  // Returns the backing ServerBoundCertStore.
+  ServerBoundCertStore* GetCertStore();
 
   // Public only for unit testing.
   int cert_count();
@@ -91,7 +91,7 @@ class NET_EXPORT OriginBoundCertService
   uint64 inflight_joins() const { return inflight_joins_; }
 
  private:
-  friend class OriginBoundCertServiceWorker;  // Calls HandleResult.
+  friend class ServerBoundCertServiceWorker;  // Calls HandleResult.
 
   // On success, |private_key| stores a DER-encoded PrivateKeyInfo
   // struct, |cert| stores a DER-encoded certificate, |creation_time| stores the
@@ -101,7 +101,7 @@ class NET_EXPORT OriginBoundCertService
   // |serial_number| is passed in because it is created with the function
   // base::RandInt, which opens the file /dev/urandom. /dev/urandom is opened
   // with a LazyInstance, which is not allowed on a worker thread.
-  static int GenerateCert(const std::string& origin,
+  static int GenerateCert(const std::string& server_identifier,
                           SSLClientCertType type,
                           uint32 serial_number,
                           base::Time* creation_time,
@@ -109,7 +109,7 @@ class NET_EXPORT OriginBoundCertService
                           std::string* private_key,
                           std::string* cert);
 
-  void HandleResult(const std::string& origin,
+  void HandleResult(const std::string& server_identifier,
                     int error,
                     SSLClientCertType type,
                     base::Time creation_time,
@@ -117,17 +117,17 @@ class NET_EXPORT OriginBoundCertService
                     const std::string& private_key,
                     const std::string& cert);
 
-  scoped_ptr<OriginBoundCertStore> origin_bound_cert_store_;
+  scoped_ptr<ServerBoundCertStore> server_bound_cert_store_;
 
-  // inflight_ maps from an origin to an active generation which is taking
+  // inflight_ maps from a server to an active generation which is taking
   // place.
-  std::map<std::string, OriginBoundCertServiceJob*> inflight_;
+  std::map<std::string, ServerBoundCertServiceJob*> inflight_;
 
   uint64 requests_;
   uint64 cert_store_hits_;
   uint64 inflight_joins_;
 
-  DISALLOW_COPY_AND_ASSIGN(OriginBoundCertService);
+  DISALLOW_COPY_AND_ASSIGN(ServerBoundCertService);
 };
 
 }  // namespace net

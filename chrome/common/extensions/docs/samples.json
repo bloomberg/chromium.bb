@@ -18,6 +18,10 @@
     "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree",
     "chrome.bookmarks.search": "bookmarks.html#method-search",
     "chrome.bookmarks.update": "bookmarks.html#method-update",
+    "chrome.browserAction.getBadgeBackgroundColor": "browserAction.html#method-getBadgeBackgroundColor",
+    "chrome.browserAction.getBadgeText": "browserAction.html#method-getBadgeText",
+    "chrome.browserAction.getPopup": "browserAction.html#method-getPopup",
+    "chrome.browserAction.getTitle": "browserAction.html#method-getTitle",
     "chrome.browserAction.onClicked": "browserAction.html#event-onClicked",
     "chrome.browserAction.setBadgeBackgroundColor": "browserAction.html#method-setBadgeBackgroundColor",
     "chrome.browserAction.setBadgeText": "browserAction.html#method-setBadgeText",
@@ -142,6 +146,8 @@
     "chrome.omnibox.onInputEntered": "omnibox.html#event-onInputEntered",
     "chrome.omnibox.onInputStarted": "omnibox.html#event-onInputStarted",
     "chrome.omnibox.setDefaultSuggestion": "omnibox.html#method-setDefaultSuggestion",
+    "chrome.pageAction.getPopup": "pageAction.html#method-getPopup",
+    "chrome.pageAction.getTitle": "pageAction.html#method-getTitle",
     "chrome.pageAction.hide": "pageAction.html#method-hide",
     "chrome.pageAction.onClicked": "pageAction.html#event-onClicked",
     "chrome.pageAction.setIcon": "pageAction.html#method-setIcon",
@@ -524,7 +530,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "d03a62493eb36bf3da3472f15df777137e159171",
+      "source_hash": "6e227746c25a1b9765dbd27e3eb0e7403dee2c65",
       "zip_path": "examples\/api\/browsingData\/basic.zip"
     },
     {

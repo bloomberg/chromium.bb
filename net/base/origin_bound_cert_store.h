@@ -15,30 +15,30 @@
 
 namespace net {
 
-// An interface for storing and retrieving origin bound certs. Origin bound
+// An interface for storing and retrieving server bound certs.
+// There isn't a domain bound certs spec yet, but the old origin bound
 // certificates are specified in
-// http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html.
+// http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-01.html.
 
-// Owned only by a single OriginBoundCertService object, which is responsible
+// Owned only by a single ServerBoundCertService object, which is responsible
 // for deleting it.
-
-class NET_EXPORT OriginBoundCertStore {
+class NET_EXPORT ServerBoundCertStore {
  public:
-  // The OriginBoundCert class contains a private key in addition to the origin
+  // The ServerBoundCert class contains a private key in addition to the server
   // cert, and cert type.
-  class NET_EXPORT OriginBoundCert {
+  class NET_EXPORT ServerBoundCert {
    public:
-    OriginBoundCert();
-    OriginBoundCert(const std::string& origin,
+    ServerBoundCert();
+    ServerBoundCert(const std::string& server_identifier,
                     SSLClientCertType type,
                     base::Time creation_time,
                     base::Time expiration_time,
                     const std::string& private_key,
                     const std::string& cert);
-    ~OriginBoundCert();
+    ~ServerBoundCert();
 
-    // Origin, for instance "https://www.verisign.com:443"
-    const std::string& origin() const { return origin_; }
+    // Server identifier.  For domain bound certs, for instance "verisign.com".
+    const std::string& server_identifier() const { return server_identifier_; }
     // TLS ClientCertificateType.
     SSLClientCertType type() const { return type_; }
     // The time the certificate was created, also the start of the certificate
@@ -54,7 +54,7 @@ class NET_EXPORT OriginBoundCertStore {
     const std::string& cert() const { return cert_; }
 
    private:
-    std::string origin_;
+    std::string server_identifier_;
     SSLClientCertType type_;
     base::Time creation_time_;
     base::Time expiration_time_;
@@ -62,7 +62,7 @@ class NET_EXPORT OriginBoundCertStore {
     std::string cert_;
   };
 
-  virtual ~OriginBoundCertStore() {}
+  virtual ~ServerBoundCertStore() {}
 
   // TODO(rkn): File I/O may be required, so this should have an asynchronous
   // interface.
@@ -71,41 +71,41 @@ class NET_EXPORT OriginBoundCertStore {
   // |type| is the ClientCertificateType of the returned certificate,
   // |creation_time| stores the start of the validity period of the certificate
   // and |expiration_time| is the expiration time of the certificate.
-  // Returns false if no origin bound cert exists for the specified origin.
-  virtual bool GetOriginBoundCert(
-      const std::string& origin,
+  // Returns false if no server bound cert exists for the specified server.
+  virtual bool GetServerBoundCert(
+      const std::string& server_identifier,
       SSLClientCertType* type,
       base::Time* creation_time,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result) = 0;
 
-  // Adds an origin bound cert and the corresponding private key to the store.
-  virtual void SetOriginBoundCert(
-      const std::string& origin,
+  // Adds a server bound cert and the corresponding private key to the store.
+  virtual void SetServerBoundCert(
+      const std::string& server_identifier,
       SSLClientCertType type,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) = 0;
 
-  // Removes an origin bound cert and the corresponding private key from the
+  // Removes a server bound cert and the corresponding private key from the
   // store.
-  virtual void DeleteOriginBoundCert(const std::string& origin) = 0;
+  virtual void DeleteServerBoundCert(const std::string& server_identifier) = 0;
 
-  // Deletes all of the origin bound certs that have a creation_date greater
+  // Deletes all of the server bound certs that have a creation_date greater
   // than or equal to |delete_begin| and less than |delete_end|.  If a
   // base::Time value is_null, that side of the comparison is unbounded.
   virtual void DeleteAllCreatedBetween(base::Time delete_begin,
                                        base::Time delete_end) = 0;
 
-  // Removes all origin bound certs and the corresponding private keys from
+  // Removes all server bound certs and the corresponding private keys from
   // the store.
   virtual void DeleteAll() = 0;
 
-  // Returns all origin bound certs and the corresponding private keys.
-  virtual void GetAllOriginBoundCerts(
-      std::vector<OriginBoundCert>* origin_bound_certs) = 0;
+  // Returns all server bound certs and the corresponding private keys.
+  virtual void GetAllServerBoundCerts(
+      std::vector<ServerBoundCert>* server_bound_certs) = 0;
 
   // Returns the number of certs in the store.
   // Public only for unit testing.

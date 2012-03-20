@@ -274,7 +274,7 @@ const char kEnableMediaStream[]             = "enable-media-stream";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enables TLS origin bound certificate extension.
+// Enables TLS domain bound certificate extension.
 const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
 
 // Enables partial swaps in the WK compositor on platforms that support it.

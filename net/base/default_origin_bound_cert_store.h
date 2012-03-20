@@ -21,30 +21,30 @@ class Task;
 
 namespace net {
 
-// This class is the system for storing and retrieving origin bound certs.
+// This class is the system for storing and retrieving server bound certs.
 // Modeled after the CookieMonster class, it has an in-memory cert store,
-// and synchronizes origin bound certs to an optional permanent storage that
+// and synchronizes server bound certs to an optional permanent storage that
 // implements the PersistentStore interface. The use case is described in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html
 //
 // This class can be accessed by multiple threads. For example, it can be used
-// by IO and origin bound cert management UI.
-class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
+// by IO and server bound cert management UI.
+class NET_EXPORT DefaultServerBoundCertStore : public ServerBoundCertStore {
  public:
   class PersistentStore;
 
-  // The key for each OriginBoundCert* in OriginBoundCertMap is the
-  // corresponding origin.
-  typedef std::map<std::string, OriginBoundCert*> OriginBoundCertMap;
+  // The key for each ServerBoundCert* in ServerBoundCertMap is the
+  // corresponding server.
+  typedef std::map<std::string, ServerBoundCert*> ServerBoundCertMap;
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the
-  // DefaultOriginBoundCertStore's existence. If |store| is NULL, then no
+  // DefaultServerBoundCertStore's existence. If |store| is NULL, then no
   // backing store will be updated.
-  explicit DefaultOriginBoundCertStore(PersistentStore* store);
+  explicit DefaultServerBoundCertStore(PersistentStore* store);
 
-  virtual ~DefaultOriginBoundCertStore();
+  virtual ~DefaultServerBoundCertStore();
 
   // Flush the backing store (if any) to disk and post the given task when done.
   // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
@@ -53,27 +53,28 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
   // to the thread you actually want to be notified on.
   void FlushStore(const base::Closure& completion_task);
 
-  // OriginBoundCertStore implementation.
-  virtual bool GetOriginBoundCert(
-      const std::string& origin,
+  // ServerBoundCertStore implementation.
+  virtual bool GetServerBoundCert(
+      const std::string& server_identifier,
       SSLClientCertType* type,
       base::Time* creation_time,
       base::Time* expiration_time,
       std::string* private_key_result,
       std::string* cert_result) OVERRIDE;
-  virtual void SetOriginBoundCert(
-      const std::string& origin,
+  virtual void SetServerBoundCert(
+      const std::string& server_identifier,
       SSLClientCertType type,
       base::Time creation_time,
       base::Time expiration_time,
       const std::string& private_key,
       const std::string& cert) OVERRIDE;
-  virtual void DeleteOriginBoundCert(const std::string& origin) OVERRIDE;
+  virtual void DeleteServerBoundCert(const std::string& server_identifier)
+      OVERRIDE;
   virtual void DeleteAllCreatedBetween(base::Time delete_begin,
                                        base::Time delete_end) OVERRIDE;
   virtual void DeleteAll() OVERRIDE;
-  virtual void GetAllOriginBoundCerts(
-      std::vector<OriginBoundCert>* origin_bound_certs) OVERRIDE;
+  virtual void GetAllServerBoundCerts(
+      std::vector<ServerBoundCert>* server_bound_certs) OVERRIDE;
   virtual int GetCertCount() OVERRIDE;
 
  private:
@@ -98,15 +99,15 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
   // Should only be called by InitIfNecessary().
   void InitStore();
 
-  // Deletes the cert for the specified origin, if such a cert exists, from the
+  // Deletes the cert for the specified server, if such a cert exists, from the
   // in-memory store. Deletes it from |store_| if |store_| is not NULL.
-  void InternalDeleteOriginBoundCert(const std::string& origin);
+  void InternalDeleteServerBoundCert(const std::string& server);
 
   // Takes ownership of *cert.
-  // Adds the cert for the specified origin to the in-memory store. Deletes it
+  // Adds the cert for the specified server to the in-memory store. Deletes it
   // from |store_| if |store_| is not NULL.
-  void InternalInsertOriginBoundCert(const std::string& origin,
-                                     OriginBoundCert* cert);
+  void InternalInsertServerBoundCert(const std::string& server_identifier,
+                                     ServerBoundCert* cert);
 
   // Indicates whether the cert store has been initialized. This happens
   // Lazily in InitStoreIfNecessary().
@@ -114,18 +115,18 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
 
   scoped_refptr<PersistentStore> store_;
 
-  OriginBoundCertMap origin_bound_certs_;
+  ServerBoundCertMap server_bound_certs_;
 
   // Lock for thread-safety
   base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultOriginBoundCertStore);
+  DISALLOW_COPY_AND_ASSIGN(DefaultServerBoundCertStore);
 };
 
-typedef base::RefCountedThreadSafe<DefaultOriginBoundCertStore::PersistentStore>
+typedef base::RefCountedThreadSafe<DefaultServerBoundCertStore::PersistentStore>
     RefcountedPersistentStore;
 
-class NET_EXPORT DefaultOriginBoundCertStore::PersistentStore
+class NET_EXPORT DefaultServerBoundCertStore::PersistentStore
     : public RefcountedPersistentStore {
  public:
   virtual ~PersistentStore() {}
@@ -134,11 +135,11 @@ class NET_EXPORT DefaultOriginBoundCertStore::PersistentStore
   // called only once at startup. Note that the certs are individually allocated
   // and that ownership is transferred to the caller upon return.
   virtual bool Load(
-      std::vector<OriginBoundCert*>* certs) = 0;
+      std::vector<ServerBoundCert*>* certs) = 0;
 
-  virtual void AddOriginBoundCert(const OriginBoundCert& cert) = 0;
+  virtual void AddServerBoundCert(const ServerBoundCert& cert) = 0;
 
-  virtual void DeleteOriginBoundCert(const OriginBoundCert& cert) = 0;
+  virtual void DeleteServerBoundCert(const ServerBoundCert& cert) = 0;
 
   // Sets the value of the user preference whether the persistent storage
   // must be deleted upon destruction.

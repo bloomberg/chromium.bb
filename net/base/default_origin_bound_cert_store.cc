@@ -10,14 +10,14 @@
 namespace net {
 
 // static
-const size_t DefaultOriginBoundCertStore::kMaxCerts = 3300;
+const size_t DefaultServerBoundCertStore::kMaxCerts = 3300;
 
-DefaultOriginBoundCertStore::DefaultOriginBoundCertStore(
+DefaultServerBoundCertStore::DefaultServerBoundCertStore(
     PersistentStore* store)
     : initialized_(false),
       store_(store) {}
 
-void DefaultOriginBoundCertStore::FlushStore(
+void DefaultServerBoundCertStore::FlushStore(
     const base::Closure& completion_task) {
   base::AutoLock autolock(lock_);
 
@@ -27,8 +27,8 @@ void DefaultOriginBoundCertStore::FlushStore(
     MessageLoop::current()->PostTask(FROM_HERE, completion_task);
 }
 
-bool DefaultOriginBoundCertStore::GetOriginBoundCert(
-    const std::string& origin,
+bool DefaultServerBoundCertStore::GetServerBoundCert(
+    const std::string& server_identifier,
     SSLClientCertType* type,
     base::Time* creation_time,
     base::Time* expiration_time,
@@ -37,12 +37,12 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
   base::AutoLock autolock(lock_);
   InitIfNecessary();
 
-  OriginBoundCertMap::iterator it = origin_bound_certs_.find(origin);
+  ServerBoundCertMap::iterator it = server_bound_certs_.find(server_identifier);
 
-  if (it == origin_bound_certs_.end())
+  if (it == server_bound_certs_.end())
     return false;
 
-  OriginBoundCert* cert = it->second;
+  ServerBoundCert* cert = it->second;
   *type = cert->type();
   *creation_time = cert->creation_time();
   *expiration_time = cert->expiration_time();
@@ -52,8 +52,8 @@ bool DefaultOriginBoundCertStore::GetOriginBoundCert(
   return true;
 }
 
-void DefaultOriginBoundCertStore::SetOriginBoundCert(
-    const std::string& origin,
+void DefaultServerBoundCertStore::SetServerBoundCert(
+    const std::string& server_identifier,
     SSLClientCertType type,
     base::Time creation_time,
     base::Time expiration_time,
@@ -62,118 +62,119 @@ void DefaultOriginBoundCertStore::SetOriginBoundCert(
   base::AutoLock autolock(lock_);
   InitIfNecessary();
 
-  InternalDeleteOriginBoundCert(origin);
-  InternalInsertOriginBoundCert(
-      origin,
-      new OriginBoundCert(
-          origin, type, creation_time, expiration_time, private_key, cert));
+  InternalDeleteServerBoundCert(server_identifier);
+  InternalInsertServerBoundCert(
+      server_identifier,
+      new ServerBoundCert(
+          server_identifier, type, creation_time, expiration_time, private_key,
+          cert));
 }
 
-void DefaultOriginBoundCertStore::DeleteOriginBoundCert(
-    const std::string& origin) {
+void DefaultServerBoundCertStore::DeleteServerBoundCert(
+    const std::string& server_identifier) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
-  InternalDeleteOriginBoundCert(origin);
+  InternalDeleteServerBoundCert(server_identifier);
 }
 
-void DefaultOriginBoundCertStore::DeleteAllCreatedBetween(
+void DefaultServerBoundCertStore::DeleteAllCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
-  for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
-       it != origin_bound_certs_.end();) {
-    OriginBoundCertMap::iterator cur = it;
+  for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
+       it != server_bound_certs_.end();) {
+    ServerBoundCertMap::iterator cur = it;
     ++it;
-    OriginBoundCert* cert = cur->second;
+    ServerBoundCert* cert = cur->second;
     if ((delete_begin.is_null() || cert->creation_time() >= delete_begin) &&
         (delete_end.is_null() || cert->creation_time() < delete_end)) {
       if (store_)
-        store_->DeleteOriginBoundCert(*cert);
+        store_->DeleteServerBoundCert(*cert);
       delete cert;
-      origin_bound_certs_.erase(cur);
+      server_bound_certs_.erase(cur);
     }
   }
 }
 
-void DefaultOriginBoundCertStore::DeleteAll() {
+void DefaultServerBoundCertStore::DeleteAll() {
   DeleteAllCreatedBetween(base::Time(), base::Time());
 }
 
-void DefaultOriginBoundCertStore::GetAllOriginBoundCerts(
-    std::vector<OriginBoundCert>* origin_bound_certs) {
+void DefaultServerBoundCertStore::GetAllServerBoundCerts(
+    std::vector<ServerBoundCert>* server_bound_certs) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
-  for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
-       it != origin_bound_certs_.end(); ++it) {
-    origin_bound_certs->push_back(*it->second);
+  for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
+       it != server_bound_certs_.end(); ++it) {
+    server_bound_certs->push_back(*it->second);
   }
 }
 
-int DefaultOriginBoundCertStore::GetCertCount() {
+int DefaultServerBoundCertStore::GetCertCount() {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
 
-  return origin_bound_certs_.size();
+  return server_bound_certs_.size();
 }
 
-DefaultOriginBoundCertStore::~DefaultOriginBoundCertStore() {
+DefaultServerBoundCertStore::~DefaultServerBoundCertStore() {
   DeleteAllInMemory();
 }
 
-void DefaultOriginBoundCertStore::DeleteAllInMemory() {
+void DefaultServerBoundCertStore::DeleteAllInMemory() {
   base::AutoLock autolock(lock_);
 
-  for (OriginBoundCertMap::iterator it = origin_bound_certs_.begin();
-       it != origin_bound_certs_.end(); ++it) {
+  for (ServerBoundCertMap::iterator it = server_bound_certs_.begin();
+       it != server_bound_certs_.end(); ++it) {
     delete it->second;
   }
-  origin_bound_certs_.clear();
+  server_bound_certs_.clear();
 }
 
-void DefaultOriginBoundCertStore::InitStore() {
+void DefaultServerBoundCertStore::InitStore() {
   lock_.AssertAcquired();
 
   DCHECK(store_) << "Store must exist to initialize";
 
   // Initialize the store and sync in any saved persistent certs.
-  std::vector<OriginBoundCert*> certs;
+  std::vector<ServerBoundCert*> certs;
   // Reserve space for the maximum amount of certs a database should have.
   // This prevents multiple vector growth / copies as we append certs.
   certs.reserve(kMaxCerts);
   store_->Load(&certs);
 
-  for (std::vector<OriginBoundCert*>::const_iterator it = certs.begin();
+  for (std::vector<ServerBoundCert*>::const_iterator it = certs.begin();
        it != certs.end(); ++it) {
-    origin_bound_certs_[(*it)->origin()] = *it;
+    server_bound_certs_[(*it)->server_identifier()] = *it;
   }
 }
 
-void DefaultOriginBoundCertStore::InternalDeleteOriginBoundCert(
-    const std::string& origin) {
+void DefaultServerBoundCertStore::InternalDeleteServerBoundCert(
+    const std::string& server_identifier) {
   lock_.AssertAcquired();
 
-  OriginBoundCertMap::iterator it = origin_bound_certs_.find(origin);
-  if (it == origin_bound_certs_.end())
+  ServerBoundCertMap::iterator it = server_bound_certs_.find(server_identifier);
+  if (it == server_bound_certs_.end())
     return;  // There is nothing to delete.
 
-  OriginBoundCert* cert = it->second;
+  ServerBoundCert* cert = it->second;
   if (store_)
-    store_->DeleteOriginBoundCert(*cert);
-  origin_bound_certs_.erase(it);
+    store_->DeleteServerBoundCert(*cert);
+  server_bound_certs_.erase(it);
   delete cert;
 }
 
-void DefaultOriginBoundCertStore::InternalInsertOriginBoundCert(
-    const std::string& origin,
-    OriginBoundCert* cert) {
+void DefaultServerBoundCertStore::InternalInsertServerBoundCert(
+    const std::string& server_identifier,
+    ServerBoundCert* cert) {
   lock_.AssertAcquired();
 
   if (store_)
-    store_->AddOriginBoundCert(*cert);
-  origin_bound_certs_[origin] = cert;
+    store_->AddServerBoundCert(*cert);
+  server_bound_certs_[server_identifier] = cert;
 }
 
-DefaultOriginBoundCertStore::PersistentStore::PersistentStore() {}
+DefaultServerBoundCertStore::PersistentStore::PersistentStore() {}
 
 }  // namespace net

@@ -19,9 +19,9 @@
 
 using content::BrowserThread;
 
-class SQLiteOriginBoundCertStoreTest : public testing::Test {
+class SQLiteServerBoundCertStoreTest : public testing::Test {
  public:
-  SQLiteOriginBoundCertStoreTest()
+  SQLiteServerBoundCertStoreTest()
       : db_thread_(BrowserThread::DB) {
   }
 
@@ -60,15 +60,15 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
   virtual void SetUp() {
     db_thread_.Start();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    store_ = new SQLiteOriginBoundCertStore(
+    store_ = new SQLiteServerBoundCertStore(
         temp_dir_.path().Append(chrome::kOBCertFilename));
-    ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
+    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
     ASSERT_TRUE(store_->Load(&certs.get()));
     ASSERT_EQ(0u, certs.size());
     // Make sure the store gets written at least once.
-    store_->AddOriginBoundCert(
-        net::DefaultOriginBoundCertStore::OriginBoundCert(
-            "https://encrypted.google.com:8443",
+    store_->AddServerBoundCert(
+        net::DefaultServerBoundCertStore::ServerBoundCert(
+            "google.com",
             net::CLIENT_CERT_RSA_SIGN,
             base::Time::FromInternalValue(1),
             base::Time::FromInternalValue(2),
@@ -77,10 +77,10 @@ class SQLiteOriginBoundCertStoreTest : public testing::Test {
 
   content::TestBrowserThread db_thread_;
   ScopedTempDir temp_dir_;
-  scoped_refptr<SQLiteOriginBoundCertStore> store_;
+  scoped_refptr<SQLiteServerBoundCertStore> store_;
 };
 
-TEST_F(SQLiteOriginBoundCertStoreTest, KeepOnDestruction) {
+TEST_F(SQLiteServerBoundCertStoreTest, KeepOnDestruction) {
   store_->SetClearLocalStateOnExit(false);
   store_ = NULL;
   // Make sure we wait until the destructor has run.
@@ -95,7 +95,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, KeepOnDestruction) {
       temp_dir_.path().Append(chrome::kOBCertFilename), false));
 }
 
-TEST_F(SQLiteOriginBoundCertStoreTest, RemoveOnDestruction) {
+TEST_F(SQLiteServerBoundCertStoreTest, RemoveOnDestruction) {
   store_->SetClearLocalStateOnExit(true);
   // Replace the store effectively destroying the current one and forcing it
   // to write it's data to disk. Then we can see if after loading it again it
@@ -112,16 +112,16 @@ TEST_F(SQLiteOriginBoundCertStoreTest, RemoveOnDestruction) {
 }
 
 // Test if data is stored as expected in the SQLite database.
-TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
-  store_->AddOriginBoundCert(
-      net::DefaultOriginBoundCertStore::OriginBoundCert(
-          "https://www.google.com/",
+TEST_F(SQLiteServerBoundCertStoreTest, TestPersistence) {
+  store_->AddServerBoundCert(
+      net::DefaultServerBoundCertStore::ServerBoundCert(
+          "foo.com",
           net::CLIENT_CERT_ECDSA_SIGN,
           base::Time::FromInternalValue(3),
           base::Time::FromInternalValue(4),
           "c", "d"));
 
-  ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
+  ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
   // Replace the store effectively destroying the current one and forcing it
   // to write it's data to disk. Then we can see if after loading it again it
   // is still there.
@@ -131,14 +131,14 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
   // Make sure we wait until the destructor has run.
   ASSERT_TRUE(helper->Run());
-  store_ = new SQLiteOriginBoundCertStore(
+  store_ = new SQLiteServerBoundCertStore(
       temp_dir_.path().Append(chrome::kOBCertFilename));
 
   // Reload and test for persistence
   ASSERT_TRUE(store_->Load(&certs.get()));
   ASSERT_EQ(2U, certs.size());
-  net::DefaultOriginBoundCertStore::OriginBoundCert* ec_cert;
-  net::DefaultOriginBoundCertStore::OriginBoundCert* rsa_cert;
+  net::DefaultServerBoundCertStore::ServerBoundCert* ec_cert;
+  net::DefaultServerBoundCertStore::ServerBoundCert* rsa_cert;
   if (net::CLIENT_CERT_RSA_SIGN == certs[0]->type()) {
     rsa_cert = certs[0];
     ec_cert = certs[1];
@@ -146,13 +146,13 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
     rsa_cert = certs[1];
     ec_cert = certs[0];
   }
-  ASSERT_STREQ("https://encrypted.google.com:8443", rsa_cert->origin().c_str());
+  ASSERT_STREQ("google.com", rsa_cert->server_identifier().c_str());
   ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, rsa_cert->type());
   ASSERT_STREQ("a", rsa_cert->private_key().c_str());
   ASSERT_STREQ("b", rsa_cert->cert().c_str());
   ASSERT_EQ(1, rsa_cert->creation_time().ToInternalValue());
   ASSERT_EQ(2, rsa_cert->expiration_time().ToInternalValue());
-  ASSERT_STREQ("https://www.google.com/", ec_cert->origin().c_str());
+  ASSERT_STREQ("foo.com", ec_cert->server_identifier().c_str());
   ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, ec_cert->type());
   ASSERT_STREQ("c", ec_cert->private_key().c_str());
   ASSERT_STREQ("d", ec_cert->cert().c_str());
@@ -160,13 +160,13 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
   ASSERT_EQ(4, ec_cert->expiration_time().ToInternalValue());
 
   // Now delete the cert and check persistence again.
-  store_->DeleteOriginBoundCert(*certs[0]);
-  store_->DeleteOriginBoundCert(*certs[1]);
+  store_->DeleteServerBoundCert(*certs[0]);
+  store_->DeleteServerBoundCert(*certs[1]);
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   ASSERT_TRUE(helper->Run());
   certs.reset();
-  store_ = new SQLiteOriginBoundCertStore(
+  store_ = new SQLiteServerBoundCertStore(
       temp_dir_.path().Append(chrome::kOBCertFilename));
 
   // Reload and check if the cert has been removed.
@@ -174,7 +174,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestPersistence) {
   ASSERT_EQ(0U, certs.size());
 }
 
-TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
+TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -200,14 +200,14 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert) "
         "VALUES (?,?,?)"));
-    add_smt.BindString(0, "https://www.google.com:443");
+    add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
     ASSERT_TRUE(add_smt.Run());
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'https://foo.com',X'AA',X'BB');"
+            "'foo.com',X'AA',X'BB');"
         ));
   }
 
@@ -217,21 +217,21 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
-    store_ = new SQLiteOriginBoundCertStore(v1_db_path);
+    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
+    store_ = new SQLiteServerBoundCertStore(v1_db_path);
 
     // Load the database and ensure the certs can be read and are marked as RSA.
     ASSERT_TRUE(store_->Load(&certs.get()));
     ASSERT_EQ(2U, certs.size());
 
-    ASSERT_STREQ("https://www.google.com:443", certs[0]->origin().c_str());
+    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
     ASSERT_EQ(GetTestCertExpirationTime(),
               certs[0]->expiration_time());
     ASSERT_EQ(key_data, certs[0]->private_key());
     ASSERT_EQ(cert_data, certs[0]->cert());
 
-    ASSERT_STREQ("https://foo.com", certs[1]->origin().c_str());
+    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[1]->type());
     // Undecodable cert, expiration time will be uninitialized.
     ASSERT_EQ(base::Time(), certs[1]->expiration_time());
@@ -258,7 +258,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV1) {
   }
 }
 
-TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
+TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -287,7 +287,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type) "
         "VALUES (?,?,?,?)"));
-    add_smt.BindString(0, "https://www.google.com:443");
+    add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
     add_smt.BindInt64(3, 1);
@@ -295,7 +295,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'https://foo.com',X'AA',X'BB',64);"
+            "'foo.com',X'AA',X'BB',64);"
         ));
   }
 
@@ -305,21 +305,21 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
-    store_ = new SQLiteOriginBoundCertStore(v2_db_path);
+    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
+    store_ = new SQLiteServerBoundCertStore(v2_db_path);
 
     // Load the database and ensure the certs can be read and are marked as RSA.
     ASSERT_TRUE(store_->Load(&certs.get()));
     ASSERT_EQ(2U, certs.size());
 
-    ASSERT_STREQ("https://www.google.com:443", certs[0]->origin().c_str());
+    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
     ASSERT_EQ(GetTestCertExpirationTime(),
               certs[0]->expiration_time());
     ASSERT_EQ(key_data, certs[0]->private_key());
     ASSERT_EQ(cert_data, certs[0]->cert());
 
-    ASSERT_STREQ("https://foo.com", certs[1]->origin().c_str());
+    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, certs[1]->type());
     // Undecodable cert, expiration time will be uninitialized.
     ASSERT_EQ(base::Time(), certs[1]->expiration_time());
@@ -346,7 +346,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV2) {
   }
 }
 
-TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
+TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
@@ -376,7 +376,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
     sql::Statement add_smt(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
         "expiration_time) VALUES (?,?,?,?,?)"));
-    add_smt.BindString(0, "https://www.google.com:443");
+    add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
     add_smt.BindInt64(3, 1);
@@ -385,7 +385,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
 
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
-            "'https://foo.com',X'AA',X'BB',64,2000);"
+            "'foo.com',X'AA',X'BB',64,2000);"
         ));
   }
 
@@ -395,14 +395,14 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
   for (int i = 0; i < 2; ++i) {
     SCOPED_TRACE(i);
 
-    ScopedVector<net::DefaultOriginBoundCertStore::OriginBoundCert> certs;
-    store_ = new SQLiteOriginBoundCertStore(v3_db_path);
+    ScopedVector<net::DefaultServerBoundCertStore::ServerBoundCert> certs;
+    store_ = new SQLiteServerBoundCertStore(v3_db_path);
 
     // Load the database and ensure the certs can be read and are marked as RSA.
     ASSERT_TRUE(store_->Load(&certs.get()));
     ASSERT_EQ(2U, certs.size());
 
-    ASSERT_STREQ("https://www.google.com:443", certs[0]->origin().c_str());
+    ASSERT_STREQ("google.com", certs[0]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_RSA_SIGN, certs[0]->type());
     ASSERT_EQ(1000, certs[0]->expiration_time().ToInternalValue());
     ASSERT_EQ(GetTestCertCreationTime(),
@@ -410,7 +410,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
     ASSERT_EQ(key_data, certs[0]->private_key());
     ASSERT_EQ(cert_data, certs[0]->cert());
 
-    ASSERT_STREQ("https://foo.com", certs[1]->origin().c_str());
+    ASSERT_STREQ("foo.com", certs[1]->server_identifier().c_str());
     ASSERT_EQ(net::CLIENT_CERT_ECDSA_SIGN, certs[1]->type());
     ASSERT_EQ(2000, certs[1]->expiration_time().ToInternalValue());
     // Undecodable cert, creation time will be uninitialized.
@@ -439,7 +439,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestUpgradeV3) {
 }
 
 // Test that we can force the database to be written by calling Flush().
-TEST_F(SQLiteOriginBoundCertStoreTest, TestFlush) {
+TEST_F(SQLiteServerBoundCertStoreTest, TestFlush) {
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
   FilePath path = temp_dir_.path().Append(chrome::kOBCertFilename);
@@ -449,12 +449,12 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestFlush) {
 
   // Write some certs, so the DB will have to expand by several KB.
   for (char c = 'a'; c < 'z'; ++c) {
-    std::string origin(1, c);
+    std::string server_identifier(1, c);
     std::string private_key(1000, c);
     std::string cert(1000, c);
-    store_->AddOriginBoundCert(
-        net::DefaultOriginBoundCertStore::OriginBoundCert(
-            origin,
+    store_->AddServerBoundCert(
+        net::DefaultServerBoundCertStore::ServerBoundCert(
+            server_identifier,
             net::CLIENT_CERT_RSA_SIGN,
             base::Time(),
             base::Time(),
@@ -493,7 +493,7 @@ class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
 };
 
 // Test that we can get a completion callback after a Flush().
-TEST_F(SQLiteOriginBoundCertStoreTest, TestFlushCompletionCallback) {
+TEST_F(SQLiteServerBoundCertStoreTest, TestFlushCompletionCallback) {
   scoped_refptr<CallbackCounter> counter(new CallbackCounter());
 
   // Callback shouldn't be invoked until we call Flush().

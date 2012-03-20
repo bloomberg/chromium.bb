@@ -194,12 +194,12 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
   main_context->set_http_server_properties(http_server_properties_.get());
 
-  // For incognito, we use a non-persistent origin bound cert store.
-  net::OriginBoundCertService* origin_bound_cert_service =
-      new net::OriginBoundCertService(
-          new net::DefaultOriginBoundCertStore(NULL));
-  set_origin_bound_cert_service(origin_bound_cert_service);
-  main_context->set_origin_bound_cert_service(origin_bound_cert_service);
+  // For incognito, we use a non-persistent server bound cert store.
+  net::ServerBoundCertService* server_bound_cert_service =
+      new net::ServerBoundCertService(
+          new net::DefaultServerBoundCertStore(NULL));
+  set_server_bound_cert_service(server_bound_cert_service);
+  main_context->set_server_bound_cert_service(server_bound_cert_service);
 
   main_context->set_cookie_store(
       new net::CookieMonster(NULL, profile_params->cookie_monster_delegate));
@@ -219,7 +219,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   net::HttpCache* cache =
       new net::HttpCache(main_context->host_resolver(),
                          main_context->cert_verifier(),
-                         main_context->origin_bound_cert_service(),
+                         main_context->server_bound_cert_service(),
                          main_context->transport_security_state(),
                          main_context->proxy_service(),
                          GetSSLSessionCacheShard(),

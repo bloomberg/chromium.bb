@@ -35,7 +35,7 @@ class HttpAuthHandlerFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class NetworkDelegate;
-class OriginBoundCertService;
+class ServerBoundCertService;
 class ProxyConfigService;
 class ProxyService;
 class SdchManager;
@@ -93,10 +93,10 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
     scoped_refptr<net::URLRequestContext> system_request_context;
-    // |system_cookie_store| and |system_origin_bound_cert_service| are shared
+    // |system_cookie_store| and |system_server_bound_cert_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
     scoped_refptr<net::CookieStore> system_cookie_store;
-    scoped_ptr<net::OriginBoundCertService> system_origin_bound_cert_service;
+    scoped_ptr<net::ServerBoundCertService> system_server_bound_cert_service;
     scoped_refptr<ExtensionEventRouterForwarder>
         extension_event_router_forwarder;
   };

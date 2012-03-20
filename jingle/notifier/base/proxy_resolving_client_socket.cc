@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.client_socket_factory = socket_factory;
   session_params.host_resolver = request_context->host_resolver();
   session_params.cert_verifier = request_context->cert_verifier();
-  // TODO(rkn): This is NULL because OriginBoundCertService is not thread safe.
-  session_params.origin_bound_cert_service = NULL;
+  // TODO(rkn): This is NULL because ServerBoundCertService is not thread safe.
+  session_params.server_bound_cert_service = NULL;
   // transport_security_state is NULL because it's not thread safe.
   session_params.transport_security_state = NULL;
   session_params.proxy_service = request_context->proxy_service();

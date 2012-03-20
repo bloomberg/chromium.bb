@@ -2221,10 +2221,10 @@
       'future': True,
       'example_value': True,
       'id': 114,
-      'caption': '''Enable TLS origin-bound certificates extension''',
-      'desc': '''Specifies whether the TLS origin-bound certificates extension should be enabled.
+      'caption': '''Enable TLS domain-bound certificates extension''',
+      'desc': '''Specifies whether the TLS domain-bound certificates extension should be enabled.
 
-      This setting is used to enable the TLS origin-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
+      This setting is used to enable the TLS domain-bound certificates extension for testing.  This experimental setting will be removed in the future.''',
     },
     {
       'name': 'EnableMemoryInfo',

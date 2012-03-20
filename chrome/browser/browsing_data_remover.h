@@ -72,14 +72,14 @@ class BrowsingDataRemover : public content::NotificationObserver,
     REMOVE_PLUGIN_DATA = 1 << 9,
     REMOVE_PASSWORDS = 1 << 10,
     REMOVE_WEBSQL = 1 << 11,
-    REMOVE_ORIGIN_BOUND_CERTS = 1 << 12,
+    REMOVE_SERVER_BOUND_CERTS = 1 << 12,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, and plugin data.
     REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
                        REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA | REMOVE_WEBSQL |
-                       REMOVE_ORIGIN_BOUND_CERTS
+                       REMOVE_SERVER_BOUND_CERTS
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type
@@ -235,13 +235,13 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Invoked on the IO thread to delete cookies.
   void ClearCookiesOnIOThread(net::URLRequestContextGetter* rq_context);
 
-  // Invoked on the IO thread to delete origin bound certs.
-  void ClearOriginBoundCertsOnIOThread(
+  // Invoked on the IO thread to delete server bound certs.
+  void ClearServerBoundCertsOnIOThread(
       net::URLRequestContextGetter* rq_context);
 
-  // Callback when origin bound certs have been deleted. Invokes
+  // Callback when server bound certs have been deleted. Invokes
   // NotifyAndDeleteIfDone.
-  void OnClearedOriginBoundCerts();
+  void OnClearedServerBoundCerts();
 
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
@@ -252,7 +252,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
            !waiting_for_clear_cookies_count_&&
            !waiting_for_clear_history_ &&
            !waiting_for_clear_networking_history_ &&
-           !waiting_for_clear_origin_bound_certs_ &&
+           !waiting_for_clear_server_bound_certs_ &&
            !waiting_for_clear_plugin_data_ &&
            !waiting_for_clear_quota_managed_data_;
   }
@@ -300,7 +300,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   int waiting_for_clear_cookies_count_;
   bool waiting_for_clear_history_;
   bool waiting_for_clear_networking_history_;
-  bool waiting_for_clear_origin_bound_certs_;
+  bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_plugin_data_;
   bool waiting_for_clear_quota_managed_data_;
 

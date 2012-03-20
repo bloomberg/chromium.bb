@@ -82,7 +82,7 @@ ProfileImplIOData::Handle::~Handle() {
 
 void ProfileImplIOData::Handle::Init(
       const FilePath& cookie_path,
-      const FilePath& origin_bound_cert_path,
+      const FilePath& server_bound_cert_path,
       const FilePath& cache_path,
       int cache_max_size,
       const FilePath& media_cache_path,
@@ -100,7 +100,7 @@ void ProfileImplIOData::Handle::Init(
   LazyParams* lazy_params = new LazyParams;
 
   lazy_params->cookie_path = cookie_path;
-  lazy_params->origin_bound_cert_path = origin_bound_cert_path;
+  lazy_params->server_bound_cert_path = server_bound_cert_path;
   lazy_params->cache_path = cache_path;
   lazy_params->cache_max_size = cache_max_size;
   lazy_params->media_cache_path = media_cache_path;
@@ -319,14 +319,14 @@ void ProfileImplIOData::LazyInitializeInternal(
   media_request_context_->set_proxy_service(proxy_service());
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
-  net::OriginBoundCertService* origin_bound_cert_service = NULL;
+  net::ServerBoundCertService* server_bound_cert_service = NULL;
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
     cookie_store = new net::CookieMonster(
         NULL, profile_params->cookie_monster_delegate);
-    // Don't use existing origin-bound certs and use an in-memory store.
-    origin_bound_cert_service = new net::OriginBoundCertService(
-        new net::DefaultOriginBoundCertStore(NULL));
+    // Don't use existing server-bound certs and use an in-memory store.
+    server_bound_cert_service = new net::ServerBoundCertService(
+        new net::DefaultServerBoundCertStore(NULL));
   }
 
   // setup cookie store
@@ -360,22 +360,22 @@ void ProfileImplIOData::LazyInitializeInternal(
   media_request_context_->set_cookie_store(cookie_store);
   extensions_context->set_cookie_store(extensions_cookie_store);
 
-  // Setup origin bound cert service.
-  if (!origin_bound_cert_service) {
-    DCHECK(!lazy_params_->origin_bound_cert_path.empty());
+  // Setup server bound cert service.
+  if (!server_bound_cert_service) {
+    DCHECK(!lazy_params_->server_bound_cert_path.empty());
 
-    scoped_refptr<SQLiteOriginBoundCertStore> origin_bound_cert_db =
-        new SQLiteOriginBoundCertStore(lazy_params_->origin_bound_cert_path);
-    origin_bound_cert_db->SetClearLocalStateOnExit(
+    scoped_refptr<SQLiteServerBoundCertStore> server_bound_cert_db =
+        new SQLiteServerBoundCertStore(lazy_params_->server_bound_cert_path);
+    server_bound_cert_db->SetClearLocalStateOnExit(
         profile_params->clear_local_state_on_exit);
-    origin_bound_cert_service = new net::OriginBoundCertService(
-        new net::DefaultOriginBoundCertStore(origin_bound_cert_db.get()));
+    server_bound_cert_service = new net::ServerBoundCertService(
+        new net::DefaultServerBoundCertStore(server_bound_cert_db.get()));
   }
 
-  set_origin_bound_cert_service(origin_bound_cert_service);
-  main_context->set_origin_bound_cert_service(origin_bound_cert_service);
-  media_request_context_->set_origin_bound_cert_service(
-      origin_bound_cert_service);
+  set_server_bound_cert_service(server_bound_cert_service);
+  main_context->set_server_bound_cert_service(server_bound_cert_service);
+  media_request_context_->set_server_bound_cert_service(
+      server_bound_cert_service);
 
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(
@@ -386,7 +386,7 @@ void ProfileImplIOData::LazyInitializeInternal(
   net::HttpCache* main_cache = new net::HttpCache(
       main_context->host_resolver(),
       main_context->cert_verifier(),
-      main_context->origin_bound_cert_service(),
+      main_context->server_bound_cert_service(),
       main_context->transport_security_state(),
       main_context->proxy_service(),
       "", // pass empty ssl_session_cache_shard to share the SSL session cache

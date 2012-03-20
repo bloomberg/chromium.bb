@@ -565,7 +565,7 @@ void ProfileIOData::ShutdownOnUIThread() {
     delete this;
 }
 
-void ProfileIOData::set_origin_bound_cert_service(
-    net::OriginBoundCertService* origin_bound_cert_service) const {
-  origin_bound_cert_service_.reset(origin_bound_cert_service);
+void ProfileIOData::set_server_bound_cert_service(
+    net::ServerBoundCertService* server_bound_cert_service) const {
+  server_bound_cert_service_.reset(server_bound_cert_service);
 }

@@ -357,9 +357,9 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 
   FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
-  FilePath origin_bound_cert_path = GetPath();
-  origin_bound_cert_path =
-      origin_bound_cert_path.Append(chrome::kOBCertFilename);
+  FilePath server_bound_cert_path = GetPath();
+  server_bound_cert_path =
+      server_bound_cert_path.Append(chrome::kOBCertFilename);
   FilePath cache_path = base_cache_path_;
   int cache_max_size;
   GetCacheParameters(false, &cache_path, &cache_max_size);
@@ -389,7 +389,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(cookie_path, origin_bound_cert_path, cache_path,
+  io_data_.Init(cookie_path, server_bound_cert_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, app_path, predictor_,
                 g_browser_process->local_state(),
