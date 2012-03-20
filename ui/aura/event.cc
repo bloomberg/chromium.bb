@@ -368,7 +368,14 @@ KeyEvent* KeyEvent::Copy() {
 
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event) {
-  ui::GetScrollOffsets(native_event, &x_offset_, &y_offset_);
+  if (type() == ui::ET_SCROLL) {
+    ui::GetScrollOffsets(native_event, &x_offset_, &y_offset_);
+    double start, end;
+    ui::GetGestureTimes(native_event, &start, &end);
+  } else if (type() == ui::ET_SCROLL_FLING_START) {
+    bool is_cancel;
+    ui::GetFlingData(native_event, &x_offset_, &y_offset_, &is_cancel);
+  }
 }
 
 GestureEvent::GestureEvent(ui::EventType type,
@@ -381,7 +388,6 @@ GestureEvent::GestureEvent(ui::EventType type,
     : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
       delta_x_(delta_x),
       delta_y_(delta_y) {
-  // XXX: Why is aura::Event::time_stamp_ a TimeDelta instead of a Time?
   set_time_stamp(base::TimeDelta::FromSeconds(time_stamp.ToDoubleT()));
 }
 

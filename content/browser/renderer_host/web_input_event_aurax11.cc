@@ -250,6 +250,32 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   return webkit_event;
 }
 
+WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
+    aura::ScrollEvent* event) {
+  WebKit::WebGestureEvent webkit_event;
+
+  switch (event->type()) {
+    case ui::ET_SCROLL:
+      webkit_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
+      break;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
+      break;
+    default:
+      NOTREACHED() << "Unknown gesture type: " << event->type();
+  }
+
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+  webkit_event.deltaX = event->x_offset();
+  webkit_event.deltaY = event->y_offset();
+
+  return webkit_event;
+}
+
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     aura::KeyEvent* event) {
   base::NativeEvent native_event = event->native_event();

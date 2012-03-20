@@ -249,6 +249,16 @@ float GetTouchForce(const base::NativeEvent& native_event) {
 bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset,
                       float* y_offset) {
+  // Not supported in Windows.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool GetFlingData(const base::NativeEvent& native_event,
+                  float* vx,
+                  float* vy,
+                  bool* is_cancel) {
+  // Not supported in Windows.
   NOTIMPLEMENTED();
   return false;
 }
