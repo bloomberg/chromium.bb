@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/extension_window_list.h"
-#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -189,31 +188,6 @@ bool GetTabById(int tab_id,
         keys::kTabNotFoundError, base::IntToString(tab_id));
 
   return false;
-}
-
-// Takes |url_string| and returns a GURL which is either valid and absolute
-// or invalid. If |url_string| is not directly interpretable as a valid (it is
-// likely a relative URL) an attempt is made to resolve it. |extension| is
-// provided so it can be resolved relative to its extension base
-// (chrome-extension://<id>/). Using the source frame url would be more correct,
-// but because the api shipped with urls resolved relative to their extension
-// base, we decided it wasn't worth breaking existing extensions to fix.
-GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                const Extension* extension) {
-  GURL url = GURL(url_string);
-  if (!url.is_valid())
-    url = extension->GetResourceURL(url_string);
-
-  return url;
-}
-
-bool IsCrashURL(const GURL& url) {
-  // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
-  GURL fixed_url =
-      URLFixerUpper::FixupURL(url.possibly_invalid_spec(), std::string());
-  return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
-          (fixed_url.host() == chrome::kChromeUIBrowserCrashHost ||
-           fixed_url.host() == chrome::kChromeUICrashHost));
 }
 
 // Reads the |value| as either a single integer value or a list of integers.
@@ -442,14 +416,15 @@ bool CreateWindowFunction::RunImpl() {
       // Second, resolve, validate and convert them to GURLs.
       for (std::vector<std::string>::iterator i = url_strings.begin();
            i != url_strings.end(); ++i) {
-        GURL url = ResolvePossiblyRelativeURL(*i, GetExtension());
+        GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
+            *i, GetExtension());
         if (!url.is_valid()) {
           error_ = ExtensionErrorUtils::FormatErrorMessage(
               keys::kInvalidUrlError, *i);
           return false;
         }
         // Don't let the extension crash the browser or renderers.
-        if (IsCrashURL(url)) {
+        if (ExtensionTabUtil::IsCrashURL(url)) {
           error_ = keys::kNoCrashBrowserError;
           return false;
         }
@@ -1010,7 +985,8 @@ bool CreateTabFunction::RunImpl() {
   if (args->HasKey(keys::kUrlKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                 &url_string));
-    url = ResolvePossiblyRelativeURL(url_string, GetExtension());
+    url = ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string,
+                                                       GetExtension());
     if (!url.is_valid()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
                                                        url_string);
@@ -1019,7 +995,7 @@ bool CreateTabFunction::RunImpl() {
   }
 
   // Don't let extensions crash the browser or renderers.
-  if (IsCrashURL(url)) {
+  if (ExtensionTabUtil::IsCrashURL(url)) {
     error_ = keys::kNoCrashBrowserError;
     return false;
   }
@@ -1216,69 +1192,15 @@ bool UpdateTabFunction::RunImpl() {
   }
 
   web_contents_ = contents->web_contents();
-  NavigationController& controller = web_contents_->GetController();
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
   // -favIconUrl
 
-  // We wait to fire the callback when executing 'javascript:' URLs in tabs.
-  bool is_async = false;
-
   // Navigate the tab to a new location if the url is different.
-  std::string url_string;
-  if (update_props->HasKey(keys::kUrlKey)) {
-    EXTENSION_FUNCTION_VALIDATE(update_props->GetString(
-        keys::kUrlKey, &url_string));
-    GURL url = ResolvePossiblyRelativeURL(url_string, GetExtension());
-
-    if (!url.is_valid()) {
-      error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                       url_string);
-      return false;
-    }
-
-    // Don't let the extension crash the browser or renderers.
-    if (IsCrashURL(url)) {
-      error_ = keys::kNoCrashBrowserError;
-      return false;
-    }
-
-    // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
-    // we need to check host permissions before allowing them.
-    if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-      if (!GetExtension()->CanExecuteScriptOnPage(
-              web_contents_->GetURL(), NULL, &error_)) {
-        return false;
-      }
-
-      ExtensionMsg_ExecuteCode_Params params;
-      params.request_id = request_id();
-      params.extension_id = extension_id();
-      params.is_javascript = true;
-      params.code = url.path();
-      params.all_frames = false;
-      params.in_main_world = true;
-
-      RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
-      render_view_host->Send(
-          new ExtensionMsg_ExecuteCode(render_view_host->GetRoutingID(),
-                                       params));
-
-      Observe(web_contents_);
-      AddRef();  // Balanced in OnExecuteCodeFinished().
-
-      is_async = true;
-    }
-
-    controller.LoadURL(
-        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
-
-    // The URL of a tab contents never actually changes to a JavaScript URL, so
-    // this check only makes sense in other cases.
-    if (!url.SchemeIs(chrome::kJavaScriptScheme))
-      DCHECK_EQ(url.spec(), web_contents_->GetURL().spec());
-  }
+  bool is_async = false;
+  if (!UpdateURLIfPresent(update_props, &is_async))
+    return false;
 
   bool active = false;
   // TODO(rafaelw): Setting |active| from js doesn't make much sense.
@@ -1340,6 +1262,67 @@ bool UpdateTabFunction::RunImpl() {
   return true;
 }
 
+bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
+                                           bool* is_async) {
+  if (!update_props->HasKey(keys::kUrlKey))
+    return true;
+
+  std::string url_string;
+  EXTENSION_FUNCTION_VALIDATE(update_props->GetString(
+      keys::kUrlKey, &url_string));
+  GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(
+      url_string, GetExtension());
+
+  if (!url.is_valid()) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kInvalidUrlError, url_string);
+    return false;
+  }
+
+  // Don't let the extension crash the browser or renderers.
+  if (ExtensionTabUtil::IsCrashURL(url)) {
+    error_ = keys::kNoCrashBrowserError;
+    return false;
+  }
+
+  // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
+  // we need to check host permissions before allowing them.
+  if (url.SchemeIs(chrome::kJavaScriptScheme)) {
+    if (!GetExtension()->CanExecuteScriptOnPage(
+            web_contents_->GetURL(), NULL, &error_)) {
+      return false;
+    }
+
+    ExtensionMsg_ExecuteCode_Params params;
+    params.request_id = request_id();
+    params.extension_id = extension_id();
+    params.is_javascript = true;
+    params.code = url.path();
+    params.all_frames = false;
+    params.in_main_world = true;
+
+    RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
+    render_view_host->Send(
+        new ExtensionMsg_ExecuteCode(render_view_host->GetRoutingID(), params));
+
+    Observe(web_contents_);
+    AddRef();  // Balanced in OnExecuteCodeFinished().
+
+    *is_async = true;
+    return true;
+  }
+
+  web_contents_->GetController().LoadURL(
+      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+
+  // The URL of a tab contents never actually changes to a JavaScript URL, so
+  // this check only makes sense in other cases.
+  if (!url.SchemeIs(chrome::kJavaScriptScheme))
+    DCHECK_EQ(url.spec(), web_contents_->GetURL().spec());
+
+  return true;
+}
+
 void UpdateTabFunction::PopulateResult() {
   if (!has_callback())
     return;
@@ -1391,7 +1374,7 @@ void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
   SendResponse(success);
 
   Observe(NULL);
-  Release();  // Balanced in RunImpl().
+  Release();  // Balanced in UpdateURLIfPresent().
 }
 
 bool MoveTabsFunction::RunImpl() {
@@ -1594,7 +1577,8 @@ bool RemoveTabsFunction::RunImpl() {
   return true;
 }
 
-bool CaptureVisibleTabFunction::RunImpl() {
+bool CaptureVisibleTabFunction::GetTabToCapture(
+    WebContents** web_contents, TabContentsWrapper** wrapper) {
   Browser* browser = NULL;
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
@@ -1603,6 +1587,23 @@ bool CaptureVisibleTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
 
   if (!GetBrowserFromWindowID(this, window_id, &browser))
+    return false;
+
+  *web_contents = browser->GetSelectedWebContents();
+  if (*web_contents == NULL) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    return false;
+  }
+
+  *wrapper = browser->GetSelectedTabContentsWrapper();
+
+  return true;
+};
+
+bool CaptureVisibleTabFunction::RunImpl() {
+  WebContents* web_contents = NULL;
+  TabContentsWrapper* wrapper = NULL;
+  if (!GetTabToCapture(&web_contents, &wrapper))
     return false;
 
   image_format_ = FORMAT_JPEG;  // Default format is JPEG.
@@ -1633,12 +1634,6 @@ bool CaptureVisibleTabFunction::RunImpl() {
     }
   }
 
-  WebContents* web_contents = browser->GetSelectedWebContents();
-  if (!web_contents) {
-    error_ = keys::kInternalVisibleTabCaptureError;
-    return false;
-  }
-
   // captureVisibleTab() can return an image containing sensitive information
   // that the browser would otherwise protect.  Ensure the extension has
   // permission to do this.
@@ -1649,7 +1644,6 @@ bool CaptureVisibleTabFunction::RunImpl() {
 
   // If a backing store is cached for the tab we want to capture,
   // and it can be copied into a bitmap, then use it to generate the image.
-  // This may fail if we can not copy a backing store into a bitmap.
   // For example, some uncommon X11 visual modes are not supported by
   // CopyFromBackingStore().
   skia::PlatformCanvas temp_canvas;
@@ -1661,7 +1655,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   }
 
   // Ask the renderer for a snapshot of the tab.
-  TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
+  wrapper->snapshot_tab_helper()->CaptureSnapshot();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  content::Source<WebContents>(wrapper->web_contents()));

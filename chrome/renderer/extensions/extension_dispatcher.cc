@@ -478,6 +478,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.declarative",
                              IDR_EXPERIMENTAL_DECLARATIVE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("experimental.offscreen",
+                             IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.socket",
                              IDR_EXPERIMENTAL_SOCKET_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);

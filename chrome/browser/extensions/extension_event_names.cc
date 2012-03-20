@@ -44,4 +44,6 @@ const char kOnSettingsChanged[] = "storage.onChanged";
 
 const char kOnTerminalProcessOutput[] = "terminalPrivate.onProcessOutput";
 
+const char kOnOffscreenTabUpdated[] = "experimental.offscreenTabs.onUpdated";
+
 }  // namespace extension_event_names
