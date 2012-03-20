@@ -11,7 +11,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/updater/extension_downloader_delegate.h"
@@ -46,6 +48,9 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
                        public content::NotificationObserver,
                        public extensions::ExtensionDownloaderDelegate {
  public:
+  // Callback to listen for updates to the screensaver extension's path.
+  typedef base::Callback<void(const FilePath&)> ScreenSaverUpdateCallback;
+
   // Keys for the entries in the AppPack dictionary policy.
   static const char kExtensionId[];
   static const char kUpdateUrl[];
@@ -59,6 +64,12 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   // by the AppPackUpdater. This can be called at most once, and the caller
   // owns the returned value.
   ExternalExtensionLoader* CreateExternalExtensionLoader();
+
+  // |callback| will be invoked whenever the screen saver extension's path
+  // changes. It will be invoked "soon" after this call if a valid path already
+  // exists. Subsequent calls will override the previous |callback|. A null
+  // |callback| can be used to remove a previous callback.
+  void SetScreenSaverUpdateCallback(const ScreenSaverUpdateCallback& callback);
 
  private:
   struct CacheEntry {
@@ -156,6 +167,10 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   void PostBlockingTask(const tracked_objects::Location& from_here,
                         const base::Closure& task);
 
+  // Sets |screen_saver_path_| and invokes |screen_saver_update_callback_| if
+  // appropriate.
+  void SetScreenSaverPath(const FilePath& path);
+
   base::WeakPtrFactory<AppPackUpdater> weak_ptr_factory_;
 
   // Observes updates to the |device_cloud_policy_subsystem_|, to detect
@@ -172,6 +187,15 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   // This contains extensions that are both currently configured by the policy
   // and that have a valid crx in the cache.
   CacheEntryMap cached_extensions_;
+
+  // The extension ID and path of the CRX file of the screen saver extension,
+  // if it is configured by the policy. Otherwise these fields are empty.
+  std::string screen_saver_id_;
+  FilePath screen_saver_path_;
+
+  // Callback to invoke whenever the screen saver's extension path changes.
+  // Can be null.
+  ScreenSaverUpdateCallback screen_saver_update_callback_;
 
   // The extension loader wires the AppPackUpdater to the extensions system, and
   // makes it install the currently cached extensions.
