@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Web Protocol Handler Test - Register</title>
+      <script type="text/javascript">
+        var custom_protocol = "web+search";
+        var custom_query_value = custom_protocol + ":test";
+        function preload() {
+          var uri = document.URL + "?q=%s";
+          navigator.registerProtocolHandler(custom_protocol,
+                                            uri,
+                                            "Example Search");
+          var element = document.getElementById('test_protocol');
+          element.innerText = custom_query_value;
+          element.setAttribute('href', custom_query_value);
+        }
+
+        function verifyQueryConformsToProtocol() {
+          var query = window.location.search.substring(1);
+          var arg_list = query.split("&");
+          if(arg_list.length != 1) return false;
+            var variable_value = arg_list[0].split("=");
+            if((variable_value[0] != "q") ||
+              (unescape(variable_value[1]) != custom_query_value))
+              return false;
+          return true;
+        }
+      </script>
+  </head>
+  <body onload="preload()">
+    <a id="test_protocol"></a>
+  </body>
+</html>

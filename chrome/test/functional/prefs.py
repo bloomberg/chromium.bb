@@ -13,6 +13,8 @@ import pyauto
 class PrefsTest(pyauto.PyUITest):
   """TestCase for Preferences."""
 
+  INFOBAR_TYPE = 'rph_infobar'
+
   def Debug(self):
     """Test method for experimentation.
 
@@ -252,6 +254,82 @@ class PrefsTest(pyauto.PyUITest):
     self.assertEqual(
         {hostname_pattern: {hostname_pattern: 2}},  # Block the hostname.
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationContentSettings))
+
+  def testImageContentSettings(self):
+    """Verify image content settings show or hide images."""
+    # Checks whether an image is loaded by checking the area (width
+    # and height) of the image. If the area is non zero then the image is
+    # visible. If the area is zero then the image is not loaded.
+    # Chrome zeros the |naturalWidth| and |naturalHeight|.
+    script = """
+      for (i=0; i < document.images.length; i++) {
+        if ((document.images[i].naturalWidth != 0) &&
+            (document.images[i].naturalHeight != 0)) {
+          return true;
+        }
+      }
+      return false;
+    """
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'settings', 'image_page.html'))
+    self.NavigateToURL(url)
+    driver = self.NewWebDriver()
+    self.assertTrue(driver.execute_script(script),
+                    msg='No visible images found.')
+    self.SetPrefs(pyauto.kDefaultContentSettings, {'images': 2})
+    driver.get(url)
+    self.assertFalse(driver.execute_script(script),
+                     msg='At least one visible image found.')
+
+  def _InfobarTypeDisplayed(self, infobar_type, windex, tab_index):
+    """Identifies whether an infobar displays and get the index.
+
+    Args:
+      infobar_type: The infobar type displayed.
+      windex: Window index.
+      tab_index: Tab index.
+
+    Returns:
+      Index of infobar for infobar type, or -1 if not found.
+    """
+    infobar_list = (
+        self.GetBrowserInfo()['windows'][windex]['tabs'][tab_index] \
+            ['infobars'])
+    print infobar_list
+    for infobar in infobar_list:
+      if infobar_type == infobar['type']:
+        return infobar_list.index(infobar)
+    return -1
+
+  def _WaitForHandlerInfobar(self, windex=0, tab_index=0):
+    """Wait for and asserts that the handler protocol infobar appears.
+
+    Args:
+      windex: Window index. Defaults to 0 (first window).
+      tab_index: Tab index. Defaults to 0 (first tab).
+
+    Returns:
+      Index of infobar for infobar type.
+    """
+    self.assertTrue(
+        self.WaitUntil(lambda: self._InfobarTypeDisplayed(
+            self.INFOBAR_TYPE, windex, tab_index) is not -1),
+        msg='Registered Handler Protocol infobar did not appear.')
+    infobar_index = self._InfobarTypeDisplayed(
+        self.INFOBAR_TYPE, windex, tab_index)
+    return infobar_index
+
+  def testProtocolHandlerRegisteredCorrectly(self):
+    """Verify sites that ask to be default handlers registers correctly."""
+    url = self.GetHttpURLForDataPath('settings', 'protocol_handler.html')
+    self.NavigateToURL(url)
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._WaitForHandlerInfobar())
+    driver = self.NewWebDriver()
+    driver.find_element_by_id('test_protocol').click()
+    self.assertTrue(
+        driver.execute_script('return verifyQueryConformsToProtocol();'),
+        msg='Protocol did not register correctly.')
 
 
 if __name__ == '__main__':
