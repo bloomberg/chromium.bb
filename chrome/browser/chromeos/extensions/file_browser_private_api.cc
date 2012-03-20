@@ -992,9 +992,11 @@ bool AddMountFunction::RunImpl() {
     case chromeos::MOUNT_TYPE_GDATA: {
       gdata::GDataFileSystem* file_system =
           gdata::GDataFileSystemFactory::GetForProfile(profile_);
-      file_system->Authenticate(
-          base::Bind(&AddMountFunction::OnGDataAuthentication,
-                     this));
+      if (file_system) {
+        file_system->Authenticate(
+            base::Bind(&AddMountFunction::OnGDataAuthentication,
+                       this));
+      }
       break;
     }
     default: {
