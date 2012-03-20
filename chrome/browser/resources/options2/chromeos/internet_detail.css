@@ -6,14 +6,13 @@
 #internet-details-content-area {
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  margin: 0 !important;
-  padding: 0 !important;
+  padding: 6px 0 0 0;
 }
 
 #network-details-header {
   -webkit-padding-start: 20px;
   margin: 0;
-  padding-bottom: 18px;
+  padding-bottom: 12px;
   padding-top: 32px;
 }
 
