@@ -501,6 +501,10 @@ std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
   return "chrome.googleechotest.com";
 }
 
+std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
+  return "http://70.32.157.92/";
+}
+
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   std::wstring sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
