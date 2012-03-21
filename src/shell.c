@@ -1284,7 +1284,7 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 		(struct weston_surface *) device->pointer_focus;
 	struct shell_surface *surface;
 	struct rotate_grab *rotate;
-	GLfloat dx, dy;
+	GLfloat dx, dy, cx, cy, cposx, cposy, dposx, dposy;
 	GLfloat r;
 
 	if (base_surface == NULL)
@@ -1333,6 +1333,20 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 	} else {
 		weston_matrix_init(&surface->rotation.rotation);
 		weston_matrix_init(&rotate->rotation);
+	}
+
+	/* We need to adjust the position of the surface
+	 * in case it was resized in a rotated state before */
+	cx = 0.5f * surface->surface->geometry.width;
+	cy = 0.5f * surface->surface->geometry.height;
+	cposx = surface->surface->geometry.x + cx;
+	cposy = surface->surface->geometry.y + cy;
+	dposx = rotate->center.x - cposx;
+	dposy = rotate->center.y - cposy;
+	if (dposx != 0 || dposy != 0) {
+		weston_surface_set_position(base_surface,
+				base_surface->geometry.x + dposx,
+				base_surface->geometry.y + dposy);
 	}
 
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0);
