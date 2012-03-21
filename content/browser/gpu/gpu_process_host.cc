@@ -163,8 +163,7 @@ class GpuMainThread : public base::Thread {
 
  protected:
   virtual void Init() {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
       child_thread_ = new GpuChildThread(channel_id_);
     } else {
       gpu_process_ = new GpuProcess();
