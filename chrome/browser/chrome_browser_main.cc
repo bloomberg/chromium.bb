@@ -660,19 +660,22 @@ void ChromeBrowserMainParts::ConnectionFieldTrial() {
 
   const int connect_trial_group = connect_trial->group();
 
+  int max_sockets = 0;
   if (connect_trial_group == connect_5) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(5);
+    max_sockets = 5;
   } else if (connect_trial_group == connect_6) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(6);
+    max_sockets = 6;
   } else if (connect_trial_group == connect_7) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(7);
+    max_sockets = 7;
   } else if (connect_trial_group == connect_8) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(8);
+    max_sockets = 8;
   } else if (connect_trial_group == connect_9) {
-    net::ClientSocketPoolManager::set_max_sockets_per_group(9);
+    max_sockets = 9;
   } else {
     NOTREACHED();
   }
+  net::ClientSocketPoolManager::set_max_sockets_per_group(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL, max_sockets);
 }
 
 // A/B test for determining a value for unused socket timeout. Currently the
@@ -745,15 +748,18 @@ void ChromeBrowserMainParts::ProxyConnectionsFieldTrial() {
 
   const int proxy_connections_trial_group = proxy_connection_trial->group();
 
+  int max_sockets = 0;
   if (proxy_connections_trial_group == proxy_connections_16) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(16);
+    max_sockets = 16;
   } else if (proxy_connections_trial_group == proxy_connections_32) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(32);
+    max_sockets = 32;
   } else if (proxy_connections_trial_group == proxy_connections_64) {
-    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(64);
+    max_sockets = 64;
   } else {
     NOTREACHED();
   }
+  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL, max_sockets);
 }
 
 // When --use-spdy not set, users will be in A/B test for spdy.
