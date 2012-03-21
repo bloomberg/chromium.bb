@@ -44,13 +44,28 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
     const float divisor = divisors[i];
     const float linear_until_x = 32.0;
     const float init_slope = linear_until_x / divisor;
-    curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
+    move_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
     const float x_border = 150;
-    curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
+    move_curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
     const float slope = x_border * 2 / divisor;
     const float y_at_border = x_border * x_border / divisor;
     const float icept = y_at_border - slope * x_border;
-    curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
+    move_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
+  }
+
+  // i starts as 1 b/c we skip the first slot, since the default is fine for it.
+  for (size_t i = 1; i < kMaxAccelCurves; ++i) {
+    const float divisor = divisors[i];
+    const float linear_until_x = 32.0;
+    const float init_slope = linear_until_x / divisor;
+    scroll_curves_[i][0] = CurveSegment(linear_until_x, 0, init_slope, 0);
+    const float x_border = 150;
+    scroll_curves_[i][1] = CurveSegment(x_border, 1 / divisor, 0, 0);
+    // For scrolling / flinging we level off the speed.
+    const float slope = init_slope;
+    const float y_at_border = x_border * x_border / divisor;
+    const float icept = y_at_border - slope * x_border;
+    scroll_curves_[i][2] = CurveSegment(INFINITY, 0, slope, icept);
   }
 }
 
@@ -125,7 +140,7 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       scale_out_x = dx = &gs->details.move.dx;
       scale_out_y = dy = &gs->details.move.dy;
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
-        segs = curves_[sensitivity_.val_ - 1];
+        segs = move_curves_[sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
         ParseCurveString(custom_point_str_.val_,
@@ -149,7 +164,7 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
         scale_out_y = dy = &gs->details.scroll.dy;
       }
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
-        segs = curves_[sensitivity_.val_ - 1];
+        segs = scroll_curves_[sensitivity_.val_ - 1];
       } else {
         segs = custom_scroll_;
         ParseCurveString(custom_scroll_str_.val_,

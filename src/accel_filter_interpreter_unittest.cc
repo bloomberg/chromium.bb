@@ -71,14 +71,14 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
                                                        2.8));  // dy
     base_interpreter->return_values_.push_back(Gesture(kGestureScroll,
                                                        2,  // start time
-                                                       2.001,  // end time
+                                                       2.1,  // end time
                                                        4.1,  // dx
                                                        -10.3));  // dy
     base_interpreter->return_values_.push_back(Gesture(kGestureFling,
                                                        3,  // start time
-                                                       3.001,  // end time
-                                                       400.1,  // vx
-                                                       -1000.3,  // vy
+                                                       3.1,  // end time
+                                                       100.1,  // vx
+                                                       -10.3,  // vy
                                                        0));  // state
 
     Gesture* out = interpreter.SyncInterpret(NULL, NULL);
@@ -117,8 +117,8 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
     EXPECT_EQ(kGestureTypeFling, out->type);
     if (i == 1) {
       // Expect no acceleration
-      EXPECT_FLOAT_EQ(400.1, out->details.fling.vx);
-      EXPECT_FLOAT_EQ(-1000.3, out->details.fling.vy);
+      EXPECT_FLOAT_EQ(100.1, out->details.fling.vx);
+      EXPECT_FLOAT_EQ(-10.3, out->details.fling.vy);
     } else {
       // Expect increasing acceleration
       EXPECT_GT(fabsf(out->details.fling.vx), fabsf(last_fling_vx));
