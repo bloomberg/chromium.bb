@@ -212,8 +212,7 @@ std::string ResourceBundle::ReloadLocaleResources(
 }
 
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
-  const SkBitmap* bitmap =
-      static_cast<const SkBitmap*>(GetImageNamed(resource_id));
+  const SkBitmap* bitmap = GetImageNamed(resource_id).ToSkBitmap();
   return const_cast<SkBitmap*>(bitmap);
 }
 

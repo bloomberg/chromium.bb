@@ -837,7 +837,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   if (IsShowingWarningDialog())
     icon = warning_icon_;
   else if (image)
-    icon = *image;
+    icon = image->ToSkBitmap();
 
   // We count on the fact that the icon manager will cache the icons and if one
   // is available, it will be cached here. We *don't* want to request the icon

@@ -55,16 +55,16 @@ class AppNonClientFrameViewAura::ControlView
     restore_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     int control_base_resource_id = owner->browser_view()->IsOffTheRecord() ?
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
-    control_base_ = *rb.GetImageNamed(control_base_resource_id);
+    control_base_ = rb.GetImageNamed(control_base_resource_id).ToSkBitmap();
 
     separator_ =
-        *rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToSkBitmap();
-    shadow_ = *rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToSkBitmap();
+        rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToSkBitmap();
+    shadow_ = rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToSkBitmap();
 
     AddChildView(close_button_);
     AddChildView(restore_button_);
@@ -72,9 +72,8 @@ class AppNonClientFrameViewAura::ControlView
 
   virtual void Layout() OVERRIDE {
     restore_button_->SetPosition(gfx::Point(kShadowStart, 0));
-    close_button_->SetPosition(
-        gfx::Point(kShadowStart + restore_button_->width() + separator_.width(),
-                   0));
+    close_button_->SetPosition(gfx::Point(kShadowStart +
+        restore_button_->width() + separator_->width(), 0));
   }
 
   virtual void ViewHierarchyChanged(bool is_add, View* parent,
@@ -95,12 +94,12 @@ class AppNonClientFrameViewAura::ControlView
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(shadow_.width() + kShadowWidthStretch,
-                     shadow_.height() + kShadowHeightStretch);
+    return gfx::Size(shadow_->width() + kShadowWidthStretch,
+                     shadow_->height() + kShadowHeightStretch);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->TileImageInt(control_base_,
+    canvas->TileImageInt(*control_base_,
         restore_button_->x(),
         restore_button_->y(),
         restore_button_->width() + close_button_->width(),
@@ -108,9 +107,9 @@ class AppNonClientFrameViewAura::ControlView
 
     views::View::OnPaint(canvas);
 
-    canvas->DrawBitmapInt(
-        separator_, restore_button_->x() + restore_button_->width(), 0);
-    canvas->DrawBitmapInt(shadow_, 0, kShadowHeightStretch);
+    canvas->DrawBitmapInt(*separator_,
+                          restore_button_->x() + restore_button_->width(), 0);
+    canvas->DrawBitmapInt(*shadow_, 0, kShadowHeightStretch);
   }
 
   void ButtonPressed(
@@ -141,9 +140,9 @@ class AppNonClientFrameViewAura::ControlView
   AppNonClientFrameViewAura* owner_;
   views::ImageButton* close_button_;
   views::ImageButton* restore_button_;
-  SkBitmap control_base_;
-  SkBitmap separator_;
-  SkBitmap shadow_;
+  const SkBitmap* control_base_;
+  const SkBitmap* separator_;
+  const SkBitmap* shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlView);
 };

@@ -209,11 +209,11 @@ TEST_F(ImageTest, SwapRepresentations) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
   gfx::Image image1(gt::CreateBitmap(25, 25));
-  const SkBitmap* bitmap1 = image1;
+  const SkBitmap* bitmap1 = image1.ToSkBitmap();
   EXPECT_EQ(1U, image1.RepresentationCount());
 
   gfx::Image image2(gt::CreatePlatformImage());
-  const SkBitmap* bitmap2 = image2;
+  const SkBitmap* bitmap2 = image2.ToSkBitmap();
   gt::PlatformImage platform_image = gt::ToPlatformType(image2);
   EXPECT_EQ(kRepCount, image2.RepresentationCount());
 

@@ -326,10 +326,6 @@ NSImage* Image::CopyNSImage() const {
 }
 #endif
 
-Image::operator const SkBitmap*() const {
-  return ToSkBitmap();
-}
-
 Image::operator const SkBitmap&() const {
   return *ToSkBitmap();
 }

@@ -375,7 +375,7 @@ void DragDownload(const DownloadItem* download,
 
   if (icon) {
     drag_utils::CreateDragImageForFile(
-        download->GetFileNameToReportUser(), *icon, &data);
+        download->GetFileNameToReportUser(), icon->ToSkBitmap(), &data);
   }
 
   const FilePath full_path = download->GetFullPath();
