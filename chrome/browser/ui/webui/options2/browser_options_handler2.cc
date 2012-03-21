@@ -611,7 +611,7 @@ void BrowserOptionsHandler::InitializePage() {
   SetupMetricsReportingSettingVisibility();
   SetupFontSizeSelector();
   SetupPageZoomSelector();
-  SetupAutoOpenFileTypesDisabledAttribute();
+  SetupAutoOpenFileTypes();
   SetupProxySettingsSection();
   SetupSSLConfigSettings();
 #if !defined(OS_CHROMEOS)
@@ -829,7 +829,7 @@ void BrowserOptionsHandler::Observe(
     if (*pref_name == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
-      SetupAutoOpenFileTypesDisabledAttribute();
+      SetupAutoOpenFileTypes();
 #if !defined(OS_CHROMEOS)
     } else if (proxy_prefs_->IsObserved(*pref_name)) {
       SetupProxySettingsSection();
@@ -1349,16 +1349,16 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
       "BrowserOptions.setupPageZoomSelector", zoom_factors_value);
 }
 
-void BrowserOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
-  // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
-  // We enable the button if the user has any auto-open file types registered.
+void BrowserOptionsHandler::SetupAutoOpenFileTypes() {
+  // Set the hidden state for the AutoOpenFileTypesResetToDefault button.
+  // We show the button if the user has any auto-open file types registered.
   DownloadManager* manager =
       web_ui()->GetWebContents()->GetBrowserContext()->GetDownloadManager();
-  bool disabled = !(manager &&
-      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
-  base::FundamentalValue value(disabled);
+  bool display = manager &&
+      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
+  base::FundamentalValue value(display);
   web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setAutoOpenFileTypesDisabledAttribute", value);
+      "BrowserOptions.setAutoOpenFileTypesDisplayed", value);
 }
 
 void BrowserOptionsHandler::SetupProxySettingsSection() {

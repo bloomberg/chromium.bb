@@ -72,10 +72,7 @@ cr.define('options', function() {
             $('advanced-settings-container'));
       }
       $('advanced-settings').addEventListener('webkitTransitionEnd',
-          function(event) {
-            self.onTransitionEnd_(event);
-            self.updateAdvancedSettingsExpander_();
-      });
+          this.updateAdvancedSettingsExpander_.bind(this));
 
       if (cr.isChromeOS)
         AccountsOptions.applyGuestModeVisibility(document);
@@ -125,8 +122,6 @@ cr.define('options', function() {
       // Appearance section.
       Preferences.getInstance().addEventListener('browser.show_home_button',
           this.onShowHomeButtonChanged_.bind(this));
-      $('change-home-page-section').addEventListener('webkitTransitionEnd',
-          this.onTransitionEnd_.bind(this));
 
       Preferences.getInstance().addEventListener('homepage',
           this.onHomePageChanged_.bind(this));
@@ -490,14 +485,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Show the given section, with animation. The section should have a
-     * onTransitionEnd_ as a listener for the |webkitTransitionEnd| event.
+     * Shows the given section, with animation.
      * @param {HTMLElement} section The section to be shown.
      * @param {HTMLElement} container The container for the section. Must be
      *     inside of |section|.
      * @private
      */
     showSectionWithAnimation_: function(section, container) {
+      this.addTransitionEndListener_(section);
+
       // Unhide
       section.hidden = false;
 
@@ -522,6 +518,8 @@ cr.define('options', function() {
      * See showSectionWithAnimation_.
      */
     hideSectionWithAnimation_: function(section, container) {
+      this.addTransitionEndListener_(section);
+
       // Before we start hiding the section, we need to set
       // the height to a pixel value.
       section.style.height = container.offsetHeight + 'px';
@@ -543,6 +541,22 @@ cr.define('options', function() {
         this.showSectionWithAnimation_(section, container);
       else
         this.hideSectionWithAnimation_(section, container);
+    },
+
+    /**
+     * Adds a |webkitTransitionEnd| listener to the given section so that
+     * it can be animated. The listener will only be added to a given section
+     * once, so this can be called as multiple times.
+     * @param {HTMLElement} section The section to be animated.
+     * @private
+     */
+    addTransitionEndListener_: function(section) {
+      if (section.hasTransitionEndListener_)
+        return;
+
+      section.addEventListener('webkitTransitionEnd',
+          this.onTransitionEnd_.bind(this));
+      section.hasTransitionEndListener_ = true;
     },
 
     /**
@@ -1022,16 +1036,28 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the enabled state for the autoOpenFileTypesResetToDefault button.
+     * Shows/hides the autoOpenFileTypesResetToDefault button and label, with
+     * animation.
+     * @param {boolean} display Whether to show the button and label or not.
      * @private
      */
-    setAutoOpenFileTypesDisabledAttribute_: function(disabled) {
-      if (!cr.isChromeOS) {
-        $('autoOpenFileTypesResetToDefault').disabled = disabled;
-        if (disabled)
-          $('auto-open-file-types-label').classList.add('disabled');
-        else
-          $('auto-open-file-types-label').classList.remove('disabled');
+    setAutoOpenFileTypesDisplayed_: function(display) {
+      if (cr.isChromeOS)
+        return;
+
+      if ($('advanced-settings').hidden) {
+        // If the Advanced section is hidden, don't animate the transition.
+        $('auto-open-file-types-section').hidden = !display;
+      } else {
+        if (display) {
+          this.showSectionWithAnimation_(
+              $('auto-open-file-types-section'),
+              $('auto-open-file-types-container'));
+        } else {
+          this.hideSectionWithAnimation_(
+              $('auto-open-file-types-section'),
+              $('auto-open-file-types-container'));
+        }
       }
     },
 
@@ -1232,7 +1258,7 @@ cr.define('options', function() {
     'hideBluetoothSettings',
     'removeCloudPrintConnectorSection',
     'removeBluetoothDevice',
-    'setAutoOpenFileTypesDisabledAttribute',
+    'setAutoOpenFileTypesDisplayed',
     'setBackgroundModeCheckboxState',
     'setBluetoothState',
     'setCheckRevocationCheckboxState',

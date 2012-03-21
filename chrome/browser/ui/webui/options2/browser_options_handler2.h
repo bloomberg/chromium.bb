@@ -244,8 +244,8 @@ class BrowserOptionsHandler
   // Setup the page zoom selector control.
   void SetupPageZoomSelector();
 
-  // Setup the enabled state of the reset button.
-  void SetupAutoOpenFileTypesDisabledAttribute();
+  // Setup the visibility of the reset button.
+  void SetupAutoOpenFileTypes();
 
   // Setup the proxy settings section UI.
   void SetupProxySettingsSection();
