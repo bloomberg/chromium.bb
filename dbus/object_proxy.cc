@@ -281,14 +281,8 @@ void ObjectProxy::ConnectToSignalInternal(
     OnConnectedCallback on_connected_callback) {
   bus_->AssertOnDBusThread();
 
-  // Check if the object is already connected to the signal.
   const std::string absolute_signal_name =
       GetAbsoluteSignalName(interface_name, signal_name);
-  if (method_table_.find(absolute_signal_name) != method_table_.end()) {
-    LOG(ERROR) << "The object proxy is already connected to "
-               << absolute_signal_name;
-    return;
-  }
 
   // Will become true, if everything is successful.
   bool success = false;

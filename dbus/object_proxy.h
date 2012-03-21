@@ -29,7 +29,9 @@ class Signal;
 // calling methods of these objects.
 //
 // ObjectProxy is a ref counted object, to ensure that |this| of the
-// object is is alive when callbacks referencing |this| are called.
+// object is is alive when callbacks referencing |this| are called; the
+// bus always holds at least one of those references so object proxies
+// always last as long as the bus that created them.
 class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
  public:
   // Client code should use Bus::GetObjectProxy() or
@@ -96,7 +98,8 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                           int timeout_ms,
                           ResponseCallback callback);
 
-  // Requests to connect to the signal from the remote object.
+  // Requests to connect to the signal from the remote object, replacing
+  // any previous |signal_callback| connected to that signal.
   //
   // |signal_callback| will be called in the origin thread, when the
   // signal is received from the remote object. As it's called in the

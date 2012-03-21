@@ -343,3 +343,59 @@ TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
   // Verify the string WAS received by the root proxy.
   ASSERT_EQ(kMessage, root_test_signal_string_);
 }
+
+class SignalReplacementTest : public EndToEndAsyncTest {
+ public:
+  SignalReplacementTest() {
+  }
+
+  virtual void SetUp() {
+    // Set up base class.
+    EndToEndAsyncTest::SetUp();
+
+    // Reconnect the root object proxy's signal handler to a new handler
+    // so that we can verify that a second call to ConnectSignal() delivers
+    // to our new handler and not the old.
+    object_proxy_->ConnectToSignal(
+        "org.chromium.TestInterface",
+        "Test",
+        base::Bind(&SignalReplacementTest::OnReplacementTestSignal,
+                   base::Unretained(this)),
+        base::Bind(&SignalReplacementTest::OnReplacementConnected,
+                   base::Unretained(this)));
+    // Wait until the object proxy is connected to the signal.
+    message_loop_.Run();
+  }
+
+ protected:
+  // Called when the "Test" signal is received, in the main thread.
+  // Copy the string payload to |replacement_test_signal_string_|.
+  void OnReplacementTestSignal(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    ASSERT_TRUE(reader.PopString(&replacement_test_signal_string_));
+    message_loop_.Quit();
+  }
+
+  // Called when connected to the signal.
+  void OnReplacementConnected(const std::string& interface_name,
+                              const std::string& signal_name,
+                              bool success) {
+    ASSERT_TRUE(success);
+    message_loop_.Quit();
+  }
+
+  // Text message from "Test" signal delivered to replacement handler.
+  std::string replacement_test_signal_string_;
+};
+
+TEST_F(SignalReplacementTest, TestSignalReplacement) {
+  const char kMessage[] = "hello, world";
+  // Send the test signal from the exported object.
+  test_service_->SendTestSignal(kMessage);
+  // Receive the signal with the object proxy.
+  WaitForTestSignal();
+  // Verify the string WAS NOT received by the original handler.
+  ASSERT_TRUE(test_signal_string_.empty());
+  // Verify the signal WAS received by the replacement handler.
+  ASSERT_EQ(kMessage, replacement_test_signal_string_);
+}
