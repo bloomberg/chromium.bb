@@ -539,6 +539,17 @@ void SystemTray::OnMouseExited(const views::MouseEvent& event) {
   SchedulePaint();
 }
 
+void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  views::View* v = GetNextFocusableView();
+  if (v && v->GetWidget())
+    v->GetWidget()->Activate();
+}
+
+void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (GetWidget() && GetWidget()->IsActive())
+    views::View::OnPaintFocusBorder(canvas);
+}
+
 void SystemTray::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(popup_, widget);
   popup_ = NULL;

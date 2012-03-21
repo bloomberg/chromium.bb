@@ -934,7 +934,8 @@ View* View::GetPreviousFocusableView() {
 }
 
 void View::SetNextFocusableView(View* view) {
-  view->previous_focusable_view_ = this;
+  if (view)
+    view->previous_focusable_view_ = this;
   next_focusable_view_ = view;
 }
 

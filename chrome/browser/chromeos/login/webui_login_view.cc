@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -155,6 +157,10 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
+  ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
+  if (tray)
+    tray->SetNextFocusableView(NULL);
+
   if (status_window_)
     status_window_->CloseNow();
   status_window_ = NULL;
@@ -404,6 +410,10 @@ bool WebUILoginView::TakeFocus(bool reverse) {
         base::Bind(&WebUILoginView::ReturnFocus, base::Unretained(this));
     status_area_->TakeFocus(reverse, return_focus_cb);
     status_area_->GetWidget()->Activate();
+
+    ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
+    if (tray)
+      tray->SetNextFocusableView(this);
   }
   return true;
 }
