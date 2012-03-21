@@ -390,10 +390,12 @@ class CONTENT_EXPORT RenderViewHostImpl
     return is_waiting_for_unload_ack_;
   }
 
-  // Checks that the given renderer can request |url|, if not it sets it to an
-  // empty url.
+  // Checks that the given renderer can request |url|, if not it sets it to
+  // about:blank.
+  // empty_allowed must be set to false for navigations for security reasons.
   static void FilterURL(ChildProcessSecurityPolicyImpl* policy,
                         int renderer_id,
+                        bool empty_allowed,
                         GURL* url);
 
   // NOTE: Do not add functions that just send an IPC message that are called in

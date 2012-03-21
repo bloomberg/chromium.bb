@@ -411,8 +411,8 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 }
 
 TEST_F(GeolocationPermissionContextTests, InvalidURL) {
-  GURL invalid_embedder;
-  GURL requesting_frame("about:blank");
+  GURL invalid_embedder("about:blank");
+  GURL requesting_frame;
   NavigateAndCommit(invalid_embedder);
   EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
   RequestGeolocationPermission(

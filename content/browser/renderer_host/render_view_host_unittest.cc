@@ -133,8 +133,8 @@ TEST_F(RenderViewHostTest, StartDragging) {
   drop_data.url = file_url;
   drop_data.html_base_url = file_url;
   test_rvh()->TestOnMsgStartDragging(drop_data);
-  EXPECT_TRUE(view_delegate.drag_url().is_empty());
-  EXPECT_TRUE(view_delegate.html_base_url().is_empty());
+  EXPECT_EQ(GURL("about:blank"), view_delegate.drag_url());
+  EXPECT_EQ(GURL("about:blank"), view_delegate.html_base_url());
 
   GURL http_url = GURL("http://www.domain.com/index.html");
   drop_data.url = http_url;

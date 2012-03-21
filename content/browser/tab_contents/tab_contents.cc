@@ -1435,10 +1435,17 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     const GURL& url) {
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
+  GURL validated_opener_url(opener_url);
   GetRenderViewHostImpl()->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       GetRenderProcessHost()->GetID(),
+      false,
       &validated_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      true,
+      &validated_opener_url);
 
   RenderViewHost* rvh =
       render_manager_.pending_render_view_host() ?
@@ -1451,7 +1458,8 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      ProvisionalChangeToMainFrameUrl(url, opener_url));
+                      ProvisionalChangeToMainFrameUrl(validated_url,
+                                                      validated_opener_url));
   }
 }
 
@@ -1462,18 +1470,36 @@ void TabContents::OnDidRedirectProvisionalLoad(int32 page_id,
   // TODO(creis): Remove this method and have the pre-rendering code listen to
   // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
   // instead.  See http://crbug.com/78512.
+  GURL validated_source_url(source_url);
+  GURL validated_target_url(target_url);
+  GURL validated_opener_url(opener_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      false,
+      &validated_source_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      false,
+      &validated_target_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      true,
+      &validated_opener_url);
   NavigationEntry* entry;
   if (page_id == -1)
     entry = controller_.GetPendingEntry();
   else
     entry = controller_.GetEntryWithPageID(GetSiteInstance(), page_id);
-  if (!entry || entry->GetURL() != source_url)
+  if (!entry || entry->GetURL() != validated_source_url)
     return;
 
   // Notify observers about the provisional change in the main frame URL.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    ProvisionalChangeToMainFrameUrl(target_url,
-                                                    opener_url));
+                    ProvisionalChangeToMainFrameUrl(validated_target_url,
+                                                    validated_opener_url));
 }
 
 void TabContents::OnDidFailProvisionalLoadWithError(
@@ -1489,6 +1515,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
   GetRenderViewHostImpl()->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
       GetRenderProcessHost()->GetID(),
+      false,
       &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
