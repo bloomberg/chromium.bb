@@ -336,17 +336,62 @@ void TestService::GetProperty(
     return;
   }
 
-  if (name != "Version") {
+  if (name == "Name") {
+    // Return the previous value for the "Name" property:
+    // Variant<"TestService">
+    Response* response = Response::FromMethodCall(method_call);
+    MessageWriter writer(response);
+
+    writer.AppendVariantOfString("TestService");
+
+    response_sender.Run(response);
+  } else if (name == "Version") {
+    // Return a new value for the "Version" property:
+    // Variant<20>
+    Response* response = Response::FromMethodCall(method_call);
+    MessageWriter writer(response);
+
+    writer.AppendVariantOfInt16(20);
+
+    response_sender.Run(response);
+  } else if (name == "Methods") {
+    // Return the previous value for the "Methods" property:
+    // Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>
+    Response* response = Response::FromMethodCall(method_call);
+    MessageWriter writer(response);
+    MessageWriter variant_writer(NULL);
+    MessageWriter variant_array_writer(NULL);
+
+    writer.OpenVariant("as", &variant_writer);
+    variant_writer.OpenArray("s", &variant_array_writer);
+    variant_array_writer.AppendString("Echo");
+    variant_array_writer.AppendString("SlowEcho");
+    variant_array_writer.AppendString("AsyncEcho");
+    variant_array_writer.AppendString("BrokenMethod");
+    variant_writer.CloseContainer(&variant_array_writer);
+    writer.CloseContainer(&variant_writer);
+
+    response_sender.Run(response);
+  } else if (name == "Objects") {
+    // Return the previous value for the "Objects" property:
+    // Variant<[objectpath:"/TestObjectPath"]>
+    Response* response = Response::FromMethodCall(method_call);
+    MessageWriter writer(response);
+    MessageWriter variant_writer(NULL);
+    MessageWriter variant_array_writer(NULL);
+
+    writer.OpenVariant("ao", &variant_writer);
+    variant_writer.OpenArray("o", &variant_array_writer);
+    variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
+    variant_writer.CloseContainer(&variant_array_writer);
+    writer.CloseContainer(&variant_writer);
+
+    response_sender.Run(response);
+  } else {
+    // Return error.
     response_sender.Run(NULL);
     return;
   }
-
-  Response* response = Response::FromMethodCall(method_call);
-  MessageWriter writer(response);
-
-  writer.AppendVariantOfInt16(20);
-
-  response_sender.Run(response);
 }
 
 void TestService::SetProperty(

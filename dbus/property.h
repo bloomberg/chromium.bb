@@ -386,9 +386,10 @@ class Property : public PropertyBase {
       callback.Run(response);
   }
 
-  // Updates the cached property value by popping from |reader| which
-  // should be positioned at the property value, generally of variant
-  // type. Implementation provided by specialization.
+  // Updates the cached property value, replacing any previous value
+  // entirely, by popping from |reader| which should be positioned at the
+  // property value, generally of variant type.
+  // Implementation provided by specialization.
   virtual bool PopValueFromReader(MessageReader* reader);
 
   // Appends the passed |value| to |writer|, generally as a variant type.

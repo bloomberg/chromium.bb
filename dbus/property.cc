@@ -382,6 +382,7 @@ bool Property<std::vector<std::string> >::PopValueFromReader(
   if (!reader->PopVariant(&variant_reader))
     return false;
 
+  value_.clear();
   return variant_reader.PopArrayOfStrings(&value_);
 }
 
@@ -406,6 +407,7 @@ bool Property<std::vector<ObjectPath> >::PopValueFromReader(
   if (!reader->PopVariant(&variant_reader))
     return false;
 
+  value_.clear();
   return variant_reader.PopArrayOfObjectPaths(&value_);
 }
 

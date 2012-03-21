@@ -167,6 +167,55 @@ TEST_F(PropertyTest, InitialValues) {
   EXPECT_EQ(dbus::ObjectPath("/TestObjectPath"), objects[0]);
 }
 
+TEST_F(PropertyTest, UpdatedValues) {
+  WaitForGetAll();
+
+  // Update the value of the "Name" property, this value should not change.
+  properties_->name.Get(base::Bind(&PropertyTest::PropertyCallback,
+                                   base::Unretained(this),
+                                   "Name"));
+  WaitForCallback("Name");
+  WaitForUpdates(1);
+
+  EXPECT_EQ(properties_->name.value(), "TestService");
+
+  // Update the value of the "Version" property, this value should be changed.
+  properties_->version.Get(base::Bind(&PropertyTest::PropertyCallback,
+                                      base::Unretained(this),
+                                      "Version"));
+  WaitForCallback("Version");
+  WaitForUpdates(1);
+
+  EXPECT_EQ(properties_->version.value(), 20);
+
+  // Update the value of the "Methods" property, this value should not change
+  // and should not grow to contain duplicate entries.
+  properties_->methods.Get(base::Bind(&PropertyTest::PropertyCallback,
+                                      base::Unretained(this),
+                                      "Methods"));
+  WaitForCallback("Methods");
+  WaitForUpdates(1);
+
+  std::vector<std::string> methods = properties_->methods.value();
+  ASSERT_EQ(4U, methods.size());
+  EXPECT_EQ("Echo", methods[0]);
+  EXPECT_EQ("SlowEcho", methods[1]);
+  EXPECT_EQ("AsyncEcho", methods[2]);
+  EXPECT_EQ("BrokenMethod", methods[3]);
+
+  // Update the value of the "Objects" property, this value should not change
+  // and should not grow to contain duplicate entries.
+  properties_->objects.Get(base::Bind(&PropertyTest::PropertyCallback,
+                                      base::Unretained(this),
+                                      "Objects"));
+  WaitForCallback("Objects");
+  WaitForUpdates(1);
+
+  std::vector<dbus::ObjectPath> objects = properties_->objects.value();
+  ASSERT_EQ(1U, objects.size());
+  EXPECT_EQ(dbus::ObjectPath("/TestObjectPath"), objects[0]);
+}
+
 TEST_F(PropertyTest, Get) {
   WaitForGetAll();
 
