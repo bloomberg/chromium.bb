@@ -38,6 +38,7 @@ class AssertNatives : public NativeHandler {
 class StringSourceMap : public ModuleSystem::SourceMap {
  public:
   StringSourceMap() {}
+  virtual ~StringSourceMap() {}
 
   v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE {
     if (source_map_.count(name) == 0)
@@ -83,7 +84,7 @@ class ModuleSystemTest : public testing::Test {
         source_map_(new StringSourceMap()) {
     context_->Enter();
     assert_natives_ = new AssertNatives();
-    module_system_.reset(new ModuleSystem(source_map_));
+    module_system_.reset(new ModuleSystem(source_map_.get()));
     module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
         assert_natives_));
     RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
@@ -109,7 +110,7 @@ class ModuleSystemTest : public testing::Test {
   v8::HandleScope handle_scope_;
   v8::TryCatch try_catch_;
   AssertNatives* assert_natives_;
-  StringSourceMap* source_map_;
+  scoped_ptr<StringSourceMap> source_map_;
   scoped_ptr<ModuleSystem> module_system_;
 };
 

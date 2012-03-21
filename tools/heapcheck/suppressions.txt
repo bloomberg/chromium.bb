@@ -1735,13 +1735,6 @@
    fun:BookmarkEditorGtkTest_*_Test::TestBody
 }
 {
-   bug_115296
-   Heapcheck:Leak
-   fun:::GetResource
-   fun:ModuleSystem::EnsureRequireLoaded
-   fun:ModuleSystem::Require
-}
-{
    bug_115611_a
    Heapcheck:Leak
    fun:base::Bind
@@ -1877,10 +1870,4 @@
    Heapcheck:Leak
    ...
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
-}
-{
-   bug_118575
-   Heapcheck:Leak
-   ...
-   fun:ModuleSystemTest*
 }

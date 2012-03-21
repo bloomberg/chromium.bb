@@ -1162,11 +1162,6 @@ name=http://crbug.com/116277
 *!zipCloseFileInZipRaw64
 
 LEAK
-name=http://crbug.com/115296
-...
-*!ModuleSystemTest*
-
-LEAK
 name=http://crbug.com/117427 a
 ...
 *!net::HostCache::Set
