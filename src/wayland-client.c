@@ -36,6 +36,7 @@
 #include <sys/poll.h>
 
 #include "wayland-util.h"
+#include "wayland-os.h"
 #include "wayland-client.h"
 #include "wayland-private.h"
 
@@ -307,7 +308,7 @@ connect_to_socket(struct wl_display *display, const char *name)
 	const char *runtime_dir;
 	size_t name_size;
 
-	display->fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	display->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (display->fd < 0)
 		return -1;
 

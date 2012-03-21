@@ -5,7 +5,8 @@ my_check_programs =				\
 	list-test				\
 	connection-test				\
 	event-loop-test				\
-	client-test
+	client-test				\
+	os-wrappers-test
 
 TESTS = $(my_check_programs)
 
@@ -22,6 +23,11 @@ list_test_SOURCES = list-test.c $(test_runner_src)
 connection_test_SOURCES = connection-test.c $(test_runner_src)
 event_loop_test_SOURCES = event-loop-test.c $(test_runner_src)
 client_test_SOURCES = client-test.c $(test_runner_src)
+
+os_wrappers_test_SOURCES = 			\
+	os-wrappers-test.c			\
+	../src/wayland-os.c			\
+	$(test_runner_src)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 LDADD = $(top_builddir)/src/libwayland-util.la \

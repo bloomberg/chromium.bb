@@ -14,6 +14,8 @@ libwayland_util_la_SOURCES =			\
 	connection.c				\
 	wayland-util.c				\
 	wayland-util.h				\
+	wayland-os.c				\
+	wayland-os.h				\
 	wayland-private.h
 
 libwayland_server_la_LIBADD = $(FFI_LIBS) libwayland-util.la -lrt

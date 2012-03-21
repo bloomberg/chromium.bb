@@ -44,6 +44,7 @@
 #include "wayland-private.h"
 #include "wayland-server.h"
 #include "wayland-server-protocol.h"
+#include "wayland-os.h"
 
 struct wl_socket {
 	int fd;
@@ -970,7 +971,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	if (s == NULL)
 		return -1;
 
-	s->fd = socket(PF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
+	s->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (s->fd < 0) {
 		free(s);
 		return -1;
