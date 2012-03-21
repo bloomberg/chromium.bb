@@ -248,11 +248,6 @@ class InputMethodManager {
   // Returns a InputMethodUtil object.
   virtual InputMethodUtil* GetInputMethodUtil() = 0;
 
-#if !defined(USE_AURA)
-  // Returns a hotkey manager object which could be used to detect Control+space
-  // and Shift+Alt key presses.
-  virtual HotkeyManager* GetHotkeyManager() = 0;
-#endif
   // Enable all input method hotkeys.
   virtual void EnableHotkeys() = 0;
   // Disable all input method hotkeys.

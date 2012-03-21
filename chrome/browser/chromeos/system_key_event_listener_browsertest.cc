@@ -27,14 +27,12 @@
 #define TestKoreanInputMethod DISABLED_TestKoreanInputMethod
 #endif
 
-#if defined(USE_AURA)
 // When Aura is in use, the shortcut is handled in Ash.
 #define TestInputMethod DISABLED_TestInputMethod
 #define TestInputMethodWithNumLock DISABLED_TestInputMethodWithNumLock
 #define TestKoreanInputMethod DISABLED_TestKoreanInputMethod
 #define TestCapsLock DISABLED_TestCapsLock
 #define TestCapsLockWithNumLock DISABLED_TestCapsLockWithNumLock
-#endif
 
 namespace chromeos {
 namespace {

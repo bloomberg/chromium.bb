@@ -10,19 +10,13 @@
 
 namespace chromeos {
 class BrightnessObserver;
+class DesktopBackgroundObserver;
+class InitialBrowserWindowObserver;
+class PowerButtonObserver;
 class ResumeObserver;
 class ScreenLockObserver;
 class SessionManagerObserver;
-
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
-class DesktopBackgroundObserver;
-#endif
-
-#if defined(USE_AURA)
-class InitialBrowserWindowObserver;
-class PowerButtonObserver;
 class VideoPropertyWriter;
-#endif
 }  // namespace chromeos
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
@@ -50,17 +44,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;
   scoped_ptr<chromeos::ScreenLockObserver> screen_lock_observer_;
   scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
-
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
   scoped_ptr<chromeos::DesktopBackgroundObserver> desktop_background_observer_;
-#endif
-
-#if defined(USE_AURA)
   scoped_ptr<chromeos::InitialBrowserWindowObserver>
       initial_browser_window_observer_;
   scoped_ptr<chromeos::PowerButtonObserver> power_button_observer_;
   scoped_ptr<chromeos::VideoPropertyWriter> video_property_writer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

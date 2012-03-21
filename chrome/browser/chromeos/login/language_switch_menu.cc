@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 
+#include "ash/shell.h"
 #include "base/i18n/rtl.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/platform_font_pango.h"
@@ -28,11 +30,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ui/aura/root_window.h"
-#endif
-
 namespace {
 
 const int kLanguageMainMenuSize = 5;
@@ -40,7 +37,6 @@ const int kLanguageMainMenuSize = 5;
 const char kLanguagesTopped[] = "es,it,de,fr,en-US";
 const int kMoreLanguagesSubMenu = 200;
 
-#if defined(USE_AURA)
 // Notifies all views::Widgets attached to |window|'s hierarchy that their
 // locale has changed.
 void NotifyLocaleChanged(aura::Window* window) {
@@ -54,7 +50,6 @@ void NotifyLocaleChanged(aura::Window* window) {
     NotifyLocaleChanged(*it);
   }
 }
-#endif
 
 }  // namespace
 
@@ -150,24 +145,6 @@ bool LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
 
 // static
 void LanguageSwitchMenu::LoadFontsForCurrentLocale() {
-#if defined(TOOLKIT_USES_GTK)
-  std::string gtkrc = l10n_util::GetStringUTF8(IDS_LOCALE_GTKRC);
-
-  // Read locale-specific gtkrc.  Ideally we'd discard all the previously read
-  // gtkrc information, but GTK doesn't support that.  Reading the new locale's
-  // gtkrc overrides the styles from previous ones when there is a conflict, but
-  // styles that are added and not conflicted will not be overridden.  So far
-  // there are no locales with such a thing; if there are then this solution
-  // will not work.
-  if (!gtkrc.empty())
-    gtk_rc_parse_string(gtkrc.c_str());
-  else
-    gtk_rc_parse("/etc/gtk-2.0/gtkrc");
-#else
-  // TODO(saintlou): Need to figure out an Aura equivalent.
-  NOTIMPLEMENTED();
-#endif
-
   // Switch the font.
   gfx::PlatformFontPango::ReloadDefaultFont();
   ResourceBundle::GetSharedInstance().ReloadFonts();
@@ -222,13 +199,7 @@ void LanguageSwitchMenu::ExecuteCommand(int command_id) {
   // that users can use those keyboard layouts on the login screen.
   SwitchLanguageAndEnableKeyboardLayouts(locale);
   InitLanguageMenu();
-
-#if defined(USE_AURA)
   NotifyLocaleChanged(ash::Shell::GetRootWindow());
-#else
-  // Update all view hierarchies that the locale has changed.
-  views::Widget::NotifyLocaleChanged();
-#endif
 }
 
 }  // namespace chromeos

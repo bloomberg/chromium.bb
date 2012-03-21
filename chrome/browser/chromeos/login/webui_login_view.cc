@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -33,9 +34,6 @@
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#endif
 
 using content::RenderViewHost;
 using content::WebContents;
@@ -122,10 +120,6 @@ WebUILoginView::WebUILoginView()
       status_area_visibility_on_init_(true),
       login_page_is_loaded_(false),
       should_emit_login_prompt_visible_(true) {
-#if !defined(USE_AURA)
-  // The X window manager emits this signal in non-Aura builds.
-  should_emit_login_prompt_visible_ = false;
-#endif
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_WEBUI_READY,
@@ -207,15 +201,6 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::OnWindowCreated() {
-#if defined(TOOLKIT_USES_GTK)
-  // Freezes host window update until the tab is rendered.
-  host_window_frozen_ = static_cast<views::NativeWidgetGtk*>(
-      GetWidget()->native_widget())->SuppressFreezeUpdates();
-#else
-  // TODO(saintlou): Unclear if we need this for the !gtk case.
-  // According to nkostylev it prevents the renderer from flashing with a
-  // white solid background until the content is fully rendered.
-#endif
 }
 
 void WebUILoginView::UpdateWindowType() {
@@ -309,22 +294,8 @@ void WebUILoginView::OnTabMainFrameRender() {
 
   StatusAreaViewChromeos::SetScreenMode(GetScreenMode());
   // In aura there's a global status area shown already.
-#if defined(USE_AURA)
   status_area_ = ChromeShellDelegate::instance()->GetStatusArea();
   status_area_->SetVisible(status_area_visibility_on_init_);
-#else
-  InitStatusArea();
-#endif
-
-#if defined(TOOLKIT_USES_GTK)
-  if (host_window_frozen_) {
-    host_window_frozen_ = false;
-
-    // Unfreezes the host window since tab is rendered now.
-    views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
-        GetNativeWindow(), false);
-  }
-#endif
 
   if (should_emit_login_prompt_visible_) {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
@@ -366,15 +337,6 @@ void WebUILoginView::InitStatusArea() {
   widget_params.parent_widget = login_window_;
   status_window_ = new views::Widget;
   status_window_->Init(widget_params);
-
-#if defined(TOOLKIT_USES_GTK)
-  std::vector<int> params;
-  params.push_back(1);  // Show while screen is locked.
-  chromeos::WmIpc::instance()->SetWindowType(
-      status_window_->GetNativeView(),
-      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-      &params);
-#endif
 
   views::View* contents_view = new RightAlignedView;
   contents_view->AddChildView(status_area_);

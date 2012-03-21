@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -14,14 +17,8 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
-#endif
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 
@@ -143,14 +140,12 @@ void WebUILoginDisplayHost::OnPreferencesChanged() {
 }
 
 void WebUILoginDisplayHost::OnBrowserCreated() {
-#if defined(USE_AURA)
   // Close lock window now so that the launched browser can receive focus.
   if (login_window_) {
     login_window_->Close();
     login_window_ = NULL;
     login_view_ = NULL;
   }
-#endif
 }
 
 void WebUILoginDisplayHost::LoadURL(const GURL& url) {
@@ -158,12 +153,10 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = background_bounds();
-#if defined(USE_AURA)
     params.show_state = ui::SHOW_STATE_FULLSCREEN;
     params.parent =
         ash::Shell::GetInstance()->GetContainer(
             ash::internal::kShellWindowId_LockScreenContainer);
-#endif
 
     login_window_ = new views::Widget;
     login_window_->Init(params);
@@ -171,22 +164,18 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 
     login_view_->Init(login_window_);
 
-#if defined(USE_AURA)
     ash::SetWindowVisibilityAnimationDuration(
         login_window_->GetNativeView(),
         base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
     ash::SetWindowVisibilityAnimationTransition(
         login_window_->GetNativeView(),
         ash::ANIMATE_HIDE);
-#endif
 
     login_window_->SetContentsView(login_view_);
     login_view_->UpdateWindowType();
 
     login_window_->Show();
-#if defined(USE_AURA)
     login_window_->GetNativeView()->SetName("WebUILoginView");
-#endif
     login_view_->OnWindowCreated();
   }
   login_view_->LoadURL(url);

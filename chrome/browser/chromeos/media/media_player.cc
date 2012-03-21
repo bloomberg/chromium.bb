@@ -19,10 +19,6 @@
 #include "net/url_request/url_request_job.h"
 #include "ui/gfx/screen.h"
 
-#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/frame/panel_browser_view.h"
-#endif
-
 using content::BrowserThread;
 using content::UserMetricsAction;
 
@@ -152,18 +148,6 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                  chrome::NOTIFICATION_BROWSER_CLOSED,
                  content::Source<Browser>(mediaplayer_browser_));
 
-#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
-  // Since we are on chromeos, popups should be a PanelBrowserView,
-  // so we can just cast it.
-  if (creator) {
-    chromeos::PanelBrowserView* creatorview =
-        static_cast<chromeos::PanelBrowserView*>(creator->window());
-    chromeos::PanelBrowserView* view =
-        static_cast<chromeos::PanelBrowserView*>(
-            mediaplayer_browser_->window());
-    view->SetCreatorView(creatorview);
-  }
-#endif
   mediaplayer_browser_->AddSelectedTabWithURL(GetMediaPlayerUrl(),
                                               content::PAGE_TRANSITION_LINK);
   mediaplayer_browser_->window()->Show();

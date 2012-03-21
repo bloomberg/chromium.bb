@@ -35,81 +35,11 @@
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
 #endif
 
-#if !defined(USE_AURA)
-#include "chrome/browser/chromeos/input_method/hotkey_manager.h"
-#include <X11/X.h>  // ShiftMask, ControlMask, etc.
-#include <X11/Xutil.h>  // for XK_* macros.
-#endif
-
 using content::BrowserThread;
 
 namespace {
 
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
-
-#if !defined(USE_AURA)
-const size_t kMaxInputMethodsPerHotkey = 2;
-
-// For hotkey handling.
-enum HotkeyEvent {
-  // Global hotkeys.
-  kPreviousInputMethod = 0,
-  kNextInputMethod,
-  // Input method specific hotkeys.
-  kJapaneseInputMethod,
-  kJapaneseLayout,
-  kJapaneseInputMethodOrLayout,
-  kKoreanInputMethodOrLayout,
-};
-
-// Details of the input method specific hotkeys.
-const struct InputMethodSpecificHotkeySetting {
-  const char* input_method_ids[kMaxInputMethodsPerHotkey];
-  int event_id;
-  KeySym keysym;
-  uint32 modifiers;
-  bool trigger_on_press;  // if true. false means 'trigger on release'.
-} kInputMethodSpecificHotkeySettings[] = {
-  {
-    { "mozc-jp" },
-    kJapaneseInputMethod,
-    XK_Henkan,
-    0x0,
-    true,
-  },
-  {
-    { "xkb:jp::jpn" },
-    kJapaneseLayout,
-    XK_Muhenkan,
-    0x0,
-    true,
-  },
-  {
-    { "mozc-jp", "xkb:jp::jpn" },
-    kJapaneseInputMethodOrLayout,
-    XK_Zenkaku_Hankaku,
-    0x0,
-    true,
-  },
-  {
-    { "mozc-hangul", "xkb:kr:kr104:kor" },
-    kKoreanInputMethodOrLayout,
-    XK_Hangul,
-    0x0,
-    true,
-  },
-  {
-    { "mozc-hangul", "xkb:kr:kr104:kor" },
-    kKoreanInputMethodOrLayout,
-    XK_space,
-    ShiftMask,
-    true,
-  },
-};
-
-const size_t kInputMethodSpecificHotkeySettingsLen =
-    arraysize(kInputMethodSpecificHotkeySettings);
-#endif
 
 // Finds a property which has |new_prop.key| from |prop_list|, and replaces the
 // property with |new_prop|. Returns true if such a property is found.
@@ -137,11 +67,7 @@ namespace input_method {
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl
-    :
-#if !defined(USE_AURA)
-      public HotkeyManager::Observer,
-#endif
-      public InputMethodManager,
+    : public InputMethodManager,
       public content::NotificationObserver,
 #if !defined(USE_VIRTUAL_KEYBOARD)
       public CandidateWindowController::Observer,
@@ -174,31 +100,10 @@ class InputMethodManagerImpl
     ibus_controller_->AddObserver(this);
     ibus_controller_->Connect();
 
-#if !defined(USE_AURA)
-    // Initialize extra_hotkeys_.
-    for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
-      const char* const* input_method_ids =
-          kInputMethodSpecificHotkeySettings[i].input_method_ids;
-      for (size_t j = 0;
-           j < kMaxInputMethodsPerHotkey && input_method_ids[j];
-           ++j) {
-        extra_hotkeys_.insert(std::make_pair(
-            input_method_ids[j], &kInputMethodSpecificHotkeySettings[i]));
-      }
-    }
-#endif
-
     EnableHotkeys();
-
-#if !defined(USE_AURA)
-    hotkey_manager_.AddObserver(this);
-#endif
   }
 
   virtual ~InputMethodManagerImpl() {
-#if !defined(USE_AURA)
-    hotkey_manager_.RemoveObserver(this);
-#endif
     ibus_controller_->RemoveObserver(this);
 #if !defined(USE_VIRTUAL_KEYBOARD)
     if (candidate_window_controller_.get())
@@ -306,13 +211,7 @@ class InputMethodManagerImpl
     // FlushImeConfig() for details.
     tentative_current_input_method_id_ = input_method_id;
 
-    if (InputMethodUtil::IsKeyboardLayout(input_method_id)
-#if !defined(USE_AURA)
-        // TODO(yusukes): Remove this code when R18 stable is shipped.
-        // crosbug.com/26245
-        && ibus_daemon_process_handle_ == base::kNullProcessHandle
-#endif
-    ) {
+    if (InputMethodUtil::IsKeyboardLayout(input_method_id)) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);
@@ -413,9 +312,6 @@ class InputMethodManagerImpl
            ix != extra_input_method_ids_.end(); ++ix) {
         active_input_method_ids_.push_back(ix->first);
       }
-#if !defined(USE_AURA)
-      UpdateInputMethodSpecificHotkeys();
-#endif
     }
 
     // Before calling FlushImeConfig(), start input method process if necessary.
@@ -551,30 +447,7 @@ class InputMethodManagerImpl
     return xkeyboard_.get();
   }
 
-#if !defined(USE_AURA)
-  virtual HotkeyManager* GetHotkeyManager() {
-    return &hotkey_manager_;
-  }
-#endif
-
   virtual void HotkeyPressed(HotkeyManager* manager, int event_id) {
-#if !defined(USE_AURA)
-    const HotkeyEvent event = HotkeyEvent(event_id);
-    switch (event) {
-      case kNextInputMethod:
-        SwitchToNextInputMethod();
-        break;
-      case kPreviousInputMethod:
-        SwitchToPreviousInputMethod();
-        break;
-      case kJapaneseInputMethod:
-      case kJapaneseLayout:
-      case kJapaneseInputMethodOrLayout:
-      case kKoreanInputMethodOrLayout:
-        SwitchToInputMethod(event);
-        break;
-    }
-#endif
   }
 
   virtual void CandidateWindowOpened() {
@@ -720,44 +593,11 @@ class InputMethodManagerImpl
   }
 
   virtual void EnableHotkeys() {
-#if defined(USE_AURA)
     ignore_hotkeys_ = false;
-#else
-    // Add Ctrl+space.
-    hotkey_manager_.AddHotkey(kPreviousInputMethod,
-                              XK_space,
-                              ControlMask,
-                              true /* trigger on key press */);
-
-    // Add Alt+Shift. For this hotkey, we use "trigger on key release" so that
-    // the current IME is not changed on pressing Alt+Shift+something.
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Shift_L,
-                              ShiftMask | Mod1Mask,
-                              false /* trigger on key release. */);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Shift_R,
-                              ShiftMask | Mod1Mask,
-                              false);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Meta_L,
-                              ShiftMask | Mod1Mask,
-                              false);
-    hotkey_manager_.AddHotkey(kNextInputMethod,
-                              XK_Meta_R,
-                              ShiftMask | Mod1Mask,
-                              false);
-    // Input method specific hotkeys will be added in SetInputMethodConfig().
-#endif
   }
 
   virtual void DisableHotkeys() {
-#if defined(USE_AURA)
     ignore_hotkeys_ = true;
-#else
-    hotkey_manager_.RemoveHotkey(kPreviousInputMethod);
-    hotkey_manager_.RemoveHotkey(kNextInputMethod);
-#endif
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -1363,92 +1203,6 @@ class InputMethodManagerImpl
     }
   }
 
-#if !defined(USE_AURA)
-  void UpdateInputMethodSpecificHotkeys() {
-    // Remove all input method specific hotkeys first.
-    for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
-      hotkey_manager_.RemoveHotkey(
-          kInputMethodSpecificHotkeySettings[i].event_id);
-    }
-
-    for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
-      typedef std::map<std::string,
-          const InputMethodSpecificHotkeySetting*>::const_iterator Iter;
-      std::pair<Iter, Iter> result = extra_hotkeys_.equal_range(
-          active_input_method_ids_[i]);
-      for (Iter iter = result.first; iter != result.second; ++iter) {
-        hotkey_manager_.AddHotkey(iter->second->event_id,
-                                  iter->second->keysym,
-                                  iter->second->modifiers,
-                                  iter->second->trigger_on_press);
-      }
-    }
-  }
-
-  // Handles input method specific hotkeys like XK_Henkan.
-  void SwitchToInputMethod(HotkeyEvent event) {
-    // Sanity check.
-    if (active_input_method_ids_.empty()) {
-      LOG(ERROR) << "active input method is empty";
-      return;
-    }
-
-    // Get the list of input method ids for |event_id|. For example, get
-    // { "mozc-hangul", "xkb:kr:kr104:kor" } for kKoreanInputMethodOrLayout.
-    const char* const* input_method_ids_to_switch = NULL;
-    switch (event) {
-      case kPreviousInputMethod:
-      case kNextInputMethod:
-        // These events should not be handled here.
-        break;
-      case kJapaneseInputMethod:
-      case kJapaneseLayout:
-      case kJapaneseInputMethodOrLayout:
-      case kKoreanInputMethodOrLayout:
-        for (size_t i = 0; i < kInputMethodSpecificHotkeySettingsLen; ++i) {
-          if (event == kInputMethodSpecificHotkeySettings[i].event_id) {
-            input_method_ids_to_switch =
-                kInputMethodSpecificHotkeySettings[i].input_method_ids;
-          }
-        }
-        break;
-    }
-    if (!input_method_ids_to_switch) {
-      LOG(ERROR) << "Unknown event: " << event;
-      return;
-    }
-
-    // Obtain the intersection of input_method_ids_to_switch and
-    // active_input_method_ids_. The order of IDs in active_input_method_ids_ is
-    // preserved.
-    std::vector<std::string> ids;
-    for (size_t i = 0; i < kMaxInputMethodsPerHotkey; ++i) {
-      const char* id = input_method_ids_to_switch[i];
-      if (id && std::find(active_input_method_ids_.begin(),
-                          active_input_method_ids_.end(),
-                          id) != active_input_method_ids_.end()) {
-        ids.push_back(id);
-      }
-    }
-    if (ids.empty()) {
-      LOG(ERROR) << "No input method for " << event << " is active";
-      return;
-    }
-
-    // If current_input_method_ is not in ids, switch to ids[0]. If
-    // current_input_method_ is ids[N], switch to ids[N+1].
-    std::vector<std::string>::const_iterator iter =
-        std::find(ids.begin(), ids.end(), current_input_method_.id());
-    if (iter != ids.end()) {
-      ++iter;
-    }
-    if (iter == ids.end()) {
-      iter = ids.begin();
-    }
-    ChangeInputMethod(*iter);
-  }
-#endif
-
   // The IBus controller is used to control the input method status and
   // allow allow callbacks when the input method status changes.
   scoped_ptr<IBusController> ibus_controller_;
@@ -1521,13 +1275,6 @@ class InputMethodManagerImpl
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_method_ids_;
 
-#if !defined(USE_AURA)
-  // A muitlmap from input method id to input method specific hotkey
-  // information. e.g. "mozc-jp" to XK_ZenkakuHankaku, "mozc-jp" to XK_Henkan.
-  std::multimap<std::string,
-                const InputMethodSpecificHotkeySetting*> extra_hotkeys_;
-#endif
-
   InputMethodWhitelist whitelist_;
 
   // An object which provides miscellaneous input method utility functions. Note
@@ -1537,11 +1284,6 @@ class InputMethodManagerImpl
   // An object for switching XKB layouts and keyboard status like caps lock and
   // auto-repeat interval.
   scoped_ptr<XKeyboard> xkeyboard_;
-
-#if !defined(USE_AURA)
-  // An object which detects Control+space and Shift+Alt key presses.
-  HotkeyManager hotkey_manager_;
-#endif
 
   // true when DisableHotkeys() is called to temporarily disable IME hotkeys.
   // EnableHotkeys() resets the flag to the default value, false.

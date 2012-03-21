@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/chromeos/background/desktop_background_observer.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
+#include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
@@ -36,8 +38,11 @@
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
+#include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
+#include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
+#include "chrome/browser/chromeos/power/video_property_writer.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -64,23 +69,9 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#endif
 
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
-#include "chrome/browser/chromeos/background/desktop_background_observer.h"
-#endif
-
-#if defined(USE_AURA)
-#include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
-#include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
-#include "chrome/browser/chromeos/power/power_button_observer.h"
-#include "chrome/browser/chromeos/power/video_property_writer.h"
-#endif
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
-#if defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     return base::EVENT_CONTINUE;
@@ -89,34 +80,6 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
   }
-#else
-  virtual void WillProcessEvent(GdkEvent* event) {
-    // On chromeos we want to map Alt-left click to right click.
-    // This code only changes presses and releases. We could decide to also
-    // modify drags and crossings. It doesn't seem to be a problem right now
-    // with our support for context menus (the only real need we have).
-    // There are some inconsistent states both with what we have and what
-    // we would get if we added drags. You could get a right drag without a
-    // right down for example, unless we started synthesizing events, which
-    // seems like more trouble than it's worth.
-    if ((event->type == GDK_BUTTON_PRESS ||
-        event->type == GDK_2BUTTON_PRESS ||
-        event->type == GDK_3BUTTON_PRESS ||
-        event->type == GDK_BUTTON_RELEASE) &&
-        event->button.button == 1 &&
-        event->button.state & GDK_MOD1_MASK) {
-      // Change the button to the third (right) one.
-      event->button.button = 3;
-      // Remove the Alt key and first button state.
-      event->button.state &= ~(GDK_MOD1_MASK | GDK_BUTTON1_MASK);
-      // Add the third (right) button state.
-      event->button.state |= GDK_BUTTON3_MASK;
-    }
-  }
-
-  virtual void DidProcessEvent(GdkEvent* event) {
-  }
-#endif
 };
 
 static base::LazyInstance<MessageLoopObserver> g_message_loop_observer =
@@ -317,10 +280,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
         GetXKeyboard()->SetNumLockEnabled(true);
 #endif
 
-#if defined(USE_AURA)
     initial_browser_window_observer_.reset(
         new chromeos::InitialBrowserWindowObserver);
-#endif
   }
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
@@ -350,13 +311,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Now that the file thread exists we can record our stats.
   chromeos::BootTimesLoader::Get()->RecordChromeMainStats();
-
-#if defined(TOOLKIT_USES_GTK)
-  // Read locale-specific GTK resource information.
-  std::string gtkrc = l10n_util::GetStringUTF8(IDS_LOCALE_GTKRC);
-  if (!gtkrc.empty())
-    gtk_rc_parse_string(gtkrc.c_str());
-#endif
 
   // Trigger prefetching of ownership status.
   chromeos::OwnershipService::GetSharedInstance()->Prewarm();
@@ -413,11 +367,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
-#if defined(OS_CHROMEOS) && defined(USE_ASH)
   // Initialize desktop background observer so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   desktop_background_observer_.reset(new chromeos::DesktopBackgroundObserver);
-#endif
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {
@@ -486,12 +438,10 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // on the background FILE thread.
   chromeos::system::StatisticsProvider::GetInstance();
 
-#if defined(USE_AURA)
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new chromeos::PowerButtonObserver);
   video_property_writer_.reset(new chromeos::VideoPropertyWriter);
-#endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -538,14 +488,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chromeos::WebSocketProxyController::Shutdown();
 
-#if defined(USE_AURA)
   // Let VideoPropertyWriter unregister itself as an observer of the ash::Shell
   // singleton before the shell is destroyed.
   video_property_writer_.reset();
   // Remove PowerButtonObserver attached to a D-Bus client before
   // DBusThreadManager is shut down.
   power_button_observer_.reset();
-#endif
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

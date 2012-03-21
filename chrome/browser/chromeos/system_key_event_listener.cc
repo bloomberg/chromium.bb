@@ -26,7 +26,7 @@
 
 #if defined(USE_WAYLAND)
 #include "base/message_pump_wayland.h"
-#elif !defined(TOOLKIT_USES_GTK)
+#else
 #include "base/message_pump_x.h"
 #endif
 
@@ -35,27 +35,7 @@ using content::UserMetricsAction;
 namespace chromeos {
 
 namespace {
-
-// TODO(yusukes): Remove code for non-Aura version of Chrome OS in this file
-// once Aura version of the OS is released.
-#if !defined(USE_AURA)
-// Percent by which the volume should be changed when a volume key is pressed.
-const double kStepPercentage = 4.0;
-
-// Percent to which the volume should be set when the "volume up" key is pressed
-// while we're muted and have the volume set to 0.  See
-// http://crosbug.com/13618.
-const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
-
-// In ProcessedXEvent(), we should check only Alt, Shift, Control, and Caps Lock
-// modifiers, and should ignore Num Lock, Super, Hyper etc. See
-// http://crosbug.com/21842.
-const unsigned int kSupportedModifiers =
-    Mod1Mask | ShiftMask | ControlMask | LockMask;
-#endif
-
 static SystemKeyEventListener* g_system_key_event_listener = NULL;
-
 }  // namespace
 
 // static
@@ -138,11 +118,7 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
-#if defined(TOOLKIT_USES_GTK)
-  gdk_window_add_filter(NULL, GdkEventFilter, this);
-#else
   MessageLoopForUI::current()->AddObserver(this);
-#endif
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
@@ -152,11 +128,7 @@ SystemKeyEventListener::~SystemKeyEventListener() {
 void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
-#if defined(TOOLKIT_USES_GTK)
-  gdk_window_remove_filter(NULL, GdkEventFilter, this);
-#else
   MessageLoopForUI::current()->RemoveObserver(this);
-#endif
   stopped_ = true;
 }
 
@@ -169,18 +141,6 @@ void SystemKeyEventListener::RemoveCapsLockObserver(
   caps_lock_observers_.RemoveObserver(observer);
 }
 
-#if defined(TOOLKIT_USES_GTK)
-// static
-GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
-                                                       GdkEvent* gevent,
-                                                       gpointer data) {
-  SystemKeyEventListener* listener = static_cast<SystemKeyEventListener*>(data);
-  XEvent* xevent = static_cast<XEvent*>(gxevent);
-
-  return listener->ProcessedXEvent(xevent) ? GDK_FILTER_REMOVE
-                                           : GDK_FILTER_CONTINUE;
-}
-#else  // defined(TOOLKIT_USES_GTK)
 base::EventStatus SystemKeyEventListener::WillProcessEvent(
     const base::NativeEvent& event) {
   return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
@@ -188,7 +148,6 @@ base::EventStatus SystemKeyEventListener::WillProcessEvent(
 
 void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
 }
-#endif  // defined(TOOLKIT_USES_GTK)
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
   uint32 caps_lock_mask = LockMask;
@@ -203,101 +162,15 @@ void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
            True, GrabModeAsync, GrabModeAsync);
 }
 
-#if !defined(USE_AURA)
-void SystemKeyEventListener::OnBrightnessDown() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      DecreaseScreenBrightness(true);
-}
-
-void SystemKeyEventListener::OnBrightnessUp() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      IncreaseScreenBrightness();
-}
-
-void SystemKeyEventListener::OnVolumeMute() {
-  AudioHandler* audio_handler = AudioHandler::GetInstance();
-
-  // Always muting (and not toggling) as per final decision on
-  // http://crosbug.com/3751
-  audio_handler->SetMuted(true);
-
-  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
-                                         audio_handler->IsMuted());
-  ShowVolumeBubble();
-}
-
-void SystemKeyEventListener::OnVolumeDown() {
-  AudioHandler* audio_handler = AudioHandler::GetInstance();
-
-  if (audio_handler->IsMuted())
-    audio_handler->SetVolumePercent(0.0);
-  else
-    audio_handler->AdjustVolumeByPercent(-kStepPercentage);
-
-  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
-                                         audio_handler->IsMuted());
-  ShowVolumeBubble();
-}
-
-void SystemKeyEventListener::OnVolumeUp() {
-  AudioHandler* audio_handler = AudioHandler::GetInstance();
-
-  if (audio_handler->IsMuted()) {
-    audio_handler->SetMuted(false);
-    if (audio_handler->GetVolumePercent() <= 0.1)  // float comparison
-      audio_handler->SetVolumePercent(kVolumePercentOnVolumeUpWhileMuted);
-  } else {
-    audio_handler->AdjustVolumeByPercent(kStepPercentage);
-  }
-
-  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
-                                         audio_handler->IsMuted());
-  ShowVolumeBubble();
-}
-#endif
-
 void SystemKeyEventListener::OnCapsLock(bool enabled) {
   FOR_EACH_OBSERVER(CapsLockObserver,
                     caps_lock_observers_,
                     OnCapsLockChange(enabled));
 }
 
-#if !defined(USE_AURA)
-void SystemKeyEventListener::ShowVolumeBubble() {
-  AudioHandler* audio_handler = AudioHandler::GetInstance();
-  VolumeBubble::GetInstance()->ShowBubble(
-      audio_handler->GetVolumePercent(),
-      !audio_handler->IsMuted());
-  BrightnessBubble::GetInstance()->HideBubble();
-}
-#endif
-
 bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
   input_method::InputMethodManager* input_method_manager =
       input_method::InputMethodManager::GetInstance();
-
-#if !defined(USE_AURA)
-  if (xevent->type == FocusIn) {
-    // This is a workaround for the Shift+Alt+Tab issue (crosbug.com/8855,
-    // crosbug.com/24182). Reset |hotkey_manager| on the Tab key press so that
-    // the manager will not switch current keyboard layout on the subsequent Alt
-    // or Shift key release. Note that when Aura is in use, we don't need this
-    // workaround since the environment does not have the Chrome OS Window
-    // Manager and the Tab key press/release is not consumed by the WM.
-    input_method::HotkeyManager* hotkey_manager =
-        input_method_manager->GetHotkeyManager();
-    hotkey_manager->OnFocus();
-  }
-
-  if (xevent->type == KeyPress || xevent->type == KeyRelease) {
-    // Change the current keyboard layout (or input method) if xevent is one of
-    // the input method hotkeys.
-    input_method::HotkeyManager* hotkey_manager =
-        input_method_manager->GetHotkeyManager();
-    if (hotkey_manager->FilterKeyEvent(*xevent))
-      return true;
-  }
-#endif
 
   if (xevent->type == xkb_event_base_) {
     // TODO(yusukes): Move this part to aura::RootWindowHost.
@@ -329,62 +202,6 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
 
       return true;
     }
-#if !defined(USE_AURA)
-  } else if (xevent->type == KeyPress) {
-    const int32 keycode = xevent->xkey.keycode;
-    if (keycode) {
-      const unsigned int state = (xevent->xkey.state & kSupportedModifiers);
-
-      // Toggle Caps Lock if Shift and Search keys are pressed.
-      // When Aura is in use, the shortcut is handled in Ash.
-      if (XKeycodeToKeysym(ui::GetXDisplay(), keycode, 0) == XK_Super_L) {
-        const bool shift_is_held = (state & ShiftMask);
-        const bool other_mods_are_held = (state & ~(ShiftMask | LockMask));
-
-        // When spoken feedback is enabled, the Search key is used as an
-        // accessibility modifier key.
-        const bool accessibility_enabled =
-            accessibility::IsSpokenFeedbackEnabled();
-
-        if (shift_is_held && !other_mods_are_held && !accessibility_enabled) {
-          input_method_manager->GetXKeyboard()->SetCapsLockEnabled(
-              !caps_lock_is_on_);
-        }
-      }
-
-      // Only doing non-Alt/Shift/Ctrl modified keys
-      if (!(state & (Mod1Mask | ShiftMask | ControlMask))) {
-        if (keycode == key_f6_ || keycode == key_brightness_down_) {
-          if (keycode == key_f6_)
-            content::RecordAction(
-                UserMetricsAction("Accel_BrightnessDown_F6"));
-          OnBrightnessDown();
-          return true;
-        } else if (keycode == key_f7_ || keycode == key_brightness_up_) {
-          if (keycode == key_f7_)
-            content::RecordAction(
-                UserMetricsAction("Accel_BrightnessUp_F7"));
-          OnBrightnessUp();
-          return true;
-        } else if (keycode == key_f8_ || keycode == key_volume_mute_) {
-          if (keycode == key_f8_)
-            content::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
-          OnVolumeMute();
-          return true;
-        } else if (keycode == key_f9_ || keycode == key_volume_down_) {
-          if (keycode == key_f9_)
-            content::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
-          OnVolumeDown();
-          return true;
-        } else if (keycode == key_f10_ || keycode == key_volume_up_) {
-          if (keycode == key_f10_)
-            content::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
-          OnVolumeUp();
-          return true;
-        }
-      }
-    }
-#endif
   }
   return false;
 }

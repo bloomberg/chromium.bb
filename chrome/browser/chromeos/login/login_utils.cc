@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -79,12 +80,8 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/gfx/gl/gl_switches.h"
-
-#if defined(USE_AURA)
-#include "ash/ash_switches.h"
 #include "ui/gfx/compositor/compositor_switches.h"
-#endif
+#include "ui/gfx/gl/gl_switches.h"
 
 using content::BrowserThread;
 
@@ -1051,7 +1048,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
       switches::kTouchDevices,
-#if defined(USE_AURA)
       ash::switches::kDisableAshUberTray,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
@@ -1059,7 +1055,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAuraWindowAnimationsDisabled,
       switches::kUIEnablePartialSwap,
       switches::kUIUseGPUProcess,
-#endif
       switches::kUseGL,
       switches::kUserDataDir,
 #if defined(USE_VIRTUAL_KEYBOARD)

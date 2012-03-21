@@ -130,14 +130,11 @@ XKeyboardImpl::XKeyboardImpl(const InputMethodUtil& util)
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()) {
   num_lock_mask_ = GetNumLockMask();
 
-#if defined(USE_AURA)
   // web_input_event_aurax11.cc seems to assume that Mod2Mask is always assigned
   // to Num Lock.
   // TODO(yusukes): Check the assumption is really okay. If not, modify the Aura
   // code, and then remove the CHECK below.
   CHECK(!is_running_on_chrome_os_ || (num_lock_mask_ == Mod2Mask));
-#endif
-
   GetLockedModifiers(&current_caps_lock_status_, &current_num_lock_status_);
 
   for (size_t i = 0; i < arraysize(kCustomizableKeys); ++i) {
@@ -377,13 +374,6 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
                          use_left_control_key_as_str.c_str(),
                          use_left_alt_key_as_str.c_str(),
                          (KeepRightAlt(layout_name) ? "_keepralt" : ""));
-
-#if !defined(USE_AURA)
-  if ((full_xkb_layout_name.substr(0, 3) != "us+") &&
-      (full_xkb_layout_name.substr(0, 3) != "us(")) {
-    full_xkb_layout_name += ",us";
-  }
-#endif
 
   return full_xkb_layout_name;
 }

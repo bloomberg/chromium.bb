@@ -19,13 +19,8 @@ class Profile;
 
 namespace chromeos {
 
-#if defined(USE_AURA)
 class BalloonCollectionImplAura;
 typedef class BalloonCollectionImplAura BalloonCollectionImplType;
-#else
-class BalloonCollectionImpl;
-typedef class BalloonCollectionImpl BalloonCollectionImplType;
-#endif
 
 // The system notification object handles the display of a system notification
 

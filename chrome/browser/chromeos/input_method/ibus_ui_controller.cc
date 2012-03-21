@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "third_party/mozc/session/candidates_lite.pb.h"
 
-#if defined(HAVE_IBUS) && defined(USE_AURA)
+#if defined(HAVE_IBUS)
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -88,16 +88,13 @@ class IBusUiControllerImpl : public IBusUiController {
   IBusUiControllerImpl()
       : ibus_(NULL),
         ibus_panel_service_(NULL) {
-#if defined(USE_AURA)
     ui::InputMethodIBus* input_method = GetChromeInputMethod();
     DCHECK(input_method);
     input_method->set_ibus_client(scoped_ptr<ui::internal::IBusClient>(
         new IBusChromeOSClientImpl(this)).Pass());
-#endif  // USE_AURA
   }
 
   ~IBusUiControllerImpl() {
-#if defined(USE_AURA)
     ui::InputMethodIBus* input_method = GetChromeInputMethod();
     if (input_method) {
       ui::internal::IBusClient* client = input_method->ibus_client();
@@ -105,7 +102,6 @@ class IBusUiControllerImpl : public IBusUiController {
       DCHECK(client);
       static_cast<IBusChromeOSClientImpl*>(client)->set_ui(NULL);
     }
-#endif  // USE_AURA
     // ibus_panel_service_ depends on ibus_, thus unref it first.
     if (ibus_panel_service_) {
       DisconnectPanelServiceSignals();
@@ -279,7 +275,6 @@ class IBusUiControllerImpl : public IBusUiController {
   }
 
  private:
-#if defined(USE_AURA)
   // A class for customizing the behavior of ui::InputMethodIBus for Chrome OS.
   class IBusChromeOSClientImpl : public ui::internal::IBusClientImpl {
    public:
@@ -338,7 +333,6 @@ class IBusUiControllerImpl : public IBusUiController {
         ash::Shell::GetRootWindow()->GetProperty(
             aura::client::kRootWindowInputMethodKey));
   }
-#endif  // USE_AURA
 
   // Functions that end with Thunk are used to deal with glib callbacks.
   //

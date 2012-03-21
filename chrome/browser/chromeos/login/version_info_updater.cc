@@ -75,11 +75,6 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {
-#if defined(USE_AURA)
-  // Suffix added to the version string on Aura builds.
-  const char *kAuraSuffix = " Aura";
-#endif
-
   if (!base::chromeos::IsRunningOnChromeOS()) {
     if (delegate_) {
       delegate_->OnOSVersionLabelTextUpdated(
@@ -95,11 +90,7 @@ void VersionInfoUpdater::UpdateVersionLabel() {
   std::string label_text = l10n_util::GetStringFUTF8(
       IDS_LOGIN_VERSION_LABEL_FORMAT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-#if defined(USE_AURA)
-      UTF8ToUTF16(version_info.Version() + kAuraSuffix),
-#else
       UTF8ToUTF16(version_info.Version()),
-#endif
       UTF8ToUTF16(version_text_));
 
   if (!enterprise_domain_text_.empty()) {

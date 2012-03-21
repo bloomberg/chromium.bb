@@ -89,10 +89,8 @@ void StatusAreaView::Layout() {
 }
 
 void StatusAreaView::PreferredSizeChanged() {
-#if defined(USE_AURA)
   if (GetWidget())
     GetWidget()->SetSize(GetPreferredSize());
-#endif
   views::AccessiblePaneView::PreferredSizeChanged();
 }
 

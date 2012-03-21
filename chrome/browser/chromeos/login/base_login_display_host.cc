@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -37,22 +39,17 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/rect.h"
-#include "unicode/timezone.h"
-
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
-#endif
+#include "unicode/timezone.h"
 
 namespace {
 
@@ -116,11 +113,9 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   }
 }
 
-#if defined(USE_AURA)
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
-#endif
 
 }  // namespace
 
@@ -173,9 +168,7 @@ void BaseLoginDisplayHost::OnSessionStart() {
   DVLOG(1) << "Session starting";
   // Display host is deleted once animation is completed
   // since sign in screen widget has to stay alive.
-#if defined(USE_AURA)
   StartAnimation();
-#endif
   ShutdownDisplayHost(false);
 }
 
@@ -295,7 +288,6 @@ void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
 }
 
 void BaseLoginDisplayHost::StartAnimation() {
-#if defined(USE_AURA)
   if (ash::Shell::GetInstance()->GetContainer(
           ash::internal::kShellWindowId_DesktopBackgroundContainer)->
           children().empty()) {
@@ -398,7 +390,6 @@ void BaseLoginDisplayHost::StartAnimation() {
       default_container_layer->SetTransform(ui::Transform());
     }
   }
-#endif
 }
 
 void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(

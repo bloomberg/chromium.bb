@@ -24,11 +24,6 @@
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 
-
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/login/lock_window_gtk.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -164,10 +159,6 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 }
 
 void WebUIScreenLockerTester::EmulateWindowManagerReady() {
-#if !defined(USE_AURA)
-  static_cast<LockWindowGtk*>(GetWidget()->native_widget())->
-      OnWindowManagerReady();
-#endif
 }
 
 views::Widget* WebUIScreenLockerTester::GetWidget() const {

@@ -6,22 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_KEY_EVENT_LISTENER_H_
 #pragma once
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 
 typedef union _XEvent XEvent;
 
 namespace chromeos {
-
-// TODO(yusukes): Remove code for non-Aura version of Chrome OS in this file
-// once Aura version of the OS is released.
-#if !defined(USE_AURA)
-class AudioHandler;
-#endif
 
 // SystemKeyEventListener listens for volume related key presses from GDK, then
 // tells the AudioHandler to adjust volume accordingly.  Start by just calling
@@ -57,42 +47,16 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();
 
-#if defined(TOOLKIT_USES_GTK)
-  // This event filter intercepts events before they reach GDK, allowing us to
-  // check for system level keyboard events regardless of which window has
-  // focus.
-  static GdkFilterReturn GdkEventFilter(GdkXEvent* gxevent,
-                                        GdkEvent* gevent,
-                                        gpointer data);
-
-  // MessageLoopForUI::Observer overrides.
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
-#else
   // MessageLoopForUI::Observer overrides.
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#endif
 
   // Tell X we are interested in the specified key/mask combination.
   // CapsLock and Numlock are always ignored.
   void GrabKey(int32 key, uint32 mask);
 
-#if !defined(USE_AURA)
-  void OnBrightnessDown();
-  void OnBrightnessUp();
-  void OnVolumeMute();
-  void OnVolumeDown();
-  void OnVolumeUp();
-#endif
   void OnCapsLock(bool enabled);
-
-#if !defined(USE_AURA)
-  // Displays the volume bubble for the current volume and muting status.
-  // Also hides the brightness bubble if it's being shown.
-  void ShowVolumeBubble();
-#endif
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);

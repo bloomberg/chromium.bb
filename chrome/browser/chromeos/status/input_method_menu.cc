@@ -131,7 +131,6 @@ InputMethodMenu::InputMethodMenu()
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                    content::NotificationService::AllSources());
-#if defined(USE_AURA)
     // On Aura status area is not recreated on sign in. Instead, 2 notifications
     // are sent to Chrome on sign in: NOTIFICATION_LOGIN_USER_CHANGED with
     // StatusAreaViewChromeos::IsLoginMode() and NOTIFICATION_SESSION_STARTED
@@ -142,7 +141,6 @@ InputMethodMenu::InputMethodMenu()
     registrar_.Add(this,
                    chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
-#endif
   }
   AddObservers();
 }
@@ -618,7 +616,6 @@ void InputMethodMenu::Observe(int type,
     // anymore.
     RemoveObservers();
   }
-#if defined(USE_AURA)
   if (type == chrome::NOTIFICATION_SESSION_STARTED) {
     InitializePrefMembers();
     AddObservers();
@@ -626,7 +623,6 @@ void InputMethodMenu::Observe(int type,
     UpdateUIFromInputMethod(manager->GetCurrentInputMethod(),
                             manager->GetNumActiveInputMethods());
   }
-#endif
 }
 
 void InputMethodMenu::SetMinimumWidth(int width) {

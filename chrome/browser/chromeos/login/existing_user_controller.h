@@ -27,10 +27,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_message_listener.h"
-#endif
-
 namespace chromeos {
 
 class LoginDisplayHost;

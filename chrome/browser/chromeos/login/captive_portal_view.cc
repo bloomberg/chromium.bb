@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -32,11 +34,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#endif
 
 using content::WebContents;
 using views::GridLayout;
@@ -319,7 +316,6 @@ void CaptivePortalView::ShowPageInfo(content::WebContents* web_contents,
                                      const GURL& url,
                                      const content::SSLStatus& ssl,
                                      bool show_history) {
-#if defined(USE_AURA)
     PageInfoBubbleView* page_info_bubble =
         new PageInfoBubbleView(
             location_bar_->location_icon_view(),
@@ -330,9 +326,6 @@ void CaptivePortalView::ShowPageInfo(content::WebContents* web_contents,
             ash::internal::kShellWindowId_LockSystemModalContainer));
     CreateViewsBubble(page_info_bubble);
     page_info_bubble->Show();
-#else
-    NOTIMPLEMENTED();
-#endif
 }
 
 PageActionImageView* CaptivePortalView::CreatePageActionImageView(
