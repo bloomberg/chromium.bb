@@ -430,10 +430,16 @@ ntdll.dll!RtlRunOnceBeginInitialize
 ntdll.dll!RtlInitializeCriticalSectionAndSpinCount
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=471
+name=http://code.google.com/p/drmemory/issues/detail?id=471 a
 *!media::AudioRendererAlgorithmOLA::Crossfade<unsigned char>
 *!media::AudioRendererAlgorithmOLA::FillBuffer
 *!media::AudioRendererAlgorithmOLATest_FillBuffer_*
+
+# Uninit reported in copy ctor.  Would be nice if we could specify which ctor
+# overload to suppress.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=471 b
+*!WebCore::FormDataElement::FormDataElement
 
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=473 a
@@ -895,6 +901,26 @@ name=http://code.google.com/p/drmemory/issues/detail?id=113 rpcrt4.dll wildcard
 RPCRT4.dll!*
 
 UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=841 a
+...
+CRYPTNET.dll!I_CryptNetGetConnectivity
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=841 b
+...
+webio.dll!*
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=841 c
+...
+winhttp.dll!*
+
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=841 d
+...
+CRYPTNET.dll!I_CryptNetGetConnectivity
+
+UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=810
 instruction=test   %edx %edx
 USER32.dll!GetClassLongW
@@ -1202,13 +1228,29 @@ name=http://crbug.com/100608
 *!SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
 
 LEAK
-name=http://crbug.com/117538
+name=http://crbug.com/117538 a
 ...
 *!ProfileSyncComponentsFactoryMock::CreateGenericChangeProcessor
 *!browser_sync::UIDataTypeController::Associate
 *!browser_sync::UIDataTypeController::Start
 *!browser_sync::DataTypeManagerImpl::StartNextType
 *!browser_sync::DataTypeManagerImpl::DownloadReady
+
+LEAK
+name=http://crbug.com/117538 b
+...
+*!ProfileSyncComponentsFactoryMock::CreateSharedChangeProcessor
+*!browser_sync::NewNonFrontendDataTypeController::Start
+*!browser_sync::DataTypeManagerImpl::StartNextType
+*!browser_sync::DataTypeManagerImpl::DownloadReady
+
+LEAK
+name=http://crbug.com/117538 c
+...
+*!ProfileSyncComponentsFactoryMock::CreateDataTypeManager
+*!ProfileSyncService::ConfigureDataTypeManager
+*!ProfileSyncService::OnBackendInitialized
+*!TestProfileSyncService::OnBackendInitialized
 
 LEAK
 name=http://crbug.com/117539
@@ -1220,8 +1262,7 @@ name=http://crbug.com/117539
 *!std::vector<net::SSLConfigService::Observer *,std::allocator<net::SSLConfigService::Observer *> >::insert
 *!std::vector<net::SSLConfigService::Observer *,std::allocator<net::SSLConfigService::Observer *> >::push_back
 *!ObserverListBase<net::SSLConfigService::Observer>::AddObserver
-*!net::SSLConfigService::AddObserver
-*!net::SpdySessionPool::SpdySessionPool
+...
 *!net::HttpNetworkSession::HttpNetworkSession
 *!notifier::ProxyResolvingClientSocket::ProxyResolvingClientSocket
 *!notifier::XmppClientSocketFactory::CreateTransportClientSocket
