@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -31,7 +32,8 @@ class Var;
 // This class maintains the "track_with_no_reference_count" but doesn't do
 // anything with it other than call virtual functions. The interesting parts
 // are added by the PluginObjectVar derived from this class.
-class PPAPI_SHARED_EXPORT VarTracker {
+class PPAPI_SHARED_EXPORT VarTracker
+    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   VarTracker();
   virtual ~VarTracker();

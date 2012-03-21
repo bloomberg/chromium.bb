@@ -38,6 +38,7 @@ PluginVarTracker::~PluginVarTracker() {
 
 PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& host_var,
                                               PluginDispatcher* dispatcher) {
+  DCHECK(CalledOnValidThread());
   DCHECK(host_var.type == PP_VARTYPE_OBJECT);
 
   // Get the object.
@@ -63,6 +64,7 @@ PP_Var PluginVarTracker::ReceiveObjectPassRef(const PP_Var& host_var,
 PP_Var PluginVarTracker::TrackObjectWithNoReference(
     const PP_Var& host_var,
     PluginDispatcher* dispatcher) {
+  DCHECK(CalledOnValidThread());
   DCHECK(host_var.type == PP_VARTYPE_OBJECT);
 
   // Get the object.
@@ -80,7 +82,9 @@ PP_Var PluginVarTracker::TrackObjectWithNoReference(
 
 void PluginVarTracker::StopTrackingObjectWithNoReference(
     const PP_Var& plugin_var) {
+  DCHECK(CalledOnValidThread());
   DCHECK(plugin_var.type == PP_VARTYPE_OBJECT);
+
   VarMap::iterator found = GetLiveVar(plugin_var);
   if (found == live_vars_.end()) {
     NOTREACHED();
@@ -93,6 +97,8 @@ void PluginVarTracker::StopTrackingObjectWithNoReference(
 }
 
 PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
+  DCHECK(CalledOnValidThread());
+
   if (plugin_object.type != PP_VARTYPE_OBJECT) {
     NOTREACHED();
     return PP_MakeUndefined();
@@ -113,6 +119,8 @@ PP_Var PluginVarTracker::GetHostObject(const PP_Var& plugin_object) const {
 
 PluginDispatcher* PluginVarTracker::DispatcherForPluginObject(
     const PP_Var& plugin_object) const {
+  DCHECK(CalledOnValidThread());
+
   if (plugin_object.type != PP_VARTYPE_OBJECT)
     return NULL;
 
@@ -128,8 +136,10 @@ PluginDispatcher* PluginVarTracker::DispatcherForPluginObject(
 
 void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
                                          const PP_Var& host_object) {
-  // Convert the host object to a normal var valid in the plugin.
+  DCHECK(CalledOnValidThread());
   DCHECK(host_object.type == PP_VARTYPE_OBJECT);
+
+  // Convert the host object to a normal var valid in the plugin.
   HostVarToPluginVarMap::iterator found = host_var_to_plugin_var_.find(
       HostVar(dispatcher, static_cast<int32>(host_object.value.as_id)));
   if (found == host_var_to_plugin_var_.end()) {

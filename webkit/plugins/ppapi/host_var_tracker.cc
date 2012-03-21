@@ -27,6 +27,8 @@ ArrayBufferVar* HostVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
 }
 
 void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
+  DCHECK(CalledOnValidThread());
+
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
   if (found_instance == instance_map_.end()) {
@@ -46,6 +48,8 @@ void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
+  DCHECK(CalledOnValidThread());
+
   InstanceMap::iterator found_instance = instance_map_.find(
       object_var->pp_instance());
   if (found_instance == instance_map_.end()) {
@@ -73,6 +77,8 @@ void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
 
 NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
                                                     NPObject* np_object) {
+  DCHECK(CalledOnValidThread());
+
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())
     return NULL;  // No such instance.
@@ -86,6 +92,8 @@ NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
 }
 
 int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
+  DCHECK(CalledOnValidThread());
+
   InstanceMap::const_iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return 0;
@@ -93,6 +101,8 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
 }
 
 void HostVarTracker::ForceFreeNPObjectsForInstance(PP_Instance instance) {
+  DCHECK(CalledOnValidThread());
+
   InstanceMap::iterator found_instance = instance_map_.find(instance);
   if (found_instance == instance_map_.end())
     return;  // Nothing to do.

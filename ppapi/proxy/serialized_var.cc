@@ -50,8 +50,10 @@ SerializedVar::Inner::~Inner() {
   }
 }
 
-PP_Var SerializedVar::Inner::GetVar() const {
+PP_Var SerializedVar::Inner::GetVar() {
   DCHECK(serialization_rules_);
+
+  ConvertRawVarData();
   return var_;
 }
 
@@ -60,14 +62,16 @@ void SerializedVar::Inner::SetVar(PP_Var var) {
   // serialization rules pointer already.
   DCHECK(serialization_rules_);
   var_ = var;
+  raw_var_data_.reset(NULL);
 }
 
 void SerializedVar::Inner::ForceSetVarValueForTest(PP_Var value) {
   var_ = value;
+  raw_var_data_.reset(NULL);
 }
 
 void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
-  // When writing to the IPC messages, a serization rules handler should
+  // When writing to the IPC messages, a serialization rules handler should
   // always have been set.
   //
   // When sending a message, it should be difficult to trigger this if you're
@@ -86,6 +90,7 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
   has_been_serialized_ = true;
 #endif
 
+  DCHECK(!raw_var_data_.get());
   m->WriteInt(static_cast<int>(var_.type));
   switch (var_.type) {
     case PP_VARTYPE_UNDEFINED:
@@ -182,9 +187,11 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
       success = IPC::ParamTraits<double>::Read(m, iter, &var_.value.as_double);
       break;
     case PP_VARTYPE_STRING: {
-      std::string string_from_ipc;
-      success = m->ReadString(iter, &string_from_ipc);
-      var_ = StringVar::SwapValidatedUTF8StringIntoPPVar(&string_from_ipc);
+      raw_var_data_.reset(new RawVarData);
+      raw_var_data_->type = PP_VARTYPE_STRING;
+      success = m->ReadString(iter, &raw_var_data_->data);
+      if (!success)
+        raw_var_data_.reset(NULL);
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {
@@ -192,8 +199,9 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
       const char* message_bytes = NULL;
       success = m->ReadData(iter, &message_bytes, &length);
       if (success) {
-        var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-            length, message_bytes);
+        raw_var_data_.reset(new RawVarData);
+        raw_var_data_->type = PP_VARTYPE_ARRAY_BUFFER;
+        raw_var_data_->data.assign(message_bytes, length);
       }
       break;
     }
@@ -213,7 +221,9 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
   // All success cases get here. We avoid writing the type above so that the
   // output param is untouched (defaults to VARTYPE_UNDEFINED) even in the
   // failure case.
-  if (success)
+  // We also don't write the type if |raw_var_data_| is set. |var_| will be
+  // updated lazily when GetVar() is called.
+  if (success && !raw_var_data_.get())
     var_.type = static_cast<PP_VarType>(type);
   return success;
 }
@@ -224,6 +234,28 @@ void SerializedVar::Inner::SetCleanupModeToEndSendPassRef() {
 
 void SerializedVar::Inner::SetCleanupModeToEndReceiveCallerOwned() {
   cleanup_mode_ = END_RECEIVE_CALLER_OWNED;
+}
+
+void SerializedVar::Inner::ConvertRawVarData() {
+  if (!raw_var_data_.get())
+    return;
+
+  DCHECK_EQ(PP_VARTYPE_UNDEFINED, var_.type);
+  switch (raw_var_data_->type) {
+    case PP_VARTYPE_STRING: {
+      var_ = StringVar::SwapValidatedUTF8StringIntoPPVar(
+          &raw_var_data_->data);
+      break;
+    }
+    case PP_VARTYPE_ARRAY_BUFFER: {
+      var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+          raw_var_data_->data.size(), raw_var_data_->data.data());
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+  raw_var_data_.reset(NULL);
 }
 
 // SerializedVar ---------------------------------------------------------------

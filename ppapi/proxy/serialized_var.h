@@ -101,7 +101,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     }
 
     // See outer class's declarations above.
-    PP_Var GetVar() const;
+    PP_Var GetVar();
     void SetVar(PP_Var var);
 
     // For the SerializedVarTestConstructor, this writes the Var value as if
@@ -128,6 +128,21 @@ class PPAPI_PROXY_EXPORT SerializedVar {
       END_RECEIVE_CALLER_OWNED
     };
 
+    // ReadFromMessage() may be called on the I/O thread, e.g., when reading the
+    // reply to a sync message. We cannot use the var tracker on the I/O thread,
+    // which means we cannot create PP_Var for PP_VARTYPE_STRING and
+    // PP_VARTYPE_ARRAY_BUFFER in ReadFromMessage(). So we save the raw var data
+    // and create PP_Var later when GetVar() is called, which should happen on
+    // the main thread.
+    struct RawVarData {
+      PP_VarType type;
+      std::string data;
+    };
+
+    // Converts |raw_var_data_| to |var_|. It is a no-op if |raw_var_data_| is
+    // NULL.
+    void ConvertRawVarData();
+
     // Rules for serializing and deserializing vars for this process type.
     // This may be NULL, but must be set before trying to serialize to IPC when
     // sending, or before converting back to a PP_Var when receiving.
@@ -151,6 +166,11 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     mutable bool has_been_serialized_;
     mutable bool has_been_deserialized_;
 #endif
+
+    // It will be non-NULL if there is PP_VARTYPE_STRING or
+    // PP_VARTYPE_ARRAY_BUFFER data from ReadFromMessage() that hasn't been
+    // converted to PP_Var.
+    scoped_ptr<RawVarData> raw_var_data_;
 
     DISALLOW_COPY_AND_ASSIGN(Inner);
   };
