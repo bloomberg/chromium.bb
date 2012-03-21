@@ -4495,6 +4495,7 @@
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
           ],
           'sources/': [
+            ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/ui/panels/'],

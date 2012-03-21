@@ -2440,6 +2440,7 @@
             'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
+            ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels'],
