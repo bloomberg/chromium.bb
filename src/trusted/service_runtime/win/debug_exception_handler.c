@@ -320,10 +320,9 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   uint32_t exception_flag;
   struct ExceptionFrame new_stack;
   /*
-   * natp_remote and nap_remote point into the debuggee process's
-   * address space, so cannot be dereferenced directly.  We use
-   * pointer types for the convenience of calculating field offsets
-   * and sizes.
+   * natp_remote points into the debuggee process's address space, so
+   * cannot be dereferenced directly.  We use a pointer type for the
+   * convenience of calculating field offsets and sizes.
    */
   struct NaClAppThread *natp_remote;
   struct NaClAppThread appthread_copy;
@@ -364,6 +363,13 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
      */
     return FALSE;
   }
+  /*
+   * We make copies of the debuggee process's NaClApp and
+   * NaClAppThread structs.  We avoid passing these copies to
+   * functions such as NaClIsUserAddr() in case these functions evolve
+   * to expect a real NaClApp that contains pointers to in-process
+   * data structures.
+   */
   if (!READ_MEM(process_handle, natp_remote, &appthread_copy)) {
     return FALSE;
   }
