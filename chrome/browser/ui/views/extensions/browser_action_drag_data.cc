@@ -51,7 +51,7 @@ bool BrowserActionDragData::Read(const ui::OSExchangeData& data) {
 // static
 ui::OSExchangeData::CustomFormat
     BrowserActionDragData::GetBrowserActionCustomFormat() {
-  static ui::OSExchangeData::CustomFormat format;
+  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat, format, ());
   static bool format_valid = false;
 
   if (!format_valid) {

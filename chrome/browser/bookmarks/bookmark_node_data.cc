@@ -82,7 +82,7 @@ bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
 #if defined(TOOLKIT_VIEWS)
 // static
 ui::OSExchangeData::CustomFormat BookmarkNodeData::GetBookmarkCustomFormat() {
-  static ui::OSExchangeData::CustomFormat format;
+  CR_DEFINE_STATIC_LOCAL(ui::OSExchangeData::CustomFormat, format, ());
   static bool format_valid = false;
 
   if (!format_valid) {
