@@ -145,6 +145,8 @@
       # crbug.com/119183
       '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
       '-protector.ProtectorSessionStartupTest.testSessionStartupPrefMigration',
+      # crbug.com/119326
+      '-protector.ProtectorSessionStartupTest.testSessionStartupChangeDismissedOnEdit',
     ],
 
     'win': [
