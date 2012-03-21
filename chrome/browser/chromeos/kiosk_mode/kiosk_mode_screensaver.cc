@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui/screensaver_extension_dialog.h"
@@ -18,13 +18,15 @@
 namespace chromeos {
 
 KioskModeScreensaver::KioskModeScreensaver() {
-  if (chromeos::KioskModeHelper::Get()->is_initialized())
-    Setup();
-  else
-    chromeos::KioskModeHelper::Get()->Initialize(
-        base::Bind(&KioskModeScreensaver::Setup,
-                   base::Unretained(this)));
+  chromeos::KioskModeSettings* kiosk_mode_settings =
+      chromeos::KioskModeSettings::Get();
 
+  if (kiosk_mode_settings->is_initialized()) {
+    Setup();
+  } else {
+    kiosk_mode_settings->Initialize(base::Bind(&KioskModeScreensaver::Setup,
+                                               base::Unretained(this)));
+  }
 }
 
 KioskModeScreensaver::~KioskModeScreensaver() {

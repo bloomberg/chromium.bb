@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -58,10 +58,10 @@ ScreensaverExtensionDialog::ScreensaverExtensionDialog()
 void ScreensaverExtensionDialog::LoadExtension() {
   // If the helper is not initialized, call us again when it is.
   // We can't get the screensaver path till the helper is ready.
-  if (!chromeos::KioskModeHelper::Get()->is_initialized()) {
-    chromeos::KioskModeHelper::Get()->Initialize(
-            base::Bind(&ScreensaverExtensionDialog::LoadExtension,
-                       base::Unretained(this)));
+  if (!chromeos::KioskModeSettings::Get()->is_initialized()) {
+    chromeos::KioskModeSettings::Get()->Initialize(
+        base::Bind(&ScreensaverExtensionDialog::LoadExtension,
+                   base::Unretained(this)));
     return;
   }
 
@@ -70,14 +70,14 @@ void ScreensaverExtensionDialog::LoadExtension() {
 
   scoped_refptr<Extension> screensaver_extension =
       extension_file_util::LoadExtension(
-          FilePath(chromeos::KioskModeHelper::Get()->GetScreensaverPath()),
+          FilePath(chromeos::KioskModeSettings::Get()->GetScreensaverPath()),
           Extension::COMPONENT,
           Extension::NO_FLAGS,
           &error);
 
   if (!screensaver_extension) {
-    LOG(ERROR) << "Could not load screensaver extension from: " <<
-        chromeos::KioskModeHelper::Get()->GetScreensaverPath();
+    LOG(ERROR) << "Could not load screensaver extension from: "
+               << chromeos::KioskModeSettings::Get()->GetScreensaverPath();
     return;
   }
 

@@ -27,7 +27,12 @@ const char* kHandledSettings[] = {
   kReportDeviceBootMode,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
-  kStatsReportingPref
+  kStatsReportingPref,
+  // Kiosk mode settings.
+  kIdleLogoutTimeout,
+  kIdleLogoutWarningDuration,
+  kScreenSaverExtensionId,
+  kScreenSaverTimeout
 };
 
 }  // namespace

@@ -1344,6 +1344,7 @@
         'browser/chromeos/input_method/xkeyboard_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver_unittest.cc',
+        'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
         'browser/chromeos/login/authenticator_unittest.cc',
         'browser/chromeos/login/cookie_fetcher_unittest.cc',

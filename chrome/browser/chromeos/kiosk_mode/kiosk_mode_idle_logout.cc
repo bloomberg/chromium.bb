@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -38,10 +38,10 @@ void CloseIdleLogoutDialog() {
 namespace chromeos {
 
 KioskModeIdleLogout::KioskModeIdleLogout() {
-  if (chromeos::KioskModeHelper::Get()->is_initialized())
+  if (chromeos::KioskModeSettings::Get()->is_initialized())
     Setup();
   else
-    chromeos::KioskModeHelper::Get()->Initialize(
+    chromeos::KioskModeSettings::Get()->Initialize(
         base::Bind(&KioskModeIdleLogout::Setup,
                    base::Unretained(this)));
 }
@@ -63,9 +63,10 @@ void KioskModeIdleLogout::Observe(
       power_manager->AddObserver(this);
 
     // Register for the next Idle for kLoginIdleTimeout event.
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        RequestIdleNotification(
-            chromeos::KioskModeHelper::Get()->GetIdleLogoutTimeout() * 1000);
+    power_manager->RequestIdleNotification(
+        chromeos::KioskModeSettings::Get()->
+            GetIdleLogoutTimeout().InMilliseconds());
+
   }
 }
 
@@ -85,8 +86,8 @@ void KioskModeIdleLogout::ActiveNotify() {
   // Now that we're active, register a request for notification for
   // the next time we go idle for kLoginIdleTimeout seconds.
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestIdleNotification(
-          chromeos::KioskModeHelper::Get()->GetIdleLogoutTimeout() * 1000);
+      RequestIdleNotification(chromeos::KioskModeSettings::Get()->
+          GetIdleLogoutTimeout().InMilliseconds());
 }
 
 static base::LazyInstance<KioskModeIdleLogout>

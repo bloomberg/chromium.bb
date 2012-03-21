@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -91,7 +91,7 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
   }
 
   std::string response;
-  if (chromeos::KioskModeHelper::Get()->IsKioskModeEnabled())
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     response = GetDataResource(IDR_DEMO_USER_LOGIN_HTML);
   else if (path.empty())
     response = GetDataResource(IDR_OOBE_HTML);

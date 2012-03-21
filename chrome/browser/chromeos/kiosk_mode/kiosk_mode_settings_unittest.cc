@@ -1,0 +1,156 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+
+#include "base/bind.h"
+#include "base/message_loop.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/stub_cros_settings_provider.h"
+#include "content/test/test_browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const int kFudgeInt = 100;
+
+}
+
+namespace chromeos {
+
+class KioskModeSettingsTest : public testing::Test {
+ protected:
+  KioskModeSettingsTest()
+      : message_loop_(MessageLoop::TYPE_UI),
+        ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_) {
+    CrosSettings* cros_settings = CrosSettings::Get();
+
+    // Remove the real DeviceSettingsProvider and replace it with a stub.
+    device_settings_provider_ =
+        cros_settings->GetProvider(chromeos::kReportDeviceVersionInfo);
+    EXPECT_TRUE(device_settings_provider_ != NULL);
+    EXPECT_TRUE(
+        cros_settings->RemoveSettingsProvider(device_settings_provider_));
+    cros_settings->AddSettingsProvider(&stub_settings_provider_);
+  }
+
+  ~KioskModeSettingsTest() {
+    // Restore the real DeviceSettingsProvider.
+    CrosSettings* cros_settings = CrosSettings::Get();
+    EXPECT_TRUE(
+      cros_settings->RemoveSettingsProvider(&stub_settings_provider_));
+    cros_settings->AddSettingsProvider(device_settings_provider_);
+  }
+
+  virtual void SetUp() OVERRIDE {
+    if (!KioskModeSettings::Get()->is_initialized()) {
+      KioskModeSettings::Get()->Initialize(
+          base::Bind(&KioskModeSettingsTest::SetUp,
+                     base::Unretained(this)));
+      return;
+    }
+  }
+
+  virtual void TearDown() OVERRIDE {
+    KioskModeSettings::Get()->set_initialized(false);
+  }
+
+  void ReInitialize() {
+    KioskModeSettings::Get()->Initialize(
+        base::Bind(&KioskModeSettingsTest::DoNothing,
+                   base::Unretained(this)));
+  }
+
+  void DisableKioskModeSettings() {
+    KioskModeSettings::Get()->set_initialized(false);
+  }
+
+  void DoNothing() {
+  }
+
+  MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+
+  CrosSettingsProvider* device_settings_provider_;
+  StubCrosSettingsProvider stub_settings_provider_;
+};
+
+TEST_F(KioskModeSettingsTest, DisabledByDefault) {
+  EXPECT_FALSE(KioskModeSettings::Get()->IsKioskModeEnabled());
+}
+
+TEST_F(KioskModeSettingsTest, InstanceAvailable) {
+  EXPECT_TRUE(KioskModeSettings::Get() != NULL);
+  EXPECT_TRUE(KioskModeSettings::Get()->is_initialized());
+}
+
+TEST_F(KioskModeSettingsTest, CheckLogoutTimeoutBounds) {
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+
+  // Check if we go over max.
+  cros_settings->SetInteger(kIdleLogoutTimeout,
+                            kMaxIdleLogoutTimeout + kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta::FromMilliseconds(kMaxIdleLogoutTimeout));
+
+  // Check if we go under min.
+  cros_settings->SetInteger(kIdleLogoutTimeout,
+                            kMinIdleLogoutTimeout - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta::FromMilliseconds(kMinIdleLogoutTimeout));
+
+  // Check if we are between max and min.
+  cros_settings->SetInteger(kIdleLogoutTimeout,
+                            kMaxIdleLogoutTimeout - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta::FromMilliseconds(
+                kMaxIdleLogoutTimeout - kFudgeInt));
+}
+
+TEST_F(KioskModeSettingsTest, CheckLogoutWarningDurationBounds) {
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+
+  // Check if we go over max.
+  cros_settings->SetInteger(kIdleLogoutWarningDuration,
+                            kMaxIdleLogoutWarningDuration + kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta::FromMilliseconds(kMaxIdleLogoutWarningDuration));
+
+  // Check if we go under min.
+  cros_settings->SetInteger(kIdleLogoutWarningDuration,
+                            kMinIdleLogoutWarningDuration - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta::FromMilliseconds(kMinIdleLogoutWarningDuration));
+
+  // Check if we are between max and min.
+  cros_settings->SetInteger(kIdleLogoutWarningDuration,
+                            kMaxIdleLogoutWarningDuration - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta::FromMilliseconds(
+                kMaxIdleLogoutWarningDuration - kFudgeInt));
+}
+
+TEST_F(KioskModeSettingsTest, UnitializedValues) {
+  DisableKioskModeSettings();
+
+  // Time delta initializes to '0' microseconds.
+  EXPECT_LT(KioskModeSettings::Get()->GetScreensaverTimeout(),
+            base::TimeDelta());
+  EXPECT_LT(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta());
+  EXPECT_LT(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta());
+}
+
+}  // namespace chromeos
