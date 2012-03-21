@@ -128,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileAsynchronous) {
 }
 
 // Test that a README file is created for profiles that didn't have it.
-// Fails on some bots, see http://crbug.com/119059.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, FAILS_ProfileReadmeCreated) {
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -149,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, FAILS_ProfileReadmeCreated) {
       content::Source<Profile>(profile.get()));
   observer.Wait();
 
-  ui_test_utils::RunAllPendingInMessageLoop();
+  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 
   // Verify that README exists.
   EXPECT_TRUE(file_util::PathExists(
@@ -175,4 +174,5 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
   // for README creation).
   profile.reset();
   ui_test_utils::RunAllPendingInMessageLoop();
+  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
