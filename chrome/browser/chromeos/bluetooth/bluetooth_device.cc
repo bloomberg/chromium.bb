@@ -48,9 +48,16 @@ void BluetoothDevice::SetObjectPath(const dbus::ObjectPath& object_path) {
 void BluetoothDevice::Update(
     const BluetoothDeviceClient::Properties* properties,
     bool update_state) {
-  address_ = properties->address.value();
-  name_ = properties->name.value();
-  bluetooth_class_ = properties->bluetooth_class.value();
+  std::string address = properties->address.value();
+  std::string name = properties->name.value();
+  uint32 bluetooth_class = properties->bluetooth_class.value();
+
+  if (!address.empty())
+    address_ = address;
+  if (!name.empty())
+    name_ = name;
+  if (bluetooth_class)
+    bluetooth_class_ = bluetooth_class;
 
   if (update_state) {
     // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
