@@ -318,7 +318,8 @@ void ChromeToMobileService::RequestSearch() {
 
   // Deny requests before the delay period has passed since the last request.
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - previous_search_time_;
-  if (elapsed_time.InHours() < kSearchRequestDelayHours)
+  if (!previous_search_time_.is_null() &&
+      elapsed_time.InHours() < kSearchRequestDelayHours)
     return;
 
   RequestData data;
