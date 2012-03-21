@@ -177,6 +177,10 @@ void AfterShutdown() {
 }  // namespace webkit_support
 
 string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
+  // |g_resource_data_pack| is null on unit tests.
+  // But som unit tests reach GetLocalizedString().
+  if (!g_resource_data_pack)
+    return string16();
   base::StringPiece res;
   if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
