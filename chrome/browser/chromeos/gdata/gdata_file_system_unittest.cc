@@ -106,6 +106,7 @@ class GDataFileSystemTest : public testing::Test {
     // Initialize() is called inside file_system_->Initialize().
     EXPECT_CALL(*mock_sync_client_, Initialize(file_system_)).Times(1);
     file_system_->Initialize();
+    file_system_->AddObserver(mock_sync_client_);
 
     RunAllPendingForCache();
   }
@@ -1126,6 +1127,8 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveFiles) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   LoadRootFeedDocument("root_feed.json");
 
   FilePath nonexisting_file(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
@@ -1268,6 +1271,8 @@ TEST_F(GDataFileSystemTest, GetCacheFilePath) {
 }
 
 TEST_F(GDataFileSystemTest, StoreToCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   std::string res_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1284,6 +1289,8 @@ TEST_F(GDataFileSystemTest, StoreToCache) {
 }
 
 TEST_F(GDataFileSystemTest, GetFromCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   std::string res_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
@@ -1310,6 +1317,8 @@ TEST_F(GDataFileSystemTest, GetFromCache) {
 }
 
 TEST_F(GDataFileSystemTest, RemoveFromCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   // Use alphanumeric characters for resource id.
   std::string res_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1334,8 +1343,13 @@ TEST_F(GDataFileSystemTest, RemoveFromCache) {
 }
 
 TEST_F(GDataFileSystemTest, PinAndUnpin) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   std::string res_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
+  EXPECT_CALL(*mock_sync_client_, OnFilePinned(res_id, md5)).Times(2);
+  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(res_id, md5)).Times(1);
+
   // First store a file to cache.
   TestStoreToCache(res_id, md5, GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK);
@@ -1357,6 +1371,9 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
 
   // Pin a non-existent file in cache.
   res_id = "document:1a2b";
+  EXPECT_CALL(*mock_sync_client_, OnFilePinned(res_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(res_id, md5)).Times(1);
+
   num_callback_invocations_ = 0;
   TestPin(res_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1429,6 +1446,8 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
 #endif // BLOCK_TILL_FIXED
 
 TEST_F(GDataFileSystemTest, InitializeCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   PrepareForInitCacheTest();
   TestInitializeCache();
 }
@@ -1453,6 +1472,8 @@ TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
 }
 
 TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   LoadRootFeedDocument("root_feed.json");
 
   // First make sure the file exists in GData.
@@ -1512,6 +1533,8 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileFromDownloads) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -1539,6 +1562,8 @@ TEST_F(GDataFileSystemTest, GetFileFromDownloads) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileFromCache) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =

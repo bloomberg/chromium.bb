@@ -22,6 +22,9 @@ namespace gdata {
 // that get pinned, and queues tasks and starts fetching these files in the
 // background.
 //
+// When the user unpins files on gdata, this client is notified about the
+// files that get unpinned, cancels tasks if these are still in the queue.
+//
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
@@ -51,8 +54,11 @@ class GDataSyncClient : public GDataSyncClientInterface {
   virtual void Initialize(GDataFileSystemInterface* file_system) OVERRIDE;
 
   // GDataFileSystem::Observer overrides.
+  virtual void OnCacheInitialized() OVERRIDE;
   virtual void OnFilePinned(const std::string& resource_id,
                             const std::string& md5) OVERRIDE;
+  virtual void OnFileUnpinned(const std::string& resource_id,
+                              const std::string& md5) OVERRIDE;
 
   // Starts scanning the pinned directory in the cache to collect
   // pinned-but-not-fetched files.

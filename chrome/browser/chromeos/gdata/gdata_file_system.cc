@@ -2289,7 +2289,11 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
     root_->SetCacheMap(cache_map);
   }
 
+  // Notify the observers that cache initialization has completed.
+  FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
+
   // Signal that cache initialization has completed.
+  // This should be the last thing in this function.
   on_cache_initialized_->Signal();
 }
 
@@ -2387,6 +2391,7 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
                                      mode_t mode_bits,
                                      const CacheOperationCallback& callback) {
   OnCacheStatusModified(error, resource_id, md5, mode_bits, callback);
+  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
 }
 
 void GDataFileSystem::OnCacheStatusModified(

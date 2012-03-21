@@ -130,12 +130,23 @@ class GDataFileSystemInterface {
   virtual ~GDataFileSystemInterface() {}
 
   // Used to notify events on the file system.
+  // There is no guarantee on what thread the observers are notified.
+  // Hence, the observers should relay these events to a certain thread
+  // themselves if needed.
   class Observer {
    public:
-    // Trigerred when a file has been pinned, after the cache state is
+    // Triggered when the cache has been initialized.
+    virtual void OnCacheInitialized() {}
+
+    // Triggered when a file has been pinned, after the cache state is
     // updated.
     virtual void OnFilePinned(const std::string& resource_id,
                               const std::string& md5) {}
+
+    // Triggered when a file has been unpinned, after the cache state is
+    // updated.
+    virtual void OnFileUnpinned(const std::string& resource_id,
+                                const std::string& md5) {}
 
    protected:
     virtual ~Observer() {}

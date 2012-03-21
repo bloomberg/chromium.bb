@@ -115,8 +115,22 @@ std::vector<std::string> GDataSyncClient::GetResourceIdInQueueForTesting() {
   return output;
 }
 
+void GDataSyncClient::OnCacheInitialized() {
+  // TODO(satorux): We should initiate the initial scan. I'm too lazy to do
+  // this now.
+  LOG(WARNING) << "Not implemented";
+}
+
 void GDataSyncClient::OnFilePinned(const std::string& resource_id,
                                    const std::string& md5) {
+  // TODO(satorux): As of now, "available offline" column in the file browser
+  // is not clickable and the user action is not propagated to the
+  // GDataFileSystem.  crosbug.com/27961
+  LOG(WARNING) << "Not implemented";
+}
+
+void GDataSyncClient::OnFileUnpinned(const std::string& resource_id,
+                                     const std::string& md5) {
   // TODO(satorux): As of now, "available offline" column in the file browser
   // is not clickable and the user action is not propagated to the
   // GDataFileSystem.  crosbug.com/27961

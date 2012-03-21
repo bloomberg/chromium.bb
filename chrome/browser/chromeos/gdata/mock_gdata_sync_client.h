@@ -19,8 +19,11 @@ class MockGDataSyncClient : public GDataSyncClientInterface {
   virtual ~MockGDataSyncClient();
 
   MOCK_METHOD1(Initialize, void(GDataFileSystemInterface* file_system));
+  MOCK_METHOD0(OnCacheInitialized, void());
   MOCK_METHOD2(OnFilePinned, void(const std::string& resource_id,
                                   const std::string& md5));
+  MOCK_METHOD2(OnFileUnpinned, void(const std::string& resource_id,
+                                    const std::string& md5));
 };
 
 }  // namespace gdata
