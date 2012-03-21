@@ -5782,6 +5782,32 @@
    fun:_Znw*
    fun:_ZN13sync_notifier12_GLOBAL__N_124InvalidationNotifierTest5SetUpEv
 }
+{
+   bug_chromium_os_28149
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadService18GetDownloadManagerEv
+   fun:_ZN5gdata15GDataFileSystem10InitializeEv
+   fun:_ZNK5gdata22GDataFileSystemFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
+   fun:_ZN5gdata22GDataFileSystemFactory13GetForProfileEP7Profile
+   fun:_ZN22FileBrowserEventRouter23ObserveFileSystemEventsEv
+   fun:_ZN16ExtensionService16InitEventRoutersEv
+   fun:_ZN11ProfileImpl14InitExtensionsEb
+   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
+   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
+   fun:_ZN14ProfileManager10AddProfileEP7Profile
+   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileEv
+   fun:_ZN8chromeos12_GLOBAL__N_118SystemTrayDelegateC1EPN3ash10SystemTrayE
+   fun:_ZN8chromeos24CreateSystemTrayDelegateEPN3ash10SystemTrayE
+   fun:_ZN19ChromeShellDelegate24CreateSystemTrayDelegateEPN3ash10SystemTrayE
+   fun:_ZN3ash5Shell4InitEv
+   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
+   fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
+   fun:_ZN22ChromeBrowserMainParts14PreProfileInitEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
