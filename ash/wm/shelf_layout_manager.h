@@ -60,11 +60,25 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
 
+  views::Widget* launcher_widget() {
+    return launcher_ ? launcher_->widget() : NULL;
+  }
+  const views::Widget* launcher_widget() const {
+    return launcher_ ? launcher_->widget() : NULL;
+  }
+  views::Widget* status() { return status_; }
+
+  bool in_layout() const { return in_layout_; }
+
+  // See description above field.
+  int shelf_height() const { return shelf_height_; }
+
   // Returns the bounds the specified window should be when maximized.
   gfx::Rect GetMaximizedWindowBounds(aura::Window* window) const;
   gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window) const;
 
-  bool in_layout() const { return in_layout_; }
+  // The launcher is typically created after the layout manager.
+  void SetLauncher(Launcher* launcher);
 
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.
@@ -79,16 +93,6 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
   void SetWindowOverlapsShelf(bool value);
-
-  void SetLauncher(Launcher* launcher);
-  views::Widget* launcher() { return launcher_ ? launcher_->widget() : NULL; }
-  const views::Widget* launcher() const {
-    return launcher_ ? launcher_->widget() : NULL;
-  }
-  views::Widget* status() { return status_; }
-
-  // See description above field.
-  int shelf_height() const { return shelf_height_; }
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;

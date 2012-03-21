@@ -37,13 +37,11 @@ const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
-      shelf_height_(-1),
+      shelf_height_(status->GetWindowScreenBounds().height()),
       launcher_(NULL),
       status_(status),
       window_overlaps_shelf_(false),
       root_window_(NULL) {
-  gfx::Rect status_bounds = status->GetWindowScreenBounds();
-  shelf_height_ = status_bounds.height();
   root_window_ = status->GetNativeView()->GetRootWindow();
 }
 
@@ -67,14 +65,25 @@ gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
   return bounds;
 }
 
+void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
+  if (launcher == launcher_)
+    return;
+
+  launcher_ = launcher;
+  shelf_height_ =
+      std::max(status_->GetWindowScreenBounds().height(),
+               launcher_widget()->GetWindowScreenBounds().height());
+  LayoutShelf();
+}
+
 void ShelfLayoutManager::LayoutShelf() {
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   StopAnimating();
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  if (launcher()) {
-    GetLayer(launcher())->SetOpacity(target_bounds.opacity);
-    launcher()->SetBounds(target_bounds.launcher_bounds);
+  if (launcher_widget()) {
+    GetLayer(launcher_widget())->SetOpacity(target_bounds.opacity);
+    launcher_widget()->SetBounds(target_bounds.launcher_bounds);
     launcher_->SetStatusWidth(
         target_bounds.status_bounds.width());
   }
@@ -105,14 +114,14 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state,
   state_ = state;
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  if (launcher()) {
+  if (launcher_widget()) {
     ui::ScopedLayerAnimationSettings launcher_animation_setter(
-        GetLayer(launcher())->GetAnimator());
+        GetLayer(launcher_widget())->GetAnimator());
     launcher_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(130));
     launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
-    GetLayer(launcher())->SetBounds(target_bounds.launcher_bounds);
-    GetLayer(launcher())->SetOpacity(target_bounds.opacity);
+    GetLayer(launcher_widget())->SetBounds(target_bounds.launcher_bounds);
+    GetLayer(launcher_widget())->SetOpacity(target_bounds.opacity);
   }
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(status_)->GetAnimator());
@@ -124,20 +133,15 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state,
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
-  launcher_->SetRendersBackground(GetShelfRendersBackground(), speed);
+  if (launcher_)
+    launcher_->SetRendersBackground(GetShelfRendersBackground(), speed);
 }
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   window_overlaps_shelf_ = value;
-  launcher_->SetRendersBackground(GetShelfRendersBackground(),
-                                  Launcher::CHANGE_ANIMATE);
-}
-
-void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
-  launcher_ = launcher;
-  gfx::Rect launcher_bounds = launcher_->widget()->GetWindowScreenBounds();
-  gfx::Rect status_bounds = status_->GetWindowScreenBounds();
-  shelf_height_ = std::max(launcher_bounds.height(), status_bounds.height());
+  if (launcher_)
+    launcher_->SetRendersBackground(GetShelfRendersBackground(),
+                                    Launcher::CHANGE_ANIMATE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,8 +172,8 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 // ShelfLayoutManager, private:
 
 void ShelfLayoutManager::StopAnimating() {
-  if (launcher())
-    GetLayer(launcher())->GetAnimator()->StopAnimating();
+  if (launcher_widget())
+    GetLayer(launcher_widget())->GetAnimator()->StopAnimating();
   GetLayer(status_)->GetAnimator()->StopAnimating();
 }
 
@@ -196,8 +200,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
       available_bounds.right() - status_bounds.width(),
       y + shelf_height_ - status_bounds.height(),
       status_bounds.width(), status_bounds.height());
-  if (launcher()) {
-    gfx::Rect launcher_bounds(launcher()->GetWindowScreenBounds());
+  if (launcher_widget()) {
+    gfx::Rect launcher_bounds(launcher_widget()->GetWindowScreenBounds());
     target_bounds->launcher_bounds = gfx::Rect(
         available_bounds.x(),
         y + (shelf_height_ - launcher_bounds.height()) / 2,

@@ -45,8 +45,8 @@ class ASH_EXPORT Launcher : public ui::AnimationDelegate {
   explicit Launcher(aura::Window* window_container);
   virtual ~Launcher();
 
-  // Sets the focus cycler.
-  void SetFocusCycler(const internal::FocusCycler* focus_cycler);
+  // Sets the focus cycler.  Also adds the launcher to the cycle.
+  void SetFocusCycler(internal::FocusCycler* focus_cycler);
 
   // Sets whether the launcher renders a background. Default is false, but is
   // set to true if a window overlaps the shelf.

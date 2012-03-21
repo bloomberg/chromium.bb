@@ -185,8 +185,9 @@ Launcher::Launcher(aura::Window* window_container)
 Launcher::~Launcher() {
 }
 
-void Launcher::SetFocusCycler(const internal::FocusCycler* focus_cycler) {
+void Launcher::SetFocusCycler(internal::FocusCycler* focus_cycler) {
   delegate_view_->set_focus_cycler(focus_cycler);
+  focus_cycler->AddWidget(widget_.get());
 }
 
 void Launcher::SetRendersBackground(bool value, BackgroundChangeSpeed speed) {

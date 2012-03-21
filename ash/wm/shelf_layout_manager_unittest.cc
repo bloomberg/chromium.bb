@@ -68,13 +68,13 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   shelf->SetState(ShelfLayoutManager::HIDDEN,
                   ShelfLayoutManager::AUTO_HIDE_HIDDEN);
   // Run the animation to completion.
-  StepWidgetLayerAnimatorToEnd(shelf->launcher());
+  StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0, monitor->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.
-  EXPECT_GE(shelf->launcher()->GetNativeView()->bounds().y(),
+  EXPECT_GE(shelf->launcher_widget()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
   EXPECT_GE(shelf->status()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
@@ -83,7 +83,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   shelf->SetState(ShelfLayoutManager::VISIBLE,
                   ShelfLayoutManager::AUTO_HIDE_HIDDEN);
   // Run the animation to completion.
-  StepWidgetLayerAnimatorToEnd(shelf->launcher());
+  StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
   EXPECT_EQ(shelf->shelf_height() +
@@ -91,7 +91,8 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             monitor->work_area_insets().bottom());
 
   // Make sure the bounds of the two widgets changed.
-  gfx::Rect launcher_bounds(shelf->launcher()->GetNativeView()->bounds());
+  gfx::Rect launcher_bounds(
+      shelf->launcher_widget()->GetNativeView()->bounds());
   int bottom = gfx::Screen::GetPrimaryMonitorBounds().bottom() -
       shelf->shelf_height();
   EXPECT_EQ(launcher_bounds.y(),
@@ -120,7 +121,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0, monitor->work_area_insets().bottom());
   // Make sure the bounds of the two widgets changed.
-  EXPECT_GE(shelf->launcher()->GetNativeView()->bounds().y(),
+  EXPECT_GE(shelf->launcher_widget()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
   EXPECT_GE(shelf->status()->GetNativeView()->bounds().y(),
             gfx::Screen::GetPrimaryMonitorBounds().bottom());

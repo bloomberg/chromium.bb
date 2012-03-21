@@ -788,6 +788,10 @@ enum NotificationType {
   // Sent when a chromium os user logs in.
   NOTIFICATION_LOGIN_USER_CHANGED,
 
+  // Sent immediately after the logged-in user's profile is ready.
+  // The details are a Profile object.
+  NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+
   // Sent when the chromium session is first started. If this is a new user this
   // will not be sent until a profile picture has been selected, unlike
   // NOTIFICATION_LOGIN_USER_CHANGED which is sent immediately after the user
