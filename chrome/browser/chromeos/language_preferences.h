@@ -166,6 +166,9 @@ extern const int kXkbAutoRepeatIntervalInMs;
 // the login screen.
 extern const char kPreferredKeyboardLayout[];
 
+// Registers non-user prefs for the default keyboard layout on the login screen.
+void RegisterPrefs(PrefService* local_state);
+
 }  // language_prefs
 }  // chromeos
 

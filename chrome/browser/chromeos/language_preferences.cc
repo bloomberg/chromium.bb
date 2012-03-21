@@ -394,5 +394,15 @@ const int kXkbAutoRepeatDelayInMs = 500;
 const int kXkbAutoRepeatIntervalInMs = 50;
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 
+void RegisterPrefs(PrefService* local_state) {
+  // We use an empty string here rather than a hardware keyboard layout name
+  // since input_method::GetHardwareInputMethodId() might return a fallback
+  // layout name if local_state->RegisterStringPref(kHardwareKeyboardLayout)
+  // is not called yet.
+  local_state->RegisterStringPref(kPreferredKeyboardLayout,
+                                  "",
+                                  PrefService::UNSYNCABLE_PREF);
+}
+
 }  // namespace language_prefs
 }  // namespace chromeos

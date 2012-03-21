@@ -151,7 +151,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(local_state);
-  chromeos::InputMethodMenu::RegisterPrefs(local_state);
+  chromeos::language_prefs::RegisterPrefs(local_state);
   chromeos::NetworkMenuButton::RegisterPrefs(local_state);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
   chromeos::UserManager::RegisterPrefs(local_state);
