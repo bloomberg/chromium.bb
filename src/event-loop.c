@@ -39,6 +39,7 @@ struct wl_event_loop {
 	int epoll_fd;
 	struct wl_list check_list;
 	struct wl_list idle_list;
+	struct wl_list destroy_list;
 };
 
 struct wl_event_source_interface {
@@ -52,11 +53,11 @@ struct wl_event_source {
 	struct wl_event_loop *loop;
 	struct wl_list link;
 	void *data;
+	int fd;
 };
 
 struct wl_event_source_fd {
 	struct wl_event_source base;
-	int fd;
 	wl_event_loop_fd_func_t func;
 };
 
@@ -73,21 +74,15 @@ wl_event_source_fd_dispatch(struct wl_event_source *source,
 	if (ep->events & EPOLLOUT)
 		mask |= WL_EVENT_WRITABLE;
 
-	return fd_source->func(fd_source->fd, mask, fd_source->base.data);
+	return fd_source->func(source->fd, mask, source->data);
 }
 
 static int
 wl_event_source_fd_remove(struct wl_event_source *source)
 {
-	struct wl_event_source_fd *fd_source =
-		(struct wl_event_source_fd *) source;
 	struct wl_event_loop *loop = source->loop;
-	int fd;
 
-	fd = fd_source->fd;
-	free(source);
-
-	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, source->fd, NULL);
 }
 
 struct wl_event_source_interface fd_source_interface = {
@@ -111,7 +106,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 	source->base.interface = &fd_source_interface;
 	source->base.loop = loop;
 	wl_list_init(&source->base.link);
-	source->fd = fd;
+	source->base.fd = fd;
 	source->func = func;
 	source->base.data = data;
 
@@ -133,8 +128,6 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 WL_EXPORT int
 wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 {
-	struct wl_event_source_fd *fd_source =
-		(struct wl_event_source_fd *) source;
 	struct wl_event_loop *loop = source->loop;
 	struct epoll_event ep;
 
@@ -145,13 +138,11 @@ wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 		ep.events |= EPOLLOUT;
 	ep.data.ptr = source;
 
-	return epoll_ctl(loop->epoll_fd,
-			 EPOLL_CTL_MOD, fd_source->fd, &ep);
+	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_MOD, source->fd, &ep);
 }
 
 struct wl_event_source_timer {
 	struct wl_event_source base;
-	int fd;
 	wl_event_loop_timer_func_t func;
 };
 
@@ -164,7 +155,7 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 	uint64_t expires;
 	int len;
 
-	len = read(timer_source->fd, &expires, sizeof expires);
+	len = read(source->fd, &expires, sizeof expires);
 	if (len != sizeof expires)
 		/* Is there anything we can do here?  Will this ever happen? */
 		fprintf(stderr, "timerfd read error: %m\n");
@@ -175,11 +166,7 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 static int
 wl_event_source_timer_remove(struct wl_event_source *source)
 {
-	struct wl_event_source_timer *timer_source =
-		(struct wl_event_source_timer *) source;
-
-	close(timer_source->fd);
-	free(source);
+	close(source->fd);
 	return 0;
 }
 
@@ -195,6 +182,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 {
 	struct wl_event_source_timer *source;
 	struct epoll_event ep;
+	int fd;
 
 	source = malloc(sizeof *source);
 	if (source == NULL)
@@ -204,12 +192,13 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	source->base.loop = loop;
 	wl_list_init(&source->base.link);
 
-	source->fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
-	if (source->fd < 0) {
+	fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+	if (fd < 0) {
 		fprintf(stderr, "could not create timerfd\n: %m");
 		free(source);
 		return NULL;
 	}
+	source->base.fd = fd;
 
 	source->func = func;
 	source->base.data = data;
@@ -218,8 +207,8 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	ep.events = EPOLLIN;
 	ep.data.ptr = source;
 
-	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, source->fd, &ep) < 0) {
-		close(source->fd);
+	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ep) < 0) {
+		close(source->base.fd);
 		free(source);
 		return NULL;
 	}
@@ -230,15 +219,13 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 WL_EXPORT int
 wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 {
-	struct wl_event_source_timer *timer_source =
-		(struct wl_event_source_timer *) source;
 	struct itimerspec its;
 
 	its.it_interval.tv_sec = 0;
 	its.it_interval.tv_nsec = 0;
 	its.it_value.tv_sec = ms_delay / 1000;
 	its.it_value.tv_nsec = (ms_delay % 1000) * 1000 * 1000;
-	if (timerfd_settime(timer_source->fd, 0, &its, NULL) < 0) {
+	if (timerfd_settime(source->fd, 0, &its, NULL) < 0) {
 		fprintf(stderr, "could not set timerfd\n: %m");
 		return -1;
 	}
@@ -248,7 +235,6 @@ wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 
 struct wl_event_source_signal {
 	struct wl_event_source base;
-	int fd;
 	int signal_number;
 	wl_event_loop_signal_func_t func;
 };
@@ -262,7 +248,7 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 	struct signalfd_siginfo signal_info;
 	int len;
 
-	len = read(signal_source->fd, &signal_info, sizeof signal_info);
+	len = read(source->fd, &signal_info, sizeof signal_info);
 	if (len != sizeof signal_info)
 		/* Is there anything we can do here?  Will this ever happen? */
 		fprintf(stderr, "signalfd read error: %m\n");
@@ -274,11 +260,7 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 static int
 wl_event_source_signal_remove(struct wl_event_source *source)
 {
-	struct wl_event_source_signal *signal_source =
-		(struct wl_event_source_signal *) source;
-
-	close(signal_source->fd);
-	free(source);
+	close(source->fd);
 	return 0;
 }
 
@@ -296,6 +278,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	struct wl_event_source_signal *source;
 	struct epoll_event ep;
 	sigset_t mask;
+	int fd;
 
 	source = malloc(sizeof *source);
 	if (source == NULL)
@@ -308,12 +291,13 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
-	source->fd = signalfd(-1, &mask, SFD_CLOEXEC);
-	if (source->fd < 0) {
+	fd = signalfd(-1, &mask, SFD_CLOEXEC);
+	if (source->base.fd < 0) {
 		fprintf(stderr, "could not create fd to watch signal\n: %m");
 		free(source);
 		return NULL;
 	}
+	source->base.fd = fd;
 	sigprocmask(SIG_BLOCK, &mask, NULL);
 
 	source->func = func;
@@ -323,8 +307,8 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	ep.events = EPOLLIN;
 	ep.data.ptr = source;
 
-	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, source->fd, &ep) < 0) {
-		close(source->fd);
+	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ep) < 0) {
+		close(fd);
 		free(source);
 		return NULL;
 	}
@@ -337,17 +321,9 @@ struct wl_event_source_idle {
 	wl_event_loop_idle_func_t func;
 };
 
-static int
-wl_event_source_idle_remove(struct wl_event_source *source)
-{
-	free(source);
-
-	return 0;
-}
-
 struct wl_event_source_interface idle_source_interface = {
 	NULL,
-	wl_event_source_idle_remove
+	NULL
 };
 
 WL_EXPORT struct wl_event_source *
@@ -363,6 +339,7 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 	source->base.interface = &idle_source_interface;
 	source->base.loop = loop;
+	source->base.fd = 0;
 
 	source->func = func;
 	source->base.data = data;
@@ -381,12 +358,29 @@ wl_event_source_check(struct wl_event_source *source)
 WL_EXPORT int
 wl_event_source_remove(struct wl_event_source *source)
 {
+	struct wl_event_loop *loop = source->loop;
+
 	if (!wl_list_empty(&source->link))
 		wl_list_remove(&source->link);
 
-	source->interface->remove(source);
+	if (source->interface->remove)
+		source->interface->remove(source);
+
+	source->fd = -1;
+	wl_list_insert(&loop->destroy_list, &source->link);
 
 	return 0;
+}
+
+static void
+wl_event_loop_process_destroy_list(struct wl_event_loop *loop)
+{
+	struct wl_event_source *source, *next;
+
+	wl_list_for_each_safe(source, next, &loop->destroy_list, link)
+		free(source);
+
+	wl_list_init(&loop->destroy_list);
 }
 
 WL_EXPORT struct wl_event_loop *
@@ -405,6 +399,7 @@ wl_event_loop_create(void)
 	}
 	wl_list_init(&loop->check_list);
 	wl_list_init(&loop->idle_list);
+	wl_list_init(&loop->destroy_list);
 
 	return loop;
 }
@@ -412,6 +407,7 @@ wl_event_loop_create(void)
 WL_EXPORT void
 wl_event_loop_destroy(struct wl_event_loop *loop)
 {
+	wl_event_loop_process_destroy_list(loop);
 	close(loop->epoll_fd);
 	free(loop);
 }
@@ -459,8 +455,11 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 	n = 0;
 	for (i = 0; i < count; i++) {
 		source = ep[i].data.ptr;
-		n += source->interface->dispatch(source, &ep[i]);
+		if (source->fd != -1)
+			n += source->interface->dispatch(source, &ep[i]);
 	}
+
+	wl_event_loop_process_destroy_list(loop);
 
 	do {
 		n = post_dispatch_check(loop);
