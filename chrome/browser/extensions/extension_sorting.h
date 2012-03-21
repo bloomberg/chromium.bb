@@ -14,12 +14,16 @@
 #include "chrome/common/string_ordinal.h"
 
 class ExtensionScopedPrefs;
+class ExtensionServiceInterface;
 
 class ExtensionSorting {
  public:
   explicit ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
                             PrefService* pref_service);
   ~ExtensionSorting();
+
+  // Set up the ExtensionService to inform of changes that require syncing.
+  void SetExtensionService(ExtensionServiceInterface* extension_service);
 
   // Properly initialize ExtensionSorting internal values that require
   // |extension_ids|.
@@ -133,8 +137,13 @@ class ExtensionSorting {
                             const StringOrdinal& page_ordinal,
                             const StringOrdinal& app_launch_ordinal);
 
+  // Syncs the extension if needed. It is an error to call this if the
+  // extension is not an application.
+  void SyncIfNeeded(const std::string& extension_id);
+
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
   PrefService* pref_service_;  // Weak.
+  ExtensionServiceInterface* extension_service_;  // Weak.
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of
   // app launch ordinals that exist on that page. This is used for mapping

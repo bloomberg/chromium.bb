@@ -124,6 +124,8 @@ class ExtensionServiceInterface : public SyncableService {
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) = 0;
 
+  virtual void SyncExtensionChangeIfNeeded(const Extension& extension) = 0;
+
   virtual bool is_ready() = 0;
 };
 
@@ -225,17 +227,6 @@ class ExtensionService
 
   virtual void SetAppNotificationDisabled(const std::string& extension_id,
       bool value);
-
-  // Getters and setters for the position of Apps in the NTP. The setters
-  // will trigger a sync if needed.
-  // The getters return invalid StringOridinals for non-app extensions and
-  // setting ordinals for non-apps is an error.
-  StringOrdinal GetAppLaunchOrdinal(const std::string& extension_id) const;
-  void SetAppLaunchOrdinal(const std::string& extension_id,
-                           const StringOrdinal& app_launch_ordinal);
-  StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
-  void SetPageOrdinal(const std::string& extension_id,
-                      const StringOrdinal& page_ordinal);
 
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor. This will
@@ -373,6 +364,10 @@ class ExtensionService
 
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
+
+  // Notifies Sync (if needed) of a newly-installed extension or a change to
+  // an existing extension.
+  virtual void SyncExtensionChangeIfNeeded(const Extension& extension) OVERRIDE;
 
   // The App that represents the web store.
   const Extension* GetWebStoreApp();
@@ -629,10 +624,6 @@ class ExtensionService
     std::string mime_type;
   };
   typedef std::list<NaClModuleInfo> NaClModuleInfoList;
-
-  // Notifies Sync (if needed) of a newly-installed extension or a change to
-  // an existing extension.
-  void SyncExtensionChangeIfNeeded(const Extension& extension);
 
   // Get the appropriate SyncBundle, given some representation of Sync data.
   SyncBundle* GetSyncBundleForExtension(const Extension& extension);

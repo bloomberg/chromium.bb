@@ -43,8 +43,10 @@ bool AppState::Equals(const AppState& other) const {
 void LoadApp(ExtensionService* extension_service,
              const std::string& id,
              AppState* app_state) {
-  app_state->app_launch_ordinal = extension_service->GetAppLaunchOrdinal(id);
-  app_state->page_ordinal = extension_service->GetPageOrdinal(id);
+  app_state->app_launch_ordinal = extension_service->extension_prefs()->
+      extension_sorting()->GetAppLaunchOrdinal(id);
+  app_state->page_ordinal = extension_service->extension_prefs()->
+      extension_sorting()->GetPageOrdinal(id);
 }
 
 // Returns a map from |profile|'s installed extensions to their state.
@@ -139,36 +141,37 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
 
 StringOrdinal SyncAppHelper::GetPageOrdinalForApp(Profile* profile,
                                                   const std::string& name) {
-  return profile->GetExtensionService()->GetPageOrdinal(
-      SyncExtensionHelper::NameToId(name));
+  return profile->GetExtensionService()->extension_prefs()->
+      extension_sorting()->GetPageOrdinal(SyncExtensionHelper::NameToId(name));
 }
 
 void SyncAppHelper::SetPageOrdinalForApp(Profile* profile,
                                          const std::string& name,
                                          const StringOrdinal& page_ordinal) {
-  profile->GetExtensionService()->SetPageOrdinal(
-      SyncExtensionHelper::NameToId(name), page_ordinal);
+  profile->GetExtensionService()->extension_prefs()->extension_sorting()->
+      SetPageOrdinal(SyncExtensionHelper::NameToId(name), page_ordinal);
 }
 
 StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name) {
-  return profile->GetExtensionService()->GetAppLaunchOrdinal(
-      SyncExtensionHelper::NameToId(name));
+  return profile->GetExtensionService()->extension_prefs()->
+      extension_sorting()->GetAppLaunchOrdinal(
+          SyncExtensionHelper::NameToId(name));
 }
 
 void SyncAppHelper::SetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name,
     const StringOrdinal& app_launch_ordinal) {
-  profile->GetExtensionService()->SetAppLaunchOrdinal(
-      SyncExtensionHelper::NameToId(name),
-      app_launch_ordinal);
+  profile->GetExtensionService()->extension_prefs()->extension_sorting()->
+      SetAppLaunchOrdinal(SyncExtensionHelper::NameToId(name),
+                          app_launch_ordinal);
 }
 
 void SyncAppHelper::FixNTPOrdinalCollisions(Profile* profile) {
-  profile->GetExtensionService()->extension_prefs()->
-      extension_sorting()->FixNTPOrdinalCollisions();
+  profile->GetExtensionService()->extension_prefs()->extension_sorting()->
+      FixNTPOrdinalCollisions();
 }
 
 SyncAppHelper::SyncAppHelper() : setup_completed_(false) {}

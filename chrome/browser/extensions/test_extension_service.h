@@ -60,6 +60,8 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) OVERRIDE;
+
+  virtual void SyncExtensionChangeIfNeeded(const Extension& extension) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_

@@ -2008,7 +2008,6 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
                                     FilePath(FILE_PATH_LITERAL("web_store")));
   service_->Init();
 
-
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
   EXPECT_TRUE(
       sorting->GetPageOrdinal(extension_misc::kWebStoreAppId).IsValid());
@@ -4119,7 +4118,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
     EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
   }
 
-  service_->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
+  ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
+  sorting->SetAppLaunchOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 1U);
@@ -4128,7 +4128,7 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
     EXPECT_TRUE(initial_ordinal.Equal(data.page_ordinal()));
   }
 
-  service_->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
+  sorting->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
   {
     SyncDataList list = service_->GetAllSyncData(syncable::APPS);
     ASSERT_EQ(list.size(), 1U);

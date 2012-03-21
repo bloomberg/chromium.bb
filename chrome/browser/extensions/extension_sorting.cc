@@ -28,10 +28,16 @@ const char kPrefPageOrdinal[] = "page_ordinal";
 ExtensionSorting::ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
                                    PrefService* pref_service)
     : extension_scoped_prefs_(extension_scoped_prefs),
-      pref_service_(pref_service) {
+      pref_service_(pref_service),
+      extension_service_(NULL) {
 }
 
 ExtensionSorting::~ExtensionSorting() {
+}
+
+void ExtensionSorting::SetExtensionService(
+    ExtensionServiceInterface* extension_service) {
+  extension_service_ = extension_service;
 }
 
 void ExtensionSorting::Initialize(
@@ -277,6 +283,7 @@ void ExtensionSorting::SetAppLaunchOrdinal(
       extension_id,
       kPrefAppLaunchOrdinal,
       new_value);
+  SyncIfNeeded(extension_id);
 }
 
 StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
@@ -344,7 +351,7 @@ StringOrdinal ExtensionSorting::GetPageOrdinal(const std::string& extension_id)
 }
 
 void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
-                                    const StringOrdinal& new_page_ordinal) {
+                                      const StringOrdinal& new_page_ordinal) {
   // No work is required if the old and new values are the same.
   if (new_page_ordinal.EqualOrBothInvalid(GetPageOrdinal(extension_id)))
     return;
@@ -362,6 +369,7 @@ void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
       extension_id,
       kPrefPageOrdinal,
       new_value);
+  SyncIfNeeded(extension_id);
 }
 
 void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {
@@ -487,6 +495,18 @@ void ExtensionSorting::RemoveOrdinalMapping(
     if (it->second == extension_id) {
       page_map->second.erase(it);
       break;
+    }
+  }
+}
+
+void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
+  if (extension_service_) {
+    const Extension* ext =
+        extension_service_->GetInstalledExtension(extension_id);
+
+    if (ext) {
+      CHECK(ext->is_app());
+      extension_service_->SyncExtensionChangeIfNeeded(*ext);
     }
   }
 }

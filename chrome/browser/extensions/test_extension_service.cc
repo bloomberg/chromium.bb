@@ -105,3 +105,8 @@ void TestExtensionService::UnloadExtension(
     extension_misc::UnloadedExtensionReason reason) {
   ADD_FAILURE();
 }
+
+void TestExtensionService::SyncExtensionChangeIfNeeded(
+    const Extension& extension) {
+  ADD_FAILURE();
+}
