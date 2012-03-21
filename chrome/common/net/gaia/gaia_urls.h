@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,8 @@ class GaiaUrls {
   const std::string& oauth2_token_url();
   const std::string& oauth2_issue_token_url();
 
+  const std::string& gaia_login_form_realm();
+
  private:
   GaiaUrls();
   ~GaiaUrls();
@@ -69,6 +71,8 @@ class GaiaUrls {
   std::string client_login_to_oauth2_url_;
   std::string oauth2_token_url_;
   std::string oauth2_issue_token_url_;
+
+  std::string gaia_login_form_realm_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaUrls);
 };

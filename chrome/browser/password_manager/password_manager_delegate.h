@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,10 @@ class PasswordManagerDelegate {
       const webkit::forms::PasswordFormFillData& form_data) = 0;
 
   // A mechanism to show an infobar in the current tab at our request.
-  virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save) = 0;
+  // The infobar may not show in some circumstances, such as when the one-click
+  // sign in infobar is or will be shown.
+  virtual void AddSavePasswordInfoBarIfPermitted(
+      PasswordFormManager* form_to_save) = 0;
 
   // Get the profile for which we are managing passwords.
   virtual Profile* GetProfileForPasswordManager() = 0;

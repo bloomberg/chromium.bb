@@ -134,7 +134,8 @@ void PasswordManager::DidStopLoading() {
 
   provisional_save_manager_->SubmitPassed();
   if (provisional_save_manager_->IsNewLogin()) {
-    delegate_->AddSavePasswordInfoBar(provisional_save_manager_.release());
+    delegate_->AddSavePasswordInfoBarIfPermitted(
+        provisional_save_manager_.release());
   } else {
     // If the save is not a new username entry, then we just want to save this
     // data (since the user already has related data saved), so don't prompt.

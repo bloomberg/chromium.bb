@@ -10,8 +10,10 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -127,8 +129,21 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
           form_data));
 }
 
-void PasswordManagerDelegateImpl::AddSavePasswordInfoBar(
+void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
     PasswordFormManager* form_to_save) {
+  // Don't show the password manager infobar if this form is for a google
+  // account and we are going to show the one-click singin infobar.
+  // For now, one-click signin is fully implemented only on windows.  When
+  // the feature is finally implemented on mac and linux, will need to add
+  // OS_MACOSX and OS_LINUX.
+#if defined(OS_WIN)
+  GURL realm(form_to_save->realm());
+  if (realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) &&
+      OneClickSigninHelper::CanOffer(tab_contents_->web_contents(), true)) {
+    return;
+  }
+#endif
+
   tab_contents_->infobar_tab_helper()->AddInfoBar(
       new SavePasswordInfoBarDelegate(
           tab_contents_->infobar_tab_helper(), form_to_save));

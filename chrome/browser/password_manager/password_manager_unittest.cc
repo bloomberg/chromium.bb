@@ -34,7 +34,7 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(FillPasswordForm, void(
      const webkit::forms::PasswordFormFillData&));
-  MOCK_METHOD1(AddSavePasswordInfoBar, void(PasswordFormManager*));
+  MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfileForPasswordManager, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
@@ -122,7 +122,7 @@ TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   manager()->ProvisionallySavePassword(form);
 
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // Now the password manager waits for the navigation to complete.
@@ -156,7 +156,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
 
   // We still expect an add, since we didn't have a good match.
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   manager()->DidStopLoading();
@@ -186,7 +186,7 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   manager()->DidNavigateAnyFrame(details, params);
 
   // No expected calls.
-  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_)).Times(0);
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_)).Times(0);
   manager()->DidStopLoading();
 }
 
@@ -204,7 +204,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
   manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   // Simulate navigating a sub-frame.
@@ -268,7 +268,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
 
   // Expect info bar to appear:
   scoped_ptr<PasswordFormManager> form_to_save;
-  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
 
   manager()->DidStopLoading();

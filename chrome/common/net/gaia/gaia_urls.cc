@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,9 @@ GaiaUrls::GaiaUrls() {
   client_login_to_oauth2_url_ = kClientLoginToOAuth2Url;
   oauth2_token_url_ = kOAuth2TokenUrl;
   oauth2_issue_token_url_ = kOAuth2IssueTokenUrl;
+
+  gaia_login_form_realm_ = "https://accounts.google.com/";
+
 }
 
 GaiaUrls::~GaiaUrls() {
@@ -166,4 +169,9 @@ const std::string& GaiaUrls::oauth2_token_url() {
 
 const std::string& GaiaUrls::oauth2_issue_token_url() {
   return oauth2_issue_token_url_;
+}
+
+
+const std::string& GaiaUrls::gaia_login_form_realm() {
+  return gaia_login_form_realm_;
 }
