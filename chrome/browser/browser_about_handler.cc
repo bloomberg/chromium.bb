@@ -41,6 +41,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIHistogramsHost,
   chrome::kChromeUIHistoryHost,
   chrome::kChromeUIIPCHost,
+  chrome::kChromeUIInspectHost,
   chrome::kChromeUIMediaInternalsHost,
   chrome::kChromeUIMemoryHost,
   chrome::kChromeUINetInternalsHost,
@@ -62,7 +63,6 @@ const char* const kChromePaths[] = {
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
   chrome::kChromeUIVersionHost,
-  chrome::kChromeUIWorkersHost,
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
 #endif

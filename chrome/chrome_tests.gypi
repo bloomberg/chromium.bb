@@ -582,7 +582,7 @@
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/views/tabs/tab_drag_controller2_interactive_uitest.cc',
-        'browser/ui/webui/workers_ui_browsertest.cc',
+        'browser/ui/webui/inspect_ui_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',

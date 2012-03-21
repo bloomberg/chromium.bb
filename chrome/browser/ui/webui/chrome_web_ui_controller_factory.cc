@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
-#include "chrome/browser/ui/webui/workers_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -222,8 +222,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<UberFrameUI>;
   if (url.host() == chrome::kChromeUIUberHost)
     return &NewWebUI<UberUI>;
-  if (url.host() == chrome::kChromeUIWorkersHost)
-    return &NewWebUI<WorkersUI>;
+  if (url.host() == chrome::kChromeUIInspectHost)
+    return &NewWebUI<InspectUI>;
 
   /****************************************************************************
    * OS Specific #defines

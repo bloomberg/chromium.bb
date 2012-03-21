@@ -44,6 +44,7 @@ extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIHistoryFrameURL[];
 extern const char kChromeUIHungRendererDialogURL[];
 extern const char kChromeUIInputWindowDialogURL[];
+extern const char kChromeUIInspectURL[];
 extern const char kChromeUIIPCURL[];
 extern const char kChromeUIKeyboardURL[];
 extern const char kChromeUIMemoryRedirectURL[];
@@ -67,7 +68,6 @@ extern const char kChromeUIThumbnailURL[];
 extern const char kChromeUIUberURL[];
 extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIVersionURL[];
-extern const char kChromeUIWorkersURL[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessage[];
@@ -142,6 +142,7 @@ extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistoryFrameHost[];
 extern const char kChromeUIHungRendererDialogHost[];
 extern const char kChromeUIInputWindowDialogHost[];
+extern const char kChromeUIInspectHost[];
 extern const char kChromeUIIPCHost[];
 extern const char kChromeUIKeyboardHost[];
 extern const char kChromeUIKillHost[];

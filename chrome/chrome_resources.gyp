@@ -67,13 +67,6 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'workers_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/workers_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
           'action_name': 'devtools_discovery_page_resources',
           'variables': {
             'grit_grd_file':

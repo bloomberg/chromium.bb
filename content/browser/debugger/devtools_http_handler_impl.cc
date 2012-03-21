@@ -29,7 +29,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/devtools_resources_map.h"

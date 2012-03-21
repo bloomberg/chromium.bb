@@ -50,6 +50,7 @@ const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
 const char kChromeUIHungRendererDialogURL[] = "chrome://hung-renderer/";
 const char kChromeUIInputWindowDialogURL[] = "chrome://input-window-dialog/";
+const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
 const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
 const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
@@ -73,7 +74,6 @@ const char kChromeUIThumbnailURL[] = "chrome://thumb/";
 const char kChromeUIUberURL[] = "chrome://chrome/";
 const char kChromeUIUberFrameURL[] = "chrome://uber-frame/";
 const char kChromeUIVersionURL[] = "chrome://version/";
-const char kChromeUIWorkersURL[] = "chrome://workers/";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
@@ -151,6 +151,7 @@ const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHungRendererDialogHost[] = "hung-renderer";
 const char kChromeUIInputWindowDialogHost[] = "input-window-dialog";
+const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIIPCHost[] = "ipc";
 const char kChromeUIKeyboardHost[] = "keyboard";
 const char kChromeUIKillHost[] = "kill";

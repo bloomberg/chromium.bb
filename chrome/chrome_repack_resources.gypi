@@ -14,7 +14,6 @@
       '<(grit_out_dir)/quota_internals_resources.pak',
       '<(grit_out_dir)/shared_resources.pak',
       '<(grit_out_dir)/sync_internals_resources.pak',
-      '<(grit_out_dir)/workers_resources.pak',
     ],
     'conditions': [
       ['OS != "mac"', {

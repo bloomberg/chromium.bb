@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,26 +18,31 @@ const char kSharedWorkerTestPage[] =
 const char kSharedWorkerJs[] =
     "files/workers/workers_ui_shared_worker.js";
 
-class WorkersUITest : public InProcessBrowserTest {
+class InspectUITest : public InProcessBrowserTest {
  public:
-  WorkersUITest() {
+  InspectUITest() {
     set_show_window(true);
     EnableDOMAutomation();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WorkersUITest);
+  DISALLOW_COPY_AND_ASSIGN(InspectUITest);
 };
 
-// The test fails on Mac OS X, see crbug.com/89583
-IN_PROC_BROWSER_TEST_F(WorkersUITest, DISABLED_SharedWorkersList) {
+// The test fails on Mac OS X and Windows, see crbug.com/89583
+#if defined(OS_LINUX)
+#define MAYBE_SharedWorkersList SharedWorkersList
+#else
+#define MAYBE_SharedWorkersList DISABLED_SharedWorkersList
+#endif
+IN_PROC_BROWSER_TEST_F(InspectUITest, MAYBE_SharedWorkersList) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      GURL(chrome::kChromeUIWorkersURL),
+      GURL(chrome::kChromeUIInspectURL),
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -50,9 +55,10 @@ IN_PROC_BROWSER_TEST_F(WorkersUITest, DISABLED_SharedWorkersList) {
           web_contents->GetRenderViewHost(),
           L"",
           L"window.domAutomationController.send("
-          L"'' + document.getElementsByTagName('td')[1].textContent);",
+          L"'' + document.body.textContent);",
           &result));
   ASSERT_TRUE(result.find(kSharedWorkerJs) != std::string::npos);
+  ASSERT_TRUE(result.find(kSharedWorkerTestPage) != std::string::npos);
 }
 
 }  // namespace
