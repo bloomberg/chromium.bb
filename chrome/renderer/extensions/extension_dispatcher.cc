@@ -28,6 +28,7 @@
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
+#include "chrome/renderer/extensions/media_gallery_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
@@ -64,6 +65,7 @@ using extensions::FileBrowserHandlerCustomBindings;
 using extensions::FileBrowserPrivateCustomBindings;
 using extensions::I18NCustomBindings;
 using extensions::MiscellaneousBindings;
+using extensions::MediaGalleryCustomBindings;
 using extensions::PageActionsCustomBindings;
 using extensions::PageCaptureCustomBindings;
 using extensions::SchemaGeneratedBindings;
@@ -357,6 +359,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
           new ExtensionCustomBindings(this)));
+  module_system->RegisterNativeHandler("experimental_mediaGalleries",
+      scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("experimental_socket",
       scoped_ptr<NativeHandler>(new ExperimentalSocketCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
@@ -402,6 +406,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.declarative",
                              IDR_EXPERIMENTAL_DECLARATIVE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("experimental.mediaGalleries",
+                             IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.socket",

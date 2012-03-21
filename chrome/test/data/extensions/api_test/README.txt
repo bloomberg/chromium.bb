@@ -11,7 +11,7 @@ To write a new test:
 
 (1) Add a new browser_test which is a subclass of ExtensionApiTest.  This test
 should call RunExtensionTest("extension_name") to kick off the test.  See
-extension_bookmarks_apitest.cc for an example.
+bookmark_extension_apitest.cc for an example.
 
 (2) Create an extension of in this directory of the same name as the extension
 that your test referred to ("extension_name" above).  This test should load

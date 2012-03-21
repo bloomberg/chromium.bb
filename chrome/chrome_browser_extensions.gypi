@@ -90,6 +90,8 @@
         'browser/extensions/api/extension_action/extension_page_actions_api.h',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.cc',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.h',
+        'browser/extensions/api/media_gallery/media_gallery_api.cc',
+        'browser/extensions/api/media_gallery/media_gallery_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_constants.cc',

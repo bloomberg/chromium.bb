@@ -1,0 +1,98 @@
+[
+  {
+    "namespace": "experimental.mediaGalleries",
+    "nodoc": true,
+    "types": [
+      {
+        "id": "MediaGallery",
+        "type": "object",
+        "description": "A class representing a media gallery on the user's machines."
+      },
+      {
+        "id": "MediaFileMetadata",
+        "type": "object",
+        "description": "A class representing a metadata for a media file."
+      }
+    ],
+    "functions": [
+      {
+        "name": "getMediaGalleries",
+        "type": "function",
+        "description": "Get the media galleries configured in this user agent.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "galleries",
+                "type": "array",
+                "items": { "$ref": "MediaGallery"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "openMediaGalleryManager",
+        "type": "function",
+        "description": "Open the user agent’s UI to configure galleries. Calling openMediaGalleryManager will trigger a permission prompt for any origin that has not yet been granted permission.",
+        "parameters": []
+      },
+      {
+        "name": "assembleMediaFile",
+        "type": "function",
+        "description": "Create a new MediaFile setting the metadata in the Blob to the supplied values, overriding any existing metadata in the media file.  If user agent does not recognize the  Blob as a supported file format, it will return null in the callback.",
+        "parameters": [
+          {
+            "type": "object",
+            "description": "A Blob",
+            "name": "mediaFileContents"
+          },
+          {
+            "$ref": "MediaFileMetadata",
+            "name": "metadata"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "mediaFile",
+                "choices": [
+                  { "type": "Blob" },
+                  { "type": "null" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "parseMediaFileMetadata",
+        "type": "function",
+        "description": "Parse the metadata in a given Blob. If the user agent does not recognize the Blob as a supported file format, it will return null in the callback.",
+        "parameters": [
+          {
+            "type": "object",
+            "description": "A Blob",
+            "name": "mediaFile"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "metadata",
+                "choices": [
+                  {"$ref": "MediaFileMetadata"},
+                  { "type": "null" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
