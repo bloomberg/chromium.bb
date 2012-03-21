@@ -83,6 +83,13 @@ cr.define('options.network', function() {
   var useSharedProxies_ = false;
 
   /**
+   * Indicates if mobile data roaming is enabled.
+   * @type {boolean}
+   * @private
+   */
+  var enableDataRoaming_ = false;
+
+  /**
    * Create an element in the network list for controlling network
    * connectivity.
    * @param {Object} data Description of the network list or command.
@@ -395,6 +402,27 @@ cr.define('options.network', function() {
                        command: 'connect',
                        data: {networkType: Constants.TYPE_WIFI,
                               servicePath: '?'}});
+      } else if (this.data_.key == 'cellular') {
+        var label = enableDataRoaming_ ? 'disableDataRoaming' :
+            'enableDataRoaming';
+        var disabled = !AccountsOptions.currentUserIsOwner();
+        var entry = {label: localStrings.getString(label),
+                     data: {}};
+        if (disabled) {
+          entry.command = null;
+          entry.tooltip =
+              localStrings.getString('dataRoamingDisableToggleTooltip');
+        } else {
+          entry.command = function() {
+            options.Preferences.setBooleanPref(
+                'cros.signed.data_roaming_enabled',
+                !enableDataRoaming_);
+            // Force revalidation of the menu the next time it is
+            // displayed.
+            this.menu_ = null;
+          };
+        }
+        addendum.push(entry);
       }
       var list = this.data.rememberedNetworks;
       if (list && list.length > 0) {
@@ -480,10 +508,12 @@ cr.define('options.network', function() {
         for (var i = 0; i < addendum.length; i++) {
           var value = addendum[i];
           if (value.data) {
-            this.createCallback_(menu,
-                                 value.data,
-                                 value.label,
-                                 value.command);
+            var item = this.createCallback_(menu,
+                                            value.data,
+                                            value.label,
+                                            value.command);
+            if (value.tooltip)
+              item.title = value.tooltip;
             separator = false;
           } else if (!separator) {
             menu.appendChild(MenuItem.createSeparator());
@@ -520,12 +550,15 @@ cr.define('options.network', function() {
                       [type, path, command]);
           closeMenu_();
         };
-      } else {
+      } else if (command != null) {
         callback = function() {
           command(data);
         };
       }
-      button.addEventListener('click', callback);
+      if (callback != null)
+        button.addEventListener('click', callback);
+      else
+        buttonLabel.classList.add('network-disabled-control');
       MenuItem.decorate(button);
       menu.appendChild(button);
       return button;
@@ -652,6 +685,11 @@ cr.define('options.network', function() {
         $('network-list').updateToggleControl('useSharedProxies',
                                               useSharedProxies_);
       });
+      prefs.addEventListener('cros.signed.data_roaming_enabled',
+          function(event) {
+            enableDataRoaming_ = event.value && event.value['value'] !=
+                undefined ? event.value['value'] : event.value;
+          });
     },
 
     /**

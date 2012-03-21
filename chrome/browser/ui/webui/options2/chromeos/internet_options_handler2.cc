@@ -298,6 +298,10 @@ void InternetOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION },
     { "addConnectionWifi", IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI },
     { "addConnectionVPN", IDS_STATUSBAR_NETWORK_ADD_VPN },
+    { "enableDataRoaming", IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING },
+    { "disableDataRoaming", IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING },
+    { "dataRoamingDisableToggleTooltip",
+      IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION },
 
     // Network options dialog labels.
     // TODO(kevers): Remove once dialog is deprecated.
@@ -404,7 +408,6 @@ void InternetOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR },
     { "cellularApnSet", IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET },
     { "cellularApnCancel", IDS_CANCEL },
-    { "enableDataRoaming", IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING },
 
     // Security Tab.
 

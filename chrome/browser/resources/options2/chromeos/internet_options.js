@@ -212,13 +212,9 @@ cr.define('options', function() {
         $('enable-cellular').hidden = false;
         $('disable-cellular').hidden = true;
       }
-      if (!AccountsOptions.currentUserIsOwner())
-        $('internet-owner-only-warning').hidden = false;
-      $('data-roaming').hidden = false;
     } else {
       $('enable-cellular').hidden = true;
       $('disable-cellular').hidden = true;
-      $('data-roaming').hidden = true;
     }
   };
 

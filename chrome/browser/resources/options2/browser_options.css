@@ -295,6 +295,10 @@ list:not([disabled]) > .network-group[selected] {
   white-space: nowrap;
 }
 
+.network-disabled-control {
+  color: #999;
+}
+
 .network-menu-header {
   -webkit-padding-start: 36px;
   color: #999;
