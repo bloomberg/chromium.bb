@@ -14169,6 +14169,23 @@ Battery full
         Aw, Snap! There've been some errors while formatting...
       </message>
 
+      <!-- ChromeOS GData synchronization notifications -->
+      <message name="IDS_CHROMEOS_GDATA_SYNC_TITLE" desc="Title text of notification message which is shown when gdata sync is on progress.">
+        Syncing
+      </message>
+      <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_TITLE" desc="Title text of notification message which is shown when there are some errors while gdata sync.">
+        Could not sync
+      </message>
+      <message name="IDS_CHROMEOS_GDATA_SYNC_PROGRESS_MESSAGE" desc="Text of notification message which is shown when gdata file sync is on progress.">
+        Syncing <ph name="COUNT">$1<ex>3</ex></ph> files...
+      </message>
+      <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_SUCCESS_MESSAGE" desc="Text of notification message which is shown when gdata sync finishes without any errors.">
+        Sync complete.
+      </message>
+      <message name="IDS_CHROMEOS_GDATA_SYNC_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while gdata sync.">
+        Unable to connect.
+      </message>
+
       <!-- Network state strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
         Unknown

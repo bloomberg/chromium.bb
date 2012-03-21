@@ -82,7 +82,8 @@ FileBrowserEventRouter::FileBrowserEventRouter(
     Profile* profile)
     : delegate_(new FileBrowserEventRouter::FileWatcherDelegate(this)),
       notifications_(new FileBrowserNotifications(profile)),
-      profile_(profile) {
+      profile_(profile),
+      current_gdata_operation_failed_(false) {
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
@@ -226,6 +227,12 @@ void FileBrowserEventRouter::MountCompleted(
 
 void FileBrowserEventRouter::OnProgressUpdate(
     const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
+  HandleProgressUpdateForExtensionAPI(list);
+  HandleProgressUpdateForSystemNotification(list);
+}
+
+void FileBrowserEventRouter::HandleProgressUpdateForExtensionAPI(
+    const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
   scoped_ptr<ListValue> event_list(
       file_manager_util::ProgressStatusVectorToListValue(
           profile_,
@@ -242,6 +249,34 @@ void FileBrowserEventRouter::OnProgressUpdate(
       NULL, GURL());
 }
 
+void FileBrowserEventRouter::HandleProgressUpdateForSystemNotification(
+    const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
+  int active_operation_count = 0;
+  for (std::vector<
+          gdata::GDataOperationRegistry::ProgressStatus>::const_iterator iter =
+              list.begin();
+       iter != list.end(); ++iter) {
+    switch (iter->transfer_state) {
+      case gdata::GDataOperationRegistry::OPERATION_FAILED:
+        current_gdata_operation_failed_ = true;
+        break;
+      case gdata::GDataOperationRegistry::OPERATION_COMPLETED:
+        break;
+      default:
+        active_operation_count += 1;
+        break;
+    }
+  }
+
+  if (active_operation_count == 0) {
+    notifications_->ManageNotificationOnGDataSyncFinish(
+        !current_gdata_operation_failed_);
+    current_gdata_operation_failed_ = false;
+  } else {
+    notifications_->ManageNotificationOnGDataSyncProgress(
+        active_operation_count);
+  }
+}
 
 void FileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {

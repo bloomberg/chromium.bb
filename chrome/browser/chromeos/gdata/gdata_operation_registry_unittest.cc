@@ -18,9 +18,11 @@ namespace {
 class MockOperation : public GDataOperationRegistry::Operation,
                       public base::SupportsWeakPtr<MockOperation> {
  public:
-  explicit MockOperation(GDataOperationRegistry* registry,
-                         bool expect_cancel)
-      : GDataOperationRegistry::Operation(registry),
+  MockOperation(GDataOperationRegistry* registry,
+                GDataOperationRegistry::OperationType type,
+                const FilePath& path,
+                bool expect_cancel)
+      : GDataOperationRegistry::Operation(registry, type, path),
         expect_cancel_(expect_cancel),
         cancel_called_(false) {}
 
@@ -40,6 +42,36 @@ class MockOperation : public GDataOperationRegistry::Operation,
  private:
   bool expect_cancel_;
   bool cancel_called_;
+};
+
+class MockUploadOperation : public MockOperation {
+ public:
+  MockUploadOperation(GDataOperationRegistry* registry,
+                      bool expect_cancel)
+      : MockOperation(registry,
+                      GDataOperationRegistry::OPERATION_UPLOAD,
+                      FilePath("/dummy/upload"),
+                      expect_cancel) {}
+};
+
+class MockDownloadOperation : public MockOperation {
+ public:
+  MockDownloadOperation(GDataOperationRegistry* registry,
+                        bool expect_cancel)
+      : MockOperation(registry,
+                      GDataOperationRegistry::OPERATION_DOWNLOAD,
+                      FilePath("/dummy/download"),
+                      expect_cancel) {}
+};
+
+class MockOtherOperation : public MockOperation {
+ public:
+  MockOtherOperation(GDataOperationRegistry* registry,
+                     bool expect_cancel)
+      : MockOperation(registry,
+                      GDataOperationRegistry::OPERATION_OTHER,
+                      FilePath("/dummy/other"),
+                      expect_cancel) {}
 };
 
 class TestObserver : public GDataOperationRegistry::Observer {
@@ -75,7 +107,7 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
-      (new MockOperation(&registry, false /* no cancel */))->AsWeakPtr();
+      (new MockUploadOperation(&registry, false /* no cancel */))->AsWeakPtr();
   EXPECT_EQ(0U, observer.status().size());
   op1->NotifyStart();
   EXPECT_EQ(1U, observer.status().size());
@@ -100,7 +132,7 @@ TEST_F(GDataOperationRegistryTest, OneCancel) {
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
-      (new MockOperation(&registry, true /* cancel */))->AsWeakPtr();
+      (new MockUploadOperation(&registry, true /* cancel */))->AsWeakPtr();
   EXPECT_EQ(0U, observer.status().size());
   op1->NotifyStart();
   EXPECT_EQ(1U, observer.status().size());
@@ -121,9 +153,10 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
-      (new MockOperation(&registry, false /* no cancel */))->AsWeakPtr();
+      (new MockUploadOperation(&registry, false /* no cancel */))->AsWeakPtr();
   base::WeakPtr<MockOperation> op2 =
-      (new MockOperation(&registry, false /* no cancel */))->AsWeakPtr();
+      (new MockDownloadOperation(&registry,
+                                 false /* no cancel */))->AsWeakPtr();
   EXPECT_EQ(0U, observer.status().size());
   op1->NotifyStart();
   op1->NotifyProgress(0, 100);
@@ -145,25 +178,32 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   EXPECT_EQ(NULL, op2.get()); // deleted
 }
 
-TEST_F(GDataOperationRegistryTest, TwoCancel) {
+TEST_F(GDataOperationRegistryTest, ThreeCancel) {
   TestObserver observer;
   GDataOperationRegistry registry;
   registry.AddObserver(&observer);
 
   base::WeakPtr<MockOperation> op1 =
-      (new MockOperation(&registry, true /* cancel */))->AsWeakPtr();
+      (new MockUploadOperation(&registry, true /* cancel */))->AsWeakPtr();
   base::WeakPtr<MockOperation> op2 =
-      (new MockOperation(&registry, true /* cancel */))->AsWeakPtr();
+      (new MockDownloadOperation(&registry,
+                                 true /* cancel */))->AsWeakPtr();
+  base::WeakPtr<MockOperation> op3 =
+      (new MockOtherOperation(&registry,
+                              true /* cancel */))->AsWeakPtr();
   EXPECT_EQ(0U, observer.status().size());
   op1->NotifyStart();
   EXPECT_EQ(1U, observer.status().size());
   op2->NotifyStart();
   EXPECT_EQ(2U, observer.status().size());
+  op3->NotifyStart();
+  EXPECT_EQ(2U, observer.status().size()); // only upload/download is reported.
   registry.CancelAll();
   EXPECT_EQ(1U, observer.status().size()); // holds the last one "COMPLETED"
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get()); // deleted
   EXPECT_EQ(NULL, op2.get()); // deleted
+  EXPECT_EQ(NULL, op3.get()); // deleted. CancelAll cares all operations.
 }
 
 }  // namespace gdata
