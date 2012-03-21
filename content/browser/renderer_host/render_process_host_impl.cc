@@ -677,6 +677,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kDisableSpeechInput,
+    switches::kEnableScriptedSpeech,
     switches::kDisableWebAudio,
     switches::kDisableWebSockets,
     switches::kDomAutomationController,

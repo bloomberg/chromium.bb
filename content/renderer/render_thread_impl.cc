@@ -558,6 +558,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableSpeechInput(
       !command_line.HasSwitch(switches::kDisableSpeechInput));
 
+  WebRuntimeFeatures::enableScriptedSpeech(
+      command_line.HasSwitch(switches::kEnableScriptedSpeech));
+
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
 
