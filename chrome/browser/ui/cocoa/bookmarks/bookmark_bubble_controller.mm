@@ -221,6 +221,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 
   [parentWindow addChildWindow:window ordered:NSWindowAbove];
   [window makeKeyAndOrderFront:self];
+  [self registerKeyStateEventTap];
 }
 
 - (void)close {

@@ -1,19 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
-#include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/cocoa/info_bubble_view.h"
+#include "base/mac/mac_util.h"
+#import "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 namespace {
 const CGFloat kBubbleWindowWidth = 100;
 const CGFloat kBubbleWindowHeight = 50;
 const CGFloat kAnchorPointX = 400;
 const CGFloat kAnchorPointY = 300;
-} // namespace
+}  // namespace
 
 class BaseBubbleControllerTest : public CocoaTest {
  public:
@@ -109,4 +112,70 @@ TEST_F(BaseBubbleControllerTest, AnchorAlignRightArrow) {
   EXPECT_EQ(NSMaxX(frame) - info_bubble::kBubbleArrowXOffset -
       floorf(info_bubble::kBubbleArrowWidth / 2.0), kAnchorPointX);
   EXPECT_GE(NSMaxY(frame), kAnchorPointY);
+}
+
+// Tests that when a new window gets key state (and the bubble resigns) that
+// the key window changes.
+TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
+  // Closing the bubble will autorelease the controller.
+  scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+
+  NSWindow* bubble_window = [controller_ window];
+  EXPECT_FALSE([bubble_window isVisible]);
+
+  scoped_nsobject<NSWindow> other_window(
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(500, 500, 500, 500)
+                                  styleMask:NSTitledWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:YES]);
+  EXPECT_FALSE([other_window isVisible]);
+
+  [controller_ showWindow:nil];
+  EXPECT_TRUE([bubble_window isVisible]);
+  EXPECT_FALSE([other_window isVisible]);
+
+  [other_window makeKeyAndOrderFront:nil];
+  // Fake the key state notification. Because unit_tests is a "daemon" process
+  // type, its windows can never become key (nor can the app become active).
+  // Instead of the hacks below, one could make a browser_test or transform the
+  // process type, but this seems easiest and is best suited to a unit test.
+  //
+  // On Lion and above, which have the event taps, simply post a notification
+  // that will cause the controller to call |-windowDidResignKey:|. Earlier
+  // OSes can call through directly.
+  NSNotification* notif =
+      [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                    object:bubble_window];
+  if (base::mac::IsOSLionOrLater())
+    [[NSNotificationCenter defaultCenter] postNotification:notif];
+  else
+    [controller_ windowDidResignKey:notif];
+
+
+  EXPECT_FALSE([bubble_window isVisible]);
+  EXPECT_TRUE([other_window isVisible]);
+}
+
+// Test that clicking outside the window causes the bubble to close.
+TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
+  // The event tap is only installed on 10.7+.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  // Closing the bubble will autorelease the controller.
+  scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
+  NSWindow* window = [controller_ window];
+
+  EXPECT_FALSE([window isVisible]);
+
+  [controller_ showWindow:nil];
+
+  EXPECT_TRUE([window isVisible]);
+
+  NSEvent* event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+      NSMakePoint(10, 10), test_window());
+  [NSApp sendEvent:event];
+  chrome::testing::NSRunLoopRunAllPending();
+
+  EXPECT_FALSE([window isVisible]);
 }

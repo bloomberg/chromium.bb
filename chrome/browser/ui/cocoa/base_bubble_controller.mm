@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/closure_blocks_leopard_compat.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
@@ -20,6 +21,26 @@
 @interface BaseBubbleController (Private)
 - (void)updateOriginFromAnchor;
 @end
+
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+@interface NSEvent (SnowLeopardDeclarations)
++ (id)addLocalMonitorForEventsMatchingMask:(NSUInteger)mask
+                                   handler:(NSEvent* (^)(NSEvent*))block;
++ (void)removeMonitor:(id)eventMonitor;
+@end
+
+@interface NSOperationQueue (SnowLeopardDeclarations)
++ (id)mainQueue;
+@end
+
+@interface NSNotificationCenter (SnowLeopardDeclarations)
+- (id)addObserverForName:(NSString*)name
+                  object:(id)obj
+                   queue:(NSOperationQueue*)queue
+              usingBlock:(void (^)(NSNotification*))block;
+@end
+#endif  // MAC_OS_X_VERSION_10_6
 
 namespace BaseBubbleControllerInternal {
 
@@ -161,13 +182,27 @@ class Bridge : public content::NotificationObserver {
 // position).  We cannot have an addChildWindow: and a subsequent
 // showWindow:. Thus, we have our own version.
 - (void)showWindow:(id)sender {
-  NSWindow* window = [self window];  // completes nib load
+  NSWindow* window = [self window];  // Completes nib load.
   [self updateOriginFromAnchor];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
   [window makeKeyAndOrderFront:self];
+  [self registerKeyStateEventTap];
 }
 
 - (void)close {
+  // The bubble will be closing, so remove the event taps.
+  if (eventTap_) {
+    [NSEvent removeMonitor:eventTap_];
+    eventTap_ = nil;
+  }
+  if (resignationObserver_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:resignationObserver_
+                  name:NSWindowDidResignKeyNotification
+                object:nil];
+    resignationObserver_ = nil;
+  }
+
   [[[self window] parentWindow] removeChildWindow:[self window]];
   [super close];
 }
@@ -183,6 +218,46 @@ class Bridge : public content::NotificationObserver {
     // has been sent as part of the closing operation, so no need to close.
     [self close];
   }
+}
+
+// Since the bubble shares first responder with its parent window, set
+// event handlers to dismiss the bubble when it would normally lose key
+// state.
+- (void)registerKeyStateEventTap {
+  // Parent key state sharing is only avaiable on 10.7+.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  NSWindow* window = self.window;
+  NSNotification* note =
+      [NSNotification notificationWithName:NSWindowDidResignKeyNotification
+                                    object:window];
+
+  // The eventTap_ catches clicks within the application that are outside the
+  // window.
+  eventTap_ = [NSEvent
+      addLocalMonitorForEventsMatchingMask:NSLeftMouseDownMask
+      handler:^NSEvent* (NSEvent* event) {
+          if (event.window != window){
+            // Call via the runloop because this block is called in the
+            // middle of event dispatch.
+            [self performSelector:@selector(windowDidResignKey:)
+                       withObject:note
+                       afterDelay:0];
+          }
+          return event;
+      }];
+
+  // The resignationObserver_ watches for when a window resigns key state,
+  // meaning the key window has changed and the bubble should be dismissed.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  resignationObserver_ =
+      [center addObserverForName:NSWindowDidResignKeyNotification
+                          object:nil
+                           queue:[NSOperationQueue mainQueue]
+                      usingBlock:^(NSNotification* notif) {
+                          [self windowDidResignKey:note];
+                      }];
 }
 
 // By implementing this, ESC causes the window to go away.
