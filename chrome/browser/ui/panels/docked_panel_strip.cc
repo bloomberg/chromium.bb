@@ -434,6 +434,17 @@ void DockedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel, bool aborted) {
     RefreshLayout();
 }
 
+bool DockedPanelStrip::CanResizePanel(const Panel* panel) const {
+  return false;
+}
+
+void DockedPanelStrip::SetPanelBounds(Panel* panel,
+                                      const gfx::Rect& new_bounds) {
+  DCHECK_EQ(this, panel->panel_strip());
+  NOTREACHED();
+}
+
+
 void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
   gfx::Size size = panel->restored_size();
   Panel::ExpansionState expansion_state = panel->expansion_state();
@@ -524,42 +535,29 @@ void DockedPanelStrip::UpdateMinimizedPanelCount() {
 void DockedPanelStrip::ResizePanelWindow(
     Panel* panel,
     const gfx::Size& preferred_window_size) {
-  // The panel width:
-  // * cannot grow or shrink to go beyond [min_width, max_width]
-  int new_width = preferred_window_size.width();
-  if (new_width > panel->max_size().width())
-    new_width = panel->max_size().width();
-  if (new_width < panel->min_size().width())
-    new_width = panel->min_size().width();
+  // Make sure the new size does not violate panel's size restrictions.
+  gfx::Size new_size(preferred_window_size.width(),
+                     preferred_window_size.height());
+  panel->ClampSize(&new_size);
 
-  // The panel height:
-  // * cannot grow or shrink to go beyond [min_height, max_height]
-  int new_height = preferred_window_size.height();
-  if (new_height > panel->max_size().height())
-    new_height = panel->max_size().height();
-  if (new_height < panel->min_size().height())
-    new_height = panel->min_size().height();
-
-  // Update restored size.
-  gfx::Size new_size(new_width, new_height);
   if (new_size != panel->restored_size())
     panel->set_restored_size(new_size);
 
   gfx::Rect bounds = panel->GetBounds();
-  int delta_x = bounds.width() - new_width;
+  int delta_x = bounds.width() - new_size.width();
 
   // Only need to adjust current bounds if panel is in the dock.
   if (panel->panel_strip() == this) {
     // Only need to adjust bounds height when panel is expanded.
     Panel::ExpansionState expansion_state = panel->expansion_state();
-    if (new_height != bounds.height() &&
+    if (new_size.height() != bounds.height() &&
         expansion_state == Panel::EXPANDED) {
-      bounds.set_y(bounds.bottom() - new_height);
-      bounds.set_height(new_height);
+      bounds.set_y(bounds.bottom() - new_size.height());
+      bounds.set_height(new_size.height());
     }
 
     if (delta_x != 0) {
-      bounds.set_width(new_width);
+      bounds.set_width(new_size.width());
       bounds.set_x(bounds.x() + delta_x);
     }
 

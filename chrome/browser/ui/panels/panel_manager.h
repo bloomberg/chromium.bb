@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_resize_controller.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "ui/gfx/rect.h"
 
@@ -51,6 +52,13 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   void Drag(const gfx::Point& mouse_location);
   void EndDragging(bool cancelled);
 
+  // Resizes the given panel.
+  // |mouse_location| is in screen coordinate system.
+  void StartResizingByMouse(Panel* panel, const gfx::Point& mouse_location,
+                            PanelResizeController::ResizingSides sides);
+  void ResizeByMouse(const gfx::Point& mouse_location);
+  void EndResizingByMouse(bool cancelled);
+
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
 
@@ -62,6 +70,9 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   // Resizes the panel. Explicitly setting the panel size is not allowed
   // for panels that are auto-sized.
   void ResizePanel(Panel* panel, const gfx::Size& new_size);
+
+  // Resizes the panel and sets the origin.
+  void SetPanelBounds(Panel* panel, const gfx::Rect& new_bounds);
 
   // Moves the |panel| to a different type of panel strip.
   void MovePanelToStrip(Panel* panel,
@@ -187,6 +198,7 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   scoped_ptr<OverflowPanelStrip> overflow_strip_;
 
   scoped_ptr<PanelDragController> drag_controller_;
+  scoped_ptr<PanelResizeController> resize_controller_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized

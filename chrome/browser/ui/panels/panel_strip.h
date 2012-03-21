@@ -110,6 +110,16 @@ class PanelStrip {
   // original strip and position when the drag gets cancelled.
   virtual void EndDraggingPanelWithinStrip(Panel* panel, bool aborted) = 0;
 
+  // Returns true if |panel| can be resized by the user when in this strip.
+  virtual bool CanResizePanel(const Panel* panel) const = 0;
+
+  // Change panel's bounds and take care of all possible side effects
+  // in ths strip.
+  // TODO (AndreiB) Add a parameter telling what how to approach animation
+  // (no animation, continue existing, or start new).
+  virtual void SetPanelBounds(Panel* panel,
+                              const gfx::Rect& new_bounds) = 0;
+
   // When a panel is added to this strip, some modifications to its visual
   // style or underlying implementation may be in order. Each strip decides
   // what properties should be applied to a newly-added panel.

@@ -3082,6 +3082,8 @@
         'browser/ui/panels/panel_browser_window_gtk.h',
         'browser/ui/panels/panel_drag_controller.cc',
         'browser/ui/panels/panel_drag_controller.h',
+        'browser/ui/panels/panel_resize_controller.cc',
+        'browser/ui/panels/panel_resize_controller.h',
         'browser/ui/panels/panel_manager.cc',
         'browser/ui/panels/panel_manager.h',
         'browser/ui/panels/panel_mouse_watcher.cc',

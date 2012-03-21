@@ -70,6 +70,7 @@ PanelManager::PanelManager()
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
   drag_controller_.reset(new PanelDragController(this));
+  resize_controller_.reset(new PanelResizeController(this));
   display_settings_provider_.reset(DisplaySettingsProvider::Create(this));
 
   OnDisplayChanged();
@@ -169,6 +170,24 @@ void PanelManager::EndDragging(bool cancelled) {
   drag_controller_->EndDragging(cancelled);
 }
 
+void PanelManager::StartResizingByMouse(Panel* panel,
+    const gfx::Point& mouse_location,
+    PanelResizeController::ResizingSides sides) {
+   if (panel->panel_strip() && panel->panel_strip()->CanResizePanel(panel) &&
+      sides != PanelResizeController::NO_SIDES)
+    resize_controller_->StartResizing(panel, mouse_location, sides);
+}
+
+void PanelManager::ResizeByMouse(const gfx::Point& mouse_location) {
+  if (resize_controller_->IsResizing())
+    resize_controller_->Resize(mouse_location);
+}
+
+void PanelManager::EndResizingByMouse(bool cancelled) {
+  if (resize_controller_->IsResizing())
+    resize_controller_->EndResizing(cancelled);
+}
+
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
   // For panels outside of the docked strip changing state is a no-op.
   // But since this method may be called for panels in other strips
@@ -198,6 +217,13 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   else
     panel->panel_strip()->ResizePanelWindow(panel, new_size);
   panel->SetAutoResizable(false);
+}
+
+void PanelManager::SetPanelBounds(Panel* panel,
+                                  const gfx::Rect& new_bounds) {
+  panel->panel_strip()->SetPanelBounds(panel, new_bounds);
+  panel->SetAutoResizable(false);
+
 }
 
 void PanelManager::MovePanelToStrip(

@@ -55,6 +55,10 @@ class OverflowPanelStrip : public PanelStrip,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
+  virtual bool CanResizePanel(const Panel* panel) const OVERRIDE;
+  virtual void SetPanelBounds(Panel* panel,
+                              const gfx::Rect& new_bounds) OVERRIDE;
+
   virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
 
   void OnFullScreenModeChanged(bool is_full_screen);

@@ -293,6 +293,9 @@ class Panel : public BrowserWindow,
     has_temporary_layout_ = temporary;
   }
 
+  // Changes the preferred size to acceptable based on min_size() and max_size()
+  void ClampSize(gfx::Size* size) const;
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 

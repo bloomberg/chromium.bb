@@ -224,6 +224,16 @@ void OverflowPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
   NOTREACHED();
 }
 
+bool OverflowPanelStrip::CanResizePanel(const Panel* panel) const {
+  return false;
+}
+
+void OverflowPanelStrip::SetPanelBounds(Panel* panel,
+                                        const gfx::Rect& new_bounds) {
+  DCHECK_EQ(this, panel->panel_strip());
+  NOTREACHED();
+}
+
 void OverflowPanelStrip::RefreshLayout() {
   if (panels_.empty())
     return;
