@@ -201,5 +201,15 @@ class CBuildBotTest(mox.MoxTestBase):
 
     self.assertFalse(not configs)
 
+  def testHWTestsIFFArchivingHWTestArtifacts(self):
+    """Make sure all configs upload artifacts that need them for hw testing."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['hw_tests']:
+        self.assertTrue(
+            config['upload_hw_test_artifacts'],
+            "%s is trying to run hw tests without uploading payloads." %
+            build_name)
+
+
 if __name__ == '__main__':
   unittest.main()

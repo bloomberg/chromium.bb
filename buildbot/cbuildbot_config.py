@@ -188,6 +188,9 @@ _settings = dict(
 # hw_tests -- A list of autotest suites to run on remote hardware.
   hw_tests=[],
 
+# upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
+  upload_hw_test_artifacts=False,
+
 # platform -- Hardware platform on which the build is tested.
   platform=None,
 
@@ -562,6 +565,7 @@ arm_generic_full.add_config('arm-tegra2-seaboard-full',
 x86_generic_full = \
 full.add_config('x86-generic-full',
   boards=['x86-generic'],
+  upload_hw_test_artifacts=True,
 )
 
 x86_generic_full.add_config('x86-pineview-full',
@@ -690,6 +694,7 @@ _release = full.derive(official, internal,
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
+  upload_hw_test_artifacts=True,
 )
 
 _release.add_config('x86-mario-release',

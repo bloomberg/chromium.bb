@@ -682,7 +682,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     # Build images and autotest tarball in parallel.
     steps = []
-    if build_autotest and (self._build_config['hw_tests'] or
+    if build_autotest and (self._build_config['upload_hw_test_artifacts'] or
                            self._build_config['archive_build_debug']):
       self._tarball_dir = tempfile.mkdtemp(prefix='autotest')
       steps.append(self._BuildAutotestTarballs)
@@ -1108,7 +1108,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
-      if self._build_config['hw_tests']:
+      if self._build_config['upload_hw_test_artifacts']:
         update_payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
         commands.GenerateNPlus1Payloads(
             buildroot, self._bot_id,
