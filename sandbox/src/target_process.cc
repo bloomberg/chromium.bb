@@ -141,7 +141,6 @@ TargetProcess::~TargetProcess() {
 DWORD TargetProcess::Create(const wchar_t* exe_path,
                             const wchar_t* command_line,
                             const wchar_t* desktop,
-                            PSECURITY_ATTRIBUTES security_attributes,
                             PROCESS_INFORMATION* target_info) {
   exe_name_ = _wcsdup(exe_path);
 
@@ -163,7 +162,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   if (!::CreateProcessAsUserW(lockdown_token_,
                               exe_path,
                               cmd_line.get(),
-                              security_attributes,
+                              NULL,   // No security attribute.
                               NULL,   // No thread attribute.
                               FALSE,  // Do not inherit handles.
                               flags,
