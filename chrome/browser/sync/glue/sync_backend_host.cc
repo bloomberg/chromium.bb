@@ -602,11 +602,6 @@ SyncBackendHost::Status SyncBackendHost::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-SyncBackendHost::StatusSummary SyncBackendHost::GetStatusSummary() {
-  DCHECK(initialized());
-  return core_->sync_manager()->GetStatusSummary();
-}
-
 const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
   return last_snapshot_.get();
 }

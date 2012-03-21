@@ -1063,11 +1063,22 @@ void ProfileSyncService::ShowSyncSetupWithWizard(SyncSetupWizard::State state) {
   ShowSyncSetup(chrome::kSyncSetupSubPage);
 }
 
-SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
-  if (backend_.get() && backend_initialized_)
-    return backend_->GetStatusSummary();
-  else
-    return SyncBackendHost::Status::OFFLINE_UNUSABLE;
+std::string ProfileSyncService::QuerySyncStatusSummary() {
+  if (unrecoverable_error_detected_) {
+    return "Unrecoverable error detected";
+  } else if (!backend_.get()) {
+    return "Syncing not enabled";
+  } else if (backend_.get() && !HasSyncSetupCompleted()) {
+    return "First time sync setup incomplete";
+  } else if (backend_.get() && HasSyncSetupCompleted() &&
+             data_type_manager_.get() &&
+             data_type_manager_->state() != DataTypeManager::CONFIGURED) {
+    return "Datatypes not fully initialized";
+  } else if (ShouldPushChanges()) {
+    return "Sync service initialized";
+  } else {
+    return "Status unknown: Internal error?";
+  }
 }
 
 SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
@@ -1075,7 +1086,6 @@ SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
     return backend_->GetDetailedStatus();
   } else {
     SyncBackendHost::Status status;
-    status.summary = SyncBackendHost::Status::OFFLINE_UNUSABLE;
     status.sync_protocol_error = last_actionable_error_;
     return status;
   }
@@ -1087,21 +1097,6 @@ const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
 
 bool ProfileSyncService::SetupInProgress() const {
   return !HasSyncSetupCompleted() && WizardIsVisible();
-}
-
-std::string ProfileSyncService::BuildSyncStatusSummaryText(
-    const sync_api::SyncManager::Status::Summary& summary) {
-  const char* strings[] = {"INVALID", "OFFLINE", "OFFLINE_UNSYNCED", "SYNCING",
-      "READY", "OFFLINE_UNUSABLE"};
-  COMPILE_ASSERT(arraysize(strings) ==
-                 sync_api::SyncManager::Status::SUMMARY_STATUS_COUNT,
-                 enum_indexed_array);
-  if (summary < 0 ||
-      summary >= sync_api::SyncManager::Status::SUMMARY_STATUS_COUNT) {
-    LOG(DFATAL) << "Illegal Summary Value: " << summary;
-    return "UNKNOWN";
-  }
-  return strings[summary];
 }
 
 bool ProfileSyncService::sync_initialized() const {

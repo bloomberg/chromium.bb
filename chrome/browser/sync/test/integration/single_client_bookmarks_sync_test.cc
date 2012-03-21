@@ -37,8 +37,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
 
   EnableNetwork(GetProfile(0));
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Commit changes."));
-  ASSERT_EQ(ProfileSyncService::Status::READY,
-            GetClient(0)->GetStatus().summary);
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
@@ -157,13 +155,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ASSERT_TRUE(AddURL(0, L"Google", GURL("http://www.google.com")));
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a bookmark."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
-  ASSERT_EQ(ProfileSyncService::Status::READY,
-            GetClient(0)->GetStatus().summary);
 
   RestartSyncService(0);
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Restarted sync."));
   ASSERT_TRUE(ModelMatchesVerifier(0));
-  ASSERT_EQ(ProfileSyncService::Status::READY,
-            GetClient(0)->GetStatus().summary);
   ASSERT_EQ(0, GetClient(0)->GetStatus().unsynced_count);
 }

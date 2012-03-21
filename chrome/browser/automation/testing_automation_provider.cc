@@ -5125,7 +5125,6 @@ void TestingAutomationProvider::SignInToSync(Browser* browser,
 // {u'summary': u'SYNC DISABLED'}
 //
 // { u'last synced': u'Just now',
-//   u'summary': u'READY',
 //   u'sync url': u'clients4.google.com',
 //   u'updates received': 42,
 //   u'synced datatypes': [ u'Bookmarks',
@@ -5150,8 +5149,6 @@ void TestingAutomationProvider::GetSyncInfo(Browser* browser,
   } else {
     ProfileSyncService* service = sync_waiter_->service();
     ProfileSyncService::Status status = sync_waiter_->GetStatus();
-    sync_info->SetString("summary",
-        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
     sync_info->SetString("sync url", service->sync_service_url().host());
     sync_info->SetString("last synced", service->GetLastSyncedTimeString());
     sync_info->SetInteger("updates received", status.updates_received);
@@ -5200,18 +5197,9 @@ void TestingAutomationProvider::AwaitFullSyncCompletion(
     reply.SendError("Sync cycle did not complete.");
     return;
   }
-  ProfileSyncService::Status status = sync_waiter_->GetStatus();
-  if (status.summary == ProfileSyncService::Status::READY) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetBoolean("success", true);
-    reply.SendSuccess(return_value.get());
-  } else {
-    std::string error_msg = "Wait for sync cycle was unsuccessful. "
-                            "Sync status: ";
-    error_msg.append(
-        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
-    reply.SendError(error_msg);
-  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("success", true);
+  reply.SendSuccess(return_value.get());
 }
 
 // Sample json output: { "success": true }
@@ -5237,18 +5225,9 @@ void TestingAutomationProvider::AwaitSyncRestart(
     reply.SendError("Sync did not successfully restart.");
     return;
   }
-  ProfileSyncService::Status status = sync_waiter_->GetStatus();
-  if (status.summary == ProfileSyncService::Status::READY) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetBoolean("success", true);
-    reply.SendSuccess(return_value.get());
-  } else {
-    std::string error_msg = "Wait for sync restart was unsuccessful. "
-                            "Sync status: ";
-    error_msg.append(
-        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
-    reply.SendError(error_msg);
-  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("success", true);
+  reply.SendSuccess(return_value.get());
 }
 
 // Refer to EnableSyncForDatatypes() in chrome/test/pyautolib/pyauto.py for
@@ -5292,15 +5271,9 @@ void TestingAutomationProvider::EnableSyncForDatatypes(
           "Enabling datatype: %s", datatype_string.c_str()));
     }
   }
-  ProfileSyncService::Status status = sync_waiter_->GetStatus();
-  if (status.summary == ProfileSyncService::Status::READY ||
-      status.summary == ProfileSyncService::Status::SYNCING) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->SetBoolean("success", true);
-    reply.SendSuccess(return_value.get());
-  } else {
-    reply.SendError("Enabling sync for given datatypes was unsuccessful");
-  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("success", true);
+  reply.SendSuccess(return_value.get());
 }
 
 // Refer to DisableSyncForDatatypes() in chrome/test/pyautolib/pyauto.py for
@@ -5330,15 +5303,6 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
   }
   if (first_datatype == "All") {
     sync_waiter_->DisableSyncForAllDatatypes();
-    ProfileSyncService::Status status = sync_waiter_->GetStatus();
-    if (status.summary != ProfileSyncService::Status::READY &&
-        status.summary != ProfileSyncService::Status::SYNCING) {
-      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-      return_value->SetBoolean("success", true);
-      reply.SendSuccess(return_value.get());
-    } else {
-      reply.SendError("Disabling all sync datatypes was unsuccessful");
-    }
   } else {
     int num_datatypes = datatypes->GetSize();
     for (int i = 0; i < num_datatypes; i++) {
@@ -5355,15 +5319,9 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
       sync_waiter_->AwaitFullSyncCompletion(StringPrintf(
           "Disabling datatype: %s", datatype_string.c_str()));
     }
-    ProfileSyncService::Status status = sync_waiter_->GetStatus();
-    if (status.summary == ProfileSyncService::Status::READY ||
-        status.summary == ProfileSyncService::Status::SYNCING) {
-      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-      return_value->SetBoolean("success", true);
-      reply.SendSuccess(return_value.get());
-    } else {
-      reply.SendError("Disabling sync for given datatypes was unsuccessful");
-    }
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean("success", true);
+    reply.SendSuccess(return_value.get());
   }
 }
 

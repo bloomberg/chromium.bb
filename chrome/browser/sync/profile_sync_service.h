@@ -259,7 +259,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnUserCancelledDialog();
 
   // Get various information for displaying in the user interface.
-  browser_sync::SyncBackendHost::StatusSummary QuerySyncStatusSummary();
+  std::string QuerySyncStatusSummary();
   virtual browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
 
   virtual const GoogleServiceAuthError& GetAuthError() const;
@@ -289,10 +289,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   virtual void ShowSyncSetup(const std::string& sub_page);
   void ShowSyncSetupWithWizard(SyncSetupWizard::State state);
-
-  // Pretty-printed strings for a given StatusSummary.
-  static std::string BuildSyncStatusSummaryText(
-      const browser_sync::SyncBackendHost::StatusSummary& summary);
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.

@@ -338,10 +338,8 @@ def SignInToSyncAndVerifyState(test, account_key):
   creds = test.GetPrivateInfo()[account_key]
   username = creds['username']
   password = creds['password']
-  test.assertTrue(test.GetSyncInfo()['summary'] == 'OFFLINE_UNUSABLE')
   test.assertTrue(test.GetSyncInfo()['last synced'] == 'Never')
   test.assertTrue(test.SignInToSync(username, password))
-  test.assertTrue(test.GetSyncInfo()['summary'] == 'READY')
   test.assertTrue(test.GetSyncInfo()['last synced'] == 'Just now')
 
 

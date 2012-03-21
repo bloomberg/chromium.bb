@@ -692,8 +692,7 @@ SyncManager::SyncManager(const std::string& name)
     : data_(new SyncInternal(name)) {}
 
 SyncManager::Status::Status()
-    : summary(INVALID),
-      notifications_enabled(false),
+    : notifications_enabled(false),
       notifications_received(0),
       unsynced_count(0),
       encryption_conflicts(0),
@@ -2368,10 +2367,6 @@ void SyncManager::SyncInternal::AddObserver(
 void SyncManager::SyncInternal::RemoveObserver(
     SyncManager::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-SyncManager::Status::Summary SyncManager::GetStatusSummary() const {
-  return data_->GetStatus().summary;
 }
 
 SyncManager::Status SyncManager::GetDetailedStatus() const {

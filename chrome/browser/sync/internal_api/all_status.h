@@ -62,9 +62,6 @@ class AllStatus : public SyncEngineEventListener {
   sync_api::SyncManager::Status CalcSyncing(const SyncEngineEvent& event) const;
   sync_api::SyncManager::Status CreateBlankStatus() const;
 
-  // Examines status to see what has changed, updates old_status in place.
-  void CalcStatusChanges();
-
   sync_api::SyncManager::Status status_;
 
   mutable base::Lock mutex_;  // Protects all data members.

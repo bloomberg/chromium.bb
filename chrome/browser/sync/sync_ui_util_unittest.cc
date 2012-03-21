@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,6 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   string16 str(ASCIIToUTF16("none"));
 
   browser_sync::SyncBackendHost::Status status;
-  status.summary = browser_sync::SyncBackendHost::Status::OFFLINE_UNUSABLE;
 
   EXPECT_CALL(service, HasSyncSetupCompleted())
               .WillOnce(Return(true));
@@ -160,7 +159,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, SetupInProgress())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
@@ -178,7 +176,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       return;
@@ -187,7 +184,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       EXPECT_CALL(service, unrecoverable_error_detected())
@@ -203,7 +199,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       *auth_error = new GoogleServiceAuthError(
@@ -222,7 +217,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       browser_sync::SyncProtocolError protocolError;
       protocolError.action = browser_sync::STOP_AND_RESTART_SYNC;
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       status.sync_protocol_error = protocolError;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
@@ -239,7 +233,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
@@ -259,7 +252,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, HasSyncSetupCompleted())
               .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
-      status.summary = browser_sync::SyncBackendHost::Status::READY;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);

@@ -144,7 +144,6 @@ class SyncFrontend {
 // that the SyncFrontend is only accessed on the UI loop.
 class SyncBackendHost : public BackendDataTypeConfigurer {
  public:
-  typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
 
   // Create a SyncBackendHost with a reference to the |frontend| that
@@ -256,7 +255,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   Status GetDetailedStatus();
-  StatusSummary GetStatusSummary();
   const sessions::SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
   // Determines if the underlying sync engine has made any local changes to
