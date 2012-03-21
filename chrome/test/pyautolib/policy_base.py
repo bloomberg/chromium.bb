@@ -251,10 +251,8 @@ class PolicyTestBase(pyauto.PyUITest):
 
     if self.IsChromeOS():
       logging.debug('Logging in')
-      # TODO(joaodasilva): figure why $apps doesn't work. An @gmail.com account
-      # shouldn't fetch policies, but this works after having the tokens.
-      credentials = constants.CREDENTIALS['$default']
-      self.Login(credentials[0], credentials[1])
+      credentials = self.GetPrivateInfo()['prod_enterprise_test_user']
+      self.Login(credentials['username'], credentials['password'])
       assert self.GetLoginInfo()['is_logged_in']
 
       self._WriteUserPolicyToken(user_dmtoken)
