@@ -43,6 +43,14 @@
 #include <dirent.h>
 #include <string.h>
 
+#ifndef FC_DIR_SEPARATOR_S
+#  ifdef _WIN32
+#    define FC_DIR_SEPARATOR_S	"\\"
+#  else
+#    define FC_DIR_SEPARATOR_S	"/"
+#  endif
+#endif
+
 #if defined (_WIN32)
 #define STRICT
 #include <windows.h>
@@ -114,6 +122,68 @@ usage (char *program, int error)
 }
 
 static FcStrSet *processed_dirs;
+
+/* Create CACHEDIR.TAG */
+static FcBool
+create_tag_file (FcConfig *config, FcBool verbose)
+{
+    FcChar8		 *cache_tag;
+    FcChar8		 *cache_dir = NULL;
+    FcStrList		 *list;
+    int 		 fd;
+    FcAtomic	 	 *atomic;
+    static const FcChar8 cache_tag_contents[] =
+	"Signature: 8a477f597d28d172789f06886806bc55\n"
+	"# This file is a cache directory tag created by fontconfig.\n"
+	"# For information about cache directory tags, see:\n"
+	"#       http://www.brynosaurus.com/cachedir/\n";
+    static size_t	 cache_tag_contents_size = 0;
+    FcBool		 ret = FcTrue;
+
+    if (cache_tag_contents_size == 0)
+	cache_tag_contents_size = strlen((char *)cache_tag_contents);
+
+    list = FcConfigGetCacheDirs(config);
+    if (!list)
+	return FcFalse;
+
+    while ((cache_dir = FcStrListNext (list)))
+    {
+	if (access ((char *) cache_dir, W_OK|X_OK) == 0)
+	{
+	    if (verbose)
+		printf ("Create CACHEDIR.TAG at %s\n", cache_dir);
+	    /* Create CACHEDIR.TAG */
+	    cache_tag = FcStrPlus (cache_dir, (const FcChar8 *) FC_DIR_SEPARATOR_S "CACHEDIR.TAG");
+	    if (!cache_tag)
+		return FcFalse;
+	    atomic = FcAtomicCreate ((FcChar8 *)cache_tag);
+	    if (!atomic)
+		goto bail1;
+	    if (!FcAtomicLock (atomic))
+		goto bail2;
+	    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0644);
+	    if (fd == -1)
+		goto bail3;
+
+	    write(fd, cache_tag_contents, cache_tag_contents_size);
+	    close(fd);
+
+	    if (!FcAtomicReplaceOrig(atomic))
+		goto bail3;
+
+	  bail3:
+	    FcAtomicUnlock (atomic);
+	  bail2:
+	    FcAtomicDestroy (atomic);
+	  bail1:
+	    FcStrFree (cache_tag);
+	}
+    }
+    FcStrListDone (list);
+
+    return ret;
+}
 
 static int
 scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose, int *changed)
@@ -449,6 +519,13 @@ main (int argc, char **argv)
 	
     changed = 0;
     ret = scanDirs (list, config, force, really_force, verbose, &changed);
+
+    /*
+     * Try to create CACHEDIR.TAG anyway.
+     * This expects the fontconfig cache directory already exists.
+     * If it doesn't, it won't be simply created.
+     */
+    create_tag_file (config, verbose);
 
     FcStrSetDestroy (processed_dirs);
 
