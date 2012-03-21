@@ -436,7 +436,7 @@ const Experiment kExperiments[] = {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,
-    kOsAll,
+    kOsWin | kOsMac | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableAsyncDns)
   },
   {
@@ -450,7 +450,7 @@ const Experiment kExperiments[] = {
     "enable-media-source",
     IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME,
     IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION,
-    kOsWin | kOsMac | kOsLinux | kOsCrOS,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaSource)
   },
   {
