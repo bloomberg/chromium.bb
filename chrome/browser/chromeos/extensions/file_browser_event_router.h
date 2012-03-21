@@ -179,6 +179,10 @@ class FileBrowserEventRouterFactory
   // Returns the FileBrowserEventRouterFactory instance.
   static FileBrowserEventRouterFactory* GetInstance();
 
+ protected:
+  // ProfileKeyedBasedFactory overrides:
+  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+
  private:
   friend struct DefaultSingletonTraits<FileBrowserEventRouterFactory>;
 

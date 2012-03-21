@@ -608,3 +608,10 @@ FileBrowserEventRouterFactory::BuildServiceInstanceFor(Profile* profile) const {
   return scoped_refptr<RefcountedProfileKeyedService>(
       new FileBrowserEventRouter(profile));
 }
+
+bool FileBrowserEventRouterFactory::ServiceHasOwnInstanceInIncognito() {
+  // Explicitly and always allow this router in guest login mode.   see
+  // chrome/browser/profiles/profile_keyed_base_factory.h comment
+  // for the details.
+  return true;
+}
