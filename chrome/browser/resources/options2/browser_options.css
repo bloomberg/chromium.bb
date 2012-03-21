@@ -127,7 +127,7 @@ input[type='range'] {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
   height: 42px;
-  vertical-align: baseline;
+  vertical-align: middle;
 }
 
 list:not([disabled]) > .network-group:hover,
@@ -139,6 +139,7 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-group-labels {
+  -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
   padding-top: 3px;
@@ -218,6 +219,7 @@ list:not([disabled]) > .network-group[selected] {
   width: 19px;
 }
 
+.network-group > .controlled-setting-indicator,
 .network-menu-item > .controlled-setting-indicator {
   -webkit-box-flex: 0;
   -webkit-margin-end: 5px;
@@ -225,6 +227,10 @@ list:not([disabled]) > .network-group[selected] {
   height: 16px;
   margin-top: 9px;
   width: 16px;
+}
+
+.network-group > .controlled-setting-indicator {
+  margin-top: 0;
 }
 
 .network-options-button:hover {

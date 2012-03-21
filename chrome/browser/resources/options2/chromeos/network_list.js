@@ -205,6 +205,13 @@ cr.define('options.network', function() {
       this.subtitle_.classList.add('network-selector');
     },
 
+    /**
+     * Adds an indicator to show that the network is policy managed.
+     */
+    showManagedNetworkIndicator: function() {
+      this.appendChild(new ManagedNetworkIndicator());
+    },
+
     /* @inheritDoc */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
@@ -345,6 +352,7 @@ cr.define('options.network', function() {
     /* @inheritDoc */
     decorate: function() {
       // TODO(kevers): Generalize method of setting default label.
+      var policyManaged = false;
       var defaultMessage = this.data_.key == 'wifi' ?
           'networkOffline' : 'networkNotConnected';
       this.subtitle = templateData[defaultMessage];
@@ -354,6 +362,7 @@ cr.define('options.network', function() {
         var networkDetails = list[i];
         if (networkDetails.connecting || networkDetails.connected) {
           this.subtitle = networkDetails.networkName;
+          policyManaged = networkDetails.policyManaged;
           candidateURL = networkDetails.iconURL;
           // Only break when we see a connecting network as it is possible to
           // have a connected network and a connecting network at the same
@@ -371,6 +380,9 @@ cr.define('options.network', function() {
         this.iconType = this.data.key;
 
       this.showSelector();
+
+      if (policyManaged)
+        this.showManagedNetworkIndicator();
 
       // TODO(kevers): Add default icon for VPN when disconnected or in the
       // process of connecting.
