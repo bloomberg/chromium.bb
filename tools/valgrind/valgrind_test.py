@@ -751,9 +751,9 @@ class DrMemory(BaseTool):
   It is not very mature at the moment, some things might not work properly.
   """
 
-  def __init__(self, handle_uninits_and_leaks):
+  def __init__(self, full_mode):
     super(DrMemory, self).__init__()
-    self.handle_uninits_and_leaks = handle_uninits_and_leaks
+    self.full_mode = full_mode
     self.RegisterOptionParserHook(DrMemory.ExtendOptionParser)
 
   def ToolName(self):
@@ -831,7 +831,7 @@ class DrMemory(BaseTool):
 
     suppression_count = 0
     supp_files = self._options.suppressions
-    if self.handle_uninits_and_leaks:
+    if self.full_mode:
       supp_files += [s.replace(".txt", "_full.txt") for s in supp_files]
     for suppression_file in supp_files:
       if os.path.exists(suppression_file):
@@ -885,8 +885,8 @@ class DrMemory(BaseTool):
     # TODO(timurrrr): In fact, we want "starting from .." instead of "below .."
     proc += ["-callstack_truncate_below", ",".join(boring_callers)]
 
-    if not self.handle_uninits_and_leaks:
-      proc += ["-no_check_uninitialized", "-no_count_leaks"]
+    if not self.full_mode:
+      proc += ["-light"]
 
     proc += self._tool_flags
 
