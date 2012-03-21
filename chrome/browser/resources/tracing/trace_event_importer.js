@@ -124,6 +124,8 @@ cr.define('tracing', function() {
       slice.duration = (event.ts / 1000) - slice.start;
       if (event.uts)
         slice.durationInUserTime = (event.uts / 1000) - slice.startInUserTime;
+      for (var arg in event.args)
+        slice.args[arg] = event.args[arg];
 
       // Store the slice on the correct subrow.
       var thread = this.model_.getOrCreateProcess(event.pid).
@@ -394,6 +396,8 @@ cr.define('tracing', function() {
             slice.args = startAsyncEventState.event.args;
           else
             slice.args = {};
+          for (var arg in event.args)
+            slice.args[arg] = event.args[arg]
 
           // Add it to the start-thread's asyncSlices.
           slice.startThread.asyncSlices.push(slice);
