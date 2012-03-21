@@ -167,7 +167,7 @@ views::Widget* NonModalTransient::non_modal_transient_ = NULL;
 void InitWindowTypeLauncher() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
-                                            gfx::Rect(120, 150, 400, 400));
+                                            gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ash::internal::SetShadowType(widget->GetNativeView(),
                                ash::internal::SHADOW_TYPE_RECTANGULAR);
