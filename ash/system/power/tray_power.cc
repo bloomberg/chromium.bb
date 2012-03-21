@@ -57,6 +57,7 @@ class PowerTrayView : public views::ImageView {
       supply_status_.battery_percentage = 100.0;
 
     UpdateImage();
+    SetVisible(status.battery_is_present);
   }
 
  private:
@@ -142,14 +143,13 @@ TrayPower::~TrayPower() {
 }
 
 views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
+  // There may not be enough information when this is created about whether
+  // there is a battery or not. So always create this, and adjust visibility as
+  // necessary.
   PowerSupplyStatus power_status =
       ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
-  if (power_status.battery_is_present) {
-    power_tray_.reset(new tray::PowerTrayView());
-    power_tray_->UpdatePowerStatus(power_status);
-  } else {
-    power_tray_.reset();
-  }
+  power_tray_.reset(new tray::PowerTrayView());
+  power_tray_->UpdatePowerStatus(power_status);
   return power_tray_.get();
 }
 
