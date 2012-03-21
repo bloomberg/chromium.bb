@@ -1481,10 +1481,6 @@ void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
   Send(new ViewMsg_SetAltErrorPageURL(GetRoutingID(), url));
 }
 
-void RenderViewHostImpl::SetGuest(bool guest) {
-  guest_ = guest;
-}
-
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
 }

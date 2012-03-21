@@ -3429,10 +3429,6 @@ int RenderViewImpl::GetRoutingID() const {
   return routing_id_;
 }
 
-bool RenderViewImpl::IsGuest() const {
-  return guest_;
-}
-
 int RenderViewImpl::GetPageId() const {
   return page_id_;
 }

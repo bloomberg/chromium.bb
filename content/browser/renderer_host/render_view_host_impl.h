@@ -211,7 +211,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;
   virtual void SetAltErrorPageURL(const GURL& url) OVERRIDE;
-  void SetGuest(bool guest);
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
   virtual void SetZoomLevel(double level) OVERRIDE;
@@ -342,6 +341,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void set_sudden_termination_allowed(bool enabled) {
     sudden_termination_allowed_ = enabled;
   }
+
+  void set_guest(bool guest) { guest_ = guest; }
 
   // RenderWidgetHost public overrides.
   virtual void Shutdown() OVERRIDE;

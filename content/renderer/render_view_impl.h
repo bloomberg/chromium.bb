@@ -246,6 +246,8 @@ class RenderViewImpl : public RenderWidget,
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
+  bool guest() const { return guest_; }
+
   void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
@@ -586,7 +588,6 @@ class RenderViewImpl : public RenderWidget,
 
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
-  bool IsGuest() const;
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual gfx::NativeViewId GetHostWindow() const OVERRIDE;
