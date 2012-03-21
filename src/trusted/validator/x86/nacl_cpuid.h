@@ -5,7 +5,6 @@
  */
 
 /*
- * cpuid.c
  * This module provides a simple abstraction for using the CPUID
  * instruction to determine instruction set extensions supported by
  * the current processor.
