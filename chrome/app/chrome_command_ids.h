@@ -176,8 +176,6 @@
 #define IDC_SHOW_SETTINGS_CHANGE_FIRST  40033
 #define IDC_SHOW_SETTINGS_CHANGE_LAST   40133
 #define IDC_SHOW_AVATAR_MENU            40134
-#define IDC_EXTENSION_DISABLED_FIRST    40135
-#define IDC_EXTENSION_DISABLED_LAST     40235
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
