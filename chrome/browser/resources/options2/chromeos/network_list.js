@@ -199,6 +199,14 @@ cr.define('options.network', function() {
     },
 
     /**
+     * Set the direction of the text.
+     * @param {string} direction The direction of the text, e.g. 'ltr'.
+     */
+    setSubtitleDirection: function(direction) {
+      this.subtitle_.dir = direction;
+    },
+
+    /**
      * Indicate that the selector arrow should be shown.
      */
     showSelector: function() {
@@ -362,6 +370,7 @@ cr.define('options.network', function() {
         var networkDetails = list[i];
         if (networkDetails.connecting || networkDetails.connected) {
           this.subtitle = networkDetails.networkName;
+          this.setSubtitleDirection('ltr');
           policyManaged = networkDetails.policyManaged;
           candidateURL = networkDetails.iconURL;
           // Only break when we see a connecting network as it is possible to
