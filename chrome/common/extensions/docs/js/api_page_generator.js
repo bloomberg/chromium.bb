@@ -77,6 +77,7 @@ var MODULE_SCHEMAS = [
   '../api/webNavigation.json',
   '../api/webRequest.json',
   '../api/webSocketProxyPrivate.json',
+  '../api/webstore.json',
   '../api/webstorePrivate.json',
   '../api/windows.json',
 ]

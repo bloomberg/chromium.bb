@@ -211,6 +211,7 @@
     "chrome.webRequest.onHeadersReceived": "webRequest.html#event-onHeadersReceived",
     "chrome.webRequest.onResponseStarted": "webRequest.html#event-onResponseStarted",
     "chrome.webRequest.onSendHeaders": "webRequest.html#event-onSendHeaders",
+    "chrome.webstore.install": "webstore.html#method-install",
     "chrome.windows.create": "windows.html#method-create",
     "chrome.windows.get": "windows.html#method-get",
     "chrome.windows.getAll": "windows.html#method-getAll",

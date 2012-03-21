@@ -57,6 +57,9 @@
     }
 
     var cwi = chrome.webstore.install;
+    var callback = function() {
+    };
+
     runTests([
       shouldPass(function() {cwi()}),
       shouldPass(function() {cwi(undefined)}),
@@ -64,12 +67,18 @@
       shouldPass(function() {cwi(undefined, undefined, undefined)}),
 
       shouldPass(function() {cwi(storeUrl)}),
-      shouldPass(function() {cwi(undefined, function() {})}),
-      shouldPass(function() {cwi(undefined, undefined, function() {})}),
+      shouldPass(function() {cwi(undefined, callback)}),
+      shouldPass(function() {cwi(undefined, undefined, callback)}),
+      shouldPass(function() {cwi(undefined, callback, callback)}),
+
+      shouldFail(function() {cwi(callback)}),
+      shouldFail(function() {cwi(callback, callback)}),
+      shouldFail(function() {cwi(callback, callback, callback)}),
 
       shouldFail(function() {cwi(123)}),
       shouldFail(function() {cwi(undefined, 123)}),
-      shouldFail(function() {cwi(undefined, undefined, 123)})
+      shouldFail(function() {cwi(undefined, undefined, 123)}),
+      shouldFail(function() {cwi(undefined, callback, 123)})
     ]);
   }
 </script>

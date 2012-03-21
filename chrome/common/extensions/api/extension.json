@@ -89,6 +89,7 @@
       {
         "name": "sendRequest",
         "type": "function",
+        "allowAmbiguousOptionalArguments": true,
         "unprivileged": true,
         "description": "Sends a single request to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single request with an optional response. The <a href='extension.html#event-onRequest'>chrome.extension.onRequest</a> event is fired in each page of the extension.",
         "parameters": [

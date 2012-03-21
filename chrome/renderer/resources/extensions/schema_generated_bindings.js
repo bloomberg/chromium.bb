@@ -128,7 +128,12 @@
   // Finds the correct signature for the given arguments, then validates the
   // arguments against that signature. Returns a 'normalized' arguments list
   // where nulls are inserted where optional parameters were omitted.
-  chromeHidden.updateArgumentsValidate = function(args, funDef) {
+  function normalizeArgumentsAndValidate(args, funDef) {
+    if (funDef.allowAmbiguousOptionalArguments) {
+      chromeHidden.validate(args, funDef.definition.parameters);
+      return args;
+    }
+
     var definedSignature = funDef.definition.parameters;
     var resolvedSignature = resolveSignature(args, definedSignature);
     if (!resolvedSignature)
@@ -136,6 +141,7 @@
           getArgumentSignatureString(funDef.name, args) +
           " doesn't match definition " +
           getParameterSignatureString(funDef.name, definedSignature));
+
     chromeHidden.validate(args, resolvedSignature);
 
     var normalizedArgs = [];
@@ -150,7 +156,10 @@
   };
 
   // Validates that a given schema for an API function is not ambiguous.
-  function isDefinedSignatureAmbiguous(definedSignature) {
+  function isFunctionSignatureAmbiguous(functionDef) {
+    if (functionDef.allowAmbiguousOptionalArguments)
+      return false;
+
     var signaturesAmbiguous = function(signature1, signature2) {
       if (signature1.length != signature2.length)
         return false;
@@ -162,7 +171,7 @@
       return true;
     };
 
-    var candidateSignatures = getSignatures(definedSignature);
+    var candidateSignatures = getSignatures(functionDef.parameters);
     for (var i = 0; i < candidateSignatures.length; i++) {
       for (var j = i + 1; j < candidateSignatures.length; j++) {
         if (signaturesAmbiguous(candidateSignatures[i], candidateSignatures[j]))
@@ -604,16 +613,17 @@
           apiFunction.definition = functionDef;
           apiFunction.name = apiFunctionName;
 
-          // Validate API for ambiguity only in DEBUG mode.
-          // We do not validate 'extension.sendRequest' because we know it is
-          // ambiguous. We disambiguate calls in 'updateArgumentsPrevalidate'.
           // TODO(aa): It would be best to run this in a unit test, but in order
           // to do that we would need to better factor this code so that it
-          // didn't depend on so much v8::Extension machinery.
+          // doesn't depend on so much v8::Extension machinery.
           if (chromeHidden.validateAPI &&
-              apiFunction.name != "extension.sendRequest" &&
-              isDefinedSignatureAmbiguous(apiFunction.definition.parameters))
-            throw new Error(apiFunction.name + " is ambiguous");
+              isFunctionSignatureAmbiguous(apiFunction.definition)) {
+            throw new Error(
+                apiFunction.name + ' has ambiguous optional arguments. ' +
+                'To implement custom disambiguation logic, add ' +
+                '"allowAmbiguousOptionalArguments" to the function\'s schema.');
+          }
+
           apiFunctions.register(apiFunction.name, apiFunction);
 
           mod[functionDef.name] = (function() {
@@ -621,7 +631,7 @@
             if (this.updateArgumentsPreValidate)
               args = this.updateArgumentsPreValidate.apply(this, args);
 
-            args = chromeHidden.updateArgumentsValidate(args, this);
+            args = normalizeArgumentsAndValidate(args, this);
             if (this.updateArgumentsPostValidate)
               args = this.updateArgumentsPostValidate.apply(this, args);
 

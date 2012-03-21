@@ -24,7 +24,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
-      <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->
       <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="resources\extensions\app_custom_bindings.js" type="BINDATA" />
@@ -50,6 +49,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="resources\extensions\tts_engine_custom_bindings.js" type="BINDATA" />
       <include name="IDR_TYPES_CUSTOM_BINDINGS_JS" file="resources\extensions\types_custom_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="resources\extensions\web_request_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="resources\extensions\webstore_custom_bindings.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

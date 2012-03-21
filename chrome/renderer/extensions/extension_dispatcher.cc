@@ -340,8 +340,6 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
 void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                                  ChromeV8Context* context) {
-  module_system->RegisterNativeHandler("webstore",
-      scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
   module_system->RegisterNativeHandler("event_bindings",
       scoped_ptr<NativeHandler>(EventBindings::Get(this)));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
@@ -379,10 +377,11 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new TTSCustomBindings()));
   module_system->RegisterNativeHandler("web_request",
       scoped_ptr<NativeHandler>(new WebRequestCustomBindings()));
+  module_system->RegisterNativeHandler("webstore",
+      scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
 }
 
 void ExtensionDispatcher::PopulateSourceMap() {
-  source_map_.RegisterSource("webstore", IDR_WEBSTORE_BINDINGS_JS);
   source_map_.RegisterSource("event_bindings", IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("miscellaneous_bindings",
       IDR_MISCELLANEOUS_BINDINGS_JS);
@@ -425,6 +424,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("types", IDR_TYPES_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 }
 
 void ExtensionDispatcher::DidCreateScriptContext(
@@ -500,9 +500,6 @@ void ExtensionDispatcher::DidCreateScriptContext(
   scoped_ptr<std::set<std::string> > apis =
       ExtensionAPI::GetInstance()->GetAPIsForContext(
           context_type, extension, url_info.url());
-
-  // TODO(kalman): include this in the APIs returned from GetAPIsForContext.
-  apis->insert("webstore");
 
   // TODO(kalman): this is probably the most unfortunate thing I've ever had
   // to write. We really need to factor things differently to delete the
