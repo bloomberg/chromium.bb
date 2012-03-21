@@ -82,6 +82,7 @@ class AutofillManager : public content::WebContentsObserver,
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
+  void OnShowPasswordGenerationPopup(const gfx::Rect& bounds);
 
  protected:
   // Only test code should subclass AutofillManager.

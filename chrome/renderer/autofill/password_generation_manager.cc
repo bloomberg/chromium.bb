@@ -5,12 +5,15 @@
 #include "chrome/renderer/autofill/password_generation_manager.h"
 
 #include "base/logging.h"
+#include "chrome/common/autofill_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "ui/gfx/rect.h"
 
 namespace autofill {
 
@@ -66,16 +69,31 @@ bool PasswordGenerationManager::ShouldAnalyzeFrame(
 
 void PasswordGenerationManager::FocusedNodeChanged(
     const WebKit::WebNode& node) {
-  if (account_creation_elements_.first ==
-      node.toConst<WebKit::WebInputElement>()) {
-    // Eventually we will show UI here and possibly fill the passwords
-    // depending on the user interaction. For now, we will just say that the
-    // associated passwords fields have been autocompleted to aid in testing.
-    std::vector<WebKit::WebInputElement> passwords =
-        account_creation_elements_.second;
-    for (size_t i = 0; i < passwords.size(); ++i) {
-      passwords[i].setAutofilled(true);
-    }
+  WebKit::WebInputElement input_element =
+      node.toConst<WebKit::WebInputElement>();
+  if (account_creation_elements_.first == input_element) {
+    gfx::Rect rect(input_element.boundsInViewportSpace());
+    Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
+                                                         rect));
+  }
+}
+
+bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PasswordGenerationManager, message)
+    IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
+                        OnPasswordAccepted)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
+  for (std::vector<WebKit::WebInputElement>::iterator it =
+           account_creation_elements_.second.begin();
+       it != account_creation_elements_.second.end(); ++it) {
+    it->setValue(password);
+    it->setAutofilled(true);
   }
 }
 

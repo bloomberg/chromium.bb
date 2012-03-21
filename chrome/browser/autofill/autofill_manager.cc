@@ -37,6 +37,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -318,6 +319,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnDidEndTextFieldEditing)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillPopup,
                         OnHideAutofillPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
+                        OnShowPasswordGenerationPopup)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -689,6 +692,12 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
 void AutofillManager::OnHideAutofillPopup() {
   if (external_delegate_)
     external_delegate_->HideAutofillPopup();
+}
+
+void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  browser->window()->ShowPasswordGenerationBubble(bounds);
 }
 
 void AutofillManager::OnLoadedServerPredictions(

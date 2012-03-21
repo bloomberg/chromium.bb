@@ -1276,6 +1276,7 @@
         'browser/autofill/form_field_unittest.cc',
         'browser/autofill/form_structure_unittest.cc',
         'browser/autofill/name_field_unittest.cc',
+	'browser/autofill/password_generator_unittest.cc',
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/autofill/phone_field_unittest.cc',
         'browser/autofill/phone_number_unittest.cc',

@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -2470,4 +2471,24 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton() {
   AvatarMenuButton* button = frame_->GetAvatarMenuButton();
   if (button)
     button->ShowAvatarBubble();
+}
+
+void BrowserView::ShowPasswordGenerationBubble(const gfx::Rect& rect) {
+  // Create a rect in the content bounds that the bubble will point to.
+  gfx::Point origin(rect.origin());
+  views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
+  gfx::Rect bounds(origin, rect.size());
+
+  // Create the bubble.
+  WebContents* web_contents = GetSelectedWebContents();
+  if (!web_contents)
+    return;
+
+  PasswordGenerationBubbleView* bubble =
+      new PasswordGenerationBubbleView(bounds,
+                                       this,
+                                       web_contents->GetRenderViewHost());
+  browser::CreateViewsBubble(bubble);
+  bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  bubble->Show();
 }

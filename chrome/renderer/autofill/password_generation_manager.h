@@ -15,10 +15,11 @@
 
 namespace autofill {
 
-// This class is responsible for controlling generation of passwords. We show
-// UI if we think that we are on an account creation or password change page,
-// and possibly generate and autofill passwords depending on user input.
-// Note that the UI hasn't been implemented yet.
+// This class is responsible for controlling communication for password
+// generation between the browser (which shows the popup and generates
+// passwords) and WebKit (determines which fields are for account signup and
+// fills in the generated passwords). Currently the WebKit part is not
+// implemented.
 class PasswordGenerationManager : public content::RenderViewObserver {
  public:
   explicit PasswordGenerationManager(content::RenderView* render_view);
@@ -29,10 +30,15 @@ class PasswordGenerationManager : public content::RenderViewObserver {
   // Virtual so that it can be overriden during testing.
   virtual bool ShouldAnalyzeFrame(const WebKit::WebFrame& frame) const;
 
+  // RenderViewObserver:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
  private:
   // RenderViewObserver:
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
+
+  void OnPasswordAccepted(const string16& password);
 
   std::pair<WebKit::WebInputElement,
             std::vector<WebKit::WebInputElement> > account_creation_elements_;

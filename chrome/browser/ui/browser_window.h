@@ -352,6 +352,11 @@ class BrowserWindow : public BaseWindow {
   // Shows the avatar bubble on the window frame off of the avatar button.
   virtual void ShowAvatarBubbleFromAvatarButton() = 0;
 
+  // Show bubble for password generation positioned relative to |rect|. A stub
+  // implementation is provided since this feature is currently only available
+  // for Windows.
+  virtual void ShowPasswordGenerationBubble(const gfx::Rect& rect) {}
+
  protected:
   friend class BrowserList;
   friend class BrowserView;
