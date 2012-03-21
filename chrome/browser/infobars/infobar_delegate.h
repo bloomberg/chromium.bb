@@ -19,6 +19,7 @@ class LinkInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
+class SavePasswordInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class TranslateInfoBarDelegate;
 
@@ -92,6 +93,7 @@ class InfoBarDelegate {
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfobarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
+  virtual SavePasswordInfoBarDelegate* AsSavePasswordInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 

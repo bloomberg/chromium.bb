@@ -53,6 +53,9 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
+  virtual SavePasswordInfoBarDelegate*
+      AsSavePasswordInfoBarDelegate() OVERRIDE;
+
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
   scoped_ptr<PasswordFormManager> form_to_save_;
@@ -109,6 +112,10 @@ bool SavePasswordInfoBarDelegate::Cancel() {
   return true;
 }
 
+SavePasswordInfoBarDelegate*
+SavePasswordInfoBarDelegate::AsSavePasswordInfoBarDelegate() {
+  return this;
+}
 
 // PasswordManagerDelegateImpl ------------------------------------------------
 
