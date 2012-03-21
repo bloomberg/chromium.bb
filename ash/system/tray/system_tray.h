@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_H_
 #pragma once
 
+#include "ash/launcher/background_animator.h"
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
@@ -32,11 +33,13 @@ class UserObserver;
 class SystemTrayItem;
 
 namespace internal {
+class SystemTrayBackground;
 class SystemTrayBubble;
 }
 
 class ASH_EXPORT SystemTray : public views::View,
-                              public views::Widget::Observer {
+                              public views::Widget::Observer,
+                              public internal::BackgroundAnimatorDelegate {
  public:
   SystemTray();
   virtual ~SystemTray();
@@ -60,6 +63,12 @@ class ASH_EXPORT SystemTray : public views::View,
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
+
+  // Sets whether the tray paints a background. Default is true, but is set to
+  // false if a window overlaps the shelf.
+  void SetPaintsBackground(
+      bool value,
+      internal::BackgroundAnimator::ChangeType change_type);
 
   AccessibilityObserver* accessibility_observer() const {
     return accessibility_observer_;
@@ -113,6 +122,9 @@ class ASH_EXPORT SystemTray : public views::View,
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
+  // Overridden from internal::BackgroundAnimatorDelegate.
+  virtual void UpdateBackground(int alpha) OVERRIDE;
+
   ScopedVector<SystemTrayItem> items_;
 
   // The container for all the tray views of the items.
@@ -134,6 +146,14 @@ class ASH_EXPORT SystemTray : public views::View,
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;
   views::Widget* popup_;
+
+  // Is the mouse in the tray?
+  bool mouse_in_tray_;
+
+  // Owned by the view it's installed on.
+  internal::SystemTrayBackground* background_;
+
+  internal::BackgroundAnimator background_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

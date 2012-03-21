@@ -83,6 +83,8 @@
         'ime/event.h',
         'ime/input_method_event_filter.cc',
         'ime/input_method_event_filter.h',
+        'launcher/background_animator.cc',
+        'launcher/background_animator.h',
         'launcher/launcher.cc',
         'launcher/launcher.h',
         'launcher/launcher_button.cc',

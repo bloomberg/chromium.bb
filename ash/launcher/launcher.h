@@ -6,11 +6,10 @@
 #define ASH_LAUNCHER_LAUNCHER_H_
 #pragma once
 
+#include "ash/launcher/background_animator.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ash/ash_export.h"
-#include "ui/base/animation/animation_delegate.h"
-#include "ui/base/animation/slide_animation.h"
 
 namespace aura {
 class Window;
@@ -34,23 +33,19 @@ class LauncherView;
 class LauncherDelegate;
 class LauncherModel;
 
-class ASH_EXPORT Launcher : public ui::AnimationDelegate {
+class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
  public:
-  // How the background can be changed.
-  enum BackgroundChangeSpeed {
-    CHANGE_ANIMATE,
-    CHANGE_IMMEDIATE
-  };
-
   explicit Launcher(aura::Window* window_container);
   virtual ~Launcher();
 
   // Sets the focus cycler.  Also adds the launcher to the cycle.
   void SetFocusCycler(internal::FocusCycler* focus_cycler);
 
-  // Sets whether the launcher renders a background. Default is false, but is
-  // set to true if a window overlaps the shelf.
-  void SetRendersBackground(bool value, BackgroundChangeSpeed speed);
+  // Sets whether the launcher paints a background. Default is false, but is set
+  // to true if a window overlaps the shelf.
+  void SetPaintsBackground(
+      bool value,
+      internal::BackgroundAnimator::ChangeType change_type);
 
   // Sets the width of the status area.
   void SetStatusWidth(int width);
@@ -69,8 +64,8 @@ class ASH_EXPORT Launcher : public ui::AnimationDelegate {
 
   aura::Window* window_container() { return window_container_; }
 
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  // BackgroundAnimatorDelegate overrides:
+  virtual void UpdateBackground(int alpha) OVERRIDE;
 
  private:
   class DelegateView;
@@ -91,13 +86,7 @@ class ASH_EXPORT Launcher : public ui::AnimationDelegate {
   scoped_ptr<LauncherDelegate> delegate_;
 
   // Used to animate the background.
-  ui::SlideAnimation background_animation_;
-
-  // Whether we render a background.
-  bool renders_background_;
-
-  // Current alpha value of the background.
-  int background_alpha_;
+  internal::BackgroundAnimator background_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(Launcher);
 };

@@ -52,8 +52,8 @@ const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
 const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 
-const SkColor kTrayBackgroundColor = SkColorSetARGB(100, 0, 0, 0);
-const SkColor kTrayBackgroundHover = SkColorSetARGB(150, 0, 0, 0);
+const SkColor kTrayBackgroundAlpha = 100;
+const SkColor kTrayBackgroundHoverAlpha = 150;
 
 // Container for items in the tray. It makes sure the widget is updated
 // correctly when the visibility/size of the tray item changes.
@@ -239,12 +239,16 @@ class SystemTrayBubbleBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
 };
 
+}  // namespace
+
+namespace internal {
+
 class SystemTrayBackground : public views::Background {
  public:
-  SystemTrayBackground() : hovering_(false) {}
+  SystemTrayBackground() : alpha_(kTrayBackgroundAlpha) {}
   virtual ~SystemTrayBackground() {}
 
-  void set_hovering(bool hover) { hovering_ = hover; }
+  void set_alpha(int alpha) { alpha_ = alpha; }
 
  private:
   // Overridden from views::Background.
@@ -252,7 +256,7 @@ class SystemTrayBackground : public views::Background {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(hovering_ ? kTrayBackgroundHover : kTrayBackgroundColor);
+    paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
     SkPath path;
     gfx::Rect bounds(view->GetContentsBounds());
     SkScalar radius = SkIntToScalar(4);
@@ -260,14 +264,10 @@ class SystemTrayBackground : public views::Background {
     canvas->sk_canvas()->drawPath(path, paint);
   }
 
-  bool hovering_;
+  int alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBackground);
 };
-
-}  // namespace
-
-namespace internal {
 
 class SystemTrayBubble : public views::BubbleDelegateView {
  public:
@@ -404,17 +404,24 @@ SystemTray::SystemTray()
       update_observer_(NULL),
       user_observer_(NULL),
       bubble_(NULL),
-      popup_(NULL) {
+      popup_(NULL),
+      mouse_in_tray_(false),
+      background_(new internal::SystemTrayBackground),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          background_animator_(this, 0, kTrayBackgroundAlpha)) {
   container_ = new views::View;
   container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 5, 0, kTrayPaddingBetweenItems));
-  container_->set_background(new SystemTrayBackground);
+  container_->set_background(background_);
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);
   set_focusable(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(container_);
+
+  // Initially we want to paint the background.
+  SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 }
 
 SystemTray::~SystemTray() {
@@ -490,6 +497,12 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   PreferredSizeChanged();
 }
 
+void SystemTray::SetPaintsBackground(
+      bool value,
+      internal::BackgroundAnimator::ChangeType change_type) {
+  background_animator_.SetPaintsBackground(value, change_type);
+}
+
 void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool activate) {
@@ -536,15 +549,13 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
-  static_cast<SystemTrayBackground*>(container_->background())->
-      set_hovering(true);
-  SchedulePaint();
+  mouse_in_tray_ = true;
+  UpdateBackground(background_animator_.alpha());
 }
 
 void SystemTray::OnMouseExited(const views::MouseEvent& event) {
-  static_cast<SystemTrayBackground*>(container_->background())->
-      set_hovering(false);
-  SchedulePaint();
+  mouse_in_tray_ = false;
+  UpdateBackground(background_animator_.alpha());
 }
 
 void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -562,6 +573,13 @@ void SystemTray::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(popup_, widget);
   popup_ = NULL;
   bubble_ = NULL;
+}
+
+void SystemTray::UpdateBackground(int alpha) {
+  if (mouse_in_tray_)
+    alpha += kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha;
+  background_->set_alpha(alpha);
+  SchedulePaint();
 }
 
 }  // namespace ash

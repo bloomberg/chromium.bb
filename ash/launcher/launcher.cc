@@ -26,9 +26,6 @@ namespace ash {
 
 namespace {
 
-// Duration of the background animation.
-const int kBackgroundDurationMS = 1000;
-
 // Delay before showing the launcher after the mouse enters the view.
 const int kShowDelayMS = 300;
 
@@ -147,9 +144,8 @@ Launcher::Launcher(aura::Window* window_container)
       window_container_(window_container),
       delegate_view_(NULL),
       launcher_view_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(background_animation_(this)),
-      renders_background_(false),
-      background_alpha_(0) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          background_animator_(this, 0, kBackgroundAlpha)) {
   model_.reset(new LauncherModel);
   if (Shell::GetInstance()->delegate()) {
     delegate_.reset(
@@ -179,7 +175,6 @@ Launcher::Launcher(aura::Window* window_container)
   widget_->SetContentsView(delegate_view_);
   widget_->Show();
   widget_->GetNativeView()->SetName("LauncherView");
-  background_animation_.SetSlideDuration(kBackgroundDurationMS);
 }
 
 Launcher::~Launcher() {
@@ -190,19 +185,10 @@ void Launcher::SetFocusCycler(internal::FocusCycler* focus_cycler) {
   focus_cycler->AddWidget(widget_.get());
 }
 
-void Launcher::SetRendersBackground(bool value, BackgroundChangeSpeed speed) {
-  if (renders_background_ == value)
-    return;
-  renders_background_ = value;
-  if (speed == CHANGE_IMMEDIATE && !background_animation_.is_animating()) {
-    background_animation_.Reset(value ? 1.0f : 0.0f);
-    AnimationProgressed(&background_animation_);
-    return;
-  }
-  if (renders_background_)
-    background_animation_.Show();
-  else
-    background_animation_.Hide();
+void Launcher::SetPaintsBackground(
+      bool value,
+      internal::BackgroundAnimator::ChangeType change_type) {
+  background_animator_.SetPaintsBackground(value, change_type);
 }
 
 void Launcher::SetStatusWidth(int width) {
@@ -235,11 +221,7 @@ internal::LauncherView* Launcher::GetLauncherViewForTest() {
       widget_->GetContentsView()->child_at(0));
 }
 
-void Launcher::AnimationProgressed(const ui::Animation* animation) {
-  int alpha = animation->CurrentValueBetween(0, kBackgroundAlpha);
-  if (background_alpha_ == alpha)
-    return;
-  background_alpha_ = alpha;
+void Launcher::UpdateBackground(int alpha) {
   if (alpha == 0) {
     delegate_view_->set_background(NULL);
   } else {

@@ -136,8 +136,11 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   void CalculateTargetBounds(const State& state,
                              TargetBounds* target_bounds) const;
 
-  // Returns whether the shelf should draw a background.
-  bool GetShelfRendersBackground() const;
+  // Updates the background of the shelf.
+  void UpdateShelfBackground(BackgroundAnimator::ChangeType type);
+
+  // Returns whether the launcher should draw a background.
+  bool GetLauncherPaintsBackground() const;
 
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().

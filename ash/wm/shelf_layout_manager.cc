@@ -7,6 +7,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/auto_reset.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer.h"
@@ -105,11 +106,12 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state,
 
   // Animating the background when transitioning from auto-hide & hidden to
   // visibile is janking. Update the background immediately in this case.
-  Launcher::BackgroundChangeSpeed speed =
+  internal::BackgroundAnimator::ChangeType change_type =
       (state_.visibility_state == AUTO_HIDE &&
        state_.auto_hide_state == AUTO_HIDE_HIDDEN &&
        state.visibility_state == VISIBLE) ?
-      Launcher::CHANGE_IMMEDIATE : Launcher::CHANGE_ANIMATE;
+      internal::BackgroundAnimator::CHANGE_IMMEDIATE :
+      internal::BackgroundAnimator::CHANGE_ANIMATE;
   StopAnimating();
   state_ = state;
   TargetBounds target_bounds;
@@ -133,15 +135,12 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state,
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
-  if (launcher_)
-    launcher_->SetRendersBackground(GetShelfRendersBackground(), speed);
+  UpdateShelfBackground(change_type);
 }
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
   window_overlaps_shelf_ = value;
-  if (launcher_)
-    launcher_->SetRendersBackground(GetShelfRendersBackground(),
-                                    Launcher::CHANGE_ANIMATE);
+  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +214,17 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Insets(0, 0, shelf_height + work_area_delta, 0);
 }
 
-bool ShelfLayoutManager::GetShelfRendersBackground() const {
+void ShelfLayoutManager::UpdateShelfBackground(
+    BackgroundAnimator::ChangeType type) {
+  bool launcher_paints = GetLauncherPaintsBackground();
+  if (launcher_)
+    launcher_->SetPaintsBackground(launcher_paints, type);
+  // SystemTray normally draws a background, but we don't want it to draw a
+  // background when the launcher does.
+  Shell::GetInstance()->tray()->SetPaintsBackground(!launcher_paints, type);
+}
+
+bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
   return window_overlaps_shelf_ || state_.visibility_state == AUTO_HIDE;
 }
 
