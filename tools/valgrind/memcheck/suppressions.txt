@@ -4026,7 +4026,7 @@
    bug_96365
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN27PasswordManagerDelegateImpl22AddSavePasswordInfoBarEP19PasswordFormManager
+   fun:_ZN27PasswordManagerDelegateImpl33AddSavePasswordInfoBarIfPermittedEP19PasswordFormManager
    fun:_ZN15PasswordManager14DidStopLoadingEv
    fun:_ZN11TabContents14DidStopLoadingEv
    fun:_ZN7content18RenderViewHostImpl19OnMsgDidStopLoadingEv
