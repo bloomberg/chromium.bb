@@ -107,7 +107,7 @@ string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
 
 string16 GoogleURLTrackerInfoBarDelegate::GetHost(bool new_host) const {
   return net::StripWWW(UTF8ToUTF16(
-      (new_host ? new_google_url_ : google_url_tracker_->GoogleURL()).host()));
+      (new_host ? new_google_url_ : google_url_tracker_->google_url_).host()));
 }
 
 
@@ -118,13 +118,13 @@ const char GoogleURLTracker::kDefaultGoogleHomepage[] =
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
-GoogleURLTracker::GoogleURLTracker()
+GoogleURLTracker::GoogleURLTracker(Mode mode)
     : infobar_creator_(&CreateInfobar),
-      google_url_(g_browser_process->local_state()->GetString(
-          prefs::kLastKnownGoogleURL)),
+      google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
+          g_browser_process->local_state()->GetString(
+              prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       fetcher_id_(0),
-      queue_wakeup_task_(true),
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
@@ -133,9 +133,22 @@ GoogleURLTracker::GoogleURLTracker()
       infobar_(NULL) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&GoogleURLTracker::QueueWakeupTask,
-                 weak_ptr_factory_.GetWeakPtr()));
+  // Because this function can be called during startup, when kicking off a URL
+  // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
+  // long enough to be after startup, but still get results back quickly.
+  // Ideally, instead of this timer, we'd do something like "check if the
+  // browser is starting up, and if so, come back later", but there is currently
+  // no function to do this.
+  //
+  // In UNIT_TEST mode, where we want to explicitly control when the tracker
+  // "wakes up", we do nothing at all.
+  if (mode == NORMAL_MODE) {
+    static const int kStartFetchDelayMS = 5000;
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        base::Bind(&GoogleURLTracker::FinishSleep,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kStartFetchDelayMS));
+  }
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
@@ -170,29 +183,49 @@ void GoogleURLTracker::GoogleURLSearchCommitted() {
     tracker->SearchCommitted();
 }
 
+void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
+  google_url_ = new_google_url;
+  g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
+                                              google_url_.spec());
+  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                              google_url_.spec());
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+  need_to_prompt_ = false;
+}
+
+void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
+  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                              new_google_url.spec());
+  need_to_prompt_ = false;
+}
+
+void GoogleURLTracker::InfoBarClosed() {
+  registrar_.RemoveAll();
+  controller_ = NULL;
+  infobar_ = NULL;
+  search_url_ = GURL();
+}
+
+void GoogleURLTracker::RedoSearch() {
+  //  Re-do the user's search on the new domain.
+  DCHECK(controller_);
+  url_canon::Replacements<char> replacements;
+  replacements.SetHost(google_url_.host().data(),
+                       url_parse::Component(0, google_url_.host().length()));
+  GURL new_search_url(search_url_.ReplaceComponents(replacements));
+  if (new_search_url.is_valid()) {
+    OpenURLParams params(new_search_url, Referrer(), CURRENT_TAB,
+                         content::PAGE_TRANSITION_GENERATED, false);
+    controller_->GetWebContents()->OpenURL(params);
+  }
+}
+
 void GoogleURLTracker::SetNeedToFetch() {
   need_to_fetch_ = true;
   StartFetchIfDesirable();
-}
-
-void GoogleURLTracker::QueueWakeupTask() {
-  // When testing, we want to wake from sleep at controlled times, not on a
-  // timer.
-  if (!queue_wakeup_task_)
-    return;
-
-  // Because this function can be called during startup, when kicking off a URL
-  // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
-  // long enough to be after startup, but still get results back quickly.
-  // Ideally, instead of this timer, we'd do something like "check if the
-  // browser is starting up, and if so, come back later", but there is currently
-  // no function to do this.
-  static const int kStartFetchDelayMS = 5000;
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&GoogleURLTracker::FinishSleep,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kStartFetchDelayMS));
 }
 
 void GoogleURLTracker::FinishSleep() {
@@ -219,9 +252,8 @@ void GoogleURLTracker::StartFetchIfDesirable() {
       fetcher_id_, GURL(kSearchDomainCheckURL), content::URLFetcher::GET,
       this));
   ++fetcher_id_;
-  // We don't want this fetch to affect existing state in local_state.  For
-  // example, if a user has no Google cookies, this automatic check should not
-  // cause one to be set, lest we alarm the user.
+  // We don't want this fetch to set new entries in the cache or cookies, lest
+  // we alarm the user.
   fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(g_browser_process->system_request_context());
@@ -280,46 +312,6 @@ void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
   need_to_prompt_ = true;
 }
 
-void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
-  google_url_ = new_google_url;
-  g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
-                                              google_url_.spec());
-  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              google_url_.spec());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-  need_to_prompt_ = false;
-}
-
-void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
-  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              new_google_url.spec());
-  need_to_prompt_ = false;
-}
-
-void GoogleURLTracker::InfoBarClosed() {
-  registrar_.RemoveAll();
-  controller_ = NULL;
-  infobar_ = NULL;
-  search_url_ = GURL();
-}
-
-void GoogleURLTracker::RedoSearch() {
-  //  Re-do the user's search on the new domain.
-  DCHECK(controller_);
-  url_canon::Replacements<char> replacements;
-  replacements.SetHost(google_url_.host().data(),
-                       url_parse::Component(0, google_url_.host().length()));
-  GURL new_search_url(search_url_.ReplaceComponents(replacements));
-  if (new_search_url.is_valid()) {
-    OpenURLParams params(new_search_url, Referrer(), CURRENT_TAB,
-                         content::PAGE_TRANSITION_GENERATED, false);
-    controller_->GetWebContents()->OpenURL(params);
-  }
-}
-
 void GoogleURLTracker::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -353,7 +345,7 @@ void GoogleURLTracker::SearchCommitted() {
     // This notification will fire a bit later in the same call chain we're
     // currently in.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                   content::NotificationService::AllSources());
+        content::NotificationService::AllBrowserContextsAndSources());
   }
 }
 

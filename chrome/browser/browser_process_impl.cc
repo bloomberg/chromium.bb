@@ -766,7 +766,8 @@ void BrowserProcessImpl::CreateIconManager() {
 
 void BrowserProcessImpl::CreateGoogleURLTracker() {
   DCHECK(google_url_tracker_.get() == NULL);
-  scoped_ptr<GoogleURLTracker> google_url_tracker(new GoogleURLTracker);
+  scoped_ptr<GoogleURLTracker> google_url_tracker(
+      new GoogleURLTracker(GoogleURLTracker::NORMAL_MODE));
   google_url_tracker_.swap(google_url_tracker);
 }
 

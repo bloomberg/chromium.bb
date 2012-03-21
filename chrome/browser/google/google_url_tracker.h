@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
+class GoogleURLTrackerInfoBarDelegate;
 class PrefService;
 
 namespace content {
@@ -42,13 +44,20 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
                          public content::NotificationObserver,
                          public net::NetworkChangeNotifier::IPAddressObserver {
  public:
+  // The constructor does different things depending on which of these values
+  // you pass it.  Hopefully these are self-explanatory.
+  enum Mode {
+    NORMAL_MODE,
+    UNIT_TEST_MODE,
+  };
+
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->google_url_tracker_.  No code other than the
   // GoogleURLTracker itself should actually use
   // g_browser_process->google_url_tracker() (which shouldn't be hard, since
   // there aren't useful public functions on this object for consumers to access
   // anyway).
-  GoogleURLTracker();
+  explicit GoogleURLTracker(Mode mode);
 
   virtual ~GoogleURLTracker();
 
@@ -78,27 +87,23 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   static const char kDefaultGoogleHomepage[];
   static const char kSearchDomainCheckURL[];
 
-  // Methods called from InfoBar delegate.
-  void AcceptGoogleURL(const GURL& google_url);
-  void CancelGoogleURL(const GURL& google_url);
-  void InfoBarClosed();
-  void RedoSearch();
-
  private:
+  friend class GoogleURLTrackerInfoBarDelegate;
   friend class GoogleURLTrackerTest;
 
   typedef InfoBarDelegate* (*InfobarCreator)(InfoBarTabHelper*,
                                              GoogleURLTracker*,
                                              const GURL&);
 
+  void AcceptGoogleURL(const GURL& google_url);
+  void CancelGoogleURL(const GURL& google_url);
+  void InfoBarClosed();
+  void RedoSearch();
+
   // Registers consumer interest in getting an updated URL from the server.
   // It will be notified as chrome::GOOGLE_URL_UPDATED, so the
   // consumer should observe this notification before calling this.
   void SetNeedToFetch();
-
-  // Begins the five-second startup sleep period, unless a test has cleared
-  // |queue_wakeup_task_|.
-  void QueueWakeupTask();
 
   // Called when the five second startup sleep has finished.  Runs any pending
   // fetch.
@@ -136,7 +141,6 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
   scoped_ptr<content::URLFetcher> fetcher_;
   int fetcher_id_;
-  bool queue_wakeup_task_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
                            // period that begins at browser start.
   bool already_fetched_;   // True if we've already fetched a URL once this run;
