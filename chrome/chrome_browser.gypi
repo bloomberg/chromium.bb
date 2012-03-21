@@ -404,6 +404,8 @@
         'browser/chromeos/audio/audio_mixer.h',
         'browser/chromeos/audio/audio_mixer_alsa.cc',
         'browser/chromeos/audio/audio_mixer_alsa.h',
+        'browser/chromeos/audio/audio_mixer_cras.cc',
+        'browser/chromeos/audio/audio_mixer_cras.h',
         'browser/chromeos/background/desktop_background_observer.cc',
         'browser/chromeos/background/desktop_background_observer.h',
         'browser/chromeos/bluetooth/bluetooth_adapter.cc',
@@ -4137,6 +4139,41 @@
             ['exclude', 'browser/ui/toolbar/wrench_menu_model_chromeos.cc'],
           ],
         }, {  # chromeos==1
+          'variables': {
+            'conditions': [
+              ['sysroot!=""', {
+                'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
+              }, {
+                'pkg-config': 'pkg-config'
+              }],
+              ],
+              # Override to dynamically link the cras (ChromeOS audio) library.
+              'use_cras%': 0,
+          },
+          'conditions': [
+            ['use_cras==1', {
+              'cflags': [
+                '<!@(<(pkg-config) --cflags libcras)',
+              ],
+              'link_settings': {
+                'libraries': [
+                  '<!@(<(pkg-config) --libs libcras)',
+                ],
+              },
+              'defines': [
+                'USE_CRAS',
+              ],
+              'sources/': [
+                ['exclude', '^browser/chromeos/audio/audio_mixer_alsa.cc'],
+                ['exclude', '^browser/chromeos/audio/audio_mixer_alsa.h'],
+              ],
+            }, {  # use_cras==0
+              'sources/': [
+                ['exclude', '^browser/chromeos/audio/audio_mixer_cras.cc'],
+                ['exclude', '^browser/chromeos/audio/audio_mixer_cras.h'],
+              ],
+            }],
+          ],
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../third_party/libevent/libevent.gyp:libevent',

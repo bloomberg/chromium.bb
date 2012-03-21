@@ -10,7 +10,11 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
+#if defined(USE_CRAS)
+#include "chrome/browser/chromeos/audio/audio_mixer_cras.h"
+#else
 #include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
+#endif
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -110,7 +114,11 @@ void AudioHandler::RemoveVolumeObserver(VolumeObserver* observer) {
 }
 
 AudioHandler::AudioHandler()
+#if defined(USE_CRAS)
+    : mixer_(new AudioMixerCras()),
+#else
     : mixer_(new AudioMixerAlsa()),
+#endif
       prefs_(g_browser_process->local_state()) {
   mixer_->SetVolumePercent(prefs_->GetDouble(prefs::kAudioVolumePercent));
   mixer_->SetMuted(prefs_->GetInteger(prefs::kAudioMute) == kPrefMuteOn);
