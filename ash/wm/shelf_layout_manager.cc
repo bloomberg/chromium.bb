@@ -32,20 +32,27 @@ const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, public:
 
-ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
-                                       views::Widget* status)
+ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
       visible_(true),
-      max_height_(-1),
-      launcher_(launcher),
+      max_height_(status->GetWindowScreenBounds().height()),
+      launcher_(NULL),
       status_(status) {
-  gfx::Rect launcher_bounds = launcher->GetWindowScreenBounds();
-  gfx::Rect status_bounds = status->GetWindowScreenBounds();
-  max_height_ = std::max(launcher_bounds.height(), status_bounds.height());
-  root_window_ = launcher->GetNativeView()->GetRootWindow();
+  root_window_ = status->GetNativeView()->GetRootWindow();
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
+}
+
+void ShelfLayoutManager::SetLauncherWidget(views::Widget* launcher) {
+  if (launcher == launcher_)
+    return;
+
+  launcher_ = launcher;
+  max_height_ =
+      std::max(max_height_, launcher->GetWindowScreenBounds().height());
+  LayoutShelf();
+  SetVisible(visible());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -54,25 +61,31 @@ void ShelfLayoutManager::LayoutShelf() {
   TargetBounds target_bounds;
   float target_opacity = visible_ ? 1.0f : 0.0f;
   CalculateTargetBounds(visible_, &target_bounds);
-  GetLayer(launcher_)->SetOpacity(target_opacity);
   GetLayer(status_)->SetOpacity(target_opacity);
-  launcher_->SetBounds(target_bounds.launcher_bounds);
   status_->SetBounds(target_bounds.status_bounds);
-  Shell::GetInstance()->launcher()->SetStatusWidth(
-      target_bounds.status_bounds.width());
+
+  if (launcher_) {
+    GetLayer(launcher_)->SetOpacity(target_opacity);
+    launcher_->SetBounds(target_bounds.launcher_bounds);
+    ash::Shell::GetInstance()->launcher()->SetStatusWidth(
+        target_bounds.status_bounds.width());
+  }
+
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
 }
 
 void ShelfLayoutManager::SetVisible(bool visible) {
-  ui::Layer* launcher_layer = GetLayer(launcher_);
+  ui::Layer* launcher_layer = launcher_ ? GetLayer(launcher_) : NULL;
   ui::Layer* status_layer = GetLayer(status_);
 
   // TODO(vollick): once visibility is animatable, use GetTargetVisibility.
   bool current_visibility = visible_ &&
-      launcher_layer->GetTargetOpacity() > 0.0f &&
       status_layer->GetTargetOpacity() > 0.0f;
+  if (launcher_layer)
+      current_visibility =
+          current_visibility && launcher_layer->GetTargetOpacity() > 0.0f;
 
   if (visible == current_visibility)
     return;  // Nothing changed.
@@ -84,18 +97,19 @@ void ShelfLayoutManager::SetVisible(bool visible) {
   float target_opacity = visible ? 1.0f : 0.0f;
   CalculateTargetBounds(visible, &target_bounds);
 
-  ui::ScopedLayerAnimationSettings launcher_animation_setter(
-      launcher_layer->GetAnimator());
   ui::ScopedLayerAnimationSettings status_animation_setter(
       status_layer->GetAnimator());
-
-  launcher_animation_setter.AddObserver(this);
   status_animation_setter.AddObserver(this);
-
-  launcher_layer->SetBounds(target_bounds.launcher_bounds);
-  launcher_layer->SetOpacity(target_opacity);
   status_layer->SetBounds(target_bounds.status_bounds);
   status_layer->SetOpacity(target_opacity);
+
+  if (launcher_layer) {
+    ui::ScopedLayerAnimationSettings launcher_animation_setter(
+        launcher_layer->GetAnimator());
+    launcher_animation_setter.AddObserver(this);
+    launcher_layer->SetBounds(target_bounds.launcher_bounds);
+    launcher_layer->SetOpacity(target_opacity);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +141,8 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 
 void ShelfLayoutManager::StopAnimating() {
   StopObservingImplicitAnimations();
-  GetLayer(launcher_)->GetAnimator()->StopAnimating();
+  if (launcher_)
+    GetLayer(launcher_)->GetAnimator()->StopAnimating();
   GetLayer(status_)->GetAnimator()->StopAnimating();
 }
 
@@ -141,7 +156,8 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
       available_bounds.right() - status_bounds.width(),
       y + max_height_ - status_bounds.height(),
       status_bounds.width(), status_bounds.height());
-  gfx::Rect launcher_bounds(launcher_->GetWindowScreenBounds());
+  gfx::Rect launcher_bounds =
+      launcher_ ? launcher_->GetWindowScreenBounds() : gfx::Rect();
   target_bounds->launcher_bounds = gfx::Rect(
       available_bounds.x(), y + (max_height_ - launcher_bounds.height()) / 2,
       available_bounds.width(),

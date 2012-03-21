@@ -37,8 +37,8 @@ class ASH_EXPORT Launcher {
   explicit Launcher(aura::Window* window_container);
   ~Launcher();
 
-  // Sets the focus cycler.
-  void SetFocusCycler(const internal::FocusCycler* focus_cycler);
+  // Sets the focus cycler.  Also adds the launcher to the cycle.
+  void SetFocusCycler(internal::FocusCycler* focus_cycler);
 
   // Sets the width of the status area.
   void SetStatusWidth(int width);

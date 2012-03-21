@@ -71,8 +71,9 @@ Launcher::DelegateView::DelegateView()
 Launcher::DelegateView::~DelegateView() {
 }
 
-void Launcher::SetFocusCycler(const internal::FocusCycler* focus_cycler) {
+void Launcher::SetFocusCycler(internal::FocusCycler* focus_cycler) {
   delegate_view_->set_focus_cycler(focus_cycler);
+  focus_cycler->AddWidget(widget_.get());
 }
 
 void Launcher::DelegateView::SetStatusWidth(int width) {

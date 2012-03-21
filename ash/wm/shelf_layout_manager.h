@@ -42,10 +42,13 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // the invisible parts of the launcher.
   static const int kWorkspaceAreaBottomInset;
 
-  ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
+  explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
 
   bool in_layout() const { return in_layout_; }
+
+  // The launcher is typically created after the layout manager.
+  void SetLauncherWidget(views::Widget* launcher);
 
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.

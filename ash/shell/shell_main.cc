@@ -190,10 +190,14 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return NULL;
   }
 
+  virtual bool CanCreateLauncher() OVERRIDE {
+    return true;
+  }
+
 #if defined(OS_CHROMEOS)
- virtual void LockScreen() OVERRIDE {
-   ash::shell::CreateLockScreen();
- }
+  virtual void LockScreen() OVERRIDE {
+    ash::shell::CreateLockScreen();
+  }
 #endif
 
   virtual void Exit() OVERRIDE {

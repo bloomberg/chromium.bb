@@ -600,10 +600,6 @@ void Shell::Init() {
   if (!status_widget_)
     status_widget_ = internal::CreateStatusArea(tray_.get());
 
-  aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
-  launcher_.reset(new Launcher(default_container));
-
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController);
 
@@ -616,8 +612,9 @@ void Shell::Init() {
 
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_widget_);
-  focus_cycler_->AddWidget(launcher_->widget());
-  launcher_->SetFocusCycler(focus_cycler_.get());
+
+  if (!delegate_.get() || delegate_->CanCreateLauncher())
+    CreateLauncher();
 
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
@@ -713,6 +710,20 @@ void Shell::SetMonitorWorkAreaInsets(Window* contains,
                     OnMonitorWorkAreaInsetsChanged());
 }
 
+void Shell::CreateLauncher() {
+  if (launcher_.get())
+    return;
+
+  aura::Window* default_container =
+      GetContainer(internal::kShellWindowId_DefaultContainer);
+  launcher_.reset(new Launcher(default_container));
+
+  launcher_->SetFocusCycler(focus_cycler_.get());
+  shelf_->SetLauncherWidget(launcher_->widget());
+
+  launcher_->widget()->Show();
+}
+
 void Shell::AddShellObserver(ShellObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -741,7 +752,7 @@ void Shell::InitLayoutManagers() {
   DCHECK(status_widget_);
 
   internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(launcher_->widget(), status_widget_);
+      new internal::ShelfLayoutManager(status_widget_);
   GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
   shelf_ = shelf_layout_manager;
@@ -757,9 +768,6 @@ void Shell::InitLayoutManagers() {
   workspace_controller_.reset(
       new internal::WorkspaceController(default_container));
   workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
-
-  // Ensure launcher is visible.
-  launcher_->widget()->Show();
 
   // Create the desktop background image.
   desktop_background_controller_->SetDefaultDesktopBackgroundImage();
