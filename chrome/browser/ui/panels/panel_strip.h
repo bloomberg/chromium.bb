@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
 #pragma once
 
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -66,6 +67,11 @@ class PanelStrip {
   // Subclass should update the display of the panel to match the new
   // draw attention state.
   virtual void OnPanelAttentionStateChanged(Panel* panel) = 0;
+
+  // Invoked when the titlebar of a |panel| in the strip has been clicked.
+  // Click behavior may be modified as indicated by |modifier|.
+  virtual void OnPanelTitlebarClicked(Panel* panel,
+                                      panel::ClickModifier modifier) = 0;
 
   // Updates the display to show |panel| as active.
   virtual void ActivatePanel(Panel* panel) = 0;

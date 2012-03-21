@@ -331,8 +331,9 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual ~NativePanelTestingCocoa() { }
   // Overridden from NativePanelTesting
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
-  virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
+      const gfx::Point& mouse_location, panel::ClickModifier modifier) OVERRIDE;
+  virtual void ReleaseMouseButtonTitlebar(
+      panel::ClickModifier modifier) OVERRIDE;
   virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
@@ -361,16 +362,20 @@ PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() const {
 }
 
 void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
+    const gfx::Point& mouse_location, panel::ClickModifier modifier) {
   // Convert from platform-indepedent screen coordinates to Cocoa's screen
   // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
   // coordinates.
+  int modifierFlags = (modifier == panel::APPLY_TO_ALL ? NSCommandKeyMask : 0);
   [titlebar() pressLeftMouseButtonTitlebar:
-      cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)];
+      cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)
+           modifiers:modifierFlags];
 }
 
-void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar() {
-  [titlebar() releaseLeftMouseButtonTitlebar];
+void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar(
+    panel::ClickModifier modifier) {
+  int modifierFlags = (modifier == panel::APPLY_TO_ALL ? NSCommandKeyMask : 0);
+  [titlebar() releaseLeftMouseButtonTitlebar:modifierFlags];
 }
 
 void NativePanelTestingCocoa::DragTitlebar(const gfx::Point& mouse_location) {

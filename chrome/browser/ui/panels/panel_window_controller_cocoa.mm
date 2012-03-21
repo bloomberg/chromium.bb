@@ -588,8 +588,15 @@ enum {
   return boundsAnimation_ && [boundsAnimation_ isAnimating];
 }
 
-- (void)onTitlebarMouseClicked {
+- (void)onTitlebarMouseClicked:(int)modifierFlags {
   Panel* panel = windowShim_->panel();
+  if (modifierFlags & NSCommandKeyMask) {
+    panel->OnTitlebarClicked(panel::APPLY_TO_ALL);
+    return;
+  }
+
+  // TODO(jennb): Move remaining titlebar click handling out of here.
+  // (http://crbug.com/118431)
   PanelStrip* panelStrip = panel->panel_strip();
   if (!panelStrip)
     return;

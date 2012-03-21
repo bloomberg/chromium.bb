@@ -123,8 +123,9 @@ enum PanelDragState {
 
 // NativePanelTesting support.
 // |mouseLocation| is in Cocoa's screen coordinates.
-- (void)pressLeftMouseButtonTitlebar:(NSPoint)mouseLocation;
-- (void)releaseLeftMouseButtonTitlebar;
+- (void)pressLeftMouseButtonTitlebar:(NSPoint)mouseLocation
+                           modifiers:(int)modifierFlags;
+- (void)releaseLeftMouseButtonTitlebar:(int)modifierFlags;
 - (void)dragTitlebar:(NSPoint)mouseLocation;
 - (void)cancelDragTitlebar;
 - (void)finishDragTitlebar;

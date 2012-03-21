@@ -160,6 +160,13 @@ void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   UpdateOverflowIndicatorAttention();
 }
 
+void OverflowPanelStrip::OnPanelTitlebarClicked(Panel* panel,
+                                                panel::ClickModifier modifier) {
+  DCHECK_EQ(this, panel->panel_strip());
+  // Modifier is ignored in overflow.
+  panel->Activate();
+}
+
 void OverflowPanelStrip::ActivatePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   // Activating an overflow panel moves it to the docked panel strip.

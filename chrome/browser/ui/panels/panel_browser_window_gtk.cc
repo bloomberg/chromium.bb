@@ -695,6 +695,13 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
 
   CleanupDragDrop();
 
+  if (event->state & GDK_CONTROL_MASK) {
+    panel_->OnTitlebarClicked(panel::APPLY_TO_ALL);
+    return TRUE;
+  }
+
+  // TODO(jennb): Move remaining titlebar click handling out of here.
+  // (http://crbug.com/118431)
   PanelStrip* panel_strip = panel_->panel_strip();
   if (!panel_strip)
     return TRUE;
@@ -796,8 +803,9 @@ class NativePanelTestingGtk : public NativePanelTesting {
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
-  virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
+      const gfx::Point& mouse_location, panel::ClickModifier modifier) OVERRIDE;
+  virtual void ReleaseMouseButtonTitlebar(
+      panel::ClickModifier modifier) OVERRIDE;
   virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
@@ -822,7 +830,7 @@ NativePanelTestingGtk::NativePanelTestingGtk(
 }
 
 void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
+    const gfx::Point& mouse_location, panel::ClickModifier modifier) {
   // If there is an animation, wait for it to finish as we don't handle button
   // clicks while animation is in progress.
   while (panel_browser_window_gtk_->IsAnimatingBounds())
@@ -832,6 +840,8 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
   event->button.button = 1;
   event->button.x_root = mouse_location.x();
   event->button.y_root = mouse_location.y();
+  if (modifier == panel::APPLY_TO_ALL)
+    event->button.state |= GDK_CONTROL_MASK;
   panel_browser_window_gtk_->OnTitlebarButtonPressEvent(
       panel_browser_window_gtk_->titlebar_widget(),
       reinterpret_cast<GdkEventButton*>(event));
@@ -839,9 +849,12 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
   MessageLoopForUI::current()->RunAllPending();
 }
 
-void NativePanelTestingGtk::ReleaseMouseButtonTitlebar() {
+void NativePanelTestingGtk::ReleaseMouseButtonTitlebar(
+    panel::ClickModifier modifier) {
   GdkEvent* event = gdk_event_new(GDK_BUTTON_RELEASE);
   event->button.button = 1;
+  if (modifier == panel::APPLY_TO_ALL)
+    event->button.state |= GDK_CONTROL_MASK;
   panel_browser_window_gtk_->OnTitlebarButtonReleaseEvent(
       panel_browser_window_gtk_->titlebar_widget(),
       reinterpret_cast<GdkEventButton*>(event));

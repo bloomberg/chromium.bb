@@ -205,10 +205,6 @@ void Panel::SetExpansionState(ExpansionState new_state) {
 
   manager()->OnPanelExpansionStateChanged(this);
 
-  // The minimized panel should not get the focus.
-  if (expansion_state_ == MINIMIZED)
-    Deactivate();
-
   DCHECK(initialized_ && panel_strip_ != NULL);
   native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
 
@@ -734,6 +730,11 @@ void Panel::ConfigureAutoResize(WebContents* web_contents) {
 
 void Panel::OnWindowSizeAvailable() {
   ConfigureAutoResize(browser()->GetSelectedWebContents());
+}
+
+void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
+  if (panel_strip_)
+    panel_strip_->OnPanelTitlebarClicked(this, modifier);
 }
 
 void Panel::DestroyBrowser() {

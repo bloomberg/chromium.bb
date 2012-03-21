@@ -100,7 +100,7 @@ class PanelBrowserWindowCocoa;
 
 // Invoked when user clicks on the titlebar. Attempts to flip the
 // Minimized/Restored states.
-- (void)onTitlebarMouseClicked;
+- (void)onTitlebarMouseClicked:(int)modifierFlags;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the

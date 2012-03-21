@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -220,6 +221,11 @@ class Panel : public BrowserWindow,
   // Gets the extension from the browser that a panel is created from.
   // Returns NULL if it cannot be found.
   static const Extension* GetExtensionFromBrowser(Browser* browser);
+
+  // Invoked when the native panel has detected a mouse click on the
+  // panel's titlebar. Behavior of the click may be modified as
+  // indicated by |modifier|.
+  void OnTitlebarClicked(panel::ClickModifier modifier);
 
   // Used on platforms where the panel cannot determine its window size
   // until the window has been created. (e.g. GTK)

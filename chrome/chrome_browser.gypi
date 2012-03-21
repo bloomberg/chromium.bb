@@ -3080,6 +3080,7 @@
         'browser/ui/panels/panel_browser_window_cocoa.mm',
         'browser/ui/panels/panel_browser_window_gtk.cc',
         'browser/ui/panels/panel_browser_window_gtk.h',
+        'browser/ui/panels/panel_constants.h',
         'browser/ui/panels/panel_drag_controller.cc',
         'browser/ui/panels/panel_drag_controller.h',
         'browser/ui/panels/panel_resize_controller.cc',

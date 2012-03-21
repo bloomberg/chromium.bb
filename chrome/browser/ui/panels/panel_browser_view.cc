@@ -21,6 +21,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/win/win_util.h"  // for IsCtrlPressed()
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -503,6 +507,22 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
   if (mouse_dragging_state_ != NO_DRAGGING)
     return true;
 
+  // Ignore long clicks. Treated as a canceled click to be consistent with Mac.
+  if (base::TimeTicks::Now() - mouse_pressed_time_ >
+      base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
+    return true;
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (base::win::IsCtrlPressed()) {
+    panel_->OnTitlebarClicked(panel::APPLY_TO_ALL);
+    return true;
+  }
+#else
+  NOTIMPLEMENTED();  // Proceed without modifier.
+#endif
+
+  // TODO(jennb): Move remaining titlebar click handling out of here.
+  // (http://crbug.com/118431)
   PanelStrip* panel_strip = panel_->panel_strip();
   if (!panel_strip)
     return true;
@@ -516,11 +536,6 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
       base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs)) {
     return true;
   }
-
-  // Ignore long clicks. Treated as a canceled click to be consistent with Mac.
-  if (base::TimeTicks::Now() - mouse_pressed_time_ >
-      base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
-    return true;
 
   if (panel_strip->type() == PanelStrip::DOCKED &&
       panel_->expansion_state() == Panel::EXPANDED)
@@ -578,8 +593,9 @@ class NativePanelTestingWin : public NativePanelTesting {
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
-  virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
+      const gfx::Point& mouse_location, panel::ClickModifier modifier) OVERRIDE;
+  virtual void ReleaseMouseButtonTitlebar(
+      panel::ClickModifier modifier) OVERRIDE;
   virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
@@ -605,11 +621,44 @@ NativePanelTestingWin::NativePanelTestingWin(
 }
 
 void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
+    const gfx::Point& mouse_location, panel::ClickModifier modifier) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (modifier == panel::APPLY_TO_ALL) {
+    BYTE keyState[256];
+    ::GetKeyboardState(keyState);
+    BYTE newKeyState[256];
+    memcpy(newKeyState, keyState, sizeof(keyState));
+    newKeyState[VK_CONTROL] = 0x80;
+    ::SetKeyboardState(newKeyState);
+    panel_browser_view_->OnTitlebarMousePressed(mouse_location);
+    ::SetKeyboardState(keyState);  // restore to original
+    return;
+  }
+#else
+  // Cannot test with modifier. Proceed without it.
+#endif
+
   panel_browser_view_->OnTitlebarMousePressed(mouse_location);
 }
 
-void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
+void NativePanelTestingWin::ReleaseMouseButtonTitlebar(
+    panel::ClickModifier modifier) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (modifier == panel::APPLY_TO_ALL) {
+    BYTE keyState[256];
+    ::GetKeyboardState(keyState);
+    BYTE newKeyState[256];
+    memcpy(newKeyState, keyState, sizeof(keyState));
+    newKeyState[VK_CONTROL] = 0x80;
+    ::SetKeyboardState(newKeyState);
+    panel_browser_view_->OnTitlebarMouseReleased();
+    ::SetKeyboardState(keyState);  // restore to original
+    return;
+  }
+#else
+  // Cannot test with modifier. Proceed without it.
+#endif
+
   panel_browser_view_->OnTitlebarMouseReleased();
 }
 

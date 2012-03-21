@@ -62,6 +62,12 @@ void DetachedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   // Nothing to do.
 }
 
+void DetachedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
+                                                panel::ClickModifier modifier) {
+  DCHECK_EQ(this, panel->panel_strip());
+  // Click on detached panel titlebars does not do anything.
+}
+
 void DetachedPanelStrip::ResizePanelWindow(
     Panel* panel,
     const gfx::Size& preferred_window_size) {

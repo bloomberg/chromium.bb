@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -60,6 +61,7 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
+      minimizing_all_(false),
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
   dragging_panel_current_iterator_ = panels_.end();
@@ -473,6 +475,13 @@ void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
                 bottom - size.height(),
                 size.width(),
                 size.height()));
+
+  // Ensure minimized panel does not get the focus. If minimizing all,
+  // the active panel will be deactivated once when all panels are minimized
+  // rather than per minimized panel.
+  if (expansion_state != Panel::EXPANDED && !minimizing_all_ &&
+      panel->IsActive())
+    panel->Deactivate();
 }
 
 void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
@@ -486,6 +495,16 @@ void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
     if (panel->expansion_state() == Panel::TITLE_ONLY && !are_titlebars_up_)
       panel->SetExpansionState(Panel::MINIMIZED);
   }
+}
+
+void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
+                                              panel::ClickModifier modifier) {
+  DCHECK_EQ(this, panel->panel_strip());
+  if (modifier == panel::APPLY_TO_ALL)
+    ToggleMinimizeAll(panel);
+
+  // TODO(jennb): Move all other titlebar click handling here.
+  // (http://crbug.com/118431)
 }
 
 void DockedPanelStrip::ActivatePanel(Panel* panel) {
@@ -522,7 +541,7 @@ void DockedPanelStrip::UpdateMinimizedPanelCount() {
         panel_iter != panels_.end(); ++panel_iter) {
     if ((*panel_iter)->expansion_state() != Panel::EXPANDED)
       minimized_panel_count_++;
-    }
+  }
 
   if (prev_minimized_panel_count == 0 && minimized_panel_count_ > 0)
     panel_manager_->mouse_watcher()->AddObserver(this);
@@ -530,6 +549,30 @@ void DockedPanelStrip::UpdateMinimizedPanelCount() {
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 
   DCHECK_LE(minimized_panel_count_, num_panels());
+}
+
+void DockedPanelStrip::ToggleMinimizeAll(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  AutoReset<bool> pin(&minimizing_all_, IsPanelMinimized(panel) ? false : true);
+  Panel* minimized_active_panel = NULL;
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    if (minimizing_all_) {
+      if ((*iter)->IsActive())
+        minimized_active_panel = *iter;
+      MinimizePanel(*iter);
+    } else {
+      RestorePanel(*iter);
+    }
+  }
+
+  // When a single panel is minimized, it is deactivated to ensure that
+  // a minimized panel does not have focus. However, when minimizing all,
+  // the deactivation is only done once after all panels are minimized,
+  // rather than per minimized panel, both for efficiency and to avoid
+  // temporary activations of random not-yet-minimized panels.
+  if (minimized_active_panel)
+    minimized_active_panel->Deactivate();
 }
 
 void DockedPanelStrip::ResizePanelWindow(

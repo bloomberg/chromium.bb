@@ -50,6 +50,8 @@ class DockedPanelStrip : public PanelStrip,
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
+  virtual void OnPanelTitlebarClicked(Panel* panel,
+                                      panel::ClickModifier modifier) OVERRIDE;
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
@@ -144,6 +146,10 @@ class DockedPanelStrip : public PanelStrip,
   // Keep track of the minimized panels to control mouse watching.
   void UpdateMinimizedPanelCount();
 
+  // Minimizes/Restores all panels in the strip depending on the current
+  // state of |panel|.
+  void ToggleMinimizeAll(Panel* panel);
+
   // Help functions to drag the given panel.
   void DragLeft(Panel* dragging_panel);
   void DragRight(Panel* dragging_panel);
@@ -182,6 +188,8 @@ class DockedPanelStrip : public PanelStrip,
 
   int minimized_panel_count_;
   bool are_titlebars_up_;
+
+  bool minimizing_all_;  // True while minimizing all panels.
 
   // Referring to current position in |panels_| where the dragging panel
   // resides.

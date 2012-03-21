@@ -844,6 +844,81 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_ActivateOverflowPanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
+                       ActivateOverflowPanelWithClick) {
+  // Compiz refuses to activate initially inactive windows.
+  if (SkipTestIfCompizWM())
+    return;
+
+  // Create docked and overflow panels.
+  //   docked:               P0, P1, P2
+  //   overflow:             P3, P4
+  const int panel_widths[] = {
+      250, 260, 200,  // docked
+      200, 200,       // overflow
+  };
+  std::vector<Panel*> panels = CreateOverflowPanels(3, 2, panel_widths);
+
+  PanelDataList expected_docked_list;
+  expected_docked_list.AddDocked(panels[0], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[1], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[2], Panel::EXPANDED, false);
+  EXPECT_EQ(expected_docked_list, GetAllDockedPanelData());
+
+  PanelDataList expected_overflow_list;
+  expected_overflow_list.AddOverflow(panels[3], true);
+  expected_overflow_list.AddOverflow(panels[4], true);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  // Activate an overflow panel by clicking on the titlebar. Expect one
+  // docked panel is swapped into the overflow strip.
+  //   docked:               P0, P1, P3
+  //   overflow:             P2, P4
+  scoped_ptr<NativePanelTesting> test_panel3(
+      NativePanelTesting::Create(panels[3]->native_panel()));
+  test_panel3->PressLeftMouseButtonTitlebar(panels[3]->GetBounds().origin());
+  test_panel3->ReleaseMouseButtonTitlebar();
+  WaitForPanelActiveState(panels[3], SHOW_AS_ACTIVE);
+  WaitForLayoutModeChanged(panels[3], PanelStrip::DOCKED);
+
+  expected_docked_list.clear();
+  expected_docked_list.AddDocked(panels[0], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[1], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[3], Panel::EXPANDED, true);
+  EXPECT_EQ(expected_docked_list, GetAllDockedPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.AddOverflow(panels[2], true);
+  expected_overflow_list.AddOverflow(panels[4], true);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  // Activate another overflow panel, this time clicking on the titlebar
+  // with the modifier to apply all. Expect the same behavior as without
+  // the modifier.
+  //   docked:               P0, P1, P4
+  //   overflow:             P3, P2
+  scoped_ptr<NativePanelTesting> test_panel4(
+      NativePanelTesting::Create(panels[4]->native_panel()));
+  test_panel4->PressLeftMouseButtonTitlebar(panels[4]->GetBounds().origin(),
+                                            panel::APPLY_TO_ALL);
+  test_panel4->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
+  WaitForPanelActiveState(panels[4], SHOW_AS_ACTIVE);
+  WaitForLayoutModeChanged(panels[4], PanelStrip::DOCKED);
+
+  expected_docked_list.clear();
+  expected_docked_list.AddDocked(panels[0], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[1], Panel::EXPANDED, false);
+  expected_docked_list.AddDocked(panels[4], Panel::EXPANDED, true);
+  EXPECT_EQ(expected_docked_list, GetAllDockedPanelData());
+
+  expected_overflow_list.clear();
+  expected_overflow_list.AddOverflow(panels[3], true);
+  expected_overflow_list.AddOverflow(panels[2], true);
+  EXPECT_EQ(expected_overflow_list, GetAllOverflowPanelData());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(
     PanelOverflowBrowserTest,
     MoveMinimizedPanelToOverflowAndBringBackByActivate) {

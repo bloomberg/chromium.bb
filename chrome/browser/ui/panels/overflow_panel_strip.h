@@ -40,6 +40,8 @@ class OverflowPanelStrip : public PanelStrip,
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
+  virtual void OnPanelTitlebarClicked(Panel* panel,
+                                      panel::ClickModifier modifier) OVERRIDE;
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
