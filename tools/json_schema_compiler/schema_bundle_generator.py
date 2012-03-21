@@ -69,6 +69,9 @@ class SchemaBundleGenerator(object):
     c.Append()
     return self.GenerateHeader('generated_api', c)
 
+  def CapitalizeFirstLetter(self, value):
+    return value[0].capitalize() + value[1:]
+
   def GenerateFunctionRegistry(self):
     c = code.Code()
     c.Sblock("class GeneratedFunctionRegistry {")
@@ -76,9 +79,10 @@ class SchemaBundleGenerator(object):
     c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
     for namespace in self._model.namespaces.values():
       for function in namespace.functions.values():
-        namespace_name = namespace.name.replace(
-            "experimental.", "").capitalize()
-        function_name = namespace_name + function.name.capitalize()
+        namespace_name = self.CapitalizeFirstLetter(namespace.name.replace(
+            "experimental.", ""))
+        function_name = namespace_name + self.CapitalizeFirstLetter(
+            function.name)
         c.Append("registry->RegisterFunction<%sFunction>();" % (
             function_name))
     c.Eblock("}")
