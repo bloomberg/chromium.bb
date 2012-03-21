@@ -5,6 +5,7 @@
 #include "ui/gfx/pango_util.h"
 
 #include <cairo/cairo.h>
+#include <fontconfig/fontconfig.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
@@ -105,14 +106,42 @@ cairo_font_options_t* GetCairoFontOptions() {
   if (rgba_style)
     g_free(rgba_style);
 #else
-  // For non-GTK builds (read: Aura), use RGB subpixel rendering with light
-  // hinting.  Note: We should probably be getting per-font settings from
-  // FontConfig here, but this path will be made obsolete by
+  // For non-GTK builds (read: Aura), use light hinting and fetch
+  // subpixel-rendering settings from FontConfig.  We should really be getting
+  // per-font settings here, but this path will be made obsolete by
   // http://crbug.com/105550.
-  cairo_font_options_set_antialias(cairo_font_options,
-                                   CAIRO_ANTIALIAS_SUBPIXEL);
+  // TODO(derat): Create font_config_util.h/cc and move this there.
+  FcPattern* pattern = FcPatternCreate();
+  FcResult result;
+  FcPattern* match = FcFontMatch(0, pattern, &result);
+  DCHECK(match);
+  int fc_rgba = FC_RGBA_RGB;
+  FcPatternGetInteger(match, FC_RGBA, 0, &fc_rgba);
+  FcPatternDestroy(pattern);
+  FcPatternDestroy(match);
+
+  cairo_antialias_t cairo_antialias = (fc_rgba != FC_RGBA_NONE) ?
+      CAIRO_ANTIALIAS_SUBPIXEL : CAIRO_ANTIALIAS_GRAY;
+
+  cairo_subpixel_order_t cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_RGB;
+  switch (fc_rgba) {
+    case FC_RGBA_RGB:
+      cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_RGB;
+      break;
+    case FC_RGBA_BGR:
+      cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_BGR;
+      break;
+    case FC_RGBA_VRGB:
+      cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VRGB;
+      break;
+    case FC_RGBA_VBGR:
+      cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VBGR;
+      break;
+  }
+
+  cairo_font_options_set_antialias(cairo_font_options, cairo_antialias);
   cairo_font_options_set_subpixel_order(cairo_font_options,
-                                        CAIRO_SUBPIXEL_ORDER_RGB);
+                                        cairo_subpixel_order);
   cairo_font_options_set_hint_style(cairo_font_options,
                                     CAIRO_HINT_STYLE_SLIGHT);
 #endif
