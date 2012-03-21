@@ -30,8 +30,8 @@ using WebKit::WebCursorInfo;
 using webkit::npapi::WebPlugin;
 using webkit::npapi::WebPluginResourceClient;
 
-void FinishDestructionCallback(webkit::npapi::WebPluginDelegateImpl* delegate,
-                               WebPlugin* webplugin) {
+static void DestroyWebPluginAndDelegate(
+    webkit::npapi::WebPluginDelegateImpl* delegate, WebPlugin* webplugin) {
   // WebPlugin must outlive WebPluginDelegate.
   if (delegate)
     delegate->PluginDestroyed();
@@ -58,13 +58,10 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
     // The delegate or an npobject is in the callstack, so don't delete it
     // right away.
     MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-        base::Bind(&FinishDestructionCallback, delegate_, webplugin_));
+        base::Bind(&DestroyWebPluginAndDelegate, delegate_, webplugin_));
   } else {
     // Safe to delete right away.
-    if (delegate_)
-      delegate_->PluginDestroyed();
-
-    delete webplugin_;
+    DestroyWebPluginAndDelegate(delegate_, webplugin_);
   }
 }
 
