@@ -256,6 +256,8 @@
       'cpp/private/flash_message_loop.h',
       'cpp/private/flash_net_connector.cc',
       'cpp/private/flash_net_connector.h',
+      'cpp/private/host_resolver_private.cc',
+      'cpp/private/host_resolver_private.h',
       'cpp/private/instance_private.cc',
       'cpp/private/instance_private.h',
       'cpp/private/net_address_private.cc',

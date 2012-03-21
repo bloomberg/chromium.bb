@@ -7,12 +7,14 @@
 
 #include <string>
 
-#include "ppapi/c/ppb_core.h"
-#include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/tests/test_case.h"
+
+struct PP_HostResolver_Private_Hint;
+struct PP_NetAddress_Private;
 
 namespace pp {
 
+class HostResolverPrivate;
 class TCPSocketPrivate;
 
 }  // namespace pp
@@ -42,18 +44,15 @@ class TestHostResolverPrivate : public TestCase {
   std::string CheckHTTPResponse(pp::TCPSocketPrivate* socket,
                                 const std::string& request,
                                 const std::string& response);
-  std::string SyncResolve(PP_Resource host_resolver,
+  std::string SyncResolve(pp::HostResolverPrivate* host_resolver,
                           const std::string& host,
                           uint16_t port,
                           const PP_HostResolver_Private_Hint& hint);
   std::string ParametrizedTestResolve(const PP_HostResolver_Private_Hint& hint);
 
-  std::string TestCreate();
+  std::string TestEmpty();
   std::string TestResolve();
   std::string TestResolveIPv4();
-
-  const PPB_Core* core_interface_;
-  const PPB_HostResolver_Private* host_resolver_private_interface_;
 
   std::string host_;
   uint16_t port_;

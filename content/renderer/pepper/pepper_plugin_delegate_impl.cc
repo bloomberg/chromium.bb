@@ -1131,8 +1131,7 @@ void PepperPluginDelegateImpl::HostResolverResolve(
   }
 }
 
-void PepperPluginDelegateImpl::UnregisterHostResolver(
-    uint32 host_resolver_id) {
+void PepperPluginDelegateImpl::UnregisterHostResolver(uint32 host_resolver_id) {
   host_resolvers_.Remove(host_resolver_id);
 }
 
