@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Wed Feb 15 13:55:58 2012. */
+/* From ppb_file_system.idl modified Mon Mar 19 11:36:09 2012. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -67,10 +67,6 @@ struct PPB_FileSystem_1_0 {
    * completion of Open().
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
-   */
-  /*
-   * TODO(brettw) clarify whether this must have completed before a file can
-   * be opened in it. Clarify what it means to be "completed."
    */
   int32_t (*Open)(PP_Resource file_system,
                   int64_t expected_size,

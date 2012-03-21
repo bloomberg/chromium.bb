@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Tue Jan 24 16:03:48 2012. */
+/* From ppb_graphics_2d.idl modified Mon Mar 19 11:35:04 2012. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -244,12 +244,6 @@ struct PPB_Graphics2D_1_0 {
    * <code>PP_ERROR_INPROGRESS</code> if a flush is already pending that has
    * not issued its callback yet.  In the failure case, nothing will be updated
    * and no callback will be scheduled.
-   */
-  /* TODO(darin): We should ensure that the completion callback always runs, so
-   * that it is easier for consumers to manage memory referenced by a callback.
-   *
-   * TODO(): Add back in the synchronous mode description once we have support
-   * for it.
    */
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);

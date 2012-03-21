@@ -219,9 +219,6 @@ std::string Var::DebugString() const {
   } else if (is_bool()) {
     snprintf(buf, sizeof(buf), AsBool() ? "Var(true)" : "Var(false)");
   } else if (is_int()) {
-    // Note that the following static_cast is necessary because
-    // NativeClient's int32_t is actually "long".
-    // TODO(sehr,polina): remove this after newlib is changed.
     snprintf(buf, sizeof(buf), "Var(%d)", static_cast<int>(AsInt()));
   } else if (is_double()) {
     snprintf(buf, sizeof(buf), "Var(%f)", AsDouble());
@@ -236,8 +233,6 @@ std::string Var::DebugString() const {
     }
     snprintf(buf, sizeof(buf), format, str.c_str());
   } else if (is_array_buffer()) {
-    // TODO(dmichael): We could make this dump hex. Maybe DebugString should be
-    // virtual?
     snprintf(buf, sizeof(buf), "Var(ARRAY_BUFFER)");
   } else if (is_object()) {
     snprintf(buf, sizeof(buf), "Var(OBJECT)");

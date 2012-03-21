@@ -239,13 +239,6 @@ interface PPB_Graphics2D {
    * not issued its callback yet.  In the failure case, nothing will be updated
    * and no callback will be scheduled.
    */
-
-  /* TODO(darin): We should ensure that the completion callback always runs, so
-   * that it is easier for consumers to manage memory referenced by a callback.
-   *
-   * TODO(): Add back in the synchronous mode description once we have support
-   * for it.
-   */
   int32_t Flush(
       [in] PP_Resource graphics_2d,
       [in] PP_CompletionCallback callback);

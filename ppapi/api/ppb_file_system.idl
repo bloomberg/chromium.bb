@@ -52,11 +52,6 @@ interface PPB_FileSystem {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
-  
-   /* 
-    * TODO(brettw) clarify whether this must have completed before a file can
-    * be opened in it. Clarify what it means to be "completed."
-    */
   int32_t Open([in] PP_Resource file_system,
                [in] int64_t expected_size,
                [in] PP_CompletionCallback callback);
