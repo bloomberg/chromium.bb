@@ -333,6 +333,23 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
+  def testSessionStartupChangeDismissedOnEdit(self):
+    """Test for that editing startup prefs manually dismissed the change."""
+    # Set startup prefs to restoring last open tabs.
+    self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
+    # Restart browser with startup prefs set to open google.com.
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=lambda: self._ChangeSessionStartupPrefs(
+            self._SESSION_STARTUP_URLS,
+            startup_urls=['http://www.google.com']))
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    # Change the setting manually.
+    self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_NTP)
+    # No longer showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+
   def testSessionStartupPrefMigration(self):
     """Test migration from old session.restore_on_startup values (homepage)."""
     # Set startup prefs to restoring last open tabs.

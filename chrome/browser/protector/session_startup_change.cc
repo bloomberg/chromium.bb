@@ -8,10 +8,11 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/browser/protector/base_prefs_change.h"
 #include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -20,7 +21,7 @@
 namespace protector {
 
 // STARTUP_SETTING and session startup settings change tracked by Protector.
-class SessionStartupChange : public BaseSettingChange {
+class SessionStartupChange : public BasePrefsChange {
  public:
   SessionStartupChange(const SessionStartupPref& actual,
                        const SessionStartupPref& backup);
@@ -61,9 +62,11 @@ SessionStartupChange::~SessionStartupChange() {
 }
 
 bool SessionStartupChange::Init(Profile* profile) {
-  if (!BaseSettingChange::Init(profile))
+  if (!BasePrefsChange::Init(profile))
     return false;
   SessionStartupPref::SetStartupPref(profile, backup_pref_);
+  DismissOnPrefChange(prefs::kRestoreOnStartup);
+  DismissOnPrefChange(prefs::kURLsToRestoreOnStartup);
   return true;
 }
 
@@ -72,6 +75,7 @@ void SessionStartupChange::Apply(Browser* browser) {
       kProtectorHistogramStartupSettingsApplied,
       new_pref_.type,
       SessionStartupPref::TYPE_COUNT);
+  IgnorePrefChanges();
   SessionStartupPref::SetStartupPref(profile(), new_pref_);
 }
 
@@ -80,6 +84,7 @@ void SessionStartupChange::Discard(Browser* browser) {
       kProtectorHistogramStartupSettingsDiscarded,
       new_pref_.type,
       SessionStartupPref::TYPE_COUNT);
+  IgnorePrefChanges();
   // Nothing to do here since |backup_pref_| was already made active by Init().
 }
 

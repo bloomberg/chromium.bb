@@ -1799,6 +1799,8 @@
         'browser/profiles/refcounted_profile_keyed_service.cc',
         'browser/profiles/refcounted_profile_keyed_service_factory.h',
         'browser/profiles/refcounted_profile_keyed_service_factory.cc',
+        'browser/protector/base_prefs_change.cc',
+        'browser/protector/base_prefs_change.h',
         'browser/protector/base_setting_change.cc',
         'browser/protector/base_setting_change.h',
         'browser/protector/default_search_provider_change.cc',
