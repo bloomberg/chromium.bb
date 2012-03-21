@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu_blacklist.h"
@@ -1658,6 +1659,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // need to read prefs that get set after that runs.
   browser_process_->google_url_tracker();
   browser_process_->intranet_redirect_detector();
+  GoogleSearchCounter::RegisterForNotifications();
 
   // Disable SDCH filtering if switches::kEnableSdch is 0.
   int sdch_enabled = 1;
