@@ -31,6 +31,7 @@ class ResourceRequestInfo {
   // NOTE: Add more parameters if you need to initialize other fields.
   CONTENT_EXPORT static void AllocateForTesting(
       net::URLRequest* request,
+      ResourceType::Type resource_type,
       ResourceContext* context);
 
   // Returns the associated RenderView for a given process. Returns false, if

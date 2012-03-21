@@ -26,6 +26,7 @@ const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
 // static
 void ResourceRequestInfo::AllocateForTesting(
     net::URLRequest* request,
+    ResourceType::Type resource_type,
     ResourceContext* context) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
@@ -35,11 +36,11 @@ void ResourceRequestInfo::AllocateForTesting(
           MSG_ROUTING_NONE,                  // route_id
           0,                                 // origin_pid
           0,                                 // request_id
-          true,                              // is_main_frame
+          resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
           0,                                 // frame_id
           false,                             // parent_is_main_frame
           0,                                 // parent_frame_id
-          ResourceType::MAIN_FRAME,          // resource_type
+          resource_type,                     // resource_type
           PAGE_TRANSITION_LINK,              // transition_type
           0,                                 // upload_size
           false,                             // is_download

@@ -1445,6 +1445,7 @@
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_prefs_unittest.h',
         'browser/extensions/extension_process_manager_unittest.cc',
+        'browser/extensions/extension_protocols_unittest.cc',
         'browser/extensions/extension_service_unittest.cc',
         'browser/extensions/extension_service_unittest.h',
         'browser/extensions/extension_sorting_unittest.cc',

@@ -165,12 +165,22 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   net::HttpResponseInfo response_info_;
 };
 
-bool ExtensionCanLoadInIncognito(const std::string& extension_id,
+bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
+                                 const std::string& extension_id,
                                  ExtensionInfoMap* extension_info_map) {
-  const Extension* extension =
-      extension_info_map->extensions().GetByID(extension_id);
-  // Only split-mode extensions can load in incognito profiles.
-  return extension && extension->incognito_split_mode();
+  if (!extension_info_map->IsIncognitoEnabled(extension_id))
+    return false;
+
+  // Only allow incognito toplevel navigations to extension resources in
+  // split mode. In spanning mode, the extension must run in a single process,
+  // and an incognito tab prevents that.
+  if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    const Extension* extension =
+        extension_info_map->extensions().GetByID(extension_id);
+    return extension && extension->incognito_split_mode();
+  }
+
+  return true;
 }
 
 // Returns true if an chrome-extension:// resource should be allowed to load.
@@ -189,14 +199,8 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return true;
   }
 
-  // Don't allow toplevel navigations to extension resources in incognito mode.
-  // This is because an extension must run in a single process, and an
-  // incognito tab prevents that.
-  if (is_incognito &&
-      info->GetResourceType() == ResourceType::MAIN_FRAME &&
-      !ExtensionCanLoadInIncognito(request->url().host(), extension_info_map)) {
-    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
-               << "incognito tab.";
+  if (is_incognito && !ExtensionCanLoadInIncognito(info, request->url().host(),
+                                                   extension_info_map)) {
     return false;
   }
 
@@ -242,7 +246,6 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   // TODO(mpcomplete): better error code.
   if (!AllowExtensionResourceLoad(
            request, is_incognito_, extension_info_map_)) {
-    LOG(ERROR) << "disallowed in extension protocols";
     return new net::URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
   }
 
