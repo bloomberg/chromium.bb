@@ -10,17 +10,8 @@
 #include <X11/XKBlib.h>
 #undef Status
 
-#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/ui/brightness_bubble.h"
-#include "chrome/browser/chromeos/ui/volume_bubble.h"
-#include "chrome/browser/extensions/system/system_api.h"
-#include "content/public/browser/user_metrics.h"
-#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/x/x11_util.h"
 
 #if defined(USE_WAYLAND)
@@ -28,8 +19,6 @@
 #else
 #include "base/message_pump_x.h"
 #endif
-
-using content::UserMetricsAction;
 
 namespace chromeos {
 
