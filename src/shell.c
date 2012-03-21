@@ -164,7 +164,7 @@ shell_configuration(struct wl_shell *shell)
 		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
 	};
 
-	config_file = config_file_path("weston-desktop-shell.ini");
+	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 	free(config_file);
 

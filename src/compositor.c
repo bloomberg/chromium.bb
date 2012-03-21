@@ -2513,12 +2513,21 @@ int main(int argc, char *argv[])
 	int32_t idle_time = 300;
 	int32_t xserver;
 	char *socket_name = NULL;
+	char *config_file;
+
+	const const struct config_key shell_config_keys[] = {
+		{ "type", CONFIG_KEY_STRING, &shell },
+	};
+
+	const const struct config_section cs[] = {
+		{ "shell",
+		  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
+	};
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
-		{ WESTON_OPTION_STRING, "shell", 's', &shell },
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 	};
 
@@ -2554,6 +2563,10 @@ int main(int argc, char *argv[])
 		else
 			backend = "drm-backend.so";
 	}
+
+	config_file = config_file_path("weston.ini");
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
+	free(config_file);
 
 	if (!shell)
 		shell = "desktop-shell.so";

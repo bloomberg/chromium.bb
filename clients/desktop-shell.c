@@ -118,7 +118,7 @@ static const struct config_key launcher_config_keys[] = {
 };
 
 static const struct config_section config_sections[] = {
-	{ "desktop-shell",
+	{ "shell",
 	  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
 	{ "launcher",
 	  launcher_config_keys, ARRAY_LENGTH(launcher_config_keys),
@@ -728,7 +728,7 @@ int main(int argc, char *argv[])
 		desktop_shell_set_background(desktop.shell, output->output, s);
 	}
 
-	config_file = config_file_path("weston-desktop-shell.ini");
+	config_file = config_file_path("weston.ini");
 	ret = parse_config_file(config_file,
 				config_sections, ARRAY_LENGTH(config_sections),
 				&desktop);

@@ -54,13 +54,10 @@ static char *key_launcher_icon;
 static char *key_launcher_path;
 static void launcher_section_done(void *data);
 
-static const struct config_key lockscreen_config_keys[] = {
-	{ "icon", CONFIG_KEY_STRING, &key_lockscreen_icon },
-	{ "background", CONFIG_KEY_STRING, &key_lockscreen_background },
-};
-
-static const struct config_key homescreen_config_keys[] = {
-	{ "background", CONFIG_KEY_STRING, &key_homescreen_background },
+static const struct config_key shell_config_keys[] = {
+	{ "lockscreen-icon", CONFIG_KEY_STRING, &key_lockscreen_icon },
+	{ "lockscreen", CONFIG_KEY_STRING, &key_lockscreen_background },
+	{ "homescreen", CONFIG_KEY_STRING, &key_homescreen_background },
 };
 
 static const struct config_key launcher_config_keys[] = {
@@ -69,10 +66,8 @@ static const struct config_key launcher_config_keys[] = {
 };
 
 static const struct config_section config_sections[] = {
-	{ "lockscreen",
-	  lockscreen_config_keys, ARRAY_LENGTH(lockscreen_config_keys) },
-	{ "homescreen",
-	  homescreen_config_keys, ARRAY_LENGTH(homescreen_config_keys) },
+	{ "shell",
+	  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
 	{ "launcher",
 	  launcher_config_keys, ARRAY_LENGTH(launcher_config_keys),
 	  launcher_section_done }
@@ -327,7 +322,7 @@ int main(int argc, char *argv[])
 				   "tablet_shell", 1);
 	shell = tablet_shell_create(display, id);
 
-	config_file = config_file_path("weston-tablet-shell.ini");
+	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file,
 			  config_sections, ARRAY_LENGTH(config_sections),
 			  shell);
