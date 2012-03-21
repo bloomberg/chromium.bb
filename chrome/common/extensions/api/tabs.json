@@ -548,6 +548,7 @@
               },
               "quality": {
                 "type": "integer",
+                "name": "quality",
                 "optional": true,
                 "minimum": 0,
                 "maximum": 100,

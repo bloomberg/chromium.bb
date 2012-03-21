@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/declarative/declarative_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
-#include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
@@ -466,16 +465,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::AddRulesFunction>();
   RegisterFunction<extensions::RemoveRulesFunction>();
   RegisterFunction<extensions::GetRulesFunction>();
-
-  // Experimental Offscreen Tabs
-  RegisterFunction<CreateOffscreenTabFunction>();
-  RegisterFunction<GetOffscreenTabFunction>();
-  RegisterFunction<GetAllOffscreenTabFunction>();
-  RegisterFunction<RemoveOffscreenTabFunction>();
-  RegisterFunction<SendKeyboardEventOffscreenTabFunction>();
-  RegisterFunction<SendMouseEventOffscreenTabFunction>();
-  RegisterFunction<ToDataUrlOffscreenTabFunction>();
-  RegisterFunction<UpdateOffscreenTabFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

@@ -43,7 +43,6 @@ var MODULE_SCHEMAS = [
   '../api/experimental.input.virtualKeyboard.json',
   '../api/experimental.keybinding.json',
   '../api/experimental.managedMode.json',
-  '../api/experimental.offscreenTabs.json',
   '../api/experimental.processes.json',
   '../api/experimental.rlz.json',
   '../api/experimental.serial.json',

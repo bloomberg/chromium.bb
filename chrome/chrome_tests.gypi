@@ -2638,7 +2638,6 @@
         'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/extension_action/browser_action_apitest.cc',
         'browser/extensions/api/extension_action/page_action_apitest.cc',
-        'browser/extensions/api/offscreen_tabs/offscreen_tabs_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
         'browser/extensions/api/proxy/proxy_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',

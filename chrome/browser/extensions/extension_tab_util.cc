@@ -12,13 +12,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
-#include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 
 namespace keys = extension_tabs_module_constants;
 namespace errors = extension_manifest_errors;
@@ -226,22 +222,4 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     }
   }
   return false;
-}
-
-GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
-                                                  const Extension* extension) {
-  GURL url = GURL(url_string);
-  if (!url.is_valid())
-    url = extension->GetResourceURL(url_string);
-
-  return url;
-}
-
-bool ExtensionTabUtil::IsCrashURL(const GURL& url) {
-  // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
-  GURL fixed_url =
-      URLFixerUpper::FixupURL(url.possibly_invalid_spec(), std::string());
-  return (fixed_url.SchemeIs(chrome::kChromeUIScheme) &&
-          (fixed_url.host() == chrome::kChromeUIBrowserCrashHost ||
-           fixed_url.host() == chrome::kChromeUICrashHost));
 }
