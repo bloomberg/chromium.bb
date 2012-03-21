@@ -26,8 +26,8 @@ weston_SOURCES =			\
 
 if ENABLE_SETUID_INSTALL
 install-exec-hook:
-	-chown root $(DESTDIR)$(bindir)/weston
-	-chmod u+s $(DESTDIR)$(bindir)/weston
+	chown root $(DESTDIR)$(bindir)/weston
+	chmod u+s $(DESTDIR)$(bindir)/weston
 endif
 
 if ENABLE_XSERVER_LAUNCHER
