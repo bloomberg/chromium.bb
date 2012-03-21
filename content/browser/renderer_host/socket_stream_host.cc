@@ -69,3 +69,24 @@ void SocketStreamHost::Close() {
     return;
   socket_->Close();
 }
+
+void SocketStreamHost::CancelWithError(int error) {
+  VLOG(1) << "SocketStreamHost::CancelWithError: error=" << error;
+  if (!socket_)
+    return;
+  socket_->CancelWithError(error);
+}
+
+void SocketStreamHost::CancelWithSSLError(const net::SSLInfo& ssl_info) {
+  VLOG(1) << "SocketStreamHost::CancelWithSSLError";
+  if (!socket_)
+    return;
+  socket_->CancelWithSSLError(ssl_info);
+}
+
+void SocketStreamHost::ContinueDespiteError() {
+  VLOG(1) << "SocketStreamHost::ContinueDespiteError";
+  if (!socket_)
+    return;
+  socket_->ContinueDespiteError();
+}

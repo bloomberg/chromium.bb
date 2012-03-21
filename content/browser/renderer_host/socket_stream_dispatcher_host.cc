@@ -6,19 +6,23 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
+#include "content/browser/ssl/ssl_manager.h"
 #include "content/common/resource_messages.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
+    int render_process_id,
     ResourceMessageFilter::URLRequestContextSelector* selector,
     content::ResourceContext* resource_context)
-    : url_request_context_selector_(selector),
+    : render_process_id_(render_process_id),
+      url_request_context_selector_(selector),
       resource_context_(resource_context) {
   DCHECK(selector);
   net::WebSocketJob::EnsureInit();
@@ -115,8 +119,12 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
     LOG(ERROR) << "NoSocketId in OnSSLCertificateError";
     return;
   }
-  // TODO(toyoshim): Use SSLManager to handle cert error.
-  socket->ContinueDespiteCertError();
+  SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
+  DCHECK(socket_stream_host);
+  content::GlobalRequestID request_id(-1, socket_id);
+  SSLManager::OnSSLCertificateError(this, request_id,
+      ResourceType::SUB_RESOURCE, socket->url(), render_process_id_,
+      socket_stream_host->render_view_id(), ssl_info, fatal);
 }
 
 bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,
@@ -131,6 +139,33 @@ bool SocketStreamDispatcherHost::CanSetCookie(net::SocketStream* request,
                                               net::CookieOptions* options) {
   return content::GetContentClient()->browser()->AllowSetCookie(
       url, url, cookie_line, resource_context_, 0, MSG_ROUTING_NONE, options);
+}
+
+void SocketStreamDispatcherHost::CancelSSLRequest(
+    const content::GlobalRequestID& id,
+    int error,
+    const net::SSLInfo* ssl_info) {
+  int socket_id = id.request_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::CancelSSLRequest socket_id="
+           << socket_id;
+  DCHECK_NE(content::kNoSocketId, socket_id);
+  SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
+  DCHECK(socket_stream_host);
+  if (ssl_info)
+    socket_stream_host->CancelWithSSLError(*ssl_info);
+  else
+    socket_stream_host->CancelWithError(error);
+}
+
+void SocketStreamDispatcherHost::ContinueSSLRequest(
+    const content::GlobalRequestID& id) {
+  int socket_id = id.request_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::ContinueSSLRequest socket_id="
+           << socket_id;
+  DCHECK_NE(content::kNoSocketId, socket_id);
+  SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
+  DCHECK(socket_stream_host);
+  socket_stream_host->ContinueDespiteError();
 }
 
 // Message handlers called by OnMessageReceived.

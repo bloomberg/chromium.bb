@@ -519,9 +519,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost(
+      new SocketStreamDispatcherHost(GetID(),
           new RendererURLRequestContextSelector(browser_context, GetID()),
-                                                resource_context);
+          resource_context);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(new WorkerMessageFilter(GetID(), resource_context,

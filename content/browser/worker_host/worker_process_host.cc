@@ -276,7 +276,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       content::GetDatabaseTrackerForResourceContext(resource_context_)));
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
-      new SocketStreamDispatcherHost(
+      new SocketStreamDispatcherHost(render_process_id,
           new URLRequestContextSelector(request_context), resource_context_);
   process_->GetHost()->AddFilter(socket_stream_dispatcher_host);
   process_->GetHost()->AddFilter(
