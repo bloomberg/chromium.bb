@@ -7654,11 +7654,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         to protect against HTTP response splitting attacks.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION" desc="The error message displayed when we received multiple 'Content-Disposition' header fields in an http response.">
-        Multiple Content-Disposition headers received.  This is disallowed to
+        Multiple distinct Content-Disposition headers received.  This is disallowed to
         protect against HTTP response splitting attacks.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION" desc="The error message displayed when we received multiple 'Location' header fields in an http response.">
-        Multiple Location headers received.  This is disallowed to protect
+        Multiple distinct Location headers received.  This is disallowed to protect
         against HTTP response splitting attacks.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
