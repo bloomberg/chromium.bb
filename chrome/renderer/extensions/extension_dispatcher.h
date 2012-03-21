@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
+#include "chrome/renderer/extensions/v8_schema_registry.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "v8/include/v8.h"
 
@@ -55,6 +56,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
     return v8_context_set_;
   }
   UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
+  extensions::V8SchemaRegistry* v8_schema_registry() {
+    return &v8_schema_registry_;
+  }
 
   bool IsExtensionActive(const std::string& extension_id) const;
 
@@ -197,6 +201,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool webrequest_other_;
 
   ResourceBundleSourceMap source_map_;
+
+  // Cache for the v8 representation of extension API schemas.
+  extensions::V8SchemaRegistry v8_schema_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

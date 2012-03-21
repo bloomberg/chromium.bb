@@ -81,38 +81,7 @@ class ExtensionImpl : public ChromeV8Extension {
     RouteStaticFunction("SetIconCommon", &SetIconCommon);
   }
 
-  ~ExtensionImpl() {
-    // TODO(aa): It seems that v8 never deletes us, so this doesn't get called.
-    // Leaving this in here in case v8's implementation ever changes.
-    for (CachedSchemaMap::iterator it = schemas_.begin(); it != schemas_.end();
-        ++it) {
-      if (!it->second.IsEmpty())
-        it->second.Dispose();
-    }
-  }
-
  private:
-  static v8::Handle<v8::Value> GetV8SchemaForAPI(
-      ExtensionImpl* self,
-      v8::Handle<v8::Context> context,
-      const std::string& api_name) {
-    CachedSchemaMap::iterator maybe_api = self->schemas_.find(api_name);
-    if (maybe_api != self->schemas_.end())
-      return maybe_api->second;
-
-    scoped_ptr<V8ValueConverter> v8_value_converter(V8ValueConverter::create());
-    const base::DictionaryValue* schema =
-        ExtensionAPI::GetInstance()->GetSchema(api_name);
-    CHECK(schema) << api_name;
-
-    self->schemas_[api_name] =
-        v8::Persistent<v8::Object>::New(v8::Handle<v8::Object>::Cast(
-            v8_value_converter->ToV8Value(schema, context)));
-    CHECK(!self->schemas_[api_name].IsEmpty());
-
-    return self->schemas_[api_name];
-  }
-
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
     ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
@@ -141,24 +110,7 @@ class ExtensionImpl : public ChromeV8Extension {
           UserScriptSlave::GetDataSourceURLForFrame(v8_context->web_frame()));
     }
 
-    v8::Persistent<v8::Context> context(v8::Context::New());
-    v8::Context::Scope context_scope(context);
-    v8::Handle<v8::Array> api(v8::Array::New(apis->size()));
-    size_t api_index = 0;
-    for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
-        ++i) {
-      // TODO(kalman): this caching is actually useless now, because
-      // SchemaGeneratedBindings is per-context not per-process. We should
-      // (e.g.) hang a SchemaRegistry off ExtensionDispatcher (which maintains
-      // a *single* v8::Context rather than multiple ones as here).
-      api->Set(api_index, GetV8SchemaForAPI(self, context, *i));
-      ++api_index;
-    }
-
-    // The persistent extension_api_ will keep the context alive.
-    context.Dispose();
-
-    return api;
+    return dispatcher->v8_schema_registry()->GetSchemas(*apis);
   }
 
   static v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args) {
@@ -321,12 +273,6 @@ class ExtensionImpl : public ChromeV8Extension {
 
     return StartRequestCommon(args, &list_value);
   }
-
-  // Cached JS Array representation of each namespace in extension_api.json.
-  // We store this so that we don't have to parse it over and over again for
-  // every context that uses it.
-  typedef std::map<std::string, v8::Persistent<v8::Object> > CachedSchemaMap;
-  CachedSchemaMap schemas_;
 };
 
 }  // namespace

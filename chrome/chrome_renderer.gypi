@@ -109,6 +109,8 @@
         'renderer/extensions/user_script_idle_scheduler.h',
         'renderer/extensions/user_script_slave.cc',
         'renderer/extensions/user_script_slave.h',
+        'renderer/extensions/v8_schema_registry.cc',
+        'renderer/extensions/v8_schema_registry.h',
         'renderer/extensions/web_request_custom_bindings.cc',
         'renderer/extensions/web_request_custom_bindings.h',
         'renderer/extensions/webstore_bindings.cc',
