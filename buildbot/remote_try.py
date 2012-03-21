@@ -90,8 +90,15 @@ class RemoteTryJob(object):
       json.dump(self.values, job_desc_file)
 
     cros_lib.RunCommand(['git', 'add', fullpath], cwd=self.tryjob_repo)
+    extra_env = {
+      # The committer field makes sure the creds match what the remote
+      # gerrit instance expects while the author field allows lookup
+      # on the console to work.  http://crosbug.com/27939
+      'GIT_COMMITTER_EMAIL' : self.user_email,
+      'GIT_AUTHOR_EMAIL'    : self.user_email,
+    }
     cros_lib.RunCommand(['git', 'commit', '-m', self.description],
-                        cwd=self.tryjob_repo)
+                        cwd=self.tryjob_repo, extra_env=extra_env)
 
     try:
       cros_lib.GitPushWithRetry(manifest_version.PUSH_BRANCH, self.tryjob_repo,
