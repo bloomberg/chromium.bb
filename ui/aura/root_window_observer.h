@@ -13,13 +13,14 @@ class Size;
 }
 
 namespace aura {
-
+class RootWindow;
 class Window;
 
 class AURA_EXPORT RootWindowObserver {
  public:
   // Invoked after the RootWindow is resized.
-  virtual void OnRootWindowResized(const gfx::Size& new_size) {}
+  virtual void OnRootWindowResized(const RootWindow* root,
+                                   const gfx::Size& old_size) {}
 
   // Invoked when a window is focused.
   virtual void OnWindowFocused(Window* window) {}

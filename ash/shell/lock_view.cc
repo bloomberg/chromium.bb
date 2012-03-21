@@ -57,7 +57,7 @@ void CreateLockScreen() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   gfx::Size ps = lock_view->GetPreferredSize();
 
-  gfx::Size root_window_size = Shell::GetRootWindow()->GetHostSize();
+  gfx::Size root_window_size = Shell::GetRootWindow()->bounds().size();
   params.bounds = gfx::Rect((root_window_size.width() - ps.width()) / 2,
                             (root_window_size.height() - ps.height()) / 2,
                             ps.width(), ps.height());

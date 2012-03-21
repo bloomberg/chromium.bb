@@ -136,9 +136,7 @@ void RootWindow::SetHostSize(const gfx::Size& size) {
 }
 
 gfx::Size RootWindow::GetHostSize() const {
-  gfx::Rect rect(host_->GetBounds().size());
-  layer()->transform().TransformRect(&rect);
-  return rect.size();
+  return host_->GetBounds().size();
 }
 
 void RootWindow::SetHostBounds(const gfx::Rect& bounds) {
@@ -296,14 +294,14 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
   compositor_->WidgetSizeChanged(size);
-
+  gfx::Size old = bounds().size();
   // The layer, and all the observers should be notified of the
   // transformed size of the root window.
   gfx::Rect bounds(size);
   layer()->transform().TransformRect(&bounds);
   SetBounds(gfx::Rect(bounds.size()));
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowResized(bounds.size()));
+                    OnRootWindowResized(this, old));
 }
 
 void RootWindow::OnWindowDestroying(Window* window) {

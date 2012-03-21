@@ -427,7 +427,7 @@ TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
   ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
 
   aura::RootWindow* root_window = Shell::GetRootWindow();
-  gfx::Size size = root_window->GetHostSize();
+  gfx::Size size = root_window->bounds().size();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
 

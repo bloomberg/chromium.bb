@@ -133,7 +133,8 @@ class KeyboardWidget
 
 #if defined(USE_AURA)
   // Overridden from aura::RootWindowObserver.
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& old_size) OVERRIDE;
 #endif
 
   // Overridden from NotificationObserver.
@@ -435,7 +436,8 @@ void KeyboardWidget::VirtualKeyboardChanged(
 #endif
 
 #if defined(USE_AURA)
-void KeyboardWidget::OnRootWindowResized(const gfx::Size& new_size) {
+void KeyboardWidget::OnRootWindowResized(const aura::RootWindow* root,
+                                         const gfx::Size& old_size) {
   ResetBounds();
 }
 #endif

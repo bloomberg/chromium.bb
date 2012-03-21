@@ -71,7 +71,8 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 /////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, RootWindowObserver overrides:
 
-void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
+void BaseLayoutManager::OnRootWindowResized(const aura::RootWindow* root,
+                                            const gfx::Size& old_size) {
   AdjustWindowSizesForScreenChange();
 }
 

@@ -156,7 +156,8 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   void RequestShutdown();
 
   // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& old_size) OVERRIDE;
 
  private:
   bool logged_in_as_non_guest() const { return logged_in_ && !is_guest_; }

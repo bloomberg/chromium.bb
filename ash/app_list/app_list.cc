@@ -208,9 +208,10 @@ ui::GestureStatus AppList::PreHandleGestureEvent(
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppList,  ura::RootWindowObserver implementation:
-void AppList::OnRootWindowResized(const gfx::Size& new_size) {
+void AppList::OnRootWindowResized(const aura::RootWindow* root,
+                                  const gfx::Size& old_size) {
   if (view_&& is_visible_)
-    view_->GetWidget()->SetBounds(gfx::Rect(new_size));
+    view_->GetWidget()->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

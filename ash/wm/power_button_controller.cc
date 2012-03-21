@@ -437,9 +437,10 @@ void PowerButtonController::RequestShutdown() {
     StartShutdownAnimationAndRequestShutdown();
 }
 
-void PowerButtonController::OnRootWindowResized(const gfx::Size& new_size) {
+void PowerButtonController::OnRootWindowResized(const aura::RootWindow* root,
+                                                const gfx::Size& new_size) {
   if (background_layer_.get())
-    background_layer_->SetBounds(gfx::Rect(new_size));
+    background_layer_->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
 void PowerButtonController::OnLockTimeout() {

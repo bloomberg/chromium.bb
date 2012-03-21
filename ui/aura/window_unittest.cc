@@ -905,11 +905,13 @@ TEST_F(WindowTest, Transform) {
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
   EXPECT_EQ(transformed_size.ToString(),
-            root_window()->GetHostSize().ToString());
-  EXPECT_EQ(transformed_size.ToString(),
             root_window()->bounds().size().ToString());
   EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
             gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
+
+  // Host size shouldn't change.
+  EXPECT_EQ(size.ToString(),
+            root_window()->GetHostSize().ToString());
 }
 
 TEST_F(WindowTest, TransformGesture) {
