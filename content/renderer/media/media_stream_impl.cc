@@ -415,6 +415,13 @@ void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
   event->Signal();
 }
 
+void MediaStreamImpl::CreateIpcNetworkManagerOnWorkerThread(
+    base::WaitableEvent* event) {
+  DCHECK_EQ(MessageLoop::current(), chrome_worker_thread_.message_loop());
+  network_manager_ = new content::IpcNetworkManager(p2p_socket_dispatcher_);
+  event->Signal();
+}
+
 void MediaStreamImpl::DeleteIpcNetworkManager() {
   DCHECK_EQ(MessageLoop::current(), chrome_worker_thread_.message_loop());
   delete network_manager_;
@@ -447,8 +454,14 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
     DCHECK(worker_thread_);
   }
 
-  if (!network_manager_)
-    network_manager_ = new content::IpcNetworkManager(p2p_socket_dispatcher_);
+  if (!network_manager_) {
+    base::WaitableEvent event(true, false);
+    chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+          &MediaStreamImpl::CreateIpcNetworkManagerOnWorkerThread,
+          this,
+          &event));
+    event.Wait();
+  }
 
   if (!socket_factory_.get()) {
     socket_factory_.reset(
