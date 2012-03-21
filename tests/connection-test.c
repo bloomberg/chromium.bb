@@ -240,7 +240,6 @@ validate_demarshal_s(void *data, struct wl_object *object, const char *s)
 	uint32_t *msg = data;
 
 	assert(object->id = msg[0]);
-	fprintf(stderr, "s = %s\n", s);
 	assert(strcmp(s, "superdude") == 0);
 }
 
