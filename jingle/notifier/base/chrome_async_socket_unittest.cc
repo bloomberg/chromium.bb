@@ -120,7 +120,8 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
       net::ClientSocketFactory* mock_client_socket_factory,
       const net::AddressList& address_list)
           : mock_client_socket_factory_(mock_client_socket_factory),
-            address_list_(address_list) {
+            address_list_(address_list),
+            cert_verifier_(net::CertVerifier::CreateDefault()) {
   }
 
   // ResolvingClientSocketFactory implementation.
@@ -134,7 +135,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
       net::ClientSocketHandle* transport_socket,
       const net::HostPortPair& host_and_port) {
     net::SSLClientSocketContext context;
-    context.cert_verifier = &cert_verifier_;
+    context.cert_verifier = cert_verifier_.get();
     return mock_client_socket_factory_->CreateSSLClientSocket(
         transport_socket, host_and_port, ssl_config_, NULL, context);
   }
@@ -143,7 +144,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   scoped_ptr<net::ClientSocketFactory> mock_client_socket_factory_;
   net::AddressList address_list_;
   net::SSLConfig ssl_config_;
-  net::CertVerifier cert_verifier_;
+  scoped_ptr<net::CertVerifier> cert_verifier_;
 };
 
 class ChromeAsyncSocketTest

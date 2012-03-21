@@ -28,7 +28,7 @@ URLRequestContext::URLRequestContext(
                                     NULL));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service, 0u, NULL));
-  storage_.set_cert_verifier(new net::CertVerifier);
+  storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));

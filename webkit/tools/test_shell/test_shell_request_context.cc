@@ -77,7 +77,7 @@ void TestShellRequestContext::Init(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     net::HostResolver::kDefaultRetryAttempts,
                                     NULL));
-  storage_.set_cert_verifier(new net::CertVerifier);
+  storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL));
   storage_.set_ssl_config_service(

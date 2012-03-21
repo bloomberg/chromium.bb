@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
 SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
     : SSLAdapter(socket),
       ignore_bad_cert_(false),
-      cert_verifier_(new net::CertVerifier()),
+      cert_verifier_(net::CertVerifier::CreateDefault()),
       ssl_state_(SSLSTATE_NONE),
       read_state_(IOSTATE_NONE),
       write_state_(IOSTATE_NONE),

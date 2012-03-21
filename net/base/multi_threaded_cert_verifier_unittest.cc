@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/cert_verifier.h"
+#include "net/base/multi_threaded_cert_verifier.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -32,8 +32,8 @@ void FailTest(int /* result */) {
 #else
 #define MAYBE_CacheHit CacheHit
 #endif  // defined(OS_MACOSX)
-TEST(CertVerifierTest, MAYBE_CacheHit) {
-  CertVerifier verifier;
+TEST(MultiThreadedCertVerifierTest, MAYBE_CacheHit) {
+  MultiThreadedCertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -71,8 +71,8 @@ TEST(CertVerifierTest, MAYBE_CacheHit) {
 // Tests the same server certificate with different intermediate CA
 // certificates.  These should be treated as different certificate chains even
 // though the two X509Certificate objects contain the same server certificate.
-TEST(CertVerifierTest, DifferentCACerts) {
-  CertVerifier verifier;
+TEST(MultiThreadedCertVerifierTest, DifferentCACerts) {
+  MultiThreadedCertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
 
@@ -131,8 +131,8 @@ TEST(CertVerifierTest, DifferentCACerts) {
 }
 
 // Tests an inflight join.
-TEST(CertVerifierTest, InflightJoin) {
-  CertVerifier verifier;
+TEST(MultiThreadedCertVerifierTest, InflightJoin) {
+  MultiThreadedCertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -166,8 +166,8 @@ TEST(CertVerifierTest, InflightJoin) {
 }
 
 // Tests that the callback of a canceled request is never made.
-TEST(CertVerifierTest, CancelRequest) {
-  CertVerifier verifier;
+TEST(MultiThreadedCertVerifierTest, CancelRequest) {
+  MultiThreadedCertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -201,8 +201,8 @@ TEST(CertVerifierTest, CancelRequest) {
 }
 
 // Tests that a canceled request is not leaked.
-TEST(CertVerifierTest, CancelRequestThenQuit) {
-  CertVerifier verifier;
+TEST(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
+  MultiThreadedCertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
@@ -222,7 +222,7 @@ TEST(CertVerifierTest, CancelRequestThenQuit) {
   // Destroy |verifier| by going out of scope.
 }
 
-TEST(CertVerifierTest, RequestParamsComparators) {
+TEST(MultiThreadedCertVerifierTest, RequestParamsComparators) {
   SHA1Fingerprint a_key;
   memset(a_key.data, 'a', sizeof(a_key.data));
 
@@ -231,8 +231,8 @@ TEST(CertVerifierTest, RequestParamsComparators) {
 
   struct {
     // Keys to test
-    CertVerifier::RequestParams key1;
-    CertVerifier::RequestParams key2;
+    MultiThreadedCertVerifier::RequestParams key1;
+    MultiThreadedCertVerifier::RequestParams key2;
 
     // Expectation:
     // -1 means key1 is less than key2
@@ -241,41 +241,50 @@ TEST(CertVerifierTest, RequestParamsComparators) {
     int expected_result;
   } tests[] = {
     {  // Test for basic equivalence.
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0),
       0,
     },
     {  // Test that different certificates but with the same CA and for
        // the same host are different validation keys.
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
-      CertVerifier::RequestParams(z_key, a_key, "www.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0),
+      MultiThreadedCertVerifier::RequestParams(z_key, a_key, "www.example.test",
+                                               0),
       -1,
     },
     {  // Test that the same EE certificate for the same host, but with
        // different chains are different validation keys.
-      CertVerifier::RequestParams(a_key, z_key, "www.example.test", 0),
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, z_key, "www.example.test",
+                                               0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0),
       1,
     },
     {  // The same certificate, with the same chain, but for different
        // hosts are different validation keys.
-      CertVerifier::RequestParams(a_key, a_key, "www1.example.test", 0),
-      CertVerifier::RequestParams(a_key, a_key, "www2.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key,
+                                               "www1.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key,
+                                               "www2.example.test", 0),
       -1,
     },
     {  // The same certificate, chain, and host, but with different flags
        // are different validation keys.
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                  X509Certificate::VERIFY_EV_CERT),
-      CertVerifier::RequestParams(a_key, a_key, "www.example.test", 0),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               X509Certificate::VERIFY_EV_CERT),
+      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
+                                               0),
       1,
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
 
-    const CertVerifier::RequestParams& key1 = tests[i].key1;
-    const CertVerifier::RequestParams& key2 = tests[i].key2;
+    const MultiThreadedCertVerifier::RequestParams& key1 = tests[i].key1;
+    const MultiThreadedCertVerifier::RequestParams& key2 = tests[i].key2;
 
     switch (tests[i].expected_result) {
       case -1:

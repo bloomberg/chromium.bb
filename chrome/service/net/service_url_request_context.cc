@@ -115,7 +115,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
                                     NULL));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       net_proxy_config_service, 0u, NULL));
-  storage_.set_cert_verifier(new net::CertVerifier);
+  storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
   storage_.set_ftp_transaction_factory(
       new net::FtpNetworkLayer(host_resolver()));
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);

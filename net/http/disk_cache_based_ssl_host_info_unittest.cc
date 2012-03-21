@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/http/disk_cache_based_ssl_host_info.h"
@@ -33,7 +34,8 @@ const MockTransaction kHostInfoTransaction = {
 // Tests that we can delete a DiskCacheBasedSSLHostInfo object in a
 // completion callback for DiskCacheBasedSSLHostInfo::WaitForDataReady.
 TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
-  net::CertVerifier cert_verifier;
+  scoped_ptr<net::CertVerifier> cert_verifier(
+      net::CertVerifier::CreateDefault());
   // Use the blocking mock backend factory to force asynchronous completion
   // of ssl_host_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
@@ -41,7 +43,8 @@ TEST(DiskCacheBasedSSLHostInfo, DeleteInCallback) {
   net::SSLConfig ssl_config;
   scoped_ptr<net::SSLHostInfo> ssl_host_info(
       new net::DiskCacheBasedSSLHostInfo("https://www.verisign.com", ssl_config,
-                                         &cert_verifier, cache.http_cache()));
+                                         cert_verifier.get(),
+                                         cache.http_cache()));
   ssl_host_info->Start();
   net::TestCompletionCallback callback;
   int rv = ssl_host_info->WaitForDataReady(callback.callback());
@@ -58,11 +61,13 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
   net::TestCompletionCallback callback;
 
   // Store a certificate chain.
-  net::CertVerifier cert_verifier;
+  scoped_ptr<net::CertVerifier> cert_verifier(
+      net::CertVerifier::CreateDefault());
   net::SSLConfig ssl_config;
   scoped_ptr<net::SSLHostInfo> ssl_host_info(
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
-                                         &cert_verifier, cache.http_cache()));
+                                         cert_verifier.get(),
+                                         cache.http_cache()));
   ssl_host_info->Start();
   int rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
@@ -78,7 +83,8 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
   // Open the stored certificate chain.
   ssl_host_info.reset(
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
-                                         &cert_verifier, cache.http_cache()));
+                                         cert_verifier.get(),
+                                         cache.http_cache()));
   ssl_host_info->Start();
   rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
@@ -97,7 +103,8 @@ TEST(DiskCacheBasedSSLHostInfo, Update) {
   // Verify that the state was updated.
   ssl_host_info.reset(
       new net::DiskCacheBasedSSLHostInfo("https://www.google.com", ssl_config,
-                                         &cert_verifier, cache.http_cache()));
+                                         cert_verifier.get(),
+                                         cache.http_cache()));
   ssl_host_info->Start();
   rv = ssl_host_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));

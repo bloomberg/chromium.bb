@@ -615,7 +615,7 @@ class SSLChan : public MessageLoopForIO::Watcher {
         net::ClientSocketFactory::GetDefaultFactory();
     net::SSLClientSocketContext ssl_context;
     if (!cert_verifier_.get())
-      cert_verifier_.reset(new net::CertVerifier());
+      cert_verifier_.reset(net::CertVerifier::CreateDefault());
     ssl_context.cert_verifier = cert_verifier_.get();
     socket_.reset(factory->CreateSSLClientSocket(
         handle, host_port_pair_, ssl_config_, NULL, ssl_context));

@@ -86,7 +86,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     result = server_socket->Handshake(base::Bind(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
   } else {
-    cert_verifier_.reset(new net::CertVerifier());
+    cert_verifier_.reset(net::CertVerifier::CreateDefault());
 
     net::SSLConfig::CertAndStatus cert_and_status;
     cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;

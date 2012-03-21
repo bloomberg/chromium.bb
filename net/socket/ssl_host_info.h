@@ -16,6 +16,7 @@
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/base/single_request_cert_verifier.h"
 #include "net/socket/ssl_client_socket.h"
 
 namespace net {

@@ -61,7 +61,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       net::HostResolver::kDefaultRetryAttempts,
                                       NULL));
-    storage_->set_cert_verifier(new net::CertVerifier);
+    storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
     // TODO(jam): use v8 if possible, look at chrome code.
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(

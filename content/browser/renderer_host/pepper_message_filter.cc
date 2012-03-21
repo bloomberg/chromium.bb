@@ -167,7 +167,7 @@ net::HostResolver* PepperMessageFilter::GetHostResolver() {
 
 net::CertVerifier* PepperMessageFilter::GetCertVerifier() {
   if (!cert_verifier_.get())
-    cert_verifier_.reset(new net::CertVerifier());
+    cert_verifier_.reset(net::CertVerifier::CreateDefault());
 
   return cert_verifier_.get();
 }
