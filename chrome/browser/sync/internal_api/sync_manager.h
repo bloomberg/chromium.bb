@@ -66,10 +66,6 @@ enum PassphraseRequiredReason {
   REASON_DECRYPTION = 2,               // The cryptographer requires a
                                        // passphrase for its first attempt at
                                        // decryption.
-  REASON_SET_PASSPHRASE_FAILED = 3,    // The cryptographer requires a new
-                                       // passphrase because its attempt at
-                                       // decryption with the cached passphrase
-                                       // was unsuccessful.
 };
 
 

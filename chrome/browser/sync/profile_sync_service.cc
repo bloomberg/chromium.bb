@@ -873,8 +873,8 @@ void ProfileSyncService::OnPassphraseRequired(
     if (backend_->IsUsingExplicitPassphrase()) {
       DVLOG(1) << "Attempting explicit passphrase.";
       // The passphrase will be re-cached if the syncer isn't ready.
-      SetDecryptionPassphrase(explicit_passphrase);
-      return;
+      if (SetDecryptionPassphrase(explicit_passphrase))
+        return;
     }
   }
 

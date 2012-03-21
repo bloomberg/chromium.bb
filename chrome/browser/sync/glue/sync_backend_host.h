@@ -202,7 +202,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // otherwise. If new encrypted keys arrive during the asynchronous call,
   // OnPassphraseRequired may be triggered at a later time. It is an error to
   // call this when there are no pending keys.
-  bool SetDecryptionPassphrase(const std::string& passphrase);
+  bool SetDecryptionPassphrase(const std::string& passphrase)
+      WARN_UNUSED_RESULT;
 
   // Called on |frontend_loop_| to kick off shutdown procedure. After this,
   // no further sync activity will occur with the sync server and no further

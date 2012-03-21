@@ -242,7 +242,7 @@ class SyncManager::SyncInternal
   // a flag in the nigori node specifying whether the current passphrase is
   // explicit (custom passphrase) or non-explicit (GAIA). If the existing
   // encryption passphrase is "explicit", the data cannot be re-encrypted and
-  // OnPassphraseRequired is triggered with REASON_SET_PASSPHRASE_FAILED.
+  // SetEncryptionPassphrase will do nothing.
   // If !is_explicit and there are pending keys, we will attempt to decrypt them
   // using this passphrase. If this fails, we will save this encryption key to
   // be applied later after the pending keys are resolved.
@@ -264,8 +264,6 @@ class SyncManager::SyncInternal
   //            success == false, we send an OnPassphraseRequired notification.
   // |bootstrap_token|: used to inform observers if the cryptographer's
   //                    bootstrap token was updated.
-  // |pending_keys|: used to pass on the cryptographer's pending keys to the UI
-  //                 thread so they can be cached. Ignored if |success| == true.
   // |is_explicit|: used to differentiate between a custom passphrase (true) and
   //                a GAIA passphrase that is implicitly used for encryption
   //                (false).
@@ -273,7 +271,6 @@ class SyncManager::SyncInternal
   void FinishSetPassphrase(
       bool success,
       const std::string& bootstrap_token,
-      const sync_pb::EncryptedData& pending_keys,
       bool is_explicit,
       WriteTransaction* trans,
       WriteNode* nigori_node);
@@ -1307,14 +1304,14 @@ void SyncManager::SyncInternal::SetEncryptionPassphrase(
     success = false;
   }
 
-  DVLOG_IF(1, success)
-      << "Failure in SetEncryptionPassphrase; notifying and returning.";
   DVLOG_IF(1, !success)
+      << "Failure in SetEncryptionPassphrase; notifying and returning.";
+  DVLOG_IF(1, success)
       << "Successfully set encryption passphrase; updating nigori and "
          "reencrypting.";
 
   FinishSetPassphrase(
-      success, bootstrap_token, pending_keys, is_explicit, &trans, &node);
+      success, bootstrap_token, is_explicit, &trans, &node);
 }
 
 void SyncManager::SyncInternal::SetDecryptionPassphrase(
@@ -1446,15 +1443,14 @@ void SyncManager::SyncInternal::SetDecryptionPassphrase(
     }
   }  // nigori_has_explicit_passphrase
 
-  DVLOG_IF(1, success)
-      << "Failure in SetDecryptionPassphrase; notifying and returning.";
   DVLOG_IF(1, !success)
+      << "Failure in SetDecryptionPassphrase; notifying and returning.";
+  DVLOG_IF(1, success)
       << "Successfully set decryption passphrase; updating nigori and "
          "reencrypting.";
 
   FinishSetPassphrase(success,
                       bootstrap_token,
-                      pending_keys,
                       nigori_has_explicit_passphrase,
                       &trans,
                       &node);
@@ -1463,7 +1459,6 @@ void SyncManager::SyncInternal::SetDecryptionPassphrase(
 void SyncManager::SyncInternal::FinishSetPassphrase(
     bool success,
     const std::string& bootstrap_token,
-    const sync_pb::EncryptedData& pending_keys,
     bool is_explicit,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
@@ -1477,10 +1472,19 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
   }
 
   if (!success) {
-    FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnPassphraseRequired(
-                          sync_api::REASON_SET_PASSPHRASE_FAILED,
-                          pending_keys));
+    Cryptographer* cryptographer = trans->GetCryptographer();
+    if (cryptographer->is_ready()) {
+      LOG(ERROR) << "Attempt to change passphrase failed while cryptographer "
+                 << "was ready.";
+    } else if (cryptographer->has_pending_keys()) {
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnPassphraseRequired(sync_api::REASON_DECRYPTION,
+                                             cryptographer->GetPendingKeys()));
+    } else {
+      FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
+                        OnPassphraseRequired(sync_api::REASON_ENCRYPTION,
+                                             sync_pb::EncryptedData()));
+    }
     return;
   }
 
@@ -2465,8 +2469,6 @@ const char* PassphraseRequiredReasonToString(
       return "REASON_ENCRYPTION";
     case REASON_DECRYPTION:
       return "REASON_DECRYPTION";
-    case REASON_SET_PASSPHRASE_FAILED:
-      return "REASON_SET_PASSPHRASE_FAILED";
     default:
       NOTREACHED();
       return "INVALID_REASON";

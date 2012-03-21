@@ -270,7 +270,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         break;
       }
       if (service()->passphrase_required_reason() ==
-              sync_api::REASON_SET_PASSPHRASE_FAILED) {
+              sync_api::REASON_DECRYPTION) {
         // A passphrase is required for decryption and we don't have it. Do not
         // wait any more.
         SignalStateCompleteWithNextState(SET_PASSPHRASE_FAILED);

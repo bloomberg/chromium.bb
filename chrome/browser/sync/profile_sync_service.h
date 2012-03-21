@@ -463,7 +463,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached
   // copy of encrypted keys; returns true otherwise.
-  virtual bool SetDecryptionPassphrase(const std::string& passphrase);
+  virtual bool SetDecryptionPassphrase(const std::string& passphrase)
+      WARN_UNUSED_RESULT;
 
   // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
   // after calling this to force the encryption to occur.
