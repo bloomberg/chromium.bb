@@ -227,7 +227,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
   }
 
   // Enable scale-to-fit if the plugin is new enough for high-quality scaling.
-  this.setScaleToFit(this.plugin.isHiQualityScalingSupported());
+  remoting.setScaleToFit(this.plugin.isHiQualityScalingSupported());
 
   /** @type {remoting.ClientSession} */ var that = this;
   /** @param {string} msg The IQ stanza to send. */

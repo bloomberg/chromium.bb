@@ -154,7 +154,7 @@ Component: Modal Dialog
   -webkit-transition: all 0.218s;
 }
 
-button:active {
+button:active, .toggle-button-active {
   background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
   color: #333;
   -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
