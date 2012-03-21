@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
+  "+chromeos",
   "+content/plugin/plugin_interpose_util_mac.h",
   "+content/public/browser",
   "+google_update",
