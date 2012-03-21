@@ -532,10 +532,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
-        ash::UserObserver* observer =
-            ash::Shell::GetInstance()->tray()->user_observer();
-        if (observer)
-          observer->OnUserUpdate();
+        // This notification is also sent on login screen when user avatar
+        // is loaded from file.
+        if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE) {
+          ash::UserObserver* observer =
+              ash::Shell::GetInstance()->tray()->user_observer();
+          if (observer)
+            observer->OnUserUpdate();
+        }
         break;
       }
       case chrome::NOTIFICATION_PREF_CHANGED: {
