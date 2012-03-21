@@ -18,6 +18,9 @@ DiskCacheBackendTest.NewEvictionInvalidEntryRead
 DiskCacheBackendTest.NewEvictionInvalidEntryWithLoad
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry2
+DiskCacheBackendTest.ShutdownWithPendingCreate_Fast
+DiskCacheBackendTest.ShutdownWithPendingFileIO_Fast
+DiskCacheBackendTest.ShutdownWithPendingIO_Fast
 
 # http://crbug.com/61908 - It's too slow
 DirectoryListerTest.BigDirRecursiveTest
