@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/event.h"
+#include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/aura/gestures/gesture_recognizer_aura.h"
 #include "ui/aura/gestures/gesture_sequence.h"
 #include "ui/aura/root_window.h"
@@ -267,12 +269,12 @@ class TimerTestGestureSequence : public GestureSequence {
 
 class TestGestureRecognizer : public GestureRecognizerAura {
   public:
-  explicit TestGestureRecognizer(RootWindow* root_window)
-      : GestureRecognizerAura(root_window) {
+  TestGestureRecognizer()
+      : GestureRecognizerAura() {
   }
 
-  GestureSequence* GetGestureSequenceForTesting() {
-    return gesture_sequence();
+  GestureSequence* GetGestureSequenceForTesting(Window* window) {
+    return GetGestureSequenceForWindow(window);
   }
 
   virtual GestureSequence* CreateSequence(RootWindow* root_window) OVERRIDE {
@@ -541,10 +543,10 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   delegate->Reset();
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer(root_window());
+      new TestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
-          gesture_recognizer->GetGestureSequenceForTesting());
+          gesture_recognizer->GetGestureSequenceForTesting(window.get()));
 
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
@@ -580,10 +582,10 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   delegate->Reset();
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer(root_window());
+      new TestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
-          gesture_recognizer->GetGestureSequenceForTesting());
+          gesture_recognizer->GetGestureSequenceForTesting(window.get()));
 
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
@@ -619,10 +621,10 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByPinch) {
       delegate.get(), -1234, bounds, NULL));
 
   TestGestureRecognizer* gesture_recognizer =
-      new TestGestureRecognizer(root_window());
+      new TestGestureRecognizer();
   TimerTestGestureSequence* gesture_sequence =
       static_cast<TimerTestGestureSequence*>(
-          gesture_recognizer->GetGestureSequenceForTesting());
+          gesture_recognizer->GetGestureSequenceForTesting(window.get()));
 
   root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
 
@@ -843,8 +845,16 @@ TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(delegate.get(), -1234,
         gfx::Rect(0, 0, 123, 45), NULL));
 
+  const int kTouchId = 4;
+
+  // This press is required for the GestureRecognizer to associate a target
+  // with kTouchId
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), kTouchId);
+  root_window()->DispatchTouchEvent(&press);
+
   delegate->Reset();
-  GestureEvent tap(ui::ET_GESTURE_TAP, 20, 20, 0, base::Time::Now(), 0, 6);
+  GestureEvent tap(ui::ET_GESTURE_TAP, 20, 20, 0,
+      base::Time::Now(), 0, 6, 1 << kTouchId);
   root_window()->DispatchGestureEvent(&tap);
   EXPECT_TRUE(delegate->mouse_enter());
   EXPECT_TRUE(delegate->mouse_press());
@@ -854,7 +864,7 @@ TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
 
   delegate->Reset();
   GestureEvent tap2(ui::ET_GESTURE_DOUBLE_TAP, 20, 20, 0,
-      base::Time::Now(), 0, 0);
+      base::Time::Now(), 0, 0, 1 << kTouchId);
   root_window()->DispatchGestureEvent(&tap2);
   EXPECT_TRUE(delegate->mouse_enter());
   EXPECT_TRUE(delegate->mouse_press());
@@ -955,7 +965,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
 
   queued_delegate->Reset();
   delegate->Reset();
-  TouchEvent press4(ui::ET_TOUCH_PRESSED, gfx::Point(10, 20), kTouchId2);
+  TouchEvent press4(ui::ET_TOUCH_PRESSED, gfx::Point(103, 203), kTouchId2);
   root_window()->DispatchTouchEvent(&press4);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
@@ -1267,6 +1277,80 @@ TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
   root_window()->DispatchTouchEvent(&release1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
+}
+
+// Check that a touch is locked to the window of the closest current touch
+// within max_separation_for_gesture_touches_in_pixels
+TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
+  GestureRecognizer* gesture_recognizer =
+      new GestureRecognizerAura();
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  Window* target;
+  const int kNumWindows = 4;
+
+  scoped_array<GestureEventConsumeDelegate*> delegates(
+      new GestureEventConsumeDelegate*[kNumWindows]);
+
+  GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(499);
+
+  scoped_array<gfx::Rect*> window_bounds(new gfx::Rect*[kNumWindows]);
+  window_bounds[0] = new gfx::Rect(0, 0, 1, 1);
+  window_bounds[1] = new gfx::Rect(500, 0, 1, 1);
+  window_bounds[2] = new gfx::Rect(0, 500, 1, 1);
+  window_bounds[3] = new gfx::Rect(500, 500, 1, 1);
+
+  scoped_array<aura::Window*> windows(new aura::Window*[kNumWindows]);
+
+  // Instantiate windows with |window_bounds| and touch each window at
+  // its origin.
+  for (int i = 0; i < kNumWindows; ++i) {
+    delegates[i] = new GestureEventConsumeDelegate();
+    windows[i] = CreateTestWindowWithDelegate(
+        delegates[i], i, *window_bounds[i], NULL);
+    TouchEvent press(ui::ET_TOUCH_PRESSED, window_bounds[i]->origin(), i);
+    root_window()->DispatchTouchEvent(&press);
+  }
+
+  // Touches should now be associated with the closest touch within
+  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11));
+  EXPECT_EQ(windows[0], target);
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11));
+  EXPECT_EQ(windows[1], target);
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 511));
+  EXPECT_EQ(windows[2], target);
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 511));
+  EXPECT_EQ(windows[3], target);
+
+  // Add a touch in the middle associated with windows[2]
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 500), kNumWindows);
+  root_window()->DispatchTouchEvent(&press);
+  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(250, 250), kNumWindows);
+  root_window()->DispatchTouchEvent(&move);
+
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250));
+  EXPECT_EQ(windows[2], target);
+
+  // Make sure that ties are broken by distance to a current touch
+  // Closer to the point in the bottom right.
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(380, 380));
+  EXPECT_EQ(windows[3], target);
+
+  // This touch is closer to the point in the middle
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(300, 300));
+  EXPECT_EQ(windows[2], target);
+
+  // A touch too far from other touches won't be locked to anything
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
+  EXPECT_TRUE(target == NULL);
+
+  // Move a touch associated with windows[2] to 1000, 1000
+  TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(1000, 1000), kNumWindows);
+  root_window()->DispatchTouchEvent(&move2);
+
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
+  EXPECT_EQ(windows[2], target);
 }
 
 }  // namespace test

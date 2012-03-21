@@ -315,7 +315,8 @@ class AURA_EXPORT GestureEvent : public LocatedEvent {
                int flags,
                base::Time time_stamp,
                float delta_x,
-               float delta_y);
+               float delta_y,
+               unsigned int touch_ids_bitfield);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -325,9 +326,20 @@ class AURA_EXPORT GestureEvent : public LocatedEvent {
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
 
+  // Returns the lowest touch-id of any of the touches which make up this
+  // gesture.
+  // If there are no touches associated with this gesture, returns -1.
+  int GetLowestTouchId() const;
+
  private:
   float delta_x_;
   float delta_y_;
+
+  // The set of indices of ones in the binary representation of
+  // touch_ids_bitfield_ is the set of touch_ids associate with this gesture.
+  // This value is stored as a bitfield because the number of touch ids varies,
+  // but we currently don't need more than 32 touches at a time.
+  const unsigned int touch_ids_bitfield_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };

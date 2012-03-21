@@ -62,6 +62,9 @@ class GesturePoint {
   void set_point_id(int point_id) { point_id_ = point_id; }
   int point_id() const { return point_id_; }
 
+  void set_touch_id(int touch_id) { touch_id_ = touch_id; }
+  int touch_id() const { return touch_id_; }
+
   bool in_use() const { return point_id_ >= 0; }
 
   double x_delta() const {
@@ -96,6 +99,7 @@ class GesturePoint {
   VelocityCalculator velocity_calculator_;
 
   int point_id_;
+  int touch_id_;
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
 

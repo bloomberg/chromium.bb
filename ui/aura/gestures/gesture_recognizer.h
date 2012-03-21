@@ -22,7 +22,7 @@ class Window;
 // into gestures.
 class AURA_EXPORT GestureRecognizer {
  public:
-  static GestureRecognizer* Create(RootWindow* root_window);
+  static GestureRecognizer* Create();
 
   // List of GestureEvent*.
   typedef std::vector<linked_ptr<GestureEvent> > Gestures;
@@ -34,7 +34,8 @@ class AURA_EXPORT GestureRecognizer {
   // TouchEvent.
   // Caller would be responsible for freeing up Gestures.
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
-                                                ui::TouchStatus status) = 0;
+                                                ui::TouchStatus status,
+                                                Window* target) = 0;
 
   // Touch-events can be queued to be played back at a later time. The queues
   // are identified by the target window.
@@ -49,6 +50,20 @@ class AURA_EXPORT GestureRecognizer {
 
   // Flushes the touch event queue (or removes the queue) for the window.
   virtual void FlushTouchQueue(Window* window) = 0;
+
+  // Return the window which should handle this TouchEvent, in the case where
+  // the touch is already associated with a target, or the touch occurs
+  // near another touch.
+  // Otherwise, returns null.
+  virtual Window* GetTargetForTouchEvent(TouchEvent* event) = 0;
+
+  // Return the window which should handle this GestureEvent.
+  virtual Window* GetTargetForGestureEvent(GestureEvent* event) = 0;
+
+  // If there is an active touch within
+  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels,
+  // of |location|, returns the target of the nearest active touch.
+  virtual Window* GetTargetForLocation(const gfx::Point& location) = 0;
 };
 
 }  // namespace aura

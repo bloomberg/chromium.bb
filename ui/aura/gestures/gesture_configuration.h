@@ -59,6 +59,15 @@ class AURA_EXPORT GestureConfiguration {
   static void set_minimum_distance_for_pinch_scroll_in_pixels(double val) {
     minimum_distance_for_pinch_scroll_in_pixels_ = val;
   }
+
+  static int max_separation_for_gesture_touches_in_pixels() {
+    return max_separation_for_gesture_touches_in_pixels_;
+  }
+
+  static void set_max_separation_for_gesture_touches_in_pixels(int val) {
+    max_separation_for_gesture_touches_in_pixels_ = val;
+  }
+
  private:
   static double max_touch_down_duration_in_seconds_for_click_;
   static double min_touch_down_duration_in_seconds_for_click_;
@@ -67,6 +76,7 @@ class AURA_EXPORT GestureConfiguration {
   static double min_flick_speed_squared_;
   static double minimum_pinch_update_distance_in_pixels_;
   static double minimum_distance_for_pinch_scroll_in_pixels_;
+  static int max_separation_for_gesture_touches_in_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };

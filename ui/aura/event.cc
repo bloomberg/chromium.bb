@@ -384,10 +384,12 @@ GestureEvent::GestureEvent(ui::EventType type,
                            int flags,
                            base::Time time_stamp,
                            float delta_x,
-                           float delta_y)
+                           float delta_y,
+                           unsigned int touch_ids_bitfield)
     : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
       delta_x_(delta_x),
-      delta_y_(delta_y) {
+      delta_y_(delta_y),
+      touch_ids_bitfield_(touch_ids_bitfield) {
   set_time_stamp(base::TimeDelta::FromSeconds(time_stamp.ToDoubleT()));
 }
 
@@ -396,7 +398,17 @@ GestureEvent::GestureEvent(const GestureEvent& model,
                            Window* target)
     : LocatedEvent(model, source, target),
       delta_x_(model.delta_x_),
-      delta_y_(model.delta_y_) {
+      delta_y_(model.delta_y_),
+      touch_ids_bitfield_(model.touch_ids_bitfield_) {
+}
+
+int GestureEvent::GetLowestTouchId() const {
+  if (touch_ids_bitfield_ == 0)
+    return -1;
+  int i = -1;
+  // Find the index of the least significant 1 bit
+  while (!(1 << ++i & touch_ids_bitfield_));
+  return i;
 }
 
 }  // namespace aura

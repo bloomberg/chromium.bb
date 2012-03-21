@@ -53,18 +53,6 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
   }
 }
 
-Window* GestureEventHandlerForConsumedGesture(const GestureEvent& event,
-                                              Window* target) {
-  switch (event.type()) {
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_GESTURE_PINCH_END:
-    case ui::ET_GESTURE_TAP:
-      return NULL;
-    default:
-      return target;
-  }
-}
-
 }  // namespace
 
 bool RootWindow::hide_host_cursor_ = false;
@@ -84,10 +72,8 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
-      touch_event_handler_(NULL),
-      gesture_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          gesture_recognizer_(GestureRecognizer::Create(this))),
+          gesture_recognizer_(GestureRecognizer::Create())),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
@@ -239,33 +225,27 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   DispatchHeldMouseMove();
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
-  Window* target =
-      touch_event_handler_ ? touch_event_handler_ : capture_window_;
+  Window* target = capture_window_;
+  if (!target)
+      target = gesture_recognizer_->GetTargetForTouchEvent(event);
   if (!target)
     target = GetEventHandlerForPoint(event->location());
+  if (!target)
+    return false;
 
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
-  if (target) {
-    TouchEvent translated_event(*event, this, target);
-    status = ProcessTouchEvent(target, &translated_event);
-    if (status == ui::TOUCH_STATUS_START ||
-        status == ui::TOUCH_STATUS_QUEUED)
-      touch_event_handler_ = target;
-    else if (status == ui::TOUCH_STATUS_END ||
-             status == ui::TOUCH_STATUS_CANCEL ||
-             status == ui::TOUCH_STATUS_QUEUED_END)
-      touch_event_handler_ = NULL;
-    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+  TouchEvent translated_event(*event, this, target);
+  status = ProcessTouchEvent(target, &translated_event);
+  handled = status != ui::TOUCH_STATUS_UNKNOWN;
 
-    if (status == ui::TOUCH_STATUS_QUEUED ||
-        status == ui::TOUCH_STATUS_QUEUED_END)
-      gesture_recognizer_->QueueTouchEventForGesture(target, *event);
-  }
+  if (status == ui::TOUCH_STATUS_QUEUED ||
+      status == ui::TOUCH_STATUS_QUEUED_END)
+    gesture_recognizer_->QueueTouchEventForGesture(target, *event);
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(*event,
-        status));
+  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+      *event, status, target));
   if (ProcessGestures(gestures.get()))
     handled = true;
 
@@ -274,16 +254,13 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
 
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   DispatchHeldMouseMove();
-  Window* target = gesture_handler_ ? gesture_handler_ : capture_window_;
+
+  Window* target = capture_window_;
   if (!target)
-    target = GetEventHandlerForPoint(event->location());
+    target = gesture_recognizer_->GetTargetForGestureEvent(event);
   if (target) {
     GestureEvent translated_event(*event, this, target);
     ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
-    if (status == ui::GESTURE_STATUS_CONSUMED) {
-      gesture_handler_ = GestureEventHandlerForConsumedGesture(
-          translated_event, target);
-    }
     return status != ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -370,17 +347,11 @@ void RootWindow::SetCapture(Window* window) {
     // Make all subsequent mouse events and touch go to the capture window. We
     // shouldn't need to send an event here as OnCaptureLost should take care of
     // that.
-    if (touch_event_handler_)
-      touch_event_handler_ = capture_window_;
     if (mouse_moved_handler_ || mouse_button_flags_ != 0)
       mouse_moved_handler_ = capture_window_;
-    if (gesture_handler_)
-      gesture_handler_ = capture_window_;
   } else {
     // When capture is lost, we must reset the event handlers.
-    touch_event_handler_ = NULL;
     mouse_moved_handler_ = NULL;
-    gesture_handler_ = NULL;
 
     host_->UnConfineCursor();
   }
@@ -394,12 +365,9 @@ void RootWindow::ReleaseCapture(Window* window) {
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
-  aura::Window* old_gesture_handler = gesture_handler_;
   scoped_ptr<GestureRecognizer::Gestures> gestures;
-  gesture_handler_ = window;
   gestures.reset(gesture_recognizer_->AdvanceTouchQueue(window, processed));
   ProcessGestures(gestures.get());
-  gesture_handler_ = old_gesture_handler;
 }
 
 void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
@@ -591,10 +559,8 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
            rend = filters.rend();
        it != rend; ++it) {
     status = (*it)->PreHandleGestureEvent(target, event);
-    if (status != ui::GESTURE_STATUS_UNKNOWN) {
-      gesture_handler_ = GestureEventHandlerForConsumedGesture(*event, target);
+    if (status != ui::GESTURE_STATUS_UNKNOWN)
       return status;
-    }
   }
 
   status = target->delegate()->OnGestureEvent(event);
@@ -614,7 +580,6 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
                                   ui::ET_MOUSE_EXITED,
                                   ui::ET_UNKNOWN
                                 };
-        gesture_handler_ = target;
         for (ui::EventType* type = types; *type != ui::ET_UNKNOWN; ++type) {
           int flags = event->flags();
           if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
@@ -623,15 +588,9 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
 
           MouseEvent synth(
               *type, event->location(), event->root_location(), flags);
-          if (ProcessMouseEvent(gesture_handler_, &synth))
+          if (ProcessMouseEvent(target, &synth))
             status = ui::GESTURE_STATUS_SYNTH_MOUSE;
-          // The window that was receiving the gestures may have closed/hidden
-          // itself in response to one of the synthetic events. Stop sending
-          // subsequent synthetic events if that happens.
-          if (!gesture_handler_)
-            break;
         }
-        gesture_handler_ = NULL;
         break;
       }
       default:
@@ -700,12 +659,6 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     mouse_pressed_handler_ = NULL;
   if (invisible->Contains(mouse_moved_handler_))
     mouse_moved_handler_ = NULL;
-  if (invisible->Contains(touch_event_handler_))
-    touch_event_handler_ = NULL;
-
-  if (invisible->Contains(gesture_handler_))
-    gesture_handler_ = NULL;
-
   gesture_recognizer_->FlushTouchQueue(invisible);
 }
 

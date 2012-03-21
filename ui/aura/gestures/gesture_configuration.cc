@@ -15,5 +15,6 @@ double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 20;
 double GestureConfiguration::min_flick_speed_squared_ = 550.f * 550.f;
 double GestureConfiguration::minimum_pinch_update_distance_in_pixels_ = 5;
 double GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels_ = 20;
+int GestureConfiguration::max_separation_for_gesture_touches_in_pixels_ = 150;
 
 }  // namespace aura

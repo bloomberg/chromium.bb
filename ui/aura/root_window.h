@@ -304,8 +304,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
   Window* focused_window_;
-  Window* touch_event_handler_;
-  Window* gesture_handler_;
 
   // The gesture_recognizer_ for this.
   scoped_ptr<GestureRecognizer> gesture_recognizer_;

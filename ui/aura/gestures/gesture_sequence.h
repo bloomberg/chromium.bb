@@ -43,6 +43,10 @@ class AURA_EXPORT GestureSequence {
   // Caller would be responsible for freeing up Gestures.
   virtual Gestures* ProcessTouchEventForGesture(const TouchEvent& event,
                                                 ui::TouchStatus status);
+  const GesturePoint* points() const { return points_; }
+
+  // Maximum number of points in a single gesture.
+  static const int kMaxGesturePoints = 12;
 
  protected:
   virtual base::OneShotTimer<GestureSequence>* CreateTimer();
@@ -144,9 +148,6 @@ class AURA_EXPORT GestureSequence {
 
   ScrollType scroll_type_;
   scoped_ptr<base::OneShotTimer<GestureSequence> > long_press_timer_;
-
-  // Maximum points in a single gesture.
-  static const int kMaxGesturePoints = 12;
 
   GesturePoint points_[kMaxGesturePoints];
   int point_count_;

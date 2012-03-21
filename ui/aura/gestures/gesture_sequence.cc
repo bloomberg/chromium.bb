@@ -171,8 +171,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     // this could occur: crbug.com/116537
     // TODO(tdresser): Enable this DCHECK, and remove the following condition
     // DCHECK(!points_[event.touch_id()].in_use());
-    if (!points_[event.touch_id()].in_use())
+    if (!points_[event.touch_id()].in_use()) {
       new_point->set_point_id(point_count_++);
+      new_point->set_touch_id(event.touch_id());
+    }
   }
 
   GestureState last_state = state_;
@@ -255,7 +257,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   // When a touch point is released, all points with ids greater than the
   // released point must have their ids decremented, or the set of point_ids
   // could end up with gaps.
-  if (event.type() == ui::ET_TOUCH_RELEASED) {
+  if (event.type() == ui::ET_TOUCH_RELEASED ||
+      event.type() == ui::ET_TOUCH_CANCELLED) {
     GesturePoint& old_point = points_[event.touch_id()];
     for (int i = 0; i < kMaxGesturePoints; ++i) {
       GesturePoint& point = points_[i];
@@ -309,7 +312,7 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
       point.first_touch_position().y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f)));
+      0.f, 0.f, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
@@ -320,7 +323,7 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
       point.first_touch_position().y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f)));
+      0.f, 0.f, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
@@ -331,7 +334,7 @@ void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
       point.first_touch_position().y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f)));
+      0.f, 0.f, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
@@ -343,7 +346,7 @@ void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
       location.y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f)));
+      0.f, 0.f, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
@@ -365,7 +368,7 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
       location.y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      railed_x_velocity, railed_y_velocity)));
+      railed_x_velocity, railed_y_velocity, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
@@ -385,7 +388,7 @@ void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
       location.y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      dx, dy)));
+      dx, dy, 1 << point.touch_id())));
 }
 
 void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
@@ -398,7 +401,7 @@ void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
       center.y(),
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      0.f, 0.f)));
+      0.f, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
 }
 
 void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
@@ -412,7 +415,7 @@ void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
       center.y(),
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      scale, 0.f)));
+      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
 }
 
 void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
@@ -428,7 +431,7 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
       center.y(),
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      scale, 0.f)));
+      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
 }
 
 bool GestureSequence::Click(const TouchEvent& event,
@@ -506,7 +509,7 @@ void GestureSequence::AppendLongPressGestureEvent() {
       point->first_touch_position().y(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      point->point_id(), 0.f);
+      point->point_id(), 0.f, 1 << point->touch_id());
   root_window_->DispatchGestureEvent(&gesture);
 }
 

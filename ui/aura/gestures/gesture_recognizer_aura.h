@@ -24,29 +24,47 @@ class GestureSequence;
 
 class AURA_EXPORT GestureRecognizerAura : public GestureRecognizer {
  public:
-  explicit GestureRecognizerAura(RootWindow* root_window);
+  GestureRecognizerAura();
   virtual ~GestureRecognizerAura();
+
+  // Checks if this finger is already down, if so, returns the current target.
+  // Otherwise, if the finger is within
+  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels
+  // of another touch, returns the target of the closest touch.
+  // If there is no nearby touch, return null.
+  virtual Window* GetTargetForTouchEvent(TouchEvent* event) OVERRIDE;
+
+  // Returns the target of the touches the gesture is composed of.
+  virtual Window* GetTargetForGestureEvent(GestureEvent* event) OVERRIDE;
+
+  virtual Window* GetTargetForLocation(const gfx::Point& location) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(RootWindow* root_window);
-  GestureSequence* gesture_sequence() { return default_sequence_.get(); }
+  virtual GestureSequence* GetGestureSequenceForWindow(Window* window);
 
  private:
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(
       const TouchEvent& event,
-      ui::TouchStatus status) OVERRIDE;
+      ui::TouchStatus status,
+      Window* target) OVERRIDE;
   virtual void QueueTouchEventForGesture(Window* window,
                                          const TouchEvent& event) OVERRIDE;
   virtual Gestures* AdvanceTouchQueue(Window* window, bool processed) OVERRIDE;
   virtual void FlushTouchQueue(Window* window) OVERRIDE;
 
-  scoped_ptr<GestureSequence> default_sequence_;
-
   typedef std::queue<TouchEvent*> TouchEventQueue;
   std::map<Window*, TouchEventQueue*> event_queue_;
   std::map<Window*, GestureSequence*> window_sequence_;
-  RootWindow* root_window_;
+
+  // Both touch_id_target_ and touch_id_target_for_gestures_
+  // map a touch-id to its target window.
+  // touch_ids are removed from touch_id_target_ on ET_TOUCH_RELEASE
+  // and ET_TOUCH_CANCEL. touch_id_target_for_gestures_ never has touch_ids
+  // removed.
+  std::map<int, Window*> touch_id_target_;
+  std::map<int, Window*> touch_id_target_for_gestures_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerAura);
 };
