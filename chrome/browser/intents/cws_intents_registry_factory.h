@@ -10,10 +10,10 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class Profile;
 class CWSIntentsRegistry;
+class Profile;
 
-// Singleton that owns all CWSIntentsRegistrys and associates each with
+// Singleton that owns all CWSIntentsRegistry objects and associates each with
 // their respective profile. Listens for the profile's destruction notification
 // and cleans up the associated CWSIntentsRegistry.
 class CWSIntentsRegistryFactory : public ProfileKeyedServiceFactory {

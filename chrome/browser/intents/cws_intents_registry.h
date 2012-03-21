@@ -60,20 +60,20 @@ class CWSIntentsRegistry : public ProfileKeyedService,
   FRIEND_TEST_ALL_PREFIXES(CWSIntentsRegistryTest, ValidQuery);
   FRIEND_TEST_ALL_PREFIXES(CWSIntentsRegistryTest, InvalidQuery);
 
-  // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
-
-  // |context| is a profile-dependent URL request context. Must not be NULL.
-  explicit CWSIntentsRegistry(net::URLRequestContextGetter* context);
-  virtual ~CWSIntentsRegistry();
-
   struct IntentsQuery;
 
   // This is an opaque version of URLFetcher*, so we can use it as a hash key.
   typedef intptr_t URLFetcherHandle;
 
-  // Maps URL fetchers to queries.
+  // Maps URL fetchers to queries. IntentsQuery objects are owned by the map.
   typedef base::hash_map<URLFetcherHandle, IntentsQuery*> QueryMap;
+
+  // |context| is a profile-dependent URL request context. Must not be NULL.
+  explicit CWSIntentsRegistry(net::URLRequestContextGetter* context);
+  virtual ~CWSIntentsRegistry();
+
+  // content::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;

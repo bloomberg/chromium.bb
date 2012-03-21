@@ -29,12 +29,21 @@ const char kCWSIntentServiceURL[] =
 
 // Internal object representing all data associated with a single query.
 struct CWSIntentsRegistry::IntentsQuery {
+  IntentsQuery();
+  ~IntentsQuery();
+
   // Underlying URL request query.
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<content::URLFetcher> url_fetcher;
 
   // The callback - invoked on completed retrieval.
-  ResultsCallback callback_;
+  ResultsCallback callback;
 };
+
+CWSIntentsRegistry::IntentsQuery::IntentsQuery() {
+}
+
+CWSIntentsRegistry::IntentsQuery::~IntentsQuery() {
+}
 
 CWSIntentsRegistry::IntentExtensionInfo::IntentExtensionInfo()
     : num_ratings(0),
@@ -60,7 +69,7 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
   QueryMap::iterator it = queries_.find(handle);
   DCHECK(it != queries_.end());
   scoped_ptr<IntentsQuery> query(it->second);
-  DCHECK(query != NULL);
+  DCHECK(query.get() != NULL);
   queries_.erase(it);
 
   std::string response;
@@ -74,7 +83,7 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
   scoped_ptr<Value> parsed_response;
   JSONStringValueSerializer serializer(response);
   parsed_response.reset(serializer.Deserialize(NULL, &error));
-  if (parsed_response == NULL)
+  if (parsed_response.get() == NULL)
     return;
 
   DictionaryValue* response_dict;
@@ -82,7 +91,7 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
   if (!response_dict)
     return;
   ListValue* items;
-  if (!response_dict->GetList("items",&items))
+  if (!response_dict->GetList("items", &items))
     return;
 
   IntentExtensionList intents;
@@ -108,7 +117,7 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
     JSONStringValueSerializer manifest_serializer(manifest_utf8);
     scoped_ptr<Value> manifest_value;
     manifest_value.reset(manifest_serializer.Deserialize(NULL, &error));
-    if (manifest_value == NULL)
+    if (manifest_value.get() == NULL)
       continue;
 
     DictionaryValue* manifest_dict;
@@ -124,29 +133,29 @@ void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
     intents.push_back(info);
   }
 
-  if (!query->callback_.is_null())
-    query->callback_.Run(intents);
+  if (!query->callback.is_null())
+    query->callback.Run(intents);
 }
 
-void CWSIntentsRegistry::GetIntentServices(
-    const string16& action, const string16& mimetype,
-    const ResultsCallback& cb) {
+void CWSIntentsRegistry::GetIntentServices(const string16& action,
+                                           const string16& mimetype,
+                                           const ResultsCallback& cb) {
   scoped_ptr<IntentsQuery> query(new IntentsQuery);
-  query->callback_ = cb;
-  query->url_fetcher_.reset(content::URLFetcher::Create(
+  query->callback = cb;
+  query->url_fetcher.reset(content::URLFetcher::Create(
       0, BuildQueryURL(action,mimetype), content::URLFetcher::GET, this));
 
-  if (query->url_fetcher_ == NULL)
+  if (query->url_fetcher.get() == NULL)
     return;
 
-  query->url_fetcher_->SetRequestContext(request_context_);
-  query->url_fetcher_->SetLoadFlags(
+  query->url_fetcher->SetRequestContext(request_context_);
+  query->url_fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
 
   URLFetcherHandle handle = reinterpret_cast<URLFetcherHandle>(
-      query->url_fetcher_.get());
+      query->url_fetcher.get());
   queries_[handle] = query.release();
-  queries_[handle]->url_fetcher_->Start();
+  queries_[handle]->url_fetcher->Start();
 }
 
 // static

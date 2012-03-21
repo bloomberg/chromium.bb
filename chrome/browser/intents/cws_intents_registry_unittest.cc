@@ -28,11 +28,16 @@ const char kCWSQueryValid[] =
     "/chromewebstore/v1.1b/items/intent"
       "?intent=http%3A%2F%2Fwebintents.org%2Fedit&mime_types=*%2Fpng";
 const char kCWSResponseValid[] =
-  "{\"kind\":\"chromewebstore#itemList\",\"total_items\":1,"
-  "\"start_index\":0,\"items\":[{\"kind\":\"chromewebstore#item\","
-  "\"id\":\"nhkckhebbbncbkefhcpcgepcgfaclehe\",\"type\":\"APPLICATION\","
-  "\"num_ratings\":0,\"average_rating\":0.0,\"manifest\":"
-  "\"{\\n\\\"update_url\\\":\\"
+  "{\"kind\":\"chromewebstore#itemList\","
+  " \"total_items\":1,"
+  " \"start_index\":0,"
+  " \"items\":[  "
+  "  {\"kind\":\"chromewebstore#item\","
+  "   \"id\":\"nhkckhebbbncbkefhcpcgepcgfaclehe\","
+  "   \"type\":\"APPLICATION\","
+  "   \"num_ratings\":0,"
+  "   \"average_rating\":0.0,"
+  "   \"manifest\":\"{\\n\\\"update_url\\\":\\"
   "\"http://0.tbhome_staging.dserver.download-qa.td.borg.google.com/"
   "service/update2/crx\\\",\\n  \\\"name\\\": \\\"Sidd's Intent App\\\""
   ",\\n  \\\"description\\\": \\\"Do stuff\\\",\\n  \\\"version\\\": "
@@ -49,8 +54,9 @@ const char kCWSResponseValid[] =
   "{\\n      \\\"type\\\" : [\\\"text/plain\\\", \\\"image/jpg\\\"],"
   "\\n      \\\"path\\\" : \\\"//services/share\\\",\\n      \\\"title\\\" : "
   "\\\"Sample sharing Intent\\\",\\n      \\\"disposition\\\" : "
-  "\\\"inline\\\"\\n    }\\n  }\\n}\\n\",\"family_safe\":true,\"icon_url\":"
-  "\"http://qa-lighthouse.sandbox.google.com/image/"
+  "\\\"inline\\\"\\n    }\\n  }\\n}\\n\","
+  "   \"family_safe\":true,"
+  "   \"icon_url\":\"http://qa-lighthouse.sandbox.google.com/image/"
   "QzPnRCYCBbBGI99ZkGxkp-NNJ488IkkiTyCgynFEeDTJHcw4tHl3csmjTQ\"}]}";
 const char kValidIconURL[]=
     "http://qa-lighthouse.sandbox.google.com/image/"
@@ -73,7 +79,9 @@ const char kValidManifest[]=
 
 class CWSIntentsRegistryTest : public testing::Test {
  public:
-  CWSIntentsRegistryTest() : test_factory_(NULL) {}
+  CWSIntentsRegistryTest() : test_factory_(NULL) {
+  }
+
   virtual void TearDown() {
     // Pump messages posted by the main thread.
     ui_loop_.RunAllPending();
@@ -114,6 +122,10 @@ TEST_F(CWSIntentsRegistryTest, ValidQuery) {
   EXPECT_EQ(0, extensions_[0].num_ratings);
   EXPECT_EQ(0.0, extensions_[0].average_rating);
   EXPECT_EQ(std::string(kValidManifest), UTF16ToUTF8(extensions_[0].manifest));
+  EXPECT_EQ(std::string("nhkckhebbbncbkefhcpcgepcgfaclehe"),
+            UTF16ToUTF8(extensions_[0].id) );
+  EXPECT_EQ(std::string("Sidd's Intent App"),
+            UTF16ToUTF8(extensions_[0].name));
   EXPECT_EQ(std::string(kValidIconURL), extensions_[0].icon_url.spec());
 }
 
