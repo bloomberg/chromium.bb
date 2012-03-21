@@ -276,7 +276,7 @@ void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
     return;
   PREFIXED_HISTOGRAM(
       base::FieldTrial::MakeName("PercentLoadDoneAtSwapin", "Prerender"),
-      HISTOGRAM_PERCENTAGE(name, percentage));
+      UMA_HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
