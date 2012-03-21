@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_TRAY_POWER_DATE_H_
-#define ASH_SYSTEM_POWER_TRAY_POWER_DATE_H_
+#ifndef ASH_SYSTEM_POWER_TRAY_POWER_H_
+#define ASH_SYSTEM_POWER_TRAY_POWER_H_
 #pragma once
 
-#include "ash/system/power/clock_observer.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
@@ -19,12 +18,11 @@ class PowerPopupView;
 class PowerTrayView;
 }
 
-class TrayPowerDate : public SystemTrayItem,
-                      public PowerStatusObserver,
-                      public ClockObserver {
+class TrayPower : public SystemTrayItem,
+                  public PowerStatusObserver {
  public:
-  TrayPowerDate();
-  virtual ~TrayPowerDate();
+  TrayPower();
+  virtual ~TrayPower();
 
  private:
   // Overridden from SystemTrayItem.
@@ -38,20 +36,14 @@ class TrayPowerDate : public SystemTrayItem,
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
-  // Overridden from ClockObserver.
-  virtual void OnDateFormatChanged() OVERRIDE;
-  virtual void Refresh() OVERRIDE;
-
   scoped_ptr<tray::DateView> date_;
-  scoped_ptr<tray::DateView> date_tray_;
-
   scoped_ptr<tray::PowerPopupView> power_;
   scoped_ptr<tray::PowerTrayView> power_tray_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayPowerDate);
+  DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_TRAY_POWER_DATE_H_
+#endif  // ASH_SYSTEM_POWER_TRAY_POWER_H_

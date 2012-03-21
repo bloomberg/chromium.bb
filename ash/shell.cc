@@ -24,11 +24,12 @@
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
+#include "ash/system/date/tray_date.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
-#include "ash/system/power/tray_power_date.h"
+#include "ash/system/power/tray_power.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -598,7 +599,8 @@ void Shell::Init() {
     internal::TrayVolume* tray_volume = new internal::TrayVolume();
     internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
-    internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
+    internal::TrayDate* tray_date = new internal::TrayDate();
+    internal::TrayPower* tray_power = new internal::TrayPower();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
     internal::TrayUser* tray_user = new internal::TrayUser;
     internal::TrayAccessibility* tray_accessibility =
@@ -611,22 +613,23 @@ void Shell::Init() {
     tray_->bluetooth_observer_ = tray_bluetooth;
     tray_->brightness_observer_ = tray_brightness;
     tray_->caps_lock_observer_ = tray_caps_lock;
-    tray_->clock_observer_ = tray_power_date;
+    tray_->clock_observer_ = tray_date;
     tray_->ime_observer_ = tray_ime;
     tray_->network_observer_ = tray_network;
-    tray_->power_status_observer_ = tray_power_date;
+    tray_->power_status_observer_ = tray_power;
     tray_->update_observer_ = tray_user;
     tray_->user_observer_ = tray_user;
 
     tray_->AddTrayItem(tray_user);
     tray_->AddTrayItem(new internal::TrayEmpty());
-    tray_->AddTrayItem(tray_power_date);
+    tray_->AddTrayItem(tray_power);
     tray_->AddTrayItem(tray_network);
     tray_->AddTrayItem(tray_bluetooth);
     tray_->AddTrayItem(tray_ime);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
+    tray_->AddTrayItem(tray_date);
     tray_->AddTrayItem(tray_accessibility);
     tray_->AddTrayItem(tray_caps_lock);
   }
