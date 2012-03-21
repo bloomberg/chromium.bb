@@ -58,6 +58,17 @@ bool HandleExit() {
   return true;
 }
 
+// Rotates the default window container.
+bool HandleRotateWindows() {
+  aura::Window* target = ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+      new ui::LayerAnimationSequence(new ui::ScreenRotation(360)));
+  target->layer()->GetAnimator()->StartAnimation(
+      screen_rotation.release());
+  return true;
+}
+
 #if !defined(NDEBUG)
 // Rotates the screen.
 bool HandleRotateScreen() {
@@ -309,6 +320,8 @@ bool AcceleratorController::AcceleratorPressed(
     case SELECT_LAST_WIN:
       SwitchToWindow(-1);
       break;
+    case ROTATE_WINDOWS:
+      return HandleRotateWindows();
 #if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();

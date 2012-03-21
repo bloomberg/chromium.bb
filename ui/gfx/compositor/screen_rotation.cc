@@ -17,11 +17,14 @@ namespace {
 
 const int k90DegreeTransitionDurationMs = 350;
 const int k180DegreeTransitionDurationMs = 550;
+const int k360DegreeTransitionDurationMs = 750;
 
 base::TimeDelta GetTransitionDuration(int degrees) {
+  if (degrees == 360)
+    return base::TimeDelta::FromMilliseconds(k360DegreeTransitionDurationMs);
   if (degrees == 180)
     return base::TimeDelta::FromMilliseconds(k180DegreeTransitionDurationMs);
-  else if (degrees == 0)
+  if (degrees == 0)
     return base::TimeDelta::FromMilliseconds(0);
   return base::TimeDelta::FromMilliseconds(k90DegreeTransitionDurationMs);
 }
@@ -58,6 +61,7 @@ void ScreenRotation::OnStart(LayerAnimationDelegate* delegate) {
       new_origin_ = new_pivot = gfx::Point(0, height);
       break;
     case 180:
+    case 360:
       new_pivot = old_pivot = gfx::Point(width / 2, height / 2);
       new_origin_.SetPoint(width, height);
       break;

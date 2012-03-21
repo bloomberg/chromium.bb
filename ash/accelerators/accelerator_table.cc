@@ -86,6 +86,8 @@ const AcceleratorData kAcceleratorData[] = {
     SELECT_WIN_7 },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_9, false, false, true,
     SELECT_LAST_WIN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F3, true, true, true,
+    ROTATE_WINDOWS },
 #if !defined(NDEBUG)
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_HOME, false, true, false,
     ROTATE_SCREEN },
