@@ -163,6 +163,7 @@ class FileBrowserEventRouter
   base::Lock lock_;
 
   bool current_gdata_operation_failed_;
+  int last_active_gdata_operation_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
 };

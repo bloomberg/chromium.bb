@@ -83,7 +83,8 @@ FileBrowserEventRouter::FileBrowserEventRouter(
     : delegate_(new FileBrowserEventRouter::FileWatcherDelegate(this)),
       notifications_(new FileBrowserNotifications(profile)),
       profile_(profile),
-      current_gdata_operation_failed_(false) {
+      current_gdata_operation_failed_(false),
+      last_active_gdata_operation_count_(0) {
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
@@ -273,9 +274,12 @@ void FileBrowserEventRouter::HandleProgressUpdateForSystemNotification(
         !current_gdata_operation_failed_);
     current_gdata_operation_failed_ = false;
   } else {
-    notifications_->ManageNotificationOnGDataSyncProgress(
-        active_operation_count);
+    if (last_active_gdata_operation_count_ != active_operation_count) {
+      notifications_->ManageNotificationOnGDataSyncProgress(
+          active_operation_count);
+    }
   }
+  last_active_gdata_operation_count_ = active_operation_count;
 }
 
 void FileBrowserEventRouter::HandleFileWatchNotification(
