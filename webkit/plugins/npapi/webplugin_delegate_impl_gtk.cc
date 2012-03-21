@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 
 void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
                                   const gfx::Rect& rect) {
-  if (!windowless_)
+  if (!windowless_ || !skia::SupportsPlatformPaint(canvas))
     return;
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   cairo_t* context = scoped_platform_paint.GetPlatformSurface();
