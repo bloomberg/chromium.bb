@@ -49,40 +49,26 @@ AudioDevice::AudioDevice()
   filter_ = RenderThreadImpl::current()->audio_message_filter();
 }
 
-AudioDevice::AudioDevice(size_t buffer_size,
-                         int channels,
-                         double sample_rate,
+AudioDevice::AudioDevice(const AudioParameters& params,
                          RenderCallback* callback)
     : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
-      callback_(NULL),
+      audio_parameters_(params),
+      callback_(callback),
       volume_(1.0),
       stream_id_(0),
       play_on_start_(true),
       is_started_(false) {
   filter_ = RenderThreadImpl::current()->audio_message_filter();
-  Initialize(buffer_size,
-             channels,
-             sample_rate,
-             AudioParameters::AUDIO_PCM_LOW_LATENCY,
-             callback);
 }
 
-void AudioDevice::Initialize(size_t buffer_size,
-                             int channels,
-                             double sample_rate,
-                             AudioParameters::Format latency_format,
+void AudioDevice::Initialize(const AudioParameters& params,
                              RenderCallback* callback) {
   CHECK_EQ(0, stream_id_) <<
       "AudioDevice::Initialize() must be called before Start()";
 
   CHECK(!callback_);  // Calling Initialize() twice?
 
-  audio_parameters_.format = latency_format;
-  audio_parameters_.channels = channels;
-  audio_parameters_.sample_rate = static_cast<int>(sample_rate);
-  audio_parameters_.bits_per_sample = 16;
-  audio_parameters_.samples_per_packet = buffer_size;
-
+  audio_parameters_ = params;
   callback_ = callback;
 }
 
@@ -225,8 +211,8 @@ void AudioDevice::OnStreamCreated(
     uint32 length) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   DCHECK_GE(length,
-      audio_parameters_.samples_per_packet * sizeof(int16) *
-      audio_parameters_.channels);
+      audio_parameters_.frames_per_buffer() * sizeof(int16) *
+      audio_parameters_.channels());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -300,7 +286,7 @@ void AudioDevice::AudioThreadCallback::Process(int pending_data) {
 
   // Update the audio-delay measurement then ask client to render audio.
   size_t num_frames = render_callback_->Render(audio_data_,
-      audio_parameters_.samples_per_packet, audio_delay_milliseconds);
+      audio_parameters_.frames_per_buffer(), audio_delay_milliseconds);
 
   // Interleave, scale, and clip to int16.
   // TODO(crogers): avoid converting to integer here, and pass the data
@@ -308,9 +294,9 @@ void AudioDevice::AudioThreadCallback::Process(int pending_data) {
   // audio hardware which has better than 16bit precision.
   int16* data = reinterpret_cast<int16*>(shared_memory_.memory());
   media::InterleaveFloatToInt16(audio_data_, data,
-      audio_parameters_.samples_per_packet);
+      audio_parameters_.frames_per_buffer());
 
   // Let the host know we are done.
   media::SetActualDataSizeInBytes(&shared_memory_, memory_length_,
-      num_frames * audio_parameters_.channels * sizeof(data[0]));
+      num_frames * audio_parameters_.channels() * sizeof(data[0]));
 }

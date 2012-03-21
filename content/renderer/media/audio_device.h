@@ -86,17 +86,11 @@ class CONTENT_EXPORT AudioDevice
   // Minimal constructor where Initialize() must be called later.
   AudioDevice();
 
-  AudioDevice(size_t buffer_size,
-              int channels,
-              double sample_rate,
-              RenderCallback* callback);
+  AudioDevice(const AudioParameters& params, RenderCallback* callback);
 
   // AudioRendererSink implementation.
 
-  virtual void Initialize(size_t buffer_size,
-                          int channels,
-                          double sample_rate,
-                          AudioParameters::Format latency_format,
+  virtual void Initialize(const AudioParameters& params,
                           RenderCallback* callback) OVERRIDE;
   // Starts audio playback.
   virtual void Start() OVERRIDE;

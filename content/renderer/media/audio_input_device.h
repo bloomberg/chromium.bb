@@ -116,10 +116,7 @@ class CONTENT_EXPORT AudioInputDevice
   };
 
   // Methods called on main render thread -------------------------------------
-  AudioInputDevice(size_t buffer_size,
-                   int channels,
-                   double sample_rate,
-                   CaptureCallback* callback,
+  AudioInputDevice(const AudioParameters& params, CaptureCallback* callback,
                    CaptureEventHandler* event_handler);
   virtual ~AudioInputDevice();
 
@@ -144,8 +141,13 @@ class CONTENT_EXPORT AudioInputDevice
   // Returns |true| on success.
   bool GetVolume(double* volume);
 
-  double sample_rate() const { return audio_parameters_.sample_rate; }
-  size_t buffer_size() const { return audio_parameters_.samples_per_packet; }
+  double sample_rate() const {
+    return audio_parameters_.sample_rate();
+  }
+
+  size_t buffer_size() const {
+    return audio_parameters_.frames_per_buffer();
+  }
 
   // Methods called on IO thread ----------------------------------------------
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter

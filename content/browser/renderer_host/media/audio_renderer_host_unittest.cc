@@ -197,15 +197,15 @@ class AudioRendererHostTest : public testing::Test {
     EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
-    AudioParameters params;
+    AudioParameters::Format format;
     if (mock_stream_)
-      params.format = AudioParameters::AUDIO_MOCK;
+      format = AudioParameters::AUDIO_MOCK;
     else
-      params.format = AudioParameters::AUDIO_PCM_LINEAR;
-    params.channels = 2;
-    params.sample_rate = AudioParameters::kAudioCDSampleRate;
-    params.bits_per_sample = 16;
-    params.samples_per_packet = AudioParameters::kAudioCDSampleRate / 10;
+      format = AudioParameters::AUDIO_PCM_LINEAR;
+
+    AudioParameters params(format, CHANNEL_LAYOUT_STEREO,
+                           AudioParameters::kAudioCDSampleRate, 16,
+                           AudioParameters::kAudioCDSampleRate / 10);
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.

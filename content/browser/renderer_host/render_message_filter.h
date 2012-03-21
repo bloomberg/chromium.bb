@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "media/base/channel_layout.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -172,9 +173,9 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   void OnGetCPUUsage(int* cpu_usage);
 
   void OnGetHardwareBufferSize(uint32* buffer_size);
-  void OnGetHardwareInputSampleRate(double* sample_rate);
-  void OnGetHardwareSampleRate(double* sample_rate);
-  void OnGetHardwareInputChannelCount(uint32* channels);
+  void OnGetHardwareInputSampleRate(int* sample_rate);
+  void OnGetHardwareSampleRate(int* sample_rate);
+  void OnGetHardwareInputChannelLayout(ChannelLayout* layout);
 
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created

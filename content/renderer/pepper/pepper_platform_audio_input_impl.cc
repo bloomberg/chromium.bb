@@ -29,12 +29,12 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
 
 // static
 PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
-    uint32_t sample_rate,
-    uint32_t sample_count,
+    int sample_rate,
+    int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
   scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
       new PepperPlatformAudioInputImpl);
-  if (audio_input->Initialize(sample_rate, sample_count, client)) {
+  if (audio_input->Initialize(sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioInputImpl::ShutDownOnIOThread().
     return audio_input.release();
@@ -66,8 +66,8 @@ void PepperPlatformAudioInputImpl::ShutDown() {
 }
 
 bool PepperPlatformAudioInputImpl::Initialize(
-    uint32_t sample_rate,
-    uint32_t sample_count,
+    int sample_rate,
+    int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
   DCHECK(client);
   // Make sure we don't call init more than once.
@@ -75,12 +75,9 @@ bool PepperPlatformAudioInputImpl::Initialize(
 
   client_ = client;
 
-  AudioParameters params;
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = 1;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
-  params.samples_per_packet = sample_count;
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
+                         CHANNEL_LAYOUT_MONO,
+                         sample_rate, 16, frames_per_buffer);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,

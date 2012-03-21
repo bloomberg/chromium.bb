@@ -208,15 +208,15 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
 
   AudioParameters audio_params(params);
 
-  DCHECK_GT(audio_params.samples_per_packet, 0);
-  uint32 packet_size = audio_params.GetPacketSize();
+  DCHECK_GT(audio_params.frames_per_buffer(), 0);
+  uint32 buffer_size = audio_params.GetBytesPerBuffer();
 
   // Create a new AudioEntry structure.
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
-  if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(buffer_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
     return;

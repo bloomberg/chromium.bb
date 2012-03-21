@@ -201,15 +201,15 @@ void AudioRendererHost::OnCreateStream(
   DCHECK(LookupById(stream_id) == NULL);
 
   AudioParameters audio_params(params);
-  DCHECK_GT(audio_params.samples_per_packet, 0);
+  DCHECK_GT(audio_params.frames_per_buffer(), 0);
 
-  uint32 packet_size = audio_params.GetPacketSize();
+  uint32 buffer_size = audio_params.GetBytesPerBuffer();
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
   // Create the shared memory and share with the renderer process.
   uint32 shared_memory_size =
-      media::TotalSharedMemorySizeInBytes(packet_size);
+      media::TotalSharedMemorySizeInBytes(buffer_size);
   if (!entry->shared_memory.CreateAndMapAnonymous(shared_memory_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);

@@ -37,12 +37,11 @@ class AudioInputDevice::AudioThreadCallback
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
-AudioInputDevice::AudioInputDevice(size_t buffer_size,
-                                   int channels,
-                                   double sample_rate,
+AudioInputDevice::AudioInputDevice(const AudioParameters& params,
                                    CaptureCallback* callback,
                                    CaptureEventHandler* event_handler)
     : ScopedLoopObserver(ChildProcess::current()->io_message_loop()),
+      audio_parameters_(params),
       callback_(callback),
       event_handler_(event_handler),
       volume_(1.0),
@@ -50,20 +49,6 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
       session_id_(0),
       pending_device_ready_(false) {
   filter_ = RenderThreadImpl::current()->audio_input_message_filter();
-#if defined(OS_MACOSX)
-  DVLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Mac OS X.";
-  audio_parameters_.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-#elif defined(OS_WIN)
-  DVLOG(1) << "Using AUDIO_PCM_LOW_LATENCY as input mode on Windows.";
-  audio_parameters_.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-#else
-  // TODO(henrika): add support for AUDIO_PCM_LOW_LATENCY on Linux as well.
-  audio_parameters_.format = AudioParameters::AUDIO_PCM_LINEAR;
-#endif
-  audio_parameters_.channels = channels;
-  audio_parameters_.sample_rate = static_cast<int>(sample_rate);
-  audio_parameters_.bits_per_sample = 16;
-  audio_parameters_.samples_per_packet = buffer_size;
 }
 
 AudioInputDevice::~AudioInputDevice() {
@@ -303,16 +288,16 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
 void AudioInputDevice::AudioThreadCallback::Process(int pending_data) {
   int audio_delay_milliseconds = pending_data / bytes_per_ms_;
   int16* memory = reinterpret_cast<int16*>(shared_memory_.memory());
-  const size_t number_of_frames = audio_parameters_.samples_per_packet;
+  const size_t number_of_frames = audio_parameters_.frames_per_buffer();
   const int bytes_per_sample = sizeof(memory[0]);
 
   // Deinterleave each channel and convert to 32-bit floating-point
   // with nominal range -1.0 -> +1.0.
-  for (int channel_index = 0; channel_index < audio_parameters_.channels;
+  for (int channel_index = 0; channel_index < audio_parameters_.channels();
        ++channel_index) {
     media::DeinterleaveAudioChannel(memory,
                                     audio_data_[channel_index],
-                                    audio_parameters_.channels,
+                                    audio_parameters_.channels(),
                                     channel_index,
                                     bytes_per_sample,
                                     number_of_frames);

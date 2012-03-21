@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "media/base/channel_layout.h"
 
 // Contains static methods to query hardware properties from the browser
 // process. Values are cached to avoid unnecessary round trips, but the cache
@@ -16,11 +17,11 @@ namespace audio_hardware {
 
 // Fetch the sample rate of the default audio output end point device.
 // Must be called from RenderThreadImpl::current().
-CONTENT_EXPORT double GetOutputSampleRate();
+CONTENT_EXPORT int GetOutputSampleRate();
 
 // Fetch the sample rate of the default audio input end point device.
 // Must be called from RenderThreadImpl::current().
-CONTENT_EXPORT double GetInputSampleRate();
+CONTENT_EXPORT int GetInputSampleRate();
 
 // Fetch the buffer size we use for the default output device.
 // Must be called from RenderThreadImpl::current().
@@ -31,9 +32,9 @@ CONTENT_EXPORT size_t GetOutputBufferSize();
 // conjunction with AUDIO_PCM_LINEAR.
 CONTENT_EXPORT size_t GetHighLatencyOutputBufferSize(int sample_rate);
 
-// Fetch the number of audio channels for the default input device.
+// Fetch the audio channel layout for the default input device.
 // Must be called from RenderThreadImpl::current().
-CONTENT_EXPORT uint32 GetInputChannelCount();
+CONTENT_EXPORT ChannelLayout GetInputChannelLayout();
 
 // Forces the next call to any of the Get functions to query the hardware
 // and repopulate the cache.

@@ -54,7 +54,7 @@
 #include "media/audio/simple_sources.h"
 
 class AudioManager;
-struct AudioParameters;
+class AudioParameters;
 
 namespace content {
 class MediaObserver;

@@ -32,16 +32,16 @@ class AudioUtil : public AudioUtilInterface {
  public:
   AudioUtil() {}
 
-  virtual double GetAudioHardwareSampleRate() OVERRIDE {
+  virtual int GetAudioHardwareSampleRate() OVERRIDE {
     return media::GetAudioHardwareSampleRate();
   }
-  virtual double GetAudioInputHardwareSampleRate(
+  virtual int GetAudioInputHardwareSampleRate(
       const std::string& device_id) OVERRIDE {
     return media::GetAudioInputHardwareSampleRate(device_id);
   }
-  virtual uint32 GetAudioInputHardwareChannelCount(
+  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) OVERRIDE {
-    return media::GetAudioInputHardwareChannelCount(device_id);
+    return media::GetAudioInputHardwareChannelLayout(device_id);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioUtil);
@@ -49,29 +49,29 @@ class AudioUtil : public AudioUtilInterface {
 
 class AudioUtilNoHardware : public AudioUtilInterface {
  public:
-  AudioUtilNoHardware(double output_rate, double input_rate,
-                      uint32 input_channels)
+  AudioUtilNoHardware(int output_rate, int input_rate,
+                      ChannelLayout input_channel_layout)
       : output_rate_(output_rate),
         input_rate_(input_rate),
-        input_channels_(input_channels) {
+        input_channel_layout_(input_channel_layout) {
   }
 
-  virtual double GetAudioHardwareSampleRate() OVERRIDE {
+  virtual int GetAudioHardwareSampleRate() OVERRIDE {
     return output_rate_;
   }
-  virtual double GetAudioInputHardwareSampleRate(
+  virtual int GetAudioInputHardwareSampleRate(
       const std::string& device_id) OVERRIDE {
     return input_rate_;
   }
-  virtual uint32 GetAudioInputHardwareChannelCount(
+  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) OVERRIDE {
-    return input_channels_;
+    return input_channel_layout_;
   }
 
  private:
-  double output_rate_;
-  double input_rate_;
-  uint32 input_channels_;
+  int output_rate_;
+  int input_rate_;
+  ChannelLayout input_channel_layout_;
   DISALLOW_COPY_AND_ASSIGN(AudioUtilNoHardware);
 };
 
@@ -237,7 +237,7 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
-  AudioUtilNoHardware audio_util(48000.0, 48000.0, 1);
+  AudioUtilNoHardware audio_util(48000, 48000, CHANNEL_LAYOUT_MONO);
   SetAudioUtilCallback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());

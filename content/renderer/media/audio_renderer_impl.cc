@@ -60,23 +60,17 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
   // does not currently support all the sample-rates that we require.
   // Please see: http://code.google.com/p/chromium/issues/detail?id=103627
   // for more details.
-  audio_parameters_ = AudioParameters(AudioParameters::AUDIO_PCM_LINEAR,
-                                      channel_layout,
-                                      sample_rate,
-                                      bits_per_channel,
-                                      0);
+  audio_parameters_.Reset(
+      AudioParameters::AUDIO_PCM_LINEAR,
+      channel_layout, sample_rate, bits_per_channel,
+      audio_hardware::GetHighLatencyOutputBufferSize(sample_rate));
 
   bytes_per_second_ = audio_parameters_.GetBytesPerSecond();
 
   DCHECK(sink_.get());
 
   if (!is_initialized_) {
-    sink_->Initialize(
-        audio_hardware::GetHighLatencyOutputBufferSize(sample_rate),
-        audio_parameters_.channels,
-        audio_parameters_.sample_rate,
-        audio_parameters_.format,
-        this);
+    sink_->Initialize(audio_parameters_, this);
 
     sink_->Start();
     is_initialized_ = true;
@@ -193,8 +187,7 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
                                 GetPlaybackRate())));
   }
 
-  uint32 bytes_per_frame =
-      audio_parameters_.bits_per_sample * audio_parameters_.channels / 8;
+  int bytes_per_frame  = audio_parameters_.GetBytesPerFrame();
 
   const size_t buf_size = number_of_frames * bytes_per_frame;
   scoped_array<uint8> buf(new uint8[buf_size]);

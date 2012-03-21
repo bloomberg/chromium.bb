@@ -8,14 +8,14 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
-static double output_sample_rate = 0.0;
-static double input_sample_rate = 0.0;
+static int output_sample_rate = 0;
+static int input_sample_rate = 0;
 static size_t output_buffer_size = 0;
-static uint32 input_channel_count = 0;
+static ChannelLayout input_channel_layout = CHANNEL_LAYOUT_NONE;
 
 namespace audio_hardware {
 
-double GetOutputSampleRate() {
+int GetOutputSampleRate() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (!output_sample_rate) {
@@ -25,7 +25,7 @@ double GetOutputSampleRate() {
   return output_sample_rate;
 }
 
-double GetInputSampleRate() {
+int GetInputSampleRate() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (!input_sample_rate) {
@@ -78,17 +78,17 @@ size_t GetHighLatencyOutputBufferSize(int sample_rate) {
   return samples;
 }
 
-uint32 GetInputChannelCount() {
+ChannelLayout GetInputChannelLayout() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
-  if (!input_channel_count) {
-    uint32 channels = 0;
+  if (input_channel_layout == CHANNEL_LAYOUT_NONE) {
+    ChannelLayout layout = CHANNEL_LAYOUT_NONE;
     RenderThreadImpl::current()->Send(
-        new ViewHostMsg_GetHardwareInputChannelCount(&channels));
-    input_channel_count = channels;
+        new ViewHostMsg_GetHardwareInputChannelLayout(&layout));
+    input_channel_layout = layout;
   }
 
-  return input_channel_count;
+  return input_channel_layout;
 }
 
 void ResetCache() {
@@ -97,7 +97,7 @@ void ResetCache() {
   output_sample_rate = 0.0;
   input_sample_rate = 0.0;
   output_buffer_size = 0;
-  input_channel_count = 0;
+  input_channel_layout = CHANNEL_LAYOUT_NONE;
 }
 
 }  // namespace audio_hardware

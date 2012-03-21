@@ -29,12 +29,12 @@ PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
 
 // static
 PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
-    uint32_t sample_rate,
-    uint32_t sample_count,
+    int sample_rate,
+    int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
   scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
       new PepperPlatformAudioOutputImpl);
-  if (audio_output->Initialize(sample_rate, sample_count, client)) {
+  if (audio_output->Initialize(sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
     return audio_output.release();
@@ -74,8 +74,8 @@ void PepperPlatformAudioOutputImpl::ShutDown() {
 }
 
 bool PepperPlatformAudioOutputImpl::Initialize(
-    uint32_t sample_rate,
-    uint32_t sample_count,
+    int sample_rate,
+    int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
   DCHECK(client);
   // Make sure we don't call init more than once.
@@ -83,20 +83,20 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 
   client_ = client;
 
-  AudioParameters params;
-  const uint32_t kMaxSampleCountForLowLatency = 2048;
+  AudioParameters::Format format;
+  const int kMaxFramesForLowLatency = 2048;
   // Use the low latency back end if the client request is compatible, and
   // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
   if (sample_rate == audio_hardware::GetOutputSampleRate() &&
-      sample_count <= kMaxSampleCountForLowLatency &&
-      sample_count % audio_hardware::GetOutputBufferSize() == 0)
-    params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  else
-    params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = 2;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
-  params.samples_per_packet = sample_count;
+      frames_per_buffer <= kMaxFramesForLowLatency &&
+      frames_per_buffer % audio_hardware::GetOutputBufferSize() == 0) {
+    format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  } else {
+    format = AudioParameters::AUDIO_PCM_LINEAR;
+  }
+
+  AudioParameters params(format, CHANNEL_LAYOUT_STEREO, sample_rate,
+                         16, frames_per_buffer);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,

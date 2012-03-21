@@ -212,24 +212,25 @@ void WebRTCAudioDeviceTest::DestroyChannel() {
   audio_input_renderer_host_ = NULL;
 }
 
-void WebRTCAudioDeviceTest::OnGetHardwareSampleRate(double* sample_rate) {
+void WebRTCAudioDeviceTest::OnGetHardwareSampleRate(int* sample_rate) {
   EXPECT_TRUE(audio_util_callback_);
   *sample_rate = audio_util_callback_ ?
-      audio_util_callback_->GetAudioHardwareSampleRate() : 0.0;
+      audio_util_callback_->GetAudioHardwareSampleRate() : 0;
 }
 
-void WebRTCAudioDeviceTest::OnGetHardwareInputSampleRate(double* sample_rate) {
+void WebRTCAudioDeviceTest::OnGetHardwareInputSampleRate(int* sample_rate) {
   EXPECT_TRUE(audio_util_callback_);
   *sample_rate = audio_util_callback_ ?
       audio_util_callback_->GetAudioInputHardwareSampleRate(
-          AudioManagerBase::kDefaultDeviceId) : 0.0;
+          AudioManagerBase::kDefaultDeviceId) : 0;
 }
 
-void WebRTCAudioDeviceTest::OnGetHardwareInputChannelCount(uint32* channels) {
+void WebRTCAudioDeviceTest::OnGetHardwareInputChannelLayout(
+    ChannelLayout* layout) {
   EXPECT_TRUE(audio_util_callback_);
-  *channels = audio_util_callback_ ?
-      audio_util_callback_->GetAudioInputHardwareChannelCount(
-          AudioManagerBase::kDefaultDeviceId) : 0;
+  *layout = audio_util_callback_ ?
+      audio_util_callback_->GetAudioInputHardwareChannelLayout(
+          AudioManagerBase::kDefaultDeviceId) : CHANNEL_LAYOUT_NONE;
 }
 
 // IPC::Channel::Listener implementation.
@@ -264,8 +265,8 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
                         OnGetHardwareSampleRate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputSampleRate,
                         OnGetHardwareInputSampleRate)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelCount,
-                        OnGetHardwareInputChannelCount)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputChannelLayout,
+                        OnGetHardwareInputChannelLayout)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 

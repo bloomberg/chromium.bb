@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/renderer/mock_content_renderer_client.h"
+#include "media/base/channel_layout.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/common_types.h"
@@ -108,10 +109,10 @@ class WebRTCAutoDelete {
 class AudioUtilInterface {
  public:
   virtual ~AudioUtilInterface() {}
-  virtual double GetAudioHardwareSampleRate() = 0;
-  virtual double GetAudioInputHardwareSampleRate(
+  virtual int GetAudioHardwareSampleRate() = 0;
+  virtual int GetAudioInputHardwareSampleRate(
       const std::string& device_id) = 0;
-  virtual uint32 GetAudioInputHardwareChannelCount(
+  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) = 0;
 };
 
@@ -139,9 +140,9 @@ class WebRTCAudioDeviceTest
   void CreateChannel(const char* name);
   void DestroyChannel();
 
-  void OnGetHardwareSampleRate(double* sample_rate);
-  void OnGetHardwareInputSampleRate(double* sample_rate);
-  void OnGetHardwareInputChannelCount(uint32* channels);
+  void OnGetHardwareSampleRate(int* sample_rate);
+  void OnGetHardwareInputSampleRate(int* sample_rate);
+  void OnGetHardwareInputChannelLayout(ChannelLayout* channels);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

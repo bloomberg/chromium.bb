@@ -11,7 +11,7 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-struct AudioParameters;
+class AudioParameters;
 
 class PepperPlatformAudioInputImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudioInput,
@@ -23,8 +23,8 @@ class PepperPlatformAudioInputImpl
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
   static PepperPlatformAudioInputImpl* Create(
-      uint32_t sample_rate,
-      uint32_t sample_count,
+      int sample_rate,
+      int frames_per_buffer,
       webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
 
   // PlatformAudioInput implementation (called on main thread).
@@ -36,8 +36,8 @@ class PepperPlatformAudioInputImpl
   PepperPlatformAudioInputImpl();
 
   bool Initialize(
-      uint32_t sample_rate,
-      uint32_t sample_count,
+      int sample_rate,
+      int frames_per_buffer,
       webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
 
   // I/O thread backends to above functions.

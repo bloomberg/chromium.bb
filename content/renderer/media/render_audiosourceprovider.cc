@@ -14,7 +14,7 @@ using WebKit::WebVector;
 RenderAudioSourceProvider::RenderAudioSourceProvider()
     : is_initialized_(false),
       channels_(0),
-      sample_rate_(0.0),
+      sample_rate_(0),
       is_running_(false),
       volume_(1.0),
       renderer_(NULL),
@@ -73,29 +73,22 @@ void RenderAudioSourceProvider::GetVolume(double* volume) {
 }
 
 void RenderAudioSourceProvider::Initialize(
-    size_t buffer_size,
-    int channels,
-    double sample_rate,
-    AudioParameters::Format latency_format,
-    RenderCallback* renderer) {
+    const AudioParameters& params, RenderCallback* renderer) {
   base::AutoLock auto_lock(sink_lock_);
   CHECK(!is_initialized_);
   renderer_ = renderer;
 
-  default_sink_->Initialize(buffer_size,
-                            channels,
-                            sample_rate,
-                            latency_format,
-                            renderer);
+  default_sink_->Initialize(params, renderer);
+
+  // Keep track of the format in case the client hasn't yet been set.
+  channels_ = params.channels();
+  sample_rate_ = params.sample_rate();
 
   if (client_) {
     // Inform WebKit about the audio stream format.
-    client_->setFormat(channels, sample_rate);
+    client_->setFormat(channels_, sample_rate_);
   }
 
-  // Keep track of the format in case the client hasn't yet been set.
-  channels_ = channels;
-  sample_rate_ = sample_rate;
   is_initialized_ = true;
 }
 

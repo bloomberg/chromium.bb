@@ -174,9 +174,9 @@ AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
                                       base::SharedMemoryHandle memory,
                                       int memory_length)
     : audio_parameters_(audio_parameters),
-      samples_per_ms_(audio_parameters.sample_rate / 1000),
-      bytes_per_ms_(audio_parameters.channels *
-                    (audio_parameters_.bits_per_sample / 8) *
+      samples_per_ms_(audio_parameters.sample_rate() / 1000),
+      bytes_per_ms_(audio_parameters.channels() *
+                    (audio_parameters_.bits_per_sample() / 8) *
                     samples_per_ms_),
       shared_memory_(memory, false),
       memory_length_(memory_length) {
@@ -193,10 +193,9 @@ void AudioDeviceThread::Callback::InitializeOnAudioThread() {
   MapSharedMemory();
   DCHECK(shared_memory_.memory() != NULL);
 
-  audio_data_.reserve(audio_parameters_.channels);
-  for (int i = 0; i < audio_parameters_.channels; ++i) {
-    float* channel_data = new float[audio_parameters_.samples_per_packet];
+  audio_data_.reserve(audio_parameters_.channels());
+  for (int i = 0; i < audio_parameters_.channels(); ++i) {
+    float* channel_data = new float[audio_parameters_.frames_per_buffer()];
     audio_data_.push_back(channel_data);
   }
 }
-

@@ -26,6 +26,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -54,6 +55,7 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
+IPC_ENUM_TRAITS(ChannelLayout)
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
@@ -684,15 +686,15 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareBufferSize,
 
 // Asks the browser for the default audio input hardware sample-rate.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputSampleRate,
-                            double /* sample_rate */)
+                            int /* sample_rate */)
 
 // Asks the browser for the default audio hardware sample-rate.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
-                            double /* sample_rate */)
+                            int /* sample_rate */)
 
-// Asks the browser for the default number of audio input channels.
-IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputChannelCount,
-                            uint32 /* channels */)
+// Asks the browser for the default channel layout.
+IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputChannelLayout,
+                            ChannelLayout /* channel layout */)
 
 // Asks the browser for CPU usage of the renderer process in percents.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,

@@ -59,17 +59,14 @@ class RenderAudioSourceProvider
   virtual void Pause(bool flush) OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
   virtual void GetVolume(double* volume) OVERRIDE;
-  virtual void Initialize(size_t buffer_size,
-                          int channels,
-                          double sample_rate,
-                          AudioParameters::Format latency_format,
-                          RenderCallback* renderer) OVERRIDE;
+  virtual void Initialize(
+      const AudioParameters& params, RenderCallback* renderer) OVERRIDE;
 
  private:
   // Set to true when Initialize() is called.
   bool is_initialized_;
   int channels_;
-  double sample_rate_;
+  int sample_rate_;
 
   bool is_running_;
   double volume_;

@@ -598,8 +598,8 @@ PepperPluginDelegateImpl::CreateAudioOutput(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  return PepperPlatformAudioOutputImpl::Create(sample_rate, sample_count,
-                                               client);
+  return PepperPlatformAudioOutputImpl::Create(
+      static_cast<int>(sample_rate), static_cast<int>(sample_count), client);
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudioInput*
@@ -607,8 +607,8 @@ PepperPluginDelegateImpl::CreateAudioInput(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  return PepperPlatformAudioInputImpl::Create(sample_rate, sample_count,
-                                              client);
+  return PepperPlatformAudioInputImpl::Create(
+      static_cast<int>(sample_rate), static_cast<int>(sample_count), client);
 }
 
 // If a broker has not already been created for this plugin, creates one.
