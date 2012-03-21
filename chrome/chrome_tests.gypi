@@ -2616,7 +2616,6 @@
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
-        'browser/chromeos/system_key_event_listener_browsertest.cc',
         'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/chromeos/ui/brightness_bubble_browsertest.cc',
         'browser/chromeos/ui/setting_level_bubble_browsertest.cc',

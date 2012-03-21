@@ -66,13 +66,12 @@ namespace chromeos {
 namespace input_method {
 
 // The implementation of InputMethodManager.
-class InputMethodManagerImpl
-    : public InputMethodManager,
-      public content::NotificationObserver,
+class InputMethodManagerImpl : public InputMethodManager,
+                               public content::NotificationObserver,
 #if !defined(USE_VIRTUAL_KEYBOARD)
-      public CandidateWindowController::Observer,
+                               public CandidateWindowController::Observer,
 #endif
-      public IBusController::Observer {
+                               public IBusController::Observer {
  public:
   InputMethodManagerImpl()
       : ibus_controller_(IBusController::Create()),
@@ -445,9 +444,6 @@ class InputMethodManagerImpl
 
   virtual XKeyboard* GetXKeyboard() {
     return xkeyboard_.get();
-  }
-
-  virtual void HotkeyPressed(HotkeyManager* manager, int event_id) {
   }
 
   virtual void CandidateWindowOpened() {
