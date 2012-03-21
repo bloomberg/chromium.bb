@@ -19,10 +19,6 @@ from chromite.lib import cros_build_lib
 if not cros_build_lib.IsInsideChroot():
   print '%s: This needs to be run inside the chroot' % sys.argv[0]
   sys.exit(1)
-# This has to be always ran as root.
-if not os.getuid() == 0:
-  print "This script must be run as root!"
-  sys.exit(1)
 # Only import portage after we've checked that we're inside the chroot.
 # Outside may not have portage, in which case the above may not happen.
 import portage
@@ -597,6 +593,11 @@ def main(argv):
                           'Useful for bootstrapping chroot.'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
+
+  # This has to be always ran as root.
+  if not os.getuid() == 0:
+    print "%s: This script must be run as root!" % sys.argv[0]
+    sys.exit(1)
 
   targets = set(options.targets.split(','))
   UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets)
