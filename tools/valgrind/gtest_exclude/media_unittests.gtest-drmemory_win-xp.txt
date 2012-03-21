@@ -2,3 +2,4 @@
 YUVConvertTest.RGB24ToYUV
 YUVConvertTest.SideBySideRGB
 PipelineIntegrationTest.BasicPlayback
+SimpleSources.SineWaveAudio16MonoTest

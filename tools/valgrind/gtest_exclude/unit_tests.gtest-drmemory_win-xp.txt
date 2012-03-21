@@ -1,6 +1,5 @@
 # Crashing (!) since forever, needs analysis.
-BookmarkNodeDataTest.Folder
-BookmarkNodeDataTest.JustURL
+BookmarkNodeDataTest.*
 
 # http://code.google.com/p/drmemory/issues/detail?id=842
 # Fails assertion.  App data corrupted by DrMemory?
