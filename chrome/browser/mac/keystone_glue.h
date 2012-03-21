@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/mac/scoped_authorizationref.h"
 #import "base/memory/scoped_nsobject.h"
-#include "chrome/browser/mac/scoped_authorizationref.h"
 
 // Possible outcomes of various operations.  A version may accompany some of
 // these, but beware: a version is never required.  For statuses that can be
@@ -94,7 +94,7 @@ enum BrandFileType {
 
   // The authorization object, when it needs to persist because it's being
   // carried across threads.
-  ScopedAuthorizationRef authorization_;
+  base::mac::ScopedAuthorizationRef authorization_;
 
   // YES if a synchronous promotion operation is in progress (promotion during
   // installation).

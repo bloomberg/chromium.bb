@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mac/authorization_util.h"
+#include "base/mac/authorization_util.h"
 
 #import <Foundation/Foundation.h>
 #include <sys/wait.h>
@@ -15,11 +15,12 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
 #import "base/mac/mac_util.h"
+#include "base/mac/scoped_authorizationref.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/mac/scoped_authorizationref.h"
 
-namespace authorization_util {
+namespace base {
+namespace mac {
 
 AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
   // Create an empty AuthorizationRef.
@@ -182,4 +183,5 @@ OSStatus ExecuteWithPrivilegesAndWait(AuthorizationRef authorization,
   return status;
 }
 
-}  // namespace authorization_util
+}  // namespace mac
+}  // namespace base

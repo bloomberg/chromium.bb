@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_AUTHORIZATION_UTIL_H_
-#define CHROME_BROWSER_MAC_AUTHORIZATION_UTIL_H_
+#ifndef BASE_MAC_AUTHORIZATION_UTIL_H_
+#define BASE_MAC_AUTHORIZATION_UTIL_H_
 #pragma once
 
 // AuthorizationExecuteWithPrivileges fork()s and exec()s the tool, but it
@@ -29,7 +29,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-namespace authorization_util {
+namespace base {
+namespace mac {
 
 // Obtains an AuthorizationRef that can be used to run commands as root.  If
 // necessary, prompts the user for authentication.  If the user is prompted,
@@ -62,6 +63,7 @@ OSStatus ExecuteWithPrivilegesAndWait(AuthorizationRef authorization,
                                       FILE** pipe,
                                       int* exit_status);
 
-}  // namespace authorization_util
+}  // namespace mac
+}  // namespace base
 
-#endif  // CHROME_BROWSER_MAC_AUTHORIZATION_UTIL_H_
+#endif  // BASE_MAC_AUTHORIZATION_UTIL_H_

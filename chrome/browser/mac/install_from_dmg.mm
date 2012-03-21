@@ -21,16 +21,16 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/authorization_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
 #import "base/mac/mac_util.h"
+#include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/mac/authorization_util.h"
 #include "chrome/browser/mac/dock.h"
-#include "chrome/browser/mac/scoped_authorizationref.h"
 #include "chrome/browser/mac/scoped_ioobject.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
@@ -279,7 +279,7 @@ AuthorizationRef MaybeShowAuthorizationDialog(NSString* application_directory) {
   NSString* prompt = l10n_util::GetNSStringFWithFixup(
       IDS_INSTALL_FROM_DMG_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  return authorization_util::AuthorizationCreateToRunAsRoot(
+  return base::mac::AuthorizationCreateToRunAsRoot(
       base::mac::NSToCFCast(prompt));
 }
 
@@ -292,7 +292,7 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
                           NSString* installer_path,
                           NSString* source_path,
                           NSString* target_path) {
-  ScopedAuthorizationRef authorization(authorization_arg);
+  base::mac::ScopedAuthorizationRef authorization(authorization_arg);
   authorization_arg = NULL;
   int exit_status;
   if (authorization) {
@@ -301,7 +301,7 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
     const char* target_path_c = [target_path fileSystemRepresentation];
     const char* arguments[] = {source_path_c, target_path_c, NULL};
 
-    OSStatus status = authorization_util::ExecuteWithPrivilegesAndWait(
+    OSStatus status = base::mac::ExecuteWithPrivilegesAndWait(
         authorization,
         installer_path_c,
         kAuthorizationFlagDefaults,
@@ -448,7 +448,7 @@ bool MaybeInstallFromDiskImage() {
     return false;
   }
 
-  ScopedAuthorizationRef authorization(
+  base::mac::ScopedAuthorizationRef authorization(
       MaybeShowAuthorizationDialog(application_directory));
   // authorization will be NULL if it's deemed unnecessary or if
   // authentication fails.  In either case, try to install without privilege

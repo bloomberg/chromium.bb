@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_SCOPED_AUTHORIZATIONREF_H_
-#define CHROME_BROWSER_MAC_SCOPED_AUTHORIZATIONREF_H_
+#ifndef BASE_MAC_SCOPED_AUTHORIZATIONREF_H_
+#define BASE_MAC_SCOPED_AUTHORIZATIONREF_H_
 #pragma once
 
 #include <Security/Authorization.h>
@@ -13,6 +13,9 @@
 
 // ScopedAuthorizationRef maintains ownership of an AuthorizationRef.  It is
 // patterned after the scoped_ptr interface.
+
+namespace base {
+namespace mac {
 
 class ScopedAuthorizationRef {
  public:
@@ -77,4 +80,7 @@ class ScopedAuthorizationRef {
   DISALLOW_COPY_AND_ASSIGN(ScopedAuthorizationRef);
 };
 
-#endif  // CHROME_BROWSER_MAC_SCOPED_AUTHORIZATIONREF_H_
+}  // namespace mac
+}  // namespace base
+
+#endif  // BASE_MAC_SCOPED_AUTHORIZATIONREF_H_
