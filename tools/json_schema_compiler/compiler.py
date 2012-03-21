@@ -18,11 +18,12 @@ Usage example:
 
 import cc_generator
 import cpp_type_generator
-import h_bundle_generator
 import h_generator
 import idl_schema
 import json_schema
 import model
+import schema_bundle_generator
+
 import optparse
 import os.path
 import sys
@@ -119,19 +120,32 @@ def handle_bundle_schema(filenames, dest_dir, root, root_namespace):
         referenced_namespace,
         referenced_namespace.unix_name)
 
-  generator = h_bundle_generator.HBundleGenerator(api_model, type_generator)
-  h_bundle_code = generator.Generate().Render()
+  generator = schema_bundle_generator.SchemaBundleGenerator(
+      api_model, api_defs, type_generator)
+  api_h_code = generator.GenerateAPIHeader().Render()
+  schemas_h_code = generator.GenerateSchemasHeader().Render()
+  schemas_cc_code = generator.GenerateSchemasCC().Render()
 
-  out_file = 'generated_api'
   if dest_dir:
-    with open(
-        os.path.join(dest_dir, 'chrome/common/extensions/api/generated_api.h'),
-          'w') as h_file:
-        h_file.write(h_bundle_code)
+    basedir = os.path.join(dest_dir, 'chrome/common/extensions/api')
+    with open(os.path.join(basedir, 'generated_api.h'), 'w') as h_file:
+      h_file.write(api_h_code)
+    with open(os.path.join(basedir, 'generated_schemas.h'), 'w') as h_file:
+      h_file.write(schemas_h_code)
+    with open(os.path.join(basedir, 'generated_schemas.cc'), 'w') as cc_file:
+      cc_file.write(schemas_cc_code)
   else:
-    print '%s.h' % out_file
+    print 'generated_api.h'
     print
-    print h_bundle_code
+    print api_h_code
+    print
+    print 'generated_schemas.h'
+    print
+    print schemas_h_code
+    print
+    print 'generated_schemas.cc'
+    print
+    print schemas_cc_code
 
 if __name__ == '__main__':
   parser = optparse.OptionParser(

@@ -13,6 +13,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "googleurl/src/gurl.h"
@@ -66,11 +67,16 @@ static base::ListValue* LoadSchemaList(int resource_id) {
 }
 
 void ExtensionAPI::LoadSchemaFromResource(int resource_id) {
-  scoped_ptr<base::ListValue> loaded(LoadSchemaList(resource_id));
+  RegisterSchema(LoadSchemaList(resource_id));
+}
+
+void ExtensionAPI::RegisterSchema(base::ListValue* loaded_schema) {
+  // We take ownership of loaded_schema, so we need to delete it.
+  scoped_ptr<base::ListValue> scoped_loaded_schema(loaded_schema);
   Value* value = NULL;
   std::string schema_namespace;
-  while (!loaded->empty()) {
-    loaded->Remove(loaded->GetSize() - 1, &value);
+  while (!loaded_schema->empty()) {
+    loaded_schema->Remove(loaded_schema->GetSize() - 1, &value);
     CHECK(value->IsType(Value::TYPE_DICTIONARY));
     const DictionaryValue* schema = static_cast<const DictionaryValue*>(value);
     CHECK(schema->GetString("namespace", &schema_namespace));
@@ -96,7 +102,6 @@ ExtensionAPI::ExtensionAPI() {
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE,
-    IDR_EXTENSION_API_JSON_EXPERIMENTAL_DNS,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_EXTENSIONS,
     IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTS,
@@ -148,6 +153,7 @@ ExtensionAPI::ExtensionAPI() {
   for (size_t i = 0; i < arraysize(kJsonApiResourceIds); i++) {
     LoadSchemaFromResource(kJsonApiResourceIds[i]);
   }
+  RegisterSchema(api::GeneratedSchemas::Get());
 
   // Populate {completely,partially}_unprivileged_apis_.
   for (SchemaMap::iterator it = schemas_.begin(); it != schemas_.end(); ++it) {

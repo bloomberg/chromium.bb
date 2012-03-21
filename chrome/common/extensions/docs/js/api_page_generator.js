@@ -34,7 +34,6 @@ var MODULE_SCHEMAS = [
   '../api/experimental.accessibility.json',
   '../api/experimental.app.json',
   '../api/experimental.bookmarkManager.json',
-  '../api/experimental.dns.json',
   '../api/experimental.downloads.json',
   '../api/experimental.extension.json',
   '../api/experimental.fontSettings.json',

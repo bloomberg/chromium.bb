@@ -63,6 +63,10 @@ class ExtensionAPI {
   // Loads a schema from a resource.
   void LoadSchemaFromResource(int resource_id);
 
+  // Given a schema in ListValue form, registers it in a map. Takes ownership
+  // of |loaded_schema|.
+  void RegisterSchema(base::ListValue* loaded_schema);
+
   // Find an item in |list| with the specified property name and value, or NULL
   // if no such item exists.
   base::DictionaryValue* FindListItem(const base::ListValue* list,
