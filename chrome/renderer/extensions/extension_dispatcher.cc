@@ -486,8 +486,8 @@ void ExtensionDispatcher::DidCreateScriptContext(
     case Feature::WEB_PAGE_CONTEXT:
       break;
 
-    case Feature::PRIVILEGED_CONTEXT:
-    case Feature::UNPRIVILEGED_CONTEXT:
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
       module_system->Require("json_schema");
       module_system->Require("event_bindings");
@@ -698,10 +698,10 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
     return Feature::CONTENT_SCRIPT_CONTEXT;
 
   if (IsExtensionActive(extension_id))
-    return Feature::PRIVILEGED_CONTEXT;
+    return Feature::BLESSED_EXTENSION_CONTEXT;
 
   if (extensions_.ExtensionBindingsAllowed(url_info))
-    return Feature::UNPRIVILEGED_CONTEXT;
+    return Feature::UNBLESSED_EXTENSION_CONTEXT;
 
   if (url_info.url().is_valid())
     return Feature::WEB_PAGE_CONTEXT;

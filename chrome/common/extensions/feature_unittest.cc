@@ -33,7 +33,7 @@ TEST(ExtensionFeatureTest, IsAvailableNullCase) {
     { "", Extension::TYPE_PACKAGED_APP, Feature::UNSPECIFIED_CONTEXT,
       Feature::UNSPECIFIED_LOCATION, Feature::UNSPECIFIED_PLATFORM, -1,
       Feature::IS_AVAILABLE },
-    { "", Extension::TYPE_UNKNOWN, Feature::PRIVILEGED_CONTEXT,
+    { "", Extension::TYPE_UNKNOWN, Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::UNSPECIFIED_LOCATION, Feature::UNSPECIFIED_PLATFORM, -1,
       Feature::IS_AVAILABLE },
     { "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_CONTEXT,
@@ -104,19 +104,19 @@ TEST(ExtensionFeatureTest, PackageType) {
 
 TEST(ExtensionFeatureTest, Context) {
   Feature feature;
-  feature.contexts()->insert(Feature::PRIVILEGED_CONTEXT);
+  feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.contexts()->insert(Feature::CONTENT_SCRIPT_CONTEXT);
 
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-      Feature::PRIVILEGED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
+      Feature::BLESSED_EXTENSION_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
       Feature::CONTENT_SCRIPT_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
 
   EXPECT_EQ(Feature::INVALID_CONTEXT, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
-      Feature::UNPRIVILEGED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
+      Feature::UNBLESSED_EXTENSION_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
   EXPECT_EQ(Feature::INVALID_CONTEXT, feature.IsAvailable(
       "", Extension::TYPE_UNKNOWN, Feature::UNSPECIFIED_LOCATION,
       Feature::UNSPECIFIED_CONTEXT, Feature::UNSPECIFIED_PLATFORM, -1));
@@ -233,15 +233,15 @@ TEST(ExtensionFeatureTest, ParsePackageTypes) {
 TEST(ExtensionFeatureTest, ParseContexts) {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
   ListValue* contexts = new ListValue();
-  contexts->Append(Value::CreateStringValue("privileged"));
-  contexts->Append(Value::CreateStringValue("unprivileged"));
+  contexts->Append(Value::CreateStringValue("blessed_extension"));
+  contexts->Append(Value::CreateStringValue("unblessed_extension"));
   contexts->Append(Value::CreateStringValue("content_script"));
   contexts->Append(Value::CreateStringValue("web_page"));
   value->Set("contexts", contexts);
   scoped_ptr<Feature> feature(Feature::Parse(value.get()));
   EXPECT_EQ(4u, feature->contexts()->size());
-  EXPECT_TRUE(feature->contexts()->count(Feature::PRIVILEGED_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::UNPRIVILEGED_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::BLESSED_EXTENSION_CONTEXT));
+  EXPECT_TRUE(feature->contexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
   EXPECT_TRUE(feature->contexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
   EXPECT_TRUE(feature->contexts()->count(Feature::WEB_PAGE_CONTEXT));
 

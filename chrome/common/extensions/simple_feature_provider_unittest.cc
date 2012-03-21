@@ -28,7 +28,7 @@ TEST(SimpleFeatureProvider, Validation) {
   extension_types->Append(Value::CreateStringValue("extension"));
   feature2->Set("extension_types", extension_types);
   ListValue* contexts = new ListValue();
-  contexts->Append(Value::CreateStringValue("privileged"));
+  contexts->Append(Value::CreateStringValue("blessed_extension"));
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 

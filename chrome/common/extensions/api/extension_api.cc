@@ -282,16 +282,17 @@ scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
     case Feature::UNSPECIFIED_CONTEXT:
       break;
 
-    case Feature::PRIVILEGED_CONTEXT:
+    case Feature::BLESSED_EXTENSION_CONTEXT:
       // Availability is determined by the permissions of the extension.
       CHECK(extension);
       GetAllowedAPIs(extension, result.get());
       ResolveDependencies(result.get());
       break;
 
-    case Feature::UNPRIVILEGED_CONTEXT:
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
-      // Same as PRIVILEGED_CONTEXT, but only those APIs that are unprivileged.
+      // Same as BLESSED_EXTENSION_CONTEXT, but only those APIs that are
+      // unprivileged.
       CHECK(extension);
       GetAllowedAPIs(extension, result.get());
       // Resolving dependencies before removing unprivileged APIs means that

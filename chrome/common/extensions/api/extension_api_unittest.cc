@@ -86,11 +86,11 @@ TEST(ExtensionAPI, ExtensionWithUnprivilegedAPIs) {
 
   scoped_ptr<std::set<std::string> > privileged_apis =
       ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
+          Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
 
   scoped_ptr<std::set<std::string> > unprivileged_apis =
       ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::UNPRIVILEGED_CONTEXT, extension.get(), GURL());
+          Feature::UNBLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
 
   scoped_ptr<std::set<std::string> > content_script_apis =
       ExtensionAPI::GetInstance()->GetAPIsForContext(
@@ -120,7 +120,7 @@ TEST(ExtensionAPI, ExtensionWithDependencies) {
         CreateExtensionWithPermission("ttsEngine");
     scoped_ptr<std::set<std::string> > apis =
         ExtensionAPI::GetInstance()->GetAPIsForContext(
-            Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
+            Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
     EXPECT_EQ(1u, apis->count("ttsEngine"));
     EXPECT_EQ(1u, apis->count("tts"));
   }
@@ -132,7 +132,7 @@ TEST(ExtensionAPI, ExtensionWithDependencies) {
         CreateExtensionWithPermission("tts");
     scoped_ptr<std::set<std::string> > apis =
         ExtensionAPI::GetInstance()->GetAPIsForContext(
-            Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
+            Feature::BLESSED_EXTENSION_CONTEXT, extension.get(), GURL());
     EXPECT_EQ(0u, apis->count("ttsEngine"));
     EXPECT_EQ(1u, apis->count("tts"));
   }

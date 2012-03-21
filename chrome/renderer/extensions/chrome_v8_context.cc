@@ -28,11 +28,11 @@ const char kValidateAPI[] = "validateAPI";
 
 std::string GetContextTypeDescription(Feature::Context context_type) {
   switch (context_type) {
-    case Feature::UNSPECIFIED_CONTEXT:    return "unspecified";
-    case Feature::PRIVILEGED_CONTEXT:     return "privileged";
-    case Feature::UNPRIVILEGED_CONTEXT:   return "unprivileged";
-    case Feature::CONTENT_SCRIPT_CONTEXT: return "content script";
-    case Feature::WEB_PAGE_CONTEXT:       return "web page";
+    case Feature::UNSPECIFIED_CONTEXT:         return "unspecified";
+    case Feature::BLESSED_EXTENSION_CONTEXT:   return "blessed extension";
+    case Feature::UNBLESSED_EXTENSION_CONTEXT: return "unblessed extension";
+    case Feature::CONTENT_SCRIPT_CONTEXT:      return "content script";
+    case Feature::WEB_PAGE_CONTEXT:            return "web page";
   }
   NOTREACHED();
   return "";

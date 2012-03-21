@@ -26,7 +26,7 @@ TEST(ChromeV8ContextSet, Lifecycle) {
       v8_context,
       frame,
       extension_id,
-      extensions::Feature::PRIVILEGED_CONTEXT);
+      extensions::Feature::BLESSED_EXTENSION_CONTEXT);
 
   context_set.Add(context);
   EXPECT_EQ(1u, context_set.GetAll().count(context));

@@ -21,8 +21,10 @@ struct Mappings {
     extension_types["hosted_app"] = Extension::TYPE_HOSTED_APP;
     extension_types["platform_app"] = Extension::TYPE_PLATFORM_APP;
 
-    contexts["privileged"] = extensions::Feature::PRIVILEGED_CONTEXT;
-    contexts["unprivileged"] = extensions::Feature::UNPRIVILEGED_CONTEXT;
+    contexts["blessed_extension"] =
+        extensions::Feature::BLESSED_EXTENSION_CONTEXT;
+    contexts["unblessed_extension"] =
+        extensions::Feature::UNBLESSED_EXTENSION_CONTEXT;
     contexts["content_script"] = extensions::Feature::CONTENT_SCRIPT_CONTEXT;
     contexts["web_page"] = extensions::Feature::WEB_PAGE_CONTEXT;
 
