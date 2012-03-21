@@ -54,7 +54,7 @@
 namespace {
 
 // Whether sign in transitions are enabled.
-const bool kEnableBackgroundAnimation = true;
+const bool kEnableBackgroundAnimation = false;
 const bool kEnableBrowserWindowsOpacityAnimation = true;
 const bool kEnableBrowserWindowsTransformAnimation = true;
 
