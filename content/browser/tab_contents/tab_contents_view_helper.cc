@@ -83,6 +83,25 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
       web_contents->GetWebUITypeForCurrentState());
   new_contents->set_has_opener(!params.opener_url.is_empty());
 
+  if (!params.opener_suppressed) {
+    content::WebContentsView* new_view = new_contents->GetView();
+
+    // TODO(brettw): It seems bogus that we have to call this function on the
+    // newly created object and give it one of its own member variables.
+    new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
+
+    // Save the created window associated with the route so we can show it
+    // later.
+    DCHECK_NE(MSG_ROUTING_NONE, route_id);
+    pending_contents_[route_id] = new_contents;
+  }
+
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->WebContentsCreated(web_contents,
+                                                    params.opener_frame_id,
+                                                    params.target_url,
+                                                    new_contents);
+
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
@@ -91,30 +110,13 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
                                  params.disposition,
                                  initial_pos,
                                  params.user_gesture);
+
     content::OpenURLParams open_params(params.target_url, content::Referrer(),
                                        CURRENT_TAB,
                                        content::PAGE_TRANSITION_LINK,
                                        true /* is_renderer_initiated */);
-    WebContents* opened_contents = new_contents->OpenURL(open_params);
-    DCHECK_EQ(new_contents, opened_contents);
-    return new_contents;
+    new_contents->OpenURL(open_params);
   }
-
-  content::WebContentsView* new_view = new_contents->GetView();
-
-  // TODO(brettw): It seems bogus that we have to call this function on the
-  // newly created object and give it one of its own member variables.
-  new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
-
-  // Save the created window associated with the route so we can show it later.
-  DCHECK_NE(MSG_ROUTING_NONE, route_id);
-  pending_contents_[route_id] = new_contents;
-
-  if (web_contents->GetDelegate())
-    web_contents->GetDelegate()->WebContentsCreated(web_contents,
-                                                    params.opener_frame_id,
-                                                    params.target_url,
-                                                    new_contents);
 
   return new_contents;
 }
