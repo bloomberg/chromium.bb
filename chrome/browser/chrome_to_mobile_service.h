@@ -70,6 +70,10 @@ class ChromeToMobileService : public ProfileKeyedService,
     RequestType type;
   };
 
+  // Returns whether Chrome To Mobile is enabled. Check for the 'disable' or
+  // 'enable' command line switches, otherwise relay the default enabled state.
+  static bool IsChromeToMobileEnabled();
+
   explicit ChromeToMobileService(Profile* profile);
   virtual ~ChromeToMobileService();
 

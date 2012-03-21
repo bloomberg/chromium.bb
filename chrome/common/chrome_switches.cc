@@ -31,8 +31,8 @@ const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 
 // Allows the browser to load extensions that lack a modern manifest when that
 // would otherwise be forbidden.
-const char kAllowLegacyExtensionManifests[]
-    = "allow-legacy-extension-manifests";
+const char kAllowLegacyExtensionManifests[] =
+    "allow-legacy-extension-manifests";
 
 // Specifies comma-separated list of extension ids to grant access to TCP/UDP
 // socket APIs.
@@ -65,7 +65,7 @@ const char kApp[]                           = "app";
 
 // A URL for the server which assigns channel ids for server pushed app
 // notifications.
-const char kAppNotifyChannelServerURL[] = "app-notify-channel-server-url";
+const char kAppNotifyChannelServerURL[]     = "app-notify-channel-server-url";
 
 // Overrides the apps checkout URL, which is used to determine when to expose
 // some private APIs.
@@ -132,7 +132,7 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 
 // Checks the cloud print connector policy, informing the service process if
 // the policy is set to disallow the connector, then quits.
-const char kCheckCloudPrintConnectorPolicy[]    =
+const char kCheckCloudPrintConnectorPolicy[] =
     "check-cloud-print-connector-policy";
 
 // Tells Chrome to delay shutdown (for a specified number of seconds) when a
@@ -165,7 +165,7 @@ const char kCloudPrintFileType[]            = "cloud-print-file-type";
 
 // Used with kCloudPrintFile to specify a JSON print ticket for the resulting
 // print job. Defaults to null if unspecified.
-const char kCloudPrintPrintTicket[]            = "cloud-print-print-ticket";
+const char kCloudPrintPrintTicket[]         = "cloud-print-print-ticket";
 
 // Used with kCloudPrintFile to specify a title for the resulting print job.
 const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
@@ -243,15 +243,18 @@ const char kDisableAuthNegotiateCnameLookup[] =
 
 // Disables background mode (background apps will not keep chrome running in
 // the background).
-const char kDisableBackgroundMode[] = "disable-background-mode";
+const char kDisableBackgroundMode[]         = "disable-background-mode";
 
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
-const char kDisableBackgroundNetworking[] = "disable-background-networking";
+const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 
 // Disables the bundled PPAPI version of Flash (if it's enabled by default).
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
+
+// Disables Chrome To Mobile.
+const char kDisableChromeToMobile[]         = "disable-chrome-to-mobile";
 
 // Disables the client-side phishing detection feature. Note that even if
 // client-side phishing detection is enabled, it will only be active if the
@@ -266,7 +269,7 @@ const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
 
 // Disables establishing certificate revocation information by downloading a
 // set of CRLs rather than performing on-line checks.
-const char kDisableCRLSets[]                 = "disable-crl-sets";
+const char kDisableCRLSets[]                = "disable-crl-sets";
 
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
@@ -405,7 +408,7 @@ const char kDisableTLS1[]                   = "disable-tls1";
 // Allows disabling of translate from the command line to assist with automated
 // browser testing (e.g. Selenium/WebDriver). Normal browser users should
 // disable translate with the preference.
-const char kDisableTranslate[] = "disable-translate";
+const char kDisableTranslate[]              = "disable-translate";
 
 // Disable uber page command and URL redirection.
 const char kDisableUberPage[]               = "disable-uber-page";
@@ -466,6 +469,10 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 
+// Enables Chrome To Mobile.
+// This switch is not currently respected; use the disable switch instead.
+const char kEnableChromeToMobile[]          = "enable-chrome-to-mobile";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
@@ -515,7 +522,7 @@ const char kEnableInBrowserThumbnailing[]   = "enable-in-browser-thumbnailing";
 const char kEnableIPv6[]                    = "enable-ipv6";
 
 /// Enables the IPC fuzzer for reliability testing
-const char kEnableIPCFuzzing[]               = "enable-ipc-fuzzing";
+const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 
 // Enables IP Pooling within the networks stack (SPDY only). When a connection
 // is needed for a domain which shares an IP with an existing connection,
@@ -554,7 +561,7 @@ const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
 // Enables the installation and usage of Portable Native Client.
-const char kEnablePnacl[]                    = "enable-pnacl";
+const char kEnablePnacl[]                   = "enable-pnacl";
 
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
@@ -656,10 +663,10 @@ const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
 // Specifies the backend server used for gaia authentications, like sync or
 // policies for example. The https:// prefix and the trailing slash should be
 // omitted. The default value is "www.google.com".
-const char kGaiaHost[]                       = "gaia-host";
+const char kGaiaHost[]                      = "gaia-host";
 
 // Enables using GAIA information to populate profile name and icon.
-const char kGaiaProfileInfo[]                = "gaia-profile-info";
+const char kGaiaProfileInfo[]               = "gaia-profile-info";
 
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
@@ -848,7 +855,7 @@ const char kNoRunningInsecureContent[]      = "no-running-insecure-content";
 // Disables the service process from adding itself as an autorun process. This
 // does not delete existing autorun registrations, it just prevents the service
 // from registering a new one.
-const char kNoServiceAutorun[]               = "no-service-autorun";
+const char kNoServiceAutorun[]              = "no-service-autorun";
 
 // Does not automatically open a browser window on startup (used when
 // launching Chrome for the purpose of hosting background apps).
@@ -913,7 +920,7 @@ const char kParentProfile[]                 = "parent-profile";
 // Controls the PPAPI Flash field trial. Valid values are defined below. If an
 // unknown value is supplied on the command line, the switch is ignored.
 // TODO(yzshen): Remove this flag when the field trial is over.
-const char kPpapiFlashFieldTrial[] = "ppapi-flash-field-trial";
+const char kPpapiFlashFieldTrial[]          = "ppapi-flash-field-trial";
 // Forces to disable PPAPI Flash when a new PPAPI Flash is downloaded.
 const char kPpapiFlashFieldTrialDisableByDefault[] = "disable-by-default";
 // Forces to enable PPAPI Flash when a new PPAPI Flash is downloaded.
@@ -921,7 +928,7 @@ const char kPpapiFlashFieldTrialEnableByDefault[] = "enable-by-default";
 
 // Forces the PPAPI version of Flash (if it's being used) to run in the
 // renderer process rather than in a separate plugin process.
-const char kPpapiFlashInProcess[]          = "ppapi-flash-in-process";
+const char kPpapiFlashInProcess[]           = "ppapi-flash-in-process";
 
 // Aggressively preloads the default search engine's Instant URL, so it's ready
 // to receive queries. Only has an effect if Instant is turned on (via "Enable
@@ -941,15 +948,15 @@ const char kPrerenderFromOmniboxSwitchValueDisabled[] = "disabled";
 const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
 // Controls speculative prerendering of pages, and content prefetching. Both
 // are dispatched from <link rel=prefetch href=...> elements.
-const char kPrerenderMode[]                     = "prerender";
+const char kPrerenderMode[]                 = "prerender";
 // These are the values the kPrerenderMode switch may have, as in
 // "--prerender=auto".
 //   auto: Allow field trial selection in both prerender and prefetch.
-const char kPrerenderModeSwitchValueAuto[]      = "auto";
+const char kPrerenderModeSwitchValueAuto[]  = "auto";
 //   disabled: No prerendering or prefetching.
-const char kPrerenderModeSwitchValueDisabled[]  = "disabled";
+const char kPrerenderModeSwitchValueDisabled[] = "disabled";
 //   enabled: Both prerendering and prefetching.
-const char kPrerenderModeSwitchValueEnabled[]   = "enabled";
+const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 //   prefetch_only: No prerendering, but enables prefetching.
 const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 
@@ -979,7 +986,7 @@ const char kProfilingFile[]                 = "profiling-file";
 
 // Specifies a path for the output of task-level profiling which can be loaded
 // and viewed in about:profiler.
-const char kProfilingOutputFile[]            = "profiling-output-file";
+const char kProfilingOutputFile[]           = "profiling-output-file";
 
 // Controls whether profile data is periodically flushed to a file. Normally
 // the data gets written on exit but cases exist where chrome doesn't exit
@@ -1261,12 +1268,12 @@ const char kAuthExtensionPath[]             = "auth-ext-path";
 
 // Power of the power-of-2 initial modulus that will be used by the
 // auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
-const char kEnterpriseEnrollmentInitialModulus[]  =
+const char kEnterpriseEnrollmentInitialModulus[] =
     "enterprise-enrollment-initial-modulus";
 
 // Power of the power-of-2 maximum modulus that will be used by the
 // auto-enrollment client.
-const char kEnterpriseEnrollmentModulusLimit[]    =
+const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
 #ifndef NDEBUG

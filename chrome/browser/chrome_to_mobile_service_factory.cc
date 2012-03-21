@@ -22,6 +22,10 @@ ChromeToMobileService* ChromeToMobileServiceFactory::GetForProfile(
 
 ProfileKeyedService* ChromeToMobileServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
+  // Ensure that the service is not instantiated or used if it is disabled.
+  if (!ChromeToMobileService::IsChromeToMobileEnabled())
+    return NULL;
+
   return new ChromeToMobileService(profile);
 }
 

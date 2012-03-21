@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -32,6 +34,9 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
+
+// The default enabled/disabled state of the Chrome To Mobile feature.
+const bool kChromeToMobileEnabled = true;
 
 // The maximum number of retries for the URLFetcher requests.
 const size_t kMaxRetries = 1;
@@ -152,6 +157,19 @@ ChromeToMobileService::Observer::~Observer() {}
 ChromeToMobileService::RequestData::RequestData() {}
 
 ChromeToMobileService::RequestData::~RequestData() {}
+
+// static
+bool ChromeToMobileService::IsChromeToMobileEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(switches::kDisableChromeToMobile))
+    return false;
+
+  if (command_line->HasSwitch(switches::kEnableChromeToMobile))
+    return true;
+
+  return kChromeToMobileEnabled;
+}
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
     : profile_(profile),
