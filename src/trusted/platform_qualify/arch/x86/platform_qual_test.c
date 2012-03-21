@@ -13,16 +13,41 @@
  * code indicates the CPUID instruction is not implemented or not
  * implemented correctly.
  */
-#include "native_client/src/include/portability.h"
+
 #include <stdio.h>
+
+#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/vcpuid.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
+
+void TestDEPCheckFailurePath() {
+  size_t size = NACL_PAGESIZE;
+  void *page;
+  CHECK(NaCl_page_alloc(&page, size) == 0);
+
+  CHECK(NaCl_mprotect(page, size, PROT_READ | PROT_WRITE | PROT_EXEC) == 0);
+  CHECK(!NaClAttemptToExecuteDataAtAddr(page, size));
+
+  /* DEP is not guaranteed to work on x86-32. */
+  if (!(NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32)) {
+    CHECK(NaCl_mprotect(page, size, PROT_READ | PROT_WRITE) == 0);
+    CHECK(NaClAttemptToExecuteDataAtAddr(page, size));
+  }
+
+  NaCl_page_free(page, size);
+}
 
 int main() {
+  NaClLogModuleInit();
+
 #if NACL_WINDOWS
   /* required by nacl_dep_qualify.c: */
   NaClSignalHandlerInit();
@@ -33,6 +58,8 @@ int main() {
 
   if (NaCl_ThisCPUIsBlacklisted()) return -1;
   printf("CPU is not blacklisted\n");
+
+  TestDEPCheckFailurePath();
 
   if (NaClCheckDEP() != 1) return -1;
   printf("DEP is either working or not required\n");

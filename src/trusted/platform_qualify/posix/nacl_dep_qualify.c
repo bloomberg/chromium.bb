@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -43,17 +43,9 @@ static void restore_signals() {
   (void) sigaction(EXPECTED_SIGNAL, &previous_sigaction, 0);
 }
 
-/*
- * Returns 1 if Data Execution Prevention is present and working.
- */
-int NaClAttemptToExecuteData() {
+int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
   int result;
-  char *thunk_buffer = malloc(64);
-  nacl_void_thunk thunk;
-  if (NULL == thunk_buffer) {
-    return 0;
-  }
-  thunk = NaClGenerateThunk(thunk_buffer, 64);
+  nacl_void_thunk thunk = NaClGenerateThunk(thunk_buffer, size);
 
   setup_signals();
 
@@ -65,6 +57,19 @@ int NaClAttemptToExecuteData() {
   }
 
   restore_signals();
+  return result;
+}
+
+/*
+ * Returns 1 if Data Execution Prevention is present and working.
+ */
+int NaClAttemptToExecuteData() {
+  int result;
+  char *thunk_buffer = malloc(64);
+  if (NULL == thunk_buffer) {
+    return 0;
+  }
+  result = NaClAttemptToExecuteDataAtAddr(thunk_buffer, 64);
   free(thunk_buffer);
   return result;
 }

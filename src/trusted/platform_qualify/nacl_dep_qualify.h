@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -32,6 +32,8 @@ EXTERN_C_BEGIN
  * be found beneath arch/ in this directory.
  */
 int NaClCheckDEP();
+
+int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size);
 
 /*
  * Attempts to generate and execute some functions in data memory, to verify

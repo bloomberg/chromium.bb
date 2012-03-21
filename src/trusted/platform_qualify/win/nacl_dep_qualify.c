@@ -41,18 +41,10 @@ static void restore_signals(int handlerId) {
   }
 }
 
-/*
- * Returns 1 if Data Execution Prevention is present and working.
- */
-int NaClAttemptToExecuteData() {
+int NaClAttemptToExecuteDataAtAddr(char *thunk_buffer, size_t size) {
   int result;
   int handlerId;
-  char *thunk_buffer = malloc(64);
-  nacl_void_thunk thunk;
-  if (NULL == thunk_buffer) {
-    return 0;
-  }
-  thunk = NaClGenerateThunk(thunk_buffer, 64);
+  nacl_void_thunk thunk = NaClGenerateThunk(thunk_buffer, size);
 
   handlerId = setup_signals();
   g_SigFound = 0;
@@ -69,6 +61,19 @@ int NaClAttemptToExecuteData() {
   }
 
   restore_signals(handlerId);
+  return result;
+}
+
+/*
+ * Returns 1 if Data Execution Prevention is present and working.
+ */
+int NaClAttemptToExecuteData() {
+  int result;
+  char *thunk_buffer = malloc(64);
+  if (NULL == thunk_buffer) {
+    return 0;
+  }
+  result = NaClAttemptToExecuteDataAtAddr(thunk_buffer, 64);
   free(thunk_buffer);
   return result;
 }

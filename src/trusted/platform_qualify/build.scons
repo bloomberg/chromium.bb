@@ -46,9 +46,6 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   env.Append(LIBS = ['platform_qual_lib',
                      TargetLib(env, 'ncval_base'),
                      'platform', 'gio'])
-  if env.Bit('windows'):
-    # 'sel' is required for nacl_signal_common.c and friends
-    env.Append(LIBS = ['platform_qual_lib', 'sel'])
   nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
   env.Append(LIBS = ['vcpuid'])
 
@@ -59,7 +56,9 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
     pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
   platform_qual_test = env.ComponentProgram(
-      'platform_qual_test', 'arch/x86/platform_qual_test.c')
+      'platform_qual_test', 'arch/x86/platform_qual_test.c',
+      # 'sel' is required for nacl_signal_common.c, sel_memory.c and friends
+      EXTRA_LIBS=['platform_qual_lib', 'sel'])
   node = env.CommandTest('platform_qual_test.out', [platform_qual_test])
   env.AddNodeToTestSuite(
       node, ['small_tests'], 'run_platform_qual_test',
