@@ -5446,23 +5446,6 @@
    ...
 }
 {
-   bug_112450_a
-   Memcheck:Leak
-   fun:posix_memalign
-   fun:av_malloc
-   fun:av_new_packet
-   fun:av_get_packet
-   fun:wav_read_packet
-   fun:av_read_packet
-   fun:*read_frame_internal
-   fun:av_read_frame
-   fun:av_read_frame
-   fun:_ZN5media15AudioFileReader4ReadERKSt6vectorIPfSaIS2_EEm
-   fun:_ZN12webkit_media19DecodeAudioFileDataEPN6WebKit11WebAudioBusEPKcmd
-   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl17loadAudioResourceEPN6WebKit11WebAudioBusEPKcmd
-   fun:_ZN7WebCore15PlatformSupport19decodeAudioFileDataEPKcmd
-}
-{
    bug_112450_b
    Memcheck:Unaddressable
    fun:_ZN7WebCore15PlatformSupport25loadPlatformAudioResourceEPKcd
