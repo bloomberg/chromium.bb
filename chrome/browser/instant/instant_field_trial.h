@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,57 +19,32 @@ class Profile;
 // Instant preference is respected. Incognito profiles are also INACTIVE.
 //
 // The following mutually exclusive groups each select a small random sample of
-// the remaining users. Instant is enabled with preloading for the EXPERIMENT
-// groups. It remains disabled, as is default, for the CONTROL groups.
+// the remaining users. Instant is enabled with preloading of the search engine
+// homepage for all the experiment groups. It remains disabled, as is default,
+// for the CONTROL group.
 //
-// INSTANT_EXPERIMENT: Queries are issued as the user types, and previews are
-//     shown. If the user hasn't opted to send metrics (UMA) data, they are
-//     bounced back to INACTIVE.
+// INSTANT: Queries are issued as the user types. Predicted query is inline
+//     autocompleted into the omnibox. Result previews are shown.
 //
-// HIDDEN_EXPERIMENT: Queries are issued as the user types, but no preview is
-//     shown until they press <Enter>. If the user hasn't opted to send metrics
-//     (UMA) data, they are bounced back to INACTIVE. Suggestions obtained from
-//     Instant are not propagated back to the omnibox.
+// SUGGEST: Same as INSTANT, without the previews.
 //
-// SILENT_EXPERIMENT: No queries are issued until the user presses <Enter>. No
-//     previews are shown. The user is not required to send metrics (UMA) data.
+// HIDDEN: Same as SUGGEST, without the inline autocompletion.
 //
-// SUGGEST_EXPERIMENT: Same as HIDDEN, except that the Instant suggestions are
-//     autocompleted inline into the omnibox.
+// SILENT: Same as HIDDEN, without issuing queries as the user types. The query
+//     is sent only after the user presses <Enter>.
 //
-// UMA_CONTROL: Instant is disabled. If the user hasn't opted to send metrics
-//     (UMA) data, they are bounced back to INACTIVE.
-//
-// ALL_CONTROL: Instant is disabled. The user is not required to send metrics
-//     (UMA) data.
+// CONTROL: Instant is disabled.
 //
 // Users not chosen into any of the above groups are INACTIVE.
-//
-// Each non-INACTIVE group is split into two equal subgroups, to detect bias
-// between them when analyzing metrics. The subgroups are denoted by "_A" and
-// "_B" suffixes, and are treated identically for all other purposes.
 class InstantFieldTrial {
  public:
   enum Group {
     INACTIVE,
-
-    INSTANT_EXPERIMENT_A,
-    INSTANT_EXPERIMENT_B,
-
-    HIDDEN_EXPERIMENT_A,
-    HIDDEN_EXPERIMENT_B,
-
-    SILENT_EXPERIMENT_A,
-    SILENT_EXPERIMENT_B,
-
-    SUGGEST_EXPERIMENT_A,
-    SUGGEST_EXPERIMENT_B,
-
-    UMA_CONTROL_A,
-    UMA_CONTROL_B,
-
-    ALL_CONTROL_A,
-    ALL_CONTROL_B,
+    INSTANT,
+    SUGGEST,
+    HIDDEN,
+    SILENT,
+    CONTROL
   };
 
   // Activate the field trial. Before this call, all calls to GetGroup will
@@ -79,25 +54,25 @@ class InstantFieldTrial {
   // Return the field trial group this profile belongs to.
   static Group GetGroup(Profile* profile);
 
-  // Check if the user is in any of the EXPERIMENT groups.
+  // Check if the user is in any of the experiment groups.
   static bool IsInstantExperiment(Profile* profile);
 
-  // Check if the user is in the HIDDEN, SILENT or SUGGEST EXPERIMENT groups.
+  // Check if the user is in the SUGGEST, HIDDEN or SILENT groups.
   static bool IsHiddenExperiment(Profile* profile);
 
-  // Check if the user is in the SILENT EXPERIMENT group.
+  // Check if the user is in the SILENT group.
   static bool IsSilentExperiment(Profile* profile);
 
   // Returns a string describing the user's group. Can be added to histogram
   // names, to split histograms by field trial groups.
   static std::string GetGroupName(Profile* profile);
 
- // Returns a string denoting the user's group, for adding as a URL param.
- static std::string GetGroupAsUrlParam(Profile* profile);
+  // Returns a string denoting the user's group, for adding as a URL param.
+  static std::string GetGroupAsUrlParam(Profile* profile);
 
- // Returns whether the Instant suggested text should be autocompleted inline
- // into the omnibox.
- static bool ShouldSetSuggestedText(Profile* profile);
+  // Returns whether the Instant suggested text should be autocompleted inline
+  // into the omnibox.
+  static bool ShouldSetSuggestedText(Profile* profile);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstantFieldTrial);
