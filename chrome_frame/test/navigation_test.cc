@@ -1161,10 +1161,6 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
     }
   }
 
-  EXPECT_CALL(server_mock_, Get(_, testing::StrCaseEq(L"/favicon.ico"), _))
-      .Times(testing::AtMost(2))
-      .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
-
   std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
 
   if (in_cf) {
