@@ -15,6 +15,8 @@ extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
 
+extern const int kTrayPopupDetailsIconWidth;
+
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
 

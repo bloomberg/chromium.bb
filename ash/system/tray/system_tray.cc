@@ -376,6 +376,13 @@ NetworkIconInfo::NetworkIconInfo()
 NetworkIconInfo::~NetworkIconInfo() {
 }
 
+BluetoothDeviceInfo::BluetoothDeviceInfo()
+    : connected(false) {
+}
+
+BluetoothDeviceInfo::~BluetoothDeviceInfo() {
+}
+
 IMEInfo::IMEInfo()
     : selected(false) {
 }
@@ -387,6 +394,7 @@ SystemTray::SystemTray()
     : items_(),
       accessibility_observer_(NULL),
       audio_observer_(NULL),
+      bluetooth_observer_(NULL),
       brightness_observer_(NULL),
       caps_lock_observer_(NULL),
       clock_observer_(NULL),

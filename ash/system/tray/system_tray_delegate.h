@@ -30,6 +30,17 @@ struct ASH_EXPORT NetworkIconInfo {
   std::string service_path;
 };
 
+struct ASH_EXPORT BluetoothDeviceInfo {
+  BluetoothDeviceInfo();
+  ~BluetoothDeviceInfo();
+
+  std::string address;
+  string16 display_name;
+  bool connected;
+};
+
+typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
+
 struct ASH_EXPORT IMEInfo {
   IMEInfo();
   ~IMEInfo();
@@ -72,8 +83,11 @@ class SystemTrayDelegate {
   // Shows the settings related to date, timezone etc.
   virtual void ShowDateSettings() = 0;
 
-  // Show the settings related to network.
+  // Shows the settings related to network.
   virtual void ShowNetworkSettings() = 0;
+
+  // Shows the settings related to bluetooth.
+  virtual void ShowBluetoothSettings() = 0;
 
   // Shows help.
   virtual void ShowHelp() = 0;
@@ -105,8 +119,11 @@ class SystemTrayDelegate {
   // Attempts to lock the screen.
   virtual void RequestLockScreen() = 0;
 
+  // Returns a list of available bluetooth devices.
+  virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices) = 0;
+
   // Returns a list of availble IMEs.
-  virtual IMEInfoList GetAvailableIMEList() = 0;
+  virtual void GetAvailableIMEList(IMEInfoList* list) = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more
@@ -119,6 +136,9 @@ class SystemTrayDelegate {
   // Connects to the network specified by the unique id.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
 
+  // Shous UI to add a new bluetooth device.
+  virtual void AddBluetoothDevice() = 0;
+
   // Toggles airplane mode.
   virtual void ToggleAirplaneMode() = 0;
 
@@ -128,17 +148,26 @@ class SystemTrayDelegate {
   // Toggles cellular network.
   virtual void ToggleCellular() = 0;
 
+  // Toggles bluetooth.
+  virtual void ToggleBluetooth() = 0;
+
   // Returns whether wifi is available.
   virtual bool GetWifiAvailable() = 0;
 
   // Returns whether cellular networking is available.
   virtual bool GetCellularAvailable() = 0;
 
+  // Returns whether bluetooth capability is available.
+  virtual bool GetBluetoothAvailable() = 0;
+
   // Returns whether wifi is enabled.
   virtual bool GetWifiEnabled() = 0;
 
   // Returns whether cellular networking is enabled.
   virtual bool GetCellularEnabled() = 0;
+
+  // Returns whether bluetooth is enabled.
+  virtual bool GetBluetoothEnabled() = 0;
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;

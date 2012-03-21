@@ -31,7 +31,7 @@ class TrayCapsLock : public TrayImageItem,
 
  private:
   // Overridden from TrayImageItem.
-  virtual bool ShouldDisplay() OVERRIDE;
+  virtual bool GetInitialVisibility() OVERRIDE;
 
   // Overridden from CapsLockObserver.
   virtual void OnCapsLockChanged(bool enabled) OVERRIDE;

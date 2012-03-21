@@ -1,0 +1,206 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/system/bluetooth/tray_bluetooth.h"
+
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_more.h"
+#include "ash/system/tray/tray_views.h"
+#include "grit/ash_strings.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
+
+namespace ash {
+namespace internal {
+
+namespace tray {
+
+class BluetoothDefaultView : public TrayItemMore {
+ public:
+  explicit BluetoothDefaultView(SystemTrayItem* owner)
+      : TrayItemMore(owner) {
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+
+    views::ImageView* icon = new views::ImageView;
+    icon->SetImage(bundle.GetImageNamed(
+        IDR_AURA_UBER_TRAY_BLUETOOTH_LARGE).ToSkBitmap());
+    AddChildView(icon);
+
+    // TODO(sad): Use the correct label depending on the status.
+    label_ = new views::Label;
+    AddChildView(label_);
+    UpdateLabel();
+
+    AddMore();
+  }
+
+  virtual ~BluetoothDefaultView() {}
+
+  void UpdateLabel() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    label_->SetText(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED :
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
+  }
+
+ private:
+  views::Label* label_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDefaultView);
+};
+
+class BluetoothDetailedView : public views::View,
+                              public ViewClickListener {
+ public:
+  BluetoothDetailedView()
+      : header_(NULL),
+        add_device_(NULL),
+        toggle_bluetooth_(NULL) {
+    SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 1, 1, 1));
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
+    BluetoothDeviceList list;
+    Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
+    Update(list);
+  }
+
+  virtual ~BluetoothDetailedView() {}
+
+  void Update(BluetoothDeviceList& list) {
+    RemoveAllChildViews(true);
+
+    header_ = NULL;
+    add_device_ = NULL;
+    toggle_bluetooth_ = NULL;
+
+    AppendHeaderEntry();
+    AppendDeviceList();
+    AppendSettingsEntries();
+
+    Layout();
+  }
+
+ private:
+  void AppendHeaderEntry() {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->SetLayoutManager(new
+        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, 5));
+    views::ImageView* back = new FixedWidthImageView;
+    back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
+    container->AddChildView(back);
+    views::Label* header = new views::Label(rb.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_BLUETOOTH));
+    header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    header->SetFont(header->font().DeriveFont(4));
+    container->AddChildView(header);
+    AddChildView(container);
+    header_ = container;
+  }
+
+  void AppendDeviceList() {
+  }
+
+  void AppendSettingsEntries() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    HoverHighlightView* container = new HoverHighlightView(this);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    container->AddLabel(rb.GetLocalizedString(
+        delegate->GetBluetoothEnabled() ?
+            IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH :
+            IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
+    AddChildView(container);
+    toggle_bluetooth_ = container;
+
+    container = new HoverHighlightView(this);
+    container->AddLabel(rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE));
+    AddChildView(container);
+    add_device_ = container;
+  }
+
+  // Overridden from ViewClickListener.
+  virtual void ClickedOn(views::View* sender) OVERRIDE {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    if (sender == header_) {
+      Shell::GetInstance()->tray()->ShowDefaultView();
+    } else if (sender == toggle_bluetooth_) {
+      delegate->ToggleBluetooth();
+    } else if (sender == add_device_) {
+      delegate->AddBluetoothDevice();
+    } else {
+      // TODO: Connect/disconnect from the device list.
+    }
+  }
+
+  views::View* header_;
+  views::View* add_device_;
+  views::View* toggle_bluetooth_;
+  views::View* settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);
+};
+
+}  // namespace tray
+
+TrayBluetooth::TrayBluetooth()
+    : TrayImageItem(IDR_AURA_UBER_TRAY_BLUETOOTH_SMALL) {
+}
+
+TrayBluetooth::~TrayBluetooth() {
+}
+
+bool TrayBluetooth::GetInitialVisibility() {
+  // Hide at startup. If bluetooth is enabled, the tray-delegate will send a
+  // notification, and this will be made visible again.
+  return false;
+}
+
+views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
+  if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
+    return NULL;
+  default_.reset(new tray::BluetoothDefaultView(this));
+  return default_.get();
+}
+
+views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
+  if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
+    return NULL;
+  detailed_.reset(new tray::BluetoothDetailedView);
+  return detailed_.get();
+}
+
+void TrayBluetooth::DestroyDefaultView() {
+  default_.reset();
+}
+
+void TrayBluetooth::DestroyDetailedView() {
+  detailed_.reset();
+}
+
+void TrayBluetooth::OnBluetoothRefresh() {
+  BluetoothDeviceList list;
+  Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
+  if (default_.get())
+    default_->UpdateLabel();
+  if (detailed_.get())
+    detailed_->Update(list);
+}
+
+}  // namespace internal
+}  // namespace ash

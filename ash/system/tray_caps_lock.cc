@@ -18,7 +18,7 @@ TrayCapsLock::TrayCapsLock()
 
 TrayCapsLock::~TrayCapsLock() {}
 
-bool TrayCapsLock::ShouldDisplay() {
+bool TrayCapsLock::GetInitialVisibility() {
   return ash::Shell::GetInstance()->tray_delegate()->IsCapsLockOn();
 }
 

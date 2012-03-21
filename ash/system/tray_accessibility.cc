@@ -18,7 +18,7 @@ TrayAccessibility::TrayAccessibility()
 
 TrayAccessibility::~TrayAccessibility() {}
 
-bool TrayAccessibility::ShouldDisplay() {
+bool TrayAccessibility::GetInitialVisibility() {
   return ash::Shell::GetInstance()->tray_delegate()->IsInAccessibilityMode();
 }
 

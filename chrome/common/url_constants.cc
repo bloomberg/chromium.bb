@@ -265,6 +265,7 @@ const char kSyncSetupForceLoginSubPage[] = "syncSetup#forceLogin";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
 const char kSystemOptionsSubPage[] = "system";
+const char kBluetoothAddDeviceSubPage[] = "bluetooth";
 #endif
 
 const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";

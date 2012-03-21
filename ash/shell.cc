@@ -22,6 +22,7 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_volume.h"
+#include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/network/tray_network.h"
@@ -233,6 +234,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
       : muted_(false),
         wifi_enabled_(true),
         cellular_enabled_(true),
+        bluetooth_enabled_(true),
         volume_(0.5) {
   }
 
@@ -282,6 +284,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowNetworkSettings() OVERRIDE {
   }
 
+  virtual void ShowBluetoothSettings() OVERRIDE {
+  }
+
   virtual void ShowHelp() OVERRIDE {
   }
 
@@ -317,8 +322,11 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual void RequestLockScreen() OVERRIDE {}
 
-  virtual IMEInfoList GetAvailableIMEList() {
-    return IMEInfoList();
+  virtual void GetAvailableBluetoothDevices(
+      BluetoothDeviceList* list) OVERRIDE {
+  }
+
+  virtual void GetAvailableIMEList(IMEInfoList* list) {
   }
 
   virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
@@ -330,6 +338,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
+  }
+
+  virtual void AddBluetoothDevice() OVERRIDE {
   }
 
   virtual void ToggleAirplaneMode() OVERRIDE {
@@ -355,11 +366,23 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     }
   }
 
+  virtual void ToggleBluetooth() OVERRIDE {
+    bluetooth_enabled_ = !bluetooth_enabled_;
+    ash::BluetoothObserver* observer =
+        ash::Shell::GetInstance()->tray()->bluetooth_observer();
+    if (observer)
+      observer->OnBluetoothRefresh();
+  }
+
   virtual bool GetWifiAvailable() OVERRIDE {
     return true;
   }
 
   virtual bool GetCellularAvailable() OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetBluetoothAvailable() OVERRIDE {
     return true;
   }
 
@@ -371,12 +394,17 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return cellular_enabled_;
   }
 
+  virtual bool GetBluetoothEnabled() OVERRIDE {
+    return bluetooth_enabled_;
+  }
+
   virtual void ChangeProxySettings() OVERRIDE {
   }
 
   bool muted_;
   bool wifi_enabled_;
   bool cellular_enabled_;
+  bool bluetooth_enabled_;
   float volume_;
   SkBitmap null_image_;
 
@@ -568,6 +596,7 @@ void Shell::Init() {
       tray_delegate_.reset(new DummySystemTrayDelegate());
 
     internal::TrayVolume* tray_volume = new internal::TrayVolume();
+    internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     internal::TrayNetwork* tray_network = new internal::TrayNetwork;
@@ -579,6 +608,7 @@ void Shell::Init() {
 
     tray_->accessibility_observer_ = tray_accessibility;
     tray_->audio_observer_ = tray_volume;
+    tray_->bluetooth_observer_ = tray_bluetooth;
     tray_->brightness_observer_ = tray_brightness;
     tray_->caps_lock_observer_ = tray_caps_lock;
     tray_->clock_observer_ = tray_power_date;
@@ -592,6 +622,7 @@ void Shell::Init() {
     tray_->AddTrayItem(new internal::TrayEmpty());
     tray_->AddTrayItem(tray_power_date);
     tray_->AddTrayItem(tray_network);
+    tray_->AddTrayItem(tray_bluetooth);
     tray_->AddTrayItem(tray_ime);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);

@@ -2557,7 +2557,12 @@ void Browser::OpenMobilePlanTabAndActivate() {
     window_->Activate();
   }
 }
-#endif
+
+void Browser::OpenAddBluetoothDeviceDialog() {
+  content::RecordAction(UserMetricsAction("OpenAddBluetoothDeviceDialog"));
+  ShowOptionsTab(chrome::kBluetoothAddDeviceSubPage);
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
 void Browser::OpenCrosh() {

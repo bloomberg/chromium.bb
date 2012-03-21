@@ -8,6 +8,8 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_more.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -24,98 +26,8 @@
 
 namespace {
 
-// Width of the icon, and the padding on the right of the icon. These are used
-// to make sure that all icons are of the same size so that they line up
-// properly, including the items that don't have any icons.
-const int kIconWidth = 27;
-const int kIconPaddingLeft = 5;
-
 // Height of the list of networks in the popup.
 const int kNetworkListHeight = 160;
-
-// An image view with that always has a fixed width (kIconWidth) so that
-// all the items line up properly.
-class FixedWidthImageView : public views::ImageView {
- public:
-  FixedWidthImageView() {
-    SetHorizontalAlignment(views::ImageView::CENTER);
-    SetVerticalAlignment(views::ImageView::CENTER);
-  }
-
-  virtual ~FixedWidthImageView() {}
-
- private:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    gfx::Size size = views::ImageView::GetPreferredSize();
-    return gfx::Size(kIconWidth, size.height());
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(FixedWidthImageView);
-};
-
-class ViewClickListener {
- public:
-  virtual ~ViewClickListener() {}
-  virtual void ClickedOn(views::View* sender) = 0;
-};
-
-class HoverHighlightView : public views::View {
- public:
-  explicit HoverHighlightView(ViewClickListener* listener)
-      : listener_(listener) {
-    set_notify_enter_exit_on_child(true);
-  }
-
-  virtual ~HoverHighlightView() {}
-
-  // Convenience function for adding an icon and a label.
-  void AddIconAndLabel(const SkBitmap& image,
-                       const string16& text,
-                       gfx::Font::FontStyle style) {
-    SetLayoutManager(new views::BoxLayout(
-          views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
-    views::ImageView* image_view = new FixedWidthImageView;
-    image_view->SetImage(image);
-    AddChildView(image_view);
-
-    views::Label* label = new views::Label(text);
-    label->SetFont(label->font().DeriveFont(0, style));
-    AddChildView(label);
-  }
-
-  void AddLabel(const string16& text) {
-    SetLayoutManager(new views::FillLayout());
-    views::Label* label = new views::Label(text);
-    label->set_border(views::Border::CreateEmptyBorder(
-        5, kIconWidth + kIconPaddingLeft, 5, 0));
-    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(label);
-  }
-
- private:
-  // Overridden from views::View.
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    if (!listener_)
-      return false;
-    listener_->ClickedOn(this);
-    return true;
-  }
-
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
-    set_background(views::Background::CreateSolidBackground(
-        ash::kHoverBackgroundColor));
-    SchedulePaint();
-  }
-
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
-    set_background(NULL);
-    SchedulePaint();
-  }
-
-  ViewClickListener* listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
-};
 
 // A custom scroll-view that has a specified dimension.
 class FixedSizedScrollView : public views::ScrollView {
@@ -198,9 +110,10 @@ class NetworkTrayView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
 
-class NetworkDefaultView : public views::View {
+class NetworkDefaultView : public TrayItemMore {
  public:
-  explicit NetworkDefaultView(SystemTrayItem* owner) : owner_(owner) {
+  explicit NetworkDefaultView(SystemTrayItem* owner)
+      : TrayItemMore(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
@@ -210,10 +123,7 @@ class NetworkDefaultView : public views::View {
     label_ = new views::Label();
     AddChildView(label_);
 
-    more_ = new views::ImageView;
-    more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_MORE).ToSkBitmap());
-    AddChildView(more_);
+    AddMore();
 
     Update(Shell::GetInstance()->tray_delegate()->
         GetMostRelevantNetworkIcon(true));
@@ -227,26 +137,8 @@ class NetworkDefaultView : public views::View {
   }
 
  private:
-  // Overridden from views::View.
-  virtual void Layout() OVERRIDE {
-    // Let the box-layout do the layout first. Then move the '>' arrow to right
-    // align.
-    views::View::Layout();
-
-    gfx::Rect bounds = more_->bounds();
-    bounds.set_x(width() - more_->width() - kTrayPopupPaddingBetweenItems);
-    more_->SetBoundsRect(bounds);
-  }
-
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    owner_->PopupDetailedView(0, true);
-    return true;
-  }
-
-  SystemTrayItem* owner_;
   NetworkTrayView* icon_;
   views::Label* label_;
-  views::ImageView* more_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
 };

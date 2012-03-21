@@ -21,7 +21,7 @@ views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   image_view_.reset(new views::ImageView);
   image_view_->SetImage(ui::ResourceBundle::GetSharedInstance().
       GetImageNamed(resource_id_).ToSkBitmap());
-  image_view_->SetVisible(ShouldDisplay());
+  image_view_->SetVisible(GetInitialVisibility());
   return image_view_.get();
 }
 

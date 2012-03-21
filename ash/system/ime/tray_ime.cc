@@ -23,8 +23,8 @@ TrayIME::~TrayIME() {
 }
 
 void TrayIME::UpdateTrayLabel() {
-  IMEInfoList list = ash::Shell::GetInstance()->tray_delegate()->
-      GetAvailableIMEList();
+  IMEInfoList list;
+  ash::Shell::GetInstance()->tray_delegate()->GetAvailableIMEList(&list);
   for (size_t i = 0; i < list.size(); i++) {
     if (list[i].selected) {
       tray_label_->SetText(list[i].short_name);

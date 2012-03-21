@@ -23,9 +23,8 @@ class TrayImageItem : public SystemTrayItem {
   views::ImageView* image_view() { return image_view_.get(); }
 
  protected:
-  virtual bool ShouldDisplay() = 0;
+  virtual bool GetInitialVisibility() = 0;
 
- private:
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
@@ -34,6 +33,7 @@ class TrayImageItem : public SystemTrayItem {
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
+ private:
   int resource_id_;
   scoped_ptr<views::ImageView> image_view_;
 

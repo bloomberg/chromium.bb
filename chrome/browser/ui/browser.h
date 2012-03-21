@@ -672,6 +672,7 @@ class Browser : public TabHandlerDelegate,
   void OpenLanguageOptionsDialog();
   void OpenSystemTabAndActivate();
   void OpenMobilePlanTabAndActivate();
+  void OpenAddBluetoothDeviceDialog();
 #endif
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
   void OpenCrosh();

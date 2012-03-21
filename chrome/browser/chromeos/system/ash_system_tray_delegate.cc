@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/audio_observer.h"
+#include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
@@ -22,6 +23,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -65,6 +68,14 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   return info;
 }
 
+void BluetoothPowerFailure() {
+  // TODO(sad): Show an error bubble?
+}
+
+void BluetoothDiscoveryFailure() {
+  // TODO(sad): Show an error bubble?
+}
+
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
@@ -76,6 +87,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
+                           public BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
@@ -122,6 +134,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
                                 g_browser_process->local_state(), this);
+
+    bluetooth_adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
+    bluetooth_adapter_->AddObserver(this);
   }
 
   virtual ~SystemTrayDelegate() {
@@ -133,6 +148,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
       SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
+    bluetooth_adapter_->RemoveObserver(this);
   }
 
   // Overridden from ash::SystemTrayDelegate:
@@ -193,6 +209,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetAppropriateBrowser()->OpenInternetOptionsDialog();
   }
 
+  virtual void ShowBluetoothSettings() OVERRIDE {
+    // TODO(sad): Make this work.
+  }
+
   virtual void ShowHelp() OVERRIDE {
     GetAppropriateBrowser()->ShowHelpTab();
   }
@@ -236,8 +256,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         NotifyScreenLockRequested();
   }
 
-  virtual ash::IMEInfoList GetAvailableIMEList() OVERRIDE {
-    ash::IMEInfoList list;
+  virtual void GetAvailableBluetoothDevices(
+      ash::BluetoothDeviceList* list) OVERRIDE {
+    BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
+    for (size_t i = 0; i < devices.size(); ++i) {
+      BluetoothDevice* device = devices[i];
+      ash::BluetoothDeviceInfo info;
+      info.address = device->address();
+      info.display_name = device->GetName();
+      info.connected = device->IsConnected();
+      list->push_back(info);
+    }
+  }
+
+  virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
     input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
@@ -251,9 +283,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       info.name = UTF8ToUTF16(util->GetInputMethodDisplayNameFromId(info.id));
       info.short_name = util->GetInputMethodShortName(ime);
       info.selected = ime.id() == current;
-      list.push_back(info);
+      list->push_back(info);
     }
-    return list;
   }
 
   virtual ash::NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
@@ -327,6 +358,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       network_menu_->ConnectToNetwork(network);
   }
 
+  virtual void AddBluetoothDevice() OVERRIDE {
+    // Opening the device dialog does not actually start the discovery process.
+    // So make an explicit call to start it.
+    GetAppropriateBrowser()->OpenAddBluetoothDeviceDialog();
+    bluetooth_adapter_->SetDiscovering(true,
+                                       base::Bind(&BluetoothDiscoveryFailure));
+  }
+
   virtual void ToggleAirplaneMode() OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     crosnet->EnableOfflineMode(!crosnet->offline_mode());
@@ -340,6 +379,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_menu_->ToggleCellular();
   }
 
+  virtual void ToggleBluetooth() OVERRIDE {
+    bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
+                                   base::Bind(&BluetoothPowerFailure));
+  }
+
   virtual bool GetWifiAvailable() OVERRIDE {
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
   }
@@ -348,12 +392,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return CrosLibrary::Get()->GetNetworkLibrary()->cellular_available();
   }
 
+  virtual bool GetBluetoothAvailable() OVERRIDE {
+    return bluetooth_adapter_->IsPresent();
+  }
+
   virtual bool GetWifiEnabled() OVERRIDE {
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_enabled();
   }
 
   virtual bool GetCellularEnabled() OVERRIDE {
     return CrosLibrary::Get()->GetNetworkLibrary()->cellular_enabled();
+  }
+
+  virtual bool GetBluetoothEnabled() OVERRIDE {
+    return bluetooth_adapter_->IsPowered();
   }
 
   virtual void ChangeProxySettings() OVERRIDE {
@@ -404,6 +456,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       info.image = network_icon_->GetIconAndText(&info.description);
       observer->OnNetworkRefresh(info);
     }
+  }
+
+  void NotifyRefreshBluetooth() {
+    ash::BluetoothObserver* observer =
+        ash::Shell::GetInstance()->tray()->bluetooth_observer();
+    if (observer)
+      observer->OnBluetoothRefresh();
   }
 
   void NotifyRefreshIME() {
@@ -594,6 +653,38 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshClock();
   }
 
+  // Overridden from BluetoothAdapter::Observer.
+  virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
+                                     bool present) OVERRIDE {
+    NotifyRefreshBluetooth();
+  }
+
+  virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
+                                     bool powered) OVERRIDE {
+    NotifyRefreshBluetooth();
+  }
+
+  virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
+                                         bool discovering) OVERRIDE {
+    // TODO: Perhaps start/stop throbbing the icon, or some other visual
+    // effects?
+  }
+
+  virtual void DeviceAdded(BluetoothAdapter* adapter,
+                           BluetoothDevice* device) OVERRIDE {
+    NotifyRefreshBluetooth();
+  }
+
+  virtual void DeviceChanged(BluetoothAdapter* adapter,
+                             BluetoothDevice* device) OVERRIDE {
+    NotifyRefreshBluetooth();
+  }
+
+  virtual void DeviceRemoved(BluetoothAdapter* adapter,
+                             BluetoothDevice* device) OVERRIDE {
+    NotifyRefreshBluetooth();
+  }
+
   // Overridden from SystemKeyEventListener::CapsLockObserver.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
     ash::CapsLockObserver* observer =
@@ -613,6 +704,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
+
+  scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
 
   BooleanPrefMember accessibility_enabled_;
 

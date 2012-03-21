@@ -19,6 +19,7 @@ namespace ash {
 
 class AccessibilityObserver;
 class AudioObserver;
+class BluetoothObserver;
 class BrightnessObserver;
 class CapsLockObserver;
 class ClockObserver;
@@ -65,6 +66,9 @@ class ASH_EXPORT SystemTray : public views::View,
   }
   AudioObserver* audio_observer() const {
     return audio_observer_;
+  }
+  BluetoothObserver* bluetooth_observer() const {
+    return bluetooth_observer_;
   }
   BrightnessObserver* brightness_observer() const {
     return brightness_observer_;
@@ -117,6 +121,7 @@ class ASH_EXPORT SystemTray : public views::View,
   // These observers are not owned by the tray.
   AccessibilityObserver* accessibility_observer_;
   AudioObserver* audio_observer_;
+  BluetoothObserver* bluetooth_observer_;
   BrightnessObserver* brightness_observer_;
   CapsLockObserver* caps_lock_observer_;
   ClockObserver* clock_observer_;

@@ -254,6 +254,7 @@ extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
+extern const char kBluetoothAddDeviceSubPage[];
 #endif
 
 extern const char kSyncGoogleDashboardURL[];

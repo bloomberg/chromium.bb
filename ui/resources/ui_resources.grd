@@ -357,6 +357,8 @@
         <include name="IDR_AURA_UBER_TRAY_LESS" file="aura/status_less.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="aura/status_accessibility_mode.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="aura/status_capslock.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_SMALL" file="aura/status_bluetooth_small.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_LARGE" file="aura/status_bluetooth_large.png" type="BINDATA" />
 
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
       </if>
