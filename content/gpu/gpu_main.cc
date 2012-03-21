@@ -94,6 +94,10 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   // Preload this DLL because the sandbox prevents it from loading.
   LoadLibrary(L"setupapi.dll");
 
+  // Cause advapi32 to load before the sandbox is turned on.
+  unsigned int dummy_rand;
+  rand_s(&dummy_rand);
+
   sandbox::TargetServices* target_services =
       parameters.sandbox_info->target_services;
   // Initialize H/W video decoding stuff which fails in the sandbox.
