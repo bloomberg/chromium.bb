@@ -37,7 +37,7 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
       NOTREACHED() << "Unable to find default monitor";
       // Fall through.
     }
-  } // Else fall through.
+  }  // Else fall through.
 
   // The window is not being fit to monitor, or the window fits on the monitor
   // as is, or we have no monitor info; reset the bounds.
@@ -120,8 +120,10 @@ void CenterAndSizeWindow(HWND parent,
   if (parent) {
     // If there is a parent, center over the parents bounds.
     ::GetWindowRect(parent, &center_bounds);
-  } else {
-    // No parent. Center over the monitor the window is on.
+  }
+
+  if (::IsRectEmpty(&center_bounds)) {
+    // No parent or no parent rect. Center over the monitor the window is on.
     HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
     if (monitor) {
       MONITORINFO mi = {0};
