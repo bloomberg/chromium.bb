@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/screen_orientation_listener.h"
@@ -62,6 +63,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   shell->accelerator_controller()->SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableZeroBrowsersOpenForTests))
+    BrowserList::StartKeepAlive();
 #endif
 
   // Make sure the singleton ScreenOrientationListener object is created.

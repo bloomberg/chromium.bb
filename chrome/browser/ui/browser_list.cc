@@ -344,24 +344,46 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      base::Bind(&BrowserList::ExitCleanly));
   }
-#else
-  AllBrowsersClosedAndAppExiting();
 #endif
+}
+
+void BrowserList::OnAppExiting() {
+  static bool notified = false;
+  if (notified)
+    return;
+  notified = true;
+
+  delete activity_observer;
+  activity_observer = NULL;
+  HandleAppExitingForPlatform();
 }
 
 // static
 void BrowserList::RemoveBrowser(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers());
 
-  // Closing all windows does not indicate quitting the application on the Mac,
-  // however, many UI tests rely on this behavior so leave it be for now and
-  // simply ignore the behavior on the Mac outside of unit tests.
-  // TODO(andybons): Fix the UI tests to Do The Right Thing.
-  bool closing_last_browser = (browsers().size() == 1);
+  // Many UI tests rely on closing the last browser window quitting the
+  // application.
+  // Mac: Closing all windows does not indicate quitting the application. Lie
+  // for now and ignore behavior outside of unit tests.
+  // ChromeOS: Force closing last window to close app with flag.
+  // TODO(andybons | pkotwicz): Fix the UI tests to Do The Right Thing.
+#if defined(OS_CHROMEOS)
+  bool closing_app;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableZeroBrowsersOpenForTests))
+    closing_app = (browsers().size() == 1);
+  else
+    closing_app = (browsers().size() == 1 &&
+        browser_shutdown::IsTryingToQuit());
+#else
+  bool closing_app = (browsers().size() == 1);
+#endif  // OS_CHROMEOS
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser),
-      content::Details<bool>(&closing_last_browser));
+      content::Details<bool>(&closing_app));
 
   RemoveBrowserFrom(browser, &browsers());
 
@@ -371,13 +393,6 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   FOR_EACH_OBSERVER(Observer, observers(), OnBrowserRemoved(browser));
   DCHECK_EQ(original_count, observers().size())
       << "observer list modified during notification";
-
-  // If the last Browser object was destroyed, make sure we try to close any
-  // remaining dependent windows too.
-  if (browsers().empty()) {
-    delete activity_observer;
-    activity_observer = NULL;
-  }
 
   g_browser_process->ReleaseModule();
 
@@ -392,7 +407,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
     NotifyAppTerminating();
-    AllBrowsersClosedAndAppExiting();
+    OnAppExiting();
   }
 }
 
@@ -422,6 +437,7 @@ void BrowserList::CloseAllBrowsers() {
   if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
       browsers().empty()) {
     NotifyAndTerminate(true);
+    OnAppExiting();
     return;
   }
 

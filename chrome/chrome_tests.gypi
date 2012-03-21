@@ -2619,7 +2619,6 @@
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
-        'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/content_settings/content_settings_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/custom_handlers/protocol_handler_registry_browsertest.cc',

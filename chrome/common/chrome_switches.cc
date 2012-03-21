@@ -416,6 +416,14 @@ const char kDisableUberPage[]               = "disable-uber-page";
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
+// Some tests seem to require the application to close when the last
+// browser window is closed. Thus, we need a switch to force this behavior
+// for ChromeOS Aura, disable "zero window mode".
+// TODO(pkotwicz): Investigate if this bug can be removed.
+// (http://crbug.com/119175)
+extern const char kDisableZeroBrowsersOpenForTests[] =
+    "disable-zero-browsers-open-for-tests";
+
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
 const char kDiskCacheDir[]                  = "disk-cache-dir";

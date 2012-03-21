@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,7 @@ class BrowserList {
 
   // Starts a user initiated exit process. Called from Browser::Exit.
   // On platforms other than ChromeOS, this is equivalent to
-  // CloseAllBrowsersAndExit. On ChromeOS, this tells session manager
+  // CloseAllBrowsers() On ChromeOS, this tells session manager
   // that chrome is signing out, which lets session manager send
   // SIGTERM to start actual exit process.
   static void AttemptUserExit();
@@ -134,7 +134,7 @@ class BrowserList {
 
 #if defined(OS_CHROMEOS)
   // This is equivalent to AttemptUserExit, except that it always set
-  // exit cleanly bit. ChroemOS checks if it can exit without user
+  // exit cleanly bit. ChromeOS checks if it can exit without user
   // interactions, so it will always exit the browser.  This is used to
   // handle SIGTERM on chromeos which is a signal to force shutdown
   // the chrome.
@@ -202,8 +202,12 @@ class BrowserList {
   // For ChromeOS, also request session manager to end the session.
   static void NotifyAndTerminate(bool fast_path);
 
-  // Called once there are no more browsers open and the application is exiting.
-  static void AllBrowsersClosedAndAppExiting();
+  // Called once the application is exiting.
+  static void OnAppExiting();
+
+  // Called once the application is exiting to do any platform specific
+  // processing required.
+  static void HandleAppExitingForPlatform();
 
  private:
   // Helper method to remove a browser instance from a list of browsers

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 // static
-void BrowserList::AllBrowsersClosedAndAppExiting() {
+void BrowserList::HandleAppExitingForPlatform() {
   // Close non-browser windows.
   GList* window_list = gtk_window_list_toplevels();
   g_list_foreach(window_list, (GFunc)g_object_ref, NULL);

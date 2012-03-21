@@ -169,6 +169,9 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   if (!tab_closeable_state_watcher_enabled_)
     command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 
+  // TODO(pkotwicz): Investigate if we can remove this switch.
+  command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
+
   command_line->AppendSwitch(switches::kDisableUberPage);
 }
 
