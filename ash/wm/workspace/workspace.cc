@@ -63,18 +63,6 @@ void Workspace::Activate() {
   workspace_manager_->SetActiveWorkspace(this);
 }
 
-void Workspace::SetBounds(const gfx::Rect& bounds) {
-  if (bounds_ == bounds)
-    return;
-
-  gfx::Rect old_bounds = bounds_;
-  bounds_ = bounds;
-  // Don't send size change for transition from empty -> not empty. That only
-  // happens when we're first created.
-  if (!old_bounds.IsEmpty())
-    OnWorkspaceSizeChanged(old_bounds);
-}
-
 void Workspace::SetWindowBounds(aura::Window* window, const gfx::Rect& bounds) {
   workspace_manager_->SetWindowBounds(window, bounds);
 }

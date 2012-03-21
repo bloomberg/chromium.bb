@@ -336,15 +336,18 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   EXPECT_FALSE(widget->IsMaximized());
 
   // Shelf defaults to visible.
-  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+  EXPECT_EQ(internal::ShelfLayoutManager::VISIBLE,
+            Shell::GetInstance()->shelf()->visibility_state());
 
   // Fullscreen window hides it.
   widget->SetFullscreen(true);
-  EXPECT_FALSE(Shell::GetInstance()->shelf()->visible());
+  EXPECT_EQ(internal::ShelfLayoutManager::HIDDEN,
+            Shell::GetInstance()->shelf()->visibility_state());
 
   // Restoring the window restores it.
   widget->Restore();
-  EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
+  EXPECT_EQ(internal::ShelfLayoutManager::VISIBLE,
+            Shell::GetInstance()->shelf()->visibility_state());
 
   // Clean up.
   widget->Close();

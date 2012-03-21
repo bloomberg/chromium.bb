@@ -27,8 +27,5 @@ void ManagedWorkspace::OnWindowAddedAfter(aura::Window* window,
 void ManagedWorkspace::OnWindowRemoved(aura::Window* window) {
 }
 
-void ManagedWorkspace::OnWorkspaceSizeChanged(const gfx::Rect& old_bounds) {
-}
-
 }  // namespace internal
 }  // namespace ash

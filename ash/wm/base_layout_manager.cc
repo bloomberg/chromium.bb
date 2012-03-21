@@ -4,8 +4,10 @@
 
 #include "ash/wm/base_layout_manager.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -60,7 +62,7 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
   // Avoid a janky resize on startup by ensuring the initial bounds fill the
   // screen.
   if (wm::IsWindowMaximized(child))
-    child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
+    child_bounds = ScreenAsh::GetMaximizedWindowBounds(child);
   else if (wm::IsWindowFullscreen(child))
     child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
   SetChildBoundsDirect(child, child_bounds);
@@ -99,19 +101,20 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
     case ui::SHOW_STATE_NORMAL: {
       const gfx::Rect* restore = GetRestoreBounds(window);
       if (restore)
-        window->SetBounds(*restore);
+        SetChildBoundsDirect(window, *restore);
       window->ClearProperty(aura::client::kRestoreBoundsKey);
       break;
     }
 
     case ui::SHOW_STATE_MAXIMIZED:
       SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorWorkAreaNearestWindow(window));
+      SetChildBoundsDirect(window, ScreenAsh::GetMaximizedWindowBounds(window));
       break;
 
     case ui::SHOW_STATE_FULLSCREEN:
       SetRestoreBoundsIfNotSet(window);
-      window->SetBounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+      SetChildBoundsDirect(window,
+                           gfx::Screen::GetMonitorAreaNearestWindow(window));
       break;
 
     default:
@@ -129,12 +132,18 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
        it != windows_.end();
        ++it) {
     aura::Window* window = *it;
-    // The work area may be smaller than the full screen.
-    gfx::Rect monitor_rect = wm::IsWindowFullscreen(window) ?
-        gfx::Screen::GetMonitorAreaNearestWindow(window) :
-        gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
-    // Put as much of the window as possible within the monitor area.
-    window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
+    if (wm::IsWindowMaximized(window)) {
+      SetChildBoundsDirect(window, ScreenAsh::GetMaximizedWindowBounds(window));
+    } else if (wm::IsWindowFullscreen(window)) {
+      SetChildBoundsDirect(window,
+                           gfx::Screen::GetMonitorAreaNearestWindow(window));
+    } else {
+      // The work area may be smaller than the full screen.
+      gfx::Rect monitor_rect =
+          gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+      // Put as much of the window as possible within the monitor area.
+      window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
+    }
   }
 }
 

@@ -48,9 +48,6 @@ class ASH_EXPORT Workspace {
   size_t num_windows() const { return windows_.size(); }
   const std::vector<aura::Window*>& windows() const { return windows_; }
 
-  // Returns the work area bounds of this workspace in viewport coordinates.
-  const gfx::Rect& bounds() const { return bounds_; }
-
   // Adds the |window| at the position after the window |after|.  It
   // inserts at the end if |after| is NULL. Return true if the
   // |window| was successfully added to this workspace, or false if it
@@ -65,9 +62,6 @@ class ASH_EXPORT Workspace {
 
   // Activates this workspace.
   void Activate();
-
-  // Sets the bounds of the workspace.
-  void SetBounds(const gfx::Rect& bounds);
 
  protected:
   // Sets the bounds of the specified window.
@@ -87,10 +81,6 @@ class ASH_EXPORT Workspace {
   // Invoked from RemoveWindow().
   virtual void OnWindowRemoved(aura::Window* window) = 0;
 
-  // Invoked when the size of the workspace changes. |old_bounds| is the
-  // previous bounds.
-  virtual void OnWorkspaceSizeChanged(const gfx::Rect& old_bounds) = 0;
-
  private:
   const Type type_;
 
@@ -98,8 +88,6 @@ class ASH_EXPORT Workspace {
 
   // Windows in the workspace in layout order.
   std::vector<aura::Window*> windows_;
-
-  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(Workspace);
 };

@@ -151,6 +151,8 @@ class ASH_EXPORT Shell {
 
   // Sets the work area insets of the monitor that contains |window|,
   // this notifies observers too.
+  // TODO(sky): this no longer really replicates what happens and is unreliable.
+  // Remove this.
   void SetMonitorWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 

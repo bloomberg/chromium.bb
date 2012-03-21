@@ -6,11 +6,11 @@
 #define ASH_WM_SHELF_LAYOUT_MANAGER_H_
 #pragma once
 
+#include "ash/ash_export.h"
+#include "ash/launcher/launcher.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
-#include "ash/ash_export.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
@@ -31,9 +31,24 @@ namespace internal {
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
-class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
-                                      public ui::ImplicitAnimationObserver {
+class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
  public:
+  enum VisibilityState {
+    // Completely visible.
+    VISIBLE,
+
+    // A couple of pixels are reserved at the bottom for the shelf.
+    AUTO_HIDE,
+
+    // Nothing is shown. Used for fullscreen windows.
+    HIDDEN,
+  };
+
+  enum AutoHideState {
+    AUTO_HIDE_SHOWN,
+    AUTO_HIDE_HIDDEN,
+  };
+
   // We reserve a small area at the bottom of the workspace area to ensure that
   // the bottom-of-window resize handle can be hit.
   // TODO(jamescook): Some day we may want the workspace area to be an even
@@ -42,8 +57,12 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // the invisible parts of the launcher.
   static const int kWorkspaceAreaBottomInset;
 
-  ShelfLayoutManager(views::Widget* launcher, views::Widget* status);
+  explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
+
+  // Returns the bounds the specified window should be when maximized.
+  gfx::Rect GetMaximizedWindowBounds(aura::Window* window) const;
+  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window) const;
 
   bool in_layout() const { return in_layout_; }
 
@@ -51,15 +70,25 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // widgets.
   void LayoutShelf();
 
-  // Sets the visibility of the shelf to |visible|.
-  void SetVisible(bool visible);
-  bool visible() const { return visible_; }
+  // Sets the visibility of the shelf to |state|.
+  void SetState(VisibilityState visibility_state,
+                AutoHideState auto_hide_state);
+  VisibilityState visibility_state() const { return state_.visibility_state; }
+  AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
-  views::Widget* launcher() { return launcher_; }
+  // Sets whether any windows overlap the shelf. If a window overlaps the shelf
+  // the shelf renders slightly differently.
+  void SetWindowOverlapsShelf(bool value);
+
+  void SetLauncher(Launcher* launcher);
+  views::Widget* launcher() { return launcher_ ? launcher_->widget() : NULL; }
+  const views::Widget* launcher() const {
+    return launcher_ ? launcher_->widget() : NULL;
+  }
   views::Widget* status() { return status_; }
 
   // See description above field.
-  int max_height() const { return max_height_; }
+  int shelf_height() const { return shelf_height_; }
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -72,34 +101,55 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 
  private:
   struct TargetBounds {
+    TargetBounds() : opacity(0.0f) {}
+
+    float opacity;
     gfx::Rect launcher_bounds;
     gfx::Rect status_bounds;
     gfx::Insets work_area_insets;
+  };
+
+  struct State {
+    State() : visibility_state(VISIBLE), auto_hide_state(AUTO_HIDE_HIDDEN) {}
+
+    // Returns true if the two states are considered equal. As
+    // |auto_hide_state| only matters if |visibility_state| is |AUTO_HIDE|,
+    // Equals() ignores the |auto_hide_state| as appropriate.
+    bool Equals(const State& other) const {
+      return other.visibility_state == visibility_state &&
+          (visibility_state != AUTO_HIDE ||
+           other.auto_hide_state == auto_hide_state);
+    }
+
+    VisibilityState visibility_state;
+    AutoHideState auto_hide_state;
   };
 
   // Stops any animations.
   void StopAnimating();
 
   // Calculates the target bounds assuming visibility of |visible|.
-  void CalculateTargetBounds(bool visible,
-                             TargetBounds* target_bounds);
+  void CalculateTargetBounds(const State& state,
+                             TargetBounds* target_bounds) const;
 
-  // Implementation of ImplicitAnimationObserver
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+  // Returns whether the shelf should draw a background.
+  bool GetShelfRendersBackground() const;
 
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().
   bool in_layout_;
 
-  // Current visibility. When the visibility changes this field is reset once
-  // the animation completes.
-  bool visible_;
+  // Current state.
+  State state_;
 
-  // Max height needed.
-  int max_height_;
+  // Height of the shelf (max of launcher and status).
+  int shelf_height_;
 
-  views::Widget* launcher_;
+  Launcher* launcher_;
   views::Widget* status_;
+
+  // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
+  bool window_overlaps_shelf_;
 
   aura::RootWindow* root_window_;
 

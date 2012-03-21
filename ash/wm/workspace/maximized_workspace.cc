@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/maximized_workspace.h"
 
+#include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -37,17 +38,12 @@ void MaximizedWorkspace::OnWindowAddedAfter(aura::Window* window,
 void MaximizedWorkspace::OnWindowRemoved(aura::Window* window) {
 }
 
-void MaximizedWorkspace::OnWorkspaceSizeChanged(const gfx::Rect& old_bounds) {
-  for (size_t i = 0; i < windows().size(); ++i)
-    ResetWindowBounds(windows()[i]);
-}
-
 void MaximizedWorkspace::ResetWindowBounds(aura::Window* window) {
   if (wm::IsWindowFullscreen(window)) {
     SetWindowBounds(window,
                     gfx::Screen::GetMonitorAreaNearestWindow(window));
   } else {
-    SetWindowBounds(window, bounds());
+    SetWindowBounds(window, ScreenAsh::GetMaximizedWindowBounds(window));
   }
 }
 

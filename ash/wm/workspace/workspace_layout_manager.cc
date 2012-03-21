@@ -96,14 +96,13 @@ void WorkspaceLayoutManager::SetChildBounds(
     BaseLayoutManager::SetChildBounds(child, requested_bounds);
   else
     SetChildBoundsDirect(child, requested_bounds);
-}
-
-void WorkspaceLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
-  workspace_manager_->SetWorkspaceSize(new_size);
+  workspace_manager_->UpdateShelfVisibility();
 }
 
 void WorkspaceLayoutManager::OnMonitorWorkAreaInsetsChanged() {
-  workspace_manager_->OnMonitorWorkAreaInsetsChanged();
+  // The workspace is currently the only one that updates the shelf, so we can
+  // safely ignore this. If we don't there are timing issues when transitioning
+  // between maximized/fullscreen windows and normal windows.
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
@@ -112,41 +111,46 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
   BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
   if (key == aura::client::kShowStateKey &&
       workspace_manager_->IsManagedWindow(window)) {
-    ui::WindowShowState last_show_state = static_cast<ui::WindowShowState>(old);
-    if (wm::IsWindowMinimized(window)) {
-      // Save the previous show state so that we can correctly restore it.
-      window->SetProperty(kRestoreShowStateKey, last_show_state);
-      workspace_manager_->RemoveWindow(window);
-      SetWindowVisibilityAnimationType(
-          window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-
-      // Effectively hide the window.
-      window->Hide();
-      // Activate another window.
-      if (wm::IsActiveWindow(window))
-        wm::DeactivateWindow(window);
-      return;
-    }
-    // We can end up here if the window was minimized and we are transitioning
-    // to another state. In that case the window is hidden.
-    if ((window->TargetVisibility() ||
-            (last_show_state == ui::SHOW_STATE_MINIMIZED)) &&
-        !workspace_manager_->IsManagingWindow(window)) {
-      workspace_manager_->AddWindow(window);
-      if (!window->layer()->visible()) {
-        // The layer may be hidden if the window was previously minimized. Make
-        // sure it's visible.
-        window->Show();
-      }
-      return;
-    }
-    workspace_manager_->ShowStateChanged(window);
+    ShowStateChanged(window, static_cast<ui::WindowShowState>(old));
   } else if (key == ash::kWindowTrackedByWorkspaceSplitPropKey &&
              ash::GetTrackedByWorkspace(window)) {
     // We currently don't need to support transitioning from true to false, so
     // we ignore it.
     workspace_manager_->AddWindow(window);
   }
+}
+
+void WorkspaceLayoutManager::ShowStateChanged(
+    aura::Window* window,
+    ui::WindowShowState last_show_state) {
+  if (wm::IsWindowMinimized(window)) {
+    // Save the previous show state so that we can correctly restore it.
+    window->SetProperty(kRestoreShowStateKey, last_show_state);
+    workspace_manager_->RemoveWindow(window);
+    SetWindowVisibilityAnimationType(
+        window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+
+    // Hide the window.
+    window->Hide();
+    // Activate another window.
+    if (wm::IsActiveWindow(window))
+      wm::DeactivateWindow(window);
+    return;
+  }
+  // We can end up here if the window was minimized and we are transitioning
+  // to another state. In that case the window is hidden.
+  if ((window->TargetVisibility() ||
+       (last_show_state == ui::SHOW_STATE_MINIMIZED)) &&
+      !workspace_manager_->IsManagingWindow(window)) {
+    workspace_manager_->AddWindow(window);
+    if (!window->layer()->visible()) {
+      // The layer may be hidden if the window was previously minimized. Make
+      // sure it's visible.
+      window->Show();
+    }
+    return;
+  }
+  workspace_manager_->ShowStateChanged(window);
 }
 
 }  // namespace internal

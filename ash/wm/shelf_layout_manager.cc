@@ -20,6 +20,9 @@ namespace internal {
 
 namespace {
 
+// Height of the shelf when auto-hidden.
+const int kAutoHideHeight = 2;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -32,70 +35,109 @@ const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, public:
 
-ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
-                                       views::Widget* status)
+ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
-      visible_(true),
-      max_height_(-1),
-      launcher_(launcher),
-      status_(status) {
-  gfx::Rect launcher_bounds = launcher->GetWindowScreenBounds();
+      shelf_height_(-1),
+      launcher_(NULL),
+      status_(status),
+      window_overlaps_shelf_(false),
+      root_window_(NULL) {
   gfx::Rect status_bounds = status->GetWindowScreenBounds();
-  max_height_ = std::max(launcher_bounds.height(), status_bounds.height());
-  root_window_ = launcher->GetNativeView()->GetRootWindow();
+  shelf_height_ = status_bounds.height();
+  root_window_ = status->GetNativeView()->GetRootWindow();
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
+}
+
+gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
+    aura::Window* window) const {
+  // TODO: needs to be multi-mon aware.
+  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+  bounds.set_height(bounds.height() - kAutoHideHeight);
+  return bounds;
+}
+
+gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
+    aura::Window* window) const {
+  // TODO: needs to be multi-mon aware.
+  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+  bounds.set_height(bounds.height() - shelf_height_ -
+                    kWorkspaceAreaBottomInset);
+  return bounds;
 }
 
 void ShelfLayoutManager::LayoutShelf() {
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
   StopAnimating();
   TargetBounds target_bounds;
-  float target_opacity = visible_ ? 1.0f : 0.0f;
-  CalculateTargetBounds(visible_, &target_bounds);
-  GetLayer(launcher_)->SetOpacity(target_opacity);
-  GetLayer(status_)->SetOpacity(target_opacity);
-  launcher_->SetBounds(target_bounds.launcher_bounds);
+  CalculateTargetBounds(state_, &target_bounds);
+  if (launcher()) {
+    GetLayer(launcher())->SetOpacity(target_bounds.opacity);
+    launcher()->SetBounds(target_bounds.launcher_bounds);
+    launcher_->SetStatusWidth(
+        target_bounds.status_bounds.width());
+  }
+  GetLayer(status_)->SetOpacity(target_bounds.opacity);
   status_->SetBounds(target_bounds.status_bounds);
-  Shell::GetInstance()->launcher()->SetStatusWidth(
-      target_bounds.status_bounds.width());
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
 }
 
-void ShelfLayoutManager::SetVisible(bool visible) {
-  ui::Layer* launcher_layer = GetLayer(launcher_);
-  ui::Layer* status_layer = GetLayer(status_);
+void ShelfLayoutManager::SetState(VisibilityState visibility_state,
+                                  AutoHideState auto_hide_state) {
+  State state;
+  state.visibility_state = visibility_state;
+  state.auto_hide_state = auto_hide_state;
 
-  // TODO(vollick): once visibility is animatable, use GetTargetVisibility.
-  bool current_visibility = visible_ &&
-      launcher_layer->GetTargetOpacity() > 0.0f &&
-      status_layer->GetTargetOpacity() > 0.0f;
-
-  if (visible == current_visibility)
+  if (state_.Equals(state))
     return;  // Nothing changed.
 
+  // Animating the background when transitioning from auto-hide & hidden to
+  // visibile is janking. Update the background immediately in this case.
+  Launcher::BackgroundChangeSpeed speed =
+      (state_.visibility_state == AUTO_HIDE &&
+       state_.auto_hide_state == AUTO_HIDE_HIDDEN &&
+       state.visibility_state == VISIBLE) ?
+      Launcher::CHANGE_IMMEDIATE : Launcher::CHANGE_ANIMATE;
   StopAnimating();
-
-  visible_ = visible;
+  state_ = state;
   TargetBounds target_bounds;
-  float target_opacity = visible ? 1.0f : 0.0f;
-  CalculateTargetBounds(visible, &target_bounds);
-
-  ui::ScopedLayerAnimationSettings launcher_animation_setter(
-      launcher_layer->GetAnimator());
+  CalculateTargetBounds(state_, &target_bounds);
+  if (launcher()) {
+    ui::ScopedLayerAnimationSettings launcher_animation_setter(
+        GetLayer(launcher())->GetAnimator());
+    launcher_animation_setter.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(130));
+    launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+    GetLayer(launcher())->SetBounds(target_bounds.launcher_bounds);
+    GetLayer(launcher())->SetOpacity(target_bounds.opacity);
+  }
   ui::ScopedLayerAnimationSettings status_animation_setter(
-      status_layer->GetAnimator());
+      GetLayer(status_)->GetAnimator());
+  status_animation_setter.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(130));
+  status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+  GetLayer(status_)->SetBounds(target_bounds.status_bounds);
+  GetLayer(status_)->SetOpacity(target_bounds.opacity);
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetRootWindow(),
+      target_bounds.work_area_insets);
+  launcher_->SetRendersBackground(GetShelfRendersBackground(), speed);
+}
 
-  launcher_animation_setter.AddObserver(this);
-  status_animation_setter.AddObserver(this);
+void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
+  window_overlaps_shelf_ = value;
+  launcher_->SetRendersBackground(GetShelfRendersBackground(),
+                                  Launcher::CHANGE_ANIMATE);
+}
 
-  launcher_layer->SetBounds(target_bounds.launcher_bounds);
-  launcher_layer->SetOpacity(target_opacity);
-  status_layer->SetBounds(target_bounds.status_bounds);
-  status_layer->SetOpacity(target_opacity);
+void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
+  launcher_ = launcher;
+  gfx::Rect launcher_bounds = launcher_->widget()->GetWindowScreenBounds();
+  gfx::Rect status_bounds = status_->GetWindowScreenBounds();
+  shelf_height_ = std::max(launcher_bounds.height(), status_bounds.height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,37 +168,51 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 // ShelfLayoutManager, private:
 
 void ShelfLayoutManager::StopAnimating() {
-  StopObservingImplicitAnimations();
-  GetLayer(launcher_)->GetAnimator()->StopAnimating();
+  if (launcher())
+    GetLayer(launcher())->GetAnimator()->StopAnimating();
   GetLayer(status_)->GetAnimator()->StopAnimating();
 }
 
-void ShelfLayoutManager::CalculateTargetBounds(bool visible,
-                                               TargetBounds* target_bounds) {
+void ShelfLayoutManager::CalculateTargetBounds(
+    const State& state,
+    TargetBounds* target_bounds) const {
   const gfx::Rect& available_bounds(root_window_->bounds());
-  int y = available_bounds.bottom() - (visible ? max_height_ : 0);
+  int y = available_bounds.bottom();
+  int shelf_height = 0;
+  int work_area_delta = 0;
+  if (state.visibility_state == VISIBLE ||
+      (state.visibility_state == AUTO_HIDE &&
+       state.auto_hide_state == AUTO_HIDE_SHOWN)) {
+    shelf_height = shelf_height_;
+    work_area_delta = kWorkspaceAreaBottomInset;
+  } else if (state.visibility_state == AUTO_HIDE &&
+             state.auto_hide_state == AUTO_HIDE_HIDDEN) {
+    shelf_height = kAutoHideHeight;
+  }
+  y -= shelf_height;
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   // The status widget should extend to the bottom and right edges.
   target_bounds->status_bounds = gfx::Rect(
       available_bounds.right() - status_bounds.width(),
-      y + max_height_ - status_bounds.height(),
+      y + shelf_height_ - status_bounds.height(),
       status_bounds.width(), status_bounds.height());
-  gfx::Rect launcher_bounds(launcher_->GetWindowScreenBounds());
-  target_bounds->launcher_bounds = gfx::Rect(
-      available_bounds.x(), y + (max_height_ - launcher_bounds.height()) / 2,
-      available_bounds.width(),
-      launcher_bounds.height());
-  if (visible)
-    target_bounds->work_area_insets = gfx::Insets(
-        0, 0, max_height_ + kWorkspaceAreaBottomInset, 0);
+  if (launcher()) {
+    gfx::Rect launcher_bounds(launcher()->GetWindowScreenBounds());
+    target_bounds->launcher_bounds = gfx::Rect(
+        available_bounds.x(),
+        y + (shelf_height_ - launcher_bounds.height()) / 2,
+        available_bounds.width(),
+        launcher_bounds.height());
+  }
+  target_bounds->opacity =
+      (state.visibility_state == VISIBLE ||
+       state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
+  target_bounds->work_area_insets =
+      gfx::Insets(0, 0, shelf_height + work_area_delta, 0);
 }
 
-void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
-  TargetBounds target_bounds;
-  CalculateTargetBounds(visible_, &target_bounds);
-  Shell::GetInstance()->SetMonitorWorkAreaInsets(
-      Shell::GetRootWindow(),
-      target_bounds.work_area_insets);
+bool ShelfLayoutManager::GetShelfRendersBackground() const {
+  return window_overlaps_shelf_ || state_.visibility_state == AUTO_HIDE;
 }
 
 }  // namespace internal

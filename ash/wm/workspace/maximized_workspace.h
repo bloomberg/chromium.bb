@@ -24,7 +24,6 @@ class ASH_EXPORT MaximizedWorkspace : public Workspace {
   virtual void OnWindowAddedAfter(aura::Window* window,
                                   aura::Window* after) OVERRIDE;
   virtual void OnWindowRemoved(aura::Window* window) OVERRIDE;
-  virtual void OnWorkspaceSizeChanged(const gfx::Rect& old_bounds) OVERRIDE;
 
  private:
   void ResetWindowBounds(aura::Window* window);

@@ -70,8 +70,6 @@ namespace internal {
 WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
     : contents_view_(contents_view),
       active_workspace_(NULL),
-      workspace_size_(
-          gfx::Screen::GetMonitorAreaNearestWindow(contents_view_).size()),
       is_overview_(false),
       ignored_window_(NULL),
       grid_size_(0),
@@ -105,6 +103,7 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
       current_workspace->Activate();
     }
     window->Show();
+    UpdateShelfVisibility();
     return;
   }
 
@@ -128,6 +127,7 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
     workspace = CreateWorkspace(type_for_window);
   workspace->AddWindowAfter(window, NULL);
   workspace->Activate();
+  UpdateShelfVisibility();
 }
 
 void WorkspaceManager::RemoveWindow(aura::Window* window) {
@@ -136,6 +136,7 @@ void WorkspaceManager::RemoveWindow(aura::Window* window) {
     return;
   workspace->RemoveWindow(window);
   CleanupWorkspace(workspace);
+  UpdateShelfVisibility();
 }
 
 void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
@@ -144,31 +145,63 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
     workspace->Activate();
 }
 
-gfx::Rect WorkspaceManager::GetDragAreaBounds() {
-  return GetWorkAreaBounds();
-}
-
 void WorkspaceManager::SetOverview(bool overview) {
   if (is_overview_ == overview)
     return;
   NOTIMPLEMENTED();
 }
 
-void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
-  if (workspace_size == workspace_size_)
-    return;
-  workspace_size_ = workspace_size;
-  SetWorkspaceBounds();
-}
-
-void WorkspaceManager::OnMonitorWorkAreaInsetsChanged() {
-  SetWorkspaceBounds();
-}
-
 gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
   if (grid_size_ <= 1)
     return bounds;
   return AlignRectToGrid(bounds, grid_size_);
+}
+
+void WorkspaceManager::UpdateShelfVisibility() {
+  if (!shelf_ || !active_workspace_) {
+    shelf_->SetState(ShelfLayoutManager::VISIBLE,
+                     ShelfLayoutManager::AUTO_HIDE_SHOWN);
+    shelf_->SetWindowOverlapsShelf(false);
+    return;
+  }
+
+  // TODO: this code needs to be made multi-monitor aware.
+  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(contents_view_));
+  bounds.set_height(bounds.height() - shelf_->shelf_height());
+  const aura::Window::Windows& windows(contents_view_->children());
+  bool has_full_screen_window = false;
+  bool has_max_window = false;
+  bool window_overlaps_launcher = false;
+  for (aura::Window::Windows::const_iterator i = windows.begin();
+       i != windows.end(); ++i) {
+    if (!IsManagingWindow(*i))
+      continue;
+    ui::Layer* layer = (*i)->layer();
+    if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
+      continue;
+    if (wm::IsWindowMaximized(*i)) {
+      has_max_window = true;
+      break;
+    }
+    if (wm::IsWindowFullscreen(*i)) {
+      has_full_screen_window = true;
+      break;
+    }
+    if (!window_overlaps_launcher && (*i)->bounds().bottom() > bounds.bottom())
+      window_overlaps_launcher = true;
+  }
+
+  ShelfLayoutManager::VisibilityState visibility_state =
+      ShelfLayoutManager::VISIBLE;
+  ShelfLayoutManager::AutoHideState auto_hide_state =
+      shelf_->auto_hide_state();
+  if (has_full_screen_window) {
+    visibility_state = ShelfLayoutManager::HIDDEN;
+  } else if (has_max_window) {
+    visibility_state = ShelfLayoutManager::AUTO_HIDE;
+  }
+  shelf_->SetState(visibility_state, auto_hide_state);
+  shelf_->SetWindowOverlapsShelf(window_overlaps_launcher);
 }
 
 void WorkspaceManager::ShowStateChanged(aura::Window* window) {
@@ -188,7 +221,6 @@ void WorkspaceManager::ShowStateChanged(aura::Window* window) {
 void WorkspaceManager::AddWorkspace(Workspace* workspace) {
   DCHECK(std::find(workspaces_.begin(), workspaces_.end(),
                    workspace) == workspaces_.end());
-  workspace->SetBounds(GetWorkAreaBounds());
   if (active_workspace_) {
     // New workspaces go right after current workspace.
     Workspaces::iterator i = std::find(workspaces_.begin(), workspaces_.end(),
@@ -214,15 +246,6 @@ void WorkspaceManager::RemoveWorkspace(Workspace* workspace) {
     else
       active_workspace_ = NULL;
   }
-}
-
-void WorkspaceManager::UpdateShelfVisibility() {
-  if (!shelf_ || !active_workspace_)
-    return;
-  std::set<aura::Window*> windows;
-  windows.insert(active_workspace_->windows().begin(),
-                 active_workspace_->windows().end());
-  shelf_->SetVisible(!wm::HasFullscreenWindow(windows));
 }
 
 void WorkspaceManager::SetVisibilityOfWorkspaceWindows(
@@ -291,16 +314,6 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
   is_overview_ = false;
 }
 
-gfx::Rect WorkspaceManager::GetWorkAreaBounds() const {
-  gfx::Rect bounds(workspace_size_);
-  const aura::MonitorManager* monitor_manager =
-      aura::Env::GetInstance()->monitor_manager();
-  const aura::Monitor* monitor =
-      monitor_manager->GetMonitorNearestWindow(contents_view_);
-  bounds.Inset(monitor->work_area_insets());
-  return bounds;
-}
-
 // Returns the index of the workspace that contains the |window|.
 int WorkspaceManager::GetWorkspaceIndexContaining(aura::Window* window) const {
   for (Workspaces::const_iterator i = workspaces_.begin();
@@ -317,13 +330,6 @@ void WorkspaceManager::SetWindowBounds(aura::Window* window,
   ignored_window_ = window;
   window->SetBounds(bounds);
   ignored_window_ = NULL;
-}
-
-void WorkspaceManager::SetWorkspaceBounds() {
-  for (Workspaces::const_iterator i = workspaces_.begin();
-       i != workspaces_.end(); ++i) {
-    (*i)->SetBounds(GetWorkAreaBounds());
-  }
 }
 
 void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {

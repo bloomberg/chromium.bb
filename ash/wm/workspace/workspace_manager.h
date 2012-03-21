@@ -63,12 +63,6 @@ class ASH_EXPORT WorkspaceManager {
   void SetOverview(bool overview);
   bool is_overview() const { return is_overview_; }
 
-  // Sets the size of a single workspace (all workspaces have the same size).
-  void SetWorkspaceSize(const gfx::Size& workspace_size);
-
-  // Called when monitor's work area insets changes.
-  void OnMonitorWorkAreaInsetsChanged();
-
   // Returns the window the layout manager should allow the size to be set for.
   // TODO: maybe this should be set on WorkspaceLayoutManager.
   aura::Window* ignored_window() { return ignored_window_; }
@@ -82,6 +76,9 @@ class ASH_EXPORT WorkspaceManager {
   gfx::Rect AlignBoundsToGrid(const gfx::Rect& bounds);
 
   void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
+
+  // Updates the visibility and whether any windows overlap the shelf.
+  void UpdateShelfVisibility();
 
   // Invoked when the show state of the specified window changes.
   void ShowStateChanged(aura::Window* window);
@@ -103,8 +100,6 @@ class ASH_EXPORT WorkspaceManager {
 
   void AddWorkspace(Workspace* workspace);
   void RemoveWorkspace(Workspace* workspace);
-
-  void UpdateShelfVisibility();
 
   // Sets the visibility of the windows in |workspace|.
   void SetVisibilityOfWorkspaceWindows(Workspace* workspace,
@@ -135,9 +130,6 @@ class ASH_EXPORT WorkspaceManager {
   // that the bounds change is allowed through.
   void SetWindowBounds(aura::Window* window, const gfx::Rect& bounds);
 
-  // Sets the bounds of all workspaces.
-  void SetWorkspaceBounds();
-
   // Invoked when the type of workspace needed for |window| changes.
   void OnTypeOfWorkspacedNeededChanged(aura::Window* window);
 
@@ -156,10 +148,6 @@ class ASH_EXPORT WorkspaceManager {
   Workspace* active_workspace_;
 
   std::vector<Workspace*> workspaces_;
-
-  // The size of a single workspace. This is generally the same as the size of
-  // monitor.
-  gfx::Size workspace_size_;
 
   // True if the workspace manager is in overview mode.
   bool is_overview_;

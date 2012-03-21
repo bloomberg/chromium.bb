@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/frame_maximize_button.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/launcher/launcher.h"
@@ -279,7 +280,7 @@ gfx::Rect FrameMaximizeButton::BoundsForType(SnapType type) const {
     case SNAP_RIGHT:
       return snap_sizer_->target_bounds();
     case SNAP_MAXIMIZE:
-      return gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+      return ScreenAsh::GetMaximizedWindowBounds(window);
     case SNAP_MINIMIZE: {
       Launcher* launcher = Shell::GetInstance()->launcher();
       gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(window));

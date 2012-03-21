@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ui_base_types.h"
 
 namespace aura {
 class MouseEvent;
@@ -47,7 +48,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
   virtual void OnMonitorWorkAreaInsetsChanged() OVERRIDE;
 
   // Overriden from aura::WindowObserver:
@@ -56,6 +56,10 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
                                        intptr_t old) OVERRIDE;
 
  private:
+  void ShowStateChanged(
+      aura::Window* window,
+      ui::WindowShowState last_show_state);
+
   // Owned by WorkspaceController.
   WorkspaceManager* workspace_manager_;
 

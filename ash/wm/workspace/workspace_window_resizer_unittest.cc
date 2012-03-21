@@ -406,6 +406,8 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
+  int bottom =
+      ScreenAsh::GetUnmaximizedWorkAreaBounds(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
@@ -413,7 +415,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 0, 10));
     resizer->CompleteDrag();
-    EXPECT_EQ("0,0 400x600", window_->bounds().ToString());
+    EXPECT_EQ("0,0 400x" + base::IntToString(bottom),
+              window_->bounds().ToString());
     ASSERT_TRUE(GetRestoreBounds(window_.get()));
     EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
   }
@@ -424,7 +427,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 800, 10));
   resizer->CompleteDrag();
-  EXPECT_EQ("400,0 400x600", window_->bounds().ToString());
+  EXPECT_EQ("400,0 400x" + base::IntToString(bottom),
+            window_->bounds().ToString());
   ASSERT_TRUE(GetRestoreBounds(window_.get()));
   EXPECT_EQ("20,30 50x60", GetRestoreBounds(window_.get())->ToString());
 }

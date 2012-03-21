@@ -4,6 +4,8 @@
 
 #include "ash/screen_ash.h"
 
+#include "ash/shell.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor.h"
@@ -27,6 +29,16 @@ ScreenAsh::ScreenAsh(aura::RootWindow* root_window)
 }
 
 ScreenAsh::~ScreenAsh() {
+}
+
+// static
+gfx::Rect ScreenAsh::GetMaximizedWindowBounds(aura::Window* window) {
+  return Shell::GetInstance()->shelf()->GetMaximizedWindowBounds(window);
+}
+
+// static
+gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBounds(aura::Window* window) {
+  return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPointImpl() {

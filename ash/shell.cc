@@ -736,7 +736,8 @@ void Shell::InitLayoutManagers() {
   DCHECK(status_widget_);
 
   internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(launcher_->widget(), status_widget_);
+      new internal::ShelfLayoutManager(status_widget_);
+  shelf_layout_manager->SetLauncher(launcher_.get());
   GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
   shelf_ = shelf_layout_manager;
