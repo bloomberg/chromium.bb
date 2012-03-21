@@ -163,16 +163,16 @@ void PasswordManager::DidNavigateAnyFrame(
 bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PasswordManager, message)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsFound,
-                        OnPasswordFormsFound)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsVisible,
-                        OnPasswordFormsVisible)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsParsed,
+                        OnPasswordFormsParsed)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsRendered,
+                        OnPasswordFormsRendered)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PasswordManager::OnPasswordFormsFound(
+void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
   if (!IsEnabled())
     return;
@@ -191,7 +191,7 @@ void PasswordManager::OnPasswordFormsFound(
   }
 }
 
-void PasswordManager::OnPasswordFormsVisible(
+void PasswordManager::OnPasswordFormsRendered(
     const std::vector<PasswordForm>& visible_forms) {
   if (!provisional_save_manager_.get())
     return;

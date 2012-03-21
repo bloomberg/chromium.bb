@@ -63,9 +63,9 @@ class PasswordManager : public LoginModel,
 
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.
-  void OnPasswordFormsFound(
+  void OnPasswordFormsParsed(
       const std::vector<webkit::forms::PasswordForm>& forms);
-  void OnPasswordFormsVisible(
+  void OnPasswordFormsRendered(
       const std::vector<webkit::forms::PasswordForm>& visible_forms);
 
  private:

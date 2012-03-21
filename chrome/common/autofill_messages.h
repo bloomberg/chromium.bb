@@ -126,12 +126,12 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormsSeen,
 
 // Notification that password forms have been seen that are candidates for
 // filling/submitting by the password manager.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsFound,
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
                     std::vector<webkit::forms::PasswordForm> /* forms */)
 
 // Notification that initial layout has occurred and the following password
 // forms are visible on the page (e.g. not set to display:none.)
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsVisible,
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
                     std::vector<webkit::forms::PasswordForm> /* forms */)
 
 // Notification that a form has been submitted.  The user hit the button.

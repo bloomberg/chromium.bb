@@ -393,7 +393,7 @@ void LoginHandler::CloseContentsDeferred() {
 }
 
 // Helper to create a PasswordForm and stuff it into a vector as input
-// for PasswordManager::PasswordFormsFound, the hook into PasswordManager.
+// for PasswordManager::PasswordFormsParsed, the hook into PasswordManager.
 void MakeInputForPasswordManager(
     const GURL& request_url,
     net::AuthChallengeInfo* auth_info,
@@ -454,7 +454,7 @@ void LoginDialogCallback(const GURL& request_url,
   PasswordManager* password_manager = wrapper->password_manager();
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);
-  password_manager->OnPasswordFormsFound(v);
+  password_manager->OnPasswordFormsParsed(v);
   handler->SetPasswordManager(password_manager);
 
   // The realm is controlled by the remote server, so there is no reason

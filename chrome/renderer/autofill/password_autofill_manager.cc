@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,10 +361,10 @@ void PasswordAutofillManager::SendPasswordForms(WebKit::WebFrame* frame,
     return;
 
   if (only_visible) {
-    Send(new AutofillHostMsg_PasswordFormsVisible(
+    Send(new AutofillHostMsg_PasswordFormsRendered(
         routing_id(), password_forms));
   } else {
-    Send(new AutofillHostMsg_PasswordFormsFound(routing_id(), password_forms));
+    Send(new AutofillHostMsg_PasswordFormsParsed(routing_id(), password_forms));
   }
 }
 
