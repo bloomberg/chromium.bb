@@ -194,6 +194,8 @@ struct frame {
 	struct widget *widget;
 	struct widget *child;
 	int margin;
+	int width;
+	int titlebar_height;
 };
 
 struct menu {
@@ -1102,11 +1104,12 @@ frame_resize_handler(struct widget *widget,
 	int opaque_margin;
 
 	if (widget->window->type != TYPE_FULLSCREEN) {
-		decoration_width = 20 + frame->margin * 2;
-		decoration_height = 60 + frame->margin * 2;
+		decoration_width = (frame->width + frame->margin) * 2;
+		decoration_height = frame->width +
+			frame->titlebar_height + frame->margin * 2;
 
-		allocation.x = 10 + frame->margin;
-		allocation.y = 50 + frame->margin;
+		allocation.x = frame->width + frame->margin;
+		allocation.y = frame->titlebar_height + frame->margin;
 		allocation.width = width - decoration_width;
 		allocation.height = height - decoration_height;
 
@@ -1159,7 +1162,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	cairo_text_extents_t extents;
 	cairo_surface_t *source;
-	int width, height, shadow_dx = 3, shadow_dy = 3;
+	int x, y, width, height, shadow_dx = 3, shadow_dy = 3;
 	struct window *window = widget->window;
 
 	if (window->type == TYPE_FULLSCREEN)
@@ -1186,17 +1189,29 @@ frame_redraw_handler(struct widget *widget, void *data)
 		source = window->display->inactive_frame;
 
 	tile_source(cr, source, 0, 0, width, height,
-		    frame->margin + 10, frame->margin + 50);
+		    frame->margin + frame->width,
+		    frame->margin + frame->titlebar_height);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_select_font_face(cr, "sans",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_BOLD);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
-	cairo_move_to(cr, (width - extents.width) / 2, 32 - extents.y_bearing);
-	if (window->keyboard_device)
+	x = (width - extents.width) / 2;
+	y = 24 - extents.y_bearing;
+	if (window->keyboard_device) {
+		cairo_move_to(cr, x + 1, y  + 1);
+		cairo_set_source_rgb(cr, 1, 1, 1);
+		cairo_show_text(cr, window->title);
+		cairo_move_to(cr, x, y);
 		cairo_set_source_rgb(cr, 0, 0, 0);
-	else
-		cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
-	cairo_show_text(cr, window->title);
+		cairo_show_text(cr, window->title);
+	} else {
+		cairo_move_to(cr, x, y);
+		cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		cairo_show_text(cr, window->title);
+	}
 
 	cairo_destroy(cr);
 }
@@ -1377,7 +1392,9 @@ frame_create(struct window *window, void *data)
 	frame->widget = window_add_widget(window, frame);
 	frame->child = widget_add_widget(frame->widget, data);
 	frame->margin = 16;
-
+	frame->width = 4;
+	frame->titlebar_height = 30
+;
 	widget_set_redraw_handler(frame->widget, frame_redraw_handler);
 	widget_set_resize_handler(frame->widget, frame_resize_handler);
 	widget_set_enter_handler(frame->widget, frame_enter_handler);
@@ -2694,8 +2711,9 @@ static void
 display_render_frame(struct display *d)
 {
 	cairo_t *cr;
+	cairo_pattern_t *pattern;
 
-	d->frame_radius = 8;
+	d->frame_radius = 3;
 	d->shadow = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
 	cr = cairo_create(d->shadow);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -2709,7 +2727,13 @@ display_render_frame(struct display *d)
 		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
 	cr = cairo_create(d->active_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0.8, 0.8, 0.4, 1);
+
+	pattern = cairo_pattern_create_linear(16, 16, 16, 112);
+	cairo_pattern_add_color_stop_rgb(pattern, 0.0, 1.0, 1.0, 1.0);
+	cairo_pattern_add_color_stop_rgb(pattern, 0.2, 0.8, 0.8, 0.8);
+	cairo_set_source(cr, pattern);
+	cairo_pattern_destroy(pattern);
+
 	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
@@ -2718,7 +2742,7 @@ display_render_frame(struct display *d)
 		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
 	cr = cairo_create(d->inactive_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 1);
+	cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
 	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
