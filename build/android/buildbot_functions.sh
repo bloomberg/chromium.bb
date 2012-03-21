@@ -60,7 +60,9 @@ function bb_baseline_setup {
 
   echo "@@@BUILD_STEP Basic setup@@@"
   bb_setup_environment
-  for mandatory_directory in "${ANDROID_SDK_ROOT}" "${ANDROID_NDK_ROOT}" ; do
+
+  for mandatory_directory in $(dirname "${ANDROID_SDK_ROOT}") \
+    $(dirname "${ANDROID_NDK_ROOT}") ; do
     if [[ ! -d "${mandatory_directory}" ]]; then
       echo "Directory ${mandatory_directory} does not exist."
       echo "Build cannot continue."
@@ -71,6 +73,11 @@ function bb_baseline_setup {
 
   if [ ! "$BUILDBOT_CLOBBER" = "" ]; then
     NEED_CLOBBER=1
+  fi
+
+  # Setting up a new bot?  Must do this before envsetup.sh
+  if [ ! -d "${ANDROID_NDK_ROOT}" ] ; then
+    bb_install_build_deps $1
   fi
 
   echo "@@@BUILD_STEP Configure with envsetup.sh@@@"
@@ -92,11 +99,25 @@ function bb_baseline_setup {
 
 # Setup goma.  Used internally to buildbot_functions.sh.
 function bb_setup_goma_internal {
+
+  # Quick bail if I messed things up and can't wait for the CQ to
+  # flush out.
+  # TODO(jrg): remove this condition when things are
+  # proven stable (4/1/12 or so).
+  if [ -f /usr/local/google/DISABLE_GOMA ]; then
+    echo "@@@STEP_WARNINGS@@@"
+    echo "Goma disabled with a local file"
+    return
+  fi
+
+  goma_dir=${goma_dir:-/b/build/goma}
+  if [ -f ${goma_dir}/goma.key ]; then
+    export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
+  fi
   local goma_ctl=$(which goma_ctl.sh)
   if [ "${goma_ctl}" != "" ]; then
     local goma_dir=$(dirname ${goma_ctl})
   fi
-  goma_dir=${goma_dir:-/b/build/goma}
 
   if [ ! -f ${goma_dir}/goma_ctl.sh ]; then
     echo "@@@STEP_WARNINGS@@@"
@@ -106,31 +127,28 @@ function bb_setup_goma_internal {
   export GOMA_DIR=${goma_dir}
   echo "GOMA_DIR: " $GOMA_DIR
 
-  ${GOMA_DIR}/goma_ctl.sh start
-  if [ -f ${goma_dir}/goma.key ]; then
-    export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
-  fi
   export GOMA_COMPILER_PROXY_DAEMON_MODE=true
   export GOMA_COMPILER_PROXY_RPC_TIMEOUT_SECS=300
   export PATH=$GOMA_DIR:$PATH
+
+  echo "Starting goma"
+  if [ "$NEED_CLOBBER" -eq 1 ]; then
+    ${GOMA_DIR}/goma_ctl.sh restart
+  else
+    ${GOMA_DIR}/goma_ctl.sh ensure_start
+  fi
+  trap bb_stop_goma_internal SIGHUP SIGINT SIGTERM
+}
+
+# Stop goma.
+function bb_stop_goma_internal {
+  echo "Stopping goma"
+  ${GOMA_DIR}/goma_ctl.sh stop
 }
 
 # $@: make args.
 # Use goma if possible; degrades to non-Goma if needed.
 function bb_goma_make {
-  # Disable Goma
-  # Seems to work on "Android FYI" 
-  #  http://build.chromium.org/p/chromium.fyi/builders/Chromium%20Linux%20Android/builds/6421/steps/Compile/logs/stdio
-  # and Linux trybots
-  #  http://build.chromium.org/p/chromium/builders/Linux%20x64/builds/23995/steps/compile/logs/stdio
-  # But not on Android trybots?
-  #  http://build.chromium.org/p/tryserver.chromium/builders/android/builds/2136/steps/Compile/logs/stdio
-  make -j${JOBS} "$@"
-  return
-
-  # TODO(bulach): to use goma, we need to:
-  # GOMA_DIR=... android_gyp
-  # PATH=$GOMA_DIR:$PATH make -j${JOBS} "$@"
   bb_setup_goma_internal
 
   if [ "${GOMA_DIR}" = "" ]; then
@@ -147,7 +165,7 @@ function bb_goma_make {
   COMMON_JAVAC="$GOMA_DIR/gomacc /usr/bin/javac -J-Xmx512M \
     -target 1.5 -Xmaxerrs 9999999"
 
-  make \
+  command make \
     -j100 \
     -l20 \
     HOST_CC="$HOST_CC" \
@@ -161,6 +179,8 @@ function bb_goma_make {
     LINK.target="$TARGET_CXX" \
     COMMON_JAVAC="$COMMON_JAVAC" \
     "$@"
+
+  bb_stop_goma_internal
 }
 
 # Compile step
