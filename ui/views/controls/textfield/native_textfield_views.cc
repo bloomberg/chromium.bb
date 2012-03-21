@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
@@ -968,8 +969,9 @@ void NativeTextfieldViews::UpdateContextMenu() {
     context_menu_contents_->AddSeparator();
     context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                                 IDS_APP_SELECT_ALL);
-    textfield_->GetController()->UpdateContextMenu(
-        context_menu_contents_.get());
+    TextfieldController* controller = textfield_->GetController();
+    if (controller)
+      controller->UpdateContextMenu(context_menu_contents_.get());
 
     context_menu_delegate_.reset(
         new views::MenuModelAdapter(context_menu_contents_.get()));
