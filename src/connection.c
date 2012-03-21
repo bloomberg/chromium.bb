@@ -307,7 +307,7 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		msg.msg_flags = 0;
 
 		do {
-			len = recvmsg(connection->fd, &msg, MSG_CMSG_CLOEXEC);
+			len = wl_os_recvmsg_cloexec(connection->fd, &msg, 0);
 		} while (len < 0 && errno == EINTR);
 
 		if (len < 0) {

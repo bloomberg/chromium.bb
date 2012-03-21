@@ -79,3 +79,48 @@ wl_os_dupfd_cloexec(int fd, long minfd)
 	newfd = fcntl(fd, F_DUPFD, minfd);
 	return set_cloexec_or_close(newfd);
 }
+
+static ssize_t
+recvmsg_cloexec_fallback(int sockfd, struct msghdr *msg, int flags)
+{
+	ssize_t len;
+	struct cmsghdr *cmsg;
+	unsigned char *data;
+	int *fd;
+	int *end;
+
+	len = recvmsg(sockfd, msg, flags);
+	if (len == -1)
+		return -1;
+
+	if (!msg->msg_control || msg->msg_controllen == 0)
+		return len;
+
+	cmsg = CMSG_FIRSTHDR(msg);
+	for (; cmsg != NULL; cmsg = CMSG_NXTHDR(msg, cmsg)) {
+		if (cmsg->cmsg_level != SOL_SOCKET ||
+		    cmsg->cmsg_type != SCM_RIGHTS)
+			continue;
+
+		data = CMSG_DATA(cmsg);
+		end = (int *)(data + cmsg->cmsg_len - CMSG_LEN(0));
+		for (fd = (int *)data; fd < end; ++fd)
+			*fd = set_cloexec_or_close(*fd);
+	}
+
+	return len;
+}
+
+ssize_t
+wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
+{
+	ssize_t len;
+
+	len = recvmsg(sockfd, msg, flags | MSG_CMSG_CLOEXEC);
+	if (len >= 0)
+		return len;
+	if (errno != EINVAL)
+		return -1;
+
+	return recvmsg_cloexec_fallback(sockfd, msg, flags);
+}

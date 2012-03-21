@@ -29,6 +29,10 @@ wl_os_socket_cloexec(int domain, int type, int protocol);
 int
 wl_os_dupfd_cloexec(int fd, long minfd);
 
+ssize_t
+wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
+
+
 /*
  * The following are for wayland-os.c and the unit tests.
  * Do not use them elsewhere.
@@ -42,6 +46,10 @@ wl_os_dupfd_cloexec(int fd, long minfd);
 
 #ifndef F_DUPFD_CLOEXEC
 #define F_DUPFD_CLOEXEC 1030
+#endif
+
+#ifndef MSG_CMSG_CLOEXEC
+#define MSG_CMSG_CLOEXEC 0x40000000
 #endif
 
 #endif /* __linux__ */
