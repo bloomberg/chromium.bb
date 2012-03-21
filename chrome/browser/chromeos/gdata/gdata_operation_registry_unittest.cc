@@ -206,4 +206,21 @@ TEST_F(GDataOperationRegistryTest, ThreeCancel) {
   EXPECT_EQ(NULL, op3.get()); // deleted. CancelAll cares all operations.
 }
 
+TEST_F(GDataOperationRegistryTest, RestartOperation) {
+  TestObserver observer;
+  GDataOperationRegistry registry;
+  registry.AddObserver(&observer);
+
+  base::WeakPtr<MockOperation> op1 =
+      (new MockUploadOperation(&registry, false /* cancel */))->AsWeakPtr();
+  op1->NotifyStart();
+  EXPECT_EQ(1U, registry.GetProgressStatusList().size());
+  op1->NotifyStart(); // restart
+  EXPECT_EQ(1U, registry.GetProgressStatusList().size());
+  op1->NotifyProgress(0, 200);
+  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  EXPECT_EQ(0U, registry.GetProgressStatusList().size());
+  EXPECT_EQ(NULL, op1.get()); // deleted
+}
+
 }  // namespace gdata

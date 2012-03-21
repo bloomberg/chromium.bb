@@ -83,9 +83,12 @@ void GDataOperationRegistry::Operation::Cancel() {
 
 void GDataOperationRegistry::Operation::NotifyStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  progress_status_.transfer_state = OPERATION_STARTED;
-  progress_status_.start_time = base::Time::Now();
-  registry_->OnOperationStart(this, &progress_status_.operation_id);
+  // Some operations may be restarted. Report only the first "start".
+  if (progress_status_.transfer_state == OPERATION_NOT_STARTED) {
+    progress_status_.transfer_state = OPERATION_STARTED;
+    progress_status_.start_time = base::Time::Now();
+    registry_->OnOperationStart(this, &progress_status_.operation_id);
+  }
 }
 
 void GDataOperationRegistry::Operation::NotifyProgress(
