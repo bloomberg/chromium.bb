@@ -482,9 +482,10 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   hr = d3d9_->CreateDeviceEx(D3DADAPTER_DEFAULT,
                              D3DDEVTYPE_HAL,
                              ::GetShellWindow(),
+                             D3DCREATE_FPU_PRESERVE |
                              D3DCREATE_SOFTWARE_VERTEXPROCESSING |
-                             D3DCREATE_MULTITHREADED |
-                             D3DCREATE_FPU_PRESERVE,
+                             D3DCREATE_DISABLE_PSGP_THREADING |
+                             D3DCREATE_MULTITHREADED,
                              &present_params,
                              NULL,
                              &device_);
