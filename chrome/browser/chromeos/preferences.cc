@@ -96,6 +96,15 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
                              base::GetHourClockType() == base::k24HourClock,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDisableGData,
+                             false,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDisableGDataOverCellular,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDisableGDataHostedFiles,
+                             false,
+                             PrefService::SYNCABLE_PREF);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod,
@@ -240,6 +249,11 @@ void Preferences::Init(PrefService* prefs) {
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
+  disable_gdata_.Init(prefs::kDisableGData, prefs, this);
+  disable_gdata_over_cellular_.Init(prefs::kDisableGDataOverCellular,
+                                   prefs, this);
+  disable_gdata_hosted_files_.Init(prefs::kDisableGDataHostedFiles,
+                                   prefs, this);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, this);
   hotkey_next_engine_in_menu_.Init(

@@ -169,6 +169,8 @@ class PolicyPrefsTestCases(object):
     'ChromeOsLockOnIdleSuspend': (True, [ BROWSER ], [ 'chromeos' ]),
     'PolicyRefreshRate': (300000, [], [ 'chromeos' ]),
     'OpenNetworkConfiguration': ('', [], [ 'chromeos' ]),
+    'GDataDisabled': (True, [], [ 'chromeos' ]),
+    'GDataDisabledOverCellular': (True, [], [ 'chromeos' ]),
 
     # ChromeOS Device policies:
     'DevicePolicyRefreshRate': (300000, [], []),

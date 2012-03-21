@@ -59,6 +59,9 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #else
       { switches::kEnablePrintPreview, prefs::kPrintPreviewDisabled, false },
 #endif
+#if defined(OS_CHROMEOS)
+      { switches::kDisableGData, prefs::kDisableGData, true },
+#endif
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

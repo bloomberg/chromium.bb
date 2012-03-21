@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -30,10 +31,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/file_browser_handler.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -430,7 +431,7 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
     const GURL& source_url, int child_id) {
   GURL origin_url = source_url.GetOrigin();
   BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
-      origin_url, fileapi::kFileSystemTypeExternal, false, // create
+      origin_url, fileapi::kFileSystemTypeExternal, false,  // create
       LocalFileSystemCallbackDispatcher::CreateCallback(
           this,
           profile(),
@@ -1535,8 +1536,8 @@ bool FileDialogStringsFunction::RunImpl() {
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGData))
-      dict->SetString("ENABLE_GDATA", "1");
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+    dict->SetString("ENABLE_GDATA", "1");
 
   return true;
 }

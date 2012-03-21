@@ -92,8 +92,11 @@ class Preferences : public content::NotificationObserver {
   BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember sensitivity_;
-  BooleanPrefMember use_24hour_clock_;
   BooleanPrefMember primary_mouse_button_right_;
+  BooleanPrefMember use_24hour_clock_;
+  BooleanPrefMember disable_gdata_;
+  BooleanPrefMember disable_gdata_over_cellular_;
+  BooleanPrefMember disable_gdata_hosted_files_;
 
   // Input method preferences.
   StringPrefMember hotkey_next_engine_in_menu_;

@@ -469,6 +469,15 @@ const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
 
+// A boolean pref to disable gdata.
+const char kDisableGData[] = "gdata.disabled";
+
+// A boolean pref to disable gdata over cellular connections.
+const char kDisableGDataOverCellular[] = "gdata.cellular.disabled";
+
+// A boolean pref to disable gdata hosted files.
+const char kDisableGDataHostedFiles[] = "gdata.hosted_files.disabled";
+
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =
     "settings.language.current_input_method";

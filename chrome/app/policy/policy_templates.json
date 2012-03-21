@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 138
+#   For your editing convenience: highest ID currently used: 140
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2555,6 +2555,42 @@
       If this policy is set to False, background mode is disabled and cannot be controlled by the user in the browser settings.
 
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.''',
+    },
+    {
+      'name': 'GData',
+      'type': 'group',
+      'caption': '''Configure GData options''',
+      'desc': '''Configure GData in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
+      'policies': [
+        {
+          'name': 'GDataDisabled',
+          'type': 'main',
+          'supported_on': ['chrome_os:19-'],
+          'features': {'dynamic_refresh': True},
+          'example_value': True,
+          'id': 139,
+          'caption': '''Disables GData''',
+          'desc': '''Disables Google Docs syncing when set to True.
+
+          - i.e. no data is uploaded to Google Docs.
+
+          - if not set or false, users will be able to transfer files to Google Docs.''',
+        },
+        {
+          'name': 'GDataDisabledOverCellular',
+          'type': 'main',
+          'supported_on': ['chrome_os:19-'],
+          'features': {'dynamic_refresh': True},
+          'example_value': True,
+          'id': 140,
+          'caption': '''Disables GData over Cellular connections''',
+          'desc': '''Disables Google Docs syncing when using a cellular connection when set to True.
+
+          - i.e. data is only synced to Google Docs when connected via WiFi or Ethernet.
+
+          - if not set or false, users will be able to transfer files to Google Docs via cellular connections.''',
+        },
+      ],
     },
   ],
   'messages': {

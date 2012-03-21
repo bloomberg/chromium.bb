@@ -296,6 +296,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kChromeOsReleaseChannel,
     prefs::kChromeOsReleaseChannel,
     Value::TYPE_STRING },
+  { key::kGDataDisabled,
+    prefs::kDisableGData,
+    Value::TYPE_BOOLEAN },
+  { key::kGDataDisabledOverCellular,
+    prefs::kDisableGDataOverCellular,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
