@@ -403,8 +403,7 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
 bool ExtensionEventRouter::CanDispatchEventNow(
      Profile* profile, const Extension* extension) {
   DCHECK(extension);
-  if (extension->has_background_page() &&
-      !extension->background_page_persists()) {
+  if (extension->has_lazy_background_page()) {
     ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
@@ -417,7 +416,7 @@ bool ExtensionEventRouter::CanDispatchEventNow(
 
 void ExtensionEventRouter::IncrementInFlightEvents(
     Profile* profile, const Extension* extension) {
-  if (!extension->background_page_persists()) {
+  if (extension->has_lazy_background_page()) {
     profile->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
         extension);
   }
@@ -427,7 +426,7 @@ void ExtensionEventRouter::OnExtensionEventAck(
     Profile* profile, const std::string& extension_id) {
   const Extension* extension =
       profile->GetExtensionService()->extensions()->GetByID(extension_id);
-  if (extension && !extension->background_page_persists()) {
+  if (extension && extension->has_lazy_background_page()) {
     profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
         extension);
   }

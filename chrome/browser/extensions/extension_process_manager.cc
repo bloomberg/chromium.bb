@@ -97,8 +97,7 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  if (extension->has_background_page() &&
-      extension->background_page_persists()) {
+  if (extension->has_persistent_background_page()) {
     manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   }
 }
@@ -141,6 +140,10 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                 content::Source<content::BrowserContext>(profile));
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+                 content::Source<content::BrowserContext>(profile));
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -359,7 +362,7 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
 }
 
 int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
-  if (extension->background_page_persists())
+  if (!extension->has_lazy_background_page())
     return 0;
 
   return ::GetLazyKeepaliveCount(GetProfile(), extension);
@@ -367,7 +370,7 @@ int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
 
 int ExtensionProcessManager::IncrementLazyKeepaliveCount(
      const Extension* extension) {
-  if (extension->background_page_persists())
+  if (!extension->has_lazy_background_page())
     return 0;
 
   int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
@@ -379,7 +382,7 @@ int ExtensionProcessManager::IncrementLazyKeepaliveCount(
 
 int ExtensionProcessManager::DecrementLazyKeepaliveCount(
      const Extension* extension) {
-  if (extension->background_page_persists())
+  if (!extension->has_lazy_background_page())
     return 0;
 
   int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
@@ -492,6 +495,37 @@ void ExtensionProcessManager::Observe(
       // have time to shutdown various objects on different threads. Our
       // destructor is called too late in the shutdown sequence.
       CloseBackgroundHosts();
+      break;
+    }
+
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING: {
+      RenderViewHost* render_view_host =
+          content::Details<RenderViewHost>(details).ptr();
+      // Keep the lazy background page alive while it's being inspected.
+      // Balanced in response to the CLOSING notification.
+      if (render_view_host->GetDelegate()->GetRenderViewType() ==
+              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+        const Extension* extension =
+            GetProfile()->GetExtensionService()->extensions()->GetByID(
+                GetExtensionID(render_view_host));
+        if (extension)
+          IncrementLazyKeepaliveCount(extension);
+      }
+      break;
+    }
+
+    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING: {
+      RenderViewHost* render_view_host =
+          content::Details<RenderViewHost>(details).ptr();
+      // Balanced in response to the OPENING notification.
+      if (render_view_host->GetDelegate()->GetRenderViewType() ==
+              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+        const Extension* extension =
+            GetProfile()->GetExtensionService()->extensions()->GetByID(
+                GetExtensionID(render_view_host));
+        if (extension)
+          DecrementLazyKeepaliveCount(extension);
+      }
       break;
     }
 

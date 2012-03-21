@@ -145,7 +145,7 @@ class ExtensionImpl : public ChromeV8Extension {
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
     const ::Extension* extension =
         extension_dispatcher()->extensions()->GetByID(extension_id);
-    return (extension && !extension->background_page_persists() &&
+    return (extension && extension->has_lazy_background_page() &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
 };

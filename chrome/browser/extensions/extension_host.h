@@ -181,7 +181,6 @@ class ExtensionHost : public content::WebContentsDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
  private:
   friend class ProcessCreationQueue;
 

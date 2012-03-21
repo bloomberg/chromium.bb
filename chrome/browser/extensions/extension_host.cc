@@ -217,19 +217,19 @@ void ExtensionHost::CreateRenderViewNow() {
 }
 
 void ExtensionHost::SendShouldClose() {
-  CHECK(!extension()->background_page_persists());
+  CHECK(extension()->has_lazy_background_page());
   render_view_host()->Send(new ExtensionMsg_ShouldClose(
       extension()->id(), ++close_sequence_id_));
   // TODO(mpcomplete): start timeout
 }
 
 void ExtensionHost::CancelShouldClose() {
-  CHECK(!extension()->background_page_persists());
+  CHECK(extension()->has_lazy_background_page());
   ++close_sequence_id_;
 }
 
 void ExtensionHost::OnShouldCloseAck(int sequence_id) {
-  CHECK(!extension()->background_page_persists());
+  CHECK(extension()->has_lazy_background_page());
   if (sequence_id != close_sequence_id_)
     return;
   Close();

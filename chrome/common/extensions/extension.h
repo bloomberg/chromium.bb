@@ -564,6 +564,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return background_scripts_;
   }
   bool background_page_persists() const { return background_page_persists_; }
+  bool has_persistent_background_page() const {
+    return has_background_page() && background_page_persists();
+  }
+  bool has_lazy_background_page() const {
+    return has_background_page() && !background_page_persists();
+  }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
   const ExtensionPermissionSet* optional_permission_set() const {

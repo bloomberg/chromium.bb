@@ -229,8 +229,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
 
   const Extension* extension = extensions_.GetByID(extension_id);
   // Tell the browser process that the event is dispatched and we're idle.
-  // TODO(mpcomplete): differentiate between background page and other views.
-  if (extension && !extension->background_page_persists() &&
+  if (extension && extension->has_lazy_background_page() &&
       function_name == "Event.dispatchJSON") { // may always be true
     RenderThread::Get()->Send(
         new ExtensionHostMsg_ExtensionEventAck(extension_id));
