@@ -32,17 +32,16 @@ include_rules = [
   "-content/browser",
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+content/browser/download/download_state_info.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/renderer_host/resource_request_info_impl.h",
   "+content/browser/tab_contents/test_tab_contents.h",
+  # TODO(asanka): see http://codereview.chromium.org/9141031
+  "+content/browser/download/download_state_info.h",
   # TODO(ben): http://crbug.com/118410 will fix the following:
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/web_contents_drag_win.h",
-  "+content/browser/tab_contents/web_drag_dest_gtk.h",
   "+content/browser/tab_contents/web_drag_dest_win.h",
-  "+content/browser/tab_contents/web_drag_source_gtk.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-content/common",
