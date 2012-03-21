@@ -164,8 +164,9 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   window_resizer_.reset(
       CreateWindowResizer(source, parent_mouse_location, HTCAPTION));
 #if !defined(OS_MACOSX)
-  MessageLoopForUI::current()->RunWithDispatcher(
-      aura::Env::GetInstance()->GetDispatcher());
+  MessageLoopForUI* loop = MessageLoopForUI::current();
+  MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
+  loop->RunWithDispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif  // !defined(OS_MACOSX)
   in_move_loop_ = false;
 }
