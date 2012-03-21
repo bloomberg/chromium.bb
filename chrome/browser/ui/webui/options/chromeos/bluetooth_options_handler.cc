@@ -184,8 +184,8 @@ void BluetoothOptionsHandler::SendDeviceNotification(
   base::DictionaryValue js_properties;
   js_properties.SetString("name", device->GetName());
   js_properties.SetString("address", device->address());
-  js_properties.SetBoolean("discovered", device->WasDiscovered());
   js_properties.SetBoolean("paired", device->IsPaired());
+  js_properties.SetBoolean("bonded", device->IsBonded());
   js_properties.SetBoolean("connected", device->IsConnected());
   if (params) {
     js_properties.MergeDictionary(params);

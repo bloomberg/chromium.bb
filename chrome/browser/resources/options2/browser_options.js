@@ -1172,15 +1172,15 @@ cr.define('options', function() {
      * with a matching address is found, the existing element is updated.
      * @param {{name: string,
      *          address: string,
-     *          discovered: boolean,
      *          paired: boolean,
+     *          bonded: boolean,
      *          connected: boolean}} device
      *     Decription of the bluetooth device.
      * @private
      */
     addBluetoothDevice_: function(device) {
       var list = $('bluetooth-unpaired-devices-list');
-      if (!device.discovered) {
+      if (device.paired) {
         // Test to see if the device is currently in the unpaired list, in which
         // case it should be removed from that list.
         var index = $('bluetooth-unpaired-devices-list').find(device.address);

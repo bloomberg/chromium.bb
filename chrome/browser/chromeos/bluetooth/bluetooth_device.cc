@@ -32,7 +32,7 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
   : weak_ptr_factory_(this),
     adapter_(adapter),
     bluetooth_class_(0),
-    paired_(false),
+    bonded_(false),
     connected_(false),
     pairing_delegate_(NULL) {
 }
@@ -53,7 +53,9 @@ void BluetoothDevice::Update(
   bluetooth_class_ = properties->bluetooth_class.value();
 
   if (update_state) {
-    paired_ = properties->paired.value();
+    // BlueZ uses paired to mean link keys exchanged, whereas the Bluetooth
+    // spec refers to this as bonded. Use the spec name for our interface.
+    bonded_ = properties->paired.value();
     connected_ = properties->connected.value();
   }
 }
@@ -154,10 +156,6 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   }
 }
 
-bool BluetoothDevice::WasDiscovered() const {
-  return object_path_.value().empty();
-}
-
 bool BluetoothDevice::IsConnected() const {
   // TODO(keybuk): examine protocol-specific connected state, such as Input
   return connected_;
@@ -165,8 +163,8 @@ bool BluetoothDevice::IsConnected() const {
 
 void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
                               ErrorCallback error_callback) {
-  if (paired_ || connected_ || !WasDiscovered()) {
-    // Connection to already known or paired device.
+  if (IsPaired() || IsBonded() || IsConnected()) {
+    // Connection to already paired or connected device.
     ConnectApplications(error_callback);
 
   } else if (!pairing_delegate) {
@@ -227,7 +225,7 @@ void BluetoothDevice::ConnectCallback(ErrorCallback error_callback,
     // we can connect after rebooting. This information is part of the
     // pairing information of the device, and is unique to the combination
     // of our bluetooth address and the device's bluetooth address. A
-    // different device needs a new pairing, so it's not useful to sync.
+    // different host needs a new pairing, so it's not useful to sync.
     DBusThreadManager::Get()->GetBluetoothDeviceClient()->
         GetProperties(object_path_)->trusted.Set(
             true,

@@ -115,8 +115,7 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   void SetDiscovering(bool discovering, ErrorCallback callback);
 
   // Requests the list of devices from the adapter, all are returned
-  // including those currently connected, those that have been connected or
-  // paired in the past and those that have only been discovered. Use the
+  // including those currently connected and those paired. Use the
   // returned device pointers to determine which they are.
   typedef std::vector<BluetoothDevice*> DeviceList;
   DeviceList GetDevices();
@@ -280,10 +279,10 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   bool powered_;
   bool discovering_;
 
-  // Devices paired with, connected to, previously connected to, discovered
-  // and visible to the adapter. The key is the Bluetooth address of the device
-  // and the value is the BluetoothDevice object whose lifetime is managed
-  // by the adapter instance.
+  // Devices paired with, connected to, discovered by, or visible to the
+  // adapter. The key is the Bluetooth address of the device and the value
+  // is the BluetoothDevice object whose lifetime is managed by the adapter
+  // instance.
   typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
   DevicesMap devices_;
 

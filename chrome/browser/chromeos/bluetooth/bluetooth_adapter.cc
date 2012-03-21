@@ -276,7 +276,7 @@ void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
   if (iter != devices_.end()){
     BluetoothDevice* device = iter->second;
 
-    if (device->WasDiscovered())
+    if (!device->IsPaired())
       device->SetObjectPath(device_path);
     device->Update(properties, true);
 
@@ -367,7 +367,7 @@ void BluetoothAdapter::ClearDiscoveredDevices() {
     DevicesMap::iterator temp = iter;
     ++iter;
 
-    if (device->WasDiscovered()) {
+    if (!device->IsPaired()) {
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceRemoved(this, device));
 
@@ -384,8 +384,8 @@ void BluetoothAdapter::DeviceFound(
     return;
 
   // DeviceFound can also be called to indicate that a device we've
-  // paired with or previously connected to is now visible to the adapter,
-  // so check it's not already in the list and just update if it is.
+  // paired with is now visible to the adapter, so check it's not already
+  // in the list and just update if it is.
   BluetoothDevice* device;
   DevicesMap::iterator iter = devices_.find(address);
   if (iter == devices_.end()) {
@@ -399,7 +399,7 @@ void BluetoothAdapter::DeviceFound(
     device = iter->second;
     device->Update(&properties, false);
 
-    if (device->IsSupported() || !device->WasDiscovered())
+    if (device->IsSupported() || device->IsPaired())
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                         DeviceChanged(this, device));
   }
@@ -417,9 +417,9 @@ void BluetoothAdapter::DeviceDisappeared(const dbus::ObjectPath& adapter_path,
   BluetoothDevice* device = iter->second;
 
   // DeviceDisappeared can also be called to indicate that a device we've
-  // paired with or previously connected to is no longer visible to the
-  // adapter, so only delete discovered devices.
-  if (device->WasDiscovered()) {
+  // paired with is no longer visible to the adapter, so only delete
+  // discovered devices.
+  if (!device->IsPaired()) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceRemoved(this, device));
 
