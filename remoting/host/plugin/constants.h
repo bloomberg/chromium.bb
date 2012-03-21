@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,11 @@
 #define REMOTING_HOST_PLUGIN_CONSTANTS_H_
 
 // Warning: If you modify any macro in this file, make sure to modify
-// remoting/remoting.gyp too.
+// the following files too:
+//   - remoting/remoting.gyp
+//   - remoting/chromium_branding
+//   - remoting/google_chrome_branding
+//   - remoting/host/plugin/host_plugin.ver
 
 #define HOST_PLUGIN_DESCRIPTION \
     "Allow another user to access your computer securely over the Internet."

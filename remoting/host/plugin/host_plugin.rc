@@ -40,11 +40,6 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE
-BEGIN
-    "\r#include ""remoting/host/plugin/host_plugin_version.rc""\0"
-END
-
 #endif    // APSTUDIO_INVOKED
 
 
@@ -105,16 +100,3 @@ END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-#include "remoting/host/plugin/host_plugin_version.rc"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
-

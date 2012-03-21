@@ -1,0 +1,5 @@
+BINARY=BINARY_HOST_PLUGIN
+FILE_TYPE=VFT_DLL
+HOST_PLUGIN_MIME_TYPE=application/vnd.chromium.remoting-host
+INTERNAL_NAME=remoting_host_plugin.dll
+ORIGINAL_FILENAME=remoting_host_plugin.dll
