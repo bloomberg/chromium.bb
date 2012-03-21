@@ -718,41 +718,57 @@ cr.define('options', function() {
     },
 
     /**
-     * Gets page visibility state.
+     * Gets the container div for this page if it is an overlay.
+     * @type {HTMLElement}
      */
-    get visible() {
-      return !this.pageDiv.hidden;
+    get container() {
+      assert(this.isOverlay);
+      return this.pageDiv.parentNode;
     },
 
     /**
+     * Gets page visibility state.
+     * @type {boolean}
+     */
+    get visible() {
+      // If this is an overlay dialog it is no longer considered visible while
+      // the overlay is fading out. See http://crbug.com/118629.
+      if (this.isOverlay &&
+          this.container.classList.contains('transparent')) {
+        return false;
+      }
+      return !this.pageDiv.hidden;
+    },
+    /**
      * Sets page visibility.
+     * @type {boolean}
      */
     set visible(visible) {
       if ((this.visible && visible) || (!this.visible && !visible))
         return;
 
-      this.pageDiv.hidden = !visible;
-      this.setContainerVisibility_(visible);
-
-      OptionsPage.updateRootPageFreezeState();
-      OptionsPage.updateManagedBannerVisibility();
-
-      if (this.isOverlay && !visible)
-        OptionsPage.updateScrollPosition_();
+      // If using an overlay, the visibility of the dialog is toggled at the
+      // same time as the overlay to show the dialog's out transition. This
+      // is handled in setOverlayVisible.
+      if (this.isOverlay) {
+        this.setOverlayVisible_(visible);
+      } else {
+        this.pageDiv.hidden = !visible;
+        this.onVisibilityChanged_();
+      }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
     },
 
     /**
-     * Shows or hides this page's container.
-     * @param {boolean} visible Whether the container should be visible or not.
+     * Shows or hides an overlay (including any visible dialog).
+     * @param {boolean} visible Whether the overlay should be visible or not.
      * @private
      */
-    setContainerVisibility_: function(visible) {
-      if (!this.isOverlay)
-        return;
-
-      var container = this.pageDiv.parentNode;
+    setOverlayVisible_: function(visible) {
+      assert(this.isOverlay);
+      var pageDiv = this.pageDiv;
+      var container = this.container;
 
       if (visible)
         uber.invokeMethodOnParent('beginInterceptingEvents');
@@ -763,27 +779,35 @@ cr.define('options', function() {
           // again, the fadeCompleted_ callback would cause it to be erroneously
           // hidden again. Removing the transparent tag avoids that.
           container.classList.remove('transparent');
+
+          // Hide all dialogs in this container since a different one may have
+          // been previously visible before fading out.
+          var pages = container.querySelectorAll('.page');
+          for (var i = 0; i < pages.length; i++)
+            pages[i].hidden = true;
+          // Show the new dialog.
+          pageDiv.hidden = false;
         }
         return;
       }
 
       if (visible) {
         container.hidden = false;
-        if (document.documentElement.classList.contains('loading')) {
-          container.classList.remove('transparent');
-        } else {
-          // Separate animating changes from the removal of display:none.
-          window.setTimeout(function() {
-            container.classList.remove('transparent');
-          });
-        }
+        pageDiv.hidden = false;
+        // NOTE: This is a hacky way to force the container to layout which
+        // will allow us to trigger the webkit transition.
+        container.scrollTop;
+        container.classList.remove('transparent');
+        this.onVisibilityChanged_();
       } else {
         var self = this;
+        // TODO: Use an event delegate to avoid having to subscribe and
+        // unsubscribe for webkitTransitionEnd events.
         container.addEventListener('webkitTransitionEnd', function f(e) {
-          if (e.propertyName != 'opacity')
+          if (e.target != e.currentTarget || e.propertyName != 'opacity')
             return;
           container.removeEventListener('webkitTransitionEnd', f);
-          self.fadeCompleted_(container);
+          self.fadeCompleted_();
         });
         container.classList.add('transparent');
       }
@@ -791,15 +815,29 @@ cr.define('options', function() {
 
     /**
      * Called when a container opacity transition finishes.
-     * @param {HTMLElement} container The container element.
      * @private
      */
-    fadeCompleted_: function(container) {
-      if (container.classList.contains('transparent')) {
-        container.hidden = true;
+    fadeCompleted_: function() {
+      if (this.container.classList.contains('transparent')) {
+        this.pageDiv.hidden = true;
+        this.container.hidden = true;
+        this.onVisibilityChanged_();
         if (this.nestingLevel == 1)
           uber.invokeMethodOnParent('stopInterceptingEvents');
       }
+    },
+
+    /**
+     * Called when a page is shown or hidden to update the root options page
+     * based on this page's visibility.
+     * @private
+     */
+    onVisibilityChanged_: function() {
+      OptionsPage.updateRootPageFreezeState();
+      OptionsPage.updateManagedBannerVisibility();
+
+      if (this.isOverlay && !this.visible)
+        OptionsPage.updateScrollPosition_();
     },
 
     /**
