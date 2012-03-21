@@ -456,8 +456,6 @@ enum {
 }
 
 - (void)startDrag:(NSPoint)mouseLocation {
-  animateOnBoundsChange_ = NO;
-
   // Convert from Cocoa's screen coordinates to platform-indepedent screen
   // coordinates because PanelManager method takes platform-indepedent screen
   // coordinates.
@@ -467,7 +465,6 @@ enum {
 }
 
 - (void)endDrag:(BOOL)cancelled {
-  animateOnBoundsChange_ = YES;
   windowShim_->panel()->manager()->EndDragging(cancelled);
 }
 
@@ -502,21 +499,31 @@ enum {
   [[[[self window] contentView] superview]
       addTrackingArea:windowTrackingArea_.get()];
 
-  if (!animateOnBoundsChange_ || !animate) {
+  BOOL jumpToDestination = (!animateOnBoundsChange_ || !animate);
+
+  // If no animation is in progress, apply bounds change instantly.
+  if (jumpToDestination && ![self isAnimatingBounds]) {
     [[self window] setFrame:frame display:YES animate:NO];
     return;
   }
+
+  NSDictionary *windowResize = [NSDictionary dictionaryWithObjectsAndKeys:
+      [self window], NSViewAnimationTargetKey,
+      [NSValue valueWithRect:frame], NSViewAnimationEndFrameKey, nil];
+  NSArray *animations = [NSArray arrayWithObjects:windowResize, nil];
+
+  // If an animation is in progress, update the animation with new target
+  // bounds. Otherwise, apply bounds change instantly.
+  if (jumpToDestination && [self isAnimatingBounds]) {
+    [boundsAnimation_ setViewAnimations:animations];
+    return;
+  }
+
   // Will be enabled back in animationDidEnd callback.
   [self disableTabContentsViewAutosizing];
 
   // Terminate previous animation, if it is still playing.
   [self terminateBoundsAnimation];
-
-  NSDictionary *windowResize = [NSDictionary dictionaryWithObjectsAndKeys:
-      [self window], NSViewAnimationTargetKey,
-      [NSValue valueWithRect:frame], NSViewAnimationEndFrameKey, nil];
-
-  NSArray *animations = [NSArray arrayWithObjects:windowResize, nil];
 
   boundsAnimation_ =
       [[NSViewAnimation alloc] initWithViewAnimations:animations];

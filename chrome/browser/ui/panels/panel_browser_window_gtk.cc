@@ -322,35 +322,33 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
   if (bounds == bounds_)
     return;
 
-  if (drag_widget_) {
-    DCHECK(!IsAnimatingBounds());
-    // If the current panel is being dragged, it should just move with the
-    // user drag, we should not animate.
-    gtk_window_move(window(), bounds.x(), bounds.y());
-  } else {
-    bool old_show_close_button = show_close_button_;
-    show_close_button_ =
-        bounds.width() > panel_->manager()->overflow_strip_width();
-    if (show_close_button_ != old_show_close_button)
-      titlebar()->UpdateCustomFrame(true);
+  bool old_show_close_button = show_close_button_;
+  show_close_button_ =
+      bounds.width() > panel_->manager()->overflow_strip_width();
+  if (show_close_button_ != old_show_close_button)
+    titlebar()->UpdateCustomFrame(true);
 
-    if (!bounds_.width() || !bounds_.height()) {
-      // If the old bounds are 0 in either dimension, we need to show the
-      // window as it would now be hidden.
-      gtk_widget_show(GTK_WIDGET(window()));
-      gdk_window_move(gtk_widget_get_window(GTK_WIDGET(window())), bounds_.x(),
-                      bounds_.y());
-    }
+  if (!bounds_.width() || !bounds_.height()) {
+    // If the old bounds are 0 in either dimension, we need to show the
+    // window as it would now be hidden.
+    gtk_widget_show(GTK_WIDGET(window()));
+    gdk_window_move(gtk_widget_get_window(GTK_WIDGET(window())), bounds_.x(),
+                    bounds_.y());
+  }
 
-    if (!animate) {
+  if (!animate) {
+    // If no animation is in progress, apply bounds change instantly. Otherwise,
+    // continue the animation with new target bounds.
+    if (!IsAnimatingBounds()) {
       if (bounds_.origin() != bounds.origin())
         gtk_window_move(window(), bounds.x(), bounds.y());
       if (bounds_.size() != bounds.size())
         ResizeWindow(bounds.width(), bounds.height());
-    } else if (window_size_known_) {
-      StartBoundsAnimation(bounds_, bounds);
     }
+  } else if (window_size_known_) {
+    StartBoundsAnimation(bounds_, bounds);
   }
+
   // If window size is not known, wait till the size is known before starting
   // the animation.
 

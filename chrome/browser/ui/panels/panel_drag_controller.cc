@@ -13,7 +13,7 @@
 #include "ui/gfx/rect.h"
 
 // static
-const int PanelDragController::kDetachDockedPanelThreshold = 60;
+const int PanelDragController::kDetachDockedPanelThreshold = 100;
 const int PanelDragController::kDockDetachedPanelThreshold = 30;
 
 PanelDragController::PanelDragController(PanelManager* panel_manager)

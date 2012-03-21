@@ -136,9 +136,11 @@ void PanelBrowserView::SetBoundsInternal(const gfx::Rect& new_bounds,
 
   bounds_ = new_bounds;
 
-  // No animation if the panel is being dragged.
-  if (!animate || mouse_dragging_state_ == DRAGGING_STARTED) {
-    ::BrowserView::SetBounds(new_bounds);
+  if (!animate) {
+    // If no animation is in progress, apply bounds change instantly. Otherwise,
+    // continue the animation with new target bounds.
+    if (!IsAnimatingBounds())
+      ::BrowserView::SetBounds(new_bounds);
     return;
   }
 
@@ -459,7 +461,7 @@ bool PanelBrowserView::OnTitlebarMousePressed(
   mouse_pressed_ = true;
   mouse_pressed_time_ = base::TimeTicks::Now();
   mouse_dragging_state_ = NO_DRAGGING;
-  mouse_location_ = mouse_location;
+  last_mouse_location_ = mouse_location;
   return true;
 }
 
@@ -471,11 +473,8 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
   if (!panel_->draggable())
     return true;
 
-  gfx::Point last_mouse_location = mouse_location_;
-  mouse_location_ = mouse_location;
-
-  int delta_x = mouse_location_.x() - last_mouse_location.x();
-  int delta_y = mouse_location_.y() - last_mouse_location.y();
+  int delta_x = mouse_location.x() - last_mouse_location_.x();
+  int delta_y = mouse_location.y() - last_mouse_location_.y();
   if (mouse_dragging_state_ == NO_DRAGGING &&
       ExceededDragThreshold(delta_x, delta_y)) {
     // When a drag begins, we do not want to the client area to still receive
@@ -483,11 +482,16 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
     old_focused_view_ = GetFocusManager()->GetFocusedView();
     GetFocusManager()->SetFocusedView(GetFrameView());
 
-    panel_->manager()->StartDragging(panel_.get(), last_mouse_location);
+    panel_->manager()->StartDragging(panel_.get(), last_mouse_location_);
     mouse_dragging_state_ = DRAGGING_STARTED;
   }
-  if (mouse_dragging_state_ == DRAGGING_STARTED)
-    panel_->manager()->Drag(mouse_location_);
+  if (mouse_dragging_state_ == DRAGGING_STARTED) {
+    panel_->manager()->Drag(mouse_location);
+
+    // Once in drag, update |last_mouse_location_| on each drag fragment, since
+    // we already dragged the panel up to the current mouse location.
+    last_mouse_location_ = mouse_location;
+  }
   return true;
 }
 
@@ -584,6 +588,10 @@ void PanelBrowserView::SetPanelAppIconVisibility(bool visible) {
 
 void PanelBrowserView::SetPanelAlwaysOnTop(bool on_top) {
   GetWidget()->SetAlwaysOnTop(on_top);
+}
+
+bool PanelBrowserView::IsAnimatingBounds() const {
+  return bounds_animator_.get() && bounds_animator_->is_animating();
 }
 
 // NativePanelTesting implementation.
@@ -699,6 +707,5 @@ bool NativePanelTestingWin::IsWindowSizeKnown() const {
 }
 
 bool NativePanelTestingWin::IsAnimatingBounds() const {
-  return panel_browser_view_->bounds_animator_.get() &&
-         panel_browser_view_->bounds_animator_->is_animating();
+  return panel_browser_view_->IsAnimatingBounds();
 }
