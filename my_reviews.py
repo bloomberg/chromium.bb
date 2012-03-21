@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,31 +61,54 @@ class Stats(object):
   def __init__(self):
     self.total = 0
     self.actually_reviewed = 0
-    self.average_latency = 0.
-    self.number_latency = 0
+    self.latencies = []
     self.lgtms = 0
     self.multiple_lgtms = 0
     self.drive_by = 0
     self.not_requested = 0
     self.self_review = 0
 
-    self.percent_done = 0.
     self.percent_lgtm = 0.
     self.percent_drive_by = 0.
     self.percent_not_requested = 0.
     self.days = 0
-    self.review_per_day = 0.
-    self.review_done_per_day = 0.
 
-  def add_latency(self, latency):
-    self.average_latency = (
-        (self.average_latency * self.number_latency + latency) /
-        (self.number_latency + 1.))
-    self.number_latency += 1
+  @property
+  def average_latency(self):
+    if not self.latencies:
+      return 0
+    return sum(self.latencies) / float(len(self.latencies))
+
+  @property
+  def median_latency(self):
+    if not self.latencies:
+      return 0
+    length = len(self.latencies)
+    latencies = sorted(self.latencies)
+    if (length & 1) == 0:
+      return (latencies[length/2] + latencies[length/2+1]) / 2.
+    else:
+      return latencies[length/2]
+
+  @property
+  def percent_done(self):
+    if not self.total:
+      return 0
+    return self.actually_reviewed * 100. / self.total
+
+  @property
+  def review_per_day(self):
+    if not self.days:
+      return 0
+    return self.total * 1. / self.days
+
+  @property
+  def review_done_per_day(self):
+    if not self.days:
+      return 0
+    return self.actually_reviewed * 1. / self.days
 
   def finalize(self, first_day, last_day):
-    if self.total:
-      self.percent_done = (self.actually_reviewed * 100. / self.total)
     if self.actually_reviewed:
       self.percent_lgtm = (self.lgtms * 100. / self.actually_reviewed)
       self.percent_drive_by = (self.drive_by * 100. / self.actually_reviewed)
@@ -93,9 +116,6 @@ class Stats(object):
           self.not_requested * 100. / self.actually_reviewed)
     if first_day and last_day:
       self.days = (to_datetime(last_day) - to_datetime(first_day)).days + 1
-    if self.days:
-      self.review_per_day = self.total * 1. / self.days
-      self.review_done_per_day = self.actually_reviewed * 1. / self.days
 
 
 def _process_issue_lgtms(issue, reviewer, stats):
@@ -145,7 +165,7 @@ def _process_issue_latency(issue, reviewer, stats):
     stats.not_requested += 1
     return '<no rqst sent>'
   if latency > 0:
-    stats.add_latency(latency)
+    stats.latencies.append(latency)
   else:
     stats.not_requested += 1
   return to_time(latency)
@@ -239,6 +259,9 @@ def print_reviews(reviewer, created_after, created_before, instance_url):
   print >> sys.stderr, (
       'Average latency from request to first comment is %s.' %
       to_time(stats.average_latency))
+  print >> sys.stderr, (
+      'Median latency from request to first comment is %s.' %
+      to_time(stats.median_latency))
 
 
 def print_count(reviewer, created_after, created_before, instance_url):
