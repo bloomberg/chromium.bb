@@ -20,6 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -283,14 +284,10 @@ void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
 
 UserManagerImpl::UserManagerImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
-      demo_user_(kDemoUser, false),
-      guest_user_(kGuestUser, true),
-      stub_user_(kStubUser, false),
       logged_in_user_(NULL),
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
-      is_user_logged_in_(false),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
@@ -306,6 +303,12 @@ UserManagerImpl::UserManagerImpl()
 }
 
 UserManagerImpl::~UserManagerImpl() {
+  // Can't use STLDeleteElements because of the private destructor of User.
+  for (size_t i = 0; i < users_.size();++i)
+    delete users_[i];
+  users_.clear();
+  if (is_current_user_ephemeral_)
+    delete logged_in_user_;
 }
 
 const UserList& UserManagerImpl::GetUsers() const {
@@ -314,9 +317,13 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 void UserManagerImpl::UserLoggedIn(const std::string& email) {
-  DCHECK(!is_user_logged_in_);
-
-  is_user_logged_in_ = true;
+  // Remove the stub user if it is still around.
+  if (logged_in_user_) {
+    DCHECK(IsLoggedInAsStub());
+    delete logged_in_user_;
+    logged_in_user_ = NULL;
+    is_current_user_ephemeral_ = false;
+  }
 
   if (email == kGuestUser) {
     GuestUserLoggedIn();
@@ -400,14 +407,14 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
 void UserManagerImpl::DemoUserLoggedIn() {
   is_current_user_new_ = true;
   is_current_user_ephemeral_ = true;
-  logged_in_user_ = &demo_user_;
+  logged_in_user_ = new User(kDemoUser, false);
   SetInitialUserImage(kDemoUser);
   NotifyOnLogin();
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
   is_current_user_ephemeral_ = true;
-  logged_in_user_ = &guest_user_;
+  logged_in_user_ = new User(kGuestUser, true);
   NotifyOnLogin();
 }
 
@@ -417,6 +424,13 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   logged_in_user_ = CreateUser(email);
   SetInitialUserImage(email);
   NotifyOnLogin();
+}
+
+void UserManagerImpl::StubUserLoggedIn() {
+  is_current_user_ephemeral_ = true;
+  logged_in_user_ = new User(kStubUser, false);
+  logged_in_user_->SetImage(GetDefaultImage(kStubDefaultImageIndex),
+                            kStubDefaultImageIndex);
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
@@ -605,7 +619,7 @@ void UserManagerImpl::Observe(int type,
           base::Unretained(this)));
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
+      if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsStub()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
             profile == ProfileManager::GetDefaultProfile()) {
@@ -623,7 +637,7 @@ void UserManagerImpl::Observe(int type,
 }
 
 void UserManagerImpl::OnStateChanged() {
-  DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest());
+  DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsStub());
   if (observed_sync_service_->GetAuthError().state() != AuthError::NONE) {
       // Invalidate OAuth token to force Gaia sign-in flow. This is needed
       // because sign-out/sign-in solution is suggested to the user.
@@ -654,15 +668,19 @@ bool UserManagerImpl::IsCurrentUserEphemeral() const {
 }
 
 bool UserManagerImpl::IsUserLoggedIn() const {
-  return is_user_logged_in_;
+  return logged_in_user_;
 }
 
 bool UserManagerImpl::IsLoggedInAsDemoUser() const {
-  return logged_in_user_ == &demo_user_;
+  return IsUserLoggedIn() && logged_in_user_->email() == kDemoUser;
 }
 
 bool UserManagerImpl::IsLoggedInAsGuest() const {
-  return logged_in_user_ == &guest_user_;
+  return IsUserLoggedIn() && logged_in_user_->email() == kGuestUser;
+}
+
+bool UserManagerImpl::IsLoggedInAsStub() const {
+  return IsUserLoggedIn() && logged_in_user_->email() == kStubUser;
 }
 
 void UserManagerImpl::AddObserver(Observer* obs) {
@@ -826,7 +844,7 @@ bool UserManagerImpl::AreEphemeralUsersEnabled() const {
 
 bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
   // The guest user always is ephemeral.
-  if (email == guest_user_.email())
+  if (email == kGuestUser)
     return true;
 
   // The currently logged-in user is ephemeral iff logged in as ephemeral.
@@ -847,12 +865,6 @@ const User* UserManagerImpl::FindUserInList(const std::string& email) const {
       return *it;
   }
   return NULL;
-}
-
-void UserManagerImpl::StubUserLoggedIn() {
-  logged_in_user_ = &stub_user_;
-  stub_user_.SetImage(GetDefaultImage(kStubDefaultImageIndex),
-                      kStubDefaultImageIndex);
 }
 
 void UserManagerImpl::NotifyOnLogin() {

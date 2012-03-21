@@ -145,8 +145,8 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_login_display_.reset(new MockLoginDisplay());
     mock_login_display_host_.reset(new MockLoginDisplayHost());
 
-    mock_user_manager_ = new MockUserManager();
-    UserManager::Set(mock_user_manager_);
+    mock_user_manager_.reset(new MockUserManager());
+    old_user_manager_ = UserManager::Set(mock_user_manager_.get());
     EXPECT_CALL(*mock_user_manager_, IsKnownUser(kUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
@@ -182,6 +182,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    UserManager::Set(old_user_manager_);
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }
@@ -194,7 +195,8 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
   // Owned by UserManagerImplWrapper.
-  MockUserManager* mock_user_manager_;
+  scoped_ptr<MockUserManager> mock_user_manager_;
+  UserManager* old_user_manager_;
 
   // Owned by LoginUtilsWrapper.
   MockLoginUtils* mock_login_utils_;

@@ -33,7 +33,8 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
   StatusAreaHostAura* host = delegate->status_area_host();
 
 #if defined(OS_CHROMEOS)
-  ASSERT_FALSE(chromeos::UserManager::Get()->IsUserLoggedIn());
+  ASSERT_TRUE(!chromeos::UserManager::Get()->IsUserLoggedIn() ||
+              chromeos::UserManager::Get()->IsLoggedInAsStub());
   if (base::chromeos::IsRunningOnChromeOS()) {
     EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT,
               host->GetStatusAreaTextStyle());
@@ -46,7 +47,8 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
   CommandLine::ForCurrentProcess()->AppendSwitchNative(
       switches::kLoginProfile, "StatusAreaHostAuraTest");
   chromeos::UserManager::Get()->UserLoggedIn("foo@example.com");
-  ASSERT_TRUE(chromeos::UserManager::Get()->IsUserLoggedIn());
+  ASSERT_TRUE(chromeos::UserManager::Get()->IsUserLoggedIn() &&
+              !chromeos::UserManager::Get()->IsLoggedInAsStub());
 #endif
 
   Browser* browser = CreateBrowser(ProfileManager::GetDefaultProfile());

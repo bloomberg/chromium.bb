@@ -5,10 +5,12 @@
 #include "chrome/browser/website_settings_model.h"
 
 #include "base/at_exit.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/test_certificate_data.h"
@@ -47,9 +49,13 @@ class MockCertStore : public content::CertStore {
 
 class WebsiteSettingsModelTest : public testing::Test {
  public:
-  WebsiteSettingsModelTest() : testing::Test(),
-                               profile_(new TestingProfile()),
-                               cert_id_(0) {
+  WebsiteSettingsModelTest()
+      : testing::Test(),
+        message_loop_(MessageLoop::TYPE_UI),
+        ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_thread_(content::BrowserThread::FILE, &message_loop_),
+        profile_(new TestingProfile()),
+        cert_id_(0) {
   }
 
   virtual ~WebsiteSettingsModelTest() {
@@ -76,6 +82,10 @@ class WebsiteSettingsModelTest : public testing::Test {
   }
 
   Profile* profile() const { return profile_.get(); }
+
+  MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   scoped_ptr<Profile> profile_;
   int cert_id_;

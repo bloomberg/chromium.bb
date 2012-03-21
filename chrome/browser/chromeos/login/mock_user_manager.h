@@ -28,8 +28,6 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
   MOCK_CONST_METHOD1(IsKnownUser, bool(const std::string&));
   MOCK_CONST_METHOD1(FindUser, const User*(const std::string&));
-  MOCK_CONST_METHOD0(GetLoggedInUser, const User&(void));
-  MOCK_METHOD0(GetLoggedInUser, User&(void));
   MOCK_CONST_METHOD1(IsDisplayNameUnique, bool(const std::string&));
   MOCK_METHOD2(SaveUserOAuthStatus, void(const std::string&,
                                          User::OAuthTokenStatus));
@@ -50,10 +48,24 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
   MOCK_CONST_METHOD0(DownloadedProfileImage, const SkBitmap& (void));
+
+  // You can't mock this function easily because nobody can create User objects
+  // but the UserManagerImpl and us.
+  virtual const User& GetLoggedInUser() const OVERRIDE;
+
+  // You can't mock this function easily because nobody can create User objects
+  // but the UserManagerImpl and us.
+  virtual User& GetLoggedInUser() OVERRIDE;
+
+  // Sets a new User instance.
+  void SetLoggedInUser(const std::string& email, bool guest);
+
+  User* user_;
 };
 
 }  // namespace chromeos

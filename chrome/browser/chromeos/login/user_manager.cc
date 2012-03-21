@@ -41,6 +41,10 @@ class UserManagerImplWrapper {
     ptr_.reset(ptr);
   }
 
+  UserManager* release() {
+    return ptr_.release();
+  }
+
  private:
   friend struct DefaultSingletonTraits<UserManagerImplWrapper>;
 
@@ -63,8 +67,10 @@ UserManager* UserManager::Get() {
 }
 
 // static
-void UserManager::Set(UserManager* mock) {
+UserManager* UserManager::Set(UserManager* mock) {
+  UserManager* old_manager = UserManagerImplWrapper::GetInstance()->release();
   UserManagerImplWrapper::GetInstance()->reset(mock);
+  return old_manager;
 }
 
 // static

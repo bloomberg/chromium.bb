@@ -52,6 +52,7 @@ class UserManagerTest : public testing::Test {
         ->SetLocalState(local_state_.get());
     UserManager::RegisterPrefs(local_state_.get());
 
+    old_user_manager_ = UserManager::Get();
     // A stub user is automatically logged in by UserManager. Reset this.
     ResetUserManager();
   }
@@ -65,6 +66,8 @@ class UserManagerTest : public testing::Test {
     EXPECT_TRUE(
       cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
     cros_settings_->AddSettingsProvider(device_settings_provider_);
+
+    UserManager::Set(old_user_manager_);
   }
 
   bool GetUserManagerEphemeralUsersEnabled() const {
@@ -88,9 +91,13 @@ class UserManagerTest : public testing::Test {
   }
 
   void ResetUserManager() {
-    UserManagerImpl* user_manager_impl(new UserManagerImpl());
+    user_manager_impl.reset(new UserManagerImpl());
+    // Clean up the stub user that gets created in the UserManagerImpl
+    // constructor.
+    delete user_manager_impl->logged_in_user_;
     user_manager_impl->logged_in_user_ = NULL;
-    UserManager::Set(user_manager_impl);
+    user_manager_impl->is_current_user_ephemeral_ = false;
+    UserManager::Set(user_manager_impl.get());
   }
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
@@ -117,6 +124,9 @@ class UserManagerTest : public testing::Test {
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
   scoped_ptr<TestingPrefService> local_state_;
+
+  scoped_ptr<UserManagerImpl> user_manager_impl;
+  UserManager* old_user_manager_;
 };
 
 TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/signed_settings_cache.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -22,6 +23,9 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::AnyNumber;
+using ::testing::Return;
 
 namespace em = enterprise_management;
 namespace chromeos {
@@ -40,6 +44,11 @@ class CrosSettingsTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    mock_user_manager_.reset(new MockUserManager());
+    old_user_manager_ = UserManager::Set(mock_user_manager_.get());
+    EXPECT_CALL(*mock_user_manager_, IsCurrentUserOwner())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
     // Reset the cache between tests.
     ApplyEmptyPolicy();
   }
@@ -50,6 +59,7 @@ class CrosSettingsTest : public testing::Test {
     // Reset the cache between tests.
     ApplyEmptyPolicy();
     STLDeleteValues(&expected_props_);
+    UserManager::Set(old_user_manager_);
   }
 
   void FetchPref(const std::string& pref) {
@@ -113,6 +123,8 @@ class CrosSettingsTest : public testing::Test {
 
   ScopedTestingLocalState local_state_;
 
+  scoped_ptr<MockUserManager> mock_user_manager_;
+  UserManager* old_user_manager_;
   ScopedStubCrosEnabler stub_cros_enabler_;
 };
 

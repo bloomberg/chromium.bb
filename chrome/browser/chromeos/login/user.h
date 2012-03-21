@@ -72,6 +72,8 @@ class User {
 
  private:
   friend class UserManagerImpl;
+  friend class MockUserManager;
+  friend class UserManagerTest;
 
   // Do not allow anyone else to create new User instances.
   User(const std::string& email, bool is_guest);

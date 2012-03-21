@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#endif
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
@@ -174,7 +178,15 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
 // Tests IDC_SEARCH (the Search key on Chrome OS devices).
 #if defined(OS_CHROMEOS)
+
+namespace chromeos {
+
 TEST_F(BrowserCommandsTest, Search) {
+  scoped_ptr<MockUserManager> mock_user_manager(new MockUserManager());
+  UserManager* old_user_manager = UserManager::Set(mock_user_manager.get());
+  EXPECT_CALL(*mock_user_manager, IsLoggedInAsGuest())
+      .Times(1).WillRepeatedly(::testing::Return(false));
+
   // Load a non-NTP URL.
   GURL non_ntp_url("http://foo/");
   AddTab(browser(), non_ntp_url);
@@ -196,5 +208,9 @@ TEST_F(BrowserCommandsTest, Search) {
   current_url = browser()->GetSelectedWebContents()->GetURL();
   EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
   EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
+
+  UserManager::Set(old_user_manager);
 }
+
+}  // namespace chromeos
 #endif

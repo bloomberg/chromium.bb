@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -35,6 +35,9 @@
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using ::testing::AnyNumber;
+using ::testing::Return;
 
 namespace msm = mozilla_security_manager;
 namespace chromeos {
@@ -882,6 +885,14 @@ TEST_F(OncNetworkParserTest, TestProxySettingsManual) {
 }
 
 TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
+  scoped_ptr<MockUserManager> mock_user_manager(new MockUserManager());
+  UserManager* old_user_manager = UserManager::Set(mock_user_manager.get());
+  mock_user_manager->SetLoggedInUser("onc@example.com", false);
+
+  EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
+      .Times(2)
+      .WillRepeatedly(Return(false));
+
   NetworkUIData::ONCSource source = NetworkUIData::ONC_SOURCE_USER_IMPORT;
 
   // Setup environment needed by UserManager.
@@ -903,13 +914,18 @@ TEST(OncNetworkParserUserExpansionTest, GetUserExpandedValue) {
                 login_email_pattern, source));
 
   // Log in a user and check that the expansions work as expected.
-  UserManager::Get()->UserLoggedIn("onc@example.com");
+  EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
+      .Times(2)
+      .WillRepeatedly(Return(true));
+
   EXPECT_EQ("a onc b",
             chromeos::OncNetworkParser::GetUserExpandedValue(
                 login_id_pattern, source));
   EXPECT_EQ("a onc@example.com b",
             chromeos::OncNetworkParser::GetUserExpandedValue(
                 login_email_pattern, source));
+
+  UserManager::Set(old_user_manager);
 }
 
 }  // namespace chromeos

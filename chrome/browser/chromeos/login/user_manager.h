@@ -53,8 +53,25 @@ class UserManager {
   // called from the main UI thread.
   static UserManager* Get();
 
-  // Set UserManager singleton object for test purpose only!
-  static void Set(UserManager* mock);
+  // Set UserManager singleton object for test purpose only! Returns the
+  // previous singleton object and releases it from the singleton memory
+  // management. It is the responsibility of the test writer to restore the
+  // original object or delete it if needed.
+  //
+  // The intended usage is meant to be something like this:
+  //   virtual void SetUp() {
+  //     mock_user_manager_.reset(new MockUserManager());
+  //     old_user_manager_ = UserManager::Set(mock_user_manager_.get());
+  //     EXPECT_CALL...
+  //     ...
+  //   }
+  //   virtual void TearDown() {
+  //     ...
+  //     UserManager::Set(old_user_manager_);
+  //   }
+  //   scoped_ptr<MockUserManager> mock_user_manager_;
+  //   UserManager* old_user_manager_;
+  static UserManager* Set(UserManager* mock);
 
   // Registers user manager preferences.
   static void RegisterPrefs(PrefService* local_state);
@@ -176,6 +193,9 @@ class UserManager {
 
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
+
+  // Returns true if we're logged in as the stub userused for testing on linux.
+  virtual bool IsLoggedInAsStub() const = 0;
 
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;
