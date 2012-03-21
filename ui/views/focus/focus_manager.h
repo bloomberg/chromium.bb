@@ -227,11 +227,6 @@ class VIEWS_EXPORT FocusManager {
   // This is effective only on x11.
   void MaybeResetMenuKeyState(const KeyEvent& key);
 
-#if defined(TOOLKIT_USES_GTK)
-  // Resets menu key state. TODO(oshima): Remove this when views/gtk is removed.
-  void ResetMenuKeyState();
-#endif
-
   // Called by a RootView when a view within its hierarchy is removed
   // from its parent. This will only be called by a RootView in a
   // hierarchy of Widgets that this FocusManager is attached to the

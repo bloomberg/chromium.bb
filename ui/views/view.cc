@@ -37,9 +37,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #endif
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/base/gtk/scoped_region.h"
-#endif
 
 namespace {
 
@@ -785,9 +782,6 @@ bool View::HitTest(const gfx::Point& l) const {
 #elif defined(OS_WIN)
       base::win::ScopedRegion rgn(mask.CreateNativeRegion());
       return !!PtInRegion(rgn, l.x(), l.y());
-#elif defined(TOOLKIT_USES_GTK)
-      ui::ScopedRegion rgn(mask.CreateNativeRegion());
-      return gdk_region_point_in(rgn.Get(), l.x(), l.y());
 #endif
     }
     // No mask, but inside our bounds.

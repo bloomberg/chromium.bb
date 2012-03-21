@@ -18,8 +18,6 @@
 #include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
 #include "ui/views/widget/native_widget_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 namespace views {
@@ -30,13 +28,11 @@ namespace {
 typedef NativeWidgetAura NativeWidgetPlatform;
 #elif defined(OS_WIN)
 typedef NativeWidgetWin NativeWidgetPlatform;
-#elif defined(TOOLKIT_USES_GTK)
-typedef NativeWidgetGtk NativeWidgetPlatform;
 #endif
 
-// A widget that assumes mouse capture always works. It won't on Gtk/Aura in
+// A widget that assumes mouse capture always works. It won't on Aura in
 // testing, so we mock it.
-#if defined(TOOLKIT_USES_GTK) || defined(USE_AURA)
+#if defined(USE_AURA)
 class NativeWidgetCapture : public NativeWidgetPlatform {
  public:
   NativeWidgetCapture(internal::NativeWidgetDelegate* delegate)
@@ -69,8 +65,6 @@ class NativeWidgetCapture : public NativeWidgetPlatform {
 typedef NativeWidgetCapture NativeWidgetPlatformForTest;
 #elif defined(OS_WIN)
 typedef NativeWidgetWin NativeWidgetPlatformForTest;
-#elif defined(TOOLKIT_USES_GTK)
-typedef NativeWidgetCapture NativeWidgetPlatformForTest;
 #endif
 
 // A view that always processes all mouse events.
@@ -186,13 +180,7 @@ TEST_F(WidgetTest, WidgetInitParams) {
 TEST_F(WidgetTest, GetTopLevelWidget_Native) {
   // Create a hierarchy of native widgets.
   Widget* toplevel = CreateTopLevelPlatformWidget();
-#if defined(TOOLKIT_USES_GTK)
-  NativeWidgetGtk* native_widget =
-      static_cast<NativeWidgetGtk*>(toplevel->native_widget());
-  gfx::NativeView parent = native_widget->window_contents();
-#else
   gfx::NativeView parent = toplevel->GetNativeView();
-#endif
   Widget* child = CreateChildPlatformWidget(parent);
 
   EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
@@ -288,13 +276,7 @@ TEST_F(WidgetTest, ChangeActivation) {
 // Tests visibility of child widgets.
 TEST_F(WidgetTest, Visibility) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-#if defined(TOOLKIT_USES_GTK)
-  NativeWidgetGtk* native_widget =
-      static_cast<NativeWidgetGtk*>(toplevel->native_widget());
-  gfx::NativeView parent = native_widget->window_contents();
-#else
   gfx::NativeView parent = toplevel->GetNativeView();
-#endif
   Widget* child = CreateChildPlatformWidget(parent);
 
   EXPECT_FALSE(toplevel->IsVisible());
@@ -523,12 +505,7 @@ TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
 }
 
 // NativeWidget owns its Widget, part 2: NativeWidget is a NativeWidget.
-#if defined(TOOLKIT_USES_GTK)
-// Temporarily disable the test (http://crbug.com/104945).
-TEST_F(WidgetOwnershipTest, DISABLED_Ownership_ViewsNativeWidgetOwnsWidget) {
-#else
 TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
-#endif
   OwnershipTestState state;
 
   Widget* toplevel = CreateTopLevelPlatformWidget();
@@ -568,8 +545,6 @@ TEST_F(WidgetOwnershipTest,
   delete widget->GetNativeView();
 #elif defined(OS_WIN)
   DestroyWindow(widget->GetNativeView());
-#elif defined(TOOLKIT_USES_GTK)
-  gtk_widget_destroy(widget->GetNativeView());
 #endif
 
   EXPECT_TRUE(state.widget_deleted);
@@ -578,14 +553,8 @@ TEST_F(WidgetOwnershipTest,
 
 // NativeWidget owns its Widget, part 4: NativeWidget is a NativeWidget,
 // destroyed by the view hierarchy that contains it.
-#if defined(TOOLKIT_USES_GTK)
-// Temporarily disable the test (http://crbug.com/104945).
-TEST_F(WidgetOwnershipTest,
-       DISABLED_Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy) {
-#else
 TEST_F(WidgetOwnershipTest,
        Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy) {
-#endif
   OwnershipTestState state;
 
   Widget* toplevel = CreateTopLevelPlatformWidget();

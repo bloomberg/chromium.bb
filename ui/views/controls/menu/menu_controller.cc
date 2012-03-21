@@ -28,8 +28,6 @@
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
 using base::Time;
@@ -952,37 +950,6 @@ base::MessagePumpDispatcher::DispatchStatus
   return exit_type_ != EXIT_NONE ?
       base::MessagePumpDispatcher::EVENT_QUIT :
       base::MessagePumpDispatcher::EVENT_PROCESSED;
-}
-#else
-bool MenuController::Dispatch(GdkEvent* event) {
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    gtk_main_do_event(event);
-    return false;
-  }
-
-  switch (event->type) {
-    case GDK_KEY_PRESS: {
-      if (!OnKeyDown(ui::WindowsKeyCodeForGdkKeyCode(event->key.keyval)))
-        return false;
-
-      guint32 keycode = gdk_keyval_to_unicode(event->key.keyval);
-      if (keycode)
-        return !SelectByChar(keycode);
-      return true;
-    }
-
-    case GDK_KEY_RELEASE:
-      return true;
-
-    default:
-      break;
-  }
-
-  // We don't want Gtk to handle keyboard events, otherwise if they get
-  // handled by Gtk, unexpected behavior may occur. For example Tab key
-  // may cause unexpected focus traversing.
-  gtk_main_do_event(event);
-  return exit_type_ == EXIT_NONE;
 }
 #endif
 

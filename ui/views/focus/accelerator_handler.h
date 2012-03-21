@@ -8,10 +8,6 @@
 
 #include "build/build_config.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include <set>
 #include <vector>
 
@@ -49,8 +45,6 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
 #elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       XEvent* xev) OVERRIDE;
-#else
-  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
  private:

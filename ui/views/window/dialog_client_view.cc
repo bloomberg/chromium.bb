@@ -10,8 +10,6 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
-#elif defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
 #endif
 
 #include <algorithm>
@@ -24,17 +22,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(OS_WIN)
-#include "ui/gfx/native_theme.h"
-#else
-#include "ui/gfx/skia_utils_gtk.h"
-#endif
 
 namespace views {
 namespace {
@@ -312,19 +305,8 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 void DialogClientView::OnPaint(gfx::Canvas* canvas) {
-#if defined(TOOLKIT_USES_GTK)
-  // TODO(benrg): Unfortunately, GetSystemColor often returns the wrong color
-  // under GTK right now. This is meant to be a temporary fix. See related TODO
-  // in ui/gfx/native_theme_gtk.cc.
-  GtkWidget* widget = GetWidget()->GetNativeView();
-  if (!GTK_IS_WINDOW(widget))
-    return;
-  SkColor bg_color = gfx::GdkColorToSkColor(
-      gtk_widget_get_style(widget)->bg[GTK_STATE_NORMAL]);
-#else
   SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
       gfx::NativeTheme::kColorId_DialogBackground);
-#endif
   canvas->FillRect(GetLocalBounds(), bg_color);
 }
 

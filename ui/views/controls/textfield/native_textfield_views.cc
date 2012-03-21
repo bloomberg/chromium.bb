@@ -37,10 +37,6 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/cursor.h"
 #endif
@@ -273,8 +269,6 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
   static HCURSOR ibeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return text_cursor ? ibeam : arrow;
-#else
-  return text_cursor ? gfx::GetCursor(GDK_XTERM) : NULL;
 #endif
 }
 

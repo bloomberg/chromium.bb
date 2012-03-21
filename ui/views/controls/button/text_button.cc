@@ -692,8 +692,6 @@ gfx::Size TextButton::GetPreferredSize() {
         prefsize.height(),
         platform_font->vertical_dlus_to_pixels(kMinHeightDLUs)));
   }
-  // GTK returns a meaningful preferred size so that we don't need to adjust
-  // the preferred size as we do on windows.
 #endif
 
   return prefsize;

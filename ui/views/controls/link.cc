@@ -6,10 +6,6 @@
 
 #include "build/build_config.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -18,10 +14,6 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/events/event.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/cursor.h"
@@ -59,8 +51,6 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
 #elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
-#elif defined(TOOLKIT_USES_GTK)
-  return gfx::GetCursor(GDK_HAND2);
 #endif
 }
 

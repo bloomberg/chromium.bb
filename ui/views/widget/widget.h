@@ -659,9 +659,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void DestroyRootView();
 
  private:
-  // TODO(beng): Remove NativeWidgetGtk's dependence on the mouse state flags.
-  friend class NativeWidgetGtk;
-
   friend class NativeTextfieldViewsTest;
   friend class NativeComboboxViewsTest;
   friend class ScopedEvent;

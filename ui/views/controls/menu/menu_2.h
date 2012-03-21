@@ -22,8 +22,6 @@ class MenuModel;
 
 namespace views {
 
-class NativeMenuGtk;
-
 // A menu. Populated from a model, and relies on a delegate to execute commands.
 //
 // WARNING: do NOT create and use Menu2 on the stack. Menu2 notifies the model
@@ -85,7 +83,6 @@ class VIEWS_EXPORT Menu2 {
   void SetMinimumWidth(int width);
 
  private:
-  friend class NativeMenuGtk;
 
   ui::MenuModel* model_;
 

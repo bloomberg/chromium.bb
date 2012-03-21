@@ -4,19 +4,11 @@
 
 #include "ui/views/controls/single_split_view.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/single_split_view_listener.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/cursor.h"
@@ -108,9 +100,6 @@ gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
   static HCURSOR we_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR ns_resize_cursor = LoadCursor(NULL, IDC_SIZENS);
   return is_horizontal_ ? we_resize_cursor : ns_resize_cursor;
-#elif defined(TOOLKIT_USES_GTK)
-  return gfx::GetCursor(is_horizontal_ ? GDK_SB_H_DOUBLE_ARROW :
-                                         GDK_SB_V_DOUBLE_ARROW);
 #endif
 }
 

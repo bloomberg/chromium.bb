@@ -9,10 +9,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/resize_area_delegate.h"
 
-#if defined(OS_LINUX)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/cursor.h"
 #endif
@@ -44,8 +40,6 @@ gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
 #elif defined(OS_WIN)
   static HCURSOR g_resize_cursor = LoadCursor(NULL, IDC_SIZEWE);
   return g_resize_cursor;
-#elif defined(OS_LINUX)
-  return gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW);
 #endif
 }
 

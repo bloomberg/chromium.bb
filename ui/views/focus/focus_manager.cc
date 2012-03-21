@@ -435,12 +435,6 @@ void FocusManager::MaybeResetMenuKeyState(const KeyEvent& key) {
 #endif
 }
 
-#if defined(TOOLKIT_USES_GTK)
-void FocusManager::ResetMenuKeyState() {
-  should_handle_menu_key_release_ = false;
-}
-#endif
-
 ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
     const ui::Accelerator& accelerator) const {
   return accelerator_manager_->GetCurrentTarget(accelerator);

@@ -746,7 +746,7 @@ TEST_F(NativeTextfieldViewsTest, DragToSelect) {
   EXPECT_EQ(textfield_->text(), textfield_->GetSelectedText());
 }
 
-#if defined(OS_WIN) || defined(TOOLKIT_USES_GTK)
+#if defined(OS_WIN)
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
@@ -794,10 +794,6 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   bad_data.SetHtml(string16(ASCIIToUTF16("x")), GURL("x.org"));
   ui::OSExchangeData::DownloadFileInfo download(FilePath(), NULL);
   bad_data.SetDownloadFileInfo(download);
-#else
-  // Skip OSExchangeDataProviderWin::SetURL, which also sets CF_TEXT / STRING.
-  bad_data.SetURL(GURL("x.org"), string16(ASCIIToUTF16("x")));
-  bad_data.SetPickledData(GDK_SELECTION_PRIMARY, Pickle());
 #endif
   EXPECT_FALSE(textfield_view_->CanDrop(bad_data));
 }

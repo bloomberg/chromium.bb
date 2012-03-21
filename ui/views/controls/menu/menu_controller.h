@@ -248,8 +248,6 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 #elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       XEvent* xevent) OVERRIDE;
-#else
-  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
   // Key processing. The return value of this is returned from Dispatch.

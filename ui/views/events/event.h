@@ -23,11 +23,6 @@ class Event;
 }
 #endif
 
-// TODO(msw): Remove GTK support from views event code when possible.
-#if defined(TOOLKIT_USES_GTK)
-typedef union _GdkEvent GdkEvent;
-#endif
-
 namespace views {
 
 #if defined(USE_AURA)
@@ -57,9 +52,6 @@ class RootView;
 class VIEWS_EXPORT Event {
  public:
   const NativeEvent& native_event() const { return native_event_; }
-#if defined(TOOLKIT_USES_GTK)
-  GdkEvent* gdk_event() const { return gdk_event_; }
-#endif
   ui::EventType type() const { return type_; }
   const base::Time& time_stamp() const { return time_stamp_; }
 
@@ -97,15 +89,8 @@ class VIEWS_EXPORT Event {
  protected:
   Event(ui::EventType type, int flags);
   Event(const NativeEvent& native_event, ui::EventType type, int flags);
-#if defined(TOOLKIT_USES_GTK)
-  Event(GdkEvent* gdk_event, ui::EventType type, int flags);
-#endif
-
   Event(const Event& model)
       : native_event_(model.native_event()),
-#if defined(TOOLKIT_USES_GTK)
-        gdk_event_(model.gdk_event_),
-#endif
         type_(model.type()),
         time_stamp_(model.time_stamp()),
         flags_(model.flags()) {
@@ -117,9 +102,6 @@ class VIEWS_EXPORT Event {
   void operator=(const Event&);
 
   NativeEvent native_event_;
-#if defined(TOOLKIT_USES_GTK)
-  GdkEvent* gdk_event_;
-#endif
   ui::EventType type_;
   base::Time time_stamp_;
   int flags_;
@@ -141,9 +123,6 @@ class VIEWS_EXPORT LocatedEvent : public Event {
 
  protected:
   explicit LocatedEvent(const NativeEvent& native_event);
-#if defined(TOOLKIT_USES_GTK)
-  explicit LocatedEvent(GdkEvent* gdk_event);
-#endif
 
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Simple initialization from cracked metadata.
@@ -173,10 +152,6 @@ class TouchEvent;
 class VIEWS_EXPORT MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(const NativeEvent& native_event);
-#if defined(TOOLKIT_USES_GTK)
-  explicit MouseEvent(GdkEvent* gdk_event);
-#endif
-
   // Create a new MouseEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
@@ -303,9 +278,6 @@ class VIEWS_EXPORT TouchEvent : public LocatedEvent {
 class VIEWS_EXPORT KeyEvent : public Event {
  public:
   explicit KeyEvent(const NativeEvent& native_event);
-#if defined(TOOLKIT_USES_GTK)
-  explicit KeyEvent(GdkEvent* gdk_event);
-#endif
 
   // Creates a new KeyEvent synthetically (i.e. not in response to an input
   // event from the host environment). This is typically only used in testing as
@@ -359,9 +331,6 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
   static const int kWheelDelta;
 
   explicit MouseWheelEvent(const NativeEvent& native_event);
-#if defined(TOOLKIT_USES_GTK)
-  explicit MouseWheelEvent(GdkEvent* gdk_event);
-#endif
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
   // The amount to scroll. This is in multiples of kWheelDelta.

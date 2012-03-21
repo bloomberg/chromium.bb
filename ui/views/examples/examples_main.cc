@@ -23,10 +23,6 @@
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer;
-#elif defined(OS_LINUX)
-  // Initializes gtk stuff.
-  g_type_init();
-  gtk_init(&argc, &argv);
 #endif
   CommandLine::Init(argc, argv);
 

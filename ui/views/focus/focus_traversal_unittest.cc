@@ -159,8 +159,6 @@ class BorderView : public NativeViewHost {
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
 #if defined(OS_WIN) || defined(USE_AURA)
         params.parent = parent->GetWidget()->GetNativeView();
-#elif defined(TOOLKIT_USES_GTK)
-        params.parent = native_view();
 #else
         NOTREACHED();
 #endif

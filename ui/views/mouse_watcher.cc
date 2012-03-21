@@ -94,22 +94,6 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
         break;
     }
   }
-#elif defined(TOOLKIT_USES_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
-  }
-
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
-    switch (event->type) {
-      case GDK_MOTION_NOTIFY:
-        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_MOVE);
-        break;
-      case GDK_LEAVE_NOTIFY:
-        HandleGlobalMouseMoveEvent(MouseWatcherHost::MOUSE_EXIT);
-        break;
-      default:
-        break;
-    }
-  }
 #endif
 
  private:

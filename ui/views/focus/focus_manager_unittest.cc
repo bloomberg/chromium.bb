@@ -17,10 +17,6 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
-#endif
-
 namespace views {
 
 enum FocusTestEventType {

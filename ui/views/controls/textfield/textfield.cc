@@ -4,10 +4,6 @@
 
 #include "ui/views/controls/textfield/textfield.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkkeysyms.h>
-#endif
-
 #include <string>
 
 #include "base/string_util.h"
@@ -23,9 +19,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_LINUX)
-#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.

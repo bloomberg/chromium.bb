@@ -19,27 +19,6 @@
 
 namespace views {
 
-namespace {
-
-// The following two functions are copied from event_gtk.cc. These will be
-// removed when GTK dependency is removed.
-#if defined(TOOLKIT_USES_GTK)
-uint16 GetCharacterFromGdkKeyval(guint keyval) {
-  guint32 ch = gdk_keyval_to_unicode(keyval);
-
-  // We only support BMP characters.
-  return ch < 0xFFFE ? static_cast<uint16>(ch) : 0;
-}
-
-GdkEventKey* GetGdkEventKeyFromNative(GdkEvent* gdk_event) {
-  DCHECK(gdk_event->type == GDK_KEY_PRESS ||
-         gdk_event->type == GDK_KEY_RELEASE);
-  return &gdk_event->key;
-}
-#endif
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent, public:
 
@@ -48,15 +27,6 @@ uint16 KeyEvent::GetCharacter() const {
     return character_;
 
   if (!native_event()) {
-#if defined(TOOLKIT_USES_GTK)
-    // This event may have been created from a Gdk event.
-    if (!IsControlDown() && gdk_event()) {
-      uint16 ch = GetCharacterFromGdkKeyval(
-          GetGdkEventKeyFromNative(gdk_event())->keyval);
-      if (ch)
-        return ch;
-    }
-#endif
     return ui::GetCharacterFromKeyCode(key_code_, flags());
   }
 
@@ -74,29 +44,6 @@ uint16 KeyEvent::GetUnmodifiedCharacter() const {
     return unmodified_character_;
 
   if (!native_event()) {
-#if defined(TOOLKIT_USES_GTK)
-    // This event may have been created from a Gdk event.
-    if (gdk_event()) {
-      GdkEventKey* key = GetGdkEventKeyFromNative(gdk_event());
-
-      static const guint kIgnoredModifiers =
-        GDK_CONTROL_MASK | GDK_LOCK_MASK | GDK_MOD1_MASK | GDK_MOD2_MASK |
-        GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK | GDK_SUPER_MASK |
-        GDK_HYPER_MASK | GDK_META_MASK;
-
-      // We can't use things like (key->state & GDK_SHIFT_MASK), as it may mask
-      // out bits used by X11 or Gtk internally.
-      GdkModifierType modifiers =
-        static_cast<GdkModifierType>(key->state & ~kIgnoredModifiers);
-      guint keyval = 0;
-      if (gdk_keymap_translate_keyboard_state(NULL, key->hardware_keycode,
-            modifiers, key->group, &keyval, NULL, NULL, NULL)) {
-        uint16 ch = GetCharacterFromGdkKeyval(keyval);
-        if (ch)
-          return ch;
-      }
-    }
-#endif
     return ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
   }
 
