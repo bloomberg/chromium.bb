@@ -25,10 +25,7 @@ class FileBrowserNotifications
     FORMAT_SUCCESS,
     FORMAT_FAIL,
     FORMAT_START,
-    FORMAT_START_FAIL,
-    GDATA_SYNC,
-    GDATA_SYNC_SUCCESS,
-    GDATA_SYNC_FAIL,
+    FORMAT_START_FAIL
   };
 
   typedef std::map<std::string, linked_ptr<chromeos::SystemNotification> >
@@ -45,9 +42,6 @@ class FileBrowserNotifications
                                            bool is_parent,
                                            bool success,
                                            bool is_unsupported);
-
-  void ManageNotificationOnGDataSyncProgress(int count);
-  void ManageNotificationOnGDataSyncFinish(bool success);
 
   void ShowNotification(NotificationType type, const std::string& path);
   void ShowNotificationDelayed(NotificationType type,

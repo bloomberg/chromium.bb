@@ -159,10 +159,8 @@ void GDataOperationRegistry::OnOperationStart(
 
   *id = in_flight_operations_.Add(operation);
   DVLOG(1) << "GDataOperation[" << *id << "] started.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnProgressUpdate(GetProgressStatusList()));
 }
 
 void GDataOperationRegistry::OnOperationProgress(OperationID id) {
@@ -173,30 +171,17 @@ void GDataOperationRegistry::OnOperationProgress(OperationID id) {
 
   DVLOG(1) << "GDataOperation[" << id << "] " <<
       operation->progress_status().ToString();
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnProgressUpdate(GetProgressStatusList()));
 }
 
 void GDataOperationRegistry::OnOperationFinish(OperationID id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Operation* operation = in_flight_operations_.Lookup(id);
-  DCHECK(operation);
-
   DVLOG(1) << "GDataOperation[" << id << "] finished.";
-  if (IsFileTransferOperation(operation)) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnProgressUpdate(GetProgressStatusList()));
-  }
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnProgressUpdate(GetProgressStatusList()));
   in_flight_operations_.Remove(id);
-}
-
-bool GDataOperationRegistry::IsFileTransferOperation(
-    const Operation* operation) const {
-  OperationType type = operation->progress_status().operation_type;
-  return type == OPERATION_UPLOAD || type == OPERATION_DOWNLOAD;
 }
 
 std::vector<GDataOperationRegistry::ProgressStatus>
@@ -208,8 +193,7 @@ GDataOperationRegistry::GetProgressStatusList() {
        !iter.IsAtEnd();
        iter.Advance()) {
     const Operation* operation = iter.GetCurrentValue();
-    if (IsFileTransferOperation(operation))
-      status_list.push_back(operation->progress_status());
+    status_list.push_back(operation->progress_status());
   }
   return status_list;
 }

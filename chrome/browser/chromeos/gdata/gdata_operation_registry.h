@@ -132,8 +132,6 @@ class GDataOperationRegistry {
   void OnOperationProgress(OperationID operation);
   void OnOperationFinish(OperationID operation);
 
-  bool IsFileTransferOperation(const Operation* operation) const;
-
   typedef IDMap<Operation, IDMapOwnPointer> OperationIDMap;
   OperationIDMap in_flight_operations_;
   ObserverList<Observer> observer_list_;
