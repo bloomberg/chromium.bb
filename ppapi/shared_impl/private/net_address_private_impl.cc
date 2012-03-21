@@ -32,7 +32,9 @@
 typedef ADDRESS_FAMILY sa_family_t;
 
 #define s6_addr16 u.Word
-#endif
+#define ntohs(x) _byteswap_ushort(x)
+#define htons(x) _byteswap_ushort(x)
+#endif // OS_WIN
 
 // The net address interface doesn't have a normal C -> C++ thunk since it
 // doesn't actually have any proxy wrapping or associated objects; it's just a
