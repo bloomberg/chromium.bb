@@ -370,6 +370,12 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
             file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
             &source_url)) {
       mount_info_value->SetString("sourceUrl", source_url.spec());
+    } else {
+      // If mounting of gdata moutn point failed, we may not be able to convert
+      // source path to source url, so let just send empty string.
+      DCHECK(mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA &&
+             error_code != chromeos::MOUNT_ERROR_NONE);
+      mount_info_value->SetString("sourceUrl", "");
     }
   } else {
     mount_info_value->SetString("sourceUrl", mount_info.source_path);
