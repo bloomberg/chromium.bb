@@ -14,6 +14,8 @@
 #include "base/timer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/feature.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "v8/include/v8.h"
@@ -54,13 +56,13 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   }
   UserScriptSlave* user_script_slave() { return user_script_slave_.get(); }
 
-  bool IsApplicationActive(const std::string& extension_id) const;
   bool IsExtensionActive(const std::string& extension_id) const;
 
-  // Whether or not we should set up custom bindings for this api.
-  bool AllowCustomAPI(WebKit::WebFrame* frame,
-                      const std::string& custom_binding_api_name,
-                      int world_id);
+  // Finds the extension ID for the JavaScript context associated with the
+  // specified |frame| and isolated world. If |world_id| is zero, finds the
+  // extension ID associated with the main world's JavaScript context. If the
+  // JavaScript context isn't from an extension, returns empty string.
+  std::string GetExtensionID(WebKit::WebFrame* frame, int world_id);
 
   // See WebKit::WebPermissionClient::allowScriptExtension
   // TODO(koz): Remove once WebKit no longer calls this.
@@ -118,7 +120,6 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
       const Extension::ScriptingWhitelist& extension_ids);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
-  void OnActivateApplication(const std::string& extension_id);
   void OnActivateExtension(const std::string& extension_id);
   void OnUpdatePermissions(int reason_id,
                            const std::string& extension_id,
@@ -151,9 +152,11 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();
 
-  // Finds the extension ID for the current context. This is determined from
-  // |world_id| if it's non-zero, or the URL in |frame| if it is.
-  std::string GetExtensionID(WebKit::WebFrame* frame, int world_id);
+  // Returns the Feature::Context type of context for a JavaScript context.
+  extensions::Feature::Context ClassifyJavaScriptContext(
+      const std::string& extension_id,
+      int extension_group,
+      const ExtensionURLInfo& url_info);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
@@ -179,11 +182,8 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // All declared function names.
   std::set<std::string> function_names_;
 
-  // The extensions that are active in this process.
+  // The extensions and apps that are active in this process.
   std::set<std::string> active_extension_ids_;
-
-  // The applications that are active in this process.
-  std::set<std::string> active_application_ids_;
 
   // True once WebKit has been initialized (and it is therefore safe to poke).
   bool is_webkit_initialized_;

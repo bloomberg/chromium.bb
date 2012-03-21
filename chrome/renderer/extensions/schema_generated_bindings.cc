@@ -31,6 +31,7 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "grit/common_resources.h"
@@ -44,8 +45,10 @@
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::RenderThread;
 using content::V8ValueConverter;
 using extensions::ExtensionAPI;
+using extensions::Feature;
 using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 
@@ -118,30 +121,37 @@ class ExtensionImpl : public ChromeV8Extension {
     ChromeV8Context* v8_context = dispatcher->v8_context_set().GetCurrent();
     CHECK(v8_context);
 
-    std::string extension_id = v8_context->extension_id();
-    ExtensionAPI::SchemaMap schemas;
-    ExtensionAPI::GetSchemasFilter filter =
-        dispatcher->is_extension_process() ?
-            ExtensionAPI::ALL : ExtensionAPI::ONLY_UNPRIVILEGED;
+    // TODO(kalman): This is being calculated twice, first in
+    // ExtensionDispatcher then again here. It might as well be a property of
+    // ChromeV8Context, however, this would require making ChromeV8Context take
+    // an Extension rather than an extension ID.  In itself this is fine,
+    // however it does not play correctly with the "IsTestExtensionId" checks.
+    // We need to remove that first.
+    scoped_ptr<std::set<std::string> > apis;
 
+    const std::string& extension_id = v8_context->extension_id();
     if (dispatcher->IsTestExtensionId(extension_id)) {
-      ExtensionAPI::GetInstance()->GetDefaultSchemas(filter, &schemas);
+      apis.reset(new std::set<std::string>());
+      // The minimal set of APIs that tests need.
+      apis->insert("extension");
     } else {
-      const ::Extension* extension =
-          dispatcher->extensions()->GetByID(extension_id);
-      CHECK(extension) << extension_id << " not found";
-      ExtensionAPI::GetInstance()->GetSchemasForExtension(
-          *extension, filter, &schemas);
+      apis = ExtensionAPI::GetInstance()->GetAPIsForContext(
+          v8_context->context_type(),
+          dispatcher->extensions()->GetByID(extension_id),
+          UserScriptSlave::GetDataSourceURLForFrame(v8_context->web_frame()));
     }
 
     v8::Persistent<v8::Context> context(v8::Context::New());
     v8::Context::Scope context_scope(context);
-    v8::Handle<v8::Array> api(v8::Array::New(schemas.size()));
+    v8::Handle<v8::Array> api(v8::Array::New(apis->size()));
     size_t api_index = 0;
-    for (ExtensionAPI::SchemaMap::iterator it = schemas.begin();
-        it != schemas.end(); ++it) {
-      std::string api_name = it->first;
-      api->Set(api_index, GetV8SchemaForAPI(self, context, api_name));
+    for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
+        ++i) {
+      // TODO(kalman): this caching is actually useless now, because
+      // SchemaGeneratedBindings is per-context not per-process. We should
+      // (e.g.) hang a SchemaRegistry off ExtensionDispatcher (which maintains
+      // a *single* v8::Context rather than multiple ones as here).
+      api->Set(api_index, GetV8SchemaForAPI(self, context, *i));
       ++api_index;
     }
 
@@ -323,6 +333,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
 namespace extensions {
 
+// static
 ChromeV8Extension* SchemaGeneratedBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
   return new ExtensionImpl(extension_dispatcher);

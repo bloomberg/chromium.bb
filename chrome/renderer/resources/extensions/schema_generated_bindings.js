@@ -531,6 +531,11 @@
     var platform = getPlatform();
 
     apiDefinitions.forEach(function(apiDef) {
+      // TODO(kalman): Remove this, or refactor schema_generated_bindings.js so
+      // that it isn't necessary. For now, chrome.app is entirely handwritten.
+      if (apiDef.namespace === 'app')
+        return;
+
       if (!isSchemaNodeSupported(apiDef, platform, manifestVersion))
         return;
 

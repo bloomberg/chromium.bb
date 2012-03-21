@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_permission_set.h"
@@ -18,12 +19,23 @@
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/custom_bindings_util.h"
+#include "chrome/renderer/extensions/chrome_private_custom_bindings.h"
+#include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
+#include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
+#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
+#include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
+#include "chrome/renderer/extensions/i18n_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/page_actions_custom_bindings.h"
+#include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/schema_generated_bindings.h"
+#include "chrome/renderer/extensions/tabs_custom_bindings.h"
+#include "chrome/renderer/extensions/tts_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
+#include "chrome/renderer/extensions/web_request_custom_bindings.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "chrome/renderer/module_system.h"
 #include "chrome/renderer/native_handler.h"
@@ -33,32 +45,21 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
-
-#include "chrome/renderer/extensions/chrome_private_custom_bindings.h"
-#include "chrome/renderer/extensions/context_menus_custom_bindings.h"
-#include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
-#include "chrome/renderer/extensions/extension_custom_bindings.h"
-#include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
-#include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
-#include "chrome/renderer/extensions/i18n_custom_bindings.h"
-#include "chrome/renderer/extensions/page_actions_custom_bindings.h"
-#include "chrome/renderer/extensions/page_capture_custom_bindings.h"
-#include "chrome/renderer/extensions/tabs_custom_bindings.h"
-#include "chrome/renderer/extensions/tts_custom_bindings.h"
-#include "chrome/renderer/extensions/web_request_custom_bindings.h"
 
 using content::RenderThread;
 using extensions::ChromePrivateCustomBindings;
 using extensions::ContextMenusCustomBindings;
 using extensions::ExperimentalSocketCustomBindings;
+using extensions::ExtensionAPI;
 using extensions::ExtensionCustomBindings;
+using extensions::Feature;
 using extensions::FileBrowserHandlerCustomBindings;
 using extensions::FileBrowserPrivateCustomBindings;
 using extensions::I18NCustomBindings;
@@ -78,18 +79,10 @@ using WebKit::WebScopedUserGesture;
 using WebKit::WebVector;
 using WebKit::WebView;
 
-namespace util = extensions::custom_bindings_util;
-
 namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
-
-ChromeV8Context::ContextType ExtensionGroupToContextType(int extension_group) {
-  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS)
-    return ChromeV8Context::CONTENT_SCRIPT;
-  return ChromeV8Context::OTHER;
-}
 
 class ChromeHiddenNativeHandler : public NativeHandler {
  public:
@@ -123,41 +116,6 @@ class PrintNativeHandler : public NativeHandler {
     LOG(ERROR) << JoinString(components, ',');
     return v8::Undefined();
   }
-};
-
-class ContextInfoNativeHandler : public NativeHandler {
- public:
-  explicit ContextInfoNativeHandler(ExtensionDispatcher* extension_dispatcher,
-                                    bool is_bindings_allowed,
-                                    WebKit::WebFrame* frame,
-                                    int world_id)
-      : extension_dispatcher_(extension_dispatcher),
-        is_bindings_allowed_(is_bindings_allowed),
-        frame_(frame),
-        world_id_(world_id) {
-    RouteFunction("IsBindingsAllowed",
-        base::Bind(&ContextInfoNativeHandler::IsBindingsAllowed,
-            base::Unretained(this)));
-    RouteFunction("IsAPIAllowed",
-        base::Bind(&ContextInfoNativeHandler::IsAPIAllowed,
-            base::Unretained(this)));
-  }
-
-  v8::Handle<v8::Value> IsBindingsAllowed(const v8::Arguments& args) {
-    return v8::Boolean::New(is_bindings_allowed_);
-  }
-
-  v8::Handle<v8::Value> IsAPIAllowed(const v8::Arguments& args) {
-    std::string custom_api_name = *v8::String::AsciiValue(args[0]->ToString());
-    return v8::Boolean::New(extension_dispatcher_->AllowCustomAPI(
-        frame_, custom_api_name, world_id_));
-  }
-
- private:
-  ExtensionDispatcher* extension_dispatcher_;
-  bool is_bindings_allowed_;
-  WebKit::WebFrame* frame_;
-  int world_id_;
 };
 
 }
@@ -197,7 +155,6 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                         OnSetScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateApplication, OnActivateApplication)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
@@ -347,12 +304,6 @@ void ExtensionDispatcher::OnSetScriptingWhitelist(
   Extension::SetScriptingWhitelist(extension_ids);
 }
 
-bool ExtensionDispatcher::IsApplicationActive(
-    const std::string& extension_id) const {
-  return active_application_ids_.find(extension_id) !=
-      active_application_ids_.end();
-}
-
 bool ExtensionDispatcher::IsExtensionActive(
     const std::string& extension_id) const {
   return active_extension_ids_.find(extension_id) !=
@@ -387,34 +338,8 @@ bool ExtensionDispatcher::AllowScriptExtension(
   return true;
 }
 
-bool ExtensionDispatcher::AllowCustomAPI(
-    WebFrame* frame,
-    const std::string& custom_binding_api_name,
-    int world_id) {
-  std::string extension_id = GetExtensionID(frame, world_id);
-  if (IsTestExtensionId(extension_id))
-    return true;
-  const Extension* extension = extensions_.GetByID(extension_id);
-  if (!extension) {
-    // This can happen when a resource is blocked due to CSP; a valid
-    // chrome-extension:// URL is navigated to, so it passes the initial
-    // checks, but the URL gets changed to "chrome-extension://invalid"
-    // afterwards (see chrome_content_renderer_client.cc). An extension
-    // page still gets loaded, just for the extension with ID "invalid",
-    // which of course isn't found so GetById extension will be NULL.
-    //
-    // Reference: http://crbug.com/111614.
-    CHECK_EQ("invalid", extension_id);
-    return false;
-  }
-  return util::AllowAPIInjection(
-      custom_binding_api_name, *extension, this);
-}
-
 void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                                  ChromeV8Context* context) {
-  module_system->RegisterNativeHandler("app",
-      scoped_ptr<NativeHandler>(new AppBindings(this, context)));
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
   module_system->RegisterNativeHandler("event_bindings",
@@ -425,6 +350,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(SchemaGeneratedBindings::Get(this)));
 
   // Custom bindings.
+  module_system->RegisterNativeHandler("app",
+      scoped_ptr<NativeHandler>(new AppBindings(this, context)));
   module_system->RegisterNativeHandler("chrome_private",
       scoped_ptr<NativeHandler>(
           new ChromePrivateCustomBindings(this)));
@@ -455,7 +382,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
 }
 
 void ExtensionDispatcher::PopulateSourceMap() {
-  source_map_.RegisterSource("app", IDR_APP_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_BINDINGS_JS);
   source_map_.RegisterSource("event_bindings", IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("miscellaneous_bindings",
@@ -464,9 +390,9 @@ void ExtensionDispatcher::PopulateSourceMap() {
       IDR_SCHEMA_GENERATED_BINDINGS_JS);
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
-  source_map_.RegisterSource("setup_bindings", IDR_SETUP_BINDINGS_JS);
 
-    // Custom bindings.
+  // Custom bindings.
+  source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("chromePrivate",
@@ -509,36 +435,37 @@ void ExtensionDispatcher::DidCreateScriptContext(
     extension_group = g_hack_extension_group;
 
   std::string extension_id = GetExtensionID(frame, world_id);
+
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension && !extension_id.empty() && !IsTestExtensionId(extension_id)) {
+    // There are conditions where despite a context being associated with an
+    // extension, no extension actually gets found.  Ignore "invalid" because
+    // CSP blocks extension page loading by switching the extension ID to
+    // "invalid". This isn't interesting.
+    if (extension_id != "invalid") {
+      LOG(ERROR) << "Extension \"" << extension_id << "\" not found";
+      RenderThread::Get()->RecordUserMetrics("ExtensionNotFound_ED");
+    }
+  }
+
+  ExtensionURLInfo url_info(frame->document().securityOrigin(),
+      UserScriptSlave::GetDataSourceURLForFrame(frame));
+
+  Feature::Context context_type =
+      ClassifyJavaScriptContext(extension_id, extension_group, url_info);
+
   ChromeV8Context* context =
-      new ChromeV8Context(
-          v8_context,
-          frame,
-          extension_id,
-          ExtensionGroupToContextType(extension_group));
+      new ChromeV8Context(v8_context, frame, extension_id, context_type);
   v8_context_set_.Add(context);
 
   scoped_ptr<ModuleSystem> module_system(new ModuleSystem(&source_map_));
   RegisterNativeHandlers(module_system.get(), context);
 
-  bool is_bindings_allowed =
-      IsTestExtensionId(extension_id) ||
-      context->context_type() == ChromeV8Context::CONTENT_SCRIPT ||
-      extensions_.ExtensionBindingsAllowed(ExtensionURLInfo(
-          frame->document().securityOrigin(),
-          UserScriptSlave::GetDataSourceURLForFrame(frame)));
-
   module_system->RegisterNativeHandler("chrome_hidden",
       scoped_ptr<NativeHandler>(new ChromeHiddenNativeHandler()));
-  module_system->RegisterNativeHandler("context_info",
-      scoped_ptr<NativeHandler>(new ContextInfoNativeHandler(
-          this,
-          is_bindings_allowed,
-          frame,
-          world_id)));
   module_system->RegisterNativeHandler("print",
       scoped_ptr<NativeHandler>(new PrintNativeHandler()));
 
-  const Extension* extension = extensions_.GetByID(context->extension_id());
   int manifest_version = 1;
   if (extension)
     manifest_version = extension->manifest_version();
@@ -551,11 +478,46 @@ void ExtensionDispatcher::DidCreateScriptContext(
     if (global->Get(chrome_string)->IsUndefined())
       global->Set(chrome_string, v8::Object::New());
   }
-  module_system->Require("app");
-  module_system->Require("webstore");
-  if (is_bindings_allowed) {
-    module_system->Require("setup_bindings");
+
+  // Loading JavaScript is expensive, so only run the full API bindings
+  // generation mechanisms in extension pages (NOT all web pages).
+  switch (context_type) {
+    case Feature::UNSPECIFIED_CONTEXT:
+    case Feature::WEB_PAGE_CONTEXT:
+      break;
+
+    case Feature::PRIVILEGED_CONTEXT:
+    case Feature::UNPRIVILEGED_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      module_system->Require("json_schema");
+      module_system->Require("event_bindings");
+      module_system->Require("miscellaneous_bindings");
+      module_system->Require("schema_generated_bindings");
+      module_system->Require("apitest");
+      break;
   }
+
+  scoped_ptr<std::set<std::string> > apis =
+      ExtensionAPI::GetInstance()->GetAPIsForContext(
+          context_type, extension, url_info.url());
+
+  // TODO(kalman): include this in the APIs returned from GetAPIsForContext.
+  apis->insert("webstore");
+
+  // TODO(kalman): this is probably the most unfortunate thing I've ever had
+  // to write. We really need to factor things differently to delete the
+  // concept of a test extension ID.
+  if (IsTestExtensionId(extension_id)) {
+    module_system->Require("miscellaneous_bindings");
+    module_system->Require("schema_generated_bindings");
+    apis->insert("extension");
+  }
+
+  for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
+      ++i) {
+    module_system->Require(*i);
+  }
+
   module_system->set_natives_enabled(false);
 
   context->set_module_system(module_system.Pass());
@@ -595,16 +557,12 @@ void ExtensionDispatcher::WillReleaseScriptContext(
 }
 
 void ExtensionDispatcher::SetTestExtensionId(const std::string& id) {
+  CHECK(!id.empty());
   test_extension_id_ = id;
 }
 
 bool ExtensionDispatcher::IsTestExtensionId(const std::string& id) {
   return !test_extension_id_.empty() && id == test_extension_id_;
-}
-
-void ExtensionDispatcher::OnActivateApplication(
-    const std::string& extension_id) {
-  active_application_ids_.insert(extension_id);
 }
 
 void ExtensionDispatcher::OnActivateExtension(
@@ -733,4 +691,23 @@ void ExtensionDispatcher::OnShouldClose(const std::string& extension_id,
                                         int sequence_id) {
   RenderThread::Get()->Send(
       new ExtensionHostMsg_ShouldCloseAck(extension_id, sequence_id));
+}
+
+Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
+    const std::string& extension_id,
+    int extension_group,
+    const ExtensionURLInfo& url_info) {
+  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS)
+    return Feature::CONTENT_SCRIPT_CONTEXT;
+
+  if (IsExtensionActive(extension_id))
+    return Feature::PRIVILEGED_CONTEXT;
+
+  if (extensions_.ExtensionBindingsAllowed(url_info))
+    return Feature::UNPRIVILEGED_CONTEXT;
+
+  if (url_info.url().is_valid())
+    return Feature::WEB_PAGE_CONTEXT;
+
+  return Feature::UNSPECIFIED_CONTEXT;
 }

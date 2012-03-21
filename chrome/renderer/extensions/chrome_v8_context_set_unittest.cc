@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "chrome/common/extensions/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,9 +22,11 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   // creating a whole webview.
   WebKit::WebFrame* frame = reinterpret_cast<WebKit::WebFrame*>(1);
   std::string extension_id = "00000000000000000000000000000000";
-  ChromeV8Context* context =
-      new ChromeV8Context(
-          v8_context, frame, extension_id, ChromeV8Context::OTHER);
+  ChromeV8Context* context = new ChromeV8Context(
+      v8_context,
+      frame,
+      extension_id,
+      extensions::Feature::PRIVILEGED_CONTEXT);
 
   context_set.Add(context);
   EXPECT_EQ(1u, context_set.GetAll().count(context));
