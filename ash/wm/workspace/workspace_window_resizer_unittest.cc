@@ -495,6 +495,18 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffTop) {
   EXPECT_EQ("100,10 300x400", window_->bounds().ToString());
 }
 
+TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      Shell::GetInstance()->GetRootWindow(), gfx::Insets(0, 0, 50, 0));
+
+  window_->SetBounds(gfx::Rect(100, 200, 300, 380));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTTOP, 10, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 8, 0));
+  EXPECT_EQ("100,200 300x380", window_->bounds().ToString());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace ash

@@ -202,8 +202,9 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   gfx::Rect new_bounds(origin, size);
   // Update bottom edge to stay in the work area when we are resizing
   // by dragging the bottome edge or corners.
-  if (details.bounds_change & kBoundsChange_Resizes &&
-      origin.y() == details.window->bounds().y()) {
+  if (details.window_component == HTBOTTOM ||
+      details.window_component == HTBOTTOMRIGHT ||
+      details.window_component == HTBOTTOMLEFT) {
     gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(
         details.window);
     if (new_bounds.bottom() > work_area.bottom())
