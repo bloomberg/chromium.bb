@@ -939,6 +939,13 @@ void Browser::OpenBookmarkManagerWindow(Profile* profile) {
 
 #if defined(OS_MACOSX)
 // static
+void Browser::OpenAboutWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->OpenAboutChromeDialog();
+  browser->window()->Show();
+}
+
+// static
 void Browser::OpenHistoryWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->ShowHistoryTab();
@@ -2461,7 +2468,7 @@ void Browser::OpenAboutChromeDialog() {
     window_->ShowAboutChromeDialog();
 #endif
   } else {
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN)
     ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
 #else
     // crbug.com/115123.

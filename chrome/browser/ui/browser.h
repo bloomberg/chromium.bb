@@ -335,6 +335,7 @@ class Browser : public TabHandlerDelegate,
 #if defined(OS_MACOSX)
   // Open a new window with history/downloads/help/options (needed on Mac when
   // there are no windows).
+  static void OpenAboutWindow(Profile* profile);
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
