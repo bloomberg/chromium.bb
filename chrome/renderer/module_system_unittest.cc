@@ -80,7 +80,6 @@ class ModuleSystemTest : public testing::Test {
  public:
   ModuleSystemTest()
       : context_(v8::Context::New()),
-        handle_scope_(),
         source_map_(new StringSourceMap()) {
     context_->Enter();
     assert_natives_ = new AssertNatives();
@@ -164,5 +163,36 @@ TEST_F(ModuleSystemTest, TestDisableNativesPreventsNativeModulesBeingLoaded) {
       "  caught = true;"
       "}"
       "assert.AssertTrue(caught);");
+  module_system_->Require("test");
+}
+
+TEST_F(ModuleSystemTest, TestLazyObject) {
+  v8::Handle<v8::String> source = v8::String::New("({x: 5})");
+  v8::Handle<v8::Object> lazy_object =
+      ModuleSystem::CreateLazyObject("lazy.js", source);
+  v8::Context::GetCurrent()->Global()->Set(v8::String::New("lazy"),
+                                           lazy_object);
+  RegisterModule("test",
+      "var assert = requireNative('assert');"
+      "assert.AssertTrue(lazy.x == 5);"
+      "assert.AssertTrue(lazy.x == 5);");
+  module_system_->Require("test");
+}
+
+TEST_F(ModuleSystemTest, TestLazyInstanceOnlyGetsEvaledOnce) {
+  v8::Context::GetCurrent()->Global()->Set(v8::String::New("evalCount"),
+                                           v8::Integer::New(0));
+  v8::Handle<v8::String> source = v8::String::New("evalCount++; ({x: 5})");
+  v8::Handle<v8::Object> lazy_object =
+      ModuleSystem::CreateLazyObject("lazy.js", source);
+  v8::Context::GetCurrent()->Global()->Set(v8::String::New("lazy"),
+                                           lazy_object);
+  RegisterModule("test",
+      "var assert = requireNative('assert');"
+      "assert.AssertTrue(evalCount == 0);"
+      "lazy.x;"
+      "assert.AssertTrue(evalCount == 1);"
+      "lazy.x;"
+      "assert.AssertTrue(evalCount == 1);");
   module_system_->Require("test");
 }

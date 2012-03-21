@@ -8,6 +8,44 @@
 
 namespace {
 
+const char* kLazyObjectSource = "lazy_object_source";
+const char* kLazyObjectName = "lazy_object_name";
+const char* kLazyObject = "lazy_object";
+
+v8::Handle<v8::Object> EvaluateLazySource(v8::Handle<v8::Object> object) {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> source_value =
+      object->GetHiddenValue(v8::String::New(kLazyObjectSource));
+  CHECK(!source_value.IsEmpty());
+  v8::Handle<v8::String> source = v8::Handle<v8::String>::Cast(source_value);
+  v8::Handle<v8::Value> name =
+      object->GetHiddenValue(v8::String::New(kLazyObjectName));
+  CHECK(!name.IsEmpty());
+  CHECK(name->IsString());
+  v8::Handle<v8::Script> script = v8::Script::New(source, name);
+  v8::Handle<v8::Value> result = script->Run();
+  CHECK(result->IsObject());
+  return handle_scope.Close(v8::Handle<v8::Object>::Cast(result));
+}
+
+v8::Handle<v8::Value> LazyObjectGetter(
+    const v8::Local<v8::String> property,
+    const v8::AccessorInfo& info) {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Object> object = info.Holder();
+  v8::Handle<v8::String> lazy_object_name = v8::String::New(kLazyObject);
+  v8::Handle<v8::Value> lazy_object_value =
+      object->GetHiddenValue(lazy_object_name);
+  CHECK(lazy_object_value.IsEmpty() || lazy_object_value->IsObject());
+  v8::Handle<v8::Object> lazy_object =
+      v8::Handle<v8::Object>::Cast(lazy_object_value);
+  if (lazy_object.IsEmpty()) {
+    lazy_object = EvaluateLazySource(object);
+    object->SetHiddenValue(lazy_object_name, lazy_object);
+  }
+  return handle_scope.Close(lazy_object->Get(property));
+}
+
 } // namespace
 
 ModuleSystem::ModuleSystem(SourceMap* source_map)
@@ -75,6 +113,19 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
   RunString(v8::String::New(code.c_str()), v8::String::New(name.c_str()));
 }
 
+// static
+v8::Handle<v8::Object> ModuleSystem::CreateLazyObject(
+    const std::string& source_name, v8::Handle<v8::String> source) {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::ObjectTemplate> object_template = v8::ObjectTemplate::New();
+  object_template->SetNamedPropertyHandler(LazyObjectGetter, NULL);
+  v8::Handle<v8::Object> object = object_template->NewInstance();
+  object->SetHiddenValue(v8::String::New(kLazyObjectSource), source);
+  object->SetHiddenValue(v8::String::New(kLazyObjectName),
+                         v8::String::New(source_name.c_str()));
+
+  return handle_scope.Close(object);
+}
 
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {

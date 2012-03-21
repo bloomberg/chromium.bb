@@ -65,6 +65,12 @@ class ModuleSystem : public NativeHandler {
     natives_enabled_ = natives_enabled;
   }
 
+  // Create an object which delegates all property accesses to the object that
+  // |source| evaluates to. The source is evaluated lazily on access to any of
+  // the object's properties.
+  static v8::Handle<v8::Object> CreateLazyObject(const std::string& source_name,
+                                                 v8::Handle<v8::String> source);
+
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
 
