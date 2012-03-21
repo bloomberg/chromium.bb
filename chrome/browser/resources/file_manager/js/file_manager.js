@@ -1478,8 +1478,8 @@ FileManager.prototype = {
       // Location hash has the highest priority.
       var path = decodeURI(location.hash.substr(1));
 
-      // In the FULL_PAGE mode if the path points to a file we should invoke
-      // the default action after selecting it.
+      // In the FULL_PAGE mode if the path points to a file we might have
+      // to invoke a task after selecting it.
       if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
         // To prevent the file list flickering for a moment before the action
         // is executed we hide it under a white div.
@@ -1507,7 +1507,20 @@ FileManager.prototype = {
         var self = this;
         function onLoadedActivateLeaf() {
           if (foundLeaf) {
-            self.dispatchDefaultTask_();
+            // There are 3 ways we can get here:
+            // 1. Invoked from file_manager_util::ViewFile. This can only
+            //    happen for 'gallery' and 'mount-archive' actions.
+            // 2. Reloading a Gallery page. Must be an image or a video file.
+            // 3. A user manually entered a URL pointing to a file.
+            if (FileType.isImageOrVideo(path)) {
+              self.onFileTaskExecute_('gallery', self.selection.urls);
+            } else if (FileType.getMediaType(path) == 'archive') {
+              self.onFileTaskExecute_('mount-archive', self.selection.urls);
+            } else {
+              // Manually entered path, do nothing, remove the shade ASAP.
+              removeShade();
+              return;
+            }
             setTimeout(removeShade, 1000);
           }
         }
@@ -2293,7 +2306,6 @@ FileManager.prototype = {
             // The selection is all videos, use the specific "Watch" title.
             task.title = str('ACTION_WATCH');
           }
-          task.allTasks = tasksList;
         } else if (task_parts[1] == 'open-hosted') {
           task.iconUrl =
           chrome.extension.getURL('images/icon_preview_16x16.png');
@@ -2411,7 +2423,7 @@ FileManager.prototype = {
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
       var taskId = task.taskId.split('|')[1];
-      this.onFileTaskExecute_(taskId, {urls: urls, task: task});
+      this.onFileTaskExecute_(taskId, urls);
     }
   };
 
@@ -2498,8 +2510,7 @@ FileManager.prototype = {
   /**
    * Event handler called when some internal task should be executed.
    */
-  FileManager.prototype.onFileTaskExecute_ = function(id, details) {
-    var urls = details.urls;
+  FileManager.prototype.onFileTaskExecute_ = function(id, urls) {
     if (id == 'play') {
       var position = 0;
       if (urls.length == 1) {
@@ -2523,17 +2534,7 @@ FileManager.prototype = {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
     } else if (id == 'gallery') {
-      // Pass to gallery all possible tasks except the gallery itself.
-      var noGallery = [];
-      for (var index = 0; index < details.task.allTasks.length; index++) {
-        var task = details.task.allTasks[index];
-        if (task.taskId != this.getExtensionId_() + '|gallery') {
-          // Add callback, so gallery can execute the task.
-          task.execute = this.dispatchFileTask_.bind(this, task);
-          noGallery.push(task);
-        }
-      }
-      this.openGallery_(urls, noGallery);
+      this.openGallery_(urls);
     } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx') {
       chrome.fileBrowserPrivate.viewFiles(urls, 'default', function() {});
     } else if (id == 'open-hosted') {
@@ -2599,9 +2600,24 @@ FileManager.prototype = {
       urls.push(dm.item(i).toURL());
     }
     return urls;
-  }
+  };
 
-  FileManager.prototype.openGallery_ = function(urls, shareActions) {
+  FileManager.prototype.getShareActions_ = function(urls, callback) {
+    chrome.fileBrowserPrivate.getFileTasks(urls, function(tasks) {
+      var shareActions = [];
+      for (var index = 0; index < tasks.length; index++) {
+        var task = tasks[index];
+        if (task.taskId != this.getExtensionId_() + '|gallery') {
+          // Add callback, so gallery can execute the task.
+          task.execute = this.dispatchFileTask_.bind(this, task);
+          shareActions.push(task);
+        }
+      }
+      callback(shareActions);
+    }.bind(this));
+  };
+
+  FileManager.prototype.openGallery_ = function(urls) {
     var self = this;
 
     var galleryFrame = this.document_.createElement('iframe');
@@ -2645,7 +2661,7 @@ FileManager.prototype = {
         readonlyDirName: readonly ? self.directoryModel_.rootName : null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
         metadataProvider: self.getMetadataProvider(),
-        shareActions: shareActions,
+        getShareActions: self.getShareActions_.bind(self),
         onNameChange: function(name) {
           self.updateLocation_(true /*replace*/, dirPath + '/' + name);
         },

@@ -255,15 +255,6 @@ Gallery.prototype.initDom_ = function() {
 
   this.editor_.trackWindow(doc.defaultView);
 
-  if (this.context_.shareActions.length > 0) {
-    this.shareMode_ = new ShareMode(this.editor_, this.container_,
-        this.toolbar_, this.context_.shareActions,
-        this.onShare_.bind(this), this.onActionExecute_.bind(this),
-        this.displayStringFunction_);
-  } else {
-    this.shareMode_ = null;
-  }
-
   Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
     this.originalFullscreen_ = fullscreen;
   }.bind(this));
@@ -341,6 +332,17 @@ Gallery.prototype.load = function(items, selectedItem) {
   this.context_.metadataProvider.fetch(selectedURL, function (metadata) {
     self.openImage(selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
+
+  this.context_.getShareActions(urls, function(tasks) {
+    if (tasks.length > 0) {
+      this.shareMode_ = new ShareMode(this.editor_, this.container_,
+        this.toolbar_, tasks,
+        this.onShare_.bind(this), this.onActionExecute_.bind(this),
+        this.displayStringFunction_);
+    } else {
+      this.shareMode_ = null;
+    }
+  }.bind(this));
 };
 
 Gallery.prototype.onImageContentChanged_ = function() {
