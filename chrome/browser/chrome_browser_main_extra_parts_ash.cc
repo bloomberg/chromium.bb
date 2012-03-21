@@ -35,7 +35,6 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
-  aura::MonitorManager::set_use_fullscreen_host_window(true);
   if (base::chromeos::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraHostWindowUseFullscreen)) {
