@@ -1135,6 +1135,7 @@
       'type': 'executable',
       'dependencies': [
         'chromedriver_lib',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../skia/skia.gyp:skia',
@@ -1143,7 +1144,6 @@
         '..',
       ],
       'sources': [
-        '../base/test/run_all_unittests.cc',
         'test/webdriver/commands/set_timeout_commands_unittest.cc',
         'test/webdriver/frame_path_unittest.cc',
         'test/webdriver/http_response_unittest.cc',
@@ -3631,7 +3631,6 @@
       'target_name': 'sync_unit_tests',
       'type': 'executable',
       'sources': [
-        '../base/test/run_all_unittests.cc',
         'browser/sync/api/sync_change_unittest.cc',
         'browser/sync/api/sync_error_unittest.cc',
         'browser/sync/internal_api/change_record_unittest.cc',
@@ -3653,11 +3652,12 @@
         '..',
       ],
       'dependencies': [
-        '../sync/sync.gyp:sync_tests',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
+        '../sync/sync.gyp:sync_tests',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'syncapi_core',

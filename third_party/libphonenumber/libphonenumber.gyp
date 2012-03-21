@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -77,7 +77,6 @@
     'target_name': 'libphonenumber_unittests',
     'type': 'executable',
     'sources': [
-      '../../base/test/run_all_unittests.cc',
       'src/phonenumbers/test_metadata.cc',
       'src/test/phonenumbers/asyoutypeformatter_test.cc',
       'src/test/phonenumbers/phonenumbermatch_test.cc',
@@ -92,7 +91,7 @@
       '../icu/icu.gyp:icui18n',
       '../icu/icu.gyp:icuuc',
       '../../base/base.gyp:base',
-      '../../base/base.gyp:test_support_base',
+      '../../base/base.gyp:run_all_unittests',
       '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       '../../testing/gmock.gyp:gmock',
       '../../testing/gtest.gyp:gtest',

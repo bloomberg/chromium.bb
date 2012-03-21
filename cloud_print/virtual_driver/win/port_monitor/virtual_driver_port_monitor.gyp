@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -57,13 +57,11 @@
       'type': 'executable',
       'dependencies': [
         '../../../../base/base.gyp:base',
-        '../../../../base/base.gyp:test_support_base',
+        '../../../../base/base.gyp:run_all_unittests',
         '../../../../testing/gmock.gyp:gmock',
         '../../../../testing/gtest.gyp:gtest',
       ],
       'sources': [
-      # Infrastructure files.
-        '../../../../base/test/run_all_unittests.cc',
         'port_monitor_unittest.cc',
       ],
     },

@@ -190,7 +190,6 @@
       'target_name': 'cacheinvalidation_unittests',
       'type': 'executable',
       'sources': [
-        '../../base/test/run_all_unittests.cc',
         'files/src/google/cacheinvalidation/test/deterministic-scheduler.cc',
         'files/src/google/cacheinvalidation/test/deterministic-scheduler.h',
         'files/src/google/cacheinvalidation/test/test-logger.cc',
@@ -204,8 +203,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
-        # Needed by run_all_unittests.cc.
-        '../../base/base.gyp:test_support_base',
+        '../../base/base.gyp:run_all_unittests',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         'cacheinvalidation',

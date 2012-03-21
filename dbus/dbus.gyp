@@ -72,6 +72,7 @@
       'target_name': 'dbus_unittests',
       'type': 'executable',
       'dependencies': [
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../build/linux/system.gyp:dbus',
         '../testing/gmock.gyp:gmock',
@@ -81,7 +82,6 @@
         'dbus_test_support',
       ],
       'sources': [
-        '../base/test/run_all_unittests.cc',
         'bus_unittest.cc',
         'end_to_end_async_unittest.cc',
         'end_to_end_sync_unittest.cc',

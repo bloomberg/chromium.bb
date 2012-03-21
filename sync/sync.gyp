@@ -324,17 +324,11 @@
     #
     # TODO(akalin): Rename this to sync_unit_tests once we've moved
     # everything from chrome.gyp.
-    #
-    # TODO(akalin): Make base.gyp have a test_main target that
-    # includes run_all_unittests.cc and the possible tcmalloc
-    # dependency and use that everywhere.
     {
       'target_name': 'sync_unit_tests_canary',
       'type': 'executable',
-      'sources': [
-        '../base/test/run_all_unittests.cc',
-      ],
       'dependencies': [
+        '../base/base.gyp:run_all_unittests',
         'sync_tests',
       ],
 
