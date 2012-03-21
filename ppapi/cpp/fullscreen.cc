@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_Fullscreen>() {
-  return PPB_FULLSCREEN_INTERFACE;
+template <> const char* interface_name<PPB_Fullscreen_1_0>() {
+  return PPB_FULLSCREEN_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -28,22 +28,22 @@ Fullscreen::~Fullscreen() {
 }
 
 bool Fullscreen::IsFullscreen() {
-  return has_interface<PPB_Fullscreen>() &&
-      get_interface<PPB_Fullscreen>()->IsFullscreen(
+  return has_interface<PPB_Fullscreen_1_0>() &&
+      get_interface<PPB_Fullscreen_1_0>()->IsFullscreen(
           instance_.pp_instance());
 }
 
 bool Fullscreen::SetFullscreen(bool fullscreen) {
-  if (!has_interface<PPB_Fullscreen>())
+  if (!has_interface<PPB_Fullscreen_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_Fullscreen>()->SetFullscreen(
+  return PP_ToBool(get_interface<PPB_Fullscreen_1_0>()->SetFullscreen(
       instance_.pp_instance(), PP_FromBool(fullscreen)));
 }
 
 bool Fullscreen::GetScreenSize(Size* size) {
-  if (!has_interface<PPB_Fullscreen>())
+  if (!has_interface<PPB_Fullscreen_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_Fullscreen>()->GetScreenSize(
+  return PP_ToBool(get_interface<PPB_Fullscreen_1_0>()->GetScreenSize(
       instance_.pp_instance(), &size->pp_size()));
 }
 
