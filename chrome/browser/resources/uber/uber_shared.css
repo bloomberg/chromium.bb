@@ -26,7 +26,9 @@ body.uber-frame > .page {
 }
 
 body.uber-frame header {
-  background: white;
+  background-image: -webkit-linear-gradient(white,
+                                            white 40%,
+                                            rgba(255, 255, 255, 0.92));
   left: 155px;
   /* <section>s in options currently amount to 638px total, broken up into
    * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
