@@ -1,3 +1,9 @@
+2012-03-21  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/Makefile.am (TESTS_ENVIRONMENT): Set the env variables so
+	that the libraries and executables from the source directories are
+	used instead of the installed ones.
+
 2012-03-20  Christian Egli  <christian.egli@sbs.ch>
 
 	* configure.ac:
