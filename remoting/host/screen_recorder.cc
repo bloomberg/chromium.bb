@@ -240,10 +240,12 @@ void ScreenRecorder::DoSendVideoPacket(scoped_ptr<VideoPacket> packet) {
   if (network_stopped_ || connections_.empty())
     return;
 
+  VideoPacket* packet_ptr = packet.get();
+
   // TODO(sergeyu): Currently we send the data only to the first
   // connection. Send it to all connections if necessary.
   connections_.front()->video_stub()->ProcessVideoPacket(
-      packet.get(), base::Bind(
+      packet_ptr, base::Bind(
           &ScreenRecorder::VideoPacketSentCallback, this,
           base::Passed(packet.Pass())));
 }
