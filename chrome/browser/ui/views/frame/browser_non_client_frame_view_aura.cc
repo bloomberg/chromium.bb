@@ -252,14 +252,18 @@ SkBitmap BrowserNonClientFrameViewAura::GetFaviconForTabIconView() {
 
 int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
     bool force_restored) const {
+  if (force_restored)
+    return kTabstripTopSpacingRestored;
+  if (frame()->IsFullscreen())
+    return 0;
+  if (frame()->IsMaximized())
+    return kTabstripTopSpacingMaximized;
   if (frame()->widget_delegate() &&
       frame()->widget_delegate()->ShouldShowWindowTitle()) {
     // For popups ensure we have enough space to see the full window buttons.
     return close_button_->bounds().bottom();
   }
-  if (!frame()->IsMaximized() || force_restored)
-    return kTabstripTopSpacingRestored;
-  return kTabstripTopSpacingMaximized;
+  return kTabstripTopSpacingRestored;
 }
 
 void BrowserNonClientFrameViewAura::LayoutAvatar() {
