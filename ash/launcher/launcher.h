@@ -43,7 +43,7 @@ class ASH_EXPORT Launcher : public ui::AnimationDelegate {
   };
 
   explicit Launcher(aura::Window* window_container);
-  ~Launcher();
+  virtual ~Launcher();
 
   // Sets the focus cycler.
   void SetFocusCycler(const internal::FocusCycler* focus_cycler);
