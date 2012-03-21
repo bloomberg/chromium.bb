@@ -95,6 +95,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Called right after the page has been hidden.
+     */
+    // TODO(ivankr): both callbacks are required as only one of them is called
+    // depending on the way the page was closed, see http://crbug.com/118923.
+    didClosePage: function() {
+      this.willHidePage();
+    },
+
+    /**
      * Closes current page, returning back to Personal Stuff page.
      * @private
      */
