@@ -38,6 +38,8 @@
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_ANDROID)
+#include "sync/util/session_utils_android.h"
 #endif
 
 using content::BrowserThread;
@@ -59,6 +61,8 @@ static const int kMaxSyncNavigationCount = 6;
 static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
 sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
+  // TODO(yfriedman): Refactor/combine with "DeviceInformation" code in
+  // sync_manager.cc[1060]
 #if defined(OS_CHROMEOS)
   return sync_pb::SessionHeader_DeviceType_TYPE_CROS;
 #elif defined(OS_LINUX)
@@ -68,8 +72,9 @@ sync_pb::SessionHeader::DeviceType GetLocalDeviceType() {
 #elif defined(OS_WIN)
   return sync_pb::SessionHeader_DeviceType_TYPE_WIN;
 #elif defined(OS_ANDROID)
-  // TODO(yfriedman): Add logic to conditionally set device_type to tablet.
-  return sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
+  return internal::IsTabletUi() ?
+      sync_pb::SessionHeader_DeviceType_TYPE_TABLET :
+      sync_pb::SessionHeader_DeviceType_TYPE_PHONE;
 #else
   return sync_pb::SessionHeader_DeviceType_TYPE_OTHER;
 #endif

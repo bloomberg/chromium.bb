@@ -169,6 +169,8 @@
         'util/nigori.cc',
         'util/nigori.h',
         'util/report_unrecoverable_error_function.h',
+        'util/session_utils_android.cc',
+        'util/session_utils_android.h',
         'util/syncer_error.cc',
         'util/syncer_error.h',
         'util/time.cc',

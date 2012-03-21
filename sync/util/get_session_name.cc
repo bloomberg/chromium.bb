@@ -17,6 +17,8 @@
 #include "sync/util/get_session_name_mac.h"
 #elif defined(OS_WIN)
 #include "sync/util/get_session_name_win.h"
+#elif defined(OS_ANDROID)
+#include "sync/util/session_utils_android.h"
 #endif
 
 namespace browser_sync {
@@ -33,6 +35,8 @@ std::string GetSessionNameSynchronously() {
   session_name = internal::GetHardwareModelName();
 #elif defined(OS_WIN)
   session_name = internal::GetComputerName();
+#elif defined(OS_ANDROID)
+  session_name = internal::GetModel();
 #endif
 
   if (session_name == "Unknown" || session_name.empty())
