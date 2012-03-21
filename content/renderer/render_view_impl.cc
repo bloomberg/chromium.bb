@@ -555,6 +555,10 @@ RenderViewImpl::RenderViewImpl(
       webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "RenderViewImpl created";
+#endif
 }
 
 RenderViewImpl::~RenderViewImpl() {

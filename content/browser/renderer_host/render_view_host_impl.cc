@@ -282,12 +282,6 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(GetRoutingID(), params);
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  LOG(ERROR) << "Navigation url=" << params.url
-             << ", suspended=" << navigations_suspended_;
-#endif
-
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
   if (navigations_suspended_) {
@@ -301,8 +295,13 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RVH swap or unload handler.
     SetSwappedOut(false);
-
+#if defined(OS_CHROMEOS)
+    // crosbug.com/26646.
+    bool sent = Send(nav_message);
+    LOG(ERROR) << "Navigation url=" << params.url << ", sent=" << sent;
+#else
     Send(nav_message);
+#endif
   }
 
   // Force the throbber to start. We do this because WebKit's "started

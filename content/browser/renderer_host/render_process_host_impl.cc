@@ -866,20 +866,40 @@ void RenderProcessHostImpl::ClearTransportDIBCache() {
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   if (!channel_.get()) {
     if (!is_initialized_) {
+#if defined(OS_CHROMEOS)
+      // crosbug.com/26646
+      LOG(ERROR) << "message queued : uninitialized";
+#endif
       queued_messages_.push(msg);
       return true;
     } else {
+#if defined(OS_CHROMEOS)
+      // crosbug.com/26646
+      LOG(ERROR) << "message discarded";
+#endif
       delete msg;
       return false;
     }
   }
 
   if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
+#if defined(OS_CHROMEOS)
+    // crosbug.com/26646
+    LOG(ERROR) << "message queued : starting";
+#endif
     queued_messages_.push(msg);
     return true;
   }
 
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646
+  bool sent = channel_->Send(msg);
+  if (!sent)
+    LOG(ERROR) << "Send:" << sent;
+  return sent;
+#else
   return channel_->Send(msg);
+#endif
 }
 
 bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
@@ -1304,6 +1324,10 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   if (child_process_launcher_.get()) {
     if (!child_process_launcher_->GetHandle()) {
+#if defined(OS_CHROMEOS)
+      // crosbug.com/26646
+      LOG(ERROR) << "ChannelError";
+#endif
       OnChannelError();
       return;
     }
@@ -1323,6 +1347,10 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       content::Source<RenderProcessHost>(this),
       content::NotificationService::NoDetails());
 
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646
+  LOG(ERROR) << "OnProcessLaunched: empty=" << queued_messages_.empty();
+#endif
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
