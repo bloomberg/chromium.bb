@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class StatusAreaHostAura;
 class StatusAreaView;
@@ -21,8 +19,7 @@ namespace views {
 class View;
 }
 
-class ChromeShellDelegate : public ash::ShellDelegate,
-                            public content::NotificationObserver {
+class ChromeShellDelegate : public ash::ShellDelegate {
  public:
   ChromeShellDelegate();
   virtual ~ChromeShellDelegate();
@@ -37,7 +34,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   // ash::ShellDelegate overrides;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
-  virtual bool CanCreateLauncher() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
 #endif
@@ -52,15 +48,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
       ash::SystemTray* tray) OVERRIDE;
 
-  // content::NotificationObserver override:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   static ChromeShellDelegate* instance_;
-
-  content::NotificationRegistrar registrar_;
 
   scoped_ptr<StatusAreaHostAura> status_area_host_;
 

@@ -25,10 +25,6 @@ views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
 
-bool TestShellDelegate::CanCreateLauncher() {
-  return true;
-}
-
 #if defined(OS_CHROMEOS)
 void TestShellDelegate::LockScreen() {
 }

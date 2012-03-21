@@ -60,6 +60,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
@@ -102,6 +103,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
@@ -175,6 +177,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
@@ -213,6 +216,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.

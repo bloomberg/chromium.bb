@@ -15,16 +15,12 @@
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/browser/ui/views/ash/status_area_host_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #endif
 namespace {
@@ -49,12 +45,6 @@ ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate() {
   instance_ = this;
-#if defined(OS_CHROMEOS)
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-#endif
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {
@@ -71,19 +61,6 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
   views::Widget* status_area_widget =
       status_area_host_.get()->CreateStatusArea();
   return status_area_widget;
-}
-
-bool ChromeShellDelegate::CanCreateLauncher() {
-#if defined(OS_CHROMEOS)
-  // When running a Chrome OS build outside of a device (i.e. on a developer's
-  // workstation), pretend like we're always logged in.
-  if (!base::chromeos::IsRunningOnChromeOS())
-    return true;
-
-  return chromeos::UserManager::Get()->IsUserLoggedIn();
-#else
-  return true;
-#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -130,22 +107,5 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
   return chromeos::CreateSystemTrayDelegate(tray);
 #else
   return NULL;
-#endif
-}
-
-void ChromeShellDelegate::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-#if defined(OS_CHROMEOS)
-  switch (type) {
-    case chrome::NOTIFICATION_SESSION_STARTED:
-      ash::Shell::GetInstance()->CreateLauncher();
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
-  }
-#else
-  // MSVC++ warns about switch statements without any cases.
-  NOTREACHED() << "Unexpected notification " << type;
 #endif
 }

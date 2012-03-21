@@ -19,7 +19,6 @@ class TestShellDelegate : public ShellDelegate {
 
   // Overridden from ShellDelegate:
   virtual views::Widget* CreateStatusArea() OVERRIDE;
-  virtual bool CanCreateLauncher() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
 #endif

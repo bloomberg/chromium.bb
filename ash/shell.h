@@ -114,7 +114,7 @@ class ASH_EXPORT Shell {
 
   static void DeleteInstance();
 
-  // Gets the singleton RootWindow used by the Shell.
+  // Get the singleton RootWindow used by the Shell.
   static aura::RootWindow* GetRootWindow();
 
   internal::RootWindowLayoutManager* root_window_layout() const {
@@ -146,7 +146,7 @@ class ASH_EXPORT Shell {
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget);
 
-  // Rotates focus through containers that can receive focus.
+  // Rotate focus through containers that can receive focus.
   void RotateFocus(Direction direction);
 
   // Sets the work area insets of the monitor that contains |window|,
@@ -154,10 +154,7 @@ class ASH_EXPORT Shell {
   void SetMonitorWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 
-  // Initializes |launcher_|.  Does nothing if it's already initialized.
-  void CreateLauncher();
-
-  // Adds/removes observer.
+  // Add/remove observer.
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
