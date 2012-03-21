@@ -9,7 +9,7 @@
  * The ClientSession class controls lifetime of the client plugin
  * object and provides the plugin with the functionality it needs to
  * establish connection. Specifically it:
- *  - Delivers incoming/otgoing signaling messages,
+ *  - Delivers incoming/outgoing signaling messages,
  *  - Adjusts plugin size and position when destop resolution changes,
  *
  * This class should not access the plugin directly, instead it should
@@ -226,8 +226,9 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
     return;
   }
 
-  // Enable scale-to-fit if the plugin is new enough for high-quality scaling.
-  remoting.setScaleToFit(this.plugin.isHiQualityScalingSupported());
+  // Enable scale-to-fit if and only if the plugin is new enough for
+  // high-quality scaling.
+  this.setScaleToFit(this.plugin.isHiQualityScalingSupported());
 
   /** @type {remoting.ClientSession} */ var that = this;
   /** @param {string} msg The IQ stanza to send. */
@@ -307,6 +308,12 @@ remoting.ClientSession.prototype.disconnect = function() {
 remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
   this.scaleToFit = scaleToFit;
   this.updateDimensions();
+  var button = document.getElementById('toggle-scaling');
+  if (scaleToFit) {
+    button.classList.add('toggle-button-active');
+  } else {
+    button.classList.remove('toggle-button-active');
+  }
 }
 
 /**

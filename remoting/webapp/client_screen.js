@@ -101,23 +101,7 @@ remoting.cancelConnect = function() {
  * @return {void} Nothing.
  */
 remoting.toggleScaleToFit = function() {
-  remoting.setScaleToFit(!remoting.clientSession.getScaleToFit());
-};
-
-/**
- * Enable or disable scale-to-fit for the current client session.
- *
- * @param {boolean} scaleToFit True to enable scale-to-fit, false otherwise.
- * @return {void} Nothing.
- */
-remoting.setScaleToFit = function(scaleToFit) {
-  remoting.clientSession.setScaleToFit(scaleToFit);
-  var button = document.getElementById('toggle-scaling');
-  if (remoting.clientSession.getScaleToFit()) {
-    button.classList.add('toggle-button-active');
-  } else {
-    button.classList.remove('toggle-button-active');
-  }
+  remoting.clientSession.setScaleToFit(!remoting.clientSession.getScaleToFit());
 };
 
 /**
@@ -318,7 +302,6 @@ function startSession_() {
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
-    remoting.setScaleToFit(remoting.clientSession.getScaleToFit());
   };
   remoting.oauth2.callWithToken(createPluginAndConnect);
 }
@@ -511,7 +494,6 @@ function connectMe2MeWithAccessToken_(token) {
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);
-    remoting.setScaleToFit(remoting.clientSession.getScaleToFit());
   } else {
     showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
   }
