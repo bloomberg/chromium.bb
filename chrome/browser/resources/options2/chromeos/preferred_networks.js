@@ -83,6 +83,8 @@ cr.define('options', function() {
       DeletableItem.prototype.decorate.call(this);
       var label = this.ownerDocument.createElement('div');
       label.textContent = this.data.networkName;
+      if (this.data.policyManaged)
+        this.deletable = false;
       this.contentElement.appendChild(label);
     }
   };
