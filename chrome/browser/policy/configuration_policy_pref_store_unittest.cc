@@ -597,7 +597,7 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
 
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kDefaultSearchProviderKeyword, &value));
-  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
+  EXPECT_TRUE(base::StringValue("test.com").Equals(value));
 
   EXPECT_EQ(PrefStore::READ_OK,
             store->GetValue(prefs::kDefaultSearchProviderSuggestURL, &value));

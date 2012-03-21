@@ -26,10 +26,10 @@ class ConfigurationPolicyHandler {
   ConfigurationPolicyHandler();
   virtual ~ConfigurationPolicyHandler();
 
-  // Returns true if the policy settings handled by this
-  // ConfigurationPolicyHandler can be applied and false otherwise. Fills
-  // |errors| with error messages or warnings. |errors| may contain error
-  // messages even when |CheckPolicySettings()| returns true.
+  // Returns whether the policy settings handled by this
+  // ConfigurationPolicyHandler can be applied.  Fills |errors| with error
+  // messages or warnings.  |errors| may contain error messages even when
+  // |CheckPolicySettings()| returns true.
   virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) = 0;
 
@@ -216,26 +216,25 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
 
  private:
   // Calls |CheckPolicySettings()| on each of the handlers in |handlers_|
-  // and returns true if all of the calls return true and false otherwise.
+  // and returns whether all of the calls succeeded.
   bool CheckIndividualPolicies(const PolicyMap& policies,
                                PolicyErrorMap* errors);
 
-  // Returns true if there is a value for |policy_name| in |policies| and false
-  // otherwise.
+  // Returns whether there is a value for |policy_name| in |policies|.
   bool HasDefaultSearchPolicy(const PolicyMap& policies,
                               const char* policy_name);
 
-  // Returns true if any default search policies are specified in |policies| and
-  // false otherwise.
+  // Returns whether any default search policies are specified in |policies|.
   bool AnyDefaultSearchPoliciesSpecified(const PolicyMap& policies);
 
-  // Returns true if the default search provider is disabled and false
-  // otherwise.
+  // Returns whether the default search provider is disabled.
   bool DefaultSearchProviderIsDisabled(const PolicyMap& policies);
 
-  // Returns true if the default search URL was set and is valid and false
-  // otherwise.
-  bool DefaultSearchURLIsValid(const PolicyMap& policies);
+  // Returns whether the default search URL is set and valid.  On success, both
+  // outparams (which must be non-NULL) are filled with the search URL.
+  bool DefaultSearchURLIsValid(const PolicyMap& policies,
+                               const Value** url_value,
+                               std::string* url_string);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.
@@ -282,8 +281,8 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
                                    const char* policy_name);
 
   // Converts the deprecated ProxyServerMode policy value to a ProxyMode value
-  // and places the result in |mode_value|. Returns true if the conversion
-  // succeeded and false otherwise.
+  // and places the result in |mode_value|. Returns whether the conversion
+  // succeeded.
   bool CheckProxyModeAndServerMode(const PolicyMap& policies,
                                    PolicyErrorMap* errors,
                                    std::string* mode_value);

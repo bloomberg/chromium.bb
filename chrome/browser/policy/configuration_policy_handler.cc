@@ -491,20 +491,14 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     return true;
   }
 
-  const Value* search_url =
-      policies.GetValue(key::kDefaultSearchProviderSearchURL);
-  if (!search_url && AnyDefaultSearchPoliciesSpecified(policies)) {
-    errors->AddError(key::kDefaultSearchProviderSearchURL,
-                     IDS_POLICY_NOT_SPECIFIED_ERROR);
-    return false;
-  }
-
-  if (search_url && !DefaultSearchURLIsValid(policies)) {
-    errors->AddError(key::kDefaultSearchProviderSearchURL,
-                     IDS_POLICY_INVALID_SEARCH_URL_ERROR);
-    return false;
-  }
-  return true;
+  const Value* url;
+  std::string dummy;
+  if (DefaultSearchURLIsValid(policies, &url, &dummy) ||
+      !AnyDefaultSearchPoliciesSpecified(policies))
+    return true;
+  errors->AddError(key::kDefaultSearchProviderSearchURL, url ?
+      IDS_POLICY_INVALID_SEARCH_URL_ERROR : IDS_POLICY_NOT_SPECIFIED_ERROR);
+  return false;
 }
 
 void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
@@ -523,15 +517,12 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   }
 
-  const Value* search_url =
-      policies.GetValue(key::kDefaultSearchProviderSearchURL);
-  // The search URL is required.
-  if (!search_url)
-    return;
-
-  // The other entries are optional.  Just make sure that they are all
-  // specified via policy, so that the regular prefs aren't used.
-  if (DefaultSearchURLIsValid(policies)) {
+  // The search URL is required.  The other entries are optional.  Just make
+  // sure that they are all specified via policy, so that the regular prefs
+  // aren't used.
+  const Value* dummy;
+  std::string url;
+  if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
     std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
     for (handler = handlers_.begin() ; handler != handlers_.end(); ++handler)
       (*handler)->ApplyPolicySettings(policies, prefs);
@@ -542,16 +533,19 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
     EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
 
-    // For the name, default to the host if not specified.
-    std::string name;
+    // For the name and keyword, default to the host if not specified.  If there
+    // is no host (file: URLs?  Not sure), use "_" to guarantee that the keyword
+    // is non-empty.
+    std::string name, keyword;
+    std::string host(GURL(url).host());
+    if (host.empty())
+      host = "_";
     if (!prefs->GetString(prefs::kDefaultSearchProviderName, &name) ||
-        name.empty()) {
-      std::string search_url_string;
-      if (search_url->GetAsString(&search_url_string)) {
-        prefs->SetString(prefs::kDefaultSearchProviderName,
-                         GURL(search_url_string).host());
-      }
-    }
+        name.empty())
+      prefs->SetString(prefs::kDefaultSearchProviderName, host);
+    if (!prefs->GetString(prefs::kDefaultSearchProviderKeyword, &keyword) ||
+        keyword.empty())
+      prefs->SetString(prefs::kDefaultSearchProviderKeyword, host);
 
     // And clear the IDs since these are not specified via policy.
     prefs->SetString(prefs::kDefaultSearchProviderID, std::string());
@@ -597,20 +591,14 @@ bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
 }
 
 bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
-    const PolicyMap& policies) {
-  const Value* search_url =
-      policies.GetValue(key::kDefaultSearchProviderSearchURL);
-  if (!search_url)
-    return false;
-
-  std::string search_url_string;
-  if (search_url->GetAsString(&search_url_string)) {
-    // It must support replacement (which implies it is valid).
-    SearchTermsData search_terms_data;
-    return TemplateURLRef(search_url_string, 0, 0).
-        SupportsReplacementUsingTermsData(search_terms_data);
-  }
-  return false;
+    const PolicyMap& policies,
+    const Value** url_value,
+    std::string* url_string) {
+  *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
+  SearchTermsData search_terms_data;
+  return *url_value && (*url_value)->GetAsString(url_string) &&
+      TemplateURLRef(*url_string, 0, 0).SupportsReplacementUsingTermsData(
+          search_terms_data);
 }
 
 void DefaultSearchPolicyHandler::EnsureStringPrefExists(
