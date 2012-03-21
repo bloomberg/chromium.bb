@@ -9,7 +9,9 @@
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/stacking_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -110,7 +112,8 @@ int main(int argc, char** argv) {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
 
-  scoped_ptr<aura::RootWindow> root_window(new aura::RootWindow);
+  scoped_ptr<aura::RootWindow> root_window(
+      aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
   scoped_ptr<DemoStackingClient> stacking_client(new DemoStackingClient(
       root_window.get()));
 

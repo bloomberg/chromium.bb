@@ -17,7 +17,7 @@ namespace ash {
 // real multi monitor support is implemented.
 
 namespace {
-const aura::MonitorManager* GetMonitorManager() {
+aura::MonitorManager* GetMonitorManager() {
   return aura::Env::GetInstance()->monitor_manager();
 }
 }  // namespace
@@ -63,7 +63,7 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPointImpl() {
 }
 
 gfx::Size ScreenAsh::GetPrimaryMonitorSizeImpl() {
-  return GetMonitorManager()->GetPrimaryMonitor()->size();
+  return GetMonitorManager()->GetMonitorAt(0)->size();
 }
 
 int ScreenAsh::GetNumMonitorsImpl() {

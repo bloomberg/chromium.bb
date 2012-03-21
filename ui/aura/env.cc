@@ -7,6 +7,7 @@
 #include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/compositor/compositor.h"
 
 namespace aura {
 
@@ -25,9 +26,12 @@ Env::Env()
 #if !defined(OS_MACOSX)
   dispatcher_.reset(CreateDispatcher());
 #endif
+  ui::Compositor::Initialize(false);
 }
 
-Env::~Env() {}
+Env::~Env() {
+  ui::Compositor::Terminate();
+}
 
 // static
 Env* Env::GetInstance() {

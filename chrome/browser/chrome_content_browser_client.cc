@@ -345,12 +345,12 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif
 
-#if defined(USE_AURA)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
-#endif
-
 #if defined(USE_ASH)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+#endif
+
+#if defined(USE_AURA)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
 #endif
 
   return main_parts;

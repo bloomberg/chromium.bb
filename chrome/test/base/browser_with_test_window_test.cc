@@ -16,7 +16,6 @@
 #include "content/test/test_renderer_host.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
@@ -45,8 +44,7 @@ void BrowserWithTestWindowTest::SetUp() {
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
 #if defined(USE_AURA)
-  root_window_.reset(aura::Env::GetInstance()->monitor_manager()->
-                     CreateRootWindowForPrimaryMonitor());
+  root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window_.get()));

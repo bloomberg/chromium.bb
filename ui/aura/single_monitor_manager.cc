@@ -38,17 +38,17 @@ SingleMonitorManager::~SingleMonitorManager() {
 }
 
 void SingleMonitorManager::OnNativeMonitorResized(const gfx::Size& size) {
-  if (RootWindow::use_fullscreen_host_window()) {
+  if (use_fullscreen_host_window()) {
     monitor_->set_size(size);
     NotifyBoundsChanged(monitor_.get());
   }
 }
 
 RootWindow* SingleMonitorManager::CreateRootWindowForMonitor(
-    const Monitor* monitor) {
+    Monitor* monitor) {
   DCHECK(!root_window_);
   DCHECK_EQ(monitor_.get(), monitor);
-  root_window_ = new RootWindow();
+  root_window_ = new RootWindow(monitor->bounds());
   root_window_->AddObserver(this);
   return root_window_;
 }
@@ -63,8 +63,8 @@ const Monitor* SingleMonitorManager::GetMonitorNearestPoint(
   return monitor_.get();
 }
 
-const Monitor* SingleMonitorManager::GetPrimaryMonitor() const {
-  return monitor_.get();
+Monitor* SingleMonitorManager::GetMonitorAt(size_t index) {
+  return !index ? monitor_.get() : NULL;
 }
 
 size_t SingleMonitorManager::GetNumMonitors() const {
@@ -77,7 +77,7 @@ Monitor* SingleMonitorManager::GetMonitorNearestWindow(const Window* window) {
 
 void SingleMonitorManager::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& bounds) {
-  if (!RootWindow::use_fullscreen_host_window()) {
+  if (!use_fullscreen_host_window()) {
     Update(bounds.size());
     NotifyBoundsChanged(monitor_.get());
   }
@@ -89,20 +89,9 @@ void SingleMonitorManager::OnWindowDestroying(Window* window) {
 }
 
 void SingleMonitorManager::Init() {
-  gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
-                   kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAuraHostWindowSize);
-  int x = 0, y = 0, width, height;
-  if (sscanf(size_str.c_str(), "%dx%d", &width, &height) == 2) {
-    bounds.set_size(gfx::Size(width, height));
-  } else if (sscanf(size_str.c_str(), "%d+%d-%dx%d", &x, &y, &width, &height)
-             == 4) {
-    bounds = gfx::Rect(x, y, width, height);
-  } else if (RootWindow::use_fullscreen_host_window()) {
-    bounds = gfx::Rect(RootWindowHost::GetNativeScreenSize());
-  }
-  monitor_->set_bounds(bounds);
+  monitor_.reset(CreateMonitorFromSpec(size_str));
 }
 
 void SingleMonitorManager::Update(const gfx::Size size) {

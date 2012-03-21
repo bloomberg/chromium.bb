@@ -67,16 +67,14 @@ Window* GestureEventHandlerForConsumedGesture(const GestureEvent& event,
 
 }  // namespace
 
-RootWindow* RootWindow::instance_ = NULL;
-bool RootWindow::use_fullscreen_host_window_ = false;
 bool RootWindow::hide_host_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
 
-RootWindow::RootWindow()
+RootWindow::RootWindow(const gfx::Rect& initial_bounds)
     : Window(NULL),
-      host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
+      host_(aura::RootWindowHost::Create(initial_bounds)),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
@@ -103,7 +101,6 @@ RootWindow::RootWindow()
   should_hold_mouse_moves_ = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAuraDisableHoldMouseMoves);
 
-  ui::Compositor::Initialize(false);
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
       host_->GetBounds().size()));
   DCHECK(compositor_.get());
@@ -122,9 +119,6 @@ RootWindow::~RootWindow() {
 
   // An observer may have been added by an animation on the RootWindow.
   layer()->GetAnimator()->RemoveObserver(this);
-  ui::Compositor::Terminate();
-  if (instance_ == this)
-    instance_ = NULL;
 }
 
 void RootWindow::ShowRootWindow() {
@@ -145,6 +139,14 @@ gfx::Size RootWindow::GetHostSize() const {
   gfx::Rect rect(host_->GetBounds().size());
   layer()->transform().TransformRect(&rect);
   return rect.size();
+}
+
+void RootWindow::SetHostBounds(const gfx::Rect& bounds) {
+  DispatchHeldMouseMove();
+  host_->SetBounds(bounds);
+  // Requery the location to constrain it within the new root window size.
+  last_mouse_location_ = host_->QueryMouseLocation();
+  synthesize_mouse_move_ = false;
 }
 
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
@@ -434,6 +436,10 @@ void RootWindow::ReleaseMouseMoves() {
 // RootWindow, Window overrides:
 
 RootWindow* RootWindow::GetRootWindow() {
+  return this;
+}
+
+const RootWindow* RootWindow::GetRootWindow() const {
   return this;
 }
 
@@ -832,11 +838,6 @@ void RootWindow::DispatchHeldMouseMove() {
       DispatchMouseEventImpl(held_mouse_move_.get());
     held_mouse_move_.reset();
   }
-}
-
-gfx::Rect RootWindow::GetInitialHostWindowBounds() const {
-  return Env::GetInstance()->monitor_manager()->
-      GetMonitorNearestWindow(this)->bounds();
 }
 
 void RootWindow::PostMouseMoveEventAfterWindowChange() {

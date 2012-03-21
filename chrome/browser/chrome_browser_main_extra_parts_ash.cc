@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/ash/status_area_host_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/aura_switches.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor_setup.h"
 
@@ -34,10 +35,11 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
+  aura::MonitorManager::set_use_fullscreen_host_window(true);
   if (base::chromeos::IsRunningOnChromeOS() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAuraHostWindowUseFullscreen)) {
-    aura::RootWindow::set_use_fullscreen_host_window(true);
+    aura::MonitorManager::set_use_fullscreen_host_window(true);
     aura::RootWindow::set_hide_host_cursor(true);
     // Hide the mouse cursor completely at boot.
     if (!chromeos::UserManager::Get()->IsUserLoggedIn())

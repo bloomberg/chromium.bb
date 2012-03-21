@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/insets.h"
 
@@ -24,6 +23,7 @@ class SkBitmap;
 
 namespace aura {
 class EventFilter;
+class Monitor;
 class RootWindow;
 class Window;
 }
@@ -61,6 +61,7 @@ class AppList;
 class DragDropController;
 class FocusCycler;
 class InputMethodEventFilter;
+class MonitorController;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
 class RootWindowEventFilter;
@@ -79,7 +80,7 @@ class WorkspaceController;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : public aura::MonitorObserver {
+class ASH_EXPORT Shell {
  public:
   enum Direction {
     FORWARD,
@@ -205,9 +206,6 @@ class ASH_EXPORT Shell : public aura::MonitorObserver {
   // Returns the size of the grid.
   int GetGridSize() const;
 
-  // aura::MonitorObserver overrides:
-  virtual void OnMonitorBoundsChanged(const aura::Monitor* monitor) OVERRIDE;
-
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }
@@ -278,6 +276,7 @@ class ASH_EXPORT Shell : public aura::MonitorObserver {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
+  scoped_ptr<internal::MonitorController> monitor_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;

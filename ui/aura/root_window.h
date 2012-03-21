@@ -49,16 +49,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public internal::FocusManager,
                                public ui::LayerAnimationObserver {
  public:
-  RootWindow();
+  explicit RootWindow(const gfx::Rect& initial_bounds);
   virtual ~RootWindow();
-
-  // TODO(oshima): Move this to monitor manager.
-  static void set_use_fullscreen_host_window(bool use_fullscreen) {
-    use_fullscreen_host_window_ = use_fullscreen;
-  }
-  static bool use_fullscreen_host_window() {
-    return use_fullscreen_host_window_;
-  }
 
   static void set_hide_host_cursor(bool hide) {
     hide_host_cursor_ = hide;
@@ -81,6 +73,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Sets the size of the root window.
   void SetHostSize(const gfx::Size& size);
   gfx::Size GetHostSize() const;
+
+  // Sets the bounds of the host window.
+  void SetHostBounds(const gfx::Rect& size);
 
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
@@ -196,6 +191,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
+  virtual const RootWindow* GetRootWindow() const OVERRIDE;
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
   // Overridden from ui::CompositorDelegate:
@@ -275,13 +271,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   scoped_ptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowHost> host_;
-
-  static RootWindow* instance_;
-
-  // If set before the RootWindow is created, the host window will cover the
-  // entire screen.  Note that this can still be overridden via the
-  // switches::kAuraHostWindowSize flag.
-  static bool use_fullscreen_host_window_;
 
   // If set before the RootWindow is created, the cursor will be drawn within
   // the Aura root window but hidden outside of it, and it'll remain hidden

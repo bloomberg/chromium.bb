@@ -15,6 +15,8 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
+#include "ash/monitor/multi_monitor_manager.h"
+#include "ash/monitor/monitor_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
@@ -409,8 +411,7 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 // Shell, public:
 
 Shell::Shell(ShellDelegate* delegate)
-    : root_window_(aura::Env::GetInstance()->monitor_manager()->
-                   CreateRootWindowForPrimaryMonitor()),
+    : root_window_(aura::MonitorManager::CreateRootWindowForPrimaryMonitor()),
       screen_(new ScreenAsh(root_window_.get())),
       root_filter_(NULL),
       delegate_(delegate),
@@ -419,11 +420,9 @@ Shell::Shell(ShellDelegate* delegate)
       status_widget_(NULL) {
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
-  aura::Env::GetInstance()->monitor_manager()->AddObserver(this);
 }
 
 Shell::~Shell() {
-  aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
   RemoveRootWindowEventFilter(window_modality_controller_.get());
@@ -462,6 +461,7 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   window_cycle_controller_.reset();
+  monitor_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
@@ -477,6 +477,8 @@ Shell::~Shell() {
 // static
 Shell* Shell::CreateInstance(ShellDelegate* delegate) {
   CHECK(!instance_);
+  aura::Env::GetInstance()->SetMonitorManager(
+      new internal::MultiMonitorManager());
   instance_ = new Shell(delegate);
   instance_->Init();
   return instance_;
@@ -631,6 +633,7 @@ void Shell::Init() {
   power_button_controller_.reset(new PowerButtonController);
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
+  monitor_controller_.reset(new internal::MonitorController);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -734,14 +737,6 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 
 int Shell::GetGridSize() const {
   return workspace_controller_->workspace_manager()->grid_size();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Shell, aura::MonitorObserver implementation:
-
-void Shell::OnMonitorBoundsChanged(const aura::Monitor* monitor) {
-  if (aura::RootWindow::use_fullscreen_host_window())
-    root_window_->SetHostSize(monitor->size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
