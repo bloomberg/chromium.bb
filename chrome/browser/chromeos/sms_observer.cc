@@ -102,6 +102,14 @@ void SmsObserver::OnNewMessage(const char* modem_device_path,
   VLOG(1) << "New message notification from " << message->number
           << " text: " << message->text;
 
+  // Don't show empty messages. Such messages most probably "Message Waiting
+  // Indication" and it should be determined by data-coding-scheme,
+  // see crosbug.com/27883. But this field is not exposed from libcros.
+  // TODO(dpokuhin): when libcros refactoring done, implement check for
+  // "Message Waiting Indication" to filter out such messages.
+  if (!*message->text)
+    return;
+
   SystemNotification note(
       profile_,
       "incoming _sms.chromeos",
