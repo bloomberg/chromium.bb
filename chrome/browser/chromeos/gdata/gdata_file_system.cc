@@ -582,11 +582,15 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       cache_initialization_started_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       sync_client_(sync_client) {
+  // Should be created from the file browser extension API on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void GDataFileSystem::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   documents_service_->Initialize(profile_);
-  sync_client_->Start(this);
+  sync_client_->Initialize(this);
 
   // download_manager will be NULL for unit tests.
   content::DownloadManager* download_manager =
@@ -596,9 +600,6 @@ void GDataFileSystem::Initialize() {
   gdata_download_observer_->Initialize(gdata_uploader_.get(), download_manager);
   root_.reset(new GDataRootDirectory(this));
   root_->set_file_name(kGDataRootDirectory);
-
-  // Should be created from the file browser extension API on UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);

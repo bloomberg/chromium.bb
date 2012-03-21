@@ -6,6 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
 #pragma once
 
+#include <queue>
+#include <string>
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 
 namespace gdata {
@@ -29,9 +34,9 @@ namespace gdata {
 // The interface class is defined to make GDataSyncClient mockable.
 class GDataSyncClientInterface : public GDataFileSystem::Observer {
  public:
-  // Starts the GDataSyncClient. |file_system| is used to access to the cache
-  // (ex. store a file to the cache when the file is downloaded).
-  virtual void Start(GDataFileSystem* file_system) = 0;
+  // Initializes the GDataSyncClient. |file_system| is used to access to the
+  // cache (ex. store a file to the cache when the file is downloaded).
+  virtual void Initialize(GDataFileSystemInterface* file_system) = 0;
 
   virtual ~GDataSyncClientInterface() {}
 };
@@ -43,14 +48,40 @@ class GDataSyncClient : public GDataSyncClientInterface {
   virtual ~GDataSyncClient();
 
   // GDataSyncClientInterface overrides.
-  virtual void Start(GDataFileSystem* file_system) OVERRIDE;
+  virtual void Initialize(GDataFileSystemInterface* file_system) OVERRIDE;
 
   // GDataFileSystem::Observer overrides.
   virtual void OnFilePinned(const std::string& resource_id,
                             const std::string& md5) OVERRIDE;
 
+  // Starts scanning the pinned directory in the cache to collect
+  // pinned-but-not-fetched files.
+  //
+  // TODO(satorux): This function isn't used yet in the production code.
+  // We should get notified about completion of the cache initialization, and
+  // call this function.
+  void StartInitialScan();
+
+  // Runs all pending operations on the background thread, and blocks until
+  // they are complete. Used only for testing.
+  void FlushForTesting();
+
+  // Returns the contents of |queue_|. Used only for testing.
+  std::vector<std::string> GetResourceIdInQueueForTesting();
+
  private:
-  GDataFileSystem* file_system_;
+  // Called when the initial scan is complete. Receives the resource IDs of
+  // pinned-but-not-fetched files as |resource_ids|.
+  void OnInitialScanComplete(std::vector<std::string>* resource_ids);
+
+  GDataFileSystemInterface* file_system_;
+
+  // The queue of resource IDs used to fetch pinned-but-not-fetched files in
+  // the background thread.
+  std::queue<std::string> queue_;
+
+  base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GDataSyncClient);
 };
 

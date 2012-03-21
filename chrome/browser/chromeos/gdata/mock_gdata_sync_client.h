@@ -10,7 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {
-class GDataFileSystem;
+class GDataFileSystemInterface;
 
 // Mock for GDataSyncClientInterface.
 class MockGDataSyncClient : public GDataSyncClientInterface {
@@ -18,7 +18,7 @@ class MockGDataSyncClient : public GDataSyncClientInterface {
   MockGDataSyncClient();
   virtual ~MockGDataSyncClient();
 
-  MOCK_METHOD1(Start, void(GDataFileSystem* file_system));
+  MOCK_METHOD1(Initialize, void(GDataFileSystemInterface* file_system));
   MOCK_METHOD2(OnFilePinned, void(const std::string& resource_id,
                                   const std::string& md5));
 };

@@ -103,8 +103,8 @@ class GDataFileSystemTest : public testing::Test {
                                        mock_doc_service_,
                                        mock_sync_client_);
 
-    // Start() is called inside file_system_->Initialize().
-    EXPECT_CALL(*mock_sync_client_, Start(file_system_)).Times(1);
+    // Initialize() is called inside file_system_->Initialize().
+    EXPECT_CALL(*mock_sync_client_, Initialize(file_system_)).Times(1);
     file_system_->Initialize();
 
     RunAllPendingForCache();
