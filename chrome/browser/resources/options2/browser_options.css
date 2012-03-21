@@ -4,7 +4,6 @@
 
 #change-home-page-section {
   margin-left: 30px;
-  overflow-y: hidden;
 }
 
 #home-page-url {
@@ -364,6 +363,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .sliding {
   -webkit-transition: height 200ms;
+  overflow-y: hidden;
 }
 
 #sessionRestoreOverlay {
