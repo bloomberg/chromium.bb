@@ -434,6 +434,17 @@ bool SyncBackendHost::SetDecryptionPassphrase(const std::string& passphrase) {
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoSetDecryptionPassphrase, core_.get(),
                  passphrase));
+
+  // Since we were able to decrypt the cached pending keys with the passphrase
+  // provided, we immediately alert the UI layer that the passphrase was
+  // accepted. This will avoid the situation where a user enters a passphrase,
+  // clicks OK, immediately reopens the advanced settings dialog, and gets an
+  // unnecessary prompt for a passphrase.
+  // Note: It is not guaranteed that the passphrase will be accepted by the
+  // syncer thread, since we could receive a new nigori node while the task is
+  // pending. This scenario is a valid race, and SetDecryptionPassphrase can
+  // trigger a new OnPassphraseRequired if it needs to.
+  NotifyPassphraseAccepted();
   return true;
 }
 
