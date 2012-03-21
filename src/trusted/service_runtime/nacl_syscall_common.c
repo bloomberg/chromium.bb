@@ -1165,8 +1165,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   usraddr = (uintptr_t) start;
 
   if (0 != (flags & ~allowed_flags)) {
-    NaClLog(LOG_WARNING, "invalid mmap flags 0%o, ignoring extraneous bits\n",
-            flags);
+    NaClLog(2, "invalid mmap flags 0%o, ignoring extraneous bits\n", flags);
     flags &= allowed_flags;
   }
 
@@ -1817,7 +1816,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
     length = alloc_rounded_length;
-    NaClLog(1, "munmap: rounded length to 0x%"NACL_PRIxS"\n", length);
+    NaClLog(2, "munmap: rounded length to 0x%"NACL_PRIxS"\n", length);
   }
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) start, length);
   if (kNaClBadAddress == sysaddr) {
