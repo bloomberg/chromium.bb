@@ -521,6 +521,8 @@
         'browser/chromeos/extensions/input_method_event_router.h',
         'browser/chromeos/extensions/media_player_event_router.cc',
         'browser/chromeos/extensions/media_player_event_router.h',
+        'browser/chromeos/extensions/offers_private_api.cc',
+        'browser/chromeos/extensions/offers_private_api.h',
         'browser/chromeos/external_metrics.cc',
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',

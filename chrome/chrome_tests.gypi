@@ -2595,6 +2595,7 @@
         'browser/chromeos/disks/mock_disk_mount_manager.h',
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
+        'browser/chromeos/extensions/offers_private_apitest.cc',
         'browser/chromeos/gdata/gdata_documents_service_browsertest.cc',
         'browser/chromeos/input_method/input_method_manager_browsertest.cc',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',

@@ -1,0 +1,28 @@
+[
+  {
+    "namespace": "offersPrivate",
+    "nodoc": true,
+    "platforms": ["chromeos"],
+    "types": [],
+    "functions": [
+      {
+        "name": "confirmEligibility",
+        "description": "Confirm eligiblility for a Chrome OS offer.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "boolean",
+                "description" : "A boolean result code."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -55,6 +55,7 @@
       <include name="IDR_EXTENSION_API_JSON_MANAGEMENT" file="extensions\api\management.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_MEDIAPLAYERPRIVATE" file="extensions\api\mediaPlayerPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_METRICSPRIVATE" file="extensions\api\metricsPrivate.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_OFFERSPRIVATE" file="extensions\api\offersPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_OMNIBOX" file="extensions\api\omnibox.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTION" file="extensions\api\pageAction.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTIONS" file="extensions\api\pageActions.json" type="BINDATA" />

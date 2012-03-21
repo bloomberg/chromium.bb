@@ -123,6 +123,7 @@ class ExtensionAPIPermission {
     kMediaPlayerPrivate,
     kMetricsPrivate,
     kNotification,
+    kOffersPrivate,
     kPageCapture,
     kPlugin,
     kPrivacy,

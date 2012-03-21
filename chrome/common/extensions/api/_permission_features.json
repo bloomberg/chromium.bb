@@ -118,6 +118,10 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "offersPrivate": {
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  },
   "pageCapture": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
