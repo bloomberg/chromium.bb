@@ -13815,6 +13815,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_POINTER_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay.">
         Pointer settings
       </message>
+      <message name="IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Mouse only.">
+        Mouse settings
+      </message>
+      <message name="IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad only.">
+        Touchpad settings
+      </message>
+      <message name="IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad and Mouse.">
+        Touchpad/Mouse settings
+      </message>
       <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
         Touchpad:
       </message>
