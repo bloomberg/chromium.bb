@@ -574,8 +574,11 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
   if (client != GetTextInputClient())
     return;
 
+  const uint32 state =
+      EventFlagsFromXFlags(GetKeyEvent(native_event)->state);
+
   // Process compose and dead keys
-  if (character_composer_.FilterKeyPress(ibus_keyval)) {
+  if (character_composer_.FilterKeyPress(ibus_keyval, state)) {
     string16 composed = character_composer_.composed_character();
     if (!composed.empty()) {
       client = GetTextInputClient();
@@ -590,8 +593,6 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
   // to send corresponding character to the focused text input client.
   client = GetTextInputClient();
 
-  const uint32 state =
-      EventFlagsFromXFlags(GetKeyEvent(native_event)->state);
   uint16 ch = 0;
   if (!(state & ui::EF_CONTROL_DOWN))
     ch = ui::GetCharacterFromXEvent(native_event);
@@ -615,7 +616,7 @@ void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
   if (client != GetTextInputClient())
     return;
 
-  if (character_composer_.FilterKeyPress(ibus_keyval)) {
+  if (character_composer_.FilterKeyPress(ibus_keyval, flags)) {
     string16 composed = character_composer_.composed_character();
     if (!composed.empty()) {
       client = GetTextInputClient();

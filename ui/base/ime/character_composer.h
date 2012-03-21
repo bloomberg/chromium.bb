@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/string_util.h"
 #include "ui/base/ui_export.h"
 
@@ -29,7 +28,9 @@ class UI_EXPORT CharacterComposer {
   // Filters keypress.
   // Returns true if the keypress is recognized as a part of composition
   // sequence.
-  bool FilterKeyPress(unsigned int keycode);
+  // |keyval| must be a GDK_KEY_* constants.
+  // |flags| must be a combination of ui::EF_* flags.
+  bool FilterKeyPress(unsigned int keyval, unsigned int flags);
 
   // Returns a string consisting of composed character.
   // Empty string is returned when there is no composition result.
@@ -38,11 +39,26 @@ class UI_EXPORT CharacterComposer {
   }
 
  private:
+  // An enum to describe composition mode.
+  enum CompositionMode {
+    // This is the initial state.
+    // Composite a character with dead-keys and compose-key.
+    KEY_SEQUENCE_MODE,
+    // Composite a character with a hexadecimal unicode sequence.
+    HEX_MODE,
+  };
+
+  // Commit a character composed from hexadecimal uncode sequence
+  void CommitHex();
+
   // Remembers keypresses previously filtered.
   std::vector<unsigned int> compose_buffer_;
 
   // A string representing the composed character.
   string16 composed_character_;
+
+  // Composition mode which this instance is in.
+  CompositionMode composition_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(CharacterComposer);
 };

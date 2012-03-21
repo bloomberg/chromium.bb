@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <iterator>
 
+#include "base/third_party/icu/icu_utf.h"
 // Note for Gtk removal: gdkkeysyms.h only contains a set of
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
+#include "ui/base/events.h"
 #include "ui/base/glib/glib_integers.h"
 
 namespace {
@@ -62,7 +64,7 @@ inline bool operator!=(const SequenceIterator& l, const SequenceIterator& r) {
   return !(l == r);
 }
 
-// A function to compare keycode value.
+// A function to compare key value.
 inline int CompareSequenceValue(unsigned int l, unsigned int r) {
   return (l > r) ? 1 : ((l < r) ? -1 : 0);
 }
@@ -293,8 +295,8 @@ const uint16 cedilla_compose_seqs[] = {
   GDK_KEY_Multi_key, GDK_KEY_c, GDK_KEY_apostrophe, 0, 0, 0x00E7,
 };
 
-bool KeypressShouldBeIgnored(unsigned int keycode) {
-  switch(keycode) {
+bool KeypressShouldBeIgnored(unsigned int keyval) {
+  switch(keyval) {
     case GDK_KEY_Shift_L:
     case GDK_KEY_Shift_R:
     case GDK_KEY_Control_L:
@@ -334,36 +336,106 @@ bool CheckCharacterComposeTable(const ComposeBufferType& sequence,
   return false;
 }
 
+// Converts |character| to UTF16 string.
+// Returns false when |character| is not a valid character.
+bool UTF32CharacterToUTF16(uint32 character, string16* output) {
+  output->clear();
+  // Reject invalid character. (e.g. codepoint greater than 0x10ffff)
+  if (!CBU_IS_UNICODE_CHAR(character))
+    return false;
+  if (character) {
+    output->resize(CBU16_LENGTH(character));
+    size_t i = 0;
+    CBU16_APPEND_UNSAFE(&(*output)[0], i, character);
+  }
+  return true;
+}
+
+// Returns an hexadecimal digit integer (0 to 15) corresponding to |keyval|.
+// -1 is returned when |keyval| cannot be a hexadecimal digit.
+int KeyvalToHexDigit(unsigned int keyval) {
+  if (GDK_KEY_0 <= keyval && keyval <= GDK_KEY_9)
+    return keyval - GDK_KEY_0;
+  if (GDK_KEY_a <= keyval && keyval <= GDK_KEY_f)
+    return keyval - GDK_KEY_a + 10;
+  if (GDK_KEY_A <= keyval && keyval <= GDK_KEY_F)
+    return keyval - GDK_KEY_A + 10;
+  return -1;  // |keyval| cannot be a hexadecimal digit.
+}
+
 }  // namespace
 
 namespace ui {
 
-CharacterComposer::CharacterComposer() {}
+CharacterComposer::CharacterComposer() : composition_mode_(KEY_SEQUENCE_MODE) {}
 
 CharacterComposer::~CharacterComposer() {}
 
 void CharacterComposer::Reset() {
   compose_buffer_.clear();
   composed_character_.clear();
+  composition_mode_ = KEY_SEQUENCE_MODE;
 }
 
-bool CharacterComposer::FilterKeyPress(unsigned int keycode) {
-  if(KeypressShouldBeIgnored(keycode))
+bool CharacterComposer::FilterKeyPress(unsigned int keyval,
+                                       unsigned int flags) {
+  composed_character_.clear();
+
+  // We don't care about modifier key presses.
+  if(KeypressShouldBeIgnored(keyval))
     return false;
 
-  compose_buffer_.push_back(keycode);
+  // When the user presses Ctrl+Shift+U, maybe switch to HEX_MODE.
+  // We don't care about other modifiers like Alt.  When CapsLock is down, we
+  // do nothing because what we receive is Ctrl+Shift+u (not U).
+  if (keyval == GDK_KEY_U && (flags & EF_SHIFT_DOWN) &&
+      (flags & EF_CONTROL_DOWN)) {
+    if (composition_mode_ == KEY_SEQUENCE_MODE && compose_buffer_.empty()) {
+      // There is no ongoing composition.  Let's switch to HEX_MODE.
+      composition_mode_ = HEX_MODE;
+      return true;
+    }
+  }
+
+  if (composition_mode_ == HEX_MODE) {
+    const size_t kMaxHexSequenceLength = 8;
+    const int hex_digit = KeyvalToHexDigit(keyval);
+
+    if (keyval == GDK_KEY_Escape) {
+      // Cancel composition when ESC is pressed.
+      Reset();
+    } else if (keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter ||
+               keyval == GDK_KEY_ISO_Enter ||
+               keyval == GDK_KEY_space || keyval == GDK_KEY_KP_Space) {
+      // Commit the composed character when Enter or space is pressed.
+      CommitHex();
+    } else if (keyval == GDK_KEY_BackSpace) {
+      // Pop back the buffer when Backspace is pressed.
+      if (!compose_buffer_.empty()) {
+        compose_buffer_.pop_back();
+      } else {
+        // If there is no character in |compose_buffer_|, cancel composition.
+        Reset();
+      }
+    } else if (hex_digit >= 0 &&
+               compose_buffer_.size() < kMaxHexSequenceLength) {
+      // Add the key to the buffer if it is a hex digit.
+      compose_buffer_.push_back(hex_digit);
+    }
+    return true;
+  }
+
+  DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
+  compose_buffer_.push_back(keyval);
 
   // Check compose table.
-  composed_character_.clear();
   uint32 composed_character_utf32 = 0;
   if (CheckCharacterComposeTable(compose_buffer_, &composed_character_utf32)) {
     // Key press is recognized as a part of composition.
-    if (composed_character_utf32 !=0) {
+    if (composed_character_utf32 != 0) {
       // We get a composed character.
       compose_buffer_.clear();
-      // We assume that composed character is in BMP.
-      if (composed_character_utf32 <= 0xffff)
-        composed_character_ += static_cast<char16>(composed_character_utf32);
+      UTF32CharacterToUTF16(composed_character_utf32, &composed_character_);
     }
     return true;
   }
@@ -374,6 +446,20 @@ bool CharacterComposer::FilterKeyPress(unsigned int keycode) {
     return true;
   }
   return false;
+}
+
+void CharacterComposer::CommitHex() {
+  DCHECK(composition_mode_ == HEX_MODE);
+  uint32 composed_character_utf32 = 0;
+  for (size_t i = 0; i != compose_buffer_.size(); ++i) {
+    const uint32 digit = compose_buffer_[i];
+    DCHECK(0 <= digit && digit < 16);
+    composed_character_utf32 <<= 4;
+    composed_character_utf32 |= digit;
+  }
+  UTF32CharacterToUTF16(composed_character_utf32, &composed_character_);
+  compose_buffer_.clear();
+  composition_mode_ = KEY_SEQUENCE_MODE;
 }
 
 }  // namespace ui
