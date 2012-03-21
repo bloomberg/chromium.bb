@@ -14,8 +14,6 @@
 #include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
 #include "ui/views/widget/native_widget_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 static const int kTransparentAlpha = 200;

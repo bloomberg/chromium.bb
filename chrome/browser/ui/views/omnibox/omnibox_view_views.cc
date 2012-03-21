@@ -297,7 +297,7 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
   // the control-key state is changed.
   if (event.key_code() == ui::VKEY_CONTROL) {
     // TODO(oshima): investigate if we need to support keyboard with two
-    // controls. See omnibox_view_gtk.cc.
+    // controls.
     model_->OnControlKeyChanged(false);
     return true;
   }

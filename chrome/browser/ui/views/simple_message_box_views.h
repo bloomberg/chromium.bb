@@ -81,8 +81,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 #elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       XEvent* xevent) OVERRIDE;
-#else
-  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
   const DialogType type_;

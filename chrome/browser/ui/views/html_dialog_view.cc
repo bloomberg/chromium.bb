@@ -21,10 +21,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/views/widget/native_widget_gtk.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/event.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -92,11 +88,6 @@ void HtmlDialogView::ViewHierarchyChanged(
   DOMView::ViewHierarchyChanged(is_add, parent, child);
   if (is_add && GetWidget() && !initialized_) {
     initialized_ = true;
-#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
-    CHECK(
-        static_cast<views::NativeWidgetGtk*>(
-            GetWidget()->native_widget())->SuppressFreezeUpdates());
-#endif
     RegisterDialogAccelerators();
   }
 }
@@ -238,13 +229,6 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // This allows stuff like F10, etc to work correctly.
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
-#elif defined(TOOLKIT_USES_GTK)
-  views::NativeWidgetGtk* window_gtk =
-      static_cast<views::NativeWidgetGtk*>(GetWidget()->native_widget());
-  if (event.os_event && !event.skip_in_browser) {
-    views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-    window_gtk->HandleKeyboardEvent(views_event);
-  }
 #endif
 }
 
@@ -316,10 +300,4 @@ void HtmlDialogView::OnTabMainFrameLoaded() {
 
 void HtmlDialogView::OnTabMainFrameRender() {
   tab_watcher_.reset();
-#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
-  if (initialized_) {
-    views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
-        GTK_WINDOW(GetWidget()->GetNativeView()), false);
-  }
-#endif
 }

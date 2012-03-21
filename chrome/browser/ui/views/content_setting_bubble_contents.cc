@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>
-#endif
-
 #include <algorithm>
 #include <set>
 #include <string>
@@ -31,10 +27,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-
-#if defined(TOOLKIT_USES_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/cursor.h"
@@ -100,8 +92,6 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 #elif defined(OS_WIN)
   static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
   return g_hand_cursor;
-#elif defined(TOOLKIT_USES_GTK)
-  return gfx::GetCursor(GDK_HAND2);
 #endif
 }
 

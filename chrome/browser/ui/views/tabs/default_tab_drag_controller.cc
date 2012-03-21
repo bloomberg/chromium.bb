@@ -43,15 +43,8 @@
 #if defined(USE_AURA)
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller2.h"
-#endif
-
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
 #include "chrome/browser/ui/views/tabs/tab_drag_controller2.h"
-#endif
-
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdk.h>  // NOLINT
-#include <gdk/gdkkeysyms.h>  // NOLINT
 #endif
 
 using content::OpenURLParams;
@@ -540,16 +533,6 @@ void DefaultTabDragController::DidProcessEvent(const base::NativeEvent& event) {
   // kinds of tab dragging.
   if (ui::EventTypeFromNative(event) == ui::ET_KEY_PRESSED &&
       ui::KeyboardCodeFromNative(event) == ui::VKEY_ESCAPE) {
-    EndDrag(true);
-  }
-}
-#elif defined(TOOLKIT_USES_GTK)
-void DefaultTabDragController::WillProcessEvent(GdkEvent* event) {
-}
-
-void DefaultTabDragController::DidProcessEvent(GdkEvent* event) {
-  if (event->type == GDK_KEY_PRESS &&
-      reinterpret_cast<GdkEventKey*>(event)->keyval == GDK_Escape) {
     EndDrag(true);
   }
 }

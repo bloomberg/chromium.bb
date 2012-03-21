@@ -22,8 +22,6 @@
 #include "ui/gfx/scoped_sk_region.h"
 #elif defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "ui/base/gtk/scoped_region.h"
 #endif
 
 namespace {
@@ -32,8 +30,6 @@ namespace {
 typedef gfx::ScopedSkRegion ScopedPlatformRegion;
 #elif defined(OS_WIN)
 typedef base::win::ScopedRegion ScopedPlatformRegion;
-#elif defined(TOOLKIT_USES_GTK)
-typedef ui::ScopedRegion ScopedPlatformRegion;
 #endif
 
 }  // namespace

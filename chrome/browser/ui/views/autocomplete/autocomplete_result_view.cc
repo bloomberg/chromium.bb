@@ -26,11 +26,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/native_theme.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#include "ui/gfx/skia_utils_gtk.h"
-#endif
-
 namespace {
 
 const char16 kEllipsis[] = { 0x2026, 0x0 };
@@ -152,14 +147,6 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
     colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
-#elif defined(TOOLKIT_USES_GTK)
-    GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
-    gtk_util::GetTextColors(
-        &bg_color, &selected_bg_color, &text_color, &selected_text_color);
-    colors[NORMAL][BACKGROUND] = gfx::GdkColorToSkColor(bg_color);
-    colors[SELECTED][BACKGROUND] = gfx::GdkColorToSkColor(selected_bg_color);
-    colors[NORMAL][TEXT] = gfx::GdkColorToSkColor(text_color);
-    colors[SELECTED][TEXT] = gfx::GdkColorToSkColor(selected_text_color);
 #else
     // TODO(beng): source from theme provider.
     colors[NORMAL][BACKGROUND] = SK_ColorWHITE;

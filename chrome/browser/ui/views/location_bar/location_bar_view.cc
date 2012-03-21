@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#endif
-
 #include <algorithm>
 #include <map>
 

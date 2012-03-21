@@ -139,9 +139,6 @@ class DefaultTabDragController : public TabDragController,
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#elif defined(TOOLKIT_USES_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 #endif
 
   // Initialize the offset used to calculate the position to create windows

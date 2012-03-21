@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#endif
-
 #include <algorithm>
 
 #include "base/auto_reset.h"
@@ -118,8 +114,6 @@
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/views/widget/native_widget_win.h"
-#elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/ui/views/accelerator_table.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1228,19 +1222,6 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
-#if defined(TOOLKIT_USES_GTK)
-  // Views and WebKit use different tables for GdkEventKey -> views::KeyEvent
-  // conversion. We need to use View's conversion table here to keep consistent
-  // behavior with views::FocusManager::OnKeyEvent() method.
-  // TODO(suzhe): We need to check if Windows code also has this issue, and
-  // it'll be best if we can unify these conversion tables.
-  // See http://crbug.com/54315
-  views::KeyEvent views_event(reinterpret_cast<GdkEvent*>(event.os_event));
-  ui::Accelerator accelerator(views_event.key_code(),
-                              views_event.IsShiftDown(),
-                              views_event.IsControlDown(),
-                              views_event.IsAltDown());
-#else
   ui::Accelerator accelerator(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
@@ -1249,7 +1230,6 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
           NativeWebKeyboardEvent::ControlKey,
       (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
           NativeWebKeyboardEvent::AltKey);
-#endif
 
   // We first find out the browser command associated to the |event|.
   // Then if the command is a reserved one, and should be processed
@@ -1275,12 +1255,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     return false;
 
   // Executing the command may cause |this| object to be destroyed.
-#if defined(TOOLKIT_USES_GTK)
-  if (browser_->IsReservedCommandOrKey(id, event) &&
-      !event.match_edit_command) {
-#else
   if (browser_->IsReservedCommandOrKey(id, event)) {
-#endif
     UpdateAcceleratorMetrics(accelerator, id);
     return browser_->ExecuteCommandIfEnabled(id);
   }

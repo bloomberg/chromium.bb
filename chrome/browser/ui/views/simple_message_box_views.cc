@@ -165,9 +165,4 @@ base::MessagePumpDispatcher::DispatchStatus
     return base::MessagePumpDispatcher::EVENT_PROCESSED;
   return base::MessagePumpDispatcher::EVENT_QUIT;
 }
-#else
-bool SimpleMessageBoxViews::Dispatch(GdkEvent* event) {
-  gtk_main_do_event(event);
-  return disposition_ == DISPOSITION_UNKNOWN;
-}
 #endif
