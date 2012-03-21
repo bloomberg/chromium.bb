@@ -30,6 +30,7 @@ DomStorageContext::DomStorageContext(
     DomStorageTaskRunner* task_runner)
     : directory_(directory),
       task_runner_(task_runner),
+      is_shutdown_(false),
       clear_local_state_(false),
       save_session_state_(false),
       special_storage_policy_(special_storage_policy) {
@@ -44,6 +45,8 @@ DomStorageContext::~DomStorageContext() {
 
 DomStorageNamespace* DomStorageContext::GetStorageNamespace(
     int64 namespace_id) {
+  if (is_shutdown_)
+    return NULL;
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
   if (found == namespaces_.end()) {
     if (namespace_id == kLocalStorageNamespaceId) {
@@ -89,11 +92,19 @@ void DomStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
 }
 
 void DomStorageContext::PurgeMemory() {
-  // TODO(michaeln): write me
+  // We can only purge memory from the local storage namespace
+  // which is backed by disk.
+  StorageNamespaceMap::iterator found =
+      namespaces_.find(kLocalStorageNamespaceId);
+  if (found != namespaces_.end())
+    found->second->PurgeMemory();
 }
 
 void DomStorageContext::Shutdown() {
-  // TODO(michaeln): write me
+  is_shutdown_ = true;
+  StorageNamespaceMap::const_iterator it = namespaces_.begin();
+  for (; it != namespaces_.end(); ++it)
+    it->second->Shutdown();
 }
 
 void DomStorageContext::AddEventObserver(EventObserver* observer) {
@@ -135,6 +146,8 @@ void DomStorageContext::NotifyAreaCleared(
 
 void DomStorageContext::CreateSessionNamespace(
     int64 namespace_id) {
+  if (is_shutdown_)
+    return;
   DCHECK(namespace_id != kLocalStorageNamespaceId);
   DCHECK(namespaces_.find(namespace_id) == namespaces_.end());
   namespaces_[namespace_id] = new DomStorageNamespace(
@@ -149,6 +162,8 @@ void DomStorageContext::DeleteSessionNamespace(
 
 void DomStorageContext::CloneSessionNamespace(
     int64 existing_id, int64 new_id) {
+  if (is_shutdown_)
+    return;
   DCHECK_NE(kLocalStorageNamespaceId, existing_id);
   DCHECK_NE(kLocalStorageNamespaceId, new_id);
   StorageNamespaceMap::iterator found = namespaces_.find(existing_id);

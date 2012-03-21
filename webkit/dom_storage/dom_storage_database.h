@@ -23,7 +23,7 @@ namespace dom_storage {
 class DomStorageDatabase {
  public:
   explicit DomStorageDatabase(const FilePath& file_path);
-  ~DomStorageDatabase();
+  virtual ~DomStorageDatabase();  // virtual for unit testing
 
   // Reads all the key, value pairs stored in the database and returns
   // them. |result| is assumed to be empty and any duplicate keys will
@@ -37,6 +37,10 @@ class DomStorageDatabase {
   // |changes| will be examined - keys mapped to a null NullableString16
   // will be removed and all others will be inserted/updated as appropriate.
   bool CommitChanges(bool clear_all_first, const ValuesMap& changes);
+
+ protected:
+  // Constructor that uses an in-memory sqlite database, for testing.
+  DomStorageDatabase();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest, SimpleOpenAndClose);
@@ -54,6 +58,7 @@ class DomStorageDatabase {
   FRIEND_TEST_ALL_PREFIXES(DomStorageDatabaseTest,
                            TestCanOpenFileThatIsNotADatabase);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, BackingDatabaseOpened);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitTasks);
 
   enum SchemaVersion {
     INVALID,
@@ -90,17 +95,6 @@ class DomStorageDatabase {
 
   void Close();
   bool IsOpen() const { return db_.get() ? db_->is_open() : false; }
-
-#ifdef UNIT_TEST
-  // This constructor allows us to bypass the DCHECK in the public
-  // constructor that normally verifies a valid file path was passed to
-  // back the database on disk. We want to be able to run unit tests
-  // from in-memory databases where possible, so we use an empty
-  // backing file path to signify we should open the database in memory
-  // inside LazyOpen. This constructor will allow us to bypass the
-  // DCHECK when running the unit tests.
-  DomStorageDatabase();
-#endif
 
   // Initialization code shared between the two constructors of this class.
   void Init();

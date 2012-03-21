@@ -14,10 +14,6 @@
 
 namespace dom_storage {
 
-DomStorageDatabase::DomStorageDatabase() {
-  Init();
-}
-
 void CreateV1Table(sql::Connection* db) {
   ASSERT_TRUE(db->is_open());
   ASSERT_TRUE(db->Execute("DROP TABLE IF EXISTS ItemTable"));

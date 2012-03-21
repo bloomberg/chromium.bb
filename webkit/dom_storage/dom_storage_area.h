@@ -48,22 +48,43 @@ class DomStorageArea
 
   DomStorageArea* ShallowCopy(int64 destination_namespace_id);
 
+  // Schedules the commit of any unsaved changes and enters a
+  // shutdown state such that the value getters and setters will
+  // no longer do anything.
+  void Shutdown();
+
  private:
+  friend class DomStorageAreaTest;
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DomStorageAreaBasics);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, BackingDatabaseOpened);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, TestDatabaseFilePath);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitTasks);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitChangesAtShutdown);
   friend class base::RefCountedThreadSafe<DomStorageArea>;
+
+  struct CommitBatch {
+    bool clear_all_first;
+    ValuesMap changed_values;
+    CommitBatch();
+    ~CommitBatch();
+  };
+
+  ~DomStorageArea();
 
   // If we haven't done so already and this is a local storage area,
   // will attempt to read any values for this origin currently
   // stored on disk.
   void InitialImportIfNeeded();
 
-  // Posts a task to write the set of changed values to disk.
-  void ScheduleCommitChanges();
+  // Post tasks to defer writing a batch of changed values to
+  // disk on the commit sequence, and to call back on the primary
+  // task sequence when complete.
+  CommitBatch* CreateCommitBatchIfNeeded();
+  void OnCommitTimer();
   void CommitChanges();
+  void OnCommitComplete();
 
-  ~DomStorageArea();
+  void ShutdownInCommitSequence();
 
   int64 namespace_id_;
   GURL origin_;
@@ -71,10 +92,10 @@ class DomStorageArea
   scoped_refptr<DomStorageTaskRunner> task_runner_;
   scoped_refptr<DomStorageMap> map_;
   scoped_ptr<DomStorageDatabase> backing_;
-  bool initial_import_done_;
-  ValuesMap changed_values_;
-  bool clear_all_next_commit_;
-  bool commit_in_flight_;
+  bool is_initial_import_done_;
+  bool is_shutdown_;
+  scoped_ptr<CommitBatch> commit_batch_;
+  scoped_ptr<CommitBatch> in_flight_commit_batch_;
 };
 
 }  // namespace dom_storage

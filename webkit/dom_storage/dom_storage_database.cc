@@ -37,6 +37,10 @@ DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
   Init();
 }
 
+DomStorageDatabase::DomStorageDatabase() {
+  Init();
+}
+
 void DomStorageDatabase::Init() {
   failed_to_open_ = false;
   tried_to_recreate_ = false;

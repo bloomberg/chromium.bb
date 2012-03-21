@@ -110,7 +110,11 @@ class DomStorageContext
     save_session_state_ = true;
   }
 
-  // Called when the BrowserContext/Profile is going away.
+  // Called when the owning BrowserContext is ending.
+  // Schedules the commit of any unsaved changes and will delete
+  // and keep data on disk per the content settings and special storage
+  // policies. Contained areas and namespaces will stop functioning after
+  // this method has been called.
   void Shutdown();
 
   // Methods to add, remove, and notify EventObservers.
@@ -164,6 +168,7 @@ class DomStorageContext
   // At a tab per second, this range is large enough for 68 years.
   base::AtomicSequenceNumber session_id_sequence_;
 
+  bool is_shutdown_;
   bool clear_local_state_;
   bool save_session_state_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;

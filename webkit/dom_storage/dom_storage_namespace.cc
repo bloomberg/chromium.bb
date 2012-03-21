@@ -64,6 +64,17 @@ DomStorageNamespace* DomStorageNamespace::Clone(int64 clone_namespace_id) {
   return clone;
 }
 
+void DomStorageNamespace::PurgeMemory() {
+  // TODO(michaeln): write me
+}
+
+void DomStorageNamespace::Shutdown() {
+  AreaMap::const_iterator it = areas_.begin();
+  for (; it != areas_.end(); ++it)
+    it->second.area_->Shutdown();
+}
+
+
 DomStorageNamespace::AreaHolder*
 DomStorageNamespace::GetAreaHolder(const GURL& origin) {
   AreaMap::iterator found = areas_.find(origin);

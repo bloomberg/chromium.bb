@@ -17,22 +17,37 @@ class MessageLoopProxy;
 
 namespace dom_storage {
 
-// Tasks must run serially with respect to one another, but may
-// execute on different OS threads. The base class is implemented
-// in terms of a MessageLoopProxy.
-class DomStorageTaskRunner : public base::SequencedTaskRunner {
+// DomStorage uses two task sequences (primary vs commit) to avoid
+// primary access from queuing up behind commits to disk.
+// * Initialization, shutdown, and administrative tasks are performed as
+//   shutdown-blocking primary sequence tasks.
+// * Methods that return values to the javascript'able interface are performed
+//   as non-shutdown-blocking primary sequence tasks.
+// * Internal tasks related to committing changes to disk are performed as
+//   shutdown-blocking commit sequence tasks.
+class DomStorageTaskRunner : public base::TaskRunner {
  public:
-  explicit DomStorageTaskRunner(base::MessageLoopProxy* message_loop);
-  virtual ~DomStorageTaskRunner();
+  enum SequenceID {
+    PRIMARY_SEQUENCE,
+    COMMIT_SEQUENCE
+  };
 
-  // The PostTask() method, defined by TaskRunner, schedules a task
-  // to run immediately.
-
-  // Schedules a task to be run after a delay.
+  // The PostTask() and PostDelayedTask() methods defined by TaskRunner
+  // post non-shutdown-blocking tasks on the primary sequence.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
+      base::TimeDelta delay) = 0;
+
+  // Posts a shutdown blocking task to |sequence_id|.
+  virtual bool PostShutdownBlockingTask(
+      const tracked_objects::Location& from_here,
+      SequenceID sequence_id,
+      const base::Closure& task) = 0;
+
+  // Only here because base::TaskRunner requires it, the return
+  // value is hard coded to true, do not rely on this method.
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 
   // DEPRECATED: Only here because base::TaskRunner requires it, implemented
   // by calling the virtual PostDelayedTask(..., TimeDelta) variant.
@@ -40,62 +55,59 @@ class DomStorageTaskRunner : public base::SequencedTaskRunner {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       int64 delay_ms) OVERRIDE;
-
-  // Only here because base::TaskRunner requires it, the return
-  // value is hard coded to true.
-  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
-
-  // SequencedTaskRunner overrides, these are implemented in
-  // terms of PostDelayedTask and the latter is similarly deprecated.
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta delay) OVERRIDE;
-  virtual bool PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      int64 delay_ms) OVERRIDE;
-
- protected:
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
-// A derived class that utlizes the SequenceWorkerPool under a
-// dom_storage specific SequenceToken. The MessageLoopProxy
+// A derived class used in chromium that utilizes a SequenceWorkerPool
+// under dom_storage specific SequenceTokens. The |delayed_task_loop|
 // is used to delay scheduling on the worker pool.
 class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
  public:
   DomStorageWorkerPoolTaskRunner(
       base::SequencedWorkerPool* sequenced_worker_pool,
-      base::SequencedWorkerPool::SequenceToken sequence_token,
+      base::SequencedWorkerPool::SequenceToken primary_sequence_token,
+      base::SequencedWorkerPool::SequenceToken commit_sequence_token,
       base::MessageLoopProxy* delayed_task_loop);
-  virtual ~DomStorageWorkerPoolTaskRunner();
 
-  // Schedules a sequenced worker task to be run after a delay.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta delay) OVERRIDE;
 
-  base::SequencedWorkerPool::SequenceToken sequence_token() const;
+  virtual bool PostShutdownBlockingTask(
+      const tracked_objects::Location& from_here,
+      SequenceID sequence_id,
+      const base::Closure& task) OVERRIDE;
 
  private:
+  virtual ~DomStorageWorkerPoolTaskRunner();
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
   const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
+  base::SequencedWorkerPool::SequenceToken primary_sequence_token_;
+  base::SequencedWorkerPool::SequenceToken commit_sequence_token_;
 };
 
-// A derived class used in unit tests that causes us to ignore the
-// delay in PostDelayedTask so we don't need to block in unit tests
-// for the timeout to expire.
+// A derived class used in unit tests that ignores all delays so
+// we don't block in unit tests waiting for timeouts to expire.
+// There is no distinction between [non]-shutdown-blocking or
+// the primary sequence vs the commit sequence in the mock,
+// all tasks are scheduled on |message_loop| with zero delay.
 class MockDomStorageTaskRunner : public DomStorageTaskRunner {
  public:
   explicit MockDomStorageTaskRunner(base::MessageLoopProxy* message_loop);
-  virtual ~MockDomStorageTaskRunner() {}
 
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta delay) OVERRIDE;
+
+  virtual bool PostShutdownBlockingTask(
+      const tracked_objects::Location& from_here,
+      SequenceID sequence_id,
+      const base::Closure& task) OVERRIDE;
+
+ private:
+  virtual ~MockDomStorageTaskRunner();
+  const scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
 }  // namespace dom_storage

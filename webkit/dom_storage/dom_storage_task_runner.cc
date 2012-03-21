@@ -13,21 +13,6 @@ namespace dom_storage {
 
 // DomStorageTaskRunner
 
-DomStorageTaskRunner::DomStorageTaskRunner(
-    base::MessageLoopProxy* message_loop)
-    : message_loop_(message_loop) {
-}
-
-DomStorageTaskRunner::~DomStorageTaskRunner() {
-}
-
-bool DomStorageTaskRunner::PostDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  return message_loop_->PostDelayedTask(from_here, task, delay);
-}
-
 bool DomStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
@@ -37,33 +22,22 @@ bool DomStorageTaskRunner::PostDelayedTask(
 }
 
 bool DomStorageTaskRunner::RunsTasksOnCurrentThread() const {
+  // TODO(michaeln): make this method useful once SequencedWorkerPool
+  // can check which sequence the current thread is processing.
   return true;
-}
-
-bool DomStorageTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta delay) {
-  return PostDelayedTask(from_here, task, delay);
-}
-
-bool DomStorageTaskRunner::PostNonNestableDelayedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    int64 delay_ms) {
-  return PostDelayedTask(
-      from_here, task, base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 // DomStorageWorkerPoolTaskRunner
 
 DomStorageWorkerPoolTaskRunner::DomStorageWorkerPoolTaskRunner(
     base::SequencedWorkerPool* sequenced_worker_pool,
-    base::SequencedWorkerPool::SequenceToken sequence_token,
+    base::SequencedWorkerPool::SequenceToken primary_sequence_token,
+    base::SequencedWorkerPool::SequenceToken commit_sequence_token,
     base::MessageLoopProxy* delayed_task_loop)
-    : DomStorageTaskRunner(delayed_task_loop),
+    : message_loop_(delayed_task_loop),
       sequenced_worker_pool_(sequenced_worker_pool),
-      sequence_token_(sequence_token) {
+      primary_sequence_token_(primary_sequence_token),
+      commit_sequence_token_(commit_sequence_token) {
 }
 
 DomStorageWorkerPoolTaskRunner::~DomStorageWorkerPoolTaskRunner() {
@@ -75,12 +49,10 @@ bool DomStorageWorkerPoolTaskRunner::PostDelayedTask(
     base::TimeDelta delay) {
   // Note base::TaskRunner implements PostTask in terms of PostDelayedTask
   // with a delay of zero, we detect that usage and avoid the unecessary
-  // trip thru the message_loop.
+  // trip thru the message loop.
   if (delay == base::TimeDelta()) {
-    // We can skip on shutdown as the destructor of DomStorageArea will ensure
-    // that any remaining data is committed to disk.
     return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
-        sequence_token_, from_here, task,
+        primary_sequence_token_, from_here, task,
         base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
   // Post a task to call this->PostTask() after the delay.
@@ -91,20 +63,44 @@ bool DomStorageWorkerPoolTaskRunner::PostDelayedTask(
       delay);
 }
 
+bool DomStorageWorkerPoolTaskRunner::PostShutdownBlockingTask(
+    const tracked_objects::Location& from_here,
+    SequenceID sequence_id,
+    const base::Closure& task) {
+  base::SequencedWorkerPool::SequenceToken token;
+  if (sequence_id == PRIMARY_SEQUENCE) {
+    token = primary_sequence_token_;
+  } else {
+    DCHECK_EQ(COMMIT_SEQUENCE, sequence_id);
+    token = commit_sequence_token_;
+  }
+  return sequenced_worker_pool_->PostSequencedWorkerTaskWithShutdownBehavior(
+      token, from_here, task,
+      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+}
+
 // MockDomStorageTaskRunner
 
 MockDomStorageTaskRunner::MockDomStorageTaskRunner(
     base::MessageLoopProxy* message_loop)
-    : DomStorageTaskRunner(message_loop) {
+    : message_loop_(message_loop) {
+}
+
+MockDomStorageTaskRunner::~MockDomStorageTaskRunner() {
 }
 
 bool MockDomStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  // Squash all delays to zero in our mock.
-  return DomStorageTaskRunner::PostDelayedTask(
-      from_here, task, base::TimeDelta());
+  return message_loop_->PostTask(from_here, task);
+}
+
+bool MockDomStorageTaskRunner::PostShutdownBlockingTask(
+    const tracked_objects::Location& from_here,
+    SequenceID sequence_id,
+    const base::Closure& task) {
+  return message_loop_->PostTask(from_here, task);
 }
 
 }  // namespace dom_storage
