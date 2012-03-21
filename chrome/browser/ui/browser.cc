@@ -208,6 +208,8 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/window_positioner.h"
 #if defined(USE_AURA)
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #endif
@@ -3690,6 +3692,17 @@ void Browser::AddNewContents(WebContents* source,
   // Can't create a new contents for the current tab - invalid case.
   DCHECK(disposition != CURRENT_TAB);
 
+  gfx::Rect adjusted_pos = gfx::Rect(initial_pos);
+#if defined(OS_CHROMEOS)
+  // In case of a popup with an 'unspecified' location we are looking
+  // for a good screen location. We are interpreting (0,0) as an unspecified
+  // location.
+  if (disposition == NEW_POPUP && !initial_pos.x() && !initial_pos.y()) {
+    adjusted_pos = ChromeShellDelegate::instance()->window_positioner()->
+        GetPopupPosition(initial_pos);
+  }
+#endif
+
   TabContentsWrapper* source_wrapper = NULL;
   BlockedContentTabHelper* source_blocked_content = NULL;
   TabContentsWrapper* new_wrapper =
@@ -3707,7 +3720,7 @@ void Browser::AddNewContents(WebContents* source,
     if (source_blocked_content->all_contents_blocked()) {
       source_blocked_content->AddTabContents(new_wrapper,
                                              disposition,
-                                             initial_pos,
+                                             adjusted_pos,
                                              user_gesture);
       return;
     }
@@ -3720,7 +3733,7 @@ void Browser::AddNewContents(WebContents* source,
       // the whitelist.  The popup owner will handle checking this.
       GetConstrainingContentsWrapper(source_wrapper)->
           blocked_content_tab_helper()->
-              AddPopup(new_wrapper, initial_pos, user_gesture);
+              AddPopup(new_wrapper, adjusted_pos, user_gesture);
       return;
     }
 
@@ -3732,7 +3745,7 @@ void Browser::AddNewContents(WebContents* source,
       tab_handler_->GetTabStripModel()->GetWrapperIndex(source))
       : NULL;
   params.disposition = disposition;
-  params.window_bounds = initial_pos;
+  params.window_bounds = adjusted_pos;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
   browser::Navigate(&params);

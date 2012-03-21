@@ -16,6 +16,7 @@
 
 class StatusAreaHostAura;
 class StatusAreaView;
+class WindowPositioner;
 
 namespace views {
 class View;
@@ -34,6 +35,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   }
 
   StatusAreaView* GetStatusArea();
+
+  WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
   // ash::ShellDelegate overrides;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
@@ -63,6 +66,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   content::NotificationRegistrar registrar_;
 
   scoped_ptr<StatusAreaHostAura> status_area_host_;
+  scoped_ptr<WindowPositioner> window_positioner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

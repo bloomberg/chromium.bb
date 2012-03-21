@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/browser/ui/views/ash/status_area_host_aura.h"
+#include "chrome/browser/ui/views/ash/window_positioner.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,7 +48,8 @@ std::vector<aura::Window*> GetBrowserWindows(IT begin, IT end) {
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
-ChromeShellDelegate::ChromeShellDelegate() {
+ChromeShellDelegate::ChromeShellDelegate()
+    : window_positioner_(new WindowPositioner()) {
   instance_ = this;
 #if defined(OS_CHROMEOS)
   registrar_.Add(

@@ -3232,6 +3232,8 @@
         'browser/ui/views/ash/status_area_host_aura.h',
         'browser/ui/views/ash/volume_controller_chromeos.cc',
         'browser/ui/views/ash/volume_controller_chromeos.h',
+        'browser/ui/views/ash/window_positioner.cc',
+        'browser/ui/views/ash/window_positioner.h',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.cc',
         'browser/ui/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/ui/views/autocomplete/autocomplete_result_view.cc',
