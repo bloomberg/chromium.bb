@@ -59,14 +59,26 @@ const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(128, 128, 128);
 const int kCloseButtonOffsetX = 0;
 // Space between close button and top edge of window.
 const int kCloseButtonOffsetY = 0;
+// In the pre-Ash era the web content area had a frame along the left edge, so
+// user-generated theme images for the new tab page assume they are shifted
+// right relative to the header.  Now that we have removed the left edge frame
+// we need to copy the theme image for the window header from a few pixels
+// inset to preserve alignment with the NTP image, or else we'll break a bunch
+// of existing themes.  We do something similar on OS X for the same reason.
+const int kThemeFrameBitmapOffsetX = 5;
 
-// Tiles an image into an area, rounding the top corners.
+// Tiles an image into an area, rounding the top corners.  Samples the |bitmap|
+// starting |bitmap_offset_x| pixels from the left of the image.
 void TileRoundRect(gfx::Canvas* canvas,
                    int x, int y, int w, int h,
                    const SkBitmap& bitmap,
-                   int corner_radius) {
+                   int corner_radius,
+                   int bitmap_offset_x) {
+  // To get the shader to sample the image |inset_y| pixels in but tile across
+  // the whole image, we adjust the target rectangle for the shader to the right
+  // and translate the canvas left to compensate.
   SkRect rect;
-  rect.iset(x, y, x + w, y + h);
+  rect.iset(x + bitmap_offset_x, y, x + bitmap_offset_x + w, y + h);
   const SkScalar kRadius = SkIntToScalar(corner_radius);
   SkScalar radii[8] = {
       kRadius, kRadius,  // top-left
@@ -85,7 +97,12 @@ void TileRoundRect(gfx::Canvas* canvas,
   // CreateBitmapShader returns a Shader with a reference count of one, we
   // need to unref after paint takes ownership of the shader.
   shader->unref();
+  // Adjust canvas to compensate for image sampling offset, draw, then adjust
+  // back. This is cheaper than pushing/popping the entire canvas state.
+  canvas->sk_canvas()->translate(SkIntToScalar(-bitmap_offset_x), 0);
   canvas->sk_canvas()->drawPath(path, paint);
+  canvas->sk_canvas()->translate(SkIntToScalar(bitmap_offset_x), 0);
+
 }
 }  // namespace
 
@@ -230,7 +247,8 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   TileRoundRect(canvas,
                 0, 0, view->width(), theme_frame->height(),
                 *theme_frame,
-                kCornerRadius);
+                kCornerRadius,
+                kThemeFrameBitmapOffsetX);
 
   // Draw the theme frame overlay, if available.
   if (theme_frame_overlay)
