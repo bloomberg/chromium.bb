@@ -15,6 +15,7 @@ namespace pp {
 
 class NetworkListPrivate : public Resource {
  public:
+  NetworkListPrivate();
   explicit NetworkListPrivate(PP_Resource resource);
 
   /// Returns true if the required interface is available.
@@ -22,33 +23,33 @@ class NetworkListPrivate : public Resource {
 
   /// @return Returns the number of available network interfaces or 0
   /// if the list has never been updated.
-  uint32_t GetCount();
+  uint32_t GetCount() const;
 
   /// @return Returns the name for the network interface with the
   /// specified <code>index</code>.
-  std::string GetName(uint32_t index);
+  std::string GetName(uint32_t index) const;
 
   /// @return Returns the type of the network interface with the
   /// specified <code>index</code>.
-  PP_NetworkListType_Private GetType(uint32_t index);
+  PP_NetworkListType_Private GetType(uint32_t index) const;
 
   /// @return Returns the current state of the network interface with
   /// the specified <code>index</code>.
-  PP_NetworkListState_Private GetState(uint32_t index);
+  PP_NetworkListState_Private GetState(uint32_t index) const;
 
   /// Gets the list of IP addresses for the network interface with the
   /// specified <code>index</code> and stores them in
   /// <code>addresses</code>.
   void GetIpAddresses(uint32_t index,
-                      std::vector<PP_NetAddress_Private>* addresses);
+                      std::vector<PP_NetAddress_Private>* addresses) const;
 
   /// @return Returns the display name for the network interface with
   /// the specified <code>index</code>.
-  std::string GetDisplayName(uint32_t index);
+  std::string GetDisplayName(uint32_t index) const;
 
   /// @return Returns the MTU for the network interface with the
   /// specified <code>index</code>.
-  uint32_t GetMTU(uint32_t index);
+  uint32_t GetMTU(uint32_t index) const;
 };
 
 }  // namespace pp
