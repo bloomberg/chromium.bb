@@ -6,8 +6,8 @@
 #    alternatives outside of ibus-m17n. Excluding these input methods from
 #    the IBus engine XML files, such as /usr/share/ibus/component/m17n.xml,
 #    makes the startup time of the IBus daemon faster. This filtering is
-#    done using a python script at build time of ibus-xkb-layouts and
-#    ibus-m17n. See crosbug.com/4161 for details.
+#    done using a python script at build time of ibus-m17n.
+#    See crosbug.com/4161 for details.
 #
 # 2. Provide the input methods metadata to Chrome at build time. Chrome
 #    needs to know about the supported input methods for the input method
@@ -19,13 +19,13 @@
 #    such as US keyboard. The metadata generation is done using a python
 #    script at build time of Chrome. See crosbug.com/16961 for details.
 #
-# The order of the list is important. In Chrome's "Languages and Input" options
+# The order of the list is important. In Chrome's "Languages and input" options
 # page, we list input methods in this order, when more than one input methods
 # are available for a language (ex. French).
 #
 # Each non-comment line contains the following tab-separated columns.
 #
-# 1) The input method ID used by IBus. (ex. "xkb:ca::fra") You should *NEVER*
+# 1) The input method ID used by Chrome. (ex. "xkb:ca::fra") You should *NEVER*
 #    change the ID since the ID might be written in user's ~/Preferences. For
 #    example, three-letter ISO 639-2/B codes are used for IDs start with "xkb:"
 #    for histrical reason, but we should not replace them with two-letter 639-1
@@ -49,7 +49,7 @@
 #   and update the following files by running this script.
 #
 #    * chrome/app/generated_resources.grd
-#    * chrome/browser/chromeos/input_method/xkeyboard.cc
+#    * chrome/browser/chromeos/input_method/xkeyboard_data.h
 #    * chrome/browser/resources/keyboard_overlay_data.js
 #    * chrome/browser/ui/webui/chromeos/keyboard_overlay_ui.cc
 
