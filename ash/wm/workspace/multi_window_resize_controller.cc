@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/root_window_event_filter.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ui_resources.h"
@@ -361,6 +362,9 @@ void MultiWindowResizeController::ShowNow() {
   params.delegate = new views::WidgetDelegateView;
   resize_widget_->set_focus_on_creation(false);
   resize_widget_->Init(params);
+  SetWindowVisibilityAnimationType(
+      resize_widget_->GetNativeWindow(),
+      WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   resize_widget_->GetNativeWindow()->SetName("MultiWindowResizeController");
   resize_widget_->SetContentsView(view);
   show_bounds_ = CalculateResizeWidgetBounds(show_location_);
