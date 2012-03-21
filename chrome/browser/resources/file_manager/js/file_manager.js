@@ -584,12 +584,13 @@ FileManager.prototype = {
     this.fileContextMenu_ = this.dialogDom_.querySelector('.file-context-menu');
     cr.ui.Menu.decorate(this.fileContextMenu_);
 
+    this.document_.addEventListener(
+      'contextmenu', this.updateCommands_.bind(this), true);
+
     this.rootsContextMenu_ =
         this.dialogDom_.querySelector('.roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
-    this.document_.addEventListener('canExecute',
-                                    this.onCanExecute_.bind(this));
     this.document_.addEventListener('command', this.onCommand_.bind(this));
   }
 
@@ -1058,16 +1059,8 @@ FileManager.prototype = {
    * Force the canExecute events to be dispatched.
    */
   FileManager.prototype.updateCommands_ = function() {
-    for (var key in this.commands_) {
-      this.commands_[key].canExecuteChange();
-    }
-  };
-
-  /**
-   * Invoked to decide whether the "copy" command can be executed.
-   */
-  FileManager.prototype.onCanExecute_ = function(event) {
-    event.canExecute = this.canExecute_(event.command.id);
+    for (var key in this.commands_)
+      this.commands_[key].disabled = !this.canExecute_(key);
   };
 
   FileManager.prototype.canPaste_ = function(readonly) {
@@ -1316,7 +1309,6 @@ FileManager.prototype = {
       if (this.currentButter_)
         this.hideButter();
 
-      this.updateCommands_();
       self = this;
       var callback;
       while (callback = self.pasteSuccessCallbacks_.shift()) {
@@ -2988,7 +2980,6 @@ FileManager.prototype = {
 
       this.cutOrCopyToClipboard_(event, false);
 
-      this.updateCommands_();
       this.blinkSelection();
   };
 
@@ -2999,7 +2990,6 @@ FileManager.prototype = {
 
     this.cutOrCopyToClipboard_(event, true);
 
-    this.updateCommands_();
     this.blinkSelection();
   };
 
@@ -3328,7 +3318,7 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    this.updateCommands_();
+    this.updateCommonActionButtons_();
     this.updateOkButton_();
     this.updateBreadcrumbs_();
     this.updateColumnModel_();
@@ -3409,11 +3399,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onGridOrTableMouseDown_ = function(event) {
-    this.updateCommands_();
-
     var item = this.findListItemForEvent_(event);
     if (!item)
       return;
+
     if (this.allowRenameClick_(event, item)) {
       event.preventDefault();
       this.directoryModel_.fileListSelection.selectedIndex = item.listIndex;
@@ -3777,12 +3766,13 @@ FileManager.prototype = {
 
     var self = this;
     function handleCommand(name) {
-      self.updateCommands_();
-      if (self.commands_[name].disabled)
+      var command = self.commands_[name];
+      command.disabled = !self.canExecute_(name);
+      if (command.disabled)
         return;
       event.preventDefault();
       event.stopPropagation();
-      self.commands_[name].execute();
+      command.execute();
     }
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
