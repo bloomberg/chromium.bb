@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/src/broker_services.h"
+
+#include <AclAPI.h>
 
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
@@ -42,25 +44,62 @@ enum {
   THREAD_CTRL_LAST
 };
 
+// Adds deny ACEs to broker and returns the security descriptor so it can
+// be applied to target processes. The returned descriptor must be freed by
+// calling LocalFree.
+PSECURITY_DESCRIPTOR SetSecurityDescriptorForBroker() {
+  static bool is_initialized = false;
+  DWORD error = ERROR_SUCCESS;
+  PSECURITY_DESCRIPTOR security_descriptor = NULL;
+
+  if (!is_initialized) {
+    error = sandbox::SetObjectDenyRestrictedAndNull(GetCurrentProcess(),
+                                                    SE_KERNEL_OBJECT);
+    if (error) {
+      ::SetLastError(error);
+      return NULL;
+    }
+
+    is_initialized = true;
+  }
+
+  // Save off resulting security descriptor for spawning the targets.
+  error = ::GetSecurityInfo(GetCurrentProcess(), SE_KERNEL_OBJECT,
+                            DACL_SECURITY_INFORMATION, NULL, NULL,
+                            NULL, NULL, &security_descriptor);
+  if (error) {
+    ::SetLastError(error);
+    return NULL;
+  }
+
+  return security_descriptor;
+}
+
 }
 
 namespace sandbox {
 
 BrokerServicesBase::BrokerServicesBase()
     : thread_pool_(NULL), job_port_(NULL), no_targets_(NULL),
-      job_thread_(NULL) {
+      security_descriptor_(NULL), job_thread_(NULL) {
 }
 
 // The broker uses a dedicated worker thread that services the job completion
 // port to perform policy notifications and associated cleanup tasks.
 ResultCode BrokerServicesBase::Init() {
-  if ((NULL != job_port_) || (NULL != thread_pool_))
+  if ((NULL != job_port_) || (NULL != thread_pool_) ||
+      (NULL != security_descriptor_)) {
     return SBOX_ERROR_UNEXPECTED_CALL;
+  }
 
   ::InitializeCriticalSection(&lock_);
 
   job_port_ = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
   if (NULL == job_port_)
+    return SBOX_ERROR_GENERIC;
+
+  security_descriptor_ = SetSecurityDescriptorForBroker();
+  if (NULL == security_descriptor_)
     return SBOX_ERROR_GENERIC;
 
   no_targets_ = ::CreateEventW(NULL, TRUE, FALSE, NULL);
@@ -104,6 +143,10 @@ BrokerServicesBase::~BrokerServicesBase() {
   ::CloseHandle(job_thread_);
   delete thread_pool_;
   ::CloseHandle(no_targets_);
+
+  if (security_descriptor_)
+    ::LocalFree(security_descriptor_);
+
   // If job_port_ isn't NULL, assumes that the lock has been initialized.
   if (job_port_)
     ::DeleteCriticalSection(&lock_);
@@ -263,13 +306,20 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProces object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   PROCESS_INFORMATION process_info = {0};
+
   TargetProcess* target = new TargetProcess(initial_token, lockdown_token,
                                             job, thread_pool_);
 
   std::wstring desktop = policy_base->GetAlternateDesktop();
 
+  // Set the security descriptor so the target picks up deny ACEs.
+  SECURITY_ATTRIBUTES security_attributes = {sizeof(security_attributes),
+                                             security_descriptor_,
+                                             FALSE};
+
   win_result = target->Create(exe_path, command_line,
                               desktop.empty() ? NULL : desktop.c_str(),
+                              &security_attributes,
                               &process_info);
   if (ERROR_SUCCESS != win_result)
     return SpawnCleanup(target, win_result);
