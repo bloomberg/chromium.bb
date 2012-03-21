@@ -17,13 +17,17 @@
 #include "googleurl/src/gurl.h"
 
 class BackingStore;
+class Extension;
+class GURL;
 class SkBitmap;
+class TabContentsWrapper;
 namespace base {
 class DictionaryValue;
 }  // namespace base
 namespace content {
 class WebContents;
 }  // namespace content
+
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
   virtual ~GetWindowFunction() {}
@@ -110,17 +114,23 @@ class UpdateTabFunction : public AsyncExtensionFunction,
                           public content::WebContentsObserver {
  public:
   UpdateTabFunction();
- private:
+
+ protected:
   virtual ~UpdateTabFunction() {}
+  virtual bool UpdateURLIfPresent(base::DictionaryValue* update_props,
+                                  bool* is_async);
+  virtual void PopulateResult();
+
+  content::WebContents* web_contents_;
+
+ private:
   virtual bool RunImpl() OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnExecuteCodeFinished(int request_id,
                              bool success,
                              const std::string& error);
-  void PopulateResult();
 
-  content::WebContents* web_contents_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };
 class MoveTabsFunction : public SyncExtensionFunction {
@@ -153,7 +163,7 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
 };
 class CaptureVisibleTabFunction : public AsyncExtensionFunction,
                                   public content::NotificationObserver {
- private:
+ protected:
   enum ImageFormat {
     FORMAT_JPEG,
     FORMAT_PNG
@@ -164,10 +174,11 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
 
   virtual ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
+  virtual bool GetTabToCapture(content::WebContents** web_contents,
+                               TabContentsWrapper** wrapper);
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-  bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   void SendResultFromBitmap(const SkBitmap& screen_capture);
 
   content::NotificationRegistrar registrar_;

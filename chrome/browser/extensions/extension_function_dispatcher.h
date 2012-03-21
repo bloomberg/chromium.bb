@@ -55,7 +55,7 @@ class ExtensionFunctionDispatcher
     // Returns NULL otherwise.
     virtual Browser* GetBrowser() = 0;
 
-    // Asks the delegate for any relevant WebbContents associated with this
+    // Asks the delegate for any relevant WebContents associated with this
     // context. For example, the WebbContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
