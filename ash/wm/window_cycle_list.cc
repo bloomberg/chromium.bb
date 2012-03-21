@@ -33,12 +33,8 @@ WindowCycleList::~WindowCycleList() {
 }
 
 void WindowCycleList::Step(Direction direction) {
-  // Ensure we have at least one window to step to.
-  if (windows_.empty())
-    return;
-
-  // Don't cycle through a list of one.
-  if (windows_.size() == 1)
+  // Ensure we have more than one window to step to.
+  if (windows_.size() <= 1)
     return;
 
   if (current_index_ == -1) {
