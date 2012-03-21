@@ -41,6 +41,7 @@
         '../webkit/support/webkit_support.gyp:fileapi',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
+        '../webkit/support/webkit_support.gyp:webkit_support',
       ],
       'include_dirs': [
         '..',
@@ -57,7 +58,9 @@
         'shell/shell_browser_context.h',
         'shell/shell_browser_main.cc',
         'shell/shell_browser_main.h',
-        'shell/shell_browser_main_mac.mm',
+        'shell/shell_browser_main_parts.cc',
+        'shell/shell_browser_main_parts.h',
+        'shell/shell_browser_main_parts_mac.mm',
         'shell/shell_content_browser_client.cc',
         'shell/shell_content_browser_client.h',
         'shell/shell_content_client.cc',

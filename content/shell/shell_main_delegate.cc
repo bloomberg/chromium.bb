@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"
@@ -84,7 +85,10 @@ void ShellMainDelegate::SandboxInitialized(const std::string& process_type) {
 int ShellMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  return -1;
+  if (process_type != "")
+    return -1;
+
+  return ShellBrowserMain(main_function_params);
 }
 
 void ShellMainDelegate::ProcessExiting(const std::string& process_type) {

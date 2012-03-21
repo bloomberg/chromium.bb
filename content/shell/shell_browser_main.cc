@@ -4,102 +4,79 @@
 
 #include "content/shell/shell_browser_main.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
-#include "base/string_number_conversions.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
-#include "content/browser/browser_process_sub_thread.h"
-#include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/save_file_manager.h"
-#include "content/browser/plugin_service_impl.h"
-#include "content/public/common/content_switches.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/shell/shell_devtools_delegate.h"
-#include "net/base/net_module.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "content/shell/shell_switches.h"
+#include "webkit/support/webkit_support.h"
 
-namespace content {
+namespace {
 
-static GURL GetStartupURL() {
-  const CommandLine::StringVector& args =
-      CommandLine::ForCurrentProcess()->GetArgs();
-  if (args.empty())
-    return GURL("http://www.google.com/");
-
-  return GURL(args[0]);
-}
-
-ShellBrowserMainParts::ShellBrowserMainParts(
-    const content::MainFunctionParams& parameters)
-    : BrowserMainParts(),
-      devtools_delegate_(NULL) {
-  ShellContentBrowserClient* shell_browser_client =
-      static_cast<ShellContentBrowserClient*>(
-          content::GetContentClient()->browser());
-  shell_browser_client->set_shell_browser_main_parts(this);
-}
-
-ShellBrowserMainParts::~ShellBrowserMainParts() {
-}
-
-#if !defined(OS_MACOSX)
-void ShellBrowserMainParts::PreMainMessageLoopStart() {
-}
-#endif
-
-MessageLoop* ShellBrowserMainParts::GetMainMessageLoop() {
-  return NULL;
-}
-
-int ShellBrowserMainParts::PreCreateThreads() {
-  return 0;
-}
-
-void ShellBrowserMainParts::PreMainMessageLoopRun() {
-  browser_context_.reset(new ShellBrowserContext(this));
-
-  Shell::PlatformInitialize();
-  net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
-    std::string port_str =
-        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    int port;
-    if (base::StringToInt(port_str, &port) && port > 0 && port < 65535) {
-      devtools_delegate_ = new ShellDevToolsDelegate(
-          port,
-          browser_context_->GetRequestContext());
-    } else {
-      DLOG(WARNING) << "Invalid http debugger port number " << port;
+GURL GetURLForLayoutTest(const char* test_name) {
+  std::string path_or_url = test_name;
+  std::string pixel_hash;
+  std::string timeout;
+  std::string::size_type separator_position = path_or_url.find(' ');
+  if (separator_position != std::string::npos) {
+    timeout = path_or_url.substr(separator_position + 1);
+    path_or_url.erase(separator_position);
+    separator_position = path_or_url.find(' ');
+    if (separator_position != std::string::npos) {
+      pixel_hash = timeout.substr(separator_position + 1);
+      timeout.erase(separator_position);
     }
   }
-
-  Shell::CreateNewWindow(browser_context_.get(),
-                         GetStartupURL(),
-                         NULL,
-                         MSG_ROUTING_NONE,
-                         NULL);
-}
-
-void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  if (devtools_delegate_)
-    devtools_delegate_->Stop();
-  browser_context_.reset();
-}
-
-bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  return false;
-}
-
-ui::Clipboard* ShellBrowserMainParts::GetClipboard() {
-  if (!clipboard_.get())
-    clipboard_.reset(new ui::Clipboard());
-  return clipboard_.get();
+  // TODO(jochen): use pixel_hash and timeout.
+  GURL test_url = webkit_support::CreateURLForPathOrURL(path_or_url);
+  webkit_support::SetCurrentDirectoryForFileURL(test_url);
+  return test_url;
 }
 
 }  // namespace
+
+// Main routine for running as the Browser process.
+int ShellBrowserMain(const content::MainFunctionParams& parameters) {
+  scoped_ptr<content::BrowserMainRunner> main_runner_(
+      content::BrowserMainRunner::Create());
+
+  int exit_code = main_runner_->Initialize(parameters);
+  if (exit_code >= 0)
+    return exit_code;
+
+  bool layout_test_mode =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
+
+  if (layout_test_mode) {
+    char test_string[2048];
+    content::ShellBrowserContext* browser_context =
+        static_cast<content::ShellContentBrowserClient*>(
+            content::GetContentClient()->browser())->browser_context();
+
+    while (fgets(test_string, sizeof(test_string), stdin)) {
+      char *new_line_position = strchr(test_string, '\n');
+      if (new_line_position)
+        *new_line_position = '\0';
+      if (test_string[0] == '\0')
+        continue;
+      if (!strcmp(test_string, "QUIT"))
+        break;
+      content::Shell::CreateNewWindow(browser_context,
+                                      GetURLForLayoutTest(test_string),
+                                      NULL,
+                                      MSG_ROUTING_NONE,
+                                      NULL);
+      main_runner_->Run();
+      // TODO(jochen): Figure out a way to close shell.
+    }
+    exit_code = 0;
+  } else {
+    exit_code = main_runner_->Run();
+  }
+
+  main_runner_->Shutdown();
+
+  return exit_code;
+}

@@ -14,6 +14,7 @@
 
 namespace content {
 
+class ShellBrowserContext;
 class ShellBrowserMainParts;
 
 class ShellContentBrowserClient : public ContentBrowserClient {
@@ -182,6 +183,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
           const GURL& url) OVERRIDE;
 #endif
+
+  ShellBrowserContext* browser_context();
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;
