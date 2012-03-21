@@ -41,6 +41,7 @@
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -553,6 +554,9 @@ bool SyncTest::IsTestServerRunning() {
   SyncServerStatusChecker delegate;
   scoped_ptr<content::URLFetcher> fetcher(content::URLFetcher::Create(
     sync_url_status, content::URLFetcher::GET, &delegate));
+  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
+                        net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(g_browser_process->system_request_context());
   fetcher->Start();
   ui_test_utils::RunMessageLoop();
