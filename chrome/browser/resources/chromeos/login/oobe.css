@@ -2,7 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * This is the stylesheet used by the Out of the box experience (OOBE) flow.
+ * This is the stylesheet used by the Out of the box experience (OOBE) flow,
+ * sign in and lock screens.
  */
 
 html,
@@ -12,7 +13,7 @@ body {
 }
 
 body {
-  background: #F1F1F1;
+  background: #fefefe;
   font-size: 14px;
   margin: 0;
   overflow: hidden;
