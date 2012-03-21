@@ -18,10 +18,159 @@ sys.path.extend([
 
 import find_depot_tools # pylint: disable=W0611
 from testing_support.super_mox import SuperMoxTestBase
-from web_dev_style import css_checker # pylint: disable=F0401
+from web_dev_style import css_checker, js_checker # pylint: disable=F0401
 
 
-class WebDevStyleGuideTest(SuperMoxTestBase):
+class JsStyleGuideTest(SuperMoxTestBase):
+  def setUp(self):
+    SuperMoxTestBase.setUp(self)
+
+    input_api = self.mox.CreateMockAnything()
+    input_api.re = re
+    output_api = self.mox.CreateMockAnything()
+    self.checker = js_checker.JSChecker(input_api, output_api)
+
+  def GetHighlight(self, line, error):
+    """Returns the substring of |line| that is highlighted in |error|."""
+    error_lines = error.split('\n')
+    highlight = error_lines[error_lines.index(line) + 1]
+    return ''.join(ch1 for (ch1, ch2) in zip(line, highlight) if ch2 == '^')
+
+  def ShouldFailConstCheck(self, line):
+    """Checks that the 'const' checker flags |line| as a style error."""
+    error = self.checker.ConstCheck(1, line)
+    self.assertNotEqual('', error,
+        'Should be flagged as style error: ' + line)
+    self.assertEqual(self.GetHighlight(line, error), 'const')
+
+  def ShouldPassConstCheck(self, line):
+    """Checks that the 'const' checker doesn't flag |line| as a style error."""
+    self.assertEqual('', self.checker.ConstCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testConstFails(self):
+    lines = [
+        "const foo = 'bar';",
+        "    const bar = 'foo';",
+
+        # Trying to use |const| as a variable name
+        "var const = 0;",
+
+        "var x = 5; const y = 6;",
+        "for (var i=0, const e=10; i<e; i++) {",
+        "for (const x=0; x<foo; i++) {",
+        "while (const x = 7) {",
+    ]
+    for line in lines:
+      self.ShouldFailConstCheck(line)
+
+  def testConstPasses(self):
+    lines = [
+        # sanity check
+        "var foo = 'bar'",
+
+        # @const JsDoc tag
+        "/** @const */ var SEVEN = 7;",
+
+        # @const tag in multi-line comment
+        " * @const",
+        "   * @const",
+
+        # @constructor tag in multi-line comment
+        " * @constructor",
+        "   * @constructor",
+
+        # words containing 'const'
+        "if (foo.constructor) {",
+        "var deconstruction = 'something';",
+        "var madeUpWordconst = 10;",
+
+        # Strings containing the word |const|
+        "var str = 'const at the beginning';",
+        "var str = 'At the end: const';",
+
+        # doing this one with regex is probably not practical
+        #"var str = 'a const in the middle';",
+    ]
+    for line in lines:
+      self.ShouldPassConstCheck(line)
+
+  def ShouldFailChromeSendCheck(self, line):
+    """Checks that the 'chrome.send' checker flags |line| as a style error."""
+    error = self.checker.ChromeSendCheck(1, line)
+    self.assertNotEqual('', error,
+        'Should be flagged as style error: ' + line)
+    self.assertEqual(self.GetHighlight(line, error), ', []')
+
+  def ShouldPassChromeSendCheck(self, line):
+    """Checks that the 'chrome.send' checker doesn't flag |line| as a style
+       error.
+    """
+    self.assertEqual('', self.checker.ChromeSendCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testChromeSendFails(self):
+    lines = [
+        "chrome.send('message', []);",
+        "  chrome.send('message', []);",
+    ]
+    for line in lines:
+      self.ShouldFailChromeSendCheck(line)
+
+  def testChromeSendPasses(self):
+    lines = [
+        "chrome.send('message', constructArgs('foo', []));",
+        "  chrome.send('message', constructArgs('foo', []));",
+        "chrome.send('message', constructArgs([]));",
+        "  chrome.send('message', constructArgs([]));",
+    ]
+    for line in lines:
+      self.ShouldPassChromeSendCheck(line)
+
+  def ShouldFailGetElementByIdCheck(self, line):
+    """Checks that the 'getElementById' checker flags |line| as a style
+       error.
+    """
+    error = self.checker.GetElementByIdCheck(1, line)
+    self.assertNotEqual('', error,
+        'Should be flagged as style error: ' + line)
+    self.assertEqual(self.GetHighlight(line, error), 'document.getElementById')
+
+  def ShouldPassGetElementByIdCheck(self, line):
+    """Checks that the 'getElementById' checker doesn't flag |line| as a style
+       error.
+    """
+    self.assertEqual('', self.checker.GetElementByIdCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testGetElementByIdFails(self):
+    lines = [
+        "document.getElementById('foo');",
+        "  document.getElementById('foo');",
+        "var x = document.getElementById('foo');",
+        "if (document.getElementById('foo').hidden) {",
+    ]
+    for line in lines:
+      self.ShouldFailGetElementByIdCheck(line)
+
+  def testGetElementByIdPasses(self):
+    lines = [
+        "elem.ownerDocument.getElementById('foo');",
+        "  elem.ownerDocument.getElementById('foo');",
+        "var x = elem.ownerDocument.getElementById('foo');",
+        "if (elem.ownerDocument.getElementById('foo').hidden) {",
+        "doc.getElementById('foo');",
+        "  doc.getElementById('foo');",
+        "cr.doc.getElementById('foo');",
+        "  cr.doc.getElementById('foo');",
+        "var x = doc.getElementById('foo');",
+        "if (doc.getElementById('foo').hidden) {",
+    ]
+    for line in lines:
+      self.ShouldPassGetElementByIdCheck(line)
+
+
+class CssStyleGuideTest(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
 
