@@ -57,15 +57,17 @@
       available_devices.parentNode.removeChild(available_devices);
 
       var control_panel = document.getElementById('control_panel');
-      var link = document.createElement('a');
-      link.href = 'javascript:Stop();';
-      link.innerText = 'Stop';
-      control_panel.appendChild(link);
+      control_panel.style.display = 'block';
     }
 
     function Stop() {
       var plugin = document.getElementById('plugin');
       plugin.postMessage('Stop');
+    }
+
+    function Start() {
+      var plugin = document.getElementById('plugin');
+      plugin.postMessage('Start');
     }
 
     function Initialize() {
@@ -93,7 +95,10 @@
           Default - use interface version 0.2 and NULL device ref</a></li>
     </ul>
   </div>
-  <div id="control_panel"></div>
+  <div id="control_panel" style="display:none">
+    <a href="javascript:Stop();">Stop</a>
+    <a href="javascript:Start();">Start</a>
+  </div>
   <div id="status"></div>
 </body>
 </html>

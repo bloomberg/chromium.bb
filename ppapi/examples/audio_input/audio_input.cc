@@ -114,6 +114,8 @@ class MyInstance : public pp::Instance {
         audio_input_ = pp::AudioInput_Dev();
       } else if (event == "Stop") {
         Stop();
+      } else if (event == "Start") {
+        Start();
       }
     } else if (message_data.is_number()) {
       int index = message_data.AsInt();
@@ -226,6 +228,16 @@ class MyInstance : public pp::Instance {
     } else if (audio_input_0_1_ != 0) {
       if (!audio_input_interface_0_1_->StopCapture(audio_input_0_1_))
         PostMessage(pp::Var("StopFailed"));
+    }
+  }
+
+  void Start() {
+    if (!audio_input_.is_null()) {
+      if (!audio_input_.StartCapture())
+        PostMessage(pp::Var("StartFailed"));
+    } else if (audio_input_0_1_ != 0) {
+      if (!audio_input_interface_0_1_->StartCapture(audio_input_0_1_))
+        PostMessage(pp::Var("StartFailed"));
     }
   }
 

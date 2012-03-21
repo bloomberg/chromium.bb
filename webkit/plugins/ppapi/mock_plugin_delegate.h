@@ -40,11 +40,12 @@ class MockPluginDelegate : public PluginDelegate {
   virtual PlatformAudioOutput* CreateAudioOutput(
       uint32_t sample_rate,
       uint32_t sample_count,
-      PlatformAudioCommonClient* client);
+      PlatformAudioOutputClient* client);
   virtual PlatformAudioInput* CreateAudioInput(
+      const std::string& device_id,
       uint32_t sample_rate,
       uint32_t sample_count,
-      PlatformAudioCommonClient* client);
+      PlatformAudioInputClient* client);
   virtual Broker* ConnectToBroker(PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,

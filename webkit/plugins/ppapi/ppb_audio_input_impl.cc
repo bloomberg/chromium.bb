@@ -94,8 +94,12 @@ void PPB_AudioInput_Impl::StreamCreated(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket) {
-  // TODO(yzshen): Report open failure.
   OnOpenComplete(PP_OK, shared_memory_handle, shared_memory_size, socket);
+}
+
+void PPB_AudioInput_Impl::StreamCreationFailed() {
+  OnOpenComplete(PP_ERROR_FAILED, base::SharedMemory::NULLHandle(), 0,
+                 base::SyncSocket::kInvalidHandle);
 }
 
 int32_t PPB_AudioInput_Impl::InternalEnumerateDevices(
@@ -122,11 +126,10 @@ int32_t PPB_AudioInput_Impl::InternalOpen(const std::string& device_id,
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
-  // TODO(yzshen): Open the device specified by |device_id|.
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_input_);
   audio_input_ = plugin_delegate->CreateAudioInput(
-      sample_rate, sample_frame_count, this);
+      device_id, sample_rate, sample_frame_count, this);
   if (audio_input_) {
     open_callback_ = new TrackedCallback(this, callback);
     return PP_OK_COMPLETIONPENDING;
@@ -139,14 +142,14 @@ PP_Bool PPB_AudioInput_Impl::InternalStartCapture() {
   if (!audio_input_)
     return PP_FALSE;
   SetStartCaptureState();
-  return BoolToPPBool(audio_input_->StartCapture());
+  audio_input_->StartCapture();
+  return PP_TRUE;
 }
 
 PP_Bool PPB_AudioInput_Impl::InternalStopCapture() {
   if (!audio_input_)
     return PP_FALSE;
-  if (!audio_input_->StopCapture())
-    return PP_FALSE;
+  audio_input_->StopCapture();
   SetStopCaptureState();
   return PP_TRUE;
 }

@@ -20,7 +20,7 @@ namespace ppapi {
 // Some of the backend functionality of this class is implemented by the
 // PPB_AudioInput_Shared so it can be shared with the proxy.
 class PPB_AudioInput_Impl : public ::ppapi::PPB_AudioInput_Shared,
-                            public PluginDelegate::PlatformAudioCommonClient,
+                            public PluginDelegate::PlatformAudioInputClient,
                             public base::SupportsWeakPtr<PPB_AudioInput_Impl> {
  public:
   typedef std::vector< ::ppapi::DeviceRefData> DeviceRefDataVector;
@@ -43,10 +43,11 @@ class PPB_AudioInput_Impl : public ::ppapi::PPB_AudioInput_Shared,
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
   virtual const DeviceRefDataVector& GetDeviceRefData() const OVERRIDE;
 
-  // PluginDelegate::PlatformAudioCommonClient implementation.
+  // PluginDelegate::PlatformAudioInputClient implementation.
   virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                              size_t shared_memory_size,
                              base::SyncSocket::Handle socket) OVERRIDE;
+  virtual void StreamCreationFailed() OVERRIDE;
 
  private:
   // PPB_AudioInput_Shared implementation.

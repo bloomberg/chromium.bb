@@ -85,14 +85,15 @@ uint32_t MockPluginDelegate::GetAudioHardwareOutputBufferSize() {
 MockPluginDelegate::PlatformAudioOutput* MockPluginDelegate::CreateAudioOutput(
     uint32_t sample_rate,
     uint32_t sample_count,
-    PlatformAudioCommonClient* client) {
+    PlatformAudioOutputClient* client) {
   return NULL;
 }
 
 MockPluginDelegate::PlatformAudioInput* MockPluginDelegate::CreateAudioInput(
+    const std::string& device_id,
     uint32_t sample_rate,
     uint32_t sample_count,
-    PlatformAudioCommonClient* client) {
+    PlatformAudioInputClient* client) {
   return NULL;
 }
 

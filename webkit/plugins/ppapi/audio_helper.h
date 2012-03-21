@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,12 +19,12 @@
 namespace webkit {
 namespace ppapi {
 
-class AudioHelper : public PluginDelegate::PlatformAudioCommonClient {
+class AudioHelper : public PluginDelegate::PlatformAudioOutputClient {
  public:
   AudioHelper();
   virtual ~AudioHelper();
 
-  // |PluginDelegate::PlatformAudioCommonClient| implementation.
+  // |PluginDelegate::PlatformAudioOutputClient| implementation.
   virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
                              size_t shared_memory_size_,
                              base::SyncSocket::Handle socket) OVERRIDE;

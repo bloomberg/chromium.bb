@@ -233,7 +233,12 @@ void MediaStreamDispatcher::OnDeviceOpened(
     if (request.ipc_request == request_id) {
       Stream new_stream;
       new_stream.handler = request.handler;
-      new_stream.video_array.push_back(device_info);
+      if (device_info.stream_type ==
+              content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) {
+        new_stream.video_array.push_back(device_info);
+      } else {
+        new_stream.audio_array.push_back(device_info);
+      }
       label_stream_map_[label] = new_stream;
       request.handler->OnDeviceOpened(request.request_id, label,
                                       device_info);

@@ -31,7 +31,7 @@ PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
 PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
     int sample_rate,
     int frames_per_buffer,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+    webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
       new PepperPlatformAudioOutputImpl);
   if (audio_output->Initialize(sample_rate, frames_per_buffer, client)) {
@@ -76,7 +76,7 @@ void PepperPlatformAudioOutputImpl::ShutDown() {
 bool PepperPlatformAudioOutputImpl::Initialize(
     int sample_rate,
     int frames_per_buffer,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+    webkit::ppapi::PluginDelegate::PlatformAudioOutputClient* client) {
   DCHECK(client);
   // Make sure we don't call init more than once.
   DCHECK_EQ(0, stream_id_);
