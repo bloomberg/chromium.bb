@@ -165,8 +165,8 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 	}
 
 	/* Top stretch */
-	cairo_matrix_init_translate(&matrix, 64, 0);
-	cairo_matrix_scale(&matrix, 64.0 / width, 1);
+	cairo_matrix_init_translate(&matrix, 60, 0);
+	cairo_matrix_scale(&matrix, 8.0 / width, 1);
 	cairo_matrix_translate(&matrix, -x - width / 2, -y);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
@@ -190,8 +190,8 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 	cairo_mask(cr, pattern);
 
 	/* Left stretch */
-	cairo_matrix_init_translate(&matrix, 0, 64);
-	cairo_matrix_scale(&matrix, 1, 64.0 / height);
+	cairo_matrix_init_translate(&matrix, 0, 60);
+	cairo_matrix_scale(&matrix, 1, 8.0 / height);
 	cairo_matrix_translate(&matrix, -x, -y - height / 2);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_reset_clip(cr);
@@ -247,8 +247,8 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 	}
 
 	/* Top stretch */
-	cairo_matrix_init_translate(&matrix, 64, 0);
-	cairo_matrix_scale(&matrix, 64.0 / (width - 2 * margin), 1);
+	cairo_matrix_init_translate(&matrix, 60, 0);
+	cairo_matrix_scale(&matrix, 8.0 / (width - 2 * margin), 1);
 	cairo_matrix_translate(&matrix, -x - width / 2, -y);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_rectangle(cr, x + margin, y, width - 2 * margin, top_margin);
@@ -262,8 +262,8 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 	cairo_fill(cr);
 
 	/* Left stretch */
-	cairo_matrix_init_translate(&matrix, 0, 64);
-	cairo_matrix_scale(&matrix, 1, 64.0 / (height - margin - top_margin));
+	cairo_matrix_init_translate(&matrix, 0, 60);
+	cairo_matrix_scale(&matrix, 1, 8.0 / (height - margin - top_margin));
 	cairo_matrix_translate(&matrix, -x, -y - height / 2);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_rectangle(cr, x, y + top_margin,
