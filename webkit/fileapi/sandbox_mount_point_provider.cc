@@ -42,7 +42,7 @@ const size_t kOldFileSystemUniqueLength = 16;
 const size_t kOldFileSystemUniqueDirectoryNameLength =
     kOldFileSystemUniqueLength + arraysize(kOldFileSystemUniqueNamePrefix) - 1;
 
-const char kOpenFileSystem[] = "FileSystem.OpenFileSystem";
+const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
 enum FileSystemError {
   kOK = 0,
   kIncognito,
@@ -50,6 +50,9 @@ enum FileSystemError {
   kCreateDirectoryError,
   kFileSystemErrorMax,
 };
+
+const char kTemporaryOriginsCountLabel[] = "FileSystem.TemporaryOriginsCount";
+const char kPersistentOriginsCountLabel[] = "FileSystem.PersistentOriginsCount";
 
 // Restricted names.
 // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
@@ -275,13 +278,13 @@ void ValidateRootOnFileThread(ObfuscatedFileUtil* file_util,
   FilePath root_path =
       file_util->GetDirectoryForOriginAndType(origin_url, type, create);
   if (root_path.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
                               kFileSystemErrorMax);
     // TODO(kinuko): We should return appropriate error code.
     *error_ptr = base::PLATFORM_FILE_ERROR_FAILED;
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem, kOK, kFileSystemErrorMax);
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel, kOK, kFileSystemErrorMax);
     *error_ptr = base::PLATFORM_FILE_OK;
   }
   // The reference of file_util will be derefed on the FILE thread
@@ -329,7 +332,7 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
   if (file_system_options_.is_incognito()) {
     // TODO(kinuko): return an isolated temporary directory.
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kIncognito,
                               kFileSystemErrorMax);
     return;
@@ -337,7 +340,7 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
 
   if (!IsAllowedScheme(origin_url)) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
-    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystem,
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kInvalidScheme,
                               kFileSystemErrorMax);
     return;
@@ -487,6 +490,10 @@ void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
     if (enumerator->HasFileSystemType(type))
       origins->insert(origin);
   }
+  UMA_HISTOGRAM_COUNTS((type == kFileSystemTypeTemporary
+                            ? kTemporaryOriginsCountLabel
+                            : kPersistentOriginsCountLabel),
+                       origins->size());
 }
 
 void SandboxMountPointProvider::GetOriginsForHostOnFileThread(
