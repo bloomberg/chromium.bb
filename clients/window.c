@@ -1162,7 +1162,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	cairo_text_extents_t extents;
 	cairo_surface_t *source;
-	int x, y, width, height, shadow_dx = 3, shadow_dy = 3;
+	int x, y, width, height;
 	struct window *window = widget->window;
 
 	if (window->type == TYPE_FULLSCREEN)
@@ -1177,20 +1177,20 @@ frame_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0);
 	cairo_paint(cr);
 
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
 	tile_mask(cr, window->display->shadow,
-		  shadow_dx, shadow_dy, width, height,
-		  frame->margin + 10 - shadow_dx,
-		  frame->margin + 10 - shadow_dy);
+		  2, 2, width + 8, height + 8,
+		  64, 64);
 
 	if (window->keyboard_device)
 		source = window->display->active_frame;
 	else
 		source = window->display->inactive_frame;
 
-	tile_source(cr, source, 0, 0, width, height,
-		    frame->margin + frame->width,
-		    frame->margin + frame->titlebar_height);
+	tile_source(cr, source,
+		    frame->margin, frame->margin,
+		    width - frame->margin * 2, height - frame->margin * 2,
+		    frame->width, frame->titlebar_height);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_select_font_face(cr, "sans",
@@ -1199,7 +1199,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
 	x = (width - extents.width) / 2;
-	y = 24 - extents.y_bearing;
+	y = frame->margin + 8 - extents.y_bearing;
 	if (window->keyboard_device) {
 		cairo_move_to(cr, x + 1, y  + 1);
 		cairo_set_source_rgb(cr, 1, 1, 1);
@@ -1391,7 +1391,7 @@ frame_create(struct window *window, void *data)
 
 	frame->widget = window_add_widget(window, frame);
 	frame->child = widget_add_widget(frame->widget, data);
-	frame->margin = 16;
+	frame->margin = 32;
 	frame->width = 4;
 	frame->titlebar_height = 30
 ;
@@ -2718,7 +2718,7 @@ display_render_frame(struct display *d)
 	cr = cairo_create(d->shadow);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
+	rounded_rect(cr, 32, 32, 96, 96, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 	blur_surface(d->shadow, 64);
@@ -2734,7 +2734,7 @@ display_render_frame(struct display *d)
 	cairo_set_source(cr, pattern);
 	cairo_pattern_destroy(pattern);
 
-	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
+	rounded_rect(cr, 0, 0, 128, 128, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
@@ -2743,7 +2743,7 @@ display_render_frame(struct display *d)
 	cr = cairo_create(d->inactive_frame);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
-	rounded_rect(cr, 16, 16, 112, 112, d->frame_radius);
+	rounded_rect(cr, 0, 0, 128, 128, d->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
 }

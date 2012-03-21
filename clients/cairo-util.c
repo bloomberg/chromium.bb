@@ -52,7 +52,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
 	int i, j, k, size, half;
-	uint32_t kernel[49];
+	uint32_t kernel[71];
 	double f;
 
 	size = ARRAY_LENGTH(kernel);
@@ -166,7 +166,7 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 
 	/* Top stretch */
 	cairo_matrix_init_translate(&matrix, 64, 0);
-	cairo_matrix_scale(&matrix, 64.0 / (width - 2 * margin), 1);
+	cairo_matrix_scale(&matrix, 64.0 / width, 1);
 	cairo_matrix_translate(&matrix, -x - width / 2, -y);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
@@ -191,7 +191,7 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 
 	/* Left stretch */
 	cairo_matrix_init_translate(&matrix, 0, 64);
-	cairo_matrix_scale(&matrix, 1, 64.0 / (height - 2 * margin));
+	cairo_matrix_scale(&matrix, 1, 64.0 / height);
 	cairo_matrix_translate(&matrix, -x, -y - height / 2);
 	cairo_pattern_set_matrix(pattern, &matrix);
 	cairo_reset_clip(cr);
