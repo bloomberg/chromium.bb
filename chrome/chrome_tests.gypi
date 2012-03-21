@@ -2081,6 +2081,7 @@
         'common/worker_thread_ticker_unittest.cc',
         'common/zip_reader_unittest.cc',
         'common/zip_unittest.cc',
+        'nacl/nacl_validation_query_unittest.cc',
         'renderer/chrome_content_renderer_client_unittest.cc',
         'renderer/content_settings_observer_unittest.cc',
         'renderer/extensions/chrome_v8_context_set_unittest.cc',
@@ -2141,8 +2142,8 @@
         '../webkit/quota/mock_storage_client.h',
       ],
       'conditions': [
-        ['disable_nacl==0', {
-          'sources':[
+        ['disable_nacl==1', {
+          'sources!':[
             'nacl/nacl_validation_query_unittest.cc',
           ],
         }],
