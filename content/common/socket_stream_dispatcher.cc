@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "content/common/child_thread.h"
 #include "content/common/socket_stream.h"
+#include "content/common/socket_stream_handle_data.h"
 #include "content/common/socket_stream_messages.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
@@ -146,8 +147,14 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
 
   socket_id_ = all_bridges.Get().Add(this);
   DCHECK_NE(socket_id_, content::kNoSocketId);
+  int render_view_id = MSG_ROUTING_NONE;
+  const SocketStreamHandleData* data =
+      SocketStreamHandleData::ForHandle(handle_);
+  if (data)
+    render_view_id = data->render_view_id();
   AddRef();  // Released in OnClosed().
-  if (child_thread_->Send(new SocketStreamHostMsg_Connect(url, socket_id_))) {
+  if (child_thread_->Send(
+      new SocketStreamHostMsg_Connect(render_view_id, url, socket_id_))) {
     DVLOG(1) << "Connect socket_id=" << socket_id_;
     // TODO(ukai): timeout to OnConnected.
   } else {

@@ -61,7 +61,7 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
 
  private:
   // Message handlers called by OnMessageReceived.
-  void OnConnect(const GURL& url, int socket_id);
+  void OnConnect(int render_view_id, const GURL& url, int socket_id);
   void OnSendData(int socket_id, const std::vector<char>& data);
   void OnCloseReq(int socket_id);
 

@@ -126,6 +126,7 @@ class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebPeerConnectionHandler;
 class WebPeerConnectionHandlerClient;
+class WebSocketStreamHandle;
 class WebSpeechInputController;
 class WebSpeechInputListener;
 class WebStorageNamespace;
@@ -552,29 +553,27 @@ class RenderViewImpl : public RenderWidget,
   virtual void reportFindInPageSelection(int request_id,
                                          int active_match_ordinal,
                                          const WebKit::WebRect& sel);
-
   virtual void openFileSystem(WebKit::WebFrame* frame,
                               WebKit::WebFileSystem::Type type,
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
-
   virtual void queryStorageUsageAndQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,
       WebKit::WebStorageQuotaCallbacks* callbacks);
-
   virtual void requestStorageQuota(
       WebKit::WebFrame* frame,
       WebKit::WebStorageQuotaType type,
       unsigned long long requested_size,
       WebKit::WebStorageQuotaCallbacks* callbacks);
-
   virtual void registerIntentService(
       WebKit::WebFrame* frame,
       const WebKit::WebIntentServiceInfo& service);
   virtual void dispatchIntent(WebKit::WebFrame* frame,
                               const WebKit::WebIntentRequest& intentRequest);
+  virtual void willOpenSocketStream(
+      WebKit::WebSocketStreamHandle* handle);
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

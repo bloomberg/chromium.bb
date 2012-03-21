@@ -293,6 +293,8 @@
     'common/socket_stream.h',
     'common/socket_stream_dispatcher.cc',
     'common/socket_stream_dispatcher.h',
+    'common/socket_stream_handle_data.cc',
+    'common/socket_stream_handle_data.h',
     'common/socket_stream_messages.h',
     'common/speech_recognition_messages.h',
     'common/ssl_status_serialization.cc',

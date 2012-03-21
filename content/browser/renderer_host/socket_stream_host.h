@@ -28,12 +28,15 @@ class URLRequestContext;
 // SocketStreamDispatcherHost.
 class SocketStreamHost {
  public:
-  SocketStreamHost(net::SocketStream::Delegate* delegate, int socket_id);
+  SocketStreamHost(net::SocketStream::Delegate* delegate,
+                   int render_view_id,
+                   int socket_id);
   ~SocketStreamHost();
 
   // Gets socket_id associated with |socket|.
   static int SocketIdFromSocketStream(net::SocketStream* socket);
 
+  int render_view_id() const { return render_view_id_; }
   int socket_id() const { return socket_id_; }
 
   // Starts to open connection to |url|.
@@ -51,6 +54,7 @@ class SocketStreamHost {
 
  private:
   net::SocketStream::Delegate* delegate_;
+  int render_view_id_;
   int socket_id_;
 
   scoped_refptr<net::SocketStreamJob> socket_;

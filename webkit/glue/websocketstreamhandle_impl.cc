@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,11 @@
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
+using WebKit::WebData;
+using WebKit::WebSocketStreamHandle;
+using WebKit::WebSocketStreamHandleClient;
+using WebKit::WebURL;
+
 namespace webkit_glue {
 
 // WebSocketStreamHandleImpl::Context -----------------------------------------
@@ -29,13 +34,13 @@ class WebSocketStreamHandleImpl::Context
  public:
   explicit Context(WebSocketStreamHandleImpl* handle);
 
-  WebKit::WebSocketStreamHandleClient* client() const { return client_; }
-  void set_client(WebKit::WebSocketStreamHandleClient* client) {
+  WebSocketStreamHandleClient* client() const { return client_; }
+  void set_client(WebSocketStreamHandleClient* client) {
     client_ = client;
   }
 
-  void Connect(const WebKit::WebURL& url, WebKitPlatformSupportImpl* platform);
-  bool Send(const WebKit::WebData& data);
+  void Connect(const WebURL& url, WebKitPlatformSupportImpl* platform);
+  bool Send(const WebData& data);
   void Close();
 
   // Must be called before |handle_| or |client_| is deleted.
@@ -43,11 +48,10 @@ class WebSocketStreamHandleImpl::Context
   void Detach();
 
   // WebSocketStreamHandleDelegate methods:
-  virtual void DidOpenStream(WebKit::WebSocketStreamHandle*, int);
-  virtual void DidSendData(WebKit::WebSocketStreamHandle*, int);
-  virtual void DidReceiveData(
-      WebKit::WebSocketStreamHandle*, const char*, int);
-  virtual void DidClose(WebKit::WebSocketStreamHandle*);
+  virtual void DidOpenStream(WebSocketStreamHandle*, int);
+  virtual void DidSendData(WebSocketStreamHandle*, int);
+  virtual void DidReceiveData(WebSocketStreamHandle*, const char*, int);
+  virtual void DidClose(WebSocketStreamHandle*);
 
  private:
   friend class base::RefCounted<Context>;
@@ -58,7 +62,7 @@ class WebSocketStreamHandleImpl::Context
   }
 
   WebSocketStreamHandleImpl* handle_;
-  WebKit::WebSocketStreamHandleClient* client_;
+  WebSocketStreamHandleClient* client_;
   // |bridge_| is alive from Connect to DidClose, so Context must be alive
   // in the time period.
   scoped_refptr<WebSocketStreamHandleBridge> bridge_;
@@ -73,7 +77,7 @@ WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
 }
 
 void WebSocketStreamHandleImpl::Context::Connect(
-    const WebKit::WebURL& url,
+    const WebURL& url,
     WebKitPlatformSupportImpl* platform) {
   VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_);
@@ -82,7 +86,7 @@ void WebSocketStreamHandleImpl::Context::Connect(
   bridge_->Connect(url);
 }
 
-bool WebSocketStreamHandleImpl::Context::Send(const WebKit::WebData& data) {
+bool WebSocketStreamHandleImpl::Context::Send(const WebData& data) {
   VLOG(1) << "Send data.size=" << data.size();
   DCHECK(bridge_);
   return bridge_->Send(
@@ -107,32 +111,32 @@ void WebSocketStreamHandleImpl::Context::Detach() {
 }
 
 void WebSocketStreamHandleImpl::Context::DidOpenStream(
-    WebKit::WebSocketStreamHandle* web_handle, int max_amount_send_allowed) {
+    WebSocketStreamHandle* web_handle, int max_amount_send_allowed) {
   VLOG(1) << "DidOpen";
   if (client_)
     client_->didOpenStream(handle_, max_amount_send_allowed);
 }
 
 void WebSocketStreamHandleImpl::Context::DidSendData(
-    WebKit::WebSocketStreamHandle* web_handle, int amount_sent) {
+    WebSocketStreamHandle* web_handle, int amount_sent) {
   if (client_)
     client_->didSendData(handle_, amount_sent);
 }
 
 void WebSocketStreamHandleImpl::Context::DidReceiveData(
-    WebKit::WebSocketStreamHandle* web_handle, const char* data, int size) {
+    WebSocketStreamHandle* web_handle, const char* data, int size) {
   if (client_)
-    client_->didReceiveData(handle_, WebKit::WebData(data, size));
+    client_->didReceiveData(handle_, WebData(data, size));
 }
 
 void WebSocketStreamHandleImpl::Context::DidClose(
-    WebKit::WebSocketStreamHandle* web_handle) {
+    WebSocketStreamHandle* web_handle) {
   VLOG(1) << "DidClose";
   bridge_ = NULL;
   WebSocketStreamHandleImpl* handle = handle_;
   handle_ = NULL;
   if (client_) {
-    WebKit::WebSocketStreamHandleClient* client = client_;
+    WebSocketStreamHandleClient* client = client_;
     client_ = NULL;
     client->didClose(handle);
   }
@@ -155,7 +159,7 @@ WebSocketStreamHandleImpl::~WebSocketStreamHandleImpl() {
 }
 
 void WebSocketStreamHandleImpl::connect(
-    const WebKit::WebURL& url, WebKit::WebSocketStreamHandleClient* client) {
+    const WebURL& url, WebSocketStreamHandleClient* client) {
   VLOG(1) << "connect url=" << url;
   DCHECK(!context_->client());
   context_->set_client(client);
@@ -163,7 +167,7 @@ void WebSocketStreamHandleImpl::connect(
   context_->Connect(url, platform_);
 }
 
-bool WebSocketStreamHandleImpl::send(const WebKit::WebData& data) {
+bool WebSocketStreamHandleImpl::send(const WebData& data) {
   return context_->Send(data);
 }
 

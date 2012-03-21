@@ -38,6 +38,7 @@
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
 #include "content/common/request_extra_data.h"
+#include "content/common/socket_stream_handle_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
@@ -142,6 +143,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSocketStreamHandle.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
@@ -244,6 +246,7 @@ using WebKit::WebSecurityPolicy;
 using WebKit::WebSettings;
 using WebKit::WebSharedWorker;
 using WebKit::WebSize;
+using WebKit::WebSocketStreamHandle;
 using WebKit::WebStorageNamespace;
 using WebKit::WebStorageQuotaCallbacks;
 using WebKit::WebStorageQuotaError;
@@ -3396,6 +3399,11 @@ void RenderViewImpl::dispatchIntent(
   int id = intents_host_->RegisterWebIntent(intentRequest);
   Send(new IntentsHostMsg_WebIntentDispatch(
       routing_id_, intent_data, id));
+}
+
+void RenderViewImpl::willOpenSocketStream(
+    WebSocketStreamHandle* handle) {
+  SocketStreamHandleData::AddToHandle(handle, routing_id_);
 }
 
 // WebKit::WebPageSerializerClient implementation ------------------------------
