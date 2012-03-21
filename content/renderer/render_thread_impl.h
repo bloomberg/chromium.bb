@@ -86,6 +86,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // execution context (corresponding to WebFrame::frameForCurrentContext).
   static int32 RoutingIDForCurrentContext();
 
+  // When initializing WebKit, ensure that any schemes needed for the content
+  // module are registered properly.  Static to allow sharing with tests.
+  static void RegisterSchemes();
+
   // content::RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual MessageLoop* GetMessageLoop() OVERRIDE;

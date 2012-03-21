@@ -2247,10 +2247,10 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   if (is_swapped_out_) {
     // It is possible for in-progress navigations to arrive here just after we
     // are swapped out, including iframes.  We should cancel them.
-    if (request.url() != GURL("about:swappedout"))
+    if (request.url() != GURL(chrome::kSwappedOutURL))
       return WebKit::WebNavigationPolicyIgnore;
 
-    // Allow about:swappedout to complete.
+    // Allow chrome::kSwappedOutURL to complete.
     return default_policy;
   }
 
@@ -2781,13 +2781,13 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
 
-    // Don't update history_page_ids_ (etc) for about:swappedout, since we
-    // don't want to forget the entry that was there, and since we will
-    // never come back to about:swappedout.  Note that we have to call
+    // Don't update history_page_ids_ (etc) for chrome::kSwappedOutURL, since
+    // we don't want to forget the entry that was there, and since we will
+    // never come back to chrome::kSwappedOutURL.  Note that we have to call
     // UpdateSessionHistory and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
-    if (GetLoadingUrl(frame) != GURL("about:swappedout")) {
+    if (GetLoadingUrl(frame) != GURL(chrome::kSwappedOutURL)) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
       history_list_offset_++;
@@ -4378,11 +4378,12 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // We use loadRequest instead of loadHTMLString because the former commits
     // synchronously.  Otherwise a new navigation can interrupt the navigation
-    // to about:swappedout.  If that happens to be to the page we had been
+    // to chrome::kSwappedOutURL.  If that happens to be to the page we had been
     // showing, then WebKit will never send a commit and we'll be left spinning.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler.  For now, we just run it a second time silently.
-    WebURLRequest request(GURL("about:swappedout"));
+    GURL swappedOutURL(chrome::kSwappedOutURL);
+    WebURLRequest request(swappedOutURL);
     webview()->mainFrame()->loadRequest(request);
   }
 

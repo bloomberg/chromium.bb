@@ -8,6 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/mock_render_process.h"
@@ -145,6 +146,10 @@ void RenderViewTest::SetUp() {
   // hacky, but this is the world we live in...
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
   WebKit::initialize(&webkit_platform_support_);
+
+  // Ensure that we register any necessary schemes when initializing WebKit,
+  // since we are using a MockRenderThread.
+  RenderThreadImpl::RegisterSchemes();
 
   mock_process_.reset(new MockRenderProcess);
 

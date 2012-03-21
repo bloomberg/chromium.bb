@@ -78,6 +78,10 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
       WebKit::WebString::fromUTF8("test-shell-resource"));
   WebKit::WebSecurityPolicy::registerURLSchemeAsNoAccess(
       WebKit::WebString::fromUTF8("test-shell-resource"));
+  WebKit::WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(
+      WebKit::WebString::fromUTF8("test-shell-resource"));
+  WebKit::WebSecurityPolicy::registerURLSchemeAsEmptyDocument(
+      WebKit::WebString::fromUTF8("test-shell-resource"));
   WebScriptController::enableV8SingleThreadMode();
   WebKit::WebRuntimeFeatures::enableSockets(true);
   WebKit::WebRuntimeFeatures::enableApplicationCache(true);
