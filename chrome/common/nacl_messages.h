@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,9 @@
 // NaClProcess messages
 // These are messages sent from the browser to the NaCl process.
 // Tells the NaCl process to start.
-IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
-                     std::vector<nacl::FileDescriptor> /* sockets */)
+IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
+                     std::vector<nacl::FileDescriptor> /* sockets */,
+                     bool /* enable_exception_handling */)
 
 // Tells the NaCl broker to launch a NaCl loader process.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,

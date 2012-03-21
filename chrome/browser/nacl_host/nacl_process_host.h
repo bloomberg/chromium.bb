@@ -69,8 +69,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void IrtReady();
   void SendStart(base::PlatformFile irt_file);
 
-  bool IsHardwareExceptionHandlingEnabled();
-
  private:
 #if defined(OS_WIN)
   class DebugContext;
@@ -92,6 +90,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
   scoped_ptr<content::BrowserChildProcessHost> process_;
+
+  bool enable_exception_handling_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

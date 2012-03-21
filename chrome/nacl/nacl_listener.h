@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,8 @@ class NaClListener : public IPC::Channel::Listener {
   void set_debug_enabled(bool value) {debug_enabled_ = value;}
 
  private:
-  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
+  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
+                     bool enable_exception_handling);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   bool debug_enabled_;

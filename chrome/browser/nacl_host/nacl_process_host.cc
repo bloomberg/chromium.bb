@@ -237,15 +237,24 @@ static bool RunningOnWOW64() {
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
     : reply_msg_(NULL),
       internal_(new NaClInternal()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      enable_exception_handling_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
   process_->SetName(WideToUTF16Hack(url));
+
+  // We allow untrusted hardware exception handling to be enabled via
+  // an env var for consistency with the standalone build of NaCl.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaClExceptionHandling) ||
+      getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
+    enable_exception_handling_ = true;
 #if defined(OS_WIN)
-  if (!RunningOnWOW64()) {
-    debug_context_ = new DebugContext();
-  }
+    if (!RunningOnWOW64()) {
+      debug_context_ = new DebugContext();
+    }
 #endif
+  }
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -286,7 +295,8 @@ NaClProcessHost::~NaClProcessHost() {
             switches::kNaClGdb).empty()) {
       NaClBrokerService::GetInstance()->OnLoaderDied();
     }
-  } else {
+  }
+  if (debug_context_ != NULL) {
     debug_context_->SetChildProcessHost(NULL);
   }
 #endif
@@ -590,11 +600,6 @@ void NaClProcessHost::IrtReady() {
 }
 
 #if defined(OS_WIN)
-bool NaClProcessHost::IsHardwareExceptionHandlingEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNaClExceptionHandling) && !RunningOnWOW64();
-}
-
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   // Set process handle, if it was not set previously.
   // This is needed when NaCl process is launched with nacl-gdb.
@@ -614,7 +619,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
       LOG(ERROR) << "Failed to get process handle";
     }
   }
-  if (!IsHardwareExceptionHandlingEnabled()) {
+  if (debug_context_ == NULL) {
     return;
   }
   // Start new thread for debug loop
@@ -648,7 +653,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   // pid in different thread is fine.
   dbg_thread->message_loop()->PostTask(FROM_HERE,
       base::Bind(&NaClProcessHost::DebugContext::AttachDebugger,
-      debug_context_, peer_pid, process));
+                 debug_context_, peer_pid, process));
 }
 #else
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
@@ -790,16 +795,17 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
+  IPC::Message* start_message =
+      new NaClProcessMsg_Start(handles_for_sel_ldr, enable_exception_handling_);
 #if defined(OS_WIN)
-  if (IsHardwareExceptionHandlingEnabled()) {
-    debug_context_->SetStartMessage(
-        new NaClProcessMsg_Start(handles_for_sel_ldr));
+  if (debug_context_ != NULL) {
+    debug_context_->SetStartMessage(start_message);
     debug_context_->SendStartMessage();
   } else {
-    process_->Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+    process_->Send(start_message);
   }
 #else
-  process_->Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
+  process_->Send(start_message);
 #endif
 
   internal_->sockets_for_sel_ldr.clear();

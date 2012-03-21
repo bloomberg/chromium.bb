@@ -88,7 +88,8 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
+void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
+                                 bool enable_exception_handling) {
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
@@ -121,6 +122,7 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
 
   CHECK(handles.size() == 1);
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
+  args->enable_exception_handling = enable_exception_handling;
   args->enable_debug_stub = debug_enabled_;
   NaClChromeMainStart(args);
   NOTREACHED();
