@@ -351,10 +351,6 @@ list:not([disabled]) > .network-group[selected] {
   line-height: 1.8em;
 }
 
-#privacy-explanation span:first-child {
-  display: block;
-}
-
 #advanced-settings {
   height: 0;
   margin-top: 8px;
