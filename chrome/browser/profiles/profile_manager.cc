@@ -52,6 +52,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -185,6 +186,18 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
 Profile* ProfileManager::GetDefaultProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
+}
+
+// static
+Profile* ProfileManager::GetDefaultProfileOrOffTheRecord() {
+  // TODO (mukai,nkostylev): In the long term we should fix those cases that
+  // crash on Guest mode and have only one GetDefaultProfile() method.
+  Profile* profile = GetDefaultProfile();
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOffTheRecordProfile();
+#endif
+  return profile;
 }
 
 // static

@@ -531,12 +531,5 @@ void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
 }
 
 Profile* ChromeLauncherDelegate::GetProfileForNewWindows() {
-  Profile* profile = ProfileManager::GetDefaultProfile();
-  if (browser_defaults::kAlwaysOpenIncognitoWindow &&
-      IncognitoModePrefs::ShouldLaunchIncognito(
-          *CommandLine::ForCurrentProcess(),
-          profile->GetPrefs())) {
-    profile = profile->GetOffTheRecordProfile();
-  }
-  return profile;
+  return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }

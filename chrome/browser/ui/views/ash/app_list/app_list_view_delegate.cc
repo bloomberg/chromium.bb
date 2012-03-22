@@ -18,7 +18,8 @@ void AppListViewDelegate::SetModel(ash::AppListModel* model) {
   if (model) {
     if (!model_builder_.get()) {
       model_builder_.reset(
-          new AppListModelBuilder(ProfileManager::GetDefaultProfile()));
+          new AppListModelBuilder(
+              ProfileManager::GetDefaultProfileOrOffTheRecord()));
     }
     model_builder_->SetModel(model);
   } else {
