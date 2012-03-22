@@ -445,6 +445,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
   //   BOUNDARY \r\n
   //
+  //   zero to 4:
+  //   Content-Disposition: form-data; name="prn-info-1" \r\n \r\n
+  //   abcdefghijklmnopqrstuvwxyzabcdef \r\n
+  //   BOUNDARY \r\n
+  //
   //   zero or one:
   //   Content-Disposition: form-data; name="num-switches" \r\n \r\n
   //   5 \r\n

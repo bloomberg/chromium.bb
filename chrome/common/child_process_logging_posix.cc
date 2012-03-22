@@ -110,7 +110,6 @@ void SetPrinterInfo(const char* printer_info) {
   std::vector<std::string> info;
   base::SplitString(printer_info, L';', &info);
   DCHECK_LE(info.size(), kMaxReportedPrinterRecords);
-  info.resize(kMaxReportedPrinterRecords);
   for (size_t i = 0; i < info.size(); ++i) {
     printer_info_str += info[i];
     // Truncate long switches, align short ones with spaces to be trimmed later.
