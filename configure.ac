@@ -23,7 +23,7 @@ PKG_PROG_PKG_CONFIG()
 PKG_CHECK_MODULES(FFI, [libffi])
 
 if test "x$GCC" = "xyes"; then
-	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
+	GCC_CFLAGS="-Wall -Wextra -Wno-unused-parameter -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
 fi
 AC_SUBST(GCC_CFLAGS)
 
