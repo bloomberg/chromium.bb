@@ -386,18 +386,45 @@ TEST_F(LauncherUpdaterTest, SetAppImage) {
 // Verifies Panels items work.
 TEST_F(LauncherUpdaterTest, PanelItem) {
   size_t initial_size = launcher_model_->items().size();
-  aura::Window window(NULL);
-  TestTabStripModelDelegate tab_strip_delegate;
-  TabStripModel tab_strip(&tab_strip_delegate, profile());
-  TabContentsWrapper panel_tab(CreateTestWebContents());
-  app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
-  tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
-  LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
-                          LauncherUpdater::TYPE_PANEL, std::string());
-  updater.Init();
-  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-  EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
-  EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
+
+  // Add an App panel.
+  {
+    aura::Window window(NULL);
+    TestTabStripModelDelegate tab_strip_delegate;
+    TabStripModel tab_strip(&tab_strip_delegate, profile());
+    TabContentsWrapper panel_tab(CreateTestWebContents());
+    app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                            LauncherUpdater::TYPE_APP_PANEL, std::string());
+    updater.Init();
+    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    ash::LauncherID id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_APP_PANEL,
+              launcher_delegate_->GetAppType(id));
+    EXPECT_EQ(static_cast<void*>(NULL), updater.favicon_loader_.get());
+  }
+
+  // Add an Extension panel.
+  {
+    aura::Window window(NULL);
+    TestTabStripModelDelegate tab_strip_delegate;
+    TabStripModel tab_strip(&tab_strip_delegate, profile());
+    TabContentsWrapper panel_tab(CreateTestWebContents());
+    app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                            LauncherUpdater::TYPE_EXTENSION_PANEL,
+                            std::string());
+    updater.Init();
+    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+    EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    ash::LauncherID id = launcher_model_->items()[initial_size].id;
+    EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL,
+              launcher_delegate_->GetAppType(id));
+    EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
+  }
 }
 
 // Verifies app tabs are added right after the existing tabbed item.
@@ -505,6 +532,7 @@ TEST_F(LauncherUpdaterTest, Pin) {
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     id = launcher_model_->items()[initial_size].id;
     EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
+    EXPECT_TRUE(launcher_delegate_->IsPinnable(id));
     // Shouldn't be pinned.
     EXPECT_FALSE(launcher_delegate_->IsPinned(id));
     launcher_delegate_->Pin(id);
@@ -528,6 +556,7 @@ TEST_F(LauncherUpdaterTest, Pin) {
     ash::LauncherID new_id = launcher_model_->items()[initial_size + 1].id;
     EXPECT_NE(id, new_id);
     EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size + 1].type);
+    EXPECT_TRUE(launcher_delegate_->IsPinnable(new_id));
     // Shouldn't be pinned.
     EXPECT_FALSE(launcher_delegate_->IsPinned(new_id));
     // But existing one should still be pinned.
@@ -576,6 +605,45 @@ TEST_F(LauncherUpdaterTest, Pin) {
     EXPECT_EQ(id, new_id);
     EXPECT_EQ(ash::TYPE_APP, launcher_model_->items()[initial_size].type);
     EXPECT_EQ(&(state1.updater), GetUpdaterByID(new_id));
+  }
+
+  // Create an app panel and pin it.
+  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
+  {
+    aura::Window window(NULL);
+    TestTabStripModelDelegate tab_strip_delegate;
+    TabStripModel tab_strip(&tab_strip_delegate, profile());
+    TabContentsWrapper panel_tab(CreateTestWebContents());
+    app_icon_loader_->SetAppID(&panel_tab, "3");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                            LauncherUpdater::TYPE_APP_PANEL, std::string());
+    updater.Init();
+    ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+    ash::LauncherID new_id = launcher_model_->items()[initial_size + 1].id;
+    EXPECT_TRUE(launcher_delegate_->IsPinnable(new_id));
+    // Shouldn't be pinned.
+    EXPECT_FALSE(launcher_delegate_->IsPinned(new_id));
+    launcher_delegate_->Pin(new_id);
+    EXPECT_TRUE(launcher_delegate_->IsPinned(new_id));
+  }
+
+  // Create an extension/child panel and ensure it is not pinnable
+  ASSERT_EQ(initial_size + 2, launcher_model_->items().size());
+  {
+    aura::Window window(NULL);
+    TestTabStripModelDelegate tab_strip_delegate;
+    TabStripModel tab_strip(&tab_strip_delegate, profile());
+    TabContentsWrapper panel_tab(CreateTestWebContents());
+    app_icon_loader_->SetAppID(&panel_tab, "4");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
+                            LauncherUpdater::TYPE_EXTENSION_PANEL,
+                            std::string());
+    updater.Init();
+    ASSERT_EQ(initial_size + 3, launcher_model_->items().size());
+    ash::LauncherID new_id = launcher_model_->items()[initial_size + 2].id;
+    EXPECT_FALSE(launcher_delegate_->IsPinnable(new_id));
   }
 }
 
@@ -781,4 +849,3 @@ TEST_F(LauncherUpdaterTest, SwitchDirectlyToApp) {
   EXPECT_EQ(ash::STATUS_ACTIVE, launcher_model_->items()[index2].status);
   EXPECT_EQ(&state2.window, activation_client_->GetActiveWindow());
 }
-

@@ -22,6 +22,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
+#if defined(TOOLKIT_GTK)
+#include "ui/base/x/x11_util.h"
+#endif
+
 namespace {
 const int kOverflowStripThickness = 26;
 
@@ -47,6 +51,18 @@ PanelManager* PanelManager::GetInstance() {
 
 // static
 bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
+#if defined(TOOLKIT_GTK)
+  // Panels are only supported on a white list of window managers for Linux.
+  ui::WindowManagerName wm_type = ui::GuessWindowManager();
+  if (wm_type != ui::WM_COMPIZ &&
+      wm_type != ui::WM_ICE_WM &&
+      wm_type != ui::WM_KWIN &&
+      wm_type != ui::WM_METACITY &&
+      wm_type != ui::WM_MUTTER) {
+    return false;
+  }
+#endif  // TOOLKIT_GTK
+
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {

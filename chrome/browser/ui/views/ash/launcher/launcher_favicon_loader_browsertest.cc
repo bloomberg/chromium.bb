@@ -77,17 +77,18 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
   }
 
   void CreatePanelBrowser(const char* url, Browser** result) {
-    Browser::CreateParams params(Browser::TYPE_PANEL, browser()->profile());
-    params.app_name = "Test Panel";
-    Browser* browser =  Browser::CreateWithParams(params);
-    EXPECT_TRUE(browser->is_type_panel());
+    Browser* panel_browser =  Browser::CreateForApp(Browser::TYPE_PANEL,
+                                                    "Test Panel",
+                                                    gfx::Rect(),
+                                                    browser()->profile());
+    EXPECT_TRUE(panel_browser->is_type_panel());
     ASSERT_EQ(static_cast<void*>(NULL), contents_observer_.get());
     // Load initial tab contents before setting the observer.
-    ui_test_utils::NavigateToURL(browser, GURL());
+    ui_test_utils::NavigateToURL(panel_browser, GURL());
     contents_observer_.reset(
-        new ContentsObserver(browser->GetWebContentsAt(0)));
-    NavigateTo(browser, url);
-    *result = browser;
+        new ContentsObserver(panel_browser->GetWebContentsAt(0)));
+    NavigateTo(panel_browser, url);
+    *result = panel_browser;
   }
 
   LauncherFaviconLoader* GetFaviconLoader(Browser* browser) {
@@ -95,7 +96,7 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
     LauncherUpdater* launcher_updater = browser_view->icon_updater();
     if (!launcher_updater)
       return NULL;
-    EXPECT_EQ(LauncherUpdater::TYPE_PANEL, launcher_updater->type());
+    EXPECT_EQ(LauncherUpdater::TYPE_EXTENSION_PANEL, launcher_updater->type());
     LauncherFaviconLoader* loader = launcher_updater->favicon_loader();
     return loader;
   }

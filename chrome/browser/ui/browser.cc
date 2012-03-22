@@ -323,6 +323,18 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
   return true;
 }
 
+bool AllowPanels(const std::string& app_name) {
+  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
+  // Android build.
+#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
+  if (!PanelManager::ShouldUsePanels(
+          web_app::GetExtensionIdFromApplicationName(app_name))) {
+    return false;
+  }
+#endif  // !OS_CHROMEOS || USE_AURA
+  return true;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,6 +343,7 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 Browser::CreateParams::CreateParams(Type type, Profile* profile)
     : type(type),
       profile(profile),
+      app_type(APP_TYPE_HOST),
       initial_show_state(ui::SHOW_STATE_DEFAULT),
       is_session_restore(false) {
 }
@@ -345,6 +358,7 @@ Browser::Browser(Type type, Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_handler_(TabHandler::CreateTabHandler(this))),
       command_updater_(this),
+      app_type_(APP_TYPE_HOST),
       chrome_updater_factory_(this),
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
@@ -511,6 +525,7 @@ Browser* Browser::CreateWithParams(const CreateParams& params) {
 
   Browser* browser = new Browser(params.type, params.profile);
   browser->app_name_ = params.app_name;
+  browser->app_type_ = params.app_type;
   browser->set_override_bounds(params.initial_bounds);
   browser->set_show_state(params.initial_show_state);
   browser->set_is_session_restore(params.is_session_restore);
@@ -533,31 +548,12 @@ Browser* Browser::CreateForApp(Type type,
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
 
-  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
-  // Android build.
-#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
-  if (type == TYPE_PANEL &&
-      !PanelManager::ShouldUsePanels(
-          web_app::GetExtensionIdFromApplicationName(app_name))) {
+  if (type == TYPE_PANEL && !AllowPanels(app_name))
     type = TYPE_POPUP;
-  }
-#if defined(TOOLKIT_GTK)
-  // Panels are only supported on a white list of window managers for Linux.
-  if (type == TYPE_PANEL) {
-    ui::WindowManagerName wm_type = ui::GuessWindowManager();
-    if (wm_type != ui::WM_COMPIZ &&
-        wm_type != ui::WM_ICE_WM &&
-        wm_type != ui::WM_KWIN &&
-        wm_type != ui::WM_METACITY &&
-        wm_type != ui::WM_MUTTER) {
-      type = TYPE_POPUP;
-    }
-  }
-#endif  // TOOLKIT_GTK
-#endif  // !OS_CHROMEOS || USE_AURA
 
   CreateParams params(type, profile);
   params.app_name = app_name;
+  params.app_type = APP_TYPE_CHILD;
   params.initial_bounds = window_bounds;
   return CreateWithParams(params);
 }
@@ -792,8 +788,12 @@ WebContents* Browser::OpenApplicationWindow(
       web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
       web_app::GenerateApplicationNameFromURL(url);
 
-  Type type = extension && (container == extension_misc::LAUNCH_PANEL) ?
-      TYPE_PANEL : TYPE_POPUP;
+  Type type = TYPE_POPUP;
+  if (extension &&
+      container == extension_misc::LAUNCH_PANEL &&
+      AllowPanels(app_name)) {
+    type = TYPE_PANEL;
+  }
 
   gfx::Rect window_bounds;
   if (extension) {
@@ -801,8 +801,10 @@ WebContents* Browser::OpenApplicationWindow(
     window_bounds.set_height(extension->launch_height());
   }
 
-  Browser* browser = Browser::CreateForApp(type, app_name, window_bounds,
-                                           profile);
+  CreateParams params(type, profile);
+  params.app_name = app_name;
+  params.initial_bounds = window_bounds;
+  Browser* browser = Browser::CreateWithParams(params);
 
   if (app_browser)
     *app_browser = browser;

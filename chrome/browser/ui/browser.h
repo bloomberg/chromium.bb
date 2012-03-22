@@ -108,6 +108,17 @@ class Browser : public TabHandlerDelegate,
     TYPE_PANEL = 3
   };
 
+  // Distinguishes between browsers that host an app (opened from
+  // Browser::OpenApplication), and child browsers created by an app from
+  // Browser::CreateForApp (e.g. by windows.open or the extension API).
+  // TODO(stevenjb): This is currently only needed by the ash Launcher for
+  // identifying child panels. Remove this once panels are no longer
+  // implemented as Browsers, crbug.com/112198.
+  enum AppType {
+    APP_TYPE_HOST = 1,
+    APP_TYPE_CHILD = 2
+  };
+
   // Possible elements of the Browser window.
   enum WindowFeature {
     FEATURE_NONE = 0,
@@ -149,6 +160,9 @@ class Browser : public TabHandlerDelegate,
     // 1) we launch an application via an application shortcut or extension API.
     // 2) we launch an undocked devtool window.
     std::string app_name;
+
+    // Type of app (host or child). See description of AppType.
+    AppType app_type;
 
     // The bounds of the window to open.
     gfx::Rect initial_bounds;
@@ -226,6 +240,7 @@ class Browser : public TabHandlerDelegate,
 
   Type type() const { return type_; }
   const std::string& app_name() const { return app_name_; }
+  AppType app_type() const { return app_type_; }
   Profile* profile() const { return profile_; }
   gfx::Rect override_bounds() const { return override_bounds_; }
 
@@ -1371,6 +1386,9 @@ class Browser : public TabHandlerDelegate,
   // 1) we launch an application via an application shortcut or extension API.
   // 2) we launch an undocked devtool window.
   std::string app_name_;
+
+  // Type of app (host or child). See description of AppType.
+  AppType app_type_;
 
   // Unique identifier of this browser for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique

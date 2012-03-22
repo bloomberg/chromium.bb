@@ -22,6 +22,24 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+ChromeLauncherDelegate::AppType GetDelegateType(LauncherUpdater::Type type) {
+  switch (type) {
+    case LauncherUpdater::TYPE_APP:
+      return ChromeLauncherDelegate::APP_TYPE_WINDOW;
+    case LauncherUpdater::TYPE_APP_PANEL:
+      return ChromeLauncherDelegate::APP_TYPE_APP_PANEL;
+    case LauncherUpdater::TYPE_EXTENSION_PANEL:
+      return ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL;
+    case LauncherUpdater::TYPE_TABBED:
+      NOTREACHED();
+  }
+  return ChromeLauncherDelegate::APP_TYPE_WINDOW;
+}
+
+}  // namespace
+
 LauncherUpdater::AppTabDetails::AppTabDetails() : id(0) {
 }
 
@@ -53,11 +71,9 @@ LauncherUpdater::~LauncherUpdater() {
 
 void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
-  if (type_ == TYPE_APP || type_ == TYPE_PANEL) {
+  if (type_ != TYPE_TABBED) {
     // App type never changes, create the launcher item immediately.
-    ChromeLauncherDelegate::AppType app_type =
-        type_ == TYPE_PANEL ? ChromeLauncherDelegate::APP_TYPE_PANEL
-        : ChromeLauncherDelegate::APP_TYPE_WINDOW;
+    ChromeLauncherDelegate::AppType app_type = GetDelegateType(type_);
     ash::LauncherItemStatus app_status =
         ash::wm::IsActiveWindow(window_) ?
             ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
@@ -91,7 +107,14 @@ LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   if (browser->type() == Browser::TYPE_TABBED) {
     type = TYPE_TABBED;
   } else if (browser->is_app()) {
-    type = browser->is_type_panel() ? TYPE_PANEL : TYPE_APP;
+    if (browser->is_type_panel()) {
+      if (browser->app_type() == Browser::APP_TYPE_CHILD)
+        type = TYPE_EXTENSION_PANEL;
+      else
+        type = TYPE_APP_PANEL;
+    } else {
+      type = TYPE_APP;
+    }
     app_id = web_app::GetExtensionIdFromApplicationName(browser->app_name());
   } else {
     return NULL;
@@ -230,26 +253,33 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     return;
 
   ash::LauncherItem item = launcher_model()->items()[item_index];
-  if (type_ == TYPE_PANEL) {
-    if (!favicon_loader_.get() ||
-        favicon_loader_->web_contents() != tab->web_contents()) {
-      favicon_loader_.reset(
-          new LauncherFaviconLoader(this, tab->web_contents()));
-    }
-    // Update the icon for app panels.
-    item.image = favicon_loader_->GetFavicon();
-    if (item.image.empty()) {
+  if (type_ != TYPE_TABBED) {
+    SkBitmap new_image;
+    if (type_ == TYPE_EXTENSION_PANEL) {
+      if (!favicon_loader_.get() ||
+          favicon_loader_->web_contents() != tab->web_contents()) {
+        favicon_loader_.reset(
+            new LauncherFaviconLoader(this, tab->web_contents()));
+      }
+      // Update the icon for app panels.
+      new_image = favicon_loader_->GetFavicon();
+      if (new_image.empty()) {
+        if (tab->extension_tab_helper()->GetExtensionAppIcon())
+          new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+      }
+    } else {
+      // Use the app icon if we can.
       if (tab->extension_tab_helper()->GetExtensionAppIcon())
-        item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+        new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
       else
-        item.image = Extension::GetDefaultIcon(true);
+        new_image = tab->favicon_tab_helper()->GetFavicon();
     }
-  } else if (launcher_model()->items()[item_index].type == ash::TYPE_APP) {
-    // Use the app icon if we can.
-    if (tab->extension_tab_helper()->GetExtensionAppIcon())
-      item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
-    else
-      item.image = tab->favicon_tab_helper()->GetFavicon();
+    // Only update the icon if we have a new image, or none has been set yet.
+    // This avoids flickering to an empty image when a pinned app is opened.
+    if (!new_image.empty())
+      item.image = new_image;
+    else if (item.image.empty())
+      item.image = Extension::GetDefaultIcon(true);
   } else {
     item.num_tabs = tab_model_->count();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
@@ -389,7 +419,7 @@ bool LauncherUpdater::ContainsID(ash::LauncherID id, TabContentsWrapper** tab) {
 }
 
 ash::LauncherID LauncherUpdater::GetLauncherID(TabContentsWrapper* tab) {
-  if (type_ == TYPE_APP || type_ == TYPE_PANEL)
+  if (type_ != TYPE_TABBED)
     return item_id_;
   AppTabMap::iterator i = app_map_.find(tab);
   if (i == app_map_.end())

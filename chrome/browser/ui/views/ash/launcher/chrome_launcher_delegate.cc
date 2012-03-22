@@ -106,7 +106,7 @@ void ChromeLauncherDelegate::Init() {
         if (type_string == kAppTypeWindow)
           app_type = APP_TYPE_WINDOW;
         else if (type_string == kAppTypePanel)
-          app_type = APP_TYPE_PANEL;
+          app_type = APP_TYPE_APP_PANEL;
         else
           app_type = APP_TYPE_TAB;
         CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
@@ -201,7 +201,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
   id_to_item_map_[id].updater = updater;
   id_to_item_map_[id].pinned = updater == NULL;
 
-  if (app_type != APP_TYPE_PANEL)
+  if (app_type != APP_TYPE_EXTENSION_PANEL)
     app_icon_loader_->FetchImage(app_id);
   return id;
 }
@@ -304,8 +304,11 @@ void ChromeLauncherDelegate::TogglePinned(ash::LauncherID id) {
 }
 
 bool ChromeLauncherDelegate::IsPinnable(ash::LauncherID id) {
+  // Only app windows and app panel windows can properly restore themselves;
+  // exptension panels can not so should not be pinnable.
   return id_to_item_map_.find(id) != id_to_item_map_.end() &&
-      id_to_item_map_[id].item_type == TYPE_APP;
+      id_to_item_map_[id].item_type == TYPE_APP &&
+      id_to_item_map_[id].app_type != APP_TYPE_EXTENSION_PANEL;
 }
 
 void ChromeLauncherDelegate::Open(ash::LauncherID id) {
@@ -324,24 +327,28 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
   } else {
     DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
     AppType app_type = id_to_item_map_[id].app_type;
+    extension_misc::LaunchContainer launch_container;
     if (app_type == APP_TYPE_TAB) {
-      const Extension* extension =
-          profile_->GetExtensionService()->GetInstalledExtension(
-              id_to_item_map_[id].app_id);
-      DCHECK(extension);
-      Browser::OpenApplicationTab(GetProfileForNewWindows(), extension, GURL(),
-                                  NEW_FOREGROUND_TAB);
-      if (id_to_item_map_[id].updater)
-        id_to_item_map_[id].updater->window()->Show();
+      launch_container = extension_misc::LAUNCH_TAB;
+    } else if (app_type == APP_TYPE_APP_PANEL) {
+      launch_container = extension_misc::LAUNCH_PANEL;
+    } else if (app_type == APP_TYPE_WINDOW) {
+      launch_container = extension_misc::LAUNCH_WINDOW;
     } else {
-      std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-          id_to_item_map_[id].app_id);
-      Browser::Type browser_type = (app_type == APP_TYPE_PANEL) ?
-          Browser::TYPE_PANEL : Browser::TYPE_POPUP;
-      Browser* browser = Browser::CreateForApp(
-          browser_type, app_name, gfx::Rect(), GetProfileForNewWindows());
-      browser->window()->Show();
+      LOG(ERROR) << "Unsupported launcher item type: " << app_type;
+      return;
     }
+    const Extension* extension =
+        profile_->GetExtensionService()->GetInstalledExtension(
+            id_to_item_map_[id].app_id);
+    DCHECK(extension);
+    Browser::OpenApplication(GetProfileForNewWindows(),
+                             extension,
+                             launch_container,
+                             GURL(),
+                             NEW_FOREGROUND_TAB);
+    if (id_to_item_map_[id].updater)
+      id_to_item_map_[id].updater->window()->Show();
   }
 }
 
@@ -392,7 +399,7 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
     // Panel items may share the same app_id as the app that created them,
     // but they set their icon image in LauncherUpdater::UpdateLauncher(),
     // so do not set panel images here.
-    if (i->second.app_type == APP_TYPE_PANEL)
+    if (i->second.app_type == APP_TYPE_EXTENSION_PANEL)
       continue;
     int index = model_->ItemIndexByID(i->first);
     ash::LauncherItem item = model_->items()[index];
@@ -502,13 +509,18 @@ void ChromeLauncherDelegate::PersistPinnedState() {
           id_to_item_map_[id].pinned) {
         base::DictionaryValue* app_value = new base::DictionaryValue;
         app_value->SetString(kAppIDPath, id_to_item_map_[id].app_id);
+        AppType app_type(id_to_item_map_[id].app_type);
         const char* app_type_string;
-        if (id_to_item_map_[id].app_type == APP_TYPE_WINDOW)
+        if (app_type == APP_TYPE_WINDOW) {
           app_type_string = kAppTypeWindow;
-        else if (id_to_item_map_[id].app_type == APP_TYPE_PANEL)
+        } else if (app_type == APP_TYPE_APP_PANEL) {
           app_type_string = kAppTypePanel;
-        else
+        } else if (app_type == APP_TYPE_TAB) {
           app_type_string = kAppTypeTab;
+        } else {
+          LOG(ERROR) << "Unsupported pinned type: " << app_type;
+          continue;
+        }
         app_value->SetString(kAppTypePath, app_type_string);
         updater.Get()->Append(app_value);
       }
