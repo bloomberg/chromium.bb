@@ -285,7 +285,8 @@ void SpellCheckHostImpl::DownloadDictionary() {
   fetcher_.reset(content::URLFetcher::Create(url, content::URLFetcher::GET,
                                 weak_ptr_factory_.GetWeakPtr()));
   fetcher_->SetRequestContext(request_context_getter_);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetLoadFlags(
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   tried_to_download_ = true;
   fetcher_->Start();
   request_context_getter_ = NULL;
