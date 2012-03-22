@@ -1,8 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
+#include "chrome/common/chrome_constants.h"
 
 #include <windows.h>
 #include <atlbase.h>
@@ -12,9 +13,30 @@
 
 // How long do we wait for the terminated thread or process to die (in ms)
 static const int kTerminateTimeout = 2000;
+// How long do we wait for the crash to be generated (in ms).
+static const int kGenerateDumpTimeout = 10000;
 
 const wchar_t HungWindowDetector::kHungChildWindowTimeout[] =
     L"Chrome_HungChildWindowTimeout";
+
+namespace {
+
+typedef void (*DumpProcessWithoutCrashFn)();
+// This function will be called via an injected thread in the hung plugin
+// process. calling DumpProcessWithoutCrash causes breakpad to capture a dump of
+// the process.
+DWORD WINAPI HungPluginDumpAndExit(void*) {
+  typedef void (__cdecl *DumpProcessFunction)();
+  DumpProcessFunction request_dump = reinterpret_cast<DumpProcessFunction>(
+      ::GetProcAddress(::GetModuleHandle(
+                       chrome::kBrowserProcessExecutableName),
+                       "DumpProcessWithoutCrash"));
+  if (request_dump)
+    request_dump();
+  return 0;
+}
+
+}  // namespace
 
 HungWindowDetector::HungWindowDetector(HungWindowNotification* notification)
     : notification_(notification),
@@ -142,7 +164,7 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
         }
         case HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS: {
           RemoveProp(child_window, kHungChildWindowTimeout);
-          CHandle child_process(OpenProcess(PROCESS_TERMINATE,
+          CHandle child_process(OpenProcess(PROCESS_ALL_ACCESS,
                                             FALSE,
                                             child_window_process_id));
 
@@ -156,6 +178,21 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
           if (process_id_check !=  child_window_process_id) {
             break;
           }
+          // Before terminating the process we try collecting a dump. Which
+          // a transient thread in the child process will do for us.
+          HANDLE remote_thread =
+              CreateRemoteThread(child_process,
+                                 NULL,
+                                 0,
+                                 &HungPluginDumpAndExit,
+                                 0,
+                                 0,
+                                 NULL);
+          if (remote_thread) {
+            WaitForSingleObject(remote_thread, kGenerateDumpTimeout);
+            CloseHandle(remote_thread);
+          }
+
           TerminateProcess(child_process, content::RESULT_CODE_HUNG);
           WaitForSingleObject(child_process, kTerminateTimeout);
           child_process.Close();
