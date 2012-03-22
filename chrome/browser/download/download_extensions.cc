@@ -143,7 +143,7 @@ static const struct Executables {
   { "msi", AllowOnUserGesture },
   { "msp", AllowOnUserGesture },
   { "mst", AllowOnUserGesture },
-  { "ocx", AllowOnUserGesture },
+  { "ocx", Dangerous },
   { "ops", AllowOnUserGesture },
   { "pcd", AllowOnUserGesture },
   { "pif", AllowOnUserGesture },
