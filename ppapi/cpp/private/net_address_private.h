@@ -26,12 +26,21 @@ class NetAddressPrivate {
   static bool ReplacePort(const PP_NetAddress_Private& addr_in,
                           uint16_t port,
                           PP_NetAddress_Private* addr_out);
-  static void GetAnyAddress(bool is_ipv6, PP_NetAddress_Private* addr);
+  static bool GetAnyAddress(bool is_ipv6, PP_NetAddress_Private* addr);
   static PP_NetAddressFamily_Private GetFamily(
       const PP_NetAddress_Private& addr);
   static uint16_t GetPort(const PP_NetAddress_Private& addr);
   static bool GetAddress(const PP_NetAddress_Private& addr,
-                         void* address, uint16_t address_size);
+                         void* address,
+                         uint16_t address_size);
+  static uint32_t GetScopeID(const PP_NetAddress_Private& addr);
+  static bool CreateFromIPv4Address(const uint8_t ip[4],
+                                    uint16_t port,
+                                    struct PP_NetAddress_Private* addr_out);
+  static bool CreateFromIPv6Address(const uint8_t ip[16],
+                                    uint32_t scope_id,
+                                    uint16_t port,
+                                    struct PP_NetAddress_Private* addr_out);
 };
 
 }  // namespace pp

@@ -11,55 +11,25 @@
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
-// Other than |GetAnyAddress()|, there's no way to actually get
-// |PP_NetAddress_Private| structs from just this interface. We'll cheat and
-// synthesize some.
-
-#if defined(PPAPI_POSIX)
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#endif
-
-#if defined(PPAPI_OS_MACOSX)
-// This is a bit evil, but it's standard operating procedure for |s6_addr|....
-#define s6_addr16 __u6_addr.__u6_addr16
-#endif
-
-#if defined(PPAPI_OS_WIN)
-#include <ws2tcpip.h>
-
-#define s6_addr16 u.Word
-#endif
-
 using pp::NetAddressPrivate;
 
 namespace {
 
-// |host| should be an IP address represented as text, e.g., "192.168.0.1".
-PP_NetAddress_Private MakeIPv4NetAddress(const char* host, int port) {
-  PP_NetAddress_Private addr = PP_NetAddress_Private();
-  addr.size = sizeof(sockaddr_in);
-  sockaddr_in* a = reinterpret_cast<sockaddr_in*>(addr.data);
-  a->sin_family = AF_INET;
-  a->sin_port = htons(port);
-  a->sin_addr.s_addr = inet_addr(host);
+PP_NetAddress_Private MakeIPv4NetAddress(const uint8_t host[4], int port) {
+  PP_NetAddress_Private addr;
+  NetAddressPrivate::CreateFromIPv4Address(host, port, &addr);
   return addr;
 }
 
-// |host| should be an array of eight 16-bit numbers.
-PP_NetAddress_Private MakeIPv6NetAddress(const uint16_t host[], uint16_t port,
+PP_NetAddress_Private MakeIPv6NetAddress(const uint16_t host[8], uint16_t port,
                                          uint32_t scope_id) {
   PP_NetAddress_Private addr = PP_NetAddress_Private();
-  addr.size = sizeof(sockaddr_in6);
-  sockaddr_in6* a = reinterpret_cast<sockaddr_in6*>(addr.data);
-  a->sin6_family = AF_INET6;
-  a->sin6_port = htons(port);
-  a->sin6_flowinfo = 0;
-  for (int i = 0; i < 8; i++)
-    a->sin6_addr.s6_addr16[i] = htons(host[i]);
-  a->sin6_scope_id = scope_id;
+  uint8_t ip[16];
+  for(int i = 0; i < 8; ++i) {
+    ip[i * 2] = host[i] >> 8;
+    ip[i * 2 + 1] = host[i] & 0xff;
+  }
+  NetAddressPrivate::CreateFromIPv6Address(ip, scope_id, port, &addr);
   return addr;
 }
 
@@ -85,6 +55,7 @@ void TestNetAddressPrivate::RunTests(const std::string& filter) {
   RUN_TEST(GetFamily, filter);
   RUN_TEST(GetPort, filter);
   RUN_TEST(GetAddress, filter);
+  RUN_TEST(GetScopeID, filter);
 }
 
 std::string TestNetAddressPrivate::TestAreEqual() {
@@ -92,14 +63,16 @@ std::string TestNetAddressPrivate::TestAreEqual() {
   PP_NetAddress_Private invalid = PP_NetAddress_Private();
   ASSERT_FALSE(NetAddressPrivate::AreEqual(invalid, invalid));
 
-  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_TRUE(NetAddressPrivate::AreEqual(localhost_80, localhost_80));
   ASSERT_FALSE(NetAddressPrivate::AreEqual(localhost_80, invalid));
 
-  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress("127.0.0.1", 1234);
+  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress(localhost_ip, 1234);
   ASSERT_FALSE(NetAddressPrivate::AreEqual(localhost_80, localhost_1234));
 
-  PP_NetAddress_Private other_80 = MakeIPv4NetAddress("192.168.0.1", 80);
+  uint8_t other_ip[4] = { 192, 168, 0, 1 };
+  PP_NetAddress_Private other_80 = MakeIPv4NetAddress(other_ip, 80);
   ASSERT_FALSE(NetAddressPrivate::AreEqual(localhost_80, other_80));
 
   PASS();
@@ -110,14 +83,16 @@ std::string TestNetAddressPrivate::TestAreHostsEqual() {
   PP_NetAddress_Private invalid = PP_NetAddress_Private();
   ASSERT_FALSE(NetAddressPrivate::AreHostsEqual(invalid, invalid));
 
-  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_TRUE(NetAddressPrivate::AreHostsEqual(localhost_80, localhost_80));
   ASSERT_FALSE(NetAddressPrivate::AreHostsEqual(localhost_80, invalid));
 
-  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress("127.0.0.1", 1234);
+  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress(localhost_ip, 1234);
   ASSERT_TRUE(NetAddressPrivate::AreHostsEqual(localhost_80, localhost_1234));
 
-  PP_NetAddress_Private other_80 = MakeIPv4NetAddress("192.168.0.1", 80);
+  uint8_t other_ip[4] = { 192, 168, 0, 1 };
+  PP_NetAddress_Private other_80 = MakeIPv4NetAddress(other_ip, 80);
   ASSERT_FALSE(NetAddressPrivate::AreHostsEqual(localhost_80, other_80));
 
   PASS();
@@ -128,16 +103,18 @@ std::string TestNetAddressPrivate::TestDescribe() {
   ASSERT_EQ("", NetAddressPrivate::Describe(invalid, false));
   ASSERT_EQ("", NetAddressPrivate::Describe(invalid, true));
 
-  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_EQ("127.0.0.1", NetAddressPrivate::Describe(localhost_80, false));
   ASSERT_EQ("127.0.0.1:80", NetAddressPrivate::Describe(localhost_80, true));
 
-  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress("127.0.0.1", 1234);
+  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress(localhost_ip, 1234);
   ASSERT_EQ("127.0.0.1", NetAddressPrivate::Describe(localhost_1234, false));
   ASSERT_EQ("127.0.0.1:1234", NetAddressPrivate::Describe(localhost_1234,
                                                           true));
 
-  PP_NetAddress_Private other_80 = MakeIPv4NetAddress("192.168.0.1", 80);
+  uint8_t other_ip[4] = { 192, 168, 0, 1 };
+  PP_NetAddress_Private other_80 = MakeIPv4NetAddress(other_ip, 80);
   ASSERT_EQ("192.168.0.1", NetAddressPrivate::Describe(other_80, false));
   ASSERT_EQ("192.168.0.1:80", NetAddressPrivate::Describe(other_80, true));
 
@@ -151,9 +128,10 @@ std::string TestNetAddressPrivate::TestReplacePort() {
   PP_NetAddress_Private invalid = PP_NetAddress_Private();
   ASSERT_FALSE(NetAddressPrivate::ReplacePort(invalid, 1234, &result));
 
-  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_TRUE(NetAddressPrivate::ReplacePort(localhost_80, 1234, &result));
-  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress("127.0.0.1", 1234);
+  PP_NetAddress_Private localhost_1234 = MakeIPv4NetAddress(localhost_ip, 1234);
   ASSERT_TRUE(NetAddressPrivate::AreEqual(result, localhost_1234));
 
   // Test that having the out param being the same as the in param works
@@ -251,20 +229,20 @@ std::string TestNetAddressPrivate::TestDescribeIPv6() {
 }
 
 std::string TestNetAddressPrivate::TestGetFamily() {
-  PP_NetAddress_Private ipv4 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private ipv4 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_EQ(NetAddressPrivate::GetFamily(ipv4), PP_NETADDRESSFAMILY_IPV4);
 
   uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
-  PP_NetAddress_Private ipv6 = MakeIPv6NetAddress(ipv6_address,
-                                                  123,
-                                                  0);
+  PP_NetAddress_Private ipv6 = MakeIPv6NetAddress(ipv6_address, 123, 0);
   ASSERT_EQ(NetAddressPrivate::GetFamily(ipv6), PP_NETADDRESSFAMILY_IPV6);
 
   PASS();
 }
 
 std::string TestNetAddressPrivate::TestGetPort() {
-  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress("127.0.0.1", 80);
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(localhost_ip, 80);
   ASSERT_EQ(NetAddressPrivate::GetPort(localhost_80), 80);
 
   uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
@@ -284,14 +262,13 @@ std::string TestNetAddressPrivate::TestGetAddress() {
   const int addr_storage_len = 16;
   unsigned char addr_storage[addr_storage_len];
 
-  const char* ipv4_addr = "127.0.0.1";
-  uint32_t ipv4_addr_long = inet_addr(ipv4_addr);
+  const uint8_t ipv4_addr[4] = { 127, 0, 0, 1 };
   PP_NetAddress_Private localhost_80 = MakeIPv4NetAddress(ipv4_addr, 80);
   memset(addr_storage, 0, addr_storage_len);
   ASSERT_TRUE(NetAddressPrivate::GetAddress(localhost_80,
                                             addr_storage,
                                             addr_storage_len));
-  ASSERT_EQ(memcmp(addr_storage, &ipv4_addr_long, 4), 0);
+  ASSERT_EQ(memcmp(addr_storage, &ipv4_addr, 4), 0);
 
   // Insufficient storage for address.
   ASSERT_FALSE(NetAddressPrivate::GetAddress(localhost_80,
@@ -304,19 +281,39 @@ std::string TestNetAddressPrivate::TestGetAddress() {
                                                        0);
 
   // Ensure the ipv6 address is transformed properly into network order.
-  for (int i = 0; i < 8; i++)
-    ipv6_address[i] = htons(ipv6_address[i]);
+  uint8_t ipv6_bytes[16];
+  for(int i = 0; i < 8; ++i) {
+    ipv6_bytes[i * 2] = ipv6_address[i] >> 8;
+    ipv6_bytes[i * 2 + 1] = ipv6_address[i] & 0xFF;
+  }
 
   memset(addr_storage, 0, addr_storage_len);
   ASSERT_TRUE(NetAddressPrivate::GetAddress(ipv6_addr,
                                             addr_storage,
                                             addr_storage_len));
-  ASSERT_EQ(memcmp(addr_storage, ipv6_address, 16), 0);
+  ASSERT_EQ(memcmp(addr_storage, ipv6_bytes, 16), 0);
 
   // Insufficient storage for address.
   ASSERT_FALSE(NetAddressPrivate::GetAddress(ipv6_addr,
                                              addr_storage,
                                              1));
+
+  PASS();
+}
+
+std::string TestNetAddressPrivate::TestGetScopeID() {
+  uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
+  PP_NetAddress_Private ipv4 = MakeIPv4NetAddress(localhost_ip, 80);
+  ASSERT_EQ(NetAddressPrivate::GetScopeID(ipv4), 0);
+
+  uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
+
+  PP_NetAddress_Private ipv6_123 = MakeIPv6NetAddress(ipv6_address, 0, 123);
+  ASSERT_EQ(NetAddressPrivate::GetScopeID(ipv6_123), 123);
+
+  PP_NetAddress_Private ipv6_max =
+      MakeIPv6NetAddress(ipv6_address, 0, 0xFFFFFFFF);
+  ASSERT_EQ(NetAddressPrivate::GetScopeID(ipv6_max), 0xFFFFFFFF);
 
   PASS();
 }

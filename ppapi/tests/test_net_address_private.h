@@ -27,6 +27,7 @@ class TestNetAddressPrivate : public TestCase {
   std::string TestGetFamily();
   std::string TestGetPort();
   std::string TestGetAddress();
+  std::string TestGetScopeID();
 };
 
 #endif  // PAPPI_TESTS_TEST_NET_ADDRESS_PRIVATE_H_
