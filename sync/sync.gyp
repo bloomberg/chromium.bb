@@ -89,6 +89,8 @@
         'engine/syncer_util.cc',
         'engine/syncer_util.h',
         'engine/syncproto.h',
+        'engine/traffic_logger.cc',
+        'engine/traffic_logger.h',
         'engine/update_applicator.cc',
         'engine/update_applicator.h',
         'engine/verify_updates_command.cc',

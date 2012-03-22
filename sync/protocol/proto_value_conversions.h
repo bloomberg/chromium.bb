@@ -20,6 +20,8 @@ class AppSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
+class ClientToServerMessage;
+class ClientToServerResponse;
 class DeviceInformation;
 class EncryptedData;
 class EntitySpecifics;
@@ -136,6 +138,15 @@ base::DictionaryValue* TypedUrlSpecificsToValue(
 // key equal to the extension name.
 base::DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics);
+
+base::DictionaryValue* ClientToServerMessageToValue(
+    const sync_pb::ClientToServerMessage& proto,
+    bool include_specifics);
+
+base::DictionaryValue* ClientToServerResponseToValue(
+    const sync_pb::ClientToServerResponse& proto,
+    bool include_specifics);
+
 
 }  // namespace browser_sync
 

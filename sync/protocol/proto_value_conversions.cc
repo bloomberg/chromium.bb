@@ -397,6 +397,184 @@ DictionaryValue* EntitySpecificsToValue(
   return value;
 }
 
+namespace {
+
+DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
+                                   bool include_specifics) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(id_string);
+  SET_STR(parent_id_string);
+  SET_STR(old_parent_id);
+  SET_INT64(version);
+  SET_INT64(mtime);
+  SET_INT64(ctime);
+  SET_STR(name);
+  SET_STR(non_unique_name);
+  SET_INT64(sync_timestamp);
+  SET_STR(server_defined_unique_tag);
+  SET_INT64(position_in_parent);
+  SET_STR(insert_after_item_id);
+  SET_BOOL(deleted);
+  SET_STR(originator_cache_guid);
+  SET_STR(originator_client_item_id);
+  if (include_specifics)
+    SET(specifics, EntitySpecificsToValue);
+  SET_BOOL(folder);
+  SET_STR(client_defined_unique_tag);
+  return value;
+}
+
+ListValue* SyncEntitiesToValue(
+    const ::google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entities,
+    bool include_specifics) {
+  ListValue* list = new ListValue();
+  ::google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>::const_iterator it;
+  for (it = entities.begin(); it != entities.end(); ++it) {
+    list->Append(SyncEntityToValue(*it, include_specifics));
+  }
+
+  return list;
+}
+
+DictionaryValue* ChromiumExtensionActivityToValue(
+    const sync_pb::ChromiumExtensionsActivity& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(extension_id);
+  SET_INT32(bookmark_writes_since_last_commit);
+  return value;
+}
+
+DictionaryValue* CommitMessageToValue(
+    const sync_pb::CommitMessage& proto,
+    bool include_specifics) {
+  DictionaryValue* value = new DictionaryValue();
+  value->Set("entries",
+             SyncEntitiesToValue(proto.entries(), include_specifics));
+  SET_STR(cache_guid);
+  SET_REP(extensions_activity, ChromiumExtensionActivityToValue);
+  return value;
+}
+
+DictionaryValue* DataTypeProgressMarkerToValue(
+    const sync_pb::DataTypeProgressMarker& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(data_type_id);
+  SET_BYTES(token);
+  SET_INT64(timestamp_token_for_migration);
+  SET_STR(notification_hint);
+  return value;
+}
+
+DictionaryValue* GetUpdatesCallerInfoToValue(
+    const sync_pb::GetUpdatesCallerInfo& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_ENUM(source, GetUpdatesSourceString);
+  SET_BOOL(notifications_enabled);
+  return value;
+}
+
+DictionaryValue* GetUpdatesMessageToValue(
+    const sync_pb::GetUpdatesMessage& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET(caller_info, GetUpdatesCallerInfoToValue);
+  SET_BOOL(fetch_folders);
+  SET_INT32(batch_size);
+  SET_REP(from_progress_marker, DataTypeProgressMarkerToValue);
+  SET_BOOL(streaming);
+  SET_BOOL(create_mobile_bookmarks_folder);
+  return value;
+}
+
+DictionaryValue* EntryResponseToValue(
+    const sync_pb::CommitResponse::EntryResponse& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_ENUM(response_type, GetResponseTypeString);
+  SET_STR(id_string);
+  SET_STR(parent_id_string);
+  SET_INT64(position_in_parent);
+  SET_INT64(version);
+  SET_STR(name);
+  SET_STR(error_message);
+  SET_INT64(mtime);
+  return value;
+}
+
+DictionaryValue* CommitResponseToValue(const sync_pb::CommitResponse& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_REP(entryresponse, EntryResponseToValue);
+  return value;
+}
+
+DictionaryValue* GetUpdatesResponseToValue(
+    const sync_pb::GetUpdatesResponse& proto,
+    bool include_specifics) {
+  DictionaryValue* value = new DictionaryValue();
+  value->Set("entries",
+             SyncEntitiesToValue(proto.entries(), include_specifics));
+  SET_INT64(changes_remaining);
+  SET_REP(new_progress_marker, DataTypeProgressMarkerToValue);
+  return value;
+}
+
+DictionaryValue* ClientCommandToValue(const sync_pb::ClientCommand& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32(set_sync_poll_interval);
+  SET_INT32(set_sync_long_poll_interval);
+  SET_INT32(max_commit_batch_size);
+  SET_INT32(sessions_commit_delay_seconds);
+  SET_INT32(throttle_delay_seconds);
+  return value;
+}
+
+DictionaryValue* ErrorToValue(
+    const sync_pb::ClientToServerResponse::Error& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_ENUM(error_type, GetErrorTypeString);
+  SET_STR(error_description);
+  SET_STR(url);
+  SET_ENUM(action, GetActionString);
+  return value;
+}
+
+}  // namespace
+
+DictionaryValue* ClientToServerResponseToValue(
+    const sync_pb::ClientToServerResponse& proto,
+    bool include_specifics) {
+  DictionaryValue* value = new DictionaryValue();
+  SET(commit, CommitResponseToValue);
+  if (proto.has_get_updates()) {
+    value->Set("get_updates", GetUpdatesResponseToValue(proto.get_updates(),
+                                                        include_specifics));
+  }
+
+  SET(error, ErrorToValue);
+  SET_ENUM(error_code, GetErrorTypeString);
+  SET_STR(error_message);
+  SET_STR(store_birthday);
+  SET(client_command, ClientCommandToValue);
+  SET_INT32_REP(migrated_data_type_id);
+  return value;
+}
+
+DictionaryValue* ClientToServerMessageToValue(
+    const sync_pb::ClientToServerMessage& proto,
+    bool include_specifics) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(share);
+  SET_INT32(protocol_version);
+  if (proto.has_commit()) {
+    value->Set("commit",
+               CommitMessageToValue(proto.commit(), include_specifics));
+  }
+
+  SET(get_updates, GetUpdatesMessageToValue);
+  SET_STR(store_birthday);
+  SET_BOOL(sync_problem_detected);
+  return value;
+}
+
+
 #undef SET
 #undef SET_REP
 

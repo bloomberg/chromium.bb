@@ -58,5 +58,32 @@ TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MAX);
 }
 
+TEST_F(ProtoEnumConversionsTest, GetResponseTypeString) {
+  TestEnumStringFunction(
+      GetResponseTypeString,
+      sync_pb::CommitResponse::ResponseType_MIN,
+      sync_pb::CommitResponse::ResponseType_MAX);
+}
+
+TEST_F(ProtoEnumConversionsTest, GetErrorTypeString) {
+  // We have a gap, so we need to do two ranges.
+  TestEnumStringFunction(
+      GetErrorTypeString,
+      sync_pb::SyncEnums::ErrorType_MIN,
+      sync_pb::SyncEnums::MIGRATION_DONE);
+  TestEnumStringFunction(
+      GetErrorTypeString,
+      sync_pb::SyncEnums::UNKNOWN,
+      sync_pb::SyncEnums::ErrorType_MAX);
+
+}
+
+TEST_F(ProtoEnumConversionsTest, GetActionString) {
+  TestEnumStringFunction(
+      GetActionString,
+      sync_pb::ClientToServerResponse::Error::Action_MIN,
+      sync_pb::ClientToServerResponse::Error::Action_MAX);
+}
+
 }  // namespace
 }  // namespace browser_sync

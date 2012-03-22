@@ -90,6 +90,59 @@ const char* GetUpdatesSourceString(
   return "";
 }
 
+const char* GetResponseTypeString(
+    sync_pb::CommitResponse::ResponseType response_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::CommitResponse, ResponseType, SUCCESS,
+                     TRANSIENT_ERROR);
+  switch (response_type) {
+    ENUM_CASE(sync_pb::CommitResponse, SUCCESS);
+    ENUM_CASE(sync_pb::CommitResponse, CONFLICT);
+    ENUM_CASE(sync_pb::CommitResponse, RETRY);
+    ENUM_CASE(sync_pb::CommitResponse, INVALID_MESSAGE);
+    ENUM_CASE(sync_pb::CommitResponse, OVER_QUOTA);
+    ENUM_CASE(sync_pb::CommitResponse, TRANSIENT_ERROR);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, ErrorType, SUCCESS, UNKNOWN);
+  switch (error_type) {
+    ENUM_CASE(sync_pb::SyncEnums, SUCCESS);
+    ENUM_CASE(sync_pb::SyncEnums, ACCESS_DENIED);
+    ENUM_CASE(sync_pb::SyncEnums, NOT_MY_BIRTHDAY);
+    ENUM_CASE(sync_pb::SyncEnums, THROTTLED);
+    ENUM_CASE(sync_pb::SyncEnums, AUTH_EXPIRED);
+    ENUM_CASE(sync_pb::SyncEnums, USER_NOT_ACTIVATED);
+    ENUM_CASE(sync_pb::SyncEnums, AUTH_INVALID);
+    ENUM_CASE(sync_pb::SyncEnums, CLEAR_PENDING);
+    ENUM_CASE(sync_pb::SyncEnums, TRANSIENT_ERROR);
+    ENUM_CASE(sync_pb::SyncEnums, MIGRATION_DONE);
+    ENUM_CASE(sync_pb::SyncEnums, UNKNOWN);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* GetActionString(
+   sync_pb::ClientToServerResponse::Error::Action action) {
+  ASSERT_ENUM_BOUNDS(sync_pb::ClientToServerResponse::Error, Action,
+                     UPGRADE_CLIENT, UNKNOWN_ACTION);
+  switch (action) {
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error, UPGRADE_CLIENT);
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error,
+              CLEAR_USER_DATA_AND_RESYNC);
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error, ENABLE_SYNC_ON_ACCOUNT);
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error, STOP_AND_RESTART_SYNC);
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error, DISABLE_SYNC_ON_CLIENT);
+    ENUM_CASE(sync_pb::ClientToServerResponse::Error, UNKNOWN_ACTION);
+  }
+  NOTREACHED();
+  return "";
+
+}
+
 const char* GetDeviceTypeString(
     sync_pb::SessionHeader::DeviceType device_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionHeader, DeviceType, TYPE_WIN, TYPE_TABLET);

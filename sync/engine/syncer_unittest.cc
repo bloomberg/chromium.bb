@@ -1027,8 +1027,8 @@ TEST_F(SyncerTest, NigoriConflicts) {
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     cryptographer(&wtrans)->GetKeys(nigori->mutable_encrypted());
     cryptographer(&wtrans)->UpdateNigoriFromEncryptedTypes(nigori);
-    // Normally this would be written as part of SetDecryptionPassphrase, but we
-    // do it manually for the test.
+    // Normally this would be written as part of SetPassphrase, but we do it
+    // manually for the test.
     nigori_entry.Put(SPECIFICS, specifics);
     nigori_entry.Put(IS_UNSYNCED, true);
   }

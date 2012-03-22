@@ -9,6 +9,7 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/engine/traffic_logger.h"
 #include "sync/protocol/service_constants.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
@@ -337,6 +338,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
   syncable::Directory* dir = session->context()->directory();
 
+  LogClientToServerMessage(msg);
   if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
                              msg, response)) {
     // There was an error establishing communication with the server.
@@ -349,6 +351,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
     return ServerConnectionErrorAsSyncerError(server_status);
   }
+
+  LogClientToServerResponse(*response);
 
   browser_sync::SyncProtocolError sync_protocol_error;
 

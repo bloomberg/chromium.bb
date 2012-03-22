@@ -187,5 +187,67 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
             static_cast<int>(value->size()));
 }
 
+namespace {
+// Returns whether the given value has specifics under the entries in the given
+// path.
+bool ValueHasSpecifics(const DictionaryValue& value,
+                       const std::string& path) {
+  ListValue* entities_list = NULL;
+  DictionaryValue* entry_dictionary = NULL;
+  DictionaryValue* specifics_dictionary = NULL;
+
+  if (!value.GetList(path, &entities_list))
+    return false;
+
+  if (!entities_list->GetDictionary(0, &entry_dictionary))
+    return false;
+
+  return entry_dictionary->GetDictionary("specifics",
+                                         &specifics_dictionary);
+}
+}  // namespace
+
+// Create a ClientToServerMessage with an EntitySpecifics.  Converting it to
+// a value should respect the |include_specifics| flag.
+TEST_F(ProtoValueConversionsTest, ClientToServerMessageToValue) {
+  sync_pb::ClientToServerMessage message;
+  sync_pb::CommitMessage* commit_message = message.mutable_commit();
+  sync_pb::SyncEntity* entity = commit_message->add_entries();
+  entity->mutable_specifics();
+
+  scoped_ptr<DictionaryValue> value_with_specifics(
+      ClientToServerMessageToValue(message, true /* include_specifics */));
+  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_TRUE(ValueHasSpecifics(*(value_with_specifics.get()),
+                                "commit.entries"));
+
+  scoped_ptr<DictionaryValue> value_without_specifics(
+      ClientToServerMessageToValue(message, false /* include_specifics */));
+  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),
+                                 "commit.entries"));
+}
+
+// Create a ClientToServerResponse with an EntitySpecifics.  Converting it to
+// a value should respect the |include_specifics| flag.
+TEST_F(ProtoValueConversionsTest, ClientToServerResponseToValue) {
+  sync_pb::ClientToServerResponse message;
+  sync_pb::GetUpdatesResponse* response = message.mutable_get_updates();
+  sync_pb::SyncEntity* entity = response->add_entries();
+  entity->mutable_specifics();
+
+  scoped_ptr<DictionaryValue> value_with_specifics(
+      ClientToServerResponseToValue(message, true /* include_specifics */));
+  EXPECT_FALSE(value_with_specifics->empty());
+  EXPECT_TRUE(ValueHasSpecifics(*(value_with_specifics.get()),
+                                "get_updates.entries"));
+
+  scoped_ptr<DictionaryValue> value_without_specifics(
+      ClientToServerResponseToValue(message, false /* include_specifics */));
+  EXPECT_FALSE(value_without_specifics->empty());
+  EXPECT_FALSE(ValueHasSpecifics(*(value_without_specifics.get()),
+                                 "get_updates.entries"));
+}
+
 }  // namespace
 }  // namespace browser_sync
