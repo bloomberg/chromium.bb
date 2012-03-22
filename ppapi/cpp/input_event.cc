@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,20 +14,20 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_InputEvent>() {
-  return PPB_INPUT_EVENT_INTERFACE;
+template <> const char* interface_name<PPB_InputEvent_1_0>() {
+  return PPB_INPUT_EVENT_INTERFACE_1_0;
 }
 
-template <> const char* interface_name<PPB_KeyboardInputEvent>() {
-  return PPB_KEYBOARD_INPUT_EVENT_INTERFACE;
+template <> const char* interface_name<PPB_KeyboardInputEvent_1_0>() {
+  return PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_0;
 }
 
-template <> const char* interface_name<PPB_MouseInputEvent>() {
-  return PPB_MOUSE_INPUT_EVENT_INTERFACE;
+template <> const char* interface_name<PPB_MouseInputEvent_1_1>() {
+  return PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1;
 }
 
-template <> const char* interface_name<PPB_WheelInputEvent>() {
-  return PPB_WHEEL_INPUT_EVENT_INTERFACE;
+template <> const char* interface_name<PPB_WheelInputEvent_1_0>() {
+  return PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -39,9 +39,9 @@ InputEvent::InputEvent() : Resource() {
 
 InputEvent::InputEvent(PP_Resource input_event_resource) : Resource() {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return;
-  if (get_interface<PPB_InputEvent>()->IsInputEvent(input_event_resource)) {
+  if (get_interface<PPB_InputEvent_1_0>()->IsInputEvent(input_event_resource)) {
     Module::Get()->core()->AddRefResource(input_event_resource);
     PassRefFromConstructor(input_event_resource);
   }
@@ -51,21 +51,21 @@ InputEvent::~InputEvent() {
 }
 
 PP_InputEvent_Type InputEvent::GetType() const {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return PP_INPUTEVENT_TYPE_UNDEFINED;
-  return get_interface<PPB_InputEvent>()->GetType(pp_resource());
+  return get_interface<PPB_InputEvent_1_0>()->GetType(pp_resource());
 }
 
 PP_TimeTicks InputEvent::GetTimeStamp() const {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return 0.0f;
-  return get_interface<PPB_InputEvent>()->GetTimeStamp(pp_resource());
+  return get_interface<PPB_InputEvent_1_0>()->GetTimeStamp(pp_resource());
 }
 
 uint32_t InputEvent::GetModifiers() const {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return 0;
-  return get_interface<PPB_InputEvent>()->GetModifiers(pp_resource());
+  return get_interface<PPB_InputEvent_1_0>()->GetModifiers(pp_resource());
 }
 
 // MouseInputEvent -------------------------------------------------------------
@@ -75,9 +75,9 @@ MouseInputEvent::MouseInputEvent() : InputEvent() {
 
 MouseInputEvent::MouseInputEvent(const InputEvent& event) : InputEvent() {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return;
-  if (get_interface<PPB_MouseInputEvent>()->IsMouseInputEvent(
+  if (get_interface<PPB_MouseInputEvent_1_1>()->IsMouseInputEvent(
           event.pp_resource())) {
     Module::Get()->core()->AddRefResource(event.pp_resource());
     PassRefFromConstructor(event.pp_resource());
@@ -93,35 +93,35 @@ MouseInputEvent::MouseInputEvent(const InstanceHandle& instance,
                                  int32_t click_count,
                                  const Point& mouse_movement) {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return;
-  PassRefFromConstructor(get_interface<PPB_MouseInputEvent>()->Create(
+  PassRefFromConstructor(get_interface<PPB_MouseInputEvent_1_1>()->Create(
       instance.pp_instance(), type, time_stamp, modifiers, mouse_button,
       &mouse_position.pp_point(), click_count, &mouse_movement.pp_point()));
 }
 
 PP_InputEvent_MouseButton MouseInputEvent::GetButton() const {
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return PP_INPUTEVENT_MOUSEBUTTON_NONE;
-  return get_interface<PPB_MouseInputEvent>()->GetButton(pp_resource());
+  return get_interface<PPB_MouseInputEvent_1_1>()->GetButton(pp_resource());
 }
 
 Point MouseInputEvent::GetPosition() const {
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return Point();
-  return get_interface<PPB_MouseInputEvent>()->GetPosition(pp_resource());
+  return get_interface<PPB_MouseInputEvent_1_1>()->GetPosition(pp_resource());
 }
 
 int32_t MouseInputEvent::GetClickCount() const {
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return 0;
-  return get_interface<PPB_MouseInputEvent>()->GetClickCount(pp_resource());
+  return get_interface<PPB_MouseInputEvent_1_1>()->GetClickCount(pp_resource());
 }
 
 Point MouseInputEvent::GetMovement() const {
-  if (!has_interface<PPB_MouseInputEvent>())
+  if (!has_interface<PPB_MouseInputEvent_1_1>())
     return Point();
-  return get_interface<PPB_MouseInputEvent>()->GetMovement(pp_resource());
+  return get_interface<PPB_MouseInputEvent_1_1>()->GetMovement(pp_resource());
 }
 
 // WheelInputEvent -------------------------------------------------------------
@@ -131,9 +131,9 @@ WheelInputEvent::WheelInputEvent() : InputEvent() {
 
 WheelInputEvent::WheelInputEvent(const InputEvent& event) : InputEvent() {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_WheelInputEvent>())
+  if (!has_interface<PPB_WheelInputEvent_1_0>())
     return;
-  if (get_interface<PPB_WheelInputEvent>()->IsWheelInputEvent(
+  if (get_interface<PPB_WheelInputEvent_1_0>()->IsWheelInputEvent(
           event.pp_resource())) {
     Module::Get()->core()->AddRefResource(event.pp_resource());
     PassRefFromConstructor(event.pp_resource());
@@ -147,31 +147,31 @@ WheelInputEvent::WheelInputEvent(const InstanceHandle& instance,
                                  const FloatPoint& wheel_ticks,
                                  bool scroll_by_page) {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_WheelInputEvent>())
+  if (!has_interface<PPB_WheelInputEvent_1_0>())
     return;
-  PassRefFromConstructor(get_interface<PPB_WheelInputEvent>()->Create(
+  PassRefFromConstructor(get_interface<PPB_WheelInputEvent_1_0>()->Create(
       instance.pp_instance(), time_stamp, modifiers,
       &wheel_delta.pp_float_point(), &wheel_ticks.pp_float_point(),
       PP_FromBool(scroll_by_page)));
 }
 
 FloatPoint WheelInputEvent::GetDelta() const {
-  if (!has_interface<PPB_WheelInputEvent>())
+  if (!has_interface<PPB_WheelInputEvent_1_0>())
     return FloatPoint();
-  return get_interface<PPB_WheelInputEvent>()->GetDelta(pp_resource());
+  return get_interface<PPB_WheelInputEvent_1_0>()->GetDelta(pp_resource());
 }
 
 FloatPoint WheelInputEvent::GetTicks() const {
-  if (!has_interface<PPB_WheelInputEvent>())
+  if (!has_interface<PPB_WheelInputEvent_1_0>())
     return FloatPoint();
-  return get_interface<PPB_WheelInputEvent>()->GetTicks(pp_resource());
+  return get_interface<PPB_WheelInputEvent_1_0>()->GetTicks(pp_resource());
 }
 
 bool WheelInputEvent::GetScrollByPage() const {
-  if (!has_interface<PPB_WheelInputEvent>())
+  if (!has_interface<PPB_WheelInputEvent_1_0>())
     return false;
   return PP_ToBool(
-      get_interface<PPB_WheelInputEvent>()->GetScrollByPage(pp_resource()));
+      get_interface<PPB_WheelInputEvent_1_0>()->GetScrollByPage(pp_resource()));
 }
 
 // KeyboardInputEvent ----------------------------------------------------------
@@ -181,9 +181,9 @@ KeyboardInputEvent::KeyboardInputEvent() : InputEvent() {
 
 KeyboardInputEvent::KeyboardInputEvent(const InputEvent& event) : InputEvent() {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_KeyboardInputEvent>())
+  if (!has_interface<PPB_KeyboardInputEvent_1_0>())
     return;
-  if (get_interface<PPB_KeyboardInputEvent>()->IsKeyboardInputEvent(
+  if (get_interface<PPB_KeyboardInputEvent_1_0>()->IsKeyboardInputEvent(
           event.pp_resource())) {
     Module::Get()->core()->AddRefResource(event.pp_resource());
     PassRefFromConstructor(event.pp_resource());
@@ -197,24 +197,24 @@ KeyboardInputEvent::KeyboardInputEvent(const InstanceHandle& instance,
                                        uint32_t key_code,
                                        const Var& character_text) {
   // Type check the input event before setting it.
-  if (!has_interface<PPB_KeyboardInputEvent>())
+  if (!has_interface<PPB_KeyboardInputEvent_1_0>())
     return;
-  PassRefFromConstructor(get_interface<PPB_KeyboardInputEvent>()->Create(
+  PassRefFromConstructor(get_interface<PPB_KeyboardInputEvent_1_0>()->Create(
       instance.pp_instance(), type, time_stamp, modifiers, key_code,
       character_text.pp_var()));
 }
 
 uint32_t KeyboardInputEvent::GetKeyCode() const {
-  if (!has_interface<PPB_KeyboardInputEvent>())
+  if (!has_interface<PPB_KeyboardInputEvent_1_0>())
     return 0;
-  return get_interface<PPB_KeyboardInputEvent>()->GetKeyCode(pp_resource());
+  return get_interface<PPB_KeyboardInputEvent_1_0>()->GetKeyCode(pp_resource());
 }
 
 Var KeyboardInputEvent::GetCharacterText() const {
-  if (!has_interface<PPB_KeyboardInputEvent>())
+  if (!has_interface<PPB_KeyboardInputEvent_1_0>())
     return Var();
   return Var(PASS_REF,
-             get_interface<PPB_KeyboardInputEvent>()->GetCharacterText(
+             get_interface<PPB_KeyboardInputEvent_1_0>()->GetCharacterText(
                  pp_resource()));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,17 +13,17 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_URLRequestInfo>() {
-  return PPB_URLREQUESTINFO_INTERFACE;
+template <> const char* interface_name<PPB_URLRequestInfo_1_0>() {
+  return PPB_URLREQUESTINFO_INTERFACE_1_0;
 }
 
 }  // namespace
 
 URLRequestInfo::URLRequestInfo(const InstanceHandle& instance) {
-  if (!has_interface<PPB_URLRequestInfo>())
+  if (!has_interface<PPB_URLRequestInfo_1_0>())
     return;
   PassRefFromConstructor(
-      get_interface<PPB_URLRequestInfo>()->Create(instance.pp_instance()));
+      get_interface<PPB_URLRequestInfo_1_0>()->Create(instance.pp_instance()));
 }
 
 URLRequestInfo::URLRequestInfo(const URLRequestInfo& other)
@@ -32,25 +32,25 @@ URLRequestInfo::URLRequestInfo(const URLRequestInfo& other)
 
 bool URLRequestInfo::SetProperty(PP_URLRequestProperty property,
                                  const Var& value) {
-  if (!has_interface<PPB_URLRequestInfo>())
+  if (!has_interface<PPB_URLRequestInfo_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_URLRequestInfo>()->SetProperty(
+  return PP_ToBool(get_interface<PPB_URLRequestInfo_1_0>()->SetProperty(
       pp_resource(), property, value.pp_var()));
 }
 
 bool URLRequestInfo::AppendDataToBody(const void* data, uint32_t len) {
-  if (!has_interface<PPB_URLRequestInfo>())
+  if (!has_interface<PPB_URLRequestInfo_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_URLRequestInfo>()->AppendDataToBody(
+  return PP_ToBool(get_interface<PPB_URLRequestInfo_1_0>()->AppendDataToBody(
       pp_resource(), data, len));
 }
 
 bool URLRequestInfo::AppendFileToBody(const FileRef& file_ref,
                                       PP_Time expected_last_modified_time) {
-  if (!has_interface<PPB_URLRequestInfo>())
+  if (!has_interface<PPB_URLRequestInfo_1_0>())
     return false;
   return PP_ToBool(
-      get_interface<PPB_URLRequestInfo>()->AppendFileToBody(
+      get_interface<PPB_URLRequestInfo_1_0>()->AppendFileToBody(
           pp_resource(),
           file_ref.pp_resource(),
           0,
@@ -63,9 +63,9 @@ bool URLRequestInfo::AppendFileRangeToBody(
     int64_t start_offset,
     int64_t length,
     PP_Time expected_last_modified_time) {
-  if (!has_interface<PPB_URLRequestInfo>())
+  if (!has_interface<PPB_URLRequestInfo_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_URLRequestInfo>()->AppendFileToBody(
+  return PP_ToBool(get_interface<PPB_URLRequestInfo_1_0>()->AppendFileToBody(
       pp_resource(),
       file_ref.pp_resource(),
       start_offset,

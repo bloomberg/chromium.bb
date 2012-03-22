@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_ImageData>() {
-  return PPB_IMAGEDATA_INTERFACE;
+template <> const char* interface_name<PPB_ImageData_1_0>() {
+  return PPB_IMAGEDATA_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -46,10 +46,10 @@ ImageData::ImageData(const InstanceHandle& instance,
     : data_(NULL) {
   memset(&desc_, 0, sizeof(PP_ImageDataDesc));
 
-  if (!has_interface<PPB_ImageData>())
+  if (!has_interface<PPB_ImageData_1_0>())
     return;
 
-  PassRefFromConstructor(get_interface<PPB_ImageData>()->Create(
+  PassRefFromConstructor(get_interface<PPB_ImageData_1_0>()->Create(
       instance.pp_instance(), format, &size.pp_size(),
       PP_FromBool(init_to_zero)));
   InitData();
@@ -76,16 +76,16 @@ uint32_t* ImageData::GetAddr32(const Point& coord) {
 
 // static
 PP_ImageDataFormat ImageData::GetNativeImageDataFormat() {
-  if (!has_interface<PPB_ImageData>())
+  if (!has_interface<PPB_ImageData_1_0>())
     return PP_IMAGEDATAFORMAT_BGRA_PREMUL;  // Default to something on failure.
-  return get_interface<PPB_ImageData>()->GetNativeImageDataFormat();
+  return get_interface<PPB_ImageData_1_0>()->GetNativeImageDataFormat();
 }
 
 void ImageData::InitData() {
-  if (!has_interface<PPB_ImageData>())
+  if (!has_interface<PPB_ImageData_1_0>())
     return;
-  if (!get_interface<PPB_ImageData>()->Describe(pp_resource(), &desc_) ||
-      !(data_ = get_interface<PPB_ImageData>()->Map(pp_resource())))
+  if (!get_interface<PPB_ImageData_1_0>()->Describe(pp_resource(), &desc_) ||
+      !(data_ = get_interface<PPB_ImageData_1_0>()->Map(pp_resource())))
     *this = ImageData();
 }
 

@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Note that the single accessor, Module::Get(), is not actually implemented
 // in this file.  This is an intentional hook that allows users of ppapi's
-// C++ wrapper objects to provide difference semantics for how the singleton
+// C++ wrapper objects to provide different semantics for how the singleton
 // object is accessed.
 //
 // In general, users of ppapi will also link in ppp_entrypoints.cc, which

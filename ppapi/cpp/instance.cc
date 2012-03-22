@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,16 +24,16 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_InputEvent>() {
-  return PPB_INPUT_EVENT_INTERFACE;
+template <> const char* interface_name<PPB_InputEvent_1_0>() {
+  return PPB_INPUT_EVENT_INTERFACE_1_0;
 }
 
-template <> const char* interface_name<PPB_Instance>() {
-  return PPB_INSTANCE_INTERFACE;
+template <> const char* interface_name<PPB_Instance_1_0>() {
+  return PPB_INSTANCE_INTERFACE_1_0;
 }
 
-template <> const char* interface_name<PPB_Messaging>() {
-  return PPB_MESSAGING_INTERFACE;
+template <> const char* interface_name<PPB_Messaging_1_0>() {
+  return PPB_MESSAGING_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -75,50 +75,51 @@ void Instance::HandleMessage(const Var& /*message*/) {
 }
 
 bool Instance::BindGraphics(const Graphics2D& graphics) {
-  if (!has_interface<PPB_Instance>())
+  if (!has_interface<PPB_Instance_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(
+  return PP_ToBool(get_interface<PPB_Instance_1_0>()->BindGraphics(
       pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::BindGraphics(const Graphics3D& graphics) {
-  if (!has_interface<PPB_Instance>())
+  if (!has_interface<PPB_Instance_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(
+  return PP_ToBool(get_interface<PPB_Instance_1_0>()->BindGraphics(
       pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::IsFullFrame() {
-  if (!has_interface<PPB_Instance>())
+  if (!has_interface<PPB_Instance_1_0>())
     return false;
-  return PP_ToBool(get_interface<PPB_Instance>()->IsFullFrame(pp_instance()));
+  return PP_ToBool(get_interface<PPB_Instance_1_0>()->IsFullFrame(
+      pp_instance()));
 }
 
 int32_t Instance::RequestInputEvents(uint32_t event_classes) {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return PP_ERROR_NOINTERFACE;
-  return get_interface<PPB_InputEvent>()->RequestInputEvents(pp_instance(),
-                                                             event_classes);
+  return get_interface<PPB_InputEvent_1_0>()->RequestInputEvents(pp_instance(),
+                                                                 event_classes);
 }
 
 int32_t Instance::RequestFilteringInputEvents(uint32_t event_classes) {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return PP_ERROR_NOINTERFACE;
-  return get_interface<PPB_InputEvent>()->RequestFilteringInputEvents(
+  return get_interface<PPB_InputEvent_1_0>()->RequestFilteringInputEvents(
       pp_instance(), event_classes);
 }
 
 void Instance::ClearInputEventRequest(uint32_t event_classes) {
-  if (!has_interface<PPB_InputEvent>())
+  if (!has_interface<PPB_InputEvent_1_0>())
     return;
-  get_interface<PPB_InputEvent>()->ClearInputEventRequest(pp_instance(),
+  get_interface<PPB_InputEvent_1_0>()->ClearInputEventRequest(pp_instance(),
                                                           event_classes);
 }
 
 void Instance::PostMessage(const Var& message) {
-  if (!has_interface<PPB_Messaging>())
+  if (!has_interface<PPB_Messaging_1_0>())
     return;
-  get_interface<PPB_Messaging>()->PostMessage(pp_instance(),
+  get_interface<PPB_Messaging_1_0>()->PostMessage(pp_instance(),
                                               message.pp_var());
 }
 
