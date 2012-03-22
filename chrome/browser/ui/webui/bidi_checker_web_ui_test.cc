@@ -208,35 +208,14 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestPluginsPage) {
 }
 
 //==============================
-// chrome://settings
+// chrome://settings-frame
 //==============================
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestSettingsPage) {
   RunBidiCheckerOnPage(chrome::kChromeUISettingsFrameURL);
 }
 
-// http://crbug.com/117923
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestSettingsPage DISABLED_TestSettingsPage
-#define MAYBE_TestSettingsClearBrowserDataPage \
-    DISABLED_TestSettingsClearBrowserDataPage
-#define MAYBE_TestSettingsContentSettingsPage \
-    DISABLED_TestSettingsContentSettingsPage
-#define MAYBE_TestSettingsContentSettingsExceptionsPage \
-    DISABLED_TestSettingsContentSettingsExceptionsPage
-#define MAYBE_TestSettingsSearchEnginesOptionsPage \
-    DISABLED_TestSettingsSearchEnginesOptionsPage
-#else
-#define MAYBE_TestSettingsPage TestSettingsPage
-#define MAYBE_TestSettingsClearBrowserDataPage TestSettingsClearBrowserDataPage
-#define MAYBE_TestSettingsContentSettingsPage TestSettingsContentSettingsPage
-#define MAYBE_TestSettingsContentSettingsExceptionsPage \
-    TestSettingsContentSettingsExceptionsPage
-#define MAYBE_TestSettingsSearchEnginesOptionsPage \
-    TestSettingsSearchEnginesOptionsPage
-#endif  // defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, MAYBE_TestSettingsPage) {
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestSettingsPage) {
   RunBidiCheckerOnPage(chrome::kChromeUISettingsFrameURL);
 }
 
@@ -330,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsClearBrowserDataPage) {
+                       TestSettingsClearBrowserDataPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kClearBrowserDataSubPage);
   RunBidiCheckerOnPage(url);
@@ -344,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsContentSettingsPage) {
+                       TestSettingsContentSettingsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kContentSettingsSubPage);
   RunBidiCheckerOnPage(url);
@@ -358,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsContentSettingsExceptionsPage) {
+                       TestSettingsContentSettingsExceptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kContentSettingsExceptionsSubPage);
   RunBidiCheckerOnPage(url);
@@ -387,8 +366,358 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       MAYBE_TestSettingsSearchEnginesOptionsPage) {
+                       TestSettingsSearchEnginesOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSearchEnginesSubPage);
   RunBidiCheckerOnPage(url);
+}
+
+//===================================
+// chrome://settings-frame/syncSetup
+//===================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameSyncSetup) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += std::string(chrome::kSyncSetupSubPage);
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameSyncSetup) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += std::string(chrome::kSyncSetupSubPage);
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================
+// chrome://settings-frame/startup
+//===================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameStartup) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "startup";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameStartup) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "startup";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================
+// chrome://settings-frame/importData
+//===================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameImportData) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kImportDataSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameImportData) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kImportDataSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+//========================================
+// chrome://settings-frame/manageProfile
+//========================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameMangageProfile) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kManageProfileSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameMangageProfile) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kManageProfileSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#cookies
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsCookies) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#cookies";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsCookies) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#cookies";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#images
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsImages) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#images";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsImages) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#images";
+  RunBidiCheckerOnPage(url);
+}
+
+//======================================================
+// chrome://settings-frame/contentExceptions#javascript
+//======================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsJavascript) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#javascript";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsJavascript) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#javascript";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#plugins
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsPlugins) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#plugins";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsPlugins) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#plugins";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#popups
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsPopups) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#popups";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsPopups) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#popups";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#location
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsLocation) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#location";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsLocation) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#location";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#notifications
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsNotifications) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#notifications";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsNotifications) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#notifications";
+  RunBidiCheckerOnPage(url);
+}
+
+//===================================================
+// chrome://settings-frame/contentExceptions#mouselock
+//===================================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameContentExceptionsMouseLock) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#mouselock";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameContentExceptionsMouseLock) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kContentSettingsExceptionsSubPage;
+  url += "#mouselock";
+  RunBidiCheckerOnPage(url);
+}
+
+//========================================
+// chrome://settings-frame/handlers
+//========================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameHandler) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kHandlerSettingsSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameHandler) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += chrome::kHandlerSettingsSubPage;
+  RunBidiCheckerOnPage(url);
+}
+
+//========================================
+// chrome://settings-frame/cookies
+//========================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameCookies) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "cookies";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFrameCookies) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "cookies";
+  RunBidiCheckerOnPage(url);
+}
+
+//========================================
+// chrome://settings-frame/passwords
+//========================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFramePasswords) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "passwords";
+  RunBidiCheckerOnPage(url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       TestSettingsFramePasswords) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "passwords";
+  RunBidiCheckerOnPage(url);
+}
+
+//========================================
+// chrome://settings-frame/fonts
+//========================================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
+                       TestSettingsFrameFonts) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "fonts";
+  RunBidiCheckerOnPage(url);
+}
+
+// http://crbug.com/118420
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
+                       DISABLED_TestSettingsFrameFonts) {
+  std::string url(chrome::kChromeUISettingsFrameURL);
+  url += "fonts";
+  RunBidiCheckerOnPage(url);
+}
+
+// Test other uber iframes.
+
+//==============================
+// chrome://extensions-frame
+//==============================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestExtensionsFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIExtensionsFrameURL);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestExtensionsFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIExtensionsFrameURL);
+}
+
+//==============================
+// chrome://help-frame
+//==============================
+
+// http://crbug.com/118477
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestHelpFrame DISABLED_TestHelpFrame
+#else
+#define MAYBE_TestHelpFrame TestHelpFrame
+#endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestHelpFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, MAYBE_TestHelpFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
+}
+
+//==============================
+// chrome://history-frame
+//==============================
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestHistoryFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestHistoryFrame) {
+  RunBidiCheckerOnPage(chrome::kChromeUIHistoryFrameURL);
 }
