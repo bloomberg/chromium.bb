@@ -37,7 +37,6 @@ TabContentsContainer::~TabContentsContainer() {
 void TabContentsContainer::ChangeWebContents(WebContents* contents) {
   if (web_contents_) {
     native_container_->DetachContents(web_contents_);
-    web_contents_->WasHidden();
     RemoveObservers();
   }
   web_contents_ = contents;
