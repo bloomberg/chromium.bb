@@ -70,8 +70,10 @@ GDataDownloadObserver::~GDataDownloadObserver() {
   }
 }
 
-void GDataDownloadObserver::Initialize(GDataUploader* gdata_uploader,
+void GDataDownloadObserver::Initialize(const FilePath& temp_download_path,
+                                       GDataUploader* gdata_uploader,
                                        DownloadManager* download_manager) {
+  temp_download_path_ = temp_download_path;
   gdata_uploader_ = gdata_uploader;
   download_manager_ = download_manager;
   if (download_manager_)
@@ -106,7 +108,7 @@ void GDataDownloadObserver::ModelChanged(DownloadManager* download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadManager::DownloadVector downloads;
-  download_manager->GetAllDownloads(util::GetGDataTempDownloadFolderPath(),
+  download_manager->GetAllDownloads(temp_download_path_,
                                     &downloads);
   for (size_t i = 0; i < downloads.size(); ++i) {
     OnDownloadUpdated(downloads[i]);

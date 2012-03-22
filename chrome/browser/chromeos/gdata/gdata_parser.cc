@@ -10,7 +10,9 @@
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/libxml_utils.h"
 
 using base::Value;
 using base::DictionaryValue;
@@ -136,6 +138,10 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
 const char Author::kNameField[] = "name.$t";
 const char Author::kEmailField[] = "email.$t";
 
+const char Author::kAuthorNode[] = "author";
+const char Author::kNameNode[] = "name";
+const char Author::kEmailNode[] = "email";
+
 Author::Author() {
 }
 
@@ -146,6 +152,33 @@ void Author::RegisterJSONConverter(
   converter->RegisterStringField(kEmailField, &Author::email_);
 }
 
+Author* Author::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kAuthorNode)
+    return NULL;
+
+  if (!xml_reader->Read())
+    return NULL;
+
+  const int depth = xml_reader->Depth();
+  Author* author = new Author();
+  bool skip_read = false;
+  do {
+    skip_read = false;
+    DVLOG(1) << "Parsing author node " << xml_reader->NodeName()
+            << ", depth = " << depth;
+    if (xml_reader->NodeName() == kNameNode) {
+     std::string name;
+     if (xml_reader->ReadElementContent(&name))
+       author->name_ = UTF8ToUTF16(name);
+     skip_read = true;
+    } else if (xml_reader->NodeName() == kEmailNode) {
+     xml_reader->ReadElementContent(&author->email_);
+     skip_read = true;
+    }
+  } while (depth == xml_reader->Depth() && (skip_read || xml_reader->Next()));
+  return author;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Link implementation
 
@@ -153,6 +186,11 @@ const char Link::kHrefField[] = "href";
 const char Link::kRelField[] = "rel";
 const char Link::kTitleField[] = "title";
 const char Link::kTypeField[] = "type";
+
+const char Link::kLinkNode[] = "link";
+const char Link::kHrefAttr[] = "href";
+const char Link::kRelAttr[] = "rel";
+const char Link::kTypeAttr[] = "type";
 
 Link::Link() : type_(Link::UNKNOWN) {
 }
@@ -181,11 +219,34 @@ void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
   converter->RegisterStringField(kTypeField, &Link::mime_type_);
 }
 
+// static.
+Link* Link::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kLinkNode)
+    return NULL;
+
+  Link* link = new Link();
+  xml_reader->NodeAttribute(kTypeAttr, &link->mime_type_);
+
+  std::string href;
+  if (xml_reader->NodeAttribute(kHrefAttr, &href))
+      link->href_ = GURL(href);
+
+  std::string rel;
+  if (xml_reader->NodeAttribute(kRelAttr, &rel))
+    GetLinkType(rel, &link->type_);
+
+  return link;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FeedLink implementation
 
 const char FeedLink::kHrefField[] = "href";
 const char FeedLink::kRelField[] = "rel";
+
+const char FeedLink::kFeedLinkNode[] = "feedLink";
+const char FeedLink::kHrefAttr[] = "href";
+const char FeedLink::kRelAttr[] = "rel";
 
 FeedLink::FeedLink() : type_(FeedLink::UNKNOWN) {
 }
@@ -212,12 +273,34 @@ void FeedLink::RegisterJSONConverter(
       kHrefField, &FeedLink::href_, &GetGURLFromString);
 }
 
+// static
+FeedLink* FeedLink::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kFeedLinkNode)
+    return NULL;
+
+  FeedLink* link = new FeedLink();
+  std::string href;
+  if (xml_reader->NodeAttribute(kHrefAttr, &href))
+    link->href_ = GURL(href);
+
+  std::string rel;
+  if (xml_reader->NodeAttribute(kRelAttr, &rel))
+    GetFeedLinkType(rel, &link->type_);
+
+  return link;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Category implementation
 
 const char Category::kLabelField[] = "label";
 const char Category::kSchemeField[] = "scheme";
 const char Category::kTermField[] = "term";
+
+const char Category::kCategoryNode[] = "category";
+const char Category::kLabelAttr[] = "label";
+const char Category::kSchemeAttr[] = "scheme";
+const char Category::kTermAttr[] = "term";
 
 Category::Category() : type_(UNKNOWN) {
 }
@@ -244,6 +327,25 @@ void Category::RegisterJSONConverter(
   converter->RegisterStringField(kTermField, &Category::term_);
 }
 
+// static
+Category* Category::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kCategoryNode)
+    return NULL;
+
+  Category* category = new Category();
+  xml_reader->NodeAttribute(kTermAttr, &category->term_);
+
+  std::string scheme;
+  if (xml_reader->NodeAttribute(kSchemeAttr, &scheme))
+    GetCategoryTypeFromScheme(scheme, &category->type_);
+
+  std::string label;
+  if (xml_reader->NodeAttribute(kLabelAttr, &label))
+    category->label_ = UTF8ToUTF16(label);
+
+  return category;
+}
+
 const Link* GDataEntry::GetLinkByType(Link::LinkType type) const {
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == type)
@@ -258,6 +360,10 @@ const Link* GDataEntry::GetLinkByType(Link::LinkType type) const {
 const char Content::kSrcField[] = "src";
 const char Content::kTypeField[] = "type";
 
+const char Content::kContentNode[] = "content";
+const char Content::kSrcAttr[] = "src";
+const char Content::kTypeAttr[] = "type";
+
 Content::Content() {
 }
 
@@ -266,6 +372,19 @@ void Content::RegisterJSONConverter(
     base::JSONValueConverter<Content>* converter) {
   converter->RegisterCustomField(kSrcField, &Content::url_, &GetGURLFromString);
   converter->RegisterStringField(kTypeField, &Content::mime_type_);
+}
+
+Content* Content::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kContentNode)
+    return NULL;
+
+  Content* content = new Content();
+  std::string src;
+  if (xml_reader->NodeAttribute(kSrcAttr, &src))
+    content->url_ = GURL(src);
+
+  xml_reader->NodeAttribute(kTypeAttr, &content->mime_type_);
+  return content;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -337,6 +456,37 @@ const char DocumentEntry::kResourceIdField[] = "gd$resourceId.$t";
 const char DocumentEntry::kIDField[] = "id.$t";
 const char DocumentEntry::kTitleField[] = "title.$t";
 const char DocumentEntry::kPublishedField[] = "published.$t";
+
+const char DocumentEntry::kEntryNode[] = "entry";
+// Attributes are not namespace-blind as node names in XmlReader.
+const char DocumentEntry::kETagAttr[] = "gd:etag";
+const char DocumentEntry::kAuthorNode[] = "author";
+const char DocumentEntry::kNameAttr[] = "name";
+const char DocumentEntry::kEmailAttr[] = "email";
+const char DocumentEntry::kUpdatedNode[] = "updated";
+
+const char DocumentEntry::kIDNode[] = "id";
+const char DocumentEntry::kPublishedNode[] = "published";
+const char DocumentEntry::kEditedNode[] = "edited";
+
+const char DocumentEntry::kTitleNode[] = "title";
+
+const char DocumentEntry::kContentNode[] = "content";
+const char DocumentEntry::kSrcAttr[] = "src";
+const char DocumentEntry::kTypeAttr[] = "type";
+
+const char DocumentEntry::kResourceIdNode[] = "resourceId";
+const char DocumentEntry::kModifiedByMeDateNode[] = "modifiedByMeDate";
+const char DocumentEntry::kLastModifiedByNode[] = "lastModifiedBy";
+const char DocumentEntry::kQuotaBytesUsedNode[] = "quotaBytesUsed";
+
+const char DocumentEntry::kWritersCanInviteNode[] = "writersCanInvite";
+const char DocumentEntry::kValueAttr[] = "value";
+
+const char DocumentEntry::kMd5ChecksumNode[] = "md5Checksum";
+const char DocumentEntry::kFilenameNode[] = "filename";
+const char DocumentEntry::kSuggestedFilenameNode[] = "suggestedFilename";
+const char DocumentEntry::kSizeNode[] = "size";
 
 DocumentEntry::DocumentEntry() : kind_(DocumentEntry::UNKNOWN), file_size_(0) {
 }
@@ -416,7 +566,7 @@ void DocumentEntry::FillRemainingFields() {
 }
 
 // static
-DocumentEntry* DocumentEntry::CreateFrom(base::Value* value) {
+DocumentEntry* DocumentEntry::CreateFrom(const base::Value* value) {
   base::JSONValueConverter<DocumentEntry> converter;
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());
   if (!converter.Convert(*value, entry.get())) {
@@ -426,6 +576,92 @@ DocumentEntry* DocumentEntry::CreateFrom(base::Value* value) {
 
   entry->FillRemainingFields();
   return entry.release();
+}
+
+// static.
+DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
+  if (xml_reader->NodeName() != kEntryNode)
+    return NULL;
+
+  DocumentEntry* entry = new DocumentEntry();
+  xml_reader->NodeAttribute(kETagAttr, &entry->etag_);
+
+  if (!xml_reader->Read())
+    return entry;
+
+  bool skip_read = false;
+  do {
+    DVLOG(1) << "Parsing node " << xml_reader->NodeName();
+    skip_read = false;
+
+    if (xml_reader->NodeName() == Author::kAuthorNode) {
+      scoped_ptr<Author> author(Author::CreateFromXml(xml_reader));
+      if (author.get())
+        entry->authors_.push_back(author.release());
+    }
+
+    if (xml_reader->NodeName() == Content::kContentNode) {
+      scoped_ptr<Content> content(Content::CreateFromXml(xml_reader));
+      if (content.get())
+        entry->content_ = *content.get();
+    } else if (xml_reader->NodeName() == Link::kLinkNode) {
+      scoped_ptr<Link> link(Link::CreateFromXml(xml_reader));
+      if (link.get())
+        entry->links_.push_back(link.release());
+    } else if (xml_reader->NodeName() == FeedLink::kFeedLinkNode) {
+      scoped_ptr<FeedLink> link(FeedLink::CreateFromXml(xml_reader));
+      if (link.get())
+        entry->feed_links_.push_back(link.release());
+    } else if (xml_reader->NodeName() == Category::kCategoryNode) {
+      scoped_ptr<Category> category(Category::CreateFromXml(xml_reader));
+      if (category.get())
+        entry->categories_.push_back(category.release());
+    } else if (xml_reader->NodeName() == kUpdatedNode) {
+      std::string time;
+      if (xml_reader->ReadElementContent(&time))
+        GetTimeFromString(time, &entry->updated_time_);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kPublishedNode) {
+      std::string time;
+      if (xml_reader->ReadElementContent(&time))
+        GetTimeFromString(time, &entry->published_time_);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kIDNode) {
+      xml_reader->ReadElementContent(&entry->id_);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kResourceIdNode) {
+      xml_reader->ReadElementContent(&entry->resource_id_);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kTitleNode) {
+      std::string title;
+      if (xml_reader->ReadElementContent(&title))
+        entry->title_ = UTF8ToUTF16(title);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kFilenameNode) {
+      std::string file_name;
+      if (xml_reader->ReadElementContent(&file_name))
+        entry->filename_ = UTF8ToUTF16(file_name);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kSuggestedFilenameNode) {
+      std::string suggested_filename;
+      if (xml_reader->ReadElementContent(&suggested_filename))
+        entry->suggested_filename_ = UTF8ToUTF16(suggested_filename);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kMd5ChecksumNode) {
+      xml_reader->ReadElementContent(&entry->file_md5_);
+      skip_read = true;
+    } else if (xml_reader->NodeName() == kSizeNode) {
+      std::string size;
+      if (xml_reader->ReadElementContent(&size))
+        base::StringToInt64(size, &entry->file_size_);
+      skip_read = true;
+    } else {
+      DVLOG(1) << "Unknown node " << xml_reader->NodeName();
+    }
+  } while (skip_read || xml_reader->Next());
+
+  entry->FillRemainingFields();
+  return entry;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

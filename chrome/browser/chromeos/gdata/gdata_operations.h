@@ -180,14 +180,14 @@ class GetDataOperation : public UrlFetchOperationBase {
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
 
+  // Parse GData JSON response.
+  static base::Value* ParseResponse(const std::string& data);
+
  protected:
   // Overridden from UrlFetchOperationBase.
   virtual bool ProcessURLFetchResults(const content::URLFetcher* source)
       OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
-
-  // Parse GData JSON response.
-  static base::Value* ParseResponse(const std::string& data);
 
  private:
   GetDataCallback callback_;

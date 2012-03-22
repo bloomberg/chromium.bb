@@ -25,7 +25,8 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   virtual ~GDataDownloadObserver();
 
   // Become an observer of  DownloadManager.
-  void Initialize(GDataUploader* gdata_uploader,
+  void Initialize(const FilePath& temp_download_path,
+                  GDataUploader* gdata_uploader,
                   content::DownloadManager* download_manager);
 
   // Sets gdata path, for example, '/special/gdata/MyFolder/MyFile',
@@ -73,6 +74,9 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   typedef std::set<content::DownloadItem*> DownloadSet;
   DownloadSet pending_downloads_;
+
+  // Temporary download location directory.
+  FilePath temp_download_path_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDownloadObserver);
 };

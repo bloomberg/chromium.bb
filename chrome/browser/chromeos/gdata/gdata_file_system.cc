@@ -49,6 +49,8 @@ const FilePath::CharType kGDataCacheOutgoingDir[] =
 const FilePath::CharType kGDataCachePersistentDir[] =
     FILE_PATH_LITERAL("persistent");
 const FilePath::CharType kGDataCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
+const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
+    FILE_PATH_LITERAL("tmp/downloads");
 const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
@@ -588,19 +590,6 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
 
 void GDataFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  documents_service_->Initialize(profile_);
-  sync_client_->Initialize(this);
-
-  // download_manager will be NULL for unit tests.
-  content::DownloadManager* download_manager =
-    g_browser_process->download_status_updater() ?
-        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
-        NULL;
-  gdata_download_observer_->Initialize(gdata_uploader_.get(), download_manager);
-  root_.reset(new GDataRootDirectory(this));
-  root_->set_file_name(kGDataRootDirectory);
-
   FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
@@ -611,7 +600,21 @@ void GDataFileSystem::Initialize() {
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheOutgoingDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePersistentDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDir));
-  DVLOG(1) << "GCache dir: " << gdata_cache_path_.value();
+  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDownloadsDir));
+
+  documents_service_->Initialize(profile_);
+  sync_client_->Initialize(this);
+
+  // download_manager will be NULL for unit tests.
+  content::DownloadManager* download_manager =
+    g_browser_process->download_status_updater() ?
+        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
+        NULL;
+  gdata_download_observer_->Initialize(
+      GetGDataTempDownloadFolderPath(),
+      gdata_uploader_.get(), download_manager);
+  root_.reset(new GDataRootDirectory(this));
+  root_->set_file_name(kGDataRootDirectory);
 }
 
 GDataFileSystem::~GDataFileSystem() {
@@ -1188,26 +1191,34 @@ void GDataFileSystem::OnUploadLocationReceived(
 
 void GDataFileSystem::ResumeUpload(
     const ResumeUploadParams& params,
-    const ResumeUploadCallback& callback) {
+    const ResumeFileUploadCallback& callback) {
   documents_service_->ResumeUpload(
           params,
           base::Bind(&GDataFileSystem::OnResumeUpload,
                      weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     // MessageLoopProxy is used to run |callback| on the
-                     // thread where this function was called.
-                     base::MessageLoopProxy::current()));
+                     params.local_file_path,
+                     params.virtual_path,
+                     base::MessageLoopProxy::current(),
+                     callback));
 }
 
-void GDataFileSystem::OnResumeUpload(const ResumeUploadCallback& callback,
+void GDataFileSystem::OnResumeUpload(
+    const FilePath& local_file_path,
+    const FilePath& virtual_file_path,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-    const ResumeUploadResponse& response) {
+    const ResumeFileUploadCallback& callback,
+    const ResumeUploadResponse& response,
+    scoped_ptr<DocumentEntry> new_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // We are done if entry has been created, add new entry to the file system
+  // and cache.
+  if (new_entry.get()) {
+    AddDownloadedFile(virtual_file_path.DirName(),
+                      new_entry.get(),
+                      local_file_path);
+  }
   if (!callback.is_null())
     message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, response));
-
-  // TODO(achuith): Figure out when we are done with upload and
-  // add appropriate entry to the file system that represents the new file.
 }
 
 
@@ -1285,6 +1296,10 @@ bool GDataFileSystem::GetFileInfoFromPath(
 
 FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
   return cache_paths_[CACHE_TYPE_TMP];
+}
+
+FilePath GDataFileSystem::GetGDataTempDownloadFolderPath() const {
+  return cache_paths_[CACHE_TYPE_TMP_DOWNLOADS];
 }
 
 FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
@@ -2024,7 +2039,7 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
 }
 
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
-  // TODO(zelidrag): Notify all observers on directory content change here.
+  LOG(WARNING) << "Content changed of " << directory_path.value();
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
@@ -2133,6 +2148,44 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
 
   return base::PLATFORM_FILE_OK;
 }
+
+void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
+                                        DocumentEntry* entry,
+                                        const FilePath& file_content_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!entry) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string resource_id;
+  std::string md5;
+  {
+    base::AutoLock lock(lock_);
+    GDataFileBase* dir_file = GetGDataFileInfoFromPath(virtual_dir_path);
+    if (!dir_file)
+      return;
+
+    GDataDirectory* parent_dir  = dir_file->AsGDataDirectory();
+    if (!parent_dir)
+      return;
+
+    scoped_ptr<GDataFileBase> new_file(
+        GDataFileBase::FromDocumentEntry(parent_dir, entry, root_.get()));
+    if (!new_file.get())
+      return;
+
+    GDataFile* file = new_file->AsGDataFile();
+    DCHECK(file);
+    resource_id = file->resource_id();
+    md5 = file->file_md5();
+    parent_dir->AddFile(new_file.release());
+  }
+  NotifyDirectoryChanged(virtual_dir_path);
+  StoreToCache(resource_id, md5, file_content_path, CacheOperationCallback());
+}
+
 
 //===================== GDataFileSystem: Cache entry points ====================
 

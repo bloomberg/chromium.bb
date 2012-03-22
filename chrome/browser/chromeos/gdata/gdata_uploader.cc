@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -245,7 +246,8 @@ void GDataUploader::ReadCompletionCallback(
                                 bytes_read - 1;
 
   file_system_->ResumeUpload(
-      ResumeUploadParams(upload_file_info->title,
+      ResumeUploadParams(upload_file_info->file_path,
+                         upload_file_info->title,
                          upload_file_info->start_range,
                          upload_file_info->end_range,
                          upload_file_info->content_length,
@@ -253,9 +255,9 @@ void GDataUploader::ReadCompletionCallback(
                          upload_file_info->buf,
                          upload_file_info->upload_location,
                          upload_file_info->gdata_path),
-      base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                 uploader_factory_.GetWeakPtr(),
-                 upload_file_info->upload_id));
+       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
+                  uploader_factory_.GetWeakPtr(),
+                  upload_file_info->upload_id));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
@@ -269,17 +271,9 @@ void GDataUploader::OnResumeUploadResponseReceived(
 
   if (response.code == HTTP_CREATED) {
     DVLOG(1) << "Successfully created uploaded file=["
-             << upload_file_info->title
-             << "], with resourceId=[" << response.resource_id
-             << "], and md5Checksum=[" << response.md5_checksum << "]";
+             << upload_file_info->title;
 
     // Done uploading.
-    DCHECK(!response.resource_id.empty());
-    DCHECK(!response.md5_checksum.empty());
-    file_system_->StoreToCache(response.resource_id,
-        response.md5_checksum,
-        upload_file_info->file_path,
-        CacheOperationCallback());
     RemovePendingUpload(upload_file_info);
     return;
   }

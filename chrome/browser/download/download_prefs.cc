@@ -90,13 +90,6 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
                  default_download_path));
-
-  // Create the temp directory for gdata downloads.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
-                 gdata::util::GetGDataTempDownloadFolderPath()));
-
 #endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do

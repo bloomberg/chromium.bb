@@ -79,6 +79,10 @@ typedef base::Callback<void(base::PlatformFileError error,
                             int bytes_used)>
     GetAvailableSpaceCallback;
 
+// Callback type for DocumentServiceInterface::ResumeUpload.
+typedef base::Callback<void(
+    const ResumeUploadResponse& response)> ResumeFileUploadCallback;
+
 
 // Delegate class used to deal with results synchronous read-only search
 // over virtual file system.
@@ -167,6 +171,7 @@ class GDataFileSystemInterface {
     CACHE_TYPE_OUTGOING,
     CACHE_TYPE_PERSISTENT,
     CACHE_TYPE_TMP,
+    CACHE_TYPE_TMP_DOWNLOADS,
   };
 
   // Enum defining origin of a cached file.
@@ -315,6 +320,10 @@ class GDataFileSystemInterface {
   // <user_profile_dir>/GCache/v1/tmp
   virtual FilePath GetGDataCacheTmpDirectory() const = 0;
 
+  // Returns the tmp downloads sub-directory under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1/tmp/downloads/
+  virtual FilePath GetGDataTempDownloadFolderPath() const = 0;
+
   // Returns the pinned sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/pinned
   virtual FilePath GetGDataCachePinnedDirectory() const = 0;
@@ -371,6 +380,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual bool GetFileInfoFromPath(const FilePath& gdata_file_path,
                                    GDataFileProperties* properties) OVERRIDE;
   virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
+  virtual FilePath GetGDataTempDownloadFolderPath() const OVERRIDE;
   virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
@@ -465,7 +475,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   //
   // Can be called from any thread. |callback| is run on the calling thread.
   void ResumeUpload(const ResumeUploadParams& params,
-                    const ResumeUploadCallback& callback);
+                    const ResumeFileUploadCallback& callback);
 
   // Unsafe (unlocked) version of FindFileByPathSync method.
   void UnsafeFindFileByPath(const FilePath& file_path,
@@ -599,9 +609,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GURL& upload_location);
 
   // Callback for handling file upload resume requests.
-  void OnResumeUpload(const ResumeUploadCallback& callback,
+  void OnResumeUpload(
+      const FilePath& local_file_path,
+      const FilePath& virtual_file_path,
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      const ResumeUploadResponse& response);
+      const ResumeFileUploadCallback& callback,
+      const ResumeUploadResponse& response,
+      scoped_ptr<gdata::DocumentEntry> new_entry);
 
   // Renames a file or directory at |file_path| on in-memory snapshot
   // of the file system. Returns PLATFORM_FILE_OK if successful.
@@ -710,6 +724,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
                             const std::string& md5,
                             CacheSubdir subdir_id,
                             CachedFileOrigin file_orign);
+
+  // Creates a new file from |entry| under |virtual_dir_path|. Stored its
+  // content from |file_content_path| into the cache.
+  void AddDownloadedFile(const FilePath& virtual_dir_path,
+                         gdata::DocumentEntry* entry,
+                         const FilePath& file_content_path);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
   // Initializes cache if it has not been initialized.

@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/libxml_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Value;
@@ -29,6 +30,8 @@ class GDataParserTest : public testing::Test {
   static Value* LoadJSONFile(const std::string& filename) {
     FilePath path;
     std::string error;
+    // Test files for this unit test are located in
+    // src/chrome/test/data/chromeos/gdata/*
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("chromeos")
         .AppendASCII("gdata")
@@ -42,10 +45,36 @@ class GDataParserTest : public testing::Test {
         "Parse error " << path.value() << ": " << error;
     return value;
   }
+
+  static DocumentEntry* LoadDocumentEntryFromXml(const std::string& filename) {
+    FilePath path;
+    std::string error;
+    PathService::Get(chrome::DIR_TEST_DATA, &path);
+    path = path.AppendASCII("chromeos")
+        .AppendASCII("gdata")
+        .AppendASCII(filename.c_str());
+    EXPECT_TRUE(file_util::PathExists(path)) <<
+        "Couldn't find " << path.value();
+    std::string contents;
+    EXPECT_TRUE(file_util::ReadFileToString(path, &contents));
+    XmlReader reader;
+    if (!reader.Load(contents)) {
+      NOTREACHED() << "Invalid xml:\n" << contents;
+      return NULL;
+    }
+    scoped_ptr<DocumentEntry> entry;
+    while (reader.Read()) {
+      if (reader.NodeName() == "entry") {
+        entry.reset(DocumentEntry::CreateFromXml(&reader));
+        break;
+      }
+    }
+    return entry.release();
+  }
 };
 
 // Test document feed parsing.
-TEST_F(GDataParserTest, DocumentFeedParser) {
+TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   std::string error;
   scoped_ptr<Value> document(LoadJSONFile("basic_feed.json"));
   ASSERT_TRUE(document.get());
@@ -150,6 +179,76 @@ TEST_F(GDataParserTest, DocumentFeedParser) {
   ASSERT_TRUE(document_entry);
   EXPECT_EQ(gdata::DocumentEntry::DOCUMENT, document_entry->kind());
 }
+
+
+// Test document feed parsing.
+TEST_F(GDataParserTest, DocumentEntryXmlParser) {
+  scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("entry.xml"));
+  ASSERT_TRUE(entry.get());
+
+  EXPECT_EQ(gdata::DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", entry->etag());
+  EXPECT_EQ("file:xml_file_resouce_id", entry->resource_id());
+  EXPECT_EQ("https://xml_file_id", entry->id());
+  EXPECT_EQ(ASCIIToUTF16("Xml Entry File Title.tar"), entry->title());
+  base::Time entry1_update_time;
+  base::Time entry1_publish_time;
+  ASSERT_TRUE(GDataEntry::GetTimeFromString("2011-04-01T18:34:08.234Z",
+                                              &entry1_update_time));
+  ASSERT_TRUE(GDataEntry::GetTimeFromString("2010-11-07T05:03:54.719Z",
+                                              &entry1_publish_time));
+  ASSERT_EQ(entry1_update_time, entry->updated_time());
+  ASSERT_EQ(entry1_publish_time, entry->published_time());
+
+  ASSERT_EQ(1U, entry->authors().size());
+  EXPECT_EQ(ASCIIToUTF16("entry_tester"), entry->authors()[0]->name());
+  EXPECT_EQ("entry_tester@testing.com", entry->authors()[0]->email());
+  EXPECT_EQ("https://1_xml_file_entry_content_url/",
+            entry->content_url().spec());
+  EXPECT_EQ("application/x-tar",
+            entry->content_mime_type());
+
+  // Check feed links.
+  ASSERT_EQ(2U, entry->feed_links().size());
+  const FeedLink* feed_link_1 = entry->feed_links()[0];
+  ASSERT_TRUE(feed_link_1);
+  ASSERT_EQ(gdata::FeedLink::ACL, feed_link_1->type());
+  const FeedLink* feed_link_2 = entry->feed_links()[1];
+  ASSERT_TRUE(feed_link_2);
+  ASSERT_EQ(gdata::FeedLink::REVISIONS, feed_link_2->type());
+
+  // Check links.
+  ASSERT_EQ(7U, entry->links().size());
+  const Link* entry1_alternate_link =
+      entry->GetLinkByType(gdata::Link::ALTERNATE);
+  ASSERT_TRUE(entry1_alternate_link);
+  EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
+            entry1_alternate_link->href().spec());
+  EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
+
+  const Link* entry1_edit_link =
+      entry->GetLinkByType(gdata::Link::EDIT_MEDIA);
+  ASSERT_TRUE(entry1_edit_link);
+  EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
+            entry1_edit_link->href().spec());
+  EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
+
+  const Link* entry1_self_link =
+      entry->GetLinkByType(gdata::Link::SELF);
+  ASSERT_TRUE(entry1_self_link);
+  EXPECT_EQ("https://xml_file_entry_id_self_link/",
+            entry1_self_link->href().spec());
+  EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
+
+  // Check a file properties.
+  EXPECT_EQ(gdata::DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ(ASCIIToUTF16("Xml Entry File Name.tar"), entry->filename());
+  EXPECT_EQ(ASCIIToUTF16("Xml Entry Suggested File Name.tar"),
+            entry->suggested_filename());
+  EXPECT_EQ("e48f4d5c46a778de263e0e3f4b3d2a7d", entry->file_md5());
+  EXPECT_EQ(26562560, entry->file_size());
+}
+
 
 TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));

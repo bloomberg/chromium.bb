@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/libxml_utils.h"
@@ -839,8 +840,7 @@ bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
   int64 end_range_received = -1;
-  std::string resource_id;
-  std::string md5_checksum;
+  scoped_ptr<DocumentEntry> entry;
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
@@ -867,25 +867,40 @@ bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     DVLOG(1) << "Got response for [" << params_.title
             << "]: code=" << code
             << ", content=[\n" << response_content << "\n]";
-    util::ParseCreatedResponseContent(response_content, &resource_id,
-                                      &md5_checksum);
-    DCHECK(!resource_id.empty());
-    DCHECK(!md5_checksum.empty());
+
+    // Parse entry XML.
+    XmlReader xml_reader;
+    if (xml_reader.Load(response_content)) {
+      while (xml_reader.Read()) {
+        if (xml_reader.NodeName() == DocumentEntry::kEntryNode) {
+          entry.reset(DocumentEntry::CreateFromXml(&xml_reader));
+          break;
+        }
+      }
+    }
+    if (!entry.get())
+      LOG(WARNING) << "Invalid entry received on upload:\n" << response_content;
   }
 
   if (!callback_.is_null()) {
     relay_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(callback_, ResumeUploadResponse(code, start_range_received,
-                   end_range_received, resource_id, md5_checksum)));
+        base::Bind(callback_,
+                   ResumeUploadResponse(code,
+                                        start_range_received,
+                                        end_range_received),
+                   base::Passed(&entry)));
   }
   return code == HTTP_CREATED || code == HTTP_RESUME_INCOMPLETE;
 }
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
+  scoped_ptr<DocumentEntry> entry;
   if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE, base::Bind(callback_,
-        ResumeUploadResponse(code, 0, 0, "", "")));
+    relay_proxy_->PostTask(FROM_HERE,
+                           base::Bind(callback_,
+                                      ResumeUploadResponse(code, 0, 0),
+                                      base::Passed(&entry)));
   }
 }
 
