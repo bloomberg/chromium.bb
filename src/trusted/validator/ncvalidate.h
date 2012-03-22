@@ -112,7 +112,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
-    NaClCPUFeatures         *cpu_features,
+    const NaClCPUFeatures   *cpu_features,
     struct NaClValidationCache *cache);
 
 /* Applies the validator, as used in a command-line tool to report issues.
@@ -139,7 +139,7 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
-    NaClCPUFeatures         *cpu_features);
+    const NaClCPUFeatures   *cpu_features);
 
 /* Applies validator to new code segment, assuming that it was updated
  * from the previously validated old code segment. Assumes that instruction
@@ -158,13 +158,13 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-      enum NaClSBKind sb_kind,
-      uintptr_t       guest_addr,
-      uint8_t         *data_old,
-      uint8_t         *data_new,
-      size_t          size,
-      int             bundle_size,
-      NaClCPUFeatures *cpu_features);
+      enum NaClSBKind       sb_kind,
+      uintptr_t             guest_addr,
+      uint8_t               *data_old,
+      uint8_t               *data_new,
+      size_t                size,
+      int                   bundle_size,
+      const NaClCPUFeatures *cpu_features);
 
 /* Runs the validator to copy code from an existing code segment to a new
  * code segment.
@@ -186,13 +186,13 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-    enum NaClSBKind sb_kind,
-    uintptr_t       guest_addr,
-    uint8_t         *data_old,
-    uint8_t         *data_new,
-    size_t          size,
-    int             bundle_size,
-    NaClCPUFeatures *cpu_features);
+    enum NaClSBKind       sb_kind,
+    uintptr_t             guest_addr,
+    uint8_t               *data_old,
+    uint8_t               *data_new,
+    size_t                size,
+    int                   bundle_size,
+    const NaClCPUFeatures *cpu_features);
 
 EXTERN_C_END
 

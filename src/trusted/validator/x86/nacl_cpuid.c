@@ -338,7 +338,7 @@ static void CheckNaClArchFeatures(NaClCPUData* data,
   }
 }
 
-int NaClArchSupported(NaClCPUFeaturesX86 *features) {
+int NaClArchSupported(const NaClCPUFeaturesX86 *features) {
   return (features->arch_features.f_cpuid_supported &&
           features->arch_features.f_cpu_supported);
 }

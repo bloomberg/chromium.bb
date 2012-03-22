@@ -150,10 +150,11 @@ static void NCJumpSummarizeDetailed(struct NCValidatorState* vstate) {
   NCDecoderStateDecode(dstate);
 }
 
-struct NCValidatorState *NCValidateInitDetailed(const NaClPcAddress vbase,
-                                                const NaClMemorySize codesize,
-                                                const uint8_t alignment,
-                                                NaClCPUFeaturesX86* features) {
+struct NCValidatorState *NCValidateInitDetailed(
+    const NaClPcAddress vbase,
+    const NaClMemorySize codesize,
+    const uint8_t alignment,
+    const NaClCPUFeaturesX86* features) {
   struct NCValidatorState *vstate = NCValidateInit(vbase, codesize, alignment,
                                                    features);
   if (NULL != vstate) {

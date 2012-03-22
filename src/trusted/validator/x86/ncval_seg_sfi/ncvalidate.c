@@ -337,7 +337,7 @@ static void NCJumpSummarize(struct NCValidatorState* vstate);
 struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const NaClPcAddress codesize,
                                         const uint8_t alignment,
-                                        NaClCPUFeaturesX86 *features) {
+                                        const NaClCPUFeaturesX86 *features) {
   struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
@@ -989,7 +989,7 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
 
 int NCValidateSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
                           NaClPcAddress vbase, size_t sz, uint8_t alignment,
-                          NaClCPUFeaturesX86 *features) {
+                          const NaClCPUFeaturesX86 *features) {
   /* TODO(karl): Refactor to use inheritance from NCDecoderStatePair? */
   NCDecoderStatePair pair;
   NCValidatorState* new_vstate;

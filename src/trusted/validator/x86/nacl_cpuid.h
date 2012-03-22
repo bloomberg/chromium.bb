@@ -143,7 +143,7 @@ void NaClCopyCPUFeatures(NaClCPUFeaturesX86* target,
 void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
 
 /* Returns true if CPUID is defined, and the CPU is supported. */
-int NaClArchSupported(NaClCPUFeaturesX86 *features);
+int NaClArchSupported(const NaClCPUFeaturesX86 *features);
 
 EXTERN_C_END
 

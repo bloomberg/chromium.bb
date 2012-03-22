@@ -72,7 +72,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    NaClCPUFeaturesArm *cpu_features,
+    const NaClCPUFeaturesArm *cpu_features,
     struct NaClValidationCache *cache) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   UNREFERENCED_PARAMETER(cpu_features);
@@ -95,7 +95,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     NaClCPUFeaturesArm *cpu_features) {
+     const NaClCPUFeaturesArm *cpu_features) {
   UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
@@ -113,7 +113,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy, arm, 32)
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     NaClCPUFeaturesArm *cpu_features) {
+     const NaClCPUFeaturesArm *cpu_features) {
   UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);

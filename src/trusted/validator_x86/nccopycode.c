@@ -290,7 +290,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     NaClCPUFeaturesX86 *cpu_features) {
+     const NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
@@ -382,7 +382,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
      uint8_t *data_new,
      size_t size,
      int bundle_size,
-     NaClCPUFeaturesX86 *cpu_features) {
+     const NaClCPUFeaturesX86 *cpu_features) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
