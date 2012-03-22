@@ -49,6 +49,8 @@
       'sources': [
         'shell/layout_test_controller_bindings.cc',
         'shell/layout_test_controller_bindings.h',
+        'shell/paths_mac.h',
+        'shell/paths_mac.mm',
         'shell/shell.cc',
         'shell/shell.h',
         'shell/shell_gtk.cc',

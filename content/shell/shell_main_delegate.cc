@@ -7,51 +7,17 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_plugin_client.h"
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_content_utility_client.h"
-#include "content/shell/shell_render_process_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif
-
-#if defined(OS_MACOSX)
-namespace {
-
-void OverrideChildProcessPath() {
-  if (base::mac::IsBackgroundOnlyProcess()) {
-    // The background-only process is the helper; no overriding needed.
-    return;
-  }
-
-  // Start out with the path to the running executable.
-  FilePath helper_path;
-  PathService::Get(base::FILE_EXE, &helper_path);
-
-  // One step up to MacOS, another to Contents.
-  helper_path = helper_path.DirName().DirName();
-  DCHECK_EQ(helper_path.BaseName().value(), "Contents");
-
-  // Go into the frameworks directory.
-  helper_path = helper_path.Append("Frameworks");
-
-  // And the app path.
-  helper_path = helper_path.Append("Content Shell Helper.app")
-                           .Append("Contents")
-                           .Append("MacOS")
-                           .Append("Content Shell Helper");
-
-  PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
-}
-
-}  // namespace
+#include "content/shell/paths_mac.h"
 #endif  // OS_MACOSX
 
 ShellMainDelegate::ShellMainDelegate() {
@@ -61,6 +27,9 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
+#if defined(OS_MACOSX)
+  OverrideFrameworkBundlePath();
+#endif
   return false;
 }
 
