@@ -186,7 +186,8 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	struct wl_object *object;
 	struct wl_closure *closure;
 	const struct wl_message *message;
-	uint32_t p[2], opcode, size;
+	uint32_t p[2];
+	int opcode, size;
 	uint32_t cmask = 0;
 	int len;
 
