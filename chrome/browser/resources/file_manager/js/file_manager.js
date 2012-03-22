@@ -508,6 +508,10 @@ FileManager.prototype = {
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
 
+    var offlineHandler = this.onOnlineOffline_.bind(this);
+    window.addEventListener('online', offlineHandler);
+    window.addEventListener('offline', offlineHandler);
+
     this.directoryModel_.addEventListener('directory-changed',
                                           this.onDirectoryChanged_.bind(this));
     var self = this;
@@ -1505,9 +1509,9 @@ FileManager.prototype = {
             // 2. Reloading a Gallery page. Must be an image or a video file.
             // 3. A user manually entered a URL pointing to a file.
             if (FileType.isImageOrVideo(path)) {
-              self.onFileTaskExecute_('gallery', self.selection.urls);
+              self.dispatchInternalTask_('gallery', self.selection.urls);
             } else if (FileType.getMediaType(path) == 'archive') {
-              self.onFileTaskExecute_('mount-archive', self.selection.urls);
+              self.dispatchInternalTask_('mount-archive', self.selection.urls);
             } else {
               // Manually entered path, do nothing, remove the shade ASAP.
               removeShade();
@@ -1718,7 +1722,9 @@ FileManager.prototype = {
       li.appendChild(this.renderCheckbox_(entry));
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
-    li.appendChild(this.renderFileNameLabel_(entry));
+    var label = this.renderFileNameLabel_(entry);
+    this.styleGDataItem_(entry, label);
+    li.appendChild(label);
   };
 
   /**
@@ -1829,6 +1835,23 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.removeMount(url);
   };
 
+  FileManager.prototype.styleGDataItem_ = function(entry, element) {
+    if (!this.isOnGData())
+      return;
+
+    cacheGDataProps(entry, function(entry) {
+      if (!entry.gdata_)
+        return;
+
+      if (entry.gdata_.isHosted) {
+        element.classList.add('gdata-hosted');
+      }
+      if (this.isAvaliableOffline_(entry.gdata_, this.getFileType(entry))) {
+        element.classList.add('gdata-present');
+      }
+    }.bind(this));
+  };
+
   /**
    * Render the Name column of the detail table.
    *
@@ -1846,6 +1869,8 @@ FileManager.prototype = {
     label.entry = entry;
     label.className = 'detail-name';
     label.appendChild(this.renderFileNameLabel_(entry));
+
+    this.styleGDataItem_(entry, label);
     return label;
   };
 
@@ -1909,6 +1934,7 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'type';
     this.updateType_(div, entry);
+    this.styleGDataItem_(entry, div);
     return div;
   };
 
@@ -1936,6 +1962,7 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'date';
     this.updateDate_(div, entry);
+    this.styleGDataItem_(entry, div);
     return div;
   };
 
@@ -1967,10 +1994,12 @@ FileManager.prototype = {
     checkbox.addEventListener('click',
                               this.onPinClick_.bind(this, checkbox, entry));
 
-    cacheGDataProps(entry, function(entry) {
-      checkbox.checked = entry.gdata_.isPinned;
-      div.appendChild(checkbox);
-    });
+    if (this.isOnGData()) {
+      cacheGDataProps(entry, function(entry) {
+        checkbox.checked = entry.gdata_.isPinned;
+        div.appendChild(checkbox);
+      });
+    }
     return div;
   };
 
@@ -2276,7 +2305,6 @@ FileManager.prototype = {
       // Tweak images, titles of internal tasks.
       var task_parts = task.taskId.split('|');
       if (task_parts[0] == this.getExtensionId_()) {
-        task.internal = true;
         if (task_parts[1] == 'play') {
           // TODO(serya): This hack needed until task.iconUrl is working
           //             (see GetFileTasksFileBrowserFunction::RunImpl).
@@ -2366,7 +2394,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTaskItemClicked_ = function(event) {
-    this.dispatchFileTask_(event.item.task, this.selection.urls);
+    this.dispatchFileTask_(event.item.task.taskId, this.selection.urls);
   };
 
   /**
@@ -2387,7 +2415,7 @@ FileManager.prototype = {
     }
 
     if (selection.tasksList.length > 0) {
-      this.dispatchFileTask_(selection.tasksList[0], selection.urls);
+      this.dispatchFileTask_(selection.tasksList[0].taskId, selection.urls);
       return;
     }
 
@@ -2403,19 +2431,63 @@ FileManager.prototype = {
               function() {});
       }
 
-      chrome.fileBrowserPrivate.viewFiles(selection.urls, 'default',
-          callback.bind(this));
+      this.executeIfAvailable_(selection.urls, function(urls) {
+        chrome.fileBrowserPrivate.viewFiles(urls, 'default',
+            callback.bind(this));
+      });
     }
   };
 
-  FileManager.prototype.dispatchFileTask_ = function(task, urls) {
-    chrome.fileBrowserPrivate.executeTask(task.taskId, urls);
-    if (task.internal) {
-      // For internal tasks we do not listen to the event to avoid
-      // handling the same task instance from multiple tabs.
-      // So, we manually execute the task.
-      var taskId = task.taskId.split('|')[1];
-      this.onFileTaskExecute_(taskId, urls);
+  FileManager.prototype.dispatchInternalTask_ = function(task, urls) {
+     this.dispatchFileTask_(this.getExtensionId_() + '|' + task, urls);
+  };
+
+  FileManager.prototype.dispatchFileTask_ = function(taskId, urls) {
+    this.executeIfAvailable_(urls, function(urls) {
+      chrome.fileBrowserPrivate.executeTask(taskId, urls);
+      var task_parts = taskId.split('|');
+      if (task_parts[0] == this.getExtensionId_()) {
+        // For internal tasks we do not listen to the event to avoid
+        // handling the same task instance from multiple tabs.
+        // So, we manually execute the task.
+        this.onFileTaskExecute_(task_parts[1], urls);
+      }
+    }.bind(this));
+  };
+
+  FileManager.prototype.executeIfAvailable_ = function(urls, callback) {
+    if (this.isOnGData() && this.isOffline()) {
+      chrome.fileBrowserPrivate.getGDataFileProperties(urls, function(props) {
+        for (var i = 0; i != props.length; i++) {
+          if (!this.isAvaliableOffline_(props[i], FileType.getType(urls[i]))) {
+            this.alert.showHtml(
+                str('OFFLINE_HEADER'),
+                strf('OFFLINE_MESSAGE', str('OFFLINE_COLUMN_LABEL')));
+            return;
+          }
+        }
+        callback(urls);
+      }.bind(this));
+    } else {
+      callback(urls);
+    }
+  };
+
+  FileManager.prototype.isAvaliableOffline_ = function(gdata, type) {
+    return gdata.isPresent || type.offline;
+  };
+
+  FileManager.prototype.isOffline = function() {
+    return !navigator.onLine;
+  };
+
+  FileManager.prototype.onOnlineOffline_ = function() {
+    if (this.isOffline()) {
+      console.log('OFFLINE');
+      this.dialogContainer_.setAttribute('offline', true);
+    } else {
+      console.log('ONLINE');
+      this.dialogContainer_.removeAttribute('offline');
     }
   };
 
@@ -2601,7 +2673,7 @@ FileManager.prototype = {
         var task = tasks[index];
         if (task.taskId != this.getExtensionId_() + '|gallery') {
           // Add callback, so gallery can execute the task.
-          task.execute = this.dispatchFileTask_.bind(this, task);
+          task.execute = this.dispatchFileTask_.bind(this, task.taskId);
           shareActions.push(task);
         }
       }
@@ -3358,6 +3430,11 @@ FileManager.prototype = {
     }
 
     this.updateVolumeMetadata_();
+
+    if (this.isOnGData())
+      this.dialogContainer_.setAttribute('gdata', true);
+    else
+      this.dialogContainer_.removeAttribute('gdata');
   };
 
   FileManager.prototype.updateVolumeMetadata_ = function() {

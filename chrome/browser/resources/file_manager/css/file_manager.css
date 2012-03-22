@@ -228,7 +228,7 @@ list.roots-list > [lead][selected]:hover,
 list.roots-list > [selected]:hover,
 list.roots-list > [anchor]:hover {
   height: 37px !important;
-  background-color: rgb(0, 0, 0, 0.5) !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
   border-top: 1px solid transparent !important;
   border-bottom: 1px solid transparent !important;
 }
@@ -836,7 +836,6 @@ li.thumbnail-item .file-checkbox {
   -webkit-margin-start: 7px;
   margin-top: 6px;
   opacity: 0;
-  background-color: green;
 }
 
 li.table-row:hover .file-checkbox,
@@ -1076,6 +1075,13 @@ li.table-row {
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
   display: -webkit-box;
+}
+
+/* GData-specfic styles */
+
+[gdata][offline] .table-row-cell > :not(.gdata-present),
+[gdata][offline] .thumbnail-item > :not(.gdata-present) {
+  color: #808080;
 }
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/

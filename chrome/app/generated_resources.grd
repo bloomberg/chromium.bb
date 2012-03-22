@@ -10353,8 +10353,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_MANY_ENTRIES_SELECTED" desc="Many items (both files and directories) selected.">
         $1 items selected, $2
       </message>
-      <message name="IDS_FILE_BROWSER_PLAYBACK_ERROR" desc="Error playing back.">
-        Error playing back
+      <message name="IDS_FILE_BROWSER_OFFLINE_HEADER" desc="Message informing the user that the browser is offline.">
+        You are offline
+      </message>
+      <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE" desc="Message informing the selected how to make the file available offline.">
+        To save this file for offline use, get back online and&lt;br&gt;select the '$1' checkbox for this file.
       </message>
       <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
 	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>

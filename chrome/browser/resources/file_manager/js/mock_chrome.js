@@ -286,6 +286,33 @@ chrome.fileBrowserPrivate = {
     callback(metadata);
   },
 
+  pinned_: {},
+
+  getGDataFileProperties: function(urls, callback) {
+    var response = [];
+    for (var i = 0; i != urls.length; i++) {
+      var url = urls[i];
+      response.push({
+        fileUrl: url,
+        isHosted: url.match(/\.g(doc|slides|sheet|draw|table)$/i),
+        isPinned: (url in chrome.fileBrowserPrivate.pinned_)
+      });
+    }
+    setTimeout(callback, 0, response);
+  },
+
+  pinGDataFile: function(urls, on, callback) {
+    for (var i = 0; i != urls.length; i++) {
+      var url = urls[i];
+      if (on) {
+        chrome.fileBrowserPrivate.pinned_[url] = true;
+      } else {
+        delete chrome.fileBrowserPrivate.pinned_[url];
+      }
+    }
+    chrome.fileBrowserPrivate.getGDataFileProperties(urls, callback);
+  },
+
   toggleFullscreen: function() {
     if (document.webkitIsFullScreen)
       document.webkitCancelFullScreen();
