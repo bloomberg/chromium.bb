@@ -126,7 +126,7 @@ cr.define('help', function() {
      * @private
      */
     setProgress_: function(progress) {
-      $('update-percentage').innerHTML = progress + "%";
+      $('update-percentage').innerHTML = progress + '%';
     },
 
     /**
@@ -253,6 +253,9 @@ cr.define('help', function() {
   };
 });
 
+/**
+ * onload listener to initialize the HelpPage.
+ */
 window.onload = function() {
   help.HelpPage.getInstance().initialize();
 };
