@@ -355,10 +355,6 @@ TEST_F(WindowTest, GetTopWindowContainingPoint) {
   scoped_ptr<Window> w311(
       CreateTestWindow(SK_ColorBLUE, 311, gfx::Rect(0, 0, 10, 10), w31.get()));
 
-  // The stop-event-propagation flag shouldn't have any effect on the behavior
-  // of this method.
-  w3->set_stops_event_propagation(true);
-
   EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(0, 0)));
   EXPECT_EQ(w2.get(), root->GetTopWindowContainingPoint(gfx::Point(5, 5)));
   EXPECT_EQ(w2.get(), root->GetTopWindowContainingPoint(gfx::Point(10, 10)));
@@ -806,58 +802,6 @@ TEST_F(WindowTest, Visibility) {
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_TRUE(w3->IsVisible());
-}
-
-// When set_consume_events() is called with |true| for a Window, that Window
-// should make sure that none behind it in the z-order see events if it has
-// children. If it does not have children, event targeting works as usual.
-TEST_F(WindowTest, StopsEventPropagation) {
-  TestWindowDelegate d11;
-  TestWindowDelegate d111;
-  TestWindowDelegate d121;
-  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
-      gfx::Rect(0, 0, 500, 500), NULL));
-  scoped_ptr<Window> w11(CreateTestWindowWithDelegate(&d11, 11,
-      gfx::Rect(0, 0, 500, 500), w1.get()));
-  scoped_ptr<Window> w111(CreateTestWindowWithDelegate(&d111, 111,
-      gfx::Rect(50, 50, 450, 450), w11.get()));
-  scoped_ptr<Window> w12(CreateTestWindowWithDelegate(NULL, 12,
-      gfx::Rect(0, 0, 500, 500), w1.get()));
-  scoped_ptr<Window> w121(CreateTestWindowWithDelegate(&d121, 121,
-      gfx::Rect(150, 150, 50, 50), NULL));
-
-  w12->set_stops_event_propagation(true);
-  EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
-
-  EXPECT_TRUE(w111->CanFocus());
-  EXPECT_TRUE(w111->CanReceiveEvents());
-  w111->Focus();
-  EXPECT_EQ(w111.get(), w1->GetFocusManager()->GetFocusedWindow());
-
-  w12->AddChild(w121.get());
-
-  EXPECT_EQ(NULL, w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
-  EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(175, 175)));
-
-  // It should be possible to focus w121 since it is at or above the
-  // consumes_events_ window.
-  EXPECT_TRUE(w121->CanFocus());
-  EXPECT_TRUE(w121->CanReceiveEvents());
-  w121->Focus();
-  EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
-
-  // An attempt to focus 111 should be ignored and w121 should retain focus,
-  // since a consumes_events_ window with a child is in the z-index above w111.
-  EXPECT_FALSE(w111->CanReceiveEvents());
-  w111->Focus();
-  EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
-
-  // Hiding w121 should make 111 focusable.
-  w121->Hide();
-  EXPECT_TRUE(w111->CanFocus());
-  EXPECT_TRUE(w111->CanReceiveEvents());
-  w111->Focus();
-  EXPECT_EQ(w111.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
 TEST_F(WindowTest, IgnoreEventsTest) {

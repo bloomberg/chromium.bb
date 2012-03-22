@@ -5,6 +5,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -227,6 +228,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 
   // Create a window in the lock screen container and ensure that it receives
   // the mouse event instead of the modal window (crbug.com/110920).
+  Shell::GetInstance()->delegate()->LockScreen();
   EventTestWindow* lock_delegate = new EventTestWindow(false);
   scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindow(
       Shell::GetInstance()->GetContainer(
@@ -247,6 +249,8 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_EQ(1, transient_delegate->mouse_presses());
   EXPECT_EQ(1, lock_delegate->mouse_presses());
   EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
+
+  Shell::GetInstance()->delegate()->UnlockScreen();
 }
 
 }  // namespace test
