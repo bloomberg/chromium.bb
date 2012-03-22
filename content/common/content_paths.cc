@@ -37,6 +37,24 @@ bool PathProvider(int key, FilePath* result) {
       return PathService::Get(base::DIR_MODULE, result);
 #endif
     }
+    case DIR_LAYOUT_TESTS: {
+      FilePath cur;
+      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("third_party"));
+      cur = cur.Append(FILE_PATH_LITERAL("WebKit"));
+      cur = cur.Append(FILE_PATH_LITERAL("LayoutTests"));
+      if (file_util::DirectoryExists(cur)) {
+        *result = cur;
+        return true;
+      }
+      if (!PathService::Get(DIR_TEST_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("layout_tests"));
+      cur = cur.Append(FILE_PATH_LITERAL("LayoutTests"));
+      *result = cur;
+      return true;
+    }
     default:
       return false;
   }

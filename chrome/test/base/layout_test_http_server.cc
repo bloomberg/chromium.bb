@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/chrome_paths.h"
+#include "content/public/common/content_paths.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -65,7 +65,7 @@ bool LayoutTestHttpServer::Start() {
   cmd_line.AppendArg("--port=" + base::IntToString(port_));
 
   FilePath layout_tests_dir;
-  if (!PathService::Get(chrome::DIR_LAYOUT_TESTS, &layout_tests_dir))
+  if (!PathService::Get(content::DIR_LAYOUT_TESTS, &layout_tests_dir))
     return false;
   cmd_line.AppendArgNative(FILE_PATH_LITERAL("--layout_tests_dir=") +
                            layout_tests_dir.value());

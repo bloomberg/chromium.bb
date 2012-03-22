@@ -21,6 +21,7 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -206,7 +207,7 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   FilePath websocket_root_dir;
   ASSERT_TRUE(
-      PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
+      PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_root_dir));
 
   ui_test_utils::TestWebSocketServer server;
   int port = server.UseRandomPort();

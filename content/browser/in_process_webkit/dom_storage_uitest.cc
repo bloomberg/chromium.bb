@@ -4,10 +4,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_layout_test.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 #include "webkit/dom_storage/dom_storage_types.h"
@@ -78,9 +79,11 @@ class DOMStorageTest : public UILayoutTest {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
 
-    const FilePath dir(FILE_PATH_LITERAL("layout_tests"));
-    const FilePath file(FILE_PATH_LITERAL("clear_dom_storage.html"));
-    GURL url = ui_test_utils::GetTestUrl(dir, file);
+    FilePath dir;
+    PathService::Get(content::DIR_TEST_DATA, &dir);
+    GURL url = net::FilePathToFileURL(
+        dir.AppendASCII("layout_tests").AppendASCII("clear_dom_storage.html"));
+
     ASSERT_TRUE(tab->SetCookie(url, ""));
     ASSERT_TRUE(tab->NavigateToURL(url));
 

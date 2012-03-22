@@ -12,7 +12,7 @@
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
+#include "content/public/common/content_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
@@ -50,10 +50,11 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
                                            const FilePath& test_case_dir,
                                            int port) {
   FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &src_dir));
+  ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &src_dir));
   layout_test_dir_ = src_dir.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
-  ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
+  ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_))
+      << " " << layout_test_dir_.value();
 
   // Gets the file path to rebased expected result directory for the current
   // platform.
@@ -123,7 +124,7 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 
   // Reads the layout test controller simulation script.
   FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  PathService::Get(content::DIR_TEST_DATA, &path);
   path = path.AppendASCII("layout_tests");
   path = path.AppendASCII("layout_test_controller.html");
   layout_test_controller_.clear();
@@ -133,11 +134,11 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
                                             const FilePath& resource_name) {
   FilePath source;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &source));
+  ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &source));
   source = source.Append(parent_dir);
   source = source.Append(resource_name);
 
-  ASSERT_TRUE(file_util::PathExists(source));
+  ASSERT_TRUE(file_util::PathExists(source)) << " " << source.value();
 
   FilePath dest_parent_dir = temp_test_dir_.
       AppendASCII("LayoutTests").Append(parent_dir);
