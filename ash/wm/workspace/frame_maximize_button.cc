@@ -10,9 +10,11 @@
 #include "ash/launcher/launcher.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
@@ -98,6 +100,7 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
       snap_type_(SNAP_NONE) {
   // TODO(sky): nuke this. It's temporary while we don't have good images.
   SetImageAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_FRAME_MAXIMIZE_BUTTON_TOOLTIP));
 }
 
 FrameMaximizeButton::~FrameMaximizeButton() {
