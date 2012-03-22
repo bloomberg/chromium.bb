@@ -332,6 +332,7 @@
         'launcher/launcher_unittest.cc',
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',
+        'monitor/multi_monitor_manager_unittest.cc',
         'shell_unittest.cc',
         'test/ash_unittests.cc',
         'test/ash_test_base.cc',

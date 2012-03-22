@@ -66,4 +66,14 @@ void MonitorManager::NotifyBoundsChanged(const Monitor* monitor) {
                     OnMonitorBoundsChanged(monitor));
 }
 
+void MonitorManager::NotifyMonitorAdded(Monitor* monitor) {
+  FOR_EACH_OBSERVER(MonitorObserver, observers_,
+                    OnMonitorAdded(monitor));
+}
+
+void MonitorManager::NotifyMonitorRemoved(const Monitor* monitor) {
+  FOR_EACH_OBSERVER(MonitorObserver, observers_,
+                    OnMonitorRemoved(monitor));
+}
+
 }  // namespace aura
