@@ -26,11 +26,11 @@ const AcceleratorData kAcceleratorData[] = {
 
   // Accelerators that should be processed after a key is sent to an IME.
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, false, false, true,
-    CYCLE_FORWARD },
+    CYCLE_FORWARD_MRU },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, true, false, true,
-    CYCLE_BACKWARD },
+    CYCLE_BACKWARD_MRU },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, false, false,
-    CYCLE_FORWARD },
+    CYCLE_FORWARD_LINEAR },
 #if defined(OS_CHROMEOS)
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_DOWN, false, false, false,
     BRIGHTNESS_DOWN },
@@ -40,7 +40,7 @@ const AcceleratorData kAcceleratorData[] = {
 #endif
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_Q, true, true, false, EXIT },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, false, false,
-    CYCLE_BACKWARD },
+    CYCLE_BACKWARD_LINEAR },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, true, false,
     TAKE_SCREENSHOT },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, true, false,
@@ -101,9 +101,9 @@ const AcceleratorData kAcceleratorData[] = {
     PRINT_WINDOW_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, false, false, true,
-    CYCLE_FORWARD },
+    CYCLE_FORWARD_MRU },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, true, false, true,
-    CYCLE_BACKWARD },
+    CYCLE_BACKWARD_MRU },
 #endif
 };
 
