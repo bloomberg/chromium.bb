@@ -4425,14 +4425,6 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
-          'sources!': [
-            'browser/ui/views/extensions/extension_view.cc',
-            'browser/ui/views/extensions/extension_view.h',
-          ],
-          'sources': [
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
-          ],
           'conditions': [
             ['OS=="linux"', {
               'link_settings': {
@@ -4685,8 +4677,6 @@
             '../ui/views/views.gyp:views',
           ],
           'sources': [
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',
             'browser/ui/webui/conflicts_ui.cc',
