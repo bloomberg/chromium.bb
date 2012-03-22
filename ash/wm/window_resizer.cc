@@ -221,12 +221,12 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
 }
 
 // static
-gfx::Rect WindowResizer::AdjustBoundsToGrid(const Details& details) {
-  const gfx::Rect& bounds(details.window->bounds());
-  if (details.grid_size <= 1)
+gfx::Rect WindowResizer::AdjustBoundsToGrid(const gfx::Rect& bounds,
+                                            int grid_size) {
+  if (grid_size <= 1)
     return bounds;
-  int x = AlignToGrid(bounds.x(), details.grid_size);
-  int y = AlignToGrid(bounds.y(), details.grid_size);
+  int x = AlignToGrid(bounds.x(), grid_size);
+  int y = AlignToGrid(bounds.y(), grid_size);
   return gfx::Rect(x, y, bounds.width(), bounds.height());
 }
 

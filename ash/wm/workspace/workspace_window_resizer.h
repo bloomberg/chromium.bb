@@ -76,7 +76,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Returns the final bounds to place the window at. This differs from
   // the current if there is a grid.
-  gfx::Rect GetFinalBounds() const;
+  gfx::Rect GetFinalBounds(const gfx::Rect& bounds) const;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(const gfx::Rect& bounds);
@@ -96,6 +96,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // work area.
   void AdjustBoundsForMainWindow(gfx::Rect* bounds) const;
 
+  // Snaps the window bounds to the work area edges if necessary.
+  void SnapToWorkAreaEdges(const gfx::Rect& work_area, gfx::Rect* bounds) const;
+
   // Returns true if the window touches the bottom edge of the work area.
   bool TouchesBottomOfScreen() const;
 
@@ -105,7 +108,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   int PrimaryAxisCoordinate(int x, int y) const;
 
   // Updates the bounds of the phantom window.
-  void UpdatePhantomWindow(const gfx::Point& location);
+  void UpdatePhantomWindow(const gfx::Point& location, const gfx::Rect& bounds);
 
   // Restacks the windows z-order position so that one of the windows is at the
   // top of the z-order, and the rest directly underneath it.

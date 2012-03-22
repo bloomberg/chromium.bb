@@ -43,7 +43,8 @@ void DefaultWindowResizer::Drag(const gfx::Point& location) {
 void DefaultWindowResizer::CompleteDrag() {
   if (details_.grid_size <= 1 || !did_move_or_resize_)
     return;
-  gfx::Rect new_bounds(AdjustBoundsToGrid(details_));
+  gfx::Rect new_bounds(
+      AdjustBoundsToGrid(details_.window->bounds(), details_.grid_size));
   if (new_bounds == details_.window->bounds())
     return;
 

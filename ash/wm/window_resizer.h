@@ -98,7 +98,8 @@ class ASH_EXPORT WindowResizer {
       const Details& details,
       const gfx::Point& location);
 
-  static gfx::Rect AdjustBoundsToGrid(const Details& details);
+  static gfx::Rect AdjustBoundsToGrid(const gfx::Rect& bounds,
+                                      int grid_size);
 
   static bool IsBottomEdge(int component);
 

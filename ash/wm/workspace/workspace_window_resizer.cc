@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
@@ -31,13 +32,19 @@ const int kSnapDurationMS = 100;
 // Delay before the phantom window is shown (in milliseconds).
 const int kPhantomDelayMS = 400;
 
+// Returns true if should snap to the edge.
+bool ShouldSnapToEdge(int distance_from_edge, int grid_size) {
+  return distance_from_edge <= grid_size / 2 &&
+      distance_from_edge > -grid_size * 2;
+}
+
 }  // namespace
 
 // static
 const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
 
 // static
-const int WorkspaceWindowResizer::kMinOnscreenHeight = 34;
+const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (root_filter_)
@@ -65,7 +72,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
       RestackWindows();
     did_move_or_resize_ = true;
   }
-  UpdatePhantomWindow(location);
+  UpdatePhantomWindow(location, bounds);
   if (!attached_windows_.empty())
     LayoutAttachedWindows(bounds);
   if (bounds != details_.window->bounds())
@@ -92,7 +99,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
   if (details_.grid_size <= 1)
     return;
 
-  gfx::Rect bounds(GetFinalBounds());
+  gfx::Rect bounds(GetFinalBounds(details_.window->bounds()));
   if (bounds == details_.window->bounds())
     return;
 
@@ -194,14 +201,15 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   }
 }
 
-gfx::Rect WorkspaceWindowResizer::GetFinalBounds() const {
+gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
+    const gfx::Rect& bounds) const {
   if (phantom_window_controller_.get() &&
       phantom_window_controller_->IsShowing() &&
       phantom_window_controller_->type() ==
       PhantomWindowController::TYPE_EDGE) {
     return phantom_window_controller_->bounds();
   }
-  return AdjustBoundsToGrid(details_);
+  return AdjustBoundsToGrid(bounds, details_.grid_size);
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(
@@ -272,11 +280,20 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds) const {
+  // Always keep kMinOnscreenHeight on the bottom.
   gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
-  if (bounds->y() + kMinOnscreenHeight > work_area.bottom())
-    bounds->set_y(work_area.bottom() - kMinOnscreenHeight);
+  int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
+                                 details_.grid_size);
+  if (bounds->y() > max_y)
+    bounds->set_y(max_y);
+
+  // Don't allow dragging above the top of the monitor.
   if (bounds->y() <= work_area.y())
     bounds->set_y(work_area.y());
+
+  if (details_.grid_size >= 0 && details_.window_component == HTCAPTION)
+    SnapToWorkAreaEdges(work_area, bounds);
+
   if (attached_windows_.empty())
     return;
 
@@ -288,6 +305,25 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     bounds->set_height(std::min(bounds->height(),
                                 work_area.bottom() - total_min_ - bounds->y()));
   }
+}
+
+void WorkspaceWindowResizer::SnapToWorkAreaEdges(
+    const gfx::Rect& work_area,
+    gfx::Rect* bounds) const {
+  int left_edge = AlignToGridRoundUp(work_area.x(), details_.grid_size);
+  int right_edge = AlignToGridRoundDown(work_area.right(), details_.grid_size);
+  int top_edge = AlignToGridRoundUp(work_area.y(), details_.grid_size);
+  int bottom_edge = AlignToGridRoundDown(work_area.bottom(),
+                                         details_.grid_size);
+  if (ShouldSnapToEdge(bounds->x() - left_edge, details_.grid_size))
+    bounds->set_x(left_edge);
+  else if (ShouldSnapToEdge(right_edge - bounds->right(), details_.grid_size))
+    bounds->set_x(right_edge - bounds->width());
+  if (ShouldSnapToEdge(bounds->y() - top_edge, details_.grid_size))
+    bounds->set_y(top_edge);
+  else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(),
+                            details_.grid_size))
+    bounds->set_y(bottom_edge - bounds->height());
 }
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
@@ -315,7 +351,8 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
   return 0;
 }
 
-void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location) {
+void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location,
+                                                 const gfx::Rect& bounds) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
@@ -350,12 +387,12 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location) {
         new PhantomWindowController(details_.window, phantom_type,
                                     kPhantomDelayMS));
   }
-  gfx::Rect bounds;
+  gfx::Rect phantom_bounds;
   if (snap_sizer_.get())
-    bounds = snap_sizer_->target_bounds();
+    phantom_bounds = snap_sizer_->target_bounds();
   else
-    bounds = GetFinalBounds();
-  phantom_window_controller_->Show(bounds);
+    phantom_bounds = GetFinalBounds(bounds);
+  phantom_window_controller_->Show(phantom_bounds);
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
