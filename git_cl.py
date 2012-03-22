@@ -48,6 +48,7 @@ import watchlists
 DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
+GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingNewGit'
 
 
 # Initialized in main()
@@ -308,6 +309,7 @@ class Changelist(object):
     self._rpc_server = None
     self.cc = None
     self.watchers = ()
+    self._remote = None
 
   def GetCCList(self):
     """Return the users cc'd on this CL.
@@ -386,14 +388,36 @@ or verify this branch is set up to track another (via the --track argument to
       self.upstream_branch = upstream_branch
     return self.upstream_branch
 
+  def GetRemote(self):
+    if not self._remote:
+      self._remote = self.FetchUpstreamTuple()[0]
+      if self._remote == '.':
+
+        remotes = RunGit(['remote'], error_ok=True).split()
+        if len(remotes) == 1:
+          self._remote, = remotes
+        elif 'origin' in remotes:
+          self._remote = 'origin'
+          logging.warning('Could not determine which remote this change is '
+                          'associated with, so defaulting to "%s".  This may '
+                          'not be what you want.  You may prevent this message '
+                          'by running "git svn info" as documented here:  %s',
+                          self._remote,
+                          GIT_INSTRUCTIONS_URL)
+        else:
+          logging.warn('Could not determine which remote this change is '
+                       'associated with.  You may prevent this message by '
+                       'running "git svn info" as documented here:  %s',
+                       GIT_INSTRUCTIONS_URL)
+    return self._remote
+
+
   def GetRemoteUrl(self):
     """Return the configured remote URL, e.g. 'git://example.org/foo.git/'.
 
     Returns None if there is no remote.
     """
-    remote = self.FetchUpstreamTuple()[0]
-    if remote == '.':
-      return None
+    remote = self.GetRemote()
     return RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
   def GetIssue(self):
