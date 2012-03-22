@@ -175,7 +175,6 @@ class HttpProxyClientSocketPoolSpdy21Test : public TestWithHttpParam {
   }
 
   void InitializeSpdySsl() {
-    spdy::SpdyFramer::set_enable_compression_default(false);
     ssl_data_->SetNextProto(SSLClientSocket::kProtoSPDY21);
   }
 
@@ -210,6 +209,7 @@ class HttpProxyClientSocketPoolSpdy21Test : public TestWithHttpParam {
   HttpServerPropertiesImpl http_server_properties_;
   const scoped_refptr<HttpNetworkSession> session_;
   ClientSocketPoolHistograms http_proxy_histograms_;
+  SpdyTestStateHelper spdy_state_;
 
  protected:
   scoped_ptr<SSLSocketDataProvider> ssl_data_;
