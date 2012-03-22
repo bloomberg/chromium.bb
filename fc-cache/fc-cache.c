@@ -131,17 +131,15 @@ create_tag_file (FcConfig *config, FcBool verbose)
     FcChar8		 *cache_dir = NULL;
     FcStrList		 *list;
     int 		 fd;
+    FILE                 *fp;
     FcAtomic	 	 *atomic;
     static const FcChar8 cache_tag_contents[] =
 	"Signature: 8a477f597d28d172789f06886806bc55\n"
 	"# This file is a cache directory tag created by fontconfig.\n"
 	"# For information about cache directory tags, see:\n"
 	"#       http://www.brynosaurus.com/cachedir/\n";
-    static size_t	 cache_tag_contents_size = 0;
+    static size_t	 cache_tag_contents_size = sizeof (cache_tag_contents) - 1;
     FcBool		 ret = FcTrue;
-
-    if (cache_tag_contents_size == 0)
-	cache_tag_contents_size = strlen((char *)cache_tag_contents);
 
     list = FcConfigGetCacheDirs(config);
     if (!list)
@@ -165,9 +163,12 @@ create_tag_file (FcConfig *config, FcBool verbose)
 	    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0644);
 	    if (fd == -1)
 		goto bail3;
+	    fp = fdopen(fd, "wb");
+	    if (fp == NULL)
+		goto bail3;
 
-	    write(fd, cache_tag_contents, cache_tag_contents_size);
-	    close(fd);
+	    fwrite(cache_tag_contents, cache_tag_contents_size, sizeof (FcChar8), fp);
+	    fclose(fp);
 
 	    if (!FcAtomicReplaceOrig(atomic))
 		goto bail3;
