@@ -49,9 +49,8 @@ bool EditSearchEngineController::IsURLValid(
           GetDefaultSearchProvider()))
     return false;
 
-  // If the url has a search term, replace it with a random string and make
-  // sure the resulting URL is valid. We don't check the validity of the url
-  // with the search term as that is not necessarily valid.
+  // Replace any search term with a placeholder string and make sure the
+  // resulting URL is valid.
   return GURL(template_ref.ReplaceSearchTerms(TemplateURL(), ASCIIToUTF16("x"),
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())).is_valid();
 }

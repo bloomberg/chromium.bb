@@ -83,11 +83,11 @@ void AlternateErrorPageTabObserver::Observe(int type,
 GURL AlternateErrorPageTabObserver::GetAlternateErrorPageURL() const {
   GURL url;
   // Disable alternate error pages when in Incognito mode.
-  if (GetProfile()->IsOffTheRecord())
+  Profile* profile = GetProfile();
+  if (profile->IsOffTheRecord())
     return url;
 
-  PrefService* prefs = GetProfile()->GetPrefs();
-  if (prefs->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
+  if (profile->GetPrefs()->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
     url = google_util::AppendGoogleLocaleParam(
         GURL(google_util::kLinkDoctorBaseURL));
     url = google_util::AppendGoogleTLDParam(url);

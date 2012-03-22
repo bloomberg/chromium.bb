@@ -29,8 +29,7 @@ bool IsFormSubmit(const NavigationEntry* entry) {
           content::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
-string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry,
-                                            bool is_autodetected_provider) {
+string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry) {
   // Don't autogenerate keywords for pages that are the result of form
   // submissions.
   if (IsFormSubmit(entry))
@@ -45,7 +44,7 @@ string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry,
       return string16();
   }
 
-  return TemplateURLService::GenerateKeyword(url, is_autodetected_provider);
+  return TemplateURLService::GenerateKeyword(url, true);
 }
 
 }  // namespace
@@ -86,27 +85,14 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   DCHECK(doc_url.is_valid());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (!web_contents()->IsActiveEntry(page_id))
-    return;
-  if (!profile->GetTemplateURLFetcher())
-    return;
-  if (profile->IsOffTheRecord())
+  if (!web_contents()->IsActiveEntry(page_id) ||
+      !profile->GetTemplateURLFetcher() || profile->IsOffTheRecord())
     return;
 
-  TemplateURLFetcher::ProviderType provider_type;
-  switch (msg_provider_type) {
-    case search_provider::AUTODETECTED_PROVIDER:
-      provider_type = TemplateURLFetcher::AUTODETECTED_PROVIDER;
-      break;
-
-    case search_provider::EXPLICIT_PROVIDER:
-      provider_type = TemplateURLFetcher::EXPLICIT_PROVIDER;
-      break;
-
-    default:
-      NOTREACHED();
-      return;
-  }
+  TemplateURLFetcher::ProviderType provider_type =
+      (msg_provider_type == search_provider::AUTODETECTED_PROVIDER) ?
+          TemplateURLFetcher::AUTODETECTED_PROVIDER :
+          TemplateURLFetcher::EXPLICIT_PROVIDER;
 
   // If the current page is a form submit, find the last page that was not a
   // form submit and use its url to generate the keyword from.
@@ -119,8 +105,14 @@ void SearchEngineTabHelper::OnPageHasOSDD(
   if (IsFormSubmit(entry))
     return;
 
-  string16 keyword = GenerateKeywordFromNavigationEntry(entry,
-      provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER);
+  // Autogenerate a keyword for the autodetected case; in the other cases we'll
+  // generate a keyword later after fetching the OSDD.
+  string16 keyword;
+  if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) {
+    keyword = GenerateKeywordFromNavigationEntry(entry);
+    if (keyword.empty())
+      return;
+  }
 
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
@@ -147,8 +139,9 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   //              happen in new tabs.
   if (last_index <= 0)
     return;
+
   string16 keyword(GenerateKeywordFromNavigationEntry(
-      controller.GetEntryAtIndex(last_index - 1), true));
+      controller.GetEntryAtIndex(last_index - 1)));
   if (keyword.empty())
     return;
 

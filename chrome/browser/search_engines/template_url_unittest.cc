@@ -55,14 +55,14 @@ void TemplateURLTest::CheckSuggestBaseURL(
 
 TEST_F(TemplateURLTest, Defaults) {
   TemplateURL url;
-  ASSERT_FALSE(url.show_in_default_list());
-  ASSERT_FALSE(url.safe_for_autoreplace());
-  ASSERT_EQ(0, url.prepopulate_id());
+  EXPECT_FALSE(url.show_in_default_list());
+  EXPECT_FALSE(url.safe_for_autoreplace());
+  EXPECT_EQ(0, url.prepopulate_id());
 }
 
 TEST_F(TemplateURLTest, TestValidWithComplete) {
   TemplateURLRef ref("{searchTerms}", 0, 0);
-  ASSERT_TRUE(ref.IsValid());
+  EXPECT_TRUE(ref.IsValid());
 }
 
 TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
@@ -266,8 +266,8 @@ TEST_F(TemplateURLTest, SetFavicon) {
   GURL favicon_url("http://favicon.url");
   TemplateURL url;
   url.SetFaviconURL(favicon_url);
-  ASSERT_EQ(1U, url.image_refs().size());
-  ASSERT_TRUE(favicon_url == url.GetFaviconURL());
+  EXPECT_EQ(1U, url.image_refs().size());
+  EXPECT_EQ(favicon_url, url.GetFaviconURL());
 
   GURL favicon_url2("http://favicon2.url");
   url.SetFaviconURL(favicon_url2);
@@ -528,7 +528,7 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
 }
 
 TEST_F(TemplateURLTest, ParseURLEmpty) {
-  TemplateURLRef url_ref("", 0, 0);
+  TemplateURLRef url_ref(std::string(), 0, 0);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ(std::string(),

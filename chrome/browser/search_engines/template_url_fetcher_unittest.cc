@@ -200,15 +200,13 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
     string16 keyword;
     TemplateURLFetcher::ProviderType provider_type;
   } test_cases[] = {
-      { "Duplicate keyword and osdd url with autodetected provider.",
-        osdd_file_name, keyword, TemplateURLFetcher::AUTODETECTED_PROVIDER },
-      { "Duplicate keyword and osdd url with explicit provider.",
-        osdd_file_name, keyword, TemplateURLFetcher::EXPLICIT_PROVIDER },
-      { "Duplicate osdd url with explicit provider.",
-        osdd_file_name, keyword + ASCIIToUTF16("1"),
-        TemplateURLFetcher::EXPLICIT_PROVIDER },
-      { "Duplicate keyword with explicit provider.",
-        osdd_file_name + "1", keyword, TemplateURLFetcher::EXPLICIT_PROVIDER }
+      { "Duplicate osdd url with autodetected provider.", osdd_file_name,
+        keyword + ASCIIToUTF16("1"),
+        TemplateURLFetcher::AUTODETECTED_PROVIDER },
+      { "Duplicate keyword with autodetected provider.", osdd_file_name + "1",
+        keyword, TemplateURLFetcher::AUTODETECTED_PROVIDER },
+      { "Duplicate osdd url with explicit provider.", osdd_file_name,
+        string16(), TemplateURLFetcher::EXPLICIT_PROVIDER },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {

@@ -189,7 +189,7 @@ void SearchProviderInstallDataTest::SetUp() {
   testing::Test::SetUp();
   util_.SetUp();
   util_.StartIOThread();
-  install_data_ = new SearchProviderInstallData(util_.GetWebDataService(),
+  install_data_ = new SearchProviderInstallData(util_.profile(),
       content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
       content::Source<SearchProviderInstallDataTest>(this));
 }

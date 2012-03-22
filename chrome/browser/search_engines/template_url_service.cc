@@ -243,11 +243,11 @@ bool TemplateURLService::CanReplaceKeyword(
                              // keywords. If we need to support empty kewords
                              // the code needs to change slightly.
   const TemplateURL* existing_url = GetTemplateURLForKeyword(keyword);
+  if (template_url_to_replace)
+    *template_url_to_replace = existing_url;
   if (existing_url) {
     // We already have a TemplateURL for this keyword. Only allow it to be
     // replaced if the TemplateURL can be replaced.
-    if (template_url_to_replace)
-      *template_url_to_replace = existing_url;
     return CanReplace(existing_url);
   }
 

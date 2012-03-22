@@ -204,7 +204,6 @@ TemplateURL* KeywordTable::GetDefaultSearchProviderBackup() {
   // ID has no meaning for the backup and should be kInvalidTemplateURLID in
   // case the TemplateURL will be added to keywords if missing.
   template_url->set_id(kInvalidTemplateURLID);
-
   return template_url;
 }
 

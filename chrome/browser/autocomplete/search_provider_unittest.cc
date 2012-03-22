@@ -200,8 +200,8 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
     return;
   ASSERT_GE(provider_->matches().size(), 1u);
   EXPECT_TRUE(FindMatchWithDestination(GURL(
-      default_t_url_->url()->ReplaceSearchTerms(*default_t_url_, text, 0,
-                                                string16())), wyt_match));
+    default_t_url_->url()->ReplaceSearchTerms(*default_t_url_, text,
+        TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())), wyt_match));
 }
 
 void SearchProviderTest::TearDown() {
@@ -216,7 +216,8 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
                                             int visit_count) {
   HistoryService* history =
       profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
-  GURL search(t_url->url()->ReplaceSearchTerms(*t_url, term, 0, string16()));
+  GURL search(t_url->url()->ReplaceSearchTerms(*t_url, term,
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   static base::Time last_added_time;
   last_added_time = std::max(base::Time::Now(),
       last_added_time + base::TimeDelta::FromMicroseconds(1));
@@ -262,8 +263,9 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   ASSERT_TRUE(fetcher);
 
   // And the URL matches what we expected.
-  GURL expected_url = GURL(default_t_url_->suggestions_url()->
-      ReplaceSearchTerms(*default_t_url_, term, 0, string16()));
+  GURL expected_url(default_t_url_->suggestions_url()->ReplaceSearchTerms(
+      *default_t_url_, term, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      string16()));
   ASSERT_TRUE(fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the suggest query is done.
@@ -282,9 +284,9 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   EXPECT_TRUE(term1_match.description.empty());
 
   AutocompleteMatch wyt_match;
-  EXPECT_TRUE(FindMatchWithDestination(GURL(
-      default_t_url_->url()->ReplaceSearchTerms(*default_t_url_, term, 0,
-                                                string16())), &wyt_match));
+  EXPECT_TRUE(FindMatchWithDestination(
+      GURL(default_t_url_->url()->ReplaceSearchTerms(*default_t_url_, term,
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())), &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
   // The match for term1 should be more relevant than the what you typed result.
@@ -322,8 +324,9 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   ASSERT_TRUE(keyword_fetcher);
 
   // And the URL matches what we expected.
-  GURL expected_url = GURL(keyword_t_url_->suggestions_url()->
-      ReplaceSearchTerms(*keyword_t_url_, term, 0, string16()));
+  GURL expected_url(keyword_t_url_->suggestions_url()->ReplaceSearchTerms(
+      *keyword_t_url_, term, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      string16()));
   ASSERT_TRUE(keyword_fetcher->GetOriginalURL() == expected_url);
 
   // Tell the SearchProvider the keyword suggest query is done.
@@ -391,8 +394,9 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   // There should be two matches, one for what you typed, the other for
   // 'foobar'.
   EXPECT_EQ(2u, provider_->matches().size());
-  GURL instant_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
-      *default_t_url_, ASCIIToUTF16("foobar"), 0, string16()));
+  GURL instant_url(default_t_url_->url()->ReplaceSearchTerms(*default_t_url_,
+      ASCIIToUTF16("foobar"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      string16()));
   AutocompleteMatch instant_match;
   EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
 
@@ -401,9 +405,10 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
 
   // Make sure the what you typed match has no description.
   AutocompleteMatch wyt_match;
-  EXPECT_TRUE(FindMatchWithDestination(GURL(
-      default_t_url_->url()->ReplaceSearchTerms(*default_t_url_,
-          ASCIIToUTF16("foo"), 0, string16())), &wyt_match));
+  EXPECT_TRUE(FindMatchWithDestination(
+      GURL(default_t_url_->url()->ReplaceSearchTerms(*default_t_url_,
+          ASCIIToUTF16("foo"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+          string16())), &wyt_match));
   EXPECT_TRUE(wyt_match.description.empty());
 
   // The instant search should be more relevant.
@@ -425,7 +430,8 @@ TEST_F(SearchProviderTest, RememberInstantQuery) {
   // 'foobar'.
   EXPECT_EQ(2u, provider_->matches().size());
   GURL instant_url(default_t_url_->url()->ReplaceSearchTerms(*default_t_url_,
-      ASCIIToUTF16("foobar"), 0, string16()));
+      ASCIIToUTF16("foobar"), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+      string16()));
   AutocompleteMatch instant_match;
   EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
 

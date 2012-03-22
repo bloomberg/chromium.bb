@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,9 +76,6 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
 
   // Set the google base url.
   void SetGoogleBaseURL(const std::string& base_url) const;
-
-  // Returns the WebDataService.
-  WebDataService* GetWebDataService();
 
   // Returns the TemplateURLService.
   TemplateURLService* model() const;

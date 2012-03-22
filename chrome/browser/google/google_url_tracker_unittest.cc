@@ -188,10 +188,10 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
 
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!registrar_.IsRegistered(observer_.get(),
-                               chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                               content::NotificationService::AllSources())) {
+      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+      content::NotificationService::AllBrowserContextsAndSources())) {
     registrar_.Add(observer_.get(), chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                   content::NotificationService::AllSources());
+        content::NotificationService::AllBrowserContextsAndSources());
   }
   google_url_tracker_->SetNeedToFetch();
 }
@@ -221,7 +221,7 @@ void GoogleURLTrackerTest::SearchCommitted(const GURL& search_url) {
   google_url_tracker_->SearchCommitted();
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
       content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::NotificationService::AllSources()))
+      content::NotificationService::AllBrowserContextsAndSources()))
     google_url_tracker_->search_url_ = search_url;
 }
 
@@ -258,8 +258,7 @@ void GoogleURLTrackerTest::InfoBarClosed() {
 }
 
 void GoogleURLTrackerTest::ExpectDefaultURLs() {
-  EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage),
-            google_url_tracker_->google_url_);
+  EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
   EXPECT_EQ(GURL(), fetched_google_url());
 }
 

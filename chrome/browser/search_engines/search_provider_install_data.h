@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   // may be observed on the UI thread to know when this class no longer needs to
   // be kept up to date. (Note that this class may be deleted before or after
   // that notification occurs. It doesn't matter.)
-  SearchProviderInstallData(WebDataService* web_service,
+  SearchProviderInstallData(Profile* profile,
                             int ui_death_notification,
                             const content::NotificationSource& ui_death_source);
   virtual ~SearchProviderInstallData();

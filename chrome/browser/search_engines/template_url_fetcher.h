@@ -38,6 +38,12 @@ class TemplateURLFetcher {
   // it is downloaded. If successful and the result can be parsed, a TemplateURL
   // is added to the TemplateURLService. Takes ownership of |callbacks|.
   //
+  // If |provider_type| is AUTODETECTED_PROVIDER, |keyword| must be non-empty,
+  // and if there's already a non-replaceable TemplateURL in the model for
+  // |keyword|, or we're already downloading an OSDD for this keyword, no
+  // download is started.  If |provider_type| is EXPLICIT_PROVIDER, |keyword| is
+  // ignored.
+  //
   // |web_contents| specifies which WebContents displays the page the OSDD is
   // downloaded for. |web_contents| must not be NULL, except during tests.
   void ScheduleDownload(const string16& keyword,

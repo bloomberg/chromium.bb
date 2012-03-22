@@ -336,7 +336,6 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
   TemplateURL* managed_turl = CreateTestTemplateURL(ASCIIToUTF16("key3"),
       "http://key3.com", std::string(), 100, true);
-  managed_turl->set_created_by_policy(true);
   model()->Add(managed_turl);
   SyncDataList all_sync_data =
       model()->GetAllSyncData(syncable::SEARCH_ENGINES);
@@ -359,7 +358,6 @@ TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key1"),
                                                      "http://new.com", "xyz"));
   string16 new_keyword = model()->UniquifyKeyword(*turl);
-
   EXPECT_EQ(ASCIIToUTF16("new.com"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("new.com"), "http://new.com",
@@ -370,7 +368,6 @@ TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   // used.
   turl.reset(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://new.com"));
   new_keyword = model()->UniquifyKeyword(*turl);
-
   EXPECT_EQ(ASCIIToUTF16("key1_"), new_keyword);
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1_"), "http://new.com"));

@@ -39,7 +39,7 @@ using content::WebContents;
 
 namespace {
 
-InfoBarDelegate* CreateInfobar(InfoBarTabHelper* infobar_helper,
+InfoBarDelegate* CreateInfoBar(InfoBarTabHelper* infobar_helper,
                                GoogleURLTracker* google_url_tracker,
                                const GURL& new_google_url) {
   InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(infobar_helper,
@@ -119,7 +119,7 @@ const char GoogleURLTracker::kSearchDomainCheckURL[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
 GoogleURLTracker::GoogleURLTracker(Mode mode)
-    : infobar_creator_(&CreateInfobar),
+    : infobar_creator_(&CreateInfoBar),
       google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
           g_browser_process->local_state()->GetString(
               prefs::kLastKnownGoogleURL)),
@@ -185,10 +185,9 @@ void GoogleURLTracker::GoogleURLSearchCommitted() {
 
 void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
   google_url_ = new_google_url;
-  g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
-                                              google_url_.spec());
-  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              google_url_.spec());
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
+  prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::NotificationService::AllSources(),
@@ -355,7 +354,7 @@ void GoogleURLTracker::OnNavigationPending(
   controller_ = content::Source<NavigationController>(source).ptr();
   search_url_ = pending_url;
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                    content::NotificationService::AllSources());
+      content::NotificationService::AllBrowserContextsAndSources());
   // Start listening for the commit notification. We also need to listen for the
   // tab close command since that means the load will never commit.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,

@@ -557,7 +557,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         GetInfoForCurrentText(&current_match, NULL);
 
         const AutocompleteMatch& match =
-            index == AutocompletePopupModel::kNoMatch ?
+            (index == AutocompletePopupModel::kNoMatch) ?
                 current_match : result().match_at(index);
 
         // Strip the keyword + leading space off the input.
@@ -570,10 +570,8 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       }
 
       content::RecordAction(UserMetricsAction("AcceptedKeyword"));
-      TemplateURLService* template_url_service =
-          TemplateURLServiceFactory::GetForProfile(profile_);
-      if (template_url_service)
-        template_url_service->IncrementUsageCount(template_url);
+      TemplateURLServiceFactory::GetForProfile(profile_)->IncrementUsageCount(
+          template_url);
     } else {
       DCHECK_EQ(content::PAGE_TRANSITION_GENERATED, match.transition);
       // NOTE: We purposefully don't increment the usage count of the default

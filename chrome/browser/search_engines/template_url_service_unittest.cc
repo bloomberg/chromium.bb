@@ -149,6 +149,7 @@ std::string TestSearchTermsData::GoogleBaseURLValue() const {
 
 
 // TemplateURLServiceTest -----------------------------------------------------
+
 class TemplateURLServiceTest : public testing::Test {
  public:
   TemplateURLServiceTest();
@@ -1162,7 +1163,8 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
   test_util_.VerifyLoad();
 
   test_util_.ClearModel();
-  WebDataService* web_service = test_util_.GetWebDataService();
+  WebDataService* web_service =
+      test_util_.profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   web_service->UnloadDatabase();
   web_service->set_failed_init(true);
 
@@ -1251,8 +1253,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   // The default should now be the first URL added
   const TemplateURL* actual_final_managed_default =
       model()->GetDefaultSearchProvider();
-  ExpectSimilar(actual_final_managed_default,
-      model()->GetTemplateURLs()[0]);
+  ExpectSimilar(model()->GetTemplateURLs()[0], actual_final_managed_default);
   EXPECT_EQ(actual_final_managed_default->show_in_default_list(), true);
 
   // Disable the default search provider through policy.

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -153,10 +154,10 @@ static bool IsSameOrigin(const GURL& requested_origin,
 }  // namespace
 
 SearchProviderInstallData::SearchProviderInstallData(
-    WebDataService* web_service,
+    Profile* profile,
     int ui_death_notification,
     const content::NotificationSource& ui_death_source)
-    : web_service_(web_service),
+    : web_service_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS)),
       load_handle_(0),
       google_base_url_(UIThreadSearchTermsData().GoogleBaseURLValue()) {
   // GoogleURLObserver is responsible for killing itself when

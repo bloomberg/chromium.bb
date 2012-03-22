@@ -248,9 +248,16 @@ void TemplateURLTableModel::Remove(int index) {
   template_url_service_->AddObserver(this);
 }
 
-void TemplateURLTableModel::Add(int index, TemplateURL* turl) {
+void TemplateURLTableModel::Add(int index,
+                                const string16& short_name,
+                                const string16& keyword,
+                                const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
   template_url_service_->RemoveObserver(this);
+  TemplateURL* turl = new TemplateURL();
+  turl->set_short_name(short_name);
+  turl->set_keyword(keyword);
+  turl->SetURL(url, 0, 0);
   template_url_service_->Add(turl);
   ModelEntry* entry = new ModelEntry(this, turl);
   template_url_service_->AddObserver(this);

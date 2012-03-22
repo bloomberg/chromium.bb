@@ -54,9 +54,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->google_url_tracker_.  No code other than the
   // GoogleURLTracker itself should actually use
-  // g_browser_process->google_url_tracker() (which shouldn't be hard, since
-  // there aren't useful public functions on this object for consumers to access
-  // anyway).
+  // g_browser_process->google_url_tracker().
   explicit GoogleURLTracker(Mode mode);
 
   virtual ~GoogleURLTracker();
@@ -91,7 +89,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   friend class GoogleURLTrackerInfoBarDelegate;
   friend class GoogleURLTrackerTest;
 
-  typedef InfoBarDelegate* (*InfobarCreator)(InfoBarTabHelper*,
+  typedef InfoBarDelegate* (*InfoBarCreator)(InfoBarTabHelper*,
                                              GoogleURLTracker*,
                                              const GURL&);
 
@@ -132,7 +130,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   void ShowGoogleURLInfoBarIfNecessary(content::WebContents* web_contents);
 
   content::NotificationRegistrar registrar_;
-  InfobarCreator infobar_creator_;
+  InfoBarCreator infobar_creator_;
   // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)
   // rather than URL (e.g. http://www.google.co.uk/), so that user could
   // configure to use https in search engine templates.

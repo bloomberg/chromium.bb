@@ -621,6 +621,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
     EXPECT_EQ(6245, s2.ColumnInt(14));
     EXPECT_FALSE(s2.ColumnBool(15));
     EXPECT_EQ(std::string(), s2.ColumnString(16));
+    EXPECT_EQ(0, s2.ColumnInt(17));
+    EXPECT_EQ(std::string(), s2.ColumnString(18));
   }
 }
 

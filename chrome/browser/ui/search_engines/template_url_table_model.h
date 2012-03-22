@@ -55,7 +55,10 @@ class TemplateURLTableModel : public ui::TableModel,
   void Remove(int index);
 
   // Adds a new entry at the specified index.
-  void Add(int index, TemplateURL* turl);
+  void Add(int index,
+           const string16& short_name,
+           const string16& keyword,
+           const std::string& url);
 
   // Update the entry at the specified index.
   void ModifyTemplateURL(int index,
