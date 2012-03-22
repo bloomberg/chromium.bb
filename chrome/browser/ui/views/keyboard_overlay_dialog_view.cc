@@ -15,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -93,6 +94,16 @@ void KeyboardOverlayDialogView::ShowDialog(
   delegate->set_view(html_view);
   html_view->InitDialog();
   browser::CreateFramelessViewsWindow(owning_window, html_view);
+  // Show the widget at the bottom of the work area.
+  gfx::Size size;
+  delegate->GetDialogSize(&size);
+  gfx::Rect rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(
+      html_view->native_view());
+  gfx::Rect bounds((rect.width() - size.width()) / 2,
+                   rect.height() - size.height(),
+                   size.width(),
+                   size.height());
+  html_view->GetWidget()->SetBounds(bounds);
   html_view->GetWidget()->Show();
 }
 

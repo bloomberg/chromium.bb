@@ -22,6 +22,9 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
     return view_;
   }
 
+  // Overridden from HtmlDialogUI::Delegate:
+  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
+
  private:
   virtual ~KeyboardOverlayDelegate();
 
@@ -31,7 +34,6 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
-  virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(content::WebContents* source,
