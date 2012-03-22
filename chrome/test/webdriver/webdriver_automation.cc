@@ -202,6 +202,9 @@ void Automation::Init(
     Error** error) {
   // Prepare Chrome's command line.
   CommandLine command(CommandLine::NO_PROGRAM);
+  if (CommandLine::ForCurrentProcess()->HasSwitch("no-sandbox")) {
+    command.AppendSwitch(switches::kNoSandbox);
+  }
   command.AppendSwitch(switches::kDisableHangMonitor);
   command.AppendSwitch(switches::kDisablePromptOnRepost);
   command.AppendSwitch(switches::kDomAutomationController);
