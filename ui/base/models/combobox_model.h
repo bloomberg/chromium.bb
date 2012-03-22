@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,16 +10,17 @@
 
 namespace ui {
 
-// The interface for models backing a combobox.
+// A data model for a combo box.
 class ComboboxModel {
  public:
-  virtual ~ComboboxModel() {}
-
-  // Return the number of items in the combo box.
+  // Returns the number of items in the combo box.
   virtual int GetItemCount() = 0;
 
-  // Return the string that should be used to represent a given item.
+  // Returns the string at the specified index.
   virtual string16 GetItemAt(int index) = 0;
+
+ protected:
+  virtual ~ComboboxModel() {}
 };
 
 }  // namespace ui

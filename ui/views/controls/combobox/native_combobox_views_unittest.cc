@@ -135,14 +135,14 @@ class NativeComboboxViewsTest : public ViewsTestBase {
   // We need widget to populate wrapper class.
   Widget* widget_;
 
-  // combobox_ will be allocated InitCombobox() and then owned by widget_.
+  // |combobox_| will be allocated InitCombobox() and then owned by |widget_|.
   TestCombobox* combobox_;
 
-  // combobox_view_ is the pointer to the pure Views interface of combobox_.
+  // |combobox_view_| is the pointer to the pure Views interface of |combobox_|.
   NativeComboboxViews* combobox_view_;
 
-  // Combobox does not take ownership of model_, which needs to be scoped.
-  scoped_ptr<ui::ComboboxModel> model_;
+  // Combobox does not take ownership of the model, hence it needs to be scoped.
+  scoped_ptr<TestComboboxModel> model_;
 
   // For testing input method related behaviors.
   MockInputMethod* input_method_;
