@@ -292,9 +292,15 @@ UserManagerImpl::UserManagerImpl()
       observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
-  // Use stub as the logged-in user for test paths without login.
-  if (!base::chromeos::IsRunningOnChromeOS())
+  // If we're not running on ChromeOS, and are not showing the login manager
+  // or attempting a command line login? Then login the stub user.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!base::chromeos::IsRunningOnChromeOS() &&
+      !command_line->HasSwitch(switches::kLoginManager) &&
+      !command_line->HasSwitch(switches::kLoginPassword)) {
     StubUserLoggedIn();
+  }
+
   registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
