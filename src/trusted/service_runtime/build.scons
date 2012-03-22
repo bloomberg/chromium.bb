@@ -355,7 +355,8 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
 env.EnsureRequiredBuildWarnings()
 
 # Bootstrap loader used on Linux.
-if env.Bit('linux') and not env.CrossToolsBuild():
+if (env.Bit('linux') and not env.CrossToolsBuild() and
+    not env.Bit('built_elsewhere')):
   bootstrap_env = env.Clone()
   bootstrap_env.Replace(CLANG_OPTS='')
   bootstrap_env.FilterOut(CCFLAGS=['-fstack-protector', '-fPIC', '-fPIE',

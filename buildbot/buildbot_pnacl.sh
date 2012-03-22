@@ -83,16 +83,19 @@ archive-for-hw-bots() {
   echo "@@@BUILD_STEP tar_generated_binaries@@@"
   # clean out a bunch of files that are not needed
   find scons-out/ \
-    \( -name '*.[so]' -o -name '*.bc' -o -name '*.pexe' -o -name '*.ll' \) \
+    \( -name '*.o' -o -name '*.bc' \) \
     -print0 | xargs -0 rm -f
 
-  tar cvfz arm-tcb.tgz scons-out/
+  # delete nexes from pexe mode directories to force translation
+  # TODO(dschuff) enable this once we can translate on the hw bots
+  #find scons-out/*pexe*/ -name '*.nexe' -print0 | xargs -0 rm -f
+  tar cvfz arm-scons.tgz scons-out/*arm*
 
   echo "@@@BUILD_STEP archive_binaries@@@"
   if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm-tcb.tgz
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${name} arm-scons.tgz
   else
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm-tcb.tgz
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${name} arm-scons.tgz
   fi
 }
 
@@ -103,14 +106,14 @@ unarchive-for-hw-bots() {
 
   echo "@@@BUILD_STEP fetch_binaries@@@"
   if [[ ${try} == "try" ]] ; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm-tcb.tgz
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${name} arm-scons.tgz
   else
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm-tcb.tgz
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${name} arm-scons.tgz
   fi
 
   echo "@@@BUILD_STEP untar_binaries@@@"
   rm -rf scons-out/
-  tar xvfz arm-tcb.tgz --no-same-owner
+  tar xvfz arm-scons.tgz --no-same-owner
 }
 
 # Build with gyp - this only exercises the trusted TC and hence this only
@@ -362,6 +365,11 @@ mode-buildbot-arm() {
   # Run all 3 test suites in a single scons invocation to minimize
   # processing time of *.scons files
   scons-tests "arm" "${mode} -k" "small_tests medium_tests large_tests"
+
+  # Run tests in pexe mode
+  scons-tests-no-translator "arm" "${mode} -k pnacl_generate_pexe=1" \
+    "toolchain_tests"
+
   # Full test suite of translator for ARM is too flaky on QEMU
   # http://code.google.com/p/nativeclient/issues/detail?id=2581
   # Running a subset here (and skipping in scons-test() itself).
@@ -390,6 +398,8 @@ mode-buildbot-arm-hw() {
   local flags="naclsdk_validate=0 built_elsewhere=1 $1"
   scons-tests-no-translator "arm" "${flags} -k" \
      "small_tests medium_tests large_tests"
+  scons-tests-no-translator "arm" "${flags} -k pnacl_generate_pexe=1" \
+    "toolchain_tests"
   browser-tests "arm" "${flags}"
 }
 

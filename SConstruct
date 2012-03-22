@@ -1977,14 +1977,11 @@ DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
 def GetTranslatedNexe(env, pexe):
   pexe_name = pexe.abspath
   nexe_name = pexe_name[:pexe_name.index('.pexe')] + '.nexe'
-
+  # Make sure the pexe doesn't get removed by the fake builders when
+  # built_elsewhere=1
+  env.Precious(pexe)
   node = env.Command(target=nexe_name, source=[pexe_name],
                      action=[Action('${TRANSLATECOM}', '${TRANSLATECOMSTR}')])
-  # Ignore nexe dependency on pexe and assume it's already there. This replaces
-  # ignoring the test dependency on the nexe, which is what built_elsewhere
-  # does when not in pnacl_generate_pexe mode
-  if env.Bit('built_elsewhere'):
-    env.Ignore(nexe_name, pexe_name)
   return node
 
 pre_base_env.AddMethod(GetTranslatedNexe)
@@ -2312,13 +2309,11 @@ def AutoDepsCommand(env, name, command, extra_deps=[], posix_path=False,
         command[index] = '${SOURCES[%d].abspath}' % len(deps)
       deps.append(arg)
 
-  # If we are testing build output captured from elsewhere,
-  # ignore build dependencies, (except pexe translation, which we always
-  # want to do in pnacl_generate_pexe mode)
-  if env.Bit('built_elsewhere') and not env.Bit('pnacl_generate_pexe'):
-    env.Ignore(name, deps)
-  else:
-    env.Depends(name, extra_deps)
+  # If built_elsewhere, build commands are replaced by no-ops, so make sure
+  # the targets don't get removed first
+  if env.Bit('built_elsewhere'):
+    env.Precious(deps)
+  env.Depends(name, extra_deps)
 
   if disabled:
     return env.DisabledCommand(name, deps)
@@ -2885,11 +2880,16 @@ def MakeLinuxEnv():
         )
   elif linux_env.Bit('build_arm'):
     if linux_env.Bit('built_elsewhere'):
-      # force an unusable environment here
-      linux_env.Replace(CC='NO-ARM-CC-INVOCATION-ALLOWED',
-                        CXX='NO-ARM-CXX-INVOCATION-ALLOWED',
-                        LD='NO-ARM-LD-INVOCATION-ALLOWD',
-                        )
+      def FakeInstall(dest, source, env):
+        print 'Not installing', dest
+      # Replace build commands with no-ops
+      linux_env.Replace(CC='true', CXX='true', LD='true',
+                        AR='true', RANLIB='true', INSTALL=FakeInstall)
+      # Allow emulation on x86 hosts for testing built_elsewhere flag
+      if not platform.machine().startswith('arm'):
+        jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+        linux_env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
+
     ###############################################################
     # EXPERIMENTAL
     # This is needed to switch to a different trusted cross

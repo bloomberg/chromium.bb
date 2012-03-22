@@ -325,6 +325,15 @@ def _SetEnvForPnacl(env, root):
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               )
 
+  if env.Bit('built_elsewhere'):
+    def FakeInstall(dest, source, env):
+      print 'Not installing', dest
+    env.Replace(CC='true', CXX='true', LINK='true', AR='true',
+                RANLIB='true', AS='true', LD='true',
+                STRIP='true', INSTALL=FakeInstall,
+                #TODO(dschuff) remove this when we can translate on arm hw
+                TRANSLATE='true')
+
 
 def _SetEnvForSdkManually(env):
   def GetEnvOrDummy(v):
@@ -359,6 +368,8 @@ def PNaClForceNative(env):
              LINK=cc_flags) # Already has -arch
   env['LD'] = '${NATIVELD}' + arch_flag
   env['SHLINK'] = '${LINK}'
+  if env.Bit('built_elsewhere'):
+    env.Replace(CC='true', CXX='true', ASPP='true', LINK='true', LD='true')
 
 # Get an environment for a different frontend when in
 # PNaCl mode.
@@ -393,6 +404,8 @@ def PNaClGetNNaClEnv(env):
                        CCFLAGS=env['CCFLAGS'],
                        CFLAGS=env['CFLAGS'],
                        CXXFLAGS=env['CXXFLAGS'])
+  if env.Bit('built_elsewhere'):
+    native_env.Replace(CC='true', CXX='true', LINK='true', LD='true')
   return native_env
 
 
