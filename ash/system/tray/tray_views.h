@@ -89,6 +89,11 @@ class FixedSizedScrollView : public views::ScrollView {
   DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
 };
 
+// Creates a container for the various detailed popups. Clicking on the view
+// triggers the callback in ViewClickListener.
+views::View* CreateDetailedHeaderEntry(int string_id,
+                                       ViewClickListener* listener);
+
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);
 

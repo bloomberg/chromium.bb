@@ -6,6 +6,9 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -122,6 +125,22 @@ void FixedSizedScrollView::OnMouseEntered(const views::MouseEvent& event) {
 
 void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Do not paint the focus border.
+}
+
+views::View* CreateDetailedHeaderEntry(int string_id,
+                                       ViewClickListener* listener) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  HoverHighlightView* container = new HoverHighlightView(listener);
+  container->SetLayoutManager(new
+      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, 5));
+  views::ImageView* back = new FixedWidthImageView;
+  back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
+  container->AddChildView(back);
+  views::Label* header = new views::Label(rb.GetLocalizedString(string_id));
+  header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  header->SetFont(header->font().DeriveFont(4));
+  container->AddChildView(header);
+  return container;
 }
 
 void SetupLabelForTray(views::Label* label) {

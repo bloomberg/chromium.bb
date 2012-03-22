@@ -52,8 +52,6 @@ const int kShadowHeight = 3;
 const int kLeftPadding = 4;
 const int kBottomLineHeight = 1;
 
-const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
-const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
 
 const SkColor kTrayBackgroundAlpha = 100;
@@ -167,17 +165,18 @@ class SystemTrayBubbleBackground : public views::Background {
       if (!v->border()) {
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
             gfx::Point(v->x() + v->width() + 1, v->y() - 1),
-            !last_view || last_view->border() ? kDarkColor : kLightColor);
+            !last_view || last_view->border() ? kBorderDarkColor :
+                                                kBorderLightColor);
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
             gfx::Point(v->x() - 1, v->y() + v->height() + 1),
-            kDarkColor);
+            kBorderDarkColor);
         canvas->DrawLine(gfx::Point(v->x() + v->width(), v->y() - 1),
             gfx::Point(v->x() + v->width(), v->y() + v->height() + 1),
-            kDarkColor);
+            kBorderDarkColor);
       } else if (last_view && !last_view->border()) {
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
             gfx::Point(v->x() + v->width() + 1, v->y() - 1),
-            kDarkColor);
+            kBorderDarkColor);
       }
 
       last_view = v;
@@ -204,7 +203,7 @@ class SystemTrayBubbleBorder : public views::Border {
     // Draw a line first.
     int y = owner_->height() + 1;
     canvas->FillRect(gfx::Rect(kLeftPadding, y, owner_->width(),
-                               kBottomLineHeight), kDarkColor);
+                               kBottomLineHeight), kBorderDarkColor);
 
     // Now, draw a shadow.
     canvas->FillRect(gfx::Rect(kLeftPadding + kShadowOffset, y,
@@ -230,7 +229,7 @@ class SystemTrayBubbleBorder : public views::Border {
 
     // Now the draw the outline.
     paint.setStyle(SkPaint::kStroke_Style);
-    paint.setColor(kDarkColor);
+    paint.setColor(kBorderDarkColor);
     canvas->sk_canvas()->drawPath(path, paint);
   }
 

@@ -306,6 +306,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowBluetoothSettings() OVERRIDE {
   }
 
+  virtual void ShowIMESettings() OVERRIDE {
+  }
+
   virtual void ShowHelp() OVERRIDE {
   }
 
@@ -348,11 +351,17 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
   }
 
-  virtual void GetAvailableIMEList(IMEInfoList* list) {
+  virtual void GetCurrentIME(IMEInfo* info) OVERRIDE {
   }
 
-  virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
-    return NetworkIconInfo();
+  virtual void GetAvailableIMEList(IMEInfoList* list) OVERRIDE {
+  }
+
+  virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
+  }
+
+  virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
+                                          bool large) OVERRIDE {
   }
 
   virtual void GetAvailableNetworks(

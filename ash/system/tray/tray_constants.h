@@ -20,6 +20,9 @@ extern const int kTrayPopupDetailsIconWidth;
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
 
+extern const SkColor kBorderDarkColor;
+extern const SkColor kBorderLightColor;
+
 extern const int kTrayPopupWidth;
 
 }  // namespace ash

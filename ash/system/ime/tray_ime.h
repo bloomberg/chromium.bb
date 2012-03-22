@@ -15,7 +15,15 @@ class Label;
 }
 
 namespace ash {
+
+struct IMEInfo;
+
 namespace internal {
+
+namespace tray {
+class IMEDefaultView;
+class IMEDetailedView;
+};
 
 class TrayIME : public SystemTrayItem,
                 public IMEObserver {
@@ -24,7 +32,7 @@ class TrayIME : public SystemTrayItem,
   virtual ~TrayIME();
 
  private:
-  void UpdateTrayLabel();
+  void UpdateTrayLabel(const IMEInfo& info, size_t count);
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
@@ -38,6 +46,8 @@ class TrayIME : public SystemTrayItem,
   virtual void OnIMERefresh() OVERRIDE;
 
   scoped_ptr<views::Label> tray_label_;
+  scoped_ptr<tray::IMEDefaultView> default_;
+  scoped_ptr<tray::IMEDetailedView> detailed_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };

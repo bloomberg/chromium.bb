@@ -18,6 +18,9 @@ const int kTrayPopupDetailsIconWidth = 27;
 const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xfb, 0xfc, 0xfb);
 
+const SkColor kBorderDarkColor = SkColorSetRGB(120, 120, 120);
+const SkColor kBorderLightColor = SkColorSetRGB(240, 240, 240);
+
 const int kTrayPopupWidth = 300;
 
 }  // namespace ash

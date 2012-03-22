@@ -98,20 +98,8 @@ class BluetoothDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    HoverHighlightView* container = new HoverHighlightView(this);
-    container->SetLayoutManager(new
-        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, 5));
-    views::ImageView* back = new FixedWidthImageView;
-    back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
-    container->AddChildView(back);
-    views::Label* header = new views::Label(rb.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_BLUETOOTH));
-    header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    header->SetFont(header->font().DeriveFont(4));
-    container->AddChildView(header);
-    AddChildView(container);
-    header_ = container;
+    header_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
+    AddChildView(header_);
   }
 
   void AppendDeviceList(const BluetoothDeviceList& list) {

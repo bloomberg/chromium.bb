@@ -69,6 +69,15 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   return info;
 }
 
+void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
+                    const input_method::InputMethodUtil& util,
+                    ash::IMEInfo* info) {
+  info->id = ime.id();
+  info->name = UTF8ToUTF16(util.GetInputMethodDisplayNameFromId(info->id));
+  info->short_name = util.GetInputMethodShortName(ime);
+}
+
+
 void BluetoothPowerFailure() {
   // TODO(sad): Show an error bubble?
 }
@@ -229,6 +238,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // TODO(sad): Make this work.
   }
 
+  virtual void ShowIMESettings() OVERRIDE {
+    GetAppropriateBrowser()->OpenLanguageOptionsDialog();
+  }
+
   virtual void ShowHelp() OVERRIDE {
     GetAppropriateBrowser()->ShowHelpTab();
   }
@@ -297,6 +310,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       device->Connect(NULL, base::Bind(&BluetoothDeviceConnectError));
   }
 
+  virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE {
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+    input_method::InputMethodDescriptor ime = manager->GetCurrentInputMethod();
+    ExtractIMEInfo(ime, *util, info);
+    info->selected = true;
+  }
+
   virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
@@ -307,19 +329,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     for (size_t i = 0; i < ime_descriptors->size(); i++) {
       input_method::InputMethodDescriptor& ime = ime_descriptors->at(i);
       ash::IMEInfo info;
-      info.id = ime.id();
-      info.name = UTF8ToUTF16(util->GetInputMethodDisplayNameFromId(info.id));
-      info.short_name = util->GetInputMethodShortName(ime);
+      ExtractIMEInfo(ime, *util, &info);
       info.selected = ime.id() == current;
       list->push_back(info);
     }
   }
 
-  virtual ash::NetworkIconInfo GetMostRelevantNetworkIcon(bool large) OVERRIDE {
-    ash::NetworkIconInfo info;
-    info.image = !large ? network_icon_->GetIconAndText(&info.description) :
-        network_icon_large_->GetIconAndText(&info.description);
-    return info;
+  virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
+    input_method::InputMethodManager::GetInstance()->ChangeInputMethod(ime_id);
+  }
+
+  virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
+                                          bool large) OVERRIDE {
+    info->image = !large ? network_icon_->GetIconAndText(&info->description) :
+        network_icon_large_->GetIconAndText(&info->description);
   }
 
   virtual void GetAvailableNetworks(

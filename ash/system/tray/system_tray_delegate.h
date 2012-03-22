@@ -92,6 +92,9 @@ class SystemTrayDelegate {
   // Shows the settings related to bluetooth.
   virtual void ShowBluetoothSettings() = 0;
 
+  // Shows settings related to input methods.
+  virtual void ShowIMESettings() = 0;
+
   // Shows help.
   virtual void ShowHelp() = 0;
 
@@ -128,13 +131,20 @@ class SystemTrayDelegate {
   // Toggles connection to a specific bluetooth device.
   virtual void ToggleBluetoothConnection(const std::string& address) = 0;
 
+  // Returns the currently selected IME.
+  virtual void GetCurrentIME(IMEInfo* info) = 0;
+
   // Returns a list of availble IMEs.
   virtual void GetAvailableIMEList(IMEInfoList* list) = 0;
+
+  // Switches to the selected input method.
+  virtual void SwitchIME(const std::string& ime_id) = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more
   // relevant over a connected network etc.)
-  virtual NetworkIconInfo GetMostRelevantNetworkIcon(bool large) = 0;
+  virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
+                                          bool large) = 0;
 
   // Returns information about the available networks.
   virtual void GetAvailableNetworks(std::vector<NetworkIconInfo>* list) = 0;
