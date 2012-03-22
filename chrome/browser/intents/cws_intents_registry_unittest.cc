@@ -14,19 +14,15 @@
 
 namespace {
 
-const char kCWSQueryInvalid[] =
-    "https://www-googleapis-staging.sandbox.google.com"
-    "/chromewebstore/v1.1b/items/intent"
-      "?intent=foo&mime_types=foo";
 const char kCWSResponseInvalid[] =
-    "{\"error\":{\"errors\":[{\"domain\":\"global\",\"reason\":\"invalid\","
-    "\"message\":\"Invalid mimetype:foo\"}],\"code\":400,"
-    "\"message\":\"Invalid mimetype:foo\"}}\"";
+    "{\"error\":{"
+      "\"errors\":[{"
+        "\"domain\":\"global\","
+        "\"reason\":\"invalid\","
+        "\"message\":\"Invalid mimetype:foo\"}],"
+      "\"code\":400,"
+      "\"message\":\"Invalid mimetype:foo\"}}\"";
 
-const char kCWSQueryValid[] =
-    "https://www-googleapis-staging.sandbox.google.com"
-    "/chromewebstore/v1.1b/items/intent"
-      "?intent=http%3A%2F%2Fwebintents.org%2Fedit&mime_types=*%2Fpng";
 const char kCWSResponseValid[] =
   "{\"kind\":\"chromewebstore#itemList\","
   " \"total_items\":1,"
@@ -96,6 +92,14 @@ class CWSIntentsRegistryTest : public testing::Test {
     extensions_ = extensions;
   }
 
+  void SetFakeResponse(const std::string& action, const std::string& mime,
+      const std::string& response) {
+    test_factory_.SetFakeResponse(
+        CWSIntentsRegistry::BuildQueryURL(
+            ASCIIToUTF16(action),ASCIIToUTF16(mime)).spec(),
+        response, true);
+  }
+
   CWSIntentsRegistry::IntentExtensionList extensions_;
   FakeURLFetcherFactory test_factory_;
 
@@ -108,7 +112,7 @@ class CWSIntentsRegistryTest : public testing::Test {
 TEST_F(CWSIntentsRegistryTest, ValidQuery) {
   const scoped_refptr<TestURLRequestContextGetter> context_getter(
       new TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
-  test_factory_.SetFakeResponse(kCWSQueryValid, kCWSResponseValid, true);
+  SetFakeResponse("http://webintents.org/edit", "*/png", kCWSResponseValid);
 
   CWSIntentsRegistry registry(context_getter);
   registry.GetIntentServices(ASCIIToUTF16("http://webintents.org/edit"),
@@ -132,7 +136,7 @@ TEST_F(CWSIntentsRegistryTest, ValidQuery) {
 TEST_F(CWSIntentsRegistryTest, InvalidQuery) {
   const scoped_refptr<TestURLRequestContextGetter> context_getter(
       new TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
-  test_factory_.SetFakeResponse(kCWSQueryInvalid, kCWSResponseInvalid, true);
+  SetFakeResponse("foo", "foo", kCWSResponseInvalid);
 
   CWSIntentsRegistry registry(context_getter);
   registry.GetIntentServices(ASCIIToUTF16("foo"),
@@ -142,4 +146,14 @@ TEST_F(CWSIntentsRegistryTest, InvalidQuery) {
 
   WaitForResults();
   EXPECT_EQ(0UL, extensions_.size());
+}
+
+TEST_F(CWSIntentsRegistryTest, BuildQueryURL) {
+  const std::string kExpectedURL = "https://www.googleapis.com"
+      "/chromewebstore/v1.1b/items/intent"
+      "?intent=action&mime_types=mime%2Ftype";
+  GURL url = CWSIntentsRegistry::BuildQueryURL(ASCIIToUTF16("action"),
+                                               ASCIIToUTF16("mime/type"));
+
+  EXPECT_EQ(kExpectedURL, url.spec().substr(0, kExpectedURL.size()));
 }

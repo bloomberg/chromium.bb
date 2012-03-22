@@ -20,10 +20,9 @@
 
 namespace {
 
-// URL for CWS intents API. TODO(groby): points to staging, fix for M18 release.
+// URL for CWS intents API.
 const char kCWSIntentServiceURL[] =
-  "https://www-googleapis-staging.sandbox.google.com"
-  "/chromewebstore/v1.1b/items/intent";
+  "https://www.googleapis.com/chromewebstore/v1.1b/items/intent";
 
 }  // namespace
 
