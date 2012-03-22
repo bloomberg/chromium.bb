@@ -1,46 +1,60 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-loopCount = 0;
-function endlessLoop()
+function finalTransactionCompleted()
 {
-  var request = objectStore.get(0);
-  request.onsuccess = endlessLoop;
-  request.onerror = unexpectedErrorCallback;
-
-  loopCount += 1;
-  if (loopCount == 7) {
-    // If we've already looped 7 times, it's pretty safe to assume
-    // we'll continue looping for some time...
-    debug("Looping infinitely within a transaction.");
-    done();
-  }
+  debug('The final transaction completed.');
+  done();
 }
 
-function newTransactionComplete()
+function finalTransactionAborted()
 {
-  debug('The transaction completed.');
+  fail('The final transaction should not abort.');
+}
+
+function employeeNotFound()
+{
+  debug('Employee not found.');
+  shouldBe("event.target.result", "undefined");
+}
+
+function newTransactionAborted()
+{
+  debug('The transaction was aborted.');
 
   var finalTransaction = db.transaction(['employees'],
                                         IDBTransaction.READ_ONLY);
-  finalTransaction.oncomplete = unexpectedCompleteCallback;
-  finalTransaction.onabort = unexpectedErrorCallback;
+  finalTransaction.oncomplete = finalTransactionCompleted;
+  finalTransaction.onabort = finalTransactionAborted;
 
-  objectStore = finalTransaction.objectStore('employees');
-  endlessLoop();
-  endlessLoop(); // Make sure at least one is in flight at any time.
+  var request = finalTransaction.objectStore('employees').get(0);
+  request.onsuccess = employeeNotFound;
+  request.onerror = unexpectedErrorCallback;
+}
+
+function newTransactionCompleted()
+{
+  fail('The new transaction should not complete.');
+}
+
+function employeeAdded()
+{
+  debug('Added an employee inside the transaction.');
+  newTransaction.abort();
 }
 
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  var newTransaction = db.transaction(['employees'], IDBTransaction.READ_WRITE);
-  newTransaction.oncomplete = newTransactionComplete;
-  newTransaction.onabort = unexpectedAbortCallback;
+  window.newTransaction = db.transaction(['employees'],
+                                         IDBTransaction.READ_WRITE);
+  newTransaction.oncomplete = newTransactionCompleted;
+  newTransaction.onabort = newTransactionAborted;
 
   var request = newTransaction.objectStore('employees').put(
       {id: 0, name: 'John Doe', desk: 'LON-BEL-123'});
+  request.onsuccess = employeeAdded;
   request.onerror = unexpectedErrorCallback;
 }
 
@@ -53,7 +67,7 @@ function onSetVersion()
 
   debug('Creating object store.');
   deleteAllObjectStores(db);
-  var objectStore = db.createObjectStore('employees', {keyPath: 'id'});
+  db.createObjectStore('employees', {keyPath: 'id'});
 }
 
 function setVersion()
