@@ -17,10 +17,13 @@
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
@@ -333,6 +336,13 @@ class SystemTrayBubble : public views::BubbleDelegateView {
       if (view)
         AddChildView(new TrayPopupItemContainer(view));
     }
+  }
+
+  // Overridden from views::View.
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+    state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+    state->name = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
   }
 
   virtual bool CanActivate() const OVERRIDE {

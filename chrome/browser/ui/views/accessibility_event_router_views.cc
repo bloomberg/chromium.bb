@@ -135,6 +135,7 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   view->GetAccessibleState(&state);
   switch (state.role) {
   case ui::AccessibilityTypes::ROLE_ALERT:
+  case ui::AccessibilityTypes::ROLE_WINDOW:
     SendWindowNotification(view, type, profile);
     break;
   case ui::AccessibilityTypes::ROLE_BUTTONMENU:

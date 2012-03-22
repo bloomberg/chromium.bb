@@ -175,6 +175,9 @@ This file contains the strings for ash.
       </message>
 
       <!-- Status tray items -->
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
+        Status tray
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP" desc="The label used for the help-and-settings item in the status tray.">
         Settings and Help
       </message>
