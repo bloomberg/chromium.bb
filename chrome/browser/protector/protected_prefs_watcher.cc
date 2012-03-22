@@ -232,8 +232,9 @@ void ProtectedPrefsWatcher::ValidateBackup() {
         kProtectorErrorCount);
   } else {
     LOG(WARNING) << "Invalid backup signature";
-    // Further changes to protected prefs will overwrite the signature.
     is_backup_valid_ = false;
+    // The whole backup has been compromised, overwrite it.
+    InitBackup();
     UMA_HISTOGRAM_ENUMERATION(
         kProtectorHistogramPrefs,
         kProtectorErrorBackupInvalid,

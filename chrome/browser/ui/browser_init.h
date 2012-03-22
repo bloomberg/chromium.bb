@@ -238,6 +238,10 @@ class BrowserInit {
     // Returns true if so.
     bool CheckIfAutoLaunched(Profile* profile);
 
+    // Checks whether the Preferences backup is invalid and notifies user in
+    // that case.
+    void CheckPreferencesBackup(Profile* profile);
+
     const FilePath cur_dir_;
     const CommandLine& command_line_;
     Profile* profile_;

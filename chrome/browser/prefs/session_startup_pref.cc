@@ -62,6 +62,15 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
 
 // static
 void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
+                             TypeToPrefValue(GetDefaultStartupType()),
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
+                          PrefService::SYNCABLE_PREF);
+}
+
+// static
+SessionStartupPref::Type SessionStartupPref::GetDefaultStartupType() {
 #if defined(OS_CHROMEOS)
   SessionStartupPref::Type type = SessionStartupPref::LAST;
 #else
@@ -74,11 +83,7 @@ void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
     type = SessionStartupPref::LAST;
 #endif
 
-  prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
-                             TypeToPrefValue(type),
-                             PrefService::SYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
-                          PrefService::SYNCABLE_PREF);
+  return type;
 }
 
 // static

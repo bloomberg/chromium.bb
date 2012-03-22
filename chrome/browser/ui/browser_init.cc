@@ -55,6 +55,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/browser/protector/protected_prefs_watcher.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -942,6 +943,9 @@ bool BrowserInit::LaunchWithProfile::Launch(
       KeystoneInfoBar::PromotionInfoBar(profile);
 #endif
     }
+
+    // Notify user if the Preferences backup is invalid.
+    CheckPreferencesBackup(profile);
   }
 
 #if defined(OS_WIN)
@@ -1581,6 +1585,15 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
   }
 #endif
   return false;
+}
+
+void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
+  protector::ProtectorService* protector_service =
+      protector::ProtectorServiceFactory::GetForProfile(profile);
+  protector::ProtectedPrefsWatcher* prefs_watcher =
+      protector_service->GetPrefsWatcher();
+  if (protector::IsEnabled() && !prefs_watcher->is_backup_valid())
+    protector_service->ShowChange(protector::CreatePrefsBackupInvalidChange());
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(

@@ -145,6 +145,12 @@ class BaseProtectorTest(pyauto.PyUITest):
     with open(os.path.join(self._profile_path, 'Preferences'), 'w') as f:
       json.dump(prefs, f)
 
+  def _InvalidatePreferencesBackup(self):
+    """Makes the Preferences backup invalid by clearing the signature."""
+    prefs = self._LoadPreferences()
+    prefs['backup']['_signature'] = 'INVALID'
+    self._WritePreferences(prefs)
+
   def _ChangeSessionStartupPrefs(self, startup_type, startup_urls=None,
                                  homepage=None):
     """Changes the session startup type and the list of URLs to load on startup.
@@ -277,6 +283,41 @@ class ProtectorSearchEngineTest(BaseProtectorTest):
 
 # TODO(ivankr): more hijacking cases (remove the current default search engine,
 # add new search engines to the list, invalidate backup, etc).
+
+
+class ProtectorPreferencesTest(BaseProtectorTest):
+  """Generic test suite for Preferences protection."""
+
+  def testPreferencesBackupInvalid(self):
+    """Test for detecting invalid Preferences backup."""
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=self._InvalidatePreferencesBackup)
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    self.DiscardProtectorChange()
+    # Verify that a new tab with settings is opened.
+    info = self.GetBrowserInfo()
+    self.assertEqual(1, len(info['windows']))  # one window
+    self.assertEqual(2, len(info['windows'][0]['tabs']))  # 2 tabs
+    self.assertEqual('chrome://settings/', info['windows'][0]['tabs'][1]['url'])
+    # No longer showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+    self.RestartBrowser(clear_profile=False)
+    # Not showing the change after a restart
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+
+  def testPreferencesBackupInvalidChangeDismissedOnEdit(self):
+    """Test that editing protected prefs dismisses the invalid backup bubble."""
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=self._InvalidatePreferencesBackup)
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    # Change some protected setting manually.
+    self.SetPrefs(pyauto.kHomePage, 'http://example.com/')
+    # No longer showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
 
 
 class ProtectorSessionStartupTest(BaseProtectorTest):

@@ -93,6 +93,10 @@ BaseSettingChange* CreateSessionStartupChange(
     const SessionStartupPref& actual,
     const SessionStartupPref& backup);
 
+// Allocates and initializes BaseSettingChange implementation for an unknown
+// preferences change with invalid backup.
+BaseSettingChange* CreatePrefsBackupInvalidChange();
+
 }  // namespace protector
 
 #endif  // CHROME_BROWSER_PROTECTOR_BASE_SETTING_CHANGE_H_

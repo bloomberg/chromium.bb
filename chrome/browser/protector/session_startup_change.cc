@@ -20,7 +20,7 @@
 
 namespace protector {
 
-// STARTUP_SETTING and session startup settings change tracked by Protector.
+// Session startup settings change tracked by Protector.
 class SessionStartupChange : public BasePrefsChange {
  public:
   SessionStartupChange(const SessionStartupPref& actual,

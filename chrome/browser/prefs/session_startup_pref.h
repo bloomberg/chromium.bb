@@ -36,6 +36,9 @@ struct SessionStartupPref {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Returns the default value for |type|.
+  static Type GetDefaultStartupType();
+
   // What should happen on startup for the specified profile.
   static void SetStartupPref(Profile* profile, const SessionStartupPref& pref);
   static void SetStartupPref(PrefService* prefs,

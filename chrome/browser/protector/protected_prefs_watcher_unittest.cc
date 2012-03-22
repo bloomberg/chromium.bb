@@ -53,7 +53,6 @@ class ProtectedPrefsWatcherTest : public testing::Test {
 
 TEST_F(ProtectedPrefsWatcherTest, ValidOnCleanProfile) {
   EXPECT_TRUE(HasBackup());
-  EXPECT_TRUE(IsSignatureValid());
   EXPECT_TRUE(prefs_watcher_->is_backup_valid());
 }
 
@@ -67,7 +66,6 @@ TEST_F(ProtectedPrefsWatcherTest, ValidAfterPrefChange) {
   prefs_->SetString(prefs::kHomePage, kNewHomePage);
 
   EXPECT_TRUE(HasBackup());
-  EXPECT_TRUE(IsSignatureValid());
   EXPECT_TRUE(prefs_watcher_->is_backup_valid());
   EXPECT_EQ(prefs_->GetString(prefs::kHomePage), kNewHomePage);
   // Backup is updated accordingly.
@@ -80,7 +78,6 @@ TEST_F(ProtectedPrefsWatcherTest, InvalidSignature) {
   prefs_->SetString("backup.homepage", kNewHomePage);
   RevalidateBackup();
   EXPECT_TRUE(HasBackup());
-  EXPECT_FALSE(IsSignatureValid());
   EXPECT_FALSE(prefs_watcher_->is_backup_valid());
   // No backup values available.
   EXPECT_FALSE(prefs_watcher_->GetBackupForPref(prefs::kHomePage));
@@ -115,12 +112,10 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
       sample_id, !extension_prefs->IsAppNotificationDisabled(sample_id));
 
   // Backup is still valid.
-  EXPECT_TRUE(IsSignatureValid());
   EXPECT_TRUE(prefs_watcher_->is_backup_valid());
 
-  // Make backup invalid by changing one of its members directly.
-  prefs_->SetString("backup.homepage", kNewHomePage);
-  RevalidateBackup();
+  // Make signature invalid by changing it directly.
+  prefs_->SetString("backup._signature", "INVALID");
   EXPECT_FALSE(IsSignatureValid());
 
   // Flip another pref value of that extension.

@@ -1809,6 +1809,7 @@
         'browser/protector/internal/keys_internal.cc',
         'browser/protector/keys.cc',
         'browser/protector/keys.h',
+        'browser/protector/prefs_backup_invalid_change.cc',
         'browser/protector/protected_prefs_watcher.cc',
         'browser/protector/protected_prefs_watcher.h',
         'browser/protector/protector_service.cc',
