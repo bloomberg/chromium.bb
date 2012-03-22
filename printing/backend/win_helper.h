@@ -11,12 +11,17 @@
 #include <prntvpt.h>
 #include <xpsprint.h>
 
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/win/scoped_handle.h"
 #include "printing/printing_export.h"
 
 // These are helper functions for dealing with Windows Printing.
 namespace printing {
+
+struct PRINTING_EXPORT PrinterBasicInfo;
 
 class PrinterHandleTraits {
  public:
@@ -119,6 +124,11 @@ class PRINTING_EXPORT XPSPrintModule {
   XPSPrintModule() { }
   static bool InitImpl();
 };
+
+PRINTING_EXPORT bool InitBasicPrinterInfo(HANDLE printer,
+                                          PrinterBasicInfo* printer_info);
+
+PRINTING_EXPORT std::string GetDriverInfo(HANDLE printer);
 
 }  // namespace printing
 

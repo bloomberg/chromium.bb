@@ -176,6 +176,12 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
     if (state != NULL)
       base::StringToInt(state, &printer_info.printer_status);
 
+    const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
+                                         printer.num_options,
+                                         printer.options);
+    if (drv_info)
+      printer_info.options[kDriverInfoTagName] = *drv_info;
+
     // Store printer options.
     for (int opt_index = 0; opt_index < printer.num_options; opt_index++) {
       printer_info.options[printer.options[opt_index].name] =

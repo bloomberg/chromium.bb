@@ -4,12 +4,9 @@
 
 #include "printing/backend/print_backend.h"
 
-#include <algorithm>
 #include <objidl.h>
 #include <winspool.h>
 
-#include "base/file_path.h"
-#include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -59,12 +56,13 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   DWORD bytes_needed = 0;
   DWORD count_returned = 0;
-  BOOL ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
-                          NULL, 0, &bytes_needed, &count_returned);
+  const DWORD kLevel = 4;
+  BOOL ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL,
+                          kLevel, NULL, 0, &bytes_needed, &count_returned);
   if (!bytes_needed)
     return false;
   scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
-  ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
+  ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, kLevel,
                      printer_info_buffer.get(), bytes_needed, &bytes_needed,
                      &count_returned);
   DCHECK(ret);
@@ -72,22 +70,16 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
     return false;
 
   std::string default_printer = GetDefaultPrinterName();
-  PRINTER_INFO_2* printer_info =
-      reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
+  PRINTER_INFO_4* printer_info =
+      reinterpret_cast<PRINTER_INFO_4*>(printer_info_buffer.get());
   for (DWORD index = 0; index < count_returned; index++) {
+    ScopedPrinterHandle printer;
+    OpenPrinter(printer_info[index].pPrinterName, printer.Receive(), NULL);
     PrinterBasicInfo info;
-    info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
-    info.is_default = (info.printer_name == default_printer);
-    if (printer_info[index].pComment)
-      info.printer_description = WideToUTF8(printer_info[index].pComment);
-    info.printer_status = printer_info[index].Status;
-    if (printer_info[index].pLocation)
-      info.options[kLocationTagName] =
-          WideToUTF8(printer_info[index].pLocation);
-    if (printer_info[index].pDriverName)
-      info.options[kDriverNameTagName] =
-          WideToUTF8(printer_info[index].pDriverName);
-    printer_list->push_back(info);
+    if (InitBasicPrinterInfo(printer, &info)) {
+      info.is_default = (info.printer_name == default_printer);
+      printer_list->push_back(info);
+    }
   }
   return true;
 }
@@ -179,48 +171,12 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 // Gets the information about driver for a specific printer.
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
-  std::string driver_info;
-  ScopedPrinterHandle printer_handle;
+  ScopedPrinterHandle printer;
   if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
-                     printer_handle.Receive(), NULL)) {
-    return driver_info;
+                     printer.Receive(), NULL)) {
+    return std::string();
   }
-  DCHECK(printer_handle.IsValid());
-  DWORD bytes_needed = 0;
-  ::GetPrinterDriver(printer_handle, NULL, 6, NULL, 0, &bytes_needed);
-  scoped_array<BYTE> driver_info_buffer(new BYTE[bytes_needed]);
-  if (!bytes_needed || !driver_info_buffer.get())
-    return driver_info;
-  if (!::GetPrinterDriver(printer_handle, NULL, 6, driver_info_buffer.get(),
-                          bytes_needed, &bytes_needed)) {
-    return driver_info;
-  }
-  if (!bytes_needed)
-    return driver_info;
-  const DRIVER_INFO_6* driver_info_6 =
-      reinterpret_cast<DRIVER_INFO_6*>(driver_info_buffer.get());
-
-  std::string info[4];
-
-  if (driver_info_6->pName)
-    info[0] = WideToUTF8(driver_info_6->pName);
-
-  if (driver_info_6->pDriverPath) {
-    scoped_ptr<FileVersionInfo> version_info(
-        FileVersionInfo::CreateFileVersionInfo(
-            FilePath(driver_info_6->pDriverPath)));
-    info[1] = WideToUTF8(version_info->file_version());
-    info[2] = WideToUTF8(version_info->product_name());
-    info[3] = WideToUTF8(version_info->product_version());
-  }
-
-  for (size_t i = 0; i < arraysize(info); ++i) {
-    std::replace(info[i].begin(), info[i].end(), ';', ',');
-    driver_info.append(info[i]);
-    driver_info.append(";");
-  }
-
-  return driver_info;
+  return GetDriverInfo(printer);
 }
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {

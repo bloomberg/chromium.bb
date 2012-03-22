@@ -225,33 +225,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
     DCHECK(printer_info);
-    if (!printer_.IsValid())
-      return false;
-
-    DWORD bytes_needed = 0;
-    bool ret = false;
-    GetPrinter(printer_, 2, NULL, 0, &bytes_needed);
-    if (0 != bytes_needed) {
-      scoped_array<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
-      if (GetPrinter(printer_, 2, printer_info_buffer.get(),
-                     bytes_needed, &bytes_needed)) {
-        PRINTER_INFO_2* printer_info_win =
-            reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
-        printer_info->printer_name = WideToUTF8(printer_info_win->pPrinterName);
-        if (printer_info_win->pComment)
-          printer_info->printer_description =
-              WideToUTF8(printer_info_win->pComment);
-        if (printer_info_win->pLocation)
-          printer_info->options[kLocationTagName] =
-              WideToUTF8(printer_info_win->pLocation);
-        if (printer_info_win->pDriverName)
-          printer_info->options[kDriverNameTagName] =
-              WideToUTF8(printer_info_win->pDriverName);
-        printer_info->printer_status = printer_info_win->Status;
-        ret = true;
-      }
-    }
-    return ret;
+    return InitBasicPrinterInfo(printer_, printer_info);
   }
 
  private:
