@@ -1728,8 +1728,8 @@
    ...
    fun:_ZN8Security12KeychainCore5Trust8evaluate*
    fun:SecTrustEvaluate
-   fun:_ZNK3net15X509Certificate14VerifyInternal*
-   fun:_ZNK3net15X509Certificate6Verify*CertVerifyResult*
+   fun:_ZN3net17CertVerifyProcMac14VerifyInternal*
+   fun:_ZN3net14CertVerifyProc6Verify*CertVerifyResult*
 }
 {
    bug_96559a
