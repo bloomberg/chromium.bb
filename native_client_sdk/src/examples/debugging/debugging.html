@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
+  <title>Logging and Stack Trace</title>
+  <script type="text/javascript">
+    statusText = 'NO-STATUS';
+    tick = '';
+    boomTime = null;
+    crashed = false;
+    // Handle a message coming from the NaCl module.
+    function handleMessage(message_event) {
+      msg_type = message_event.data.substring(0,4)
+      msg_data = message_event.data.substring(5, message_event.data.length)
+      if (msg_type == 'POP:') {
+        alert(message_event.data);
+        return
+      }
+      if (msg_type == 'LOG:') {
+        document.Logging.log.value += msg_data + '\n';
+        return
+      }
+      if (msg_type == 'TRC:') {
+        crashed = true;
+        updateStatus('Crash Reported')
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST',document.nacl_module.src,false);
+        xmlhttp.send(msg_data)
+        document.Logging.trace.value = xmlhttp.responseText + '\n';
+        return
+      }
+    }
+
+    function pageDidLoad() {
+      updateStatus("Page Loaded")
+      heartBeat();
+      updateStatus("Page Submitted")
+    }
+
+    // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      updateStatus('LOADED');
+      t=setTimeout('boom()', 4000);
+    }
+    // Set the global status message.  If the element with id 'statusField'
+    // exists, then set its HTML to the status message as well.
+    // opt_message The message test.  If this is null or undefined, then
+    //     attempt to set the element with id 'statusField' to the value of
+    //     |statusText|.
+    function updateStatus(opt_message) {
+      if (opt_message)
+        statusText = opt_message;
+        document.Logging.log.value += opt_message + '\n'
+      var statusField = document.getElementById('statusField');
+      if (statusField) {
+        statusField.innerHTML = statusText;
+      }
+    }
+
+    function boom() {
+      if (!crashed) {
+        updateStatus('Send BOOM');
+        document.nacl_module.postMessage('BOOM');
+        t=setTimeout('boom()', 1000);
+      }
+    }
+
+    function heartBeat() {
+      if (document.nacl_module.lastError) {
+        if (tick != document.nacl_module.lastError) {
+          tick = document.nacl_module.lastError;
+          updateStatus('Missed heartbeat: ' + document.nacl_module.lastError);
+          crashed = true;
+        }
+      }
+      else { t=setTimeout('heartBeat()', 1000); }
+    }
+  </script>
+  <form name="Status">
+    <input type="hidden" name="Data" value="">
+  </form>
+</head>
+<body onload="pageDidLoad()">
+<h1>Native Client Getting Started: Debugging.</h1>
+<p>This example shows how to trap an untrusted exception, and then send that
+information to the webserver to generate a stack trace.  This can only be used
+for development since it requires several command-line switches, environment
+variables and a special version of the plugin.  The test works, by loading the
+module and communicating with it through PostMessage.  Messages from the module
+are sent to the status line and/or the log window.  Four seconds after loading,
+the script will send a 'BOOM' message to the module which will cause it to 
+dereference an illegal location in memory.</p>
+
+<p>If Chrome is launched correctly with the appropriate command-line arguments
+and environment variables, the Log will show the crash dump facilities were 
+turn on and when the crash data arrives, it will be forwarded to the http server
+which will drive the decoder and send a stack trace back to the web page.</p>
+
+<p>If setup incorrectly, the page may or may not load.  If it does, it will
+send a "LOADED" message to the log and eventual will crash.  The script will
+detect this crash by detecting a missed heartbeat the the running application
+would normal send, and then print the current module status. 
+</p> 
+
+<h2>Running the example</h2>
+In one console window, to start the server:
+<ul>
+<li>Set CHROME_PATH to the fully qualified path.</li>
+<li>From the example directory type: <b>make RUN</b></li>
+</ul>
+In another console window, to start Chrome:
+<ul>
+<li>Set CHROME_PATH to the fully qualified path.</li>
+<li>From the example directory type: <b>make TRACE</b></li>
+</ul>
+
+<div id="listener">
+  <script type="text/javascript">
+    var listener = document.getElementById('listener')
+    listener.addEventListener('load', moduleDidLoad, true);
+    listener.addEventListener('message', handleMessage, true);
+  </script>
+  <embed name="nacl_module"
+         id="hello_world"
+         width=100 height=100
+         src="hello_world.nmf"
+         type="application/x-nacl" />
+</div>
+<h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <form name="Logging">
+    <h2>Log</h2>
+    <textarea rows="10" cols="130" name="log" readonly="readonly"></textarea>
+    <br />
+    <h2>Stack Trace</h2>
+    <textarea rows="10" cols="130" name="trace" readonly="readonly"></textarea>
+  </form>
+</body>
+</html>
