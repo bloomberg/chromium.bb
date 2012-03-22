@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
 
 #include <gtk/gtk.h>
+
 #include <set>
 
 #include "base/basictypes.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -32,20 +34,14 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/controls/menu/menu_2.h"
-#else
-#include "chrome/browser/ui/gtk/menu_gtk.h"
-#endif
-
 namespace {
 
 // Background color of text field when URL is invalid.
 const GdkColor kErrorColor = GDK_COLOR_RGB(0xFF, 0xBC, 0xBC);
 
 // Preferred initial dimensions, in pixels, of the folder tree.
-static const int kTreeWidth = 300;
-static const int kTreeHeight = 150;
+const int kTreeWidth = 300;
+const int kTreeHeight = 150;
 
 typedef std::set<int64> ExpandedNodeIDs;
 
@@ -107,11 +103,7 @@ class BookmarkEditorGtk::ContextMenuController
     menu_model_->AddItemWithStringId(
         COMMAND_NEW_FOLDER,
         IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
-#if defined(TOOLKIT_VIEWS)
-    menu_.reset(new views::Menu2(menu_model_.get()));
-#else
     menu_.reset(new MenuGtk(NULL, menu_model_.get()));
-#endif
   }
   virtual ~ContextMenuController() {}
 
@@ -119,20 +111,12 @@ class BookmarkEditorGtk::ContextMenuController
     const BookmarkNode* selected_node = GetSelectedNode();
     if (selected_node)
       running_menu_for_root_ = selected_node->parent()->is_root();
-#if defined(TOOLKIT_VIEWS)
-    menu_->RunContextMenuAt(point);
-#else
     menu_->PopupAsContext(point, event_time);
-#endif
   }
 
   void Cancel() {
     editor_ = NULL;
-#if defined(TOOLKIT_VIEWS)
-    menu_->CancelMenu();
-#else
     menu_->Cancel();
-#endif
   }
 
  private:
@@ -242,11 +226,7 @@ class BookmarkEditorGtk::ContextMenuController
 
   // The model and view for the right click context menu.
   scoped_ptr<ui::SimpleMenuModel> menu_model_;
-#if defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::Menu2> menu_;
-#else
   scoped_ptr<MenuGtk> menu_;
-#endif
 
   // The context menu was brought up for. Set to NULL when the menu is canceled.
   BookmarkEditorGtk* editor_;
