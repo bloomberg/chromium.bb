@@ -34,6 +34,7 @@ sources_for_standard_interfaces = [
     'munmap.c',
     'nanosleep.c',
     'nacl_interface_query.c',
+    'nacl_add_tp.c',
     'nacl_read_tp.c',
     'open.c',
     'read.c',

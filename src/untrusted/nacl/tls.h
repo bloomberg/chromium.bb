@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -52,6 +52,9 @@ void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size);
 
 /* Read the per-thread pointer.  */
 void *__nacl_read_tp(void);
+
+/* Read the per-thread pointer and add an offset.  */
+void *__nacl_add_tp(ptrdiff_t);
 
 
 #endif /* NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H */

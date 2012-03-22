@@ -10,7 +10,14 @@
  *    been examined, and _start's call would get an undefined reference.
  */
 
-EXTERN ( main exit _exit __nacl_read_tp )
+EXTERN ( main exit _exit )
 
-/* These are needed by libgcc_eh */
+/* Preserve __nacl_read_tp and __nacl_add_tp in the bitcode during LTO
+ * (for static linking).  These functions are not referenced by the
+ * program code -- references are only introduced by the compiler,
+ * or by the linker (after doing TLS transitions).
+ */
+EXTERN ( __nacl_read_tp __nacl_add_tp )
+
+/* These are needed by libgcc_eh. */
 EXTERN ( malloc free strlen abort )
