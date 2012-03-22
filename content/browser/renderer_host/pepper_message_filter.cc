@@ -861,7 +861,7 @@ void PepperMessageFilter::DoGetNetworkList() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PepperMessageFilter::SendNetworkList,
-                 this, base::Passed(list.Pass())));
+                 this, base::Passed(&list)));
 }
 
 void PepperMessageFilter::SendNetworkList(
