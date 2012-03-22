@@ -14,11 +14,6 @@
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #include "ui/gfx/rect.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-#endif
-
 namespace {
 
 // static
@@ -250,14 +245,5 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
 bool SendMouseClick(MouseButton type) {
   return SendMouseEvents(type, UP | DOWN);
 }
-
-#if defined(TOOLKIT_VIEWS)
-void RunClosureAfterAllPendingUIEvents(const base::Closure& task) {
-  // Send noop event and run task.
-  int x, y;
-  gdk_window_at_pointer(&x, &y);
-  SendMouseMoveNotifyWhenDone(x, y, task);
-}
-#endif
 
 }  // namespace ui_controls
