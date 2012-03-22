@@ -20,6 +20,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "net/base/cert_database.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/cert_verify_proc.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
@@ -550,9 +551,11 @@ TEST_F(CertDatabaseNSSTest, DISABLED_ImportServerCert) {
   psm::nsNSSCertTrust goog_trust(goog_cert->os_cert_handle()->trust);
   EXPECT_TRUE(goog_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
 
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = goog_cert->Verify("www.google.com", flags, NULL, &verify_result);
+  int error = verify_proc->Verify(goog_cert, "www.google.com", flags,
+                                      NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
@@ -575,10 +578,11 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
   psm::nsNSSCertTrust puny_trust(puny_cert->os_cert_handle()->trust);
   EXPECT_TRUE(puny_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
 
+  scoped_refptr<CertVerifyProc> verify_proc(CertVerifyProc::CreateDefault());
   int flags = 0;
   CertVerifyResult verify_result;
-  int error = puny_cert->Verify("xn--wgv71a119e.com", flags, NULL,
-                                &verify_result);
+  int error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
+                                      NULL, &verify_result);
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
 
@@ -589,7 +593,8 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
       CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL));
 
   verify_result.Reset();
-  error = puny_cert->Verify("xn--wgv71a119e.com", flags, NULL, &verify_result);
+  error = verify_proc->Verify(puny_cert, "xn--wgv71a119e.com", flags,
+                                  NULL, &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
 }
