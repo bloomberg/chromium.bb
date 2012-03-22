@@ -28,11 +28,18 @@ class CSSChecker(object):
     def _is_gray(s):
       return s[0] == s[1] == s[2] if len(s) == 3 else s[0:2] == s[2:4] == s[4:6]
 
+    def _remove_all(s):
+      return _remove_grit(_remove_ats(_remove_comments(s)))
+
     def _remove_ats(s):
       return re.sub(re.compile(r'@\w+.*?{(.*{.*?})+.*?}', re.DOTALL), '\\1', s)
 
     def _remove_comments(s):
       return re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', s)
+
+    def _remove_grit(s):
+      grit_reg = r'<if[^>]*>.*<\s*/\s*if[^>]*>|<include[^>]+>'
+      return re.sub(re.compile(grit_reg, re.DOTALL), '', s)
 
     def _rgb_from_hex(s):
       if len(s) == 3:
@@ -44,8 +51,8 @@ class CSSChecker(object):
     def alphabetize_props(contents):
       errors = []
       for rule in re.finditer(r'{(.*?)}', contents, re.DOTALL):
-        rules = filter(lambda r: r.find(': ') >= 0,
-                       map(lambda t: t.strip(), rule.group(1).split(';'))[0:-1])
+        semis = map(lambda t: t.strip(), rule.group(1).split(';'))[:-1]
+        rules = filter(lambda r: ': ' in r, semis)
         props = map(lambda r: r[0:r.find(':')], rules)
         if props != sorted(props):
           errors.append('    %s;\n' % (';\n    '.join(rules)))
@@ -170,8 +177,9 @@ class CSSChecker(object):
                                                   file_filter=self.file_filter)
     files = []
     for f in affected_files:
-      # Remove all /*comments*/ and @at-keywords; we're not using a real parser.
-      file_contents = _remove_ats(_remove_comments('\n'.join(f.NewContents())))
+      # Remove all /*comments*/, @at-keywords, and grit <if|include> tags; we're
+      # not using a real parser. TODO(dbeam): Check alpha in <if> blocks.
+      file_contents = _remove_all('\n'.join(f.NewContents()))
       files.append((f.LocalPath(), file_contents))
 
     # Only look at CSS files for now.

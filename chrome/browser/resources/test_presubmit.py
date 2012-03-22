@@ -209,13 +209,31 @@ class CssStyleGuideTest(SuperMoxTestBase):
 
   def testCssAlphaWithAtBlock(self):
     self.VerifyContentsProducesOutput("""
+<include src="../shared/css/cr/ui/overlay.css">
+<include src="chrome://resources/totally-cool.css" />
+
 /* A hopefully safely ignored comment and @media statement. /**/
 @media print {
   div {
     display: block;
     color: red;
   }
-}""", """
+<if expr="not is macosx">
+  background-image: url(chrome://resources/BLAH); /* TODO(dbeam): Fix this. */
+  background-color: rgb(235, 239, 249);
+</if>
+<if expr="is_macosx">
+  background-color: white;
+  background-image: url(chrome://resources/BLAH2);
+</if>
+}
+
+<if expr="is_macosx">
+.language-options-right {
+  visibility: hidden;
+  opacity: 1; /* TODO(dbeam): Fix this. */
+}
+</if>""", """
 - Alphabetize properties and list vendor specific (i.e. -webkit) above standard.
     display: block;
     color: red;""")

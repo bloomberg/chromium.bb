@@ -25,8 +25,14 @@ def _CommonChecks(input_api, output_api):
   resources = input_api.PresubmitLocalPath()
 
   path = input_api.os_path
-  presubmit = path.join(resources, 'PRESUBMIT.py')
-  if presubmit in (f.AbsoluteLocalPath() for f in input_api.AffectedFiles()):
+  affected_files = (f.AbsoluteLocalPath() for f in input_api.AffectedFiles())
+  would_affect_tests = (
+      path.join(resources, 'PRESUBMIT.py'),
+      path.join(resources, 'test_presubmit.py'),
+      path.join(resources, 'web_dev_style', 'css_checker.py'),
+      path.join(resources, 'web_dev_style', 'js_checker.py'),
+  )
+  if any(f for f in affected_files if f in would_affect_tests):
     tests = [path.join(resources, 'test_presubmit.py')]
     results.extend(
         input_api.canned_checks.RunUnitTests(input_api, output_api, tests))
