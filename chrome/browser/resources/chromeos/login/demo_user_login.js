@@ -10,7 +10,9 @@
  * Handles a user clicking anywhere on the screen. This will log the demo user
  * in. Yes, this actually _is the intention.
  */
-onClick = function() {
+onClick = function(e) {
+  document.removeEventListener('click', onClick);
+  e.stopPropagation();
   chrome.send('launchDemoUser');
 };
 
