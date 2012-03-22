@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -32,10 +29,8 @@ const int kMinColumnWidth = 320;
 // a way for the user to continue or backout.
 class OneClickSigninDialogView : public views::DialogDelegateView {
  public:
-  OneClickSigninDialogView(Profile* profile,
-                           const std::string& session_index,
-                           const std::string& email,
-                           const std::string& password);
+  explicit OneClickSigninDialogView(
+      const OneClickAcceptCallback& accept_callback);
   virtual ~OneClickSigninDialogView();
 
  private:
@@ -50,27 +45,17 @@ class OneClickSigninDialogView : public views::DialogDelegateView {
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  Profile* profile_;
-  views::Checkbox* checkbox_;
+  OneClickAcceptCallback accept_callback_;
 
-  // Information about the account that has just logged in.
-  std::string session_index_;
-  std::string email_;
-  std::string password_;
+  views::Checkbox* checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninDialogView);
 };
 
 OneClickSigninDialogView::OneClickSigninDialogView(
-    Profile* profile,
-    const std::string& session_index,
-    const std::string& email,
-    const std::string& password)
-    : profile_(profile),
-      checkbox_(NULL),
-      session_index_(session_index),
-      email_(email),
-      password_(password) {
+    const OneClickAcceptCallback& accept_callback)
+    : accept_callback_(accept_callback),
+      checkbox_(NULL) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
   const int kColumnSetId = 0;
@@ -133,10 +118,8 @@ bool OneClickSigninDialogView::Cancel() {
 }
 
 bool OneClickSigninDialogView::Accept() {
-  // The starter deletes itself once its done.
-  OneClickSigninSyncStarter* starter =
-      new OneClickSigninSyncStarter(session_index_, email_, password_, profile_,
-                                    checkbox_->checked());
+  const bool use_default_settings = checkbox_->checked();
+  accept_callback_.Run(use_default_settings);
   return true;
 }
 
@@ -155,23 +138,14 @@ views::View* OneClickSigninDialogView::GetContentsView() {
 }  // namespace
 
 
-void ShowOneClickSigninDialog(Profile* profile,
-                              const std::string& session_index,
-                              const std::string& email,
-                              const std::string& password) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-  if (!browser)
-    return;
+void ShowOneClickSigninDialog(
+    gfx::NativeWindow parent_window,
+    const OneClickAcceptCallback& accept_callback) {
+  OneClickSigninDialogView* dialog =
+      new OneClickSigninDialogView(accept_callback);
 
-  BrowserWindow* browser_window = browser->window();
-  if (!browser_window)
-    return;
-
-  OneClickSigninDialogView* dialog = new OneClickSigninDialogView(
-      profile, session_index, email, password);
-
-  views::Widget* window =  browser::CreateViewsWindow(
-      browser_window->GetNativeHandle(), dialog, STYLE_GENERIC);
+  views::Widget* window = browser::CreateViewsWindow(
+      parent_window, dialog, STYLE_GENERIC);
 
   window->Show();
 }

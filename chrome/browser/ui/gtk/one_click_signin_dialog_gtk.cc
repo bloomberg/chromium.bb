@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 
-void ShowOneClickSigninDialog(Profile* profile,
-                              const std::string& email,
-                              const std::string& password) {
+#include "base/logging.h"
+
+void ShowOneClickSigninDialog(
+    gfx::NativeWindow parent_window,
+    const OneClickAcceptCallback& accept_callback) {
   // TODO(rogerta): gtk dialog not yet implemented.  See
   // one_click_signin_dialog_view.cc for what needs to be done here.
+  NOTREACHED();
 }

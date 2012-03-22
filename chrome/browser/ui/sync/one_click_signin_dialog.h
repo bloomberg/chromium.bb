@@ -6,16 +6,19 @@
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_DIALOG_H_
 #pragma once
 
-#include <string>
+#include "base/callback_forward.h"
+#include "ui/gfx/native_widget_types.h"
 
-class Profile;
+typedef base::Callback<void(bool /* use_default_settings */)>
+    OneClickAcceptCallback;
 
-// Shows a dialog with more information about one click signin and waits for
-// confirmation from the user.  The implementation of this function is platform
-// specific.
-void ShowOneClickSigninDialog(Profile* profile,
-                              const std::string& session_index,
-                              const std::string& email,
-                              const std::string& password);
+// Shows a dialog with more information about one click signin and
+// waits for confirmation from the user.  |parent_window| is the
+// window from which the dialog was invoked.  If the user confirms,
+// |accept_callback| is called.  The implementation of this function
+// is platform specific.
+void ShowOneClickSigninDialog(
+    gfx::NativeWindow parent_window,
+    const OneClickAcceptCallback& accept_callback);
 
 #endif  // CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_DIALOG_H_

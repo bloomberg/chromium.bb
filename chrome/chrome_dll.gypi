@@ -272,6 +272,7 @@
                 'app/nibs/InstantOptIn.xib',
                 'app/nibs/MainMenu.xib',
                 'app/nibs/Notification.xib',
+                'app/nibs/OneClickSigninDialog.xib',
                 'app/nibs/Panel.xib',
                 'app/nibs/PreviewableContents.xib',
                 'app/nibs/SaveAccessoryView.xib',

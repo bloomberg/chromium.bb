@@ -17,10 +17,10 @@ class Profile;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer {
  public:
-  OneClickSigninSyncStarter(const std::string& session_index,
+  OneClickSigninSyncStarter(Profile* profile,
+                            const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
-                            Profile* profile,
                             bool use_default_settings);
 
  private:
@@ -31,7 +31,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 
-  Profile* profile_;
+  Profile* const profile_;
   SigninTracker signin_tracker_;
   bool use_default_settings_;
 

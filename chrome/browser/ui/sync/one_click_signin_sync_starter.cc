@@ -15,10 +15,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
+    Profile* profile,
     const std::string& session_index,
     const std::string& email,
     const std::string& password,
-    Profile* profile,
     bool use_default_settings)
     : profile_(profile),
       signin_tracker_(profile, this),

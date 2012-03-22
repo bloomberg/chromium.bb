@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 
+#include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
@@ -17,11 +19,13 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
+#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -120,10 +124,28 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
                             : IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON);
 }
 
+namespace {
+
+// Start syncing with the given user information.
+void StartSync(Profile* profile,
+               const std::string& session_index,
+               const std::string& email,
+               const std::string& password,
+               bool use_default_settings) {
+  // The starter deletes itself once its done.
+  ignore_result(
+      new OneClickSigninSyncStarter(
+          profile, session_index, email, password, use_default_settings));
+}
+
+}  // namespace
+
 bool OneClickLoginInfoBarDelegate::Accept() {
   DisableOneClickSignIn();
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
-  ShowOneClickSigninDialog(profile_, session_index_, email_, password_);
+  ShowOneClickSigninDialog(
+      owner()->web_contents()->GetView()->GetTopLevelNativeWindow(),
+      base::Bind(&StartSync, profile_, session_index_, email_, password_));
   button_pressed_ = true;
   return true;
 }
