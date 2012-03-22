@@ -123,10 +123,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       kTestRefreshRate : kDefaultRefreshRate;
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
-#if defined(PER_TILE_PAINTING)
   settings.perTilePainting =
     command_line->HasSwitch(switches::kUIEnablePerTilePainting);
-#endif
 
 #if defined(WEBLAYERTREEVIEW_HAS_INITIALIZE)
   host_.initialize(this, root_web_layer_, settings);
