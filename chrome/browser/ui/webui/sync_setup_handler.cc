@@ -233,9 +233,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "promoTitle", GetStringFUTF16(title_id, short_product_name));
 
   localized_strings->SetString(
-      "promoMessageTitle",
-      GetStringFUTF16(IDS_SYNC_PROMO_MESSAGE_TITLE, short_product_name));
-  localized_strings->SetString(
       "syncEverythingHelpURL", chrome::kSyncEverythingLearnMoreURL);
   localized_strings->SetString(
       "syncErrorHelpURL", chrome::kSyncErrorsHelpURL);
@@ -249,18 +246,9 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString("createAccountLinkHTML",
       GetStringFUTF16(IDS_SYNC_CREATE_ACCOUNT_PREFIX, create_account));
 
-  localized_strings->SetString("promoVerboseTitle", short_product_name);
-  localized_strings->SetString("promoVerboseMessageBody",
-      GetStringFUTF16(IDS_SYNC_PROMO_V_MESSAGE_BODY, short_product_name));
-
   string16 sync_benefits_url(
       UTF8ToUTF16(google_util::StringAppendGoogleLocaleParam(
           chrome::kSyncLearnMoreURL)));
-  localized_strings->SetString("promoVerboseLearnMore",
-      GetStringFUTF16(IDS_SYNC_PROMO_V_LEARN_MORE, sync_benefits_url));
-  localized_strings->SetString("promoVerboseBackupBody",
-      GetStringFUTF16(IDS_SYNC_PROMO_V_BACKUP_BODY, short_product_name));
-  localized_strings->SetString("signUpURL", create_account_url);
   localized_strings->SetString("promoLearnMoreURL", sync_benefits_url);
 
   static OptionsStringResource resources[] = {
@@ -337,17 +325,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON },
     { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED },
     { "promoLearnMore", IDS_LEARN_MORE },
-    { "promoLearnMoreShow", IDS_SYNC_PROMO_LEARN_MORE_SHOW },
-    { "promoLearnMoreHide", IDS_SYNC_PROMO_LEARN_MORE_HIDE },
-    { "promoInformation", IDS_SYNC_PROMO_INFORMATION },
-    { "promoVerboseSyncTitle", IDS_SYNC_PROMO_V_SYNC_TITLE },
-    { "promoVerboseSyncBody", IDS_SYNC_PROMO_V_SYNC_BODY },
-    { "promoVerboseBackupTitle", IDS_SYNC_PROMO_V_BACKUP_TITLE },
-    { "promoVerboseServicesTitle", IDS_SYNC_PROMO_V_SERVICES_TITLE },
-    { "promoVerboseServicesBody", IDS_SYNC_PROMO_V_SERVICES_BODY },
-    { "promoVerboseSignUp", IDS_SYNC_PROMO_V_SIGN_UP },
     { "promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT },
-    { "promoMessageBody", IDS_SYNC_PROMO_MESSAGE_BODY },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

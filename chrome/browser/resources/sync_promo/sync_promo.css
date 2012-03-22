@@ -16,11 +16,6 @@ html, body {
   position: absolute;
 }
 
-html[promo-version='0'] body {
-  background-image: -webkit-linear-gradient(
-      rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.04));
-}
-
 #sync-setup-overlay {
   background-color: transparent;
   margin: 0;
@@ -36,30 +31,12 @@ html[promo-version='0'] body {
 
 .sync-main-content {
   margin: 0 auto;
-  max-width: 900px;
-  min-width: 830px;
-  padding: 23px 44px 0;
   width: auto;
 }
 
-html[promo-version='3'] .sync-main-content {
-  max-width: none;
-  min-width: 0;
-  padding-top: 0;
-}
-
 #sync-setup-login-content-column {
-  float: right;
-  width: 335px;
-}
-
-html[dir='rtl'] #sync-setup-login-content-column {
-  float: left;
-}
-
-html[promo-version='3'] #sync-setup-login-content-column {
-  float: none;
   margin: 0 auto;
+  width: 335px;
 }
 
 #sync-setup-login-promo-column p,
@@ -130,200 +107,19 @@ html[dir='rtl'] #promo-advanced {
   text-align: center;
 }
 
-html[promo-version='2'] #promo-title-container {
-  display: none;
-}
-
 h1 {
   color: rgb(34, 34, 34);
-  font-size: 27px;
+  font-size: 36px;
   font-weight: normal;
   margin: 0;
 }
 
-html[promo-version='1'] #sync-setup-login h1 {
-  font-size: 40px;
-}
-
-html[promo-version='3'] #sync-setup-login h1 {
-  font-size: 36px;
-}
-
 #promo-title-container h2 {
   color: rgb(102, 102, 102);
-  font-size: 16px;
-  font-weight: normal;
-}
-
-html[promo-version='0'] #promo-title-container h2,
-html[promo-version='2'] #promo-title-container h2 {
-  display: none;
-}
-
-html[promo-version='3'] #promo-title-container h2 {
   font-size: 14px;
+  font-weight: normal;
 }
 
 #promo-learn-more {
   display: inline-block;
-}
-
-/* Signup header bar. *********************************************************/
-
-.signup-header-bar {
-  background: rgb(245, 245, 245);
-  border-bottom: 1px solid rgb(229, 229, 229);
-  height: 71px;
-  overflow: hidden;
-  padding: 0 44px;
-}
-
-.signup-header-bar .logo {
-  background: url('chrome://resources/images/google-logo-41.png') no-repeat;
-  float: left;
-  height: 41px;
-  margin: 17px 0 0;
-  width: 116px;
-}
-
-html[dir='rtl'] .signup-header-bar .logo {
-  float: right;
-}
-
-html[promo-version='2'] .signup-header-bar {
-  display: block;
-}
-
-.signup-header-bar .signup {
-  float: right;
-  font-weight: bold;
-  margin: 28px 0 0;
-}
-
-html[dir='rtl'] .signup-header-bar .signup {
-  float: left;
-}
-
-/* Promo graphic / info toggle column. ****************************************/
-
-#sync-setup-login-promo-column-0 h2 {
-  color: rgb(34, 34, 34);
-  font-size: 18px;
-  font-weight: normal;
-}
-
-#sync-setup-login-promo-column-0 p {
-  font-size: 13px;
-  line-height: 20px;
-}
-
-#promo-info-pane {
-  height: 186px;
-  position: relative;
-}
-
-#promo-info-pane > * {
-  -webkit-transition: opacity 200ms linear;
-  opacity: 1;
-  position: absolute;
-}
-
-#promo-info-pane > [hidden] {
-  display: inline-block; /* Override default user-agent styles. */
-  opacity: 0;
-}
-
-#promo-infographic {
-  background: url('chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC') no-repeat;
-  height: 161px;
-  margin-top: 14px;
-  width: 444px;
-}
-
-#promo-infographic-1 {
-  background: url('chrome://theme/IRD_SYNC_PROMO_INFO_GRAPHIC_1') no-repeat;
-  height: 274px;
-  margin-top: 10px;
-  width: 451px;
-}
-
-/* Verbose feature list. ******************************************************/
-
-#sync-setup-login-promo-column-2 h2 {
-  color: rgb(221, 75, 57);
-  font-size: 25px;
-  font-weight: normal;
-  margin: 0 0 15px;
-}
-
-.features {
-  line-height: 17px;
-  list-style: none;
-  margin: 2em 0 0;
-  overflow: hidden;
-  padding: 0;
-}
-
-.features li {
-  margin: 3px 0 2em;
-}
-
-.feature-logo {
-  float: left;
-  margin: -3px 0 0;
-}
-
-html[dir='rtl'] .feature-logo {
-  float: right;
-}
-
-.features p,
-.features h3 {
-  -webkit-margin-start: 68px;
-  margin-bottom: 0;
-  margin-top: 0;
-}
-
-.features h3 {
-  font-size: 16px;
-  font-weight: normal;
-  margin-bottom: 0.3em;
-}
-
-#features-sync-logo {
-  background: url('chrome://resources/images/sync.png') no-repeat;
-  height: 42px;
-  width: 53px;
-}
-
-#features-sync-backup-logo {
-  background: url('chrome://resources/images/sync-backup.png') no-repeat;
-  height: 42px;
-  width: 52px;
-}
-
-#features-google-mail-logo {
-  background: url('chrome://resources/images/google-mail.png') no-repeat;
-  height: 43px;
-  width: 52px;
-}
-
-/* Promo information column. **************************************************/
-
-#sync-setup-login-promo-column {
-  display: block;
-}
-
-html[promo-version='3'] #sync-setup-login-promo-column {
-  display: none;
-}
-
-html[promo-version='0'] #sync-setup-login-promo-column-0,
-html[promo-version='1'] #sync-setup-login-promo-column-1,
-html[promo-version='2'] #sync-setup-login-promo-column-2 {
-  display: block;
-}
-
-#sync-setup-login-promo-column {
-  -webkit-margin-end: 385px;
 }

@@ -74,15 +74,10 @@ cr.define('sync_promo', function() {
       });
 
       var learnMoreClickedAlready = false;
-      $('promo-learn-more-show').addEventListener('click', function() {
-        self.showLearnMore_(true);
+      $('promo-learn-more').addEventListener('click', function() {
         if (!learnMoreClickedAlready)
           chrome.send('SyncPromo:UserFlowAction', [actions.LEARN_MORE_CLICKED]);
         learnMoreClickedAlready = true;
-      });
-
-      $('promo-learn-more-hide').addEventListener('click', function() {
-        self.showLearnMore_(false);
       });
 
       $('promo-advanced').addEventListener('click', function() {
@@ -137,14 +132,6 @@ cr.define('sync_promo', function() {
       };
       $('confirm-everything-cancel').addEventListener('click', cancelFunc);
       $('choose-datatypes-cancel').addEventListener('click', cancelFunc);
-
-      this.infographic_ = $('promo-infographic');
-      this.learnMore_ = $('promo-information');
-
-      this.infographic_.addEventListener('webkitTransitionEnd',
-                                         this.toggleHidden_.bind(this));
-      this.learnMore_.addEventListener('webkitTransitionEnd',
-                                       this.toggleHidden_.bind(this));
     },
 
     /**
@@ -156,37 +143,6 @@ cr.define('sync_promo', function() {
       chrome.send('SyncPromo:RecordSignInAttempts', [this.signInAttempts_]);
       if (this.throbberStart_)
         chrome.send('SyncPromo:UserFlowAction', [actions.LEFT_DURING_THROBBER]);
-    },
-
-    /**
-     * Remove the [hidden] attribute from the node that was not previously
-     * transitioning.
-     * @param {Event} e A -webkit-transition end event.
-     * @private
-     */
-    toggleHidden_: function(e) {
-      // Only show the other element if the target of this event was hidden
-      // (showing also triggers a transition end).
-      if (e.target.hidden) {
-        if (e.target === this.infographic_)
-          this.learnMore_.hidden = false;
-        else
-          this.infographic_.hidden = false;
-      }
-    },
-
-    /**
-     * Shows or hides the sync information.
-     * @param {Boolean} show True if sync information should be shown, false
-     *     otherwise.
-     * @private
-     */
-    showLearnMore_: function(show) {
-      $('promo-learn-more-show').hidden = show;
-      $('promo-learn-more-hide').hidden = !show;
-      // Setting [hidden] triggers a transition, which (when ended) will trigger
-      // this.toggleHidden_.
-      (show ? this.infographic_ : this.learnMore_).hidden = true;
     },
 
     /** @inheritDoc */
@@ -211,16 +167,6 @@ cr.define('sync_promo', function() {
       // Pass through to SyncSetupOverlay to handle display logic.
       options.SyncSetupOverlay.prototype.setThrobbersVisible_.apply(
           this, arguments);
-    },
-
-    /**
-     * Shows the given promo version. Each version changes the UI slightly
-     * (for example, replacing text with an infographic).
-     * @param {Integer} the version of the promo.
-     * @private
-     */
-    showPromoVersion_: function(version) {
-      document.documentElement.setAttribute('promo-version', version);
     },
 
     /**
@@ -272,10 +218,6 @@ cr.define('sync_promo', function() {
 
   SyncPromo.populatePromoMessage = function(resName) {
     SyncPromo.getInstance().populatePromoMessage_(resName);
-  };
-
-  SyncPromo.showPromoVersion = function(version) {
-    SyncPromo.getInstance().showPromoVersion_(version);
   };
 
   // Export

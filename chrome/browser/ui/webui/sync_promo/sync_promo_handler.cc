@@ -202,11 +202,6 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
-  // TODO(sail): The version argument is going away, remove this.
-  base::FundamentalValue version(3);
-  web_ui()->CallJavascriptFunction("SyncSetupOverlay.showPromoVersion",
-                                   version);
-
   // Open the sync wizard to the login screen.
   OpenSyncSetup(true);
   // We don't need to compute anything for this, just do this every time.

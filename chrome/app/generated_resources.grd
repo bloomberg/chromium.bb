@@ -11231,45 +11231,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
         Sign in
       </message>
-      <message name="IDS_SYNC_PROMO_TITLE" desc="The title at the top of the sync promo">
-        Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-      </message>
       <message name="IDS_SYNC_PROMO_TITLE_SHORT" desc="The title at the top of the sync promo with a short product name.">
         Welcome to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_SYNC_PROMO_TITLE_EXISTING_USER" desc="The title at the top of the sync promo shown to existing users.">
         Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_TITLE" desc="The first part of the sync promo message.">
-        Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account
-      </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT" desc="A short sync promo message displayed under the title.">
         Sign in to get your bookmarks, history, and settings on all your devices.
-      </message>
-      <message name="IDS_SYNC_PROMO_MESSAGE_BODY" desc="The body of the sync promo message.">
-        Get your bookmarks, history, and settings on all your devices.
       </message>
       <message name="IDS_SYNC_PROMO_SKIP_BUTTON" desc="The link button at the bottom to let the user skip the sync promo.">
         Skip for now
       </message>
       <message name="IDS_SYNC_PROMO_ADVANCED" desc="The link button at the bottom to let the user customize the sync settings.">
         Advanced...
-      </message>
-      <message name="IDS_SYNC_PROMO_LEARN_MORE_SHOW" desc="Text for the link at the end of the message body to show more information about sync.">
-        Learn more
-      </message>
-      <message name="IDS_SYNC_PROMO_LEARN_MORE_HIDE" desc="Text for the link to hide the sync information.">
-        Hide
-      </message>
-      <message name="IDS_SYNC_PROMO_INFORMATION" desc="Information about sync displayed when the user clicks the Learn More link.">
-        &lt;h3&gt;Backup&lt;/h3&gt;
-        &lt;p&gt;
-        Signing in to Chrome saves your bookmarks, history, and settings securely to your Google Account, so they’re always backed up online. If something happens to your computer, just sign in to Chrome on your new machine to get all your Chrome data back.
-        &lt;/p&gt;
-        &lt;h3&gt;Sync&lt;/h3&gt;
-        &lt;p&gt;
-        When you sign in to Chrome on multiple computers, anything you change on one computer instantly syncs to all your other computers—no wires needed. For example, add a bookmark on your laptop, and it will also appear on your desktop. That way, you can always pick up right where you left off.
-        &lt;/p&gt;
       </message>
       <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER" desc="The first line of the of the message shown in NTP when a user is not signed into sync.">
         Not signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
@@ -11280,40 +11255,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" desc="The linkified portion of the sync sign in promo on the NTP. Clicking this text allows the user to sign in to sync.">
         sign in
       </message>
-      <message name="IDS_SYNC_PROMO_V_CREATE_ACCOUNT" desc="Verbose sync promo. A link at the top of the sync promo to create a new account.">
-        Sign up for a new Google Account
-      </message>
-      <message name="IDS_SYNC_PROMO_V_MESSAGE_BODY" desc="Verbose sync promo. The message body.">
-        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to get your bookmarks, history, and settings on all your devices. You'll also be automatically signed in to all your favorite Google services.
-      </message>
-      <message name="IDS_SYNC_PROMO_V_SYNC_TITLE" desc="Verbose sync promo. Title of the sync message.">
-        Sync
-      </message>
-      <message name="IDS_SYNC_PROMO_V_SYNC_BODY" desc="Verbose sync promo. Body of the sync message.">
-        Add a bookmark on one device and it's instantly added on all your devices.
-      </message>
-      <message name="IDS_SYNC_PROMO_V_BACKUP_TITLE" desc="Verbose sync promo. Title of the backup message.">
-        Backup
-      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Mobile: Verbose sync promo. Body of the backup message.">
           All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your mobile device.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
-        <message name="IDS_SYNC_PROMO_V_BACKUP_BODY" desc="Verbose sync promo. Body of the backup message.">
-          All your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> settings are safe in case anything happens to your computer.
-        </message>
-      </if>
-      <message name="IDS_SYNC_PROMO_V_SERVICES_TITLE" desc="Verbose sync promo. Title of the Google Services message.">
-        Google Services
-      </message>
-      <message name="IDS_SYNC_PROMO_V_SERVICES_BODY" desc="Verbose sync promo. Body of the Google Services message.">
-        Automatically sign in to all your favorite Google services, like Gmail.
-      </message>
-      <message name="IDS_SYNC_PROMO_V_SIGN_UP" desc="Sign up link at the top of the sync promo.">
-        Sign up for a new Google Account
-      </message>
 
       <!-- Translate Info Bar -->
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS" desc="Text to show for the translate infobar options menu button">
