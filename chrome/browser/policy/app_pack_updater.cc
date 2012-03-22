@@ -315,8 +315,18 @@ void AppPackUpdater::BlockingCheckCacheInternal(
 void AppPackUpdater::OnCacheUpdated(CacheEntryMap* cache_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cached_extensions_.swap(*cache_entries);
+
+  CacheEntryMap::iterator it = cached_extensions_.find(screen_saver_id_);
+  if (it != cached_extensions_.end()) {
+    SetScreenSaverPath(FilePath(it->second.path));
+    cached_extensions_.erase(it);
+  } else {
+    SetScreenSaverPath(FilePath());
+  }
+
   VLOG(1) << "Updated AppPack cache, there are " << cached_extensions_.size()
-          << " extensions cached.";
+          << " extensions cached and "
+          << (screen_saver_path_.empty() ? "no" : "the") << " screensaver";
   UpdateExtensionLoader();
   DownloadMissingExtensions();
 }
