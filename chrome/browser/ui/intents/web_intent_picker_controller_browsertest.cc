@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -28,7 +27,6 @@
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/base/escape.h"
-#include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/image/image_util.h"
@@ -36,13 +34,11 @@
 
 namespace {
 
-const string16 kAction1(ASCIIToUTF16("http://webintents.org/share"));
+const string16 kAction1(ASCIIToUTF16("http://www.example.com/share"));
 const string16 kAction2(ASCIIToUTF16("http://www.example.com/foobar"));
-const string16 kType1(ASCIIToUTF16("image/png"));
-const string16 kType2(ASCIIToUTF16("text/*"));
+const string16 kType(ASCIIToUTF16("image/png"));
 const GURL kServiceURL1("http://www.google.com");
 const GURL kServiceURL2("http://www.chromium.org");
-const char kDummyExtensionId[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const char kCWSResponseEmpty[] =
   "{\"kind\":\"chromewebstore#itemList\",\"total_items\":0,\"start_index\":0,"
   "\"items\":[]}";
@@ -53,20 +49,34 @@ const char kCWSResponseResultFormat[] =
     "\"start_index\":0,"
     "\"items\":[{"
       "\"kind\":\"chromewebstore#item\","
-      "\"id\":\"%s\","
+      "\"id\":\"nhkckhebbbncbkefhcpcgepcgfaclehe\","
       "\"type\":\"APPLICATION\","
       "\"num_ratings\":0,"
       "\"average_rating\":0.0,"
       "\"manifest\": \"{\\n"
-        "\\\"name\\\": \\\"Dummy Share\\\",\\n"
-        "\\\"version\\\": \\\"1.0.0.0\\\",\\n"
-        "\\\"intents\\\": {\\n"
-          "\\\"%s\\\" : {\\n"
-            "\\\"type\\\" : [\\\"%s\\\"],\\n"
-            "\\\"path\\\" : \\\"share.html\\\",\\n"
-            "\\\"title\\\" : \\\"Dummy share!\\\",\\n"
-            "\\\"disposition\\\": \\\"inline\\\"\\n"
-          "}\\n"
+        "\\\"update_url\\\":\\"
+            "\"http://0.tbhome_staging.dserver.download-qa.td.borg.google.com/"
+            "service/update2/crx\\\",\\n  "
+        "\\\"name\\\": \\\"Sidd's Intent App\\\",\\n  "
+        "\\\"description\\\": \\\"Do stuff\\\",\\n  "
+        "\\\"version\\\": \\\"1.2.19\\\",\\n  "
+        "\\\"app\\\": {\\n    "
+          "\\\"urls\\\": [     \\n    ],\\n    "
+          "\\\"launch\\\": {\\n      "
+            "\\\"web_url\\\": \\\"http://siddharthasaha.net/\\\"\\n    "
+          "}\\n  "
+        "},\\n  "
+        "\\\"icons\\\": {\\n    \\\"128\\\": \\\"icon128.png\\\"\\n  },\\n  "
+        "\\\"permissions\\\":" " [\\n    "
+          "\\\"unlimitedStorage\\\",\\n    \\\"notifications\\\"\\n  "
+        "],\\n"
+        "  \\\"intents\\\": {\\n    "
+          "\\\"%s\\\" : {\\n      "
+            "\\\"type\\\" : [\\\"%s\\\"],\\n      "
+            "\\\"path\\\" : \\\"//services/edit\\\",\\n      "
+            "\\\"title\\\" : \\\"Sample Editing Intent\\\",\\n      "
+            "\\\"disposition\\\" : \\\"inline\\\"\\n    "
+          "}\\n  "
         "}\\n"
       "}\\n\","
       "\"family_safe\":true,"
@@ -97,7 +107,6 @@ class WebIntentPickerMock : public WebIntentPicker,
       : num_installed_services_(0),
         num_icons_changed_(0),
         num_extension_icons_changed_(0),
-        num_extensions_installed_(0),
         message_loop_started_(false),
         pending_async_completed_(false) {
   }
@@ -121,35 +130,23 @@ class WebIntentPickerMock : public WebIntentPicker,
       WebIntentPickerModel* model, const GURL& url) OVERRIDE {}
   virtual void Close() OVERRIDE {}
 
-  virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
-    num_extensions_installed_++;
-  }
-
-  virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE {
-  }
-
   virtual void OnPendingAsyncCompleted() OVERRIDE {
-    StopWaiting();
+    pending_async_completed_ = true;
+
+    if (message_loop_started_)
+      MessageLoop::current()->Quit();
   }
 
-  void Wait() {
+  void WaitForPendingAsync() {
     if (!pending_async_completed_) {
       message_loop_started_ = true;
       ui_test_utils::RunMessageLoop();
-      pending_async_completed_ = false;
     }
-  }
-
-  void StopWaiting() {
-    pending_async_completed_ = true;
-    if (message_loop_started_)
-      MessageLoop::current()->Quit();
   }
 
   int num_installed_services_;
   int num_icons_changed_;
   int num_extension_icons_changed_;
-  int num_extensions_installed_;
   bool message_loop_started_;
   bool pending_async_completed_;
 };
@@ -186,27 +183,6 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
   WebIntentPickerControllerBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // We start the test server now instead of in
-    // SetUpInProcessBrowserTestFixture so that we can get its port number.
-    ASSERT_TRUE(test_server()->Start());
-
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
-    net::HostPortPair host_port = test_server()->host_port_pair();
-    command_line->AppendSwitchASCII(
-        switches::kAppsGalleryDownloadURL,
-        base::StringPrintf(
-            "http://www.example.com:%d/files/extensions/intents/%%s.crx",
-            host_port.port()));
-    command_line->AppendSwitchASCII(
-        switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
-  }
-
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     // The FakeURLFetcherFactory will return a NULL URLFetcher if a request is
     // created for a URL it doesn't know and there is no default factory.
@@ -233,36 +209,33 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   void AddWebIntentService(const string16& action, const GURL& service_url) {
     webkit_glue::WebIntentServiceData service;
     service.action = action;
-    service.type = kType1;
+    service.type = kType;
     service.service_url = service_url;
     web_data_service_->AddWebIntentService(service);
   }
 
   void AddCWSExtensionServiceEmpty(const string16& action) {
-    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType1);
+    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
     fake_url_fetcher_factory_->SetFakeResponse(cws_query_url.spec(),
-                                               kCWSResponseEmpty, true);
+        kCWSResponseEmpty, true);
   }
 
-  void AddCWSExtensionServiceWithResult(const std::string& extension_id,
-                                        const string16& action,
-                                        const string16& type) {
-    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, type);
+  void AddCWSExtensionServiceWithResult(const string16& action) {
+    GURL cws_query_url = CWSIntentsRegistry::BuildQueryURL(action, kType);
     std::string icon_url;
     std::string escaped_action = net::EscapePath(UTF16ToUTF8(action));
     base::SStringPrintf(&icon_url, kCWSFakeIconURLFormat,
-                        escaped_action.c_str());
+        escaped_action.c_str());
 
     std::string response;
     base::SStringPrintf(&response, kCWSResponseResultFormat,
-                        extension_id.c_str(),
-                        UTF16ToUTF8(action).c_str(), UTF16ToUTF8(type).c_str(),
-                        icon_url.c_str());
+        UTF16ToUTF8(action).c_str(), UTF16ToUTF8(kType).c_str(),
+        icon_url.c_str());
     fake_url_fetcher_factory_->SetFakeResponse(cws_query_url.spec(), response,
-                                               true);
+        true);
 
     fake_url_fetcher_factory_->SetFakeResponse(icon_url, icon_response_,
-                                               true);
+        true);
   }
 
   void OnSendReturnMessage(
@@ -278,10 +251,6 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     controller_->OnCancelled();
   }
 
-  void OnExtensionInstallRequested(const std::string& extension_id) {
-    controller_->OnExtensionInstallRequested(extension_id);
-  }
-
   void CreateFakeIcon() {
     gfx::Image image(gfx::test::CreateImage());
     std::vector<unsigned char> image_data;
@@ -289,7 +258,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     DCHECK(result);
 
     std::copy(image_data.begin(), image_data.end(),
-              std::back_inserter(icon_response_));
+        std::back_inserter(icon_response_));
   }
 
   WebIntentPickerMock picker_;
@@ -306,8 +275,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
-  picker_.Wait();
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
 
@@ -332,10 +301,10 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                        FetchExtensionIcon) {
   AddWebIntentService(kAction1, kServiceURL1);
   AddWebIntentService(kAction1, kServiceURL2);
-  AddCWSExtensionServiceWithResult(kDummyExtensionId, kAction1, kType1);
+  AddCWSExtensionServiceWithResult(kAction1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
-  picker_.Wait();
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
   EXPECT_EQ(1, picker_.num_extension_icons_changed_);
@@ -346,11 +315,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
-  picker_.Wait();
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
   OnCancelled();
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(browser(), kAction1, kType);
   OnCancelled();
 }
 
@@ -368,8 +337,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
-  picker_.Wait();
+  controller_->ShowDialog(browser(), kAction1, kType);
+  picker_.WaitForPendingAsync();
   EXPECT_EQ(1, picker_.num_installed_services_);
 
   webkit_glue::WebIntentData intent;
@@ -413,30 +382,4 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerIncognitoBrowserTest,
   controller_->ShowDialog(GetBrowser(), kAction1, kType);
   // This should do nothing for now.
   EXPECT_EQ(0, pending_async_count());
-}
-
-IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
-                       ExtensionInstallSuccess) {
-  const char extension_id[] = "ooodacpbmglpoagccnepcbfhfhpdgddn";
-  AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
-
-  controller_->ShowDialog(browser(), kAction1, kType2);
-  picker_.Wait();
-
-  webkit_glue::WebIntentData intent;
-  intent.action = kAction1;
-  intent.type = kType2;
-  IntentsDispatcherMock dispatcher(intent);
-  controller_->SetIntentsDispatcher(&dispatcher);
-
-  OnExtensionInstallRequested(extension_id);
-  picker_.Wait();
-  EXPECT_EQ(1, picker_.num_extensions_installed_);
-  const Extension* extension = browser()->profile()->GetExtensionService()->
-      GetExtensionById(extension_id, false);
-  EXPECT_TRUE(extension);
-
-  // Installing an extension should also choose it. Since this extension uses
-  // window disposition, it will create a new tab.
-  ASSERT_EQ(2, browser()->tab_count());
 }

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
@@ -68,76 +66,24 @@ WebIntentPickerModel::Disposition ConvertDisposition(
   }
 }
 
-// Self-deleting trampoline that forwards a WebIntentsRegistry response to a
-// callback.
-class WebIntentsRegistryTrampoline : public WebIntentsRegistry::Consumer {
- public:
-  typedef std::vector<webkit_glue::WebIntentServiceData> IntentServices;
-  typedef base::Callback<void(const IntentServices&)> ForwardingCallback;
-
-  explicit WebIntentsRegistryTrampoline(const ForwardingCallback& callback);
-  ~WebIntentsRegistryTrampoline();
-
-  // WebIntentsRegistry::Consumer implementation.
-  virtual void OnIntentsQueryDone(
-      WebIntentsRegistry::QueryID,
-      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
-  virtual void OnIntentsDefaultsQueryDone(
-      WebIntentsRegistry::QueryID,
-      const DefaultWebIntentService& default_service) OVERRIDE {}
-
- private:
-  // Forwarding callback from |OnIntentsQueryDone|.
-  ForwardingCallback callback_;
-};
-
-WebIntentsRegistryTrampoline::WebIntentsRegistryTrampoline(
-    const ForwardingCallback& callback)
-    : callback_(callback) {
-}
-
-WebIntentsRegistryTrampoline::~WebIntentsRegistryTrampoline() {
-}
-
-void WebIntentsRegistryTrampoline::OnIntentsQueryDone(
-    WebIntentsRegistry::QueryID,
-    const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  DCHECK(!callback_.is_null());
-  callback_.Run(services);
-  delete this;
-}
-
-// Self-deleting trampoline that forwards A URLFetcher response to a callback.
 class URLFetcherTrampoline : public content::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(const content::URLFetcher* source)>
-      ForwardingCallback;
+  typedef base::Callback<void(const content::URLFetcher* source)> Callback;
 
-  explicit URLFetcherTrampoline(const ForwardingCallback& callback);
-  ~URLFetcherTrampoline();
+  explicit URLFetcherTrampoline(const Callback& callback)
+      : callback_(callback) {}
+  ~URLFetcherTrampoline() {}
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+    callback_.Run(source);
+    delete source;
+    delete this;
+  }
 
  private:
-  // Fowarding callback from |OnURLFetchComplete|.
-  ForwardingCallback callback_;
+  Callback callback_;
 };
-
-URLFetcherTrampoline::URLFetcherTrampoline(const ForwardingCallback& callback)
-    : callback_(callback) {
-}
-
-URLFetcherTrampoline::~URLFetcherTrampoline() {
-}
-
-void URLFetcherTrampoline::OnURLFetchComplete(
-    const content::URLFetcher* source) {
-  DCHECK(!callback_.is_null());
-  callback_.Run(source);
-  delete source;
-  delete this;
-}
 
 }  // namespace
 
@@ -183,8 +129,6 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
     return;
 
   picker_model_->Clear();
-  picker_model_->set_action(action);
-  picker_model_->set_mimetype(type);
 
   // If picker is non-NULL, it was set by a test.
   if (picker_ == NULL) {
@@ -194,14 +138,8 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
 
   picker_shown_ = true;
   pending_async_count_+= 2;
-  GetWebIntentsRegistry(wrapper_)->GetIntentServices(
-      action, type,
-      // WebIntentsRegistryTrampoline is self-deleting.
-      new WebIntentsRegistryTrampoline(
-          base::Bind(&WebIntentPickerController::OnWebIntentServicesAvailable,
-              weak_ptr_factory_.GetWeakPtr())));
-  GetCWSIntentsRegistry(wrapper_)->GetIntentServices(
-      action, type,
+  GetWebIntentsRegistry(wrapper_)->GetIntentServices(action, type, this);
+  GetCWSIntentsRegistry(wrapper_)->GetIntentServices(action, type,
       base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -274,16 +212,6 @@ void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
     intents_dispatcher_->DispatchIntent(web_contents);
 }
 
-void WebIntentPickerController::OnExtensionInstallRequested(
-    const std::string& id) {
-  webstore_installer_ = new WebstoreInstaller(
-      wrapper_->profile(), this, &wrapper_->web_contents()->GetController(), id,
-      WebstoreInstaller::FLAG_INLINE_INSTALL);
-
-  pending_async_count_++;
-  webstore_installer_->Start();
-}
-
 void WebIntentPickerController::OnCancelled() {
   if (!intents_dispatcher_)
     return;
@@ -302,28 +230,6 @@ void WebIntentPickerController::OnCancelled() {
 void WebIntentPickerController::OnClosing() {
   picker_shown_ = false;
   picker_ = NULL;
-}
-
-void WebIntentPickerController::OnExtensionInstallSuccess(
-    const std::string& id) {
-  picker_->OnExtensionInstallSuccess(id);
-  pending_async_count_++;
-  GetWebIntentsRegistry(wrapper_)->GetIntentServicesForExtensionFilter(
-      picker_model_->action(),
-      picker_model_->mimetype(),
-      id,
-      new WebIntentsRegistryTrampoline(
-          base::Bind(
-              &WebIntentPickerController::OnExtensionInstallServiceAvailable,
-              weak_ptr_factory_.GetWeakPtr())));
-  AsyncOperationFinished();
-}
-
-void WebIntentPickerController::OnExtensionInstallFailure(
-    const std::string& id,
-    const std::string& error) {
-  picker_->OnExtensionInstallFailure(id);
-  AsyncOperationFinished();
 }
 
 void WebIntentPickerController::OnSendReturnMessage(
@@ -354,7 +260,8 @@ void WebIntentPickerController::OnSendReturnMessage(
   intents_dispatcher_ = NULL;
 }
 
-void WebIntentPickerController::OnWebIntentServicesAvailable(
+void WebIntentPickerController::OnIntentsQueryDone(
+    WebIntentsRegistry::QueryID,
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
   FaviconService* favicon_service = GetFaviconService(wrapper_);
   for (size_t i = 0; i < services.size(); ++i) {
@@ -375,6 +282,11 @@ void WebIntentPickerController::OnWebIntentServicesAvailable(
   }
 
   AsyncOperationFinished();
+}
+
+void WebIntentPickerController::OnIntentsDefaultsQueryDone(
+    WebIntentsRegistry::QueryID,
+    const DefaultWebIntentService& default_service) {
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(
@@ -506,19 +418,6 @@ void WebIntentPickerController::OnExtensionIconAvailable(
 
 void WebIntentPickerController::OnExtensionIconUnavailable(
     const string16& extension_id) {
-  AsyncOperationFinished();
-}
-
-void WebIntentPickerController::OnExtensionInstallServiceAvailable(
-    const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  DCHECK(services.size() > 0);
-
-  // TODO(binji): We're going to need to disambiguate if there are multiple
-  // services. For now, just choose the first.
-  const webkit_glue::WebIntentServiceData& service_data = services[0];
-  OnServiceChosen(
-      service_data.service_url,
-      ConvertDisposition(service_data.disposition));
   AsyncOperationFinished();
 }
 

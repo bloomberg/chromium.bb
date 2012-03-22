@@ -77,15 +77,6 @@ class WebIntentsRegistry
       const webkit_glue::WebIntentServiceData& service,
       const base::Callback<void(bool)>& callback);
 
-  // Requests all extension services matching |action|, |mimetype| and
-  // |extension_id|.
-  // |mimetype| must conform to definition as outlined for GetIntentServices.
-  // |consumer| must not be NULL.
-  QueryID GetIntentServicesForExtensionFilter(const string16& action,
-                                              const string16& mimetype,
-                                              const std::string& extension_id,
-                                              Consumer* consumer);
-
   // Record the given default service entry.
   virtual void RegisterDefaultIntentService(
       const DefaultWebIntentService& default_service);
@@ -130,10 +121,6 @@ class WebIntentsRegistry
   virtual void OnWebDataServiceDefaultsRequestDone(
       WebDataService::Handle h,
       const WDTypedResult* result);
-
-  // Implementation of GetIntentServicesForExtensionFilter.
-  void DoGetIntentServicesForExtensionFilter(scoped_ptr<IntentsQuery> query,
-                                             const std::string& extension_id);
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;
