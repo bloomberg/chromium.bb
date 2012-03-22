@@ -247,6 +247,13 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE" desc="The label used in the tray popup to add a bluetooth device.">
         Add device...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
+        Battery full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_STATUS" desc="The label in the tray dialog to show the status of the battery power.">
+Battery: <ph name="percentage">$1<ex>56</ex></ph>%
+<ph name="hour">$2</ph>h <ph name="minute">$3</ph>m
+      </message>
     </messages>
   </release>
 </grit>

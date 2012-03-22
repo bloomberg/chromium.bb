@@ -9,14 +9,17 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "base/utf_string_conversions.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -121,10 +124,20 @@ class PowerPopupView : public views::Label {
         supply_status_.battery_seconds_to_empty);
     int hour = time.InHours();
     int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-    // TODO: Translation
-    SetText(ASCIIToUTF16(base::StringPrintf("Battery: %.0lf%%\n%dh%02dm",
-          supply_status_.battery_percentage,
-          hour, min)));
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    if (hour && min) {
+      SetText(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS,
+          UTF8ToUTF16(base::DoubleToString(supply_status_.battery_percentage)),
+          base::IntToString16(hour),
+          base::IntToString16(min)));
+    } else {
+      if (supply_status_.line_power_on) {
+        SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+      } else {
+        // Completely discharged? ... ha?
+        SetText(string16());
+      }
+    }
   }
 
   PowerSupplyStatus supply_status_;
