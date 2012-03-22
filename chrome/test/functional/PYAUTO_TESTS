@@ -596,6 +596,16 @@
     ],
   },
 
+  'PERFORMANCE_LAB': {
+    'all': [
+      'perf.BenchmarkPerfTest.testV8BenchmarkSuite',
+      'perf.FlashTest.testFlashGaming',
+      'perf.ScrollTest.testGooglePlusScroll',
+      'perf.TabPerfTest.test20Tabs',
+      'perf.WebGLTest.testWebGLSpaceRocks',
+    ],
+  },
+
   'EMPTY': {
   },
 
