@@ -4,13 +4,14 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/protector/protected_prefs_watcher.h"
-#include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/protector/protector_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -21,6 +22,7 @@ namespace protector {
 
 namespace {
 
+const char kBackupSignature[] = "backup._signature";
 const char kNewHomePage[] = "http://example.com";
 
 }
@@ -115,7 +117,7 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
   EXPECT_TRUE(prefs_watcher_->is_backup_valid());
 
   // Make signature invalid by changing it directly.
-  prefs_->SetString("backup._signature", "INVALID");
+  prefs_->SetString(kBackupSignature, "INVALID");
   EXPECT_FALSE(IsSignatureValid());
 
   // Flip another pref value of that extension.
@@ -131,6 +133,42 @@ TEST_F(ProtectedPrefsWatcherTest, ExtensionPrefChange) {
   extension_prefs->UpdateBlacklist(blacklist);
 
   EXPECT_TRUE(IsSignatureValid());
+}
+
+TEST_F(ProtectedPrefsWatcherTest, PinnedTabsMigration) {
+  // Verify that backup for "pinned_tabs" is added if signature is valid.
+
+  // Store the old signature (without "pinned_tabs").
+  std::string old_signature = prefs_->GetString(kBackupSignature);
+
+  // Add a pinned tab.
+  {
+    ListPrefUpdate pinned_tabs_update(prefs_, prefs::kPinnedTabs);
+    base::ListValue* pinned_tabs = pinned_tabs_update.Get();
+    pinned_tabs->Clear();
+    base::DictionaryValue* tab = new base::DictionaryValue;
+    tab->SetString("url", "http://example.com/");
+    pinned_tabs->Append(tab);
+  }
+
+  EXPECT_TRUE(prefs_watcher_->is_backup_valid());
+
+  scoped_ptr<base::Value> pinned_tabs_copy(
+      prefs_->GetList(prefs::kPinnedTabs)->DeepCopy());
+
+  // Removed "pinned_tabs" from backup and restore old signature.
+  prefs_->ClearPref("backup.pinned_tabs");
+  EXPECT_FALSE(IsSignatureValid());
+  prefs_->SetString(kBackupSignature, old_signature);
+  EXPECT_TRUE(IsSignatureValid());
+
+  RevalidateBackup();
+
+  // Now the backup should be valid and "pinned_tabs" is added back.
+  EXPECT_TRUE(prefs_watcher_->is_backup_valid());
+  EXPECT_TRUE(pinned_tabs_copy->Equals(prefs_->GetList("backup.pinned_tabs")));
+  EXPECT_TRUE(pinned_tabs_copy->Equals(prefs_->GetList(prefs::kPinnedTabs)));
+  EXPECT_FALSE(prefs_watcher_->DidPrefChange(prefs::kPinnedTabs));
 }
 
 }  // namespace protector

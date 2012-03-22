@@ -83,6 +83,8 @@ PrefSetObserver* PrefSetObserver::CreateProtectedPrefSetObserver(
   // Session startup.
   pref_set->AddPref(prefs::kRestoreOnStartup);
   pref_set->AddPref(prefs::kURLsToRestoreOnStartup);
+  // Pinned tabs.
+  pref_set->AddPref(prefs::kPinnedTabs);
   // Extensions.
   pref_set->AddPref(ExtensionPrefs::kExtensionsPref);
 

@@ -33,6 +33,7 @@ const char kBackupShowHomeButton[] = "backup.browser.show_home_button";
 const char kBackupRestoreOnStartup[] = "backup.session.restore_on_startup";
 const char kBackupURLsToRestoreOnStartup[] =
     "backup.session.urls_to_restore_on_startup";
+const char kBackupPinnedTabs[] = "backup.pinned_tabs";
 const char kBackupExtensionsIDs[] = "backup.extensions.ids";
 const char kBackupSignature[] = "backup._signature";
 
@@ -65,6 +66,8 @@ void ProtectedPrefsWatcher::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(kBackupRestoreOnStartup, 0,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(kBackupURLsToRestoreOnStartup,
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(kBackupPinnedTabs,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(kBackupExtensionsIDs,
                           PrefService::UNSYNCABLE_PREF);
@@ -143,6 +146,7 @@ void ProtectedPrefsWatcher::InitBackup() {
                     prefs->GetInteger(prefs::kRestoreOnStartup));
   prefs->Set(kBackupURLsToRestoreOnStartup,
              *prefs->GetList(prefs::kURLsToRestoreOnStartup));
+  prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
   ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
   base::ListValue* extension_ids = extension_ids_update.Get();
   extension_ids->Clear();
@@ -152,6 +156,18 @@ void ProtectedPrefsWatcher::InitBackup() {
     extension_ids->Append(base::Value::CreateStringValue(*it));
   }
   UpdateBackupSignature();
+}
+
+void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
+  PrefService* prefs = profile_->GetPrefs();
+  bool changed = false;
+  if (!prefs->HasPrefPath(kBackupPinnedTabs) &&
+      prefs->HasPrefPath(prefs::kPinnedTabs)) {
+    prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
+    changed = true;
+  }
+  if (changed)
+    UpdateBackupSignature();
 }
 
 bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& pref_name) {
@@ -183,6 +199,8 @@ bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& pref_name) {
   } else if (pref_name == prefs::kURLsToRestoreOnStartup) {
     prefs->Set(kBackupURLsToRestoreOnStartup,
                *prefs->GetList(prefs::kURLsToRestoreOnStartup));
+  } else if (pref_name == prefs::kPinnedTabs) {
+    prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
   } else {
     NOTREACHED();
     return false;
@@ -226,6 +244,7 @@ void ProtectedPrefsWatcher::ValidateBackup() {
         kProtectorErrorValueValidZero,
         kProtectorErrorCount);
   } else if (IsSignatureValid()) {
+    MigrateOldBackupIfNeeded();
     UMA_HISTOGRAM_ENUMERATION(
         kProtectorHistogramPrefs,
         kProtectorErrorValueValid,
@@ -243,7 +262,8 @@ void ProtectedPrefsWatcher::ValidateBackup() {
 }
 
 std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
-  // std::stringstream data;
+  // TODO(ivankr): replace this with some existing reliable serializer.
+  // JSONWriter isn't a good choice because JSON formatting may change suddenly.
   std::string data = base::StringPrintf(
       "%s|%d|%d|%d",
       prefs->GetString(kBackupHomePage).c_str(),
@@ -258,6 +278,22 @@ std::string ProtectedPrefsWatcher::GetSignatureData(PrefService* prefs) const {
     if (!(*it)->GetAsString(&url))
       NOTREACHED();
     base::StringAppendF(&data, "|%s", url.c_str());
+  }
+  const base::ListValue* pinned_tabs = prefs->GetList(kBackupPinnedTabs);
+  for (base::ListValue::const_iterator it = pinned_tabs->begin();
+       it != pinned_tabs->end(); ++it) {
+    const base::DictionaryValue* tab = NULL;
+    if (!(*it)->GetAsDictionary(&tab)) {
+      NOTREACHED();
+      continue;
+    }
+    for (base::DictionaryValue::Iterator it2(*tab); it2.HasNext();
+         it2.Advance()) {
+      std::string value;
+      if (!it2.value().GetAsString(&value))
+        NOTREACHED();
+      base::StringAppendF(&data, "|%s|%s", it2.key().c_str(), value.c_str());
+    }
   }
   // These are safe to use becase they are always up-to-date and returned in
   // a consistent (sorted) order.
