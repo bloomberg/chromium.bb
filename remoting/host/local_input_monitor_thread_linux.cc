@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 
 // These includes need to be later than dictated by the style guide due to
 // Xlib header pollution, specifically the min, max, and Status macros.
+#include <X11/XKBlib.h>
 #include <X11/Xlibint.h>
 #include <X11/extensions/record.h>
 
@@ -167,7 +168,7 @@ void LocalInputMonitorThread::LocalMouseMoved(const SkIPoint& pos) {
 }
 
 void LocalInputMonitorThread::LocalKeyPressed(int key_code, bool down) {
-  int key_sym = XKeycodeToKeysym(display_, key_code, 0);
+  KeySym key_sym = XkbKeycodeToKeysym(display_, key_code, 0, 0);
   if (key_sym == XK_Control_L || key_sym == XK_Control_R) {
     ctrl_pressed_ = down;
   } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {

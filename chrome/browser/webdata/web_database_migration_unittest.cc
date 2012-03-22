@@ -608,18 +608,18 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
         "{google:originalQueryForSuggestion}sourceid=chrome&ie={inputEncoding}"\
         "&q={searchTerms}",
         s2.ColumnString(4));
-    EXPECT_EQ(true, s2.ColumnBool(5));
+    EXPECT_TRUE(s2.ColumnBool(5));
     EXPECT_EQ(std::string(), s2.ColumnString(6));
     EXPECT_EQ(0, s2.ColumnInt(7));
     EXPECT_EQ(0, s2.ColumnInt(8));
     EXPECT_EQ(std::string("UTF-8"), s2.ColumnString(9));
-    EXPECT_EQ(true, s2.ColumnBool(10));
+    EXPECT_TRUE(s2.ColumnBool(10));
     EXPECT_EQ(std::string("{google:baseSuggestURL}search?client=chrome&hl="
                           "{language}&q={searchTerms}"), s2.ColumnString(11));
     EXPECT_EQ(1, s2.ColumnInt(12));
-    EXPECT_EQ(true, s2.ColumnBool(13));
+    EXPECT_TRUE(s2.ColumnBool(13));
     EXPECT_EQ(6245, s2.ColumnInt(14));
-    EXPECT_EQ(false, s2.ColumnBool(15));
+    EXPECT_FALSE(s2.ColumnBool(15));
     EXPECT_EQ(std::string(), s2.ColumnString(16));
   }
 }
@@ -1833,18 +1833,18 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
               "{google:originalQueryForSuggestion}sourceid=chrome&"
               "ie={inputEncoding}&q={searchTerms}",
               s.ColumnString(4));
-    EXPECT_EQ(true, s.ColumnBool(5));
+    EXPECT_TRUE(s.ColumnBool(5));
     EXPECT_EQ(std::string(), s.ColumnString(6));
     EXPECT_EQ(0, s.ColumnInt(7));
     EXPECT_EQ(0, s.ColumnInt(8));
     EXPECT_EQ("UTF-8", s.ColumnString(9));
-    EXPECT_EQ(true, s.ColumnBool(10));
+    EXPECT_TRUE(s.ColumnBool(10));
     EXPECT_EQ("{google:baseSuggestURL}search?client=chrome&hl={language}&"
               "q={searchTerms}", s.ColumnString(11));
     EXPECT_EQ(1, s.ColumnInt(12));
-    EXPECT_EQ(true, s.ColumnBool(13));
+    EXPECT_TRUE(s.ColumnBool(13));
     EXPECT_EQ(6262, s.ColumnInt(14));
-    EXPECT_EQ(false, s.ColumnBool(15));
+    EXPECT_FALSE(s.ColumnBool(15));
     EXPECT_EQ("{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
               "ie={inputEncoding}&ion=1{searchTerms}&nord=1",
               s.ColumnString(16));

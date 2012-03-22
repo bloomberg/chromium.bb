@@ -115,7 +115,7 @@ class PanelOverflowBrowserTest : public BasePanelBrowserTest {
     panel_manager->SetMouseWatcherForTesting(mouse_watcher);
 
     // All the overflow tests assume 800x600 work area. Do the check now.
-    DCHECK(PanelManager::GetInstance()->work_area().width() == 800);
+    DCHECK_EQ(800, PanelManager::GetInstance()->work_area().width());
   }
 
  protected:
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, AddMinimizedTillOverflow) {
 
     docked_strip->AddPanel(panel, PanelStrip::DEFAULT_POSITION);
     EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
-    EXPECT_EQ(false, panel->has_temporary_layout());
+    EXPECT_FALSE(panel->has_temporary_layout());
   }
 
   EXPECT_EQ(num_panels_to_add, num_panels);
@@ -1040,8 +1040,8 @@ IN_PROC_BROWSER_TEST_F(
   //   docked:   P0, P1, P2
   //   overflow: P3, P4, P5
   const int panel_widths[] = {
-      240, 240, 120, // docked
-      240, 240, 240  // overflow
+      240, 240, 120,  // docked
+      240, 240, 240   // overflow
   };
   std::vector<Panel*> panels = CreateOverflowPanels(3, 3, panel_widths);
 
@@ -1300,9 +1300,11 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
 
 // http://crbug.com/115568
 #if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow HoverOverOverflowAreaWithOverflowOfOverflow
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
+    HoverOverOverflowAreaWithOverflowOfOverflow
 #else
-#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
+#define MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow \
+    DISABLED_HoverOverOverflowAreaWithOverflowOfOverflow
 #endif
 IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest,
                        MAYBE_HoverOverOverflowAreaWithOverflowOfOverflow) {
