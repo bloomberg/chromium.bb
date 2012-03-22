@@ -164,3 +164,10 @@ TEST(SubstringSetMatcherTest, RegisterAndRemove) {
   EXPECT_TRUE(matches.end() != matches.find(1));
   EXPECT_TRUE(matches.end() == matches.find(2));
 }
+
+TEST(SubstringSetMatcherTest, TestEmptyMatcher) {
+  SubstringSetMatcher matcher;
+  std::set<int> matches;
+  matcher.Match("abd", &matches);
+  EXPECT_TRUE(matches.empty());
+}

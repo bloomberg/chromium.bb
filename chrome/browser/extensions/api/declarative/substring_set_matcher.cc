@@ -31,7 +31,9 @@ bool SubstringPattern::operator<(const SubstringPattern& rhs) const {
 // SubstringSetMatcher
 //
 
-SubstringSetMatcher::SubstringSetMatcher() {}
+SubstringSetMatcher::SubstringSetMatcher() {
+  RebuildAhoCorasickTree();
+}
 
 SubstringSetMatcher::~SubstringSetMatcher() {}
 
