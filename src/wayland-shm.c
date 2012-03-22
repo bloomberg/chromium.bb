@@ -57,7 +57,7 @@ shm_buffer_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource, 0);
 }
 
-const static struct wl_buffer_interface shm_buffer_interface = {
+static const struct wl_buffer_interface shm_buffer_interface = {
 	shm_buffer_destroy
 };
 
@@ -142,7 +142,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	wl_client_add_resource(client, &buffer->buffer.resource);
 }
 
-const static struct wl_shm_interface shm_interface = {
+static const struct wl_shm_interface shm_interface = {
 	shm_create_buffer
 };
 
