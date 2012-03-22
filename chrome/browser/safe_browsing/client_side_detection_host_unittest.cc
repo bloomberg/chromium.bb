@@ -16,7 +16,7 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
@@ -40,6 +40,7 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using content::BrowserThread;
 using content::RenderViewHostTester;
+using content::WebContents;
 
 namespace {
 const bool kFalse = false;
@@ -131,7 +132,7 @@ class MockTestingProfile : public TestingProfile {
 class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
  public:
   explicit MockBrowserFeatureExtractor(
-      TabContents* tab,
+      WebContents* tab,
       ClientSideDetectionService* service)
       : BrowserFeatureExtractor(tab, service) {}
   virtual ~MockBrowserFeatureExtractor() {}

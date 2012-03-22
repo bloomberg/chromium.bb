@@ -9,6 +9,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 
@@ -122,19 +123,20 @@ RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }
 
 NavigationController& RenderViewHostTestHarness::controller() {
-  return contents()->GetController();
+  return web_contents()->GetController();
 }
 
-TestTabContents* RenderViewHostTestHarness::contents() {
+WebContents* RenderViewHostTestHarness::web_contents() {
   return contents_.get();
 }
 
 RenderViewHost* RenderViewHostTestHarness::rvh() {
-  return contents()->GetRenderViewHost();
+  return web_contents()->GetRenderViewHost();
 }
 
 RenderViewHost* RenderViewHostTestHarness::pending_rvh() {
-  return contents()->GetRenderManagerForTesting()->pending_render_view_host();
+  return static_cast<TestTabContents*>(web_contents())->
+      GetRenderManagerForTesting()->pending_render_view_host();
 }
 
 RenderViewHost* RenderViewHostTestHarness::active_rvh() {
@@ -153,11 +155,11 @@ void RenderViewHostTestHarness::DeleteContents() {
   SetContents(NULL);
 }
 
-void RenderViewHostTestHarness::SetContents(TestTabContents* contents) {
+void RenderViewHostTestHarness::SetContents(WebContents* contents) {
   contents_.reset(contents);
 }
 
-TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
+WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   // See comment above browser_context_ decl for why we check for NULL here.
   if (!browser_context_.get())
     browser_context_.reset(new TestBrowserContext());
@@ -169,7 +171,7 @@ TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
 }
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
-  contents()->NavigateAndCommit(url);
+  static_cast<TestTabContents*>(web_contents())->NavigateAndCommit(url);
 }
 
 void RenderViewHostTestHarness::Reload() {
@@ -187,7 +189,7 @@ void RenderViewHostTestHarness::SetUp() {
   test_stacking_client_.reset(
       new aura::test::TestStackingClient(root_window_.get()));
 #endif
-  SetContents(CreateTestTabContents());
+  SetContents(CreateTestWebContents());
 }
 
 void RenderViewHostTestHarness::TearDown() {

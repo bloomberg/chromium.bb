@@ -26,7 +26,6 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
 class Profile;
-class TabContents;
 
 namespace ui {
 class OSExchangeData;

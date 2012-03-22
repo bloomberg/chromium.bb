@@ -15,7 +15,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/test/test_browser_thread.h"

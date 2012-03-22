@@ -12,7 +12,6 @@ class Browser;
 class Extension;
 class GURL;
 class Profile;
-class TabContents;
 class TabContentsWrapper;
 class TabStripModel;
 

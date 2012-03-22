@@ -28,11 +28,11 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/notification_observer_mock.h"
 #include "content/test/render_view_test.h"
@@ -266,10 +266,10 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 // An observer that keeps track of whether a navigation entry was committed.
 class NavEntryCommittedObserver : public content::NotificationObserver {
  public:
-  explicit NavEntryCommittedObserver(TabContents* tab_contents) {
+  explicit NavEntryCommittedObserver(WebContents* web_contents) {
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                    content::Source<NavigationController>(
-                      &tab_contents->GetController()));
+                      &web_contents->GetController()));
   }
 
   virtual void Observe(int type,

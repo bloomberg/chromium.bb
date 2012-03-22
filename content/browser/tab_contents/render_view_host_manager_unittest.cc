@@ -132,16 +132,16 @@ class RenderViewHostManagerTest
     : public RenderViewHostImplTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
     old_client_ = content::GetContentClient();
-    content::SetContentClient(&client_);
     old_browser_client_ = content::GetContentClient()->browser();
+    content::SetContentClient(&client_);
     content::GetContentClient()->set_browser(&browser_client_);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
   }
 
   virtual void TearDown() OVERRIDE {
-    RenderViewHostTestHarness::TearDown();
+    RenderViewHostImplTestHarness::TearDown();
     content::GetContentClient()->set_browser(old_browser_client_);
     content::SetContentClient(old_client_);
   }

@@ -28,7 +28,6 @@ class CustomDrawButton;
 class ThemeServiceGtk;
 class MenuGtk;
 class PopupPageMenuModel;
-class TabContents;
 
 namespace content {
 class WebContents;

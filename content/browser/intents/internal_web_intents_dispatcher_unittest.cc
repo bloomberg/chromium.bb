@@ -48,7 +48,7 @@ TEST_F(InternalWebIntentsDispatcherTest, NotifiesOnReply) {
       base::Bind(&InternalWebIntentsDispatcherTest::ReplySent,
                  base::Unretained(this)));
 
-  dispatcher->DispatchIntent(contents());
+  dispatcher->DispatchIntent(web_contents());
 
   dispatcher->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS,
                               ASCIIToUTF16("success"));

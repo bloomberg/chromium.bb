@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,8 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_contents.h"
+#include "content/test/web_contents_tester.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,8 @@
 
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
+using content::WebContentsTester;
 
 namespace {
 
@@ -83,8 +86,8 @@ TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
 }
 
 TEST_F(HtmlDialogTabContentsDelegateTest, AddNewContentsForegroundTabTest) {
-  TabContents* contents =
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  WebContents* contents =
+      WebContentsTester::CreateTestWebContents(profile(), NULL);
   test_tab_contents_delegate_->AddNewContents(
       NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false);
   // This should create a new foreground tab in the existing browser.

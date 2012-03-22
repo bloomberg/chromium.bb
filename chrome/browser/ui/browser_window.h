@@ -21,7 +21,6 @@ class GURL;
 class LocationBar;
 class Profile;
 class StatusBubble;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
 #if !defined(OS_MACOSX)

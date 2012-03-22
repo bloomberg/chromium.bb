@@ -279,16 +279,16 @@ class TabContentsTest : public RenderViewHostImplTestHarness {
     url_util::AddStandardScheme("tabcontentstest");
 
     old_client_ = content::GetContentClient();
-    content::SetContentClient(&client_);
     old_browser_client_ = content::GetContentClient()->browser();
+    content::SetContentClient(&client_);
     content::GetContentClient()->set_browser(&browser_client_);
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
   }
 
   virtual void TearDown() {
     content::GetContentClient()->set_browser(old_browser_client_);
     content::SetContentClient(old_client_);
-    RenderViewHostTestHarness::TearDown();
+    RenderViewHostImplTestHarness::TearDown();
   }
 
  private:
@@ -1861,7 +1861,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
 
   // Create another NavigationController.
   GURL url3("http://foo2");
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
@@ -1889,7 +1890,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   contents()->NavigateAndCommit(url1);
 
   // Create another NavigationController.
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
 

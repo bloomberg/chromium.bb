@@ -15,7 +15,6 @@ class Extension;
 class HtmlDialogUIDelegate;
 class Profile;
 class SkBitmap;
-class TabContents;
 class TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 class TemplateURL;

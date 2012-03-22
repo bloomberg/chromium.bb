@@ -6,10 +6,10 @@
 #include "chrome/browser/favicon/favicon_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
@@ -17,6 +17,7 @@
 class TestFaviconHandler;
 
 using content::NavigationEntry;
+using content::WebContents;
 
 namespace {
 
@@ -141,7 +142,7 @@ class HistoryRequestHandler {
 // of subclassing.
 class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
  public:
-  explicit TestFaviconHandlerDelegate(TabContents* tab_contents)
+  explicit TestFaviconHandlerDelegate(WebContents* tab_contents)
       : tab_contents_(tab_contents) {
   }
 
@@ -161,7 +162,7 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
   }
 
  private:
-  TabContents* tab_contents_;  // weak
+  WebContents* tab_contents_;  // weak
 };
 
 // This class is used to catch the FaviconHandler's download and history

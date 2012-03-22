@@ -83,7 +83,7 @@ void SelectFileDialog::SelectFile(Type type,
           l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),
           true));
     } else {
-      LOG(WARNING) << "File-selection dialogs are disabled but no TabContents "
+      LOG(WARNING) << "File-selection dialogs are disabled but no WebContents "
                    << "is given to display the InfoBar.";
     }
 

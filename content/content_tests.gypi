@@ -106,6 +106,8 @@
         'test/test_web_contents_view.h',
         'test/unittest_test_suite.cc',
         'test/unittest_test_suite.h',
+        'test/web_contents_tester.cc',
+        'test/web_contents_tester.h',
 
         # TODO(phajdan.jr): Those files should be moved to webkit
         # test support target.

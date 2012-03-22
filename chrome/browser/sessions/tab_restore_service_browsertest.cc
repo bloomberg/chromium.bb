@@ -17,17 +17,18 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/render_view_test.h"
+#include "content/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 
 typedef TabRestoreService::Tab Tab;
 typedef TabRestoreService::Window Window;
+using content::WebContentsTester;
 
 using content::NavigationEntry;
 
@@ -86,7 +87,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     // Navigate back. We have to do this song and dance as NavigationController
     // isn't happy if you navigate immediately while going back.
     controller().GoToIndex(index);
-    contents()->CommitPendingNavigation();
+    WebContentsTester::For(contents())->CommitPendingNavigation();
   }
 
   void RecreateService() {

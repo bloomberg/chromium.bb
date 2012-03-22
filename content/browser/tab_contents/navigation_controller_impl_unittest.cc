@@ -2083,7 +2083,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
 
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
@@ -2128,7 +2129,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   NavigateAndCommit(url2);
   controller.GoBack();
 
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
@@ -2162,7 +2164,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   NavigateAndCommit(url2);
   controller.GoBack();
 
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_controller.LoadURL(
@@ -2212,7 +2215,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
 
-  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  scoped_ptr<TestTabContents> other_contents(
+      static_cast<TestTabContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url4);

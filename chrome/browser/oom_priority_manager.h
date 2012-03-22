@@ -20,8 +20,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class TabContents;
-
 namespace browser {
 
 class LowMemoryObserver;

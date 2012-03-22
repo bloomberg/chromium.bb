@@ -12,11 +12,13 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::WebContentsTester;
 
 class ContentSettingBubbleModelTest : public TabContentsWrapperTestHarness {
  protected:
@@ -114,7 +116,8 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
 
   // Navigating to some sample url prevents the GetURL method from returning an
   // invalid empty URL.
-  contents()->NavigateAndCommit(GURL("http://www.example.com"));
+  WebContentsTester::For(
+      contents())->NavigateAndCommit(GURL("http://www.example.com"));
   GURL url = contents()->GetURL();
   map->AddExceptionForURL(url,
                           url,

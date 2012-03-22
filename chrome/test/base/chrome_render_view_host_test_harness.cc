@@ -25,6 +25,10 @@ TestingProfile* ChromeRenderViewHostTestHarness::profile() {
   return static_cast<TestingProfile*>(browser_context_.get());
 }
 
+content::WebContents* ChromeRenderViewHostTestHarness::contents() {
+  return web_contents();
+}
+
 RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
   return RenderViewHostTester::For(rvh());
 }

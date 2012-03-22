@@ -24,14 +24,20 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/web_contents_tester.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+
+#if defined(OS_LINUX)
+#include "ui/base/x/x11_util.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #endif
+
+using content::WebContentsTester;
 
 namespace {
 
@@ -431,7 +437,8 @@ Panel* BasePanelBrowserTest::CreateOverflowPanel(const std::string& name,
 
 void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
   TabContentsWrapper* tab_contents =
-      new TabContentsWrapper(new TestTabContents(browser->profile(), NULL));
+      new TabContentsWrapper(
+          WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
   browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
 }
 

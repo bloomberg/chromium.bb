@@ -25,7 +25,6 @@
 class Browser;
 class CustomDrawButton;
 class GURL;
-class TabContents;
 class TabContentsContainerGtk;
 class TabContentsWrapper;
 class WebIntentPickerDelegate;

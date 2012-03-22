@@ -21,7 +21,6 @@
 #include "ui/gfx/size.h"
 
 class DragData;
-class TabContents;
 class TabRendererGtk;
 
 class DraggedViewGtk : public ui::AnimationDelegate {

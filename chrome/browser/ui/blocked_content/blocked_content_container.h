@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-class TabContents;
 class TabContentsWrapper;
 
 // Takes ownership of TabContents that are unrequested popup windows.

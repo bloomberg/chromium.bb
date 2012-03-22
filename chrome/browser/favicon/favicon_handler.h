@@ -24,7 +24,6 @@ class FaviconHandlerDelegate;
 class Profile;
 class RefCountedMemory;
 class SkBitmap;
-class TabContents;
 
 namespace content {
 class NavigationEntry;

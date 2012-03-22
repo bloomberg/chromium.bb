@@ -24,7 +24,6 @@
 
 class InstantLoaderDelegate;
 class InstantLoaderManagerTest;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
 

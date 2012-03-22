@@ -53,7 +53,6 @@ class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationControllerRestoredObserver;
 class Profile;
-class TabContents;
 struct AutomationMsg_Find_Params;
 struct Reposition_Params;
 struct ExternalTabSettings;

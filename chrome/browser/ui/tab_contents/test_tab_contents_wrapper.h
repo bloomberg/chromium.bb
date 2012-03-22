@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,15 +11,19 @@
 
 class TabContentsWrapper;
 
+namespace content {
+class WebContents;
+}
+
 class TabContentsWrapperTestHarness : public ChromeRenderViewHostTestHarness {
  public:
   TabContentsWrapperTestHarness();
   virtual ~TabContentsWrapperTestHarness();
 
-  virtual TestTabContents* contents() OVERRIDE;
+  virtual content::WebContents* web_contents() OVERRIDE;
   TabContentsWrapper* contents_wrapper();
 
-  virtual void SetContents(TestTabContents* contents) OVERRIDE;
+  virtual void SetContents(content::WebContents* contents) OVERRIDE;
 
  protected:
   // testing::Test

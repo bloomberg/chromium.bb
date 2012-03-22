@@ -64,7 +64,6 @@ class InfoBarTabHelper;
 class Notification;
 class Profile;
 class SavePackage;
-class TabContents;
 class TranslateInfoBarDelegate;
 
 #if defined(OS_CHROMEOS)

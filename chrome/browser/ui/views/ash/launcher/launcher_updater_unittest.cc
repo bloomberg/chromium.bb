@@ -15,7 +15,6 @@
 #include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -196,7 +195,7 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
 TEST_F(LauncherUpdaterTest, TabbedSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
-    TabContentsWrapper wrapper(CreateTestTabContents());
+    TabContentsWrapper wrapper(CreateTestWebContents());
     State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
 
     // Since the type is tabbed and there is nothing in the tabstrip an item
@@ -216,7 +215,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
 
   // Do the same, but this time add the tab first.
   {
-    TabContentsWrapper wrapper(CreateTestTabContents());
+    TabContentsWrapper wrapper(CreateTestWebContents());
 
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
@@ -254,7 +253,7 @@ TEST_F(LauncherUpdaterTest, AppSetup) {
 TEST_F(LauncherUpdaterTest, TabbedWithApp) {
   size_t initial_size = launcher_model_->items().size();
   {
-    TabContentsWrapper initial_tab(CreateTestTabContents());
+    TabContentsWrapper initial_tab(CreateTestWebContents());
     State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
     // Add a tab.
     state.tab_strip.InsertTabContentsAt(0, &initial_tab,
@@ -267,7 +266,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithApp) {
     ash::LauncherID tabbed_id = launcher_model_->items()[initial_size].id;
 
     // Add another tab, configure it so that the launcher thinks it's an app.
-    TabContentsWrapper app_tab(CreateTestTabContents());
+    TabContentsWrapper app_tab(CreateTestWebContents());
     app_icon_loader_->SetAppID(&app_tab, "1");
     state.tab_strip.InsertTabContentsAt(1, &app_tab, TabStripModel::ADD_NONE);
 
@@ -301,7 +300,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithAppOnCreate) {
   root_window()->AddChild(&window);
   TestTabStripModelDelegate tab_strip_delegate;
   TabStripModel tab_strip(&tab_strip_delegate, profile());
-  TabContentsWrapper app_tab(CreateTestTabContents());
+  TabContentsWrapper app_tab(CreateTestWebContents());
   app_icon_loader_->SetAppID(&app_tab, "1");
   tab_strip.InsertTabContentsAt(0, &app_tab, TabStripModel::ADD_ACTIVE);
   LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
@@ -315,7 +314,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithAppOnCreate) {
 TEST_F(LauncherUpdaterTest, ChangeToApp) {
   size_t initial_size = launcher_model_->items().size();
   {
-    TabContentsWrapper initial_tab(CreateTestTabContents());
+    TabContentsWrapper initial_tab(CreateTestWebContents());
     State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
     // Add a tab.
     state.tab_strip.InsertTabContentsAt(0, &initial_tab,
@@ -349,7 +348,7 @@ TEST_F(LauncherUpdaterTest, ChangeToApp) {
 TEST_F(LauncherUpdaterTest, QueryAppIconLoader) {
   size_t initial_size = launcher_model_->items().size();
   {
-    TabContentsWrapper initial_tab(CreateTestTabContents());
+    TabContentsWrapper initial_tab(CreateTestWebContents());
     State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
     // Configure the tab as an app.
     app_icon_loader_->SetAppID(&initial_tab, "1");
@@ -368,7 +367,7 @@ TEST_F(LauncherUpdaterTest, QueryAppIconLoader) {
 // Verifies SetAppImage works.
 TEST_F(LauncherUpdaterTest, SetAppImage) {
   size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper initial_tab(CreateTestTabContents());
+  TabContentsWrapper initial_tab(CreateTestWebContents());
   State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
   // Configure the tab as an app.
   app_icon_loader_->SetAppID(&initial_tab, "1");
@@ -390,7 +389,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
   aura::Window window(NULL);
   TestTabStripModelDelegate tab_strip_delegate;
   TabStripModel tab_strip(&tab_strip_delegate, profile());
-  TabContentsWrapper panel_tab(CreateTestTabContents());
+  TabContentsWrapper panel_tab(CreateTestWebContents());
   app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
   tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
   LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
@@ -404,7 +403,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
 // Verifies app tabs are added right after the existing tabbed item.
 TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper tab1(CreateTestTabContents());
+  TabContentsWrapper tab1(CreateTestWebContents());
   State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
   // Add a tab.
   state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_ACTIVE);
@@ -420,7 +419,7 @@ TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
   // Add an app tab to state1, it should go after the item for state1 but
   // before the item for state2.
   int next_id = launcher_model_->next_id();
-  TabContentsWrapper app_tab(CreateTestTabContents());
+  TabContentsWrapper app_tab(CreateTestWebContents());
   app_icon_loader_->SetAppID(&app_tab, "1");
   state1.tab_strip.InsertTabContentsAt(1, &app_tab, TabStripModel::ADD_ACTIVE);
 
@@ -444,9 +443,9 @@ TEST_F(LauncherUpdaterTest, AddAppAfterTabbed) {
 // Verifies GetWindowAndTabByID works.
 TEST_F(LauncherUpdaterTest, GetUpdaterByID) {
   size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper tab1(CreateTestTabContents());
-  TabContentsWrapper tab2(CreateTestTabContents());
-  TabContentsWrapper tab3(CreateTestTabContents());
+  TabContentsWrapper tab1(CreateTestWebContents());
+  TabContentsWrapper tab2(CreateTestWebContents());
+  TabContentsWrapper tab3(CreateTestWebContents());
 
   // Create 3 states:
   // . tabbed with an app tab and normal tab.
@@ -494,9 +493,9 @@ TEST_F(LauncherUpdaterTest, GetUpdaterByID) {
 // LauncherUpdater doesn't remove the entry for a pinned app.
 TEST_F(LauncherUpdaterTest, Pin) {
   size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper tab1(CreateTestTabContents());
-  TabContentsWrapper tab2(CreateTestTabContents());
-  TabContentsWrapper tab3(CreateTestTabContents());
+  TabContentsWrapper tab1(CreateTestWebContents());
+  TabContentsWrapper tab2(CreateTestWebContents());
+  TabContentsWrapper tab3(CreateTestWebContents());
 
   ash::LauncherID id;
   {
@@ -583,7 +582,7 @@ TEST_F(LauncherUpdaterTest, Pin) {
 // Verifies pinned apps are persisted and restored.
 TEST_F(LauncherUpdaterTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper tab1(CreateTestTabContents());
+  TabContentsWrapper tab1(CreateTestWebContents());
 
   app_icon_loader_->SetAppID(&tab1, "1");
   app_icon_loader_->SetAppID(NULL, "2");
@@ -641,11 +640,11 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
 // Confirm that tabbed browsers with apps handle activation correctly.
 TEST_F(LauncherUpdaterTest, ActivateAppsInBrowser) {
   State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
-  TabContentsWrapper app_tab1(CreateTestTabContents());
+  TabContentsWrapper app_tab1(CreateTestWebContents());
   app_icon_loader_->SetAppID(&app_tab1, "1");
-  TabContentsWrapper app_tab2(CreateTestTabContents());
+  TabContentsWrapper app_tab2(CreateTestWebContents());
   app_icon_loader_->SetAppID(&app_tab2, "2");
-  TabContentsWrapper app_tab3(CreateTestTabContents());
+  TabContentsWrapper app_tab3(CreateTestWebContents());
   app_icon_loader_->SetAppID(&app_tab3, "3");
 
   // Insert an app tab.
@@ -675,7 +674,7 @@ TEST_F(LauncherUpdaterTest, ActivateAppsInBrowser) {
 
   {
     // Add a 4th tab.
-    TabContentsWrapper app_tab4(CreateTestTabContents());
+    TabContentsWrapper app_tab4(CreateTestWebContents());
     app_icon_loader_->SetAppID(&app_tab3, "4");
     state.tab_strip.InsertTabContentsAt(
         4, &app_tab4, TabStripModel::ADD_ACTIVE);
@@ -696,7 +695,7 @@ TEST_F(LauncherUpdaterTest, ActivateAppsInBrowser) {
 // Confirm that tabbed browsers handle activation correctly.
 TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
   State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
-  TabContentsWrapper tab1(CreateTestTabContents());
+  TabContentsWrapper tab1(CreateTestWebContents());
   state1.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_ACTIVE);
 
   // First browser is active.
@@ -705,7 +704,7 @@ TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
   {
     // Second browser is active and first is inactive.
     State state2(this, std::string(), LauncherUpdater::TYPE_TABBED);
-    TabContentsWrapper tab2(CreateTestTabContents());
+    TabContentsWrapper tab2(CreateTestWebContents());
     state2.tab_strip.InsertTabContentsAt(0, &tab1, TabStripModel::ADD_ACTIVE);
     EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
     EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);

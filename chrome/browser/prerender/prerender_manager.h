@@ -25,7 +25,6 @@
 #include "googleurl/src/gurl.h"
 
 class Profile;
-class TabContents;
 
 namespace base {
 class DictionaryValue;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -57,7 +56,7 @@ class PrefsTabHelperTest : public TabContentsWrapperTestHarness {
     return test_prefs_helper;
   }
 
-  void SetContents2(TestTabContents* contents) {
+  void SetContents2(WebContents* contents) {
     contents_wrapper2_.reset(
         contents ? new TabContentsWrapper(contents) : NULL);
   }
@@ -142,7 +141,7 @@ class PrefsTabHelperTest : public TabContentsWrapperTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     TabContentsWrapperTestHarness::SetUp();
-    SetContents2(CreateTestTabContents());
+    SetContents2(CreateTestWebContents());
   }
 
   virtual void TearDown() OVERRIDE {

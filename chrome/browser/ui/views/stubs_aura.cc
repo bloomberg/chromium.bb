@@ -22,7 +22,6 @@
 #endif
 
 class SSLClientAuthHandler;
-class TabContents;
 class TabContentsWrapper;
 
 namespace net {

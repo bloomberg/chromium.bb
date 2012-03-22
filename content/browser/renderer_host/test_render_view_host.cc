@@ -319,4 +319,8 @@ TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
   return static_cast<TestRenderViewHost*>(active_rvh());
 }
 
+TestTabContents* RenderViewHostImplTestHarness::contents() {
+  return static_cast<TestTabContents*>(web_contents());
+}
+
 }  // namespace content

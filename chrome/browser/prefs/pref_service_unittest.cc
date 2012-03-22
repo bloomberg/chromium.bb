@@ -23,13 +23,15 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/data/resource.h"
+#include "webkit/glue/webpreferences.h"
 
 using content::BrowserThread;
+using content::WebContentsTester;
 using testing::_;
 using testing::Mock;
 
@@ -304,7 +306,8 @@ class PrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
 // Tests to see that webkit preferences are properly loaded and copied over
 // to a WebPreferences object.
 TEST_F(PrefServiceWebKitPrefs, PrefsCopied) {
-  WebPreferences webkit_prefs = contents()->TestGetWebkitPrefs();
+  WebPreferences webkit_prefs =
+      WebContentsTester::For(contents())->TestGetWebkitPrefs();
 
   // These values have been overridden by the profile preferences.
   EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);

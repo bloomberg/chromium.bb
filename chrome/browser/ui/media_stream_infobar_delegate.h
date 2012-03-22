@@ -14,7 +14,6 @@
 #include "content/public/common/media_stream_request.h"
 
 class MessageLoop;
-class TabContents;
 class TabContentsWrapper;
 
 // This class configures an infobar shown when a page requests access to a

@@ -83,6 +83,10 @@ void TestTabContents::TestDidNavigateWithReferrer(
   DidNavigate(render_view_host, params);
 }
 
+WebPreferences TestTabContents::TestGetWebkitPrefs() {
+  return GetWebkitPrefs();
+}
+
 bool TestTabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   // This will go to a TestRenderViewHost.
@@ -135,6 +139,11 @@ void TestTabContents::CommitPendingNavigation() {
   // without making any network requests.
   if (old_rvh != rvh)
     static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK();
+}
+
+int TestTabContents::GetNumberOfFocusCalls() {
+  NOTREACHED();
+  return 0;
 }
 
 void TestTabContents::ProceedWithCrossSiteNavigation() {

@@ -14,7 +14,6 @@ class Browser;
 class DockInfo;
 class GURL;
 class Profile;
-class TabContents;
 class TabContentsWrapper;
 namespace content {
 class SiteInstance;

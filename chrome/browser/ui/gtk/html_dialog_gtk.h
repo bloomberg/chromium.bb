@@ -22,7 +22,6 @@ typedef struct _GtkWidget GtkWidget;
 class Browser;
 class HtmlDialogController;
 class Profile;
-class TabContents;
 class TabContentsContainerGtk;
 class TabContentsWrapper;
 

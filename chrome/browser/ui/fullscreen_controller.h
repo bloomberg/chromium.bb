@@ -15,7 +15,6 @@ class Browser;
 class BrowserWindow;
 class GURL;
 class Profile;
-class TabContents;
 class TabContentsWrapper;
 
 namespace content {

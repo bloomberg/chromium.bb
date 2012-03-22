@@ -5,12 +5,16 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 
 using content::BrowserThread;
 using content::InterstitialPage;
+using content::WebContents;
+using content::WebContentsTester;
 
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";
@@ -22,10 +26,10 @@ class OfflineLoadPageTest;
 // An OfflineLoadPage class that does not create windows.
 class TestOfflineLoadPage :  public chromeos::OfflineLoadPage {
  public:
-  TestOfflineLoadPage(TabContents* tab_contents,
+  TestOfflineLoadPage(WebContents* web_contents,
                       const GURL& url,
                       OfflineLoadPageTest* test_page)
-    : chromeos::OfflineLoadPage(tab_contents, url, CompletionCallback()),
+    : chromeos::OfflineLoadPage(web_contents, url, CompletionCallback()),
       test_page_(test_page) {
     interstitial_page_->DontCreateViewForTesting();
   }
@@ -68,7 +72,7 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void Navigate(const char* url, int page_id) {
-    contents()->TestDidNavigate(
+    WebContentsTester::For(contents())->TestDidNavigate(
         contents()->GetRenderViewHost(), page_id, GURL(url),
         content::PAGE_TRANSITION_TYPED);
   }

@@ -14,6 +14,7 @@
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -122,12 +123,12 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
     original_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
 
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
   }
 
   virtual void TearDown() OVERRIDE {
-    RenderViewHostTestHarness::TearDown();
+    RenderViewHostImplTestHarness::TearDown();
     content::GetContentClient()->set_browser(original_browser_client_);
   }
 

@@ -12,10 +12,13 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/web_contents_tester.h"
 #include "printing/print_job_constants.h"
+
+using content::WebContents;
+using content::WebContentsTester;
 
 namespace {
 
@@ -25,23 +28,6 @@ const unsigned char blob1[] =
 size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
   return tab->constrained_window_tab_helper()->constrained_window_count();
 }
-
-class FocusTestTabContents : public TestTabContents {
- public:
-  FocusTestTabContents(content::BrowserContext* browser_context,
-                       content::SiteInstance* instance)
-      : TestTabContents(browser_context, instance), focus_called_(0) {
-      }
-
-  int focus_called() const { return focus_called_; }
-
-  virtual void Focus() OVERRIDE {
-    focus_called_++;
-  }
-
- private:
-  int focus_called_;
-};
 
 }  // namespace
 
@@ -232,8 +218,10 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
 TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
   EXPECT_EQ(1, browser()->tab_count());
-  FocusTestTabContents* initiator_contents =
-      new FocusTestTabContents(profile(), NULL);
+  WebContents* initiator_contents =
+      WebContentsTester::CreateTestWebContentsCountFocus(profile(), NULL);
+  WebContentsTester* initiator_tester =
+      WebContentsTester::For(initiator_contents);
   browser()->AddWebContents(initiator_contents,
                             NEW_FOREGROUND_TAB,
                             gfx::Rect(),
@@ -242,7 +230,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_contents);
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(0, initiator_contents->focus_called());
+  EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
   printing::PrintPreviewTabController* controller =
       printing::PrintPreviewTabController::GetInstance();
@@ -255,7 +243,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
-  EXPECT_EQ(0, initiator_contents->focus_called());
+  EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_tab->web_contents()->GetWebUI()->GetController());
@@ -265,5 +253,5 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
 
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
-  EXPECT_EQ(1, initiator_contents->focus_called());
+  EXPECT_EQ(1, initiator_tester->GetNumberOfFocusCalls());
 }

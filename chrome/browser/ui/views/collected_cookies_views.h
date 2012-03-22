@@ -18,7 +18,6 @@ class ConstrainedWindow;
 class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
-class TabContents;
 class TabContentsWrapper;
 
 namespace views {

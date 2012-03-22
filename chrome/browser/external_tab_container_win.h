@@ -391,7 +391,7 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     NOTREACHED();
   }
 
-  virtual void CloseContents(TabContents* source) {
+  virtual void CloseContents(content::WebContents* source) {
     NOTREACHED();
   }
 

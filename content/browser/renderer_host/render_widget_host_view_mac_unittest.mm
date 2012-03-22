@@ -22,7 +22,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {}
 
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
 
     // TestRenderViewHost's destruction assumes that its view is a
     // TestRenderWidgetHostView, so store its view and reset it back to the
@@ -44,7 +44,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     MessageLoop::current()->RunAllPending();
     pool_.Recycle();
 
-    RenderViewHostTestHarness::TearDown();
+    RenderViewHostImplTestHarness::TearDown();
   }
  protected:
   // Adds an accelerated plugin view to |rwhv_cocoa_|.  Returns a handle to the

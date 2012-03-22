@@ -8,6 +8,7 @@
 
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/web_contents_tester.h"
 #include "webkit/glue/webpreferences.h"
 
 class SiteInstanceImpl;
@@ -15,6 +16,7 @@ class SiteInstanceImpl;
 namespace content {
 class RenderViewHost;
 class TestRenderViewHost;
+class WebContentsTester;
 }
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts
@@ -22,16 +24,30 @@ class TestRenderViewHost;
 //
 // TODO(joi): Rename TestWebContents.
 // TODO(joi): Move to content namespace.
-class TestTabContents : public TabContents {
+class TestTabContents : public TabContents, public content::WebContentsTester {
  public:
   TestTabContents(content::BrowserContext* browser_context,
                   content::SiteInstance* instance);
   virtual ~TestTabContents();
 
-  content::RenderViewHost* pending_rvh() const;
+  // WebContentsTester implementation.
+  virtual void CommitPendingNavigation() OVERRIDE;
+  virtual int GetNumberOfFocusCalls() OVERRIDE;
+  virtual content::RenderViewHost* pending_rvh() const OVERRIDE;
+  virtual void NavigateAndCommit(const GURL& url) OVERRIDE;
+  virtual void ProceedWithCrossSiteNavigation() OVERRIDE;
+  virtual void TestDidNavigate(content::RenderViewHost* render_view_host,
+                               int page_id,
+                               const GURL& url,
+                               content::PageTransition transition) OVERRIDE;
+  virtual void TestDidNavigateWithReferrer(
+      content::RenderViewHost* render_view_host,
+      int page_id,
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::PageTransition transition) OVERRIDE;
+  virtual WebPreferences TestGetWebkitPrefs() OVERRIDE;
 
-  // TODO(joi): Make sure this one is hidden once TestTabContents
-  // hides internal types from embedders.
   content::TestRenderViewHost* pending_test_rvh() const;
 
   // State accessor.
@@ -43,21 +59,6 @@ class TestTabContents : public TabContents {
   // alternatives without using command-line switches.
   bool ShouldTransitionCrossSite() { return transition_cross_site; }
 
-  void TestDidNavigate(content::RenderViewHost* render_view_host,
-                       int page_id,
-                       const GURL& url,
-                       content::PageTransition transition);
-  void TestDidNavigateWithReferrer(content::RenderViewHost* render_view_host,
-                                   int page_id,
-                                   const GURL& url,
-                                   const content::Referrer& referrer,
-                                   content::PageTransition transition);
-
-  // Promote GetWebkitPrefs to public.
-  WebPreferences TestGetWebkitPrefs() {
-    return GetWebkitPrefs();
-  }
-
   // Prevent interaction with views.
   virtual bool CreateRenderViewForRenderManager(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -66,20 +67,6 @@ class TestTabContents : public TabContents {
   // Returns a clone of this TestTabContents. The returned object is also a
   // TestTabContents. The caller owns the returned object.
   virtual content::WebContents* Clone() OVERRIDE;
-
-  // Creates a pending navigation to the given URL with the default parameters
-  // and then commits the load with a page ID one larger than any seen. This
-  // emulates what happens on a new navigation.
-  void NavigateAndCommit(const GURL& url);
-
-  // Simulates the appropriate RenderView (pending if any, current otherwise)
-  // sending a navigate notification for the NavigationController pending entry.
-  void CommitPendingNavigation();
-
-  // Simulates the current RVH notifying that it has unloaded so that the
-  // pending RVH navigation can proceed.
-  // Does nothing if no cross-navigation is pending.
-  void ProceedWithCrossSiteNavigation();
 
   // Set by individual tests.
   bool transition_cross_site;

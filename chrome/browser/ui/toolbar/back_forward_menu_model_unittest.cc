@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,16 +14,17 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
 using content::BrowserThread;
+using content::WebContentsTester;
 
 namespace {
 
@@ -83,23 +84,23 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
   // will be pending after we ask to navigate there).
   void NavigateToOffset(int offset) {
     controller().GoToOffset(offset);
-    contents()->CommitPendingNavigation();
+    WebContentsTester::For(contents())->CommitPendingNavigation();
   }
 
   // Same as NavigateToOffset but goes to an absolute index.
   void NavigateToIndex(int index) {
     controller().GoToIndex(index);
-    contents()->CommitPendingNavigation();
+    WebContentsTester::For(contents())->CommitPendingNavigation();
   }
 
   // Goes back/forward and commits the load.
   void GoBack() {
     controller().GoBack();
-    contents()->CommitPendingNavigation();
+    WebContentsTester::For(contents())->CommitPendingNavigation();
   }
   void GoForward() {
     controller().GoForward();
-    contents()->CommitPendingNavigation();
+    WebContentsTester::For(contents())->CommitPendingNavigation();
   }
 
   content::TestBrowserThread ui_thread_;

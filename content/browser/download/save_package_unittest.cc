@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,9 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::RenderViewHostImplTestHarness;
 
 #define FPL FILE_PATH_LITERAL
 #if defined(OS_WIN)
@@ -28,8 +30,6 @@ using content::BrowserThreadImpl;
 #define HTML_EXTENSION ".html"
 #define FPL_HTML_EXTENSION ".html"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -66,7 +66,7 @@ bool HasOrdinalNumber(const FilePath::StringType& filename) {
 
 }  // namespace
 
-class SavePackageTest : public RenderViewHostTestHarness {
+class SavePackageTest : public RenderViewHostImplTestHarness {
  public:
   SavePackageTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
@@ -100,10 +100,10 @@ class SavePackageTest : public RenderViewHostTestHarness {
 
  protected:
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
 
     // Do the initialization in SetUp so contents() is initialized by
-    // RenderViewHostTestHarness::SetUp.
+    // RenderViewHostImplTestHarness::SetUp.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     save_package_success_ = new SavePackage(contents(),

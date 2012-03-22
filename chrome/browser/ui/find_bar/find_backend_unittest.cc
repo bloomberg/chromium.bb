@@ -12,10 +12,13 @@
 #include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 
 using content::BrowserThread;
+using content::WebContents;
+using content::WebContentsTester;
 
 class FindBackendTest : public TabContentsWrapperTestHarness {
  public:
@@ -29,7 +32,7 @@ class FindBackendTest : public TabContentsWrapperTestHarness {
 
 namespace {
 
-string16 FindPrepopulateText(TabContents* contents) {
+string16 FindPrepopulateText(WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   return FindBarStateFactory::GetLastPrepopulateText(profile);
 }
@@ -45,7 +48,8 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(string16(), find_tab_helper->find_text());
 
   // Get another TabContents object ready.
-  TestTabContents* contents2 = new TestTabContents(profile(), NULL);
+  WebContents* contents2 =
+      WebContentsTester::CreateTestWebContents(profile(), NULL);
   TabContentsWrapper wrapper2(contents2);
   FindTabHelper* find_tab_helper2 = wrapper2.find_tab_helper();
 

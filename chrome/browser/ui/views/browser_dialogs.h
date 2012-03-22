@@ -23,7 +23,6 @@ class Extension;
 class FindBar;
 class GURL;
 class Profile;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
 

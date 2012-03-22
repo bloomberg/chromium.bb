@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
 class Extension;
-class TabContents;
 class TabContentsWrapper;
 
 class CreateApplicationShortcutsDialogGtk

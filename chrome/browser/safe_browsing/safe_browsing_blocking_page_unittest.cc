@@ -8,15 +8,19 @@
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/web_contents_tester.h"
 
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
+using content::WebContentsTester;
 using content::WebContentsView;
 
 static const char* kGoogleURL = "http://www.google.com/";
@@ -110,7 +114,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void Navigate(const char* url, int page_id) {
-    contents()->TestDidNavigate(
+    WebContentsTester::For(contents())->TestDidNavigate(
         contents()->GetRenderViewHost(), page_id, GURL(url),
         content::PAGE_TRANSITION_TYPED);
   }
@@ -122,10 +126,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
     // The pending RVH should commit for cross-site navigations.
     content::RenderViewHost* rvh = is_cross_site ?
-        contents()->pending_rvh() :
+        WebContentsTester::For(contents())->pending_rvh() :
         contents()->GetRenderViewHost();
-    contents()->TestDidNavigate(rvh, entry->GetPageID(), GURL(entry->GetURL()),
-                                content::PAGE_TRANSITION_TYPED);
+    WebContentsTester::For(contents())->TestDidNavigate(
+        rvh,
+        entry->GetPageID(),
+        GURL(entry->GetURL()),
+        content::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {

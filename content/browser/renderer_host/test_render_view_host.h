@@ -19,19 +19,18 @@
 // NavigationController, and other layers above that without running an actual
 // renderer process.
 //
-// To use, derive your test base class from RenderViewHostTestHarness.
+// To use, derive your test base class from RenderViewHostImplTestHarness.
 
-namespace content {
-class SiteInstance;
-}
+class TestTabContents;
+struct ViewHostMsg_FrameNavigate_Params;
 
 namespace gfx {
 class Rect;
 }
 
-struct ViewHostMsg_FrameNavigate_Params;
-
 namespace content {
+
+class SiteInstance;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
 // with given |page_id|, |url| and |transition_type|.
@@ -310,6 +309,7 @@ class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
   TestRenderViewHost* test_rvh();
   TestRenderViewHost* pending_test_rvh();
   TestRenderViewHost* active_test_rvh();
+  TestTabContents* contents();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);

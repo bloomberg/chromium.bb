@@ -11,6 +11,10 @@
 
 class TestingProfile;
 
+namespace content {
+class WebContents;
+}
+
 // Wrapper around RenderViewHostTestHarness that uses a TestingProfile as
 // browser context instead of a TestBrowserContext.
 class ChromeRenderViewHostTestHarness : public RenderViewHostTestHarness {
@@ -20,6 +24,7 @@ class ChromeRenderViewHostTestHarness : public RenderViewHostTestHarness {
 
   TestingProfile* profile();
 
+  content::WebContents* contents();
   content::RenderViewHostTester* rvh_tester();
 
  protected:

@@ -29,7 +29,6 @@ class InstantLoader;
 class InstantTest;
 class PrefService;
 class Profile;
-class TabContents;
 class TabContentsWrapper;
 class TemplateURL;
 class TemplateURLService;

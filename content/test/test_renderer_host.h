@@ -12,8 +12,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TestTabContents;
-
 #if defined(USE_AURA)
 namespace aura {
 class RootWindow;
@@ -32,6 +30,7 @@ class NavigationController;
 class RenderProcessHostFactory;
 class RenderViewHostDelegate;
 class TestRenderViewHostFactory;
+class WebContents;
 
 // An interface and utility for driving tests of RenderViewHost.
 class RenderViewHostTester {
@@ -120,7 +119,7 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual ~RenderViewHostTestHarness();
 
   NavigationController& controller();
-  virtual TestTabContents* contents();
+  virtual WebContents* web_contents();
   RenderViewHost* rvh();
   RenderViewHost* pending_rvh();
   RenderViewHost* active_rvh();
@@ -131,14 +130,15 @@ class RenderViewHostTestHarness : public testing::Test {
   void DeleteContents();
 
   // Sets the current tab contents for tests that want to alter it. Takes
-  // ownership of the TestTabContents passed.
-  virtual void SetContents(TestTabContents* contents);
+  // ownership of the WebContents passed.
+  virtual void SetContents(WebContents* contents);
 
-  // Creates a new TestTabContents. Ownership passes to the caller.
-  TestTabContents* CreateTestTabContents();
+  // Creates a new test-enabled WebContents. Ownership passes to the
+  // caller.
+  WebContents* CreateTestWebContents();
 
   // Cover for |contents()->NavigateAndCommit(url)|. See
-  // TestTabContents::NavigateAndCommit for details.
+  // WebContentsTester::NavigateAndCommit for details.
   void NavigateAndCommit(const GURL& url);
 
   // Simulates a reload of the current page.
@@ -165,7 +165,10 @@ class RenderViewHostTestHarness : public testing::Test {
   MessageLoopForUI message_loop_;
 
  private:
-  scoped_ptr<TestTabContents> contents_;
+  // It is important not to use this directly in the implementation as
+  // web_contents() and SetContents() are virtual and may be
+  // overridden by subclasses.
+  scoped_ptr<WebContents> contents_;
 #if defined(USE_AURA)
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;

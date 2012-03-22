@@ -15,6 +15,8 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "webkit/glue/webdropdata.h"
 
+using content::RenderViewHostImplTestHarness;
+
 namespace {
 NSString* const kCrCorePasteboardFlavorType_url =
     @"CorePasteboardFlavorType 0x75726C20"; // 'url '  url
@@ -22,10 +24,10 @@ NSString* const kCrCorePasteboardFlavorType_urln =
     @"CorePasteboardFlavorType 0x75726C6E"; // 'urln'  title
 }  // namespace
 
-class WebDragDestTest : public RenderViewHostTestHarness {
+class WebDragDestTest : public RenderViewHostImplTestHarness {
  public:
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
+    RenderViewHostImplTestHarness::SetUp();
     drag_dest_.reset([[WebDragDest alloc] initWithTabContents:contents()]);
   }
 

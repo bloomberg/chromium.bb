@@ -17,7 +17,6 @@
 class ContentSettingImageModel;
 class ContentSettingBubbleContents;
 class LocationBarView;
-class TabContents;
 
 namespace content {
 class WebContents;
