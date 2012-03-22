@@ -93,6 +93,12 @@
             "properties": {
               "url": {"type": "string", "description": "The URL to add."}
             }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
           }
         ]
       },
@@ -107,6 +113,12 @@
             "properties": {
               "url": {"type": "string", "description": "The URL to remove."}
             }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
           }
         ]
       },

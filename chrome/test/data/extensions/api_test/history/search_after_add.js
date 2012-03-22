@@ -10,11 +10,12 @@ runHistoryTestFns([
   function searchAfterAdd() {
     chrome.history.deleteAll(function() {
       var VALID_URL = 'http://www.google.com/';
-      chrome.history.addUrl({url: VALID_URL});
-      chrome.history.search({text: ''}, function(historyItems) {
-        assertEq(1, historyItems.length);
-        assertEq(VALID_URL, historyItems[0].url);
-        chrome.test.succeed();
+      chrome.history.addUrl({url: VALID_URL}, function() {
+        chrome.history.search({text: ''}, function(historyItems) {
+          assertEq(1, historyItems.length);
+          assertEq(VALID_URL, historyItems[0].url);
+          chrome.test.succeed();
+        });
       });
     });
   }

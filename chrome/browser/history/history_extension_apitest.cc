@@ -19,9 +19,8 @@ class HistoryExtensionApiTest : public ExtensionApiTest {
   }
 };
 
-// Full text search indexing sometimes exceeds a timeout.
-// Fix this as part of crbug/76170.
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, DISABLED_MiscSearch) {
+// Full text search indexing sometimes exceeds a timeout. (http://crbug/119505)
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MiscSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "misc_search.html")) << message_;
 }
 

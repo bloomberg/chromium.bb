@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,10 +112,13 @@ function countItemsInHistory(callback) {
  * @param {function} callback Closure.
  */
 function populateHistory(urls, callback) {
+  var num_urls_added = 0;
   urls.forEach(function(url) {
-    chrome.history.addUrl({ 'url': url });
+    chrome.history.addUrl({ 'url': url }, function() {
+      if (++num_urls_added == urls.length)
+        callback()
+    });
   });
-  callback();
 }
 
 /**
@@ -148,16 +151,9 @@ function addUrlsWithTimeline(urls, callback) {
   assertEq(2, urls.length);
 
   // Add the first URL now.
-  chrome.history.addUrl({url: urls[0]});
+  chrome.history.addUrl({url: urls[0]}, function() {
 
-  // Add the second URL after a delay, so that the times at which the
-  // URLs were added are not the same.
-  waitAFewSeconds(1, function() {
-    chrome.history.addUrl({url: urls[1]});
-
-    // TODO(skerner): If addUrl() had a callback, waiting would not be
-    // necessary.  When crbug/76170 is fixed, use a callback.
-    waitAFewSeconds(1, function() {
+    chrome.history.addUrl({url: urls[1]}, function() {
 
       // Use search to get the times of the two URLs, and compute times
       // to pass to the callback.
