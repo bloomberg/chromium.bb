@@ -29,6 +29,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import cros_mark_as_stable
 from chromite.buildbot import portage_utilities
+from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
@@ -487,9 +488,16 @@ def main():
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
   os.chdir(overlay_dir)
+  existing_branch = cros_lib.GetCurrentBranch(overlay_dir)
   work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
                                               tracking_branch)
   work_branch.CreateBranch()
+
+  # In the case of uprevving overlays that have patches applied to them,
+  # include the patched changes in the stabilizing branch.
+  if existing_branch:
+    RunCommand(['git', 'rebase', existing_branch], cwd=overlay_dir)
+
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,
       commit_to_use, overlay_dir)
