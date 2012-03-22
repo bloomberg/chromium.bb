@@ -91,6 +91,10 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;
 
+  // The address of this adapter.  The address format is "XX:XX:XX:XX:XX:XX",
+  // where each XX is a hexadecimal number.
+  const std::string& address() const { return address_; }
+
   // Indicates whether the adapter is actually present on the system, for
   // the default adapter this indicates whether any adapter is present.
   bool IsPresent() const;
@@ -273,6 +277,9 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // point at the default adapter.
   bool track_default_;
   dbus::ObjectPath object_path_;
+
+  // Address of the adapter.
+  std::string address_;
 
   // Tracked adapter state, cached locally so we only send change notifications
   // to observers on a genuine change.

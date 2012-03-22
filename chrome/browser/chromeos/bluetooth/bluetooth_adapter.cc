@@ -114,6 +114,8 @@ void BluetoothAdapter::ChangeAdapter(const dbus::ObjectPath& adapter_path) {
       DBusThreadManager::Get()->GetBluetoothAdapterClient()->
       GetProperties(object_path_);
 
+  address_ = properties->address.value();
+
   PoweredChanged(properties->powered.value());
   DiscoveringChanged(properties->discovering.value());
   DevicesChanged(properties->devices.value());
@@ -133,6 +135,7 @@ void BluetoothAdapter::RemoveAdapter() {
   ClearDevices();
 
   object_path_ = dbus::ObjectPath("");
+  address_.clear();
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterPresentChanged(this, false));
