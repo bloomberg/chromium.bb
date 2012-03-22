@@ -125,11 +125,8 @@ bool PropertySet::UpdatePropertiesFromReader(MessageReader* reader) {
 
   while (array_reader.HasMoreData()) {
     MessageReader dict_entry_reader(NULL);
-    if (!array_reader.PopDictEntry(&dict_entry_reader))
-      continue;
-
-    if (!UpdatePropertyFromReader(&dict_entry_reader))
-      continue;
+    if (array_reader.PopDictEntry(&dict_entry_reader))
+      UpdatePropertyFromReader(&dict_entry_reader);
   }
 
   return true;

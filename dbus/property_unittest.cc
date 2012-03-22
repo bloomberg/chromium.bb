@@ -112,7 +112,7 @@ class PropertyTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  // Wait for the given number of updates.
+  // Waits for the given number of updates.
   void WaitForUpdates(size_t num_updates) {
     while (updated_properties_.size() < num_updates)
       message_loop_.Run();
@@ -123,12 +123,12 @@ class PropertyTest : public testing::Test {
   // Name, Version, Methods, Objects
   static const int kExpectedSignalUpdates = 4;
 
-  // Wait for initial values to be set.
+  // Waits for initial values to be set.
   void WaitForGetAll() {
     WaitForUpdates(kExpectedSignalUpdates);
   }
 
-  // Wait for the callback. |id| is the string bound to the callback when
+  // Waits for the callback. |id| is the string bound to the callback when
   // the method call is made that identifies it and distinguishes from any
   // other; you can set this to whatever you wish.
   void WaitForCallback(const std::string& id) {
@@ -152,8 +152,8 @@ class PropertyTest : public testing::Test {
 TEST_F(PropertyTest, InitialValues) {
   WaitForGetAll();
 
-  EXPECT_EQ(properties_->name.value(), "TestService");
-  EXPECT_EQ(properties_->version.value(), 10);
+  EXPECT_EQ("TestService", properties_->name.value());
+  EXPECT_EQ(10, properties_->version.value());
 
   std::vector<std::string> methods = properties_->methods.value();
   ASSERT_EQ(4U, methods.size());
@@ -177,7 +177,7 @@ TEST_F(PropertyTest, UpdatedValues) {
   WaitForCallback("Name");
   WaitForUpdates(1);
 
-  EXPECT_EQ(properties_->name.value(), "TestService");
+  EXPECT_EQ("TestService", properties_->name.value());
 
   // Update the value of the "Version" property, this value should be changed.
   properties_->version.Get(base::Bind(&PropertyTest::PropertyCallback,
@@ -186,7 +186,7 @@ TEST_F(PropertyTest, UpdatedValues) {
   WaitForCallback("Version");
   WaitForUpdates(1);
 
-  EXPECT_EQ(properties_->version.value(), 20);
+  EXPECT_EQ(20, properties_->version.value());
 
   // Update the value of the "Methods" property, this value should not change
   // and should not grow to contain duplicate entries.
@@ -228,7 +228,7 @@ TEST_F(PropertyTest, Get) {
   // Make sure we got a property update too.
   WaitForUpdates(1);
 
-  EXPECT_EQ(properties_->version.value(), 20);
+  EXPECT_EQ(20, properties_->version.value());
 }
 
 TEST_F(PropertyTest, Set) {
@@ -244,5 +244,5 @@ TEST_F(PropertyTest, Set) {
   // TestService sends a property update.
   WaitForUpdates(1);
 
-  EXPECT_EQ(properties_->name.value(), "NewService");
+  EXPECT_EQ("NewService", properties_->name.value());
 }

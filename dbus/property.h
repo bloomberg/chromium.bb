@@ -136,8 +136,10 @@ class PropertyBase {
 
   // Initializes the |property_set| and property |name| so that method
   // calls may be made from this class. This method is called by
-  // PropertySet::RegisterProperty(), there should be no need to call it
-  // directly.
+  // PropertySet::RegisterProperty() passing |this| for |property_set| so
+  // there should be no need to call it directly. If you do beware that
+  // no ownership or reference to |property_set| is taken so that object
+  // must outlive this one.
   void Init(PropertySet* property_set, const std::string& name);
 
   // Retrieves the name of this property, this may be useful in observers
@@ -150,7 +152,7 @@ class PropertyBase {
   //       // Handle version property changing
   //     }
   //   }
-  const std::string& name() { return name_; }
+  const std::string& name() const { return name_; }
 
   // Method used by PropertySet to retrieve the value from a MessageReader,
   // no knowledge of the contained type is required, this method returns
@@ -162,7 +164,8 @@ class PropertyBase {
   PropertySet* property_set() { return property_set_; }
 
  private:
-  // Pointer to the associated property set.
+  // Pointer to the PropertySet instance that this instance is a member of,
+  // no ownership is taken and |property_set_| must outlive this class.
   PropertySet* property_set_;
 
   // Name of the property.
@@ -188,8 +191,8 @@ class PropertySet {
   // argument specifies the name of the property changed.
   typedef base::Callback<void(const std::string& name)> PropertyChangedCallback;
 
-  // Construct a property set, |object_proxy| specifies the proxy for the
-  // remote object that these properties are for, care should be taken to
+  // Constructs a property set, where |object_proxy| specifies the proxy for
+  // the/ remote object that these properties are for, care should be taken to
   // ensure that this object does not outlive the lifetime of the proxy;
   // |interface| specifies the D-Bus interface of these properties, and
   // |property_changed_callback| specifies the callback for when properties
@@ -207,9 +210,10 @@ class PropertySet {
   // call the PropertyBase::Init method.
   void RegisterProperty(const std::string& name, PropertyBase* property);
 
-  // Call after construction to connect property change notification
-  // signals. Sub-classes may override to use different D-Bus signals.
-  void ConnectSignals();
+  // Connects property change notification signals to the object, generally
+  // called immediately after the object is created and before calls to other
+  // methods. Sub-classes may override to use different D-Bus signals.
+  virtual void ConnectSignals();
 
   // Methods connected by ConnectSignals() and called by dbus:: when
   // a property is changed. Sub-classes may override if the property
@@ -223,17 +227,17 @@ class PropertySet {
   // initial values. Sub-classes may override to use a different D-Bus
   // method, or if the remote object does not support retrieving all
   // properties, either ignore or obtain each property value individually.
-  void GetAll();
+  virtual void GetAll();
   virtual void OnGetAll(Response* response);
 
   // Update properties by reading an array of dictionary entries, each
   // containing a string with the name and a variant with the value, from
-  // |message_reader|. Returns false if message in incorrect format.
+  // |message_reader|. Returns false if message is in incorrect format.
   bool UpdatePropertiesFromReader(MessageReader* reader);
 
   // Updates a single property by reading a string with the name and a
   // variant with the value from |message_reader|. Returns false if message
-  // in incorrect format, or property type doesn't match.
+  // is in incorrect format, or property type doesn't match.
   bool UpdatePropertyFromReader(MessageReader* reader);
 
   // Calls the property changed callback passed to the constructor, used
@@ -243,11 +247,11 @@ class PropertySet {
 
   // Retrieves the object proxy this property set was initialized with,
   // provided for sub-classes overriding methods that make D-Bus calls
-  // and for Property<>.
+  // and for Property<>. Not permitted with const references to this class.
   ObjectProxy* object_proxy() { return object_proxy_; }
 
   // Retrieves the interface of this property set.
-  const std::string& interface() { return interface_; }
+  const std::string& interface() const { return interface_; }
 
  protected:
   // Get a weak pointer to this property set, provided so that sub-classes
@@ -258,7 +262,8 @@ class PropertySet {
   }
 
  private:
-  // Pointer to object proxy for making method calls.
+  // Pointer to object proxy for making method calls, no ownership is taken
+  // so this must outlive this class.
   ObjectProxy* object_proxy_;
 
   // Interface of property, e.g. "org.chromium.ExampleService", this is
@@ -324,9 +329,9 @@ class Property : public PropertyBase {
 
   // Requests an updated value from the remote object incurring a
   // round-trip. |callback| will be called when the new value is available.
-  // This may not be implemented by some interfaces, and may be overriden by
-  // sub-classes if interfaces use different method calls.
-  void Get(GetCallback callback) {
+  // This may not be implemented by some interfaces, and may be overriden
+  // by sub-classes if interfaces use different method calls.
+  virtual void Get(GetCallback callback) {
     MethodCall method_call(kPropertiesInterface, kPropertiesGet);
     MessageWriter writer(&method_call);
     writer.AppendString(property_set()->interface());
@@ -360,9 +365,9 @@ class Property : public PropertyBase {
   // Requests that the remote object change the property value to |value|,
   // |callback| will be called to indicate the success or failure of the
   // request, however the new value may not be available depending on the
-  // remote object. This method may be overriden by sub-classes if
+  // remote object. This method may be overridden by sub-classes if
   // interfaces use different method calls.
-  void Set(const T& value, SetCallback callback) {
+  virtual void Set(const T& value, SetCallback callback) {
     MethodCall method_call(kPropertiesInterface, kPropertiesSet);
     MessageWriter writer(&method_call);
     writer.AppendString(property_set()->interface());

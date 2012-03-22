@@ -11,7 +11,6 @@
 
 namespace chromeos {
 
-// dbus::PropertySet override.
 void BluetoothPropertySet::ConnectSignals() {
   dbus::ObjectProxy* object_proxy = this->object_proxy();
   DCHECK(object_proxy);
@@ -22,7 +21,6 @@ void BluetoothPropertySet::ConnectSignals() {
       base::Bind(&dbus::PropertySet::ChangedConnected, GetWeakPtr()));
 }
 
-// dbus::PropertySet override.
 void BluetoothPropertySet::ChangedReceived(dbus::Signal* signal) {
   DCHECK(signal);
 
@@ -30,7 +28,6 @@ void BluetoothPropertySet::ChangedReceived(dbus::Signal* signal) {
   UpdatePropertyFromReader(&reader);
 }
 
-// dbus::PropertySet override.
 void BluetoothPropertySet::GetAll() {
   dbus::MethodCall method_call(interface(),
                                bluetooth_common::kGetProperties);
