@@ -623,9 +623,13 @@ void AutofillManager::OnHideAutofillPopup() {
 }
 
 void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
   Browser* browser = BrowserList::GetLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   browser->window()->ShowPasswordGenerationBubble(bounds);
+#endif  // #if defined(OS_ANDROID)
 }
 
 void AutofillManager::OnLoadedServerPredictions(
