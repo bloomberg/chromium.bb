@@ -30,6 +30,25 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
     return scoped_ptr<DesktopEnvironment>();
   }
 
+  return scoped_ptr<DesktopEnvironment>(
+      new DesktopEnvironment(context,
+                             capturer.Pass(),
+                             event_executor.Pass()));
+}
+
+// static
+scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
+    ChromotingHostContext* context) {
+  scoped_ptr<Capturer> capturer(Capturer::Create());
+  scoped_ptr<protocol::HostEventStub> event_executor =
+      EventExecutor::Create(context->desktop_message_loop(),
+                            capturer.get());
+
+  if (capturer.get() == NULL || event_executor.get() == NULL) {
+    LOG(ERROR) << "Unable to create DesktopEnvironment";
+    return scoped_ptr<DesktopEnvironment>();
+  }
+
 #if defined(OS_WIN)
   event_executor.reset(new SessionEventExecutorWin(
       context->desktop_message_loop(),

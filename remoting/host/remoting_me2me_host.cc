@@ -276,8 +276,10 @@ class HostProcess : public OAuthClient::Delegate {
           new SignalingConnector(signal_strategy_.get()));
     }
 
-    if (!desktop_environment_.get())
-      desktop_environment_ = DesktopEnvironment::Create(context_.get());
+    if (!desktop_environment_.get()) {
+      desktop_environment_ =
+          DesktopEnvironment::CreateForService(context_.get());
+    }
 
     protocol::NetworkSettings network_settings(allow_nat_traversal_);
     if (!allow_nat_traversal_) {

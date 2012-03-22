@@ -25,7 +25,14 @@ class HostEventStub;
 
 class DesktopEnvironment {
  public:
-  static scoped_ptr<DesktopEnvironment> Create(ChromotingHostContext* context);
+  // Creates a DesktopEnvironment used in a host plugin.
+  static scoped_ptr<DesktopEnvironment> Create(
+      ChromotingHostContext* context);
+
+  // Creates a DesktopEnvironment used in a service process.
+  static scoped_ptr<DesktopEnvironment> CreateForService(
+      ChromotingHostContext* context);
+
   static scoped_ptr<DesktopEnvironment> CreateFake(
       ChromotingHostContext* context,
       scoped_ptr<Capturer> capturer,
