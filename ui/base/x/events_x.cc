@@ -500,9 +500,10 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
         return ET_MOUSEWHEEL;
       return ET_MOUSE_PRESSED;
     case ButtonRelease:
+      // Drop wheel events; we should've already scrolled on the press.
       if (static_cast<int>(native_event->xbutton.button) >= kMinWheelButton &&
           static_cast<int>(native_event->xbutton.button) <= kMaxWheelButton)
-        return ET_MOUSEWHEEL;
+        return ET_UNKNOWN;
       return ET_MOUSE_RELEASED;
     case MotionNotify:
       if (native_event->xmotion.state &
@@ -523,13 +524,18 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
       switch (xievent->evtype) {
-        case XI_ButtonPress:
-        case XI_ButtonRelease: {
+        case XI_ButtonPress: {
           int button = EventButtonFromNative(native_event);
           if (button >= kMinWheelButton && button <= kMaxWheelButton)
             return ET_MOUSEWHEEL;
-          return xievent->evtype == XI_ButtonPress ?
-              ET_MOUSE_PRESSED : ET_MOUSE_RELEASED;
+          return ET_MOUSE_PRESSED;
+        }
+        case XI_ButtonRelease: {
+          int button = EventButtonFromNative(native_event);
+          // Drop wheel events; we should've already scrolled on the press.
+          if (button >= kMinWheelButton && button <= kMaxWheelButton)
+            return ET_UNKNOWN;
+          return ET_MOUSE_RELEASED;
         }
         case XI_Motion: {
           float vx, vy;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,6 +111,21 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_TRUE(ui::IsMouseEvent(&event));
   EXPECT_LT(ui::GetMouseWheelOffset(&event), 0);
 #endif
+
+  // TODO(derat): Test XInput code.
+}
+
+TEST(EventsXTest, AvoidExtraEventsOnWheelRelease) {
+  XEvent event;
+  gfx::Point location(5, 10);
+
+  InitButtonEvent(&event, true, location, 4, 0);
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
+
+  // We should return ET_UNKNOWN for the release event instead of returning
+  // ET_MOUSEWHEEL; otherwise we'll scroll twice for each scrollwheel step.
+  InitButtonEvent(&event, false, location, 4, 0);
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(&event));
 
   // TODO(derat): Test XInput code.
 }
