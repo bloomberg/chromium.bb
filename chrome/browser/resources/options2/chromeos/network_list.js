@@ -886,7 +886,6 @@ cr.define('options.network', function() {
       loadData_('vpn', data.vpnList, data.rememberedList);
     else
       networkList.deleteItem('vpn');
-
     networkList.updateToggleControl('airplaneMode', data.airplaneMode);
 
     networkList.invalidate();

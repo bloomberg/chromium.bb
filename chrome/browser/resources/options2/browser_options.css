@@ -187,6 +187,10 @@ list:not([disabled]) > .network-group[selected] {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS');
 }
 
+.network-vpn {
+  background-image: url('chrome://theme/IDR_STATUSBAR_VPN');
+}
+
 .network-add-connection,
 .network-control-active,
 .network-control-inactive {
@@ -211,11 +215,16 @@ list:not([disabled]) > .network-group[selected] {
 .network-options-button {
   -webkit-box-flex: 0;
   -webkit-transform: scale(0.6);
-  background-image: url('chrome://theme/IDR_INFOBAR_QUESTION_MARK');
+  background-image: none;
   background-position: center center;
   display: block;
+  opacity: 0.5;
   vertical-align: middle;
   width: 19px;
+}
+
+.network-menu-item:hover .network-options-button {
+  background-image: url('chrome://theme/IDR_STATUSBAR_EDIT');
 }
 
 .network-group > .controlled-setting-indicator,
@@ -233,14 +242,24 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-options-button:hover {
-  /* TODO(kevers): Update once proper assets received for the options
-     button. */
-  border: 2px solid #333;
-  border-radius: 10px;
+  opacity: 1;
+}
+
+@-webkit-keyframes vpn-connecting-animation {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
 }
 
 .network-connecting {
   -webkit-animation: connecting-animation 1s step-end infinite;
+}
+
+.network-vpn.network-connecting {
+  -webkit-animation: vpn-connecting-animation 500ms alternate infinite;
 }
 
 .network-title {

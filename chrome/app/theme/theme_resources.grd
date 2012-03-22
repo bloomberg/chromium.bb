@@ -480,6 +480,7 @@
         <include name="IDR_STATUSBAR_BATTERY_LARGE_ALL" file="statusbar_battery_large_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_SMALL_ALL" file="statusbar_battery_small_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_CAPS_LOCK" file="statusbar_caps_lock.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_EDIT" file="statusbar_edit.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" type="BINDATA" />
@@ -510,6 +511,7 @@
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_EMPTY" file="statusbar_volume_slider_empty.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_FULL" file="statusbar_volume_slider_full.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_THUMB" file="statusbar_volume_slider_thumb.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_MAXIMIZE" file="statusbar_window_maximize.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_RESTORE" file="statusbar_window_restore.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
