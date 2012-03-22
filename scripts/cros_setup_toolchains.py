@@ -29,10 +29,6 @@ EMERGE_CMD = os.path.join(os.path.dirname(__file__),
 PACKAGE_STABLE = '[stable]'
 PACKAGE_NONE = '[none]'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
-# NOTE: gdb is only built using --ex-gdb through crossdev.
-CROSSDEV_PACKAGES = ['gcc', 'libc', 'binutils', 'kernel']
-TOOLCHAIN_PACKAGES = CROSSDEV_PACKAGES + ['gdb']
-
 
 CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
 STABLE_OVERLAY = '/usr/local/portage/stable'
@@ -47,10 +43,6 @@ DEFAULT_TARGET_VERSION_MAP = {
   'binutils' : '2.21-r4',
 }
 TARGET_VERSION_MAP = {
-  'arm-none-eabi' : {
-    'kernel' : PACKAGE_NONE,
-    'gdb' : PACKAGE_NONE,
-  },
   'host' : {
     'binutils' : '2.21.1',
     'gdb' : PACKAGE_NONE,
@@ -95,7 +87,7 @@ def GetPackageMap(target):
   # Start from copy of the global defaults.
   result = copy.copy(DEFAULT_TARGET_VERSION_MAP)
 
-  for pkg in TOOLCHAIN_PACKAGES:
+  for pkg in GetTargetPackages(target):
   # prefer any specific overrides
     if pkg in TARGET_VERSION_MAP.get(target, {}):
       result[pkg] = TARGET_VERSION_MAP[target][pkg]
@@ -116,8 +108,7 @@ def GetHostTuple():
 
   val = getattr(VAR_CACHE, CACHE_ATTR, None)
   if val is None:
-    val = cros_build_lib.RunCommand(['portageq', 'envvar', 'CHOST'],
-                      print_cmd=False, redirect_stdout=True).output
+    val = portage.settings['CHOST']
     setattr(VAR_CACHE, CACHE_ATTR, val)
   return val
 
@@ -142,6 +133,13 @@ def GetCrossdevConf(target):
   return val[target]
 
 
+def GetTargetPackages(target):
+  """Returns a list of packages for a given target."""
+  conf = GetCrossdevConf(target)
+  # Undesired packages are denoted by empty ${pkg}_pn variable.
+  return [x for x in conf['crosspkgs'].strip("'").split() if conf[x+'_pn']]
+
+
 # Portage helper functions:
 def GetPortagePackage(target, package):
   """Returns a package name for the given target."""
@@ -162,11 +160,6 @@ def GetPortagePackage(target, package):
 def GetPortageKeyword(target):
   """Returns a portage friendly keyword for a given target."""
   return GetCrossdevConf(target)['arch']
-
-
-def GetHostTarget():
-  """Returns a string for the host target tuple."""
-  return portage.settings['CHOST']
 
 
 def IsPackageDisabled(target, package):
@@ -190,13 +183,11 @@ def GetAllTargets():
       with open(config) as config_file:
         lines = config_file.read().splitlines()
         for line in lines:
-          # Remove empty lines and commented lines.
-          if line and not line.startswith('#'):
-            targets.add(line)
+          line = line.split('#', 1)[0]
+          targets.update(line.split())
 
   # Remove the host target as that is not a cross-target. Replace with 'host'.
-  targets.remove(GetHostTarget())
-  targets.add('host')
+  targets.discard(GetHostTuple())
   return targets
 
 
@@ -294,7 +285,7 @@ def TargetIsInitialized(target):
   """
   # Check if packages for the given target all have a proper version.
   try:
-    for package in TOOLCHAIN_PACKAGES:
+    for package in GetTargetPackages(target):
       # Do we even want this package && is it initialized?
       if not IsPackageDisabled(target, package) and \
           not GetInstalledPackageVersions(target, package):
@@ -360,7 +351,7 @@ def CreatePackageKeywords(target):
   keyword = GetPortageKeyword(target)
 
   with open(maskfile, 'w') as f:
-    for pkg in TOOLCHAIN_PACKAGES:
+    for pkg in GetTargetPackages(target):
       if IsPackageDisabled(target, pkg):
         continue
       f.write('%s %s ~%s\n' %
@@ -391,15 +382,10 @@ def InitializeCrossdevTargets(targets, usepkg):
     cmd.extend(['--overlays', '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)])
     cmd.extend(['--ov-output', CROSSDEV_OVERLAY])
 
-    # HACK(zbehan): arm-none-eabi uses newlib which doesn't like headers-only.
-    if target == 'arm-none-eabi':
-      cmd.append('--without-headers')
-
-    if not IsPackageDisabled(target, 'gdb'):
-      cmd.append('--ex-gdb')
-
-    for pkg in CROSSDEV_PACKAGES:
-      if IsPackageDisabled(target, pkg):
+    for pkg in GetTargetPackages(target):
+      if pkg == 'gdb':
+        # Gdb does not have selectable versions.
+        cmd.append('--ex-gdb')
         continue
       # The first of the desired versions is the "primary" one.
       version = GetDesiredPackageVersions(target, pkg)[0]
@@ -428,7 +414,7 @@ def UpdateTargets(targets, usepkg):
     RemovePackageMask(target)
     CreatePackageKeywords(target)
     packagemasks = {}
-    for package in TOOLCHAIN_PACKAGES:
+    for package in GetTargetPackages(target):
       # Portage name for the package
       if IsPackageDisabled(target, package):
         continue
@@ -470,7 +456,7 @@ def CleanTargets(targets):
   """Unmerges old packages that are assumed unnecessary."""
   unmergemap = {}
   for target in targets:
-    for package in TOOLCHAIN_PACKAGES:
+    for package in GetTargetPackages(target):
       if IsPackageDisabled(target, package):
         continue
       pkg = GetPortagePackage(target, package)
@@ -512,7 +498,7 @@ def SelectActiveToolchains(targets, suffixes):
 
       if target == 'host':
         # *-config is the only tool treating host identically (by tuple).
-        target = GetHostTarget()
+        target = GetHostTuple()
 
       # And finally, attach target to it.
       desired = '%s-%s' % (target, desired)
