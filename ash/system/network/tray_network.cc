@@ -29,49 +29,6 @@ namespace {
 // Height of the list of networks in the popup.
 const int kNetworkListHeight = 160;
 
-// A custom scroll-view that has a specified dimension.
-class FixedSizedScrollView : public views::ScrollView {
- public:
-  FixedSizedScrollView() {
-    set_focusable(true);
-    set_notify_enter_exit_on_child(true);
-  }
-
-  virtual ~FixedSizedScrollView() {}
-
-  void SetContentsView(View* view) {
-    SetContents(view);
-    view->SetBoundsRect(gfx::Rect(view->GetPreferredSize()));
-  }
-
-  void set_fixed_size(gfx::Size size) { fixed_size_ = size; }
-
- private:
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return fixed_size_;
-  }
-
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
-    views::View* contents = GetContents();
-    gfx::Rect bounds = contents->bounds();
-    bounds.set_width(width() - GetScrollBarWidth());
-    contents->SetBoundsRect(bounds);
-  }
-
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
-    RequestFocus();
-  }
-
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
-    // Do not paint the focus border.
-  }
-
-  gfx::Size fixed_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
-};
-
 }
 
 namespace ash {
@@ -230,7 +187,7 @@ class NetworkDetailedView : public views::View,
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddLabel(rb.GetLocalizedString(delegate->GetWifiEnabled() ?
           IDS_ASH_STATUS_TRAY_DISABLE_WIFI :
-          IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
+          IDS_ASH_STATUS_TRAY_ENABLE_WIFI), gfx::Font::NORMAL);
       AddChildView(container);
       toggle_wifi_ = container;
     }
@@ -239,7 +196,8 @@ class NetworkDetailedView : public views::View,
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddLabel(rb.GetLocalizedString(
           delegate->GetCellularEnabled() ?  IDS_ASH_STATUS_TRAY_DISABLE_MOBILE :
-                                            IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
+                                            IDS_ASH_STATUS_TRAY_ENABLE_MOBILE),
+          gfx::Font::NORMAL);
       AddChildView(container);
       toggle_mobile_ = container;
     }
@@ -264,14 +222,14 @@ class NetworkDetailedView : public views::View,
       // Settings, only if logged in.
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddLabel(rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS));
+          IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS), gfx::Font::NORMAL);
       AddChildView(container);
       settings_ = container;
     } else {
       // Allow changing proxy settings in the login screen.
       HoverHighlightView* container = new HoverHighlightView(this);
       container->AddLabel(rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS));
+          IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS), gfx::Font::NORMAL);
       AddChildView(container);
       proxy_settings_ = container;
     }

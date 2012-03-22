@@ -18,6 +18,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
+namespace {
+const int kDeviceListHeight = 190;
+}
+
 namespace ash {
 namespace internal {
 
@@ -36,7 +40,6 @@ class BluetoothDefaultView : public TrayItemMore {
         IDR_AURA_UBER_TRAY_BLUETOOTH_LARGE).ToSkBitmap());
     AddChildView(icon);
 
-    // TODO(sad): Use the correct label depending on the status.
     label_ = new views::Label;
     AddChildView(label_);
     UpdateLabel();
@@ -79,7 +82,7 @@ class BluetoothDetailedView : public views::View,
 
   virtual ~BluetoothDetailedView() {}
 
-  void Update(BluetoothDeviceList& list) {
+  void Update(const BluetoothDeviceList& list) {
     RemoveAllChildViews(true);
 
     header_ = NULL;
@@ -87,7 +90,7 @@ class BluetoothDetailedView : public views::View,
     toggle_bluetooth_ = NULL;
 
     AppendHeaderEntry();
-    AppendDeviceList();
+    AppendDeviceList(list);
     AppendSettingsEntries();
 
     Layout();
@@ -111,7 +114,28 @@ class BluetoothDetailedView : public views::View,
     header_ = container;
   }
 
-  void AppendDeviceList() {
+  void AppendDeviceList(const BluetoothDeviceList& list) {
+    views::View* devices = new views::View;
+    devices->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, 1));
+
+    for (size_t i = 0; i < list.size(); i++) {
+      HoverHighlightView* container = new HoverHighlightView(this);
+      container->AddLabel(list[i].display_name,
+          list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
+      devices->AddChildView(container);
+      device_map_[container] = list[i].address;
+    }
+
+    FixedSizedScrollView* scroller = new FixedSizedScrollView;
+    scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
+        SkColorSetARGB(25, 0, 0, 0)));
+    scroller->set_fixed_size(
+        gfx::Size(devices->GetPreferredSize().width() +
+                  scroller->GetScrollBarWidth(),
+                  kDeviceListHeight));
+    scroller->SetContentsView(devices);
+    AddChildView(scroller);
   }
 
   void AppendSettingsEntries() {
@@ -122,13 +146,13 @@ class BluetoothDetailedView : public views::View,
     container->AddLabel(rb.GetLocalizedString(
         delegate->GetBluetoothEnabled() ?
             IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH :
-            IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
+            IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH), gfx::Font::NORMAL);
     AddChildView(container);
     toggle_bluetooth_ = container;
 
     container = new HoverHighlightView(this);
     container->AddLabel(rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE));
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
     AddChildView(container);
     add_device_ = container;
   }
@@ -144,10 +168,16 @@ class BluetoothDetailedView : public views::View,
     } else if (sender == add_device_) {
       delegate->AddBluetoothDevice();
     } else {
-      // TODO: Connect/disconnect from the device list.
+      std::map<views::View*, std::string>::iterator find;
+      find = device_map_.find(sender);
+      if (find != device_map_.end()) {
+        std::string device_id = find->second;
+        delegate->ToggleBluetoothConnection(device_id);
+      }
     }
   }
 
+  std::map<views::View*, std::string> device_map_;
   views::View* header_;
   views::View* add_device_;
   views::View* toggle_bluetooth_;

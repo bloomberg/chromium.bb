@@ -345,6 +345,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
       BluetoothDeviceList* list) OVERRIDE {
   }
 
+  virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
+  }
+
   virtual void GetAvailableIMEList(IMEInfoList* list) {
   }
 

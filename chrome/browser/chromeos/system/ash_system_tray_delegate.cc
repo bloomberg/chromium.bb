@@ -77,6 +77,14 @@ void BluetoothDiscoveryFailure() {
   // TODO(sad): Show an error bubble?
 }
 
+void BluetoothDeviceDisconnectError() {
+  // TODO(sad): Do something?
+}
+
+void BluetoothDeviceConnectError() {
+  // TODO(sad): Do something?
+}
+
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
                            public PowerManagerClient::Observer,
@@ -269,12 +277,24 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
     for (size_t i = 0; i < devices.size(); ++i) {
       BluetoothDevice* device = devices[i];
+      if (!device->IsPaired())
+        continue;
       ash::BluetoothDeviceInfo info;
       info.address = device->address();
       info.display_name = device->GetName();
       info.connected = device->IsConnected();
       list->push_back(info);
     }
+  }
+
+  virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
+    BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
+    if (!device)
+      return;
+    if (device->IsConnected())
+      device->Disconnect(base::Bind(&BluetoothDeviceDisconnectError));
+    else if (device->IsPaired())
+      device->Connect(NULL, base::Bind(&BluetoothDeviceConnectError));
   }
 
   virtual void GetAvailableIMEList(ash::IMEInfoList* list) OVERRIDE {

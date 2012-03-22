@@ -58,12 +58,14 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
   AddChildView(label);
 }
 
-void HoverHighlightView::AddLabel(const string16& text) {
+void HoverHighlightView::AddLabel(const string16& text,
+                                  gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
   views::Label* label = new views::Label(text);
   label->set_border(views::Border::CreateEmptyBorder(
       5, kTrayPopupDetailsIconWidth + kIconPaddingLeft, 5, 0));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetFont(label->font().DeriveFont(0, style));
   AddChildView(label);
 }
 
@@ -83,6 +85,43 @@ void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
 void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
   set_background(NULL);
   SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FixedSizedScrollView
+
+FixedSizedScrollView::FixedSizedScrollView() {
+  set_focusable(true);
+  set_notify_enter_exit_on_child(true);
+}
+
+FixedSizedScrollView::~FixedSizedScrollView() {}
+
+void FixedSizedScrollView::SetContentsView(View* view) {
+  SetContents(view);
+  view->SetBoundsRect(gfx::Rect(view->GetPreferredSize()));
+}
+
+gfx::Size FixedSizedScrollView::GetPreferredSize() {
+  return fixed_size_;
+}
+
+void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  views::View* contents = GetContents();
+  gfx::Rect bounds = contents->bounds();
+  bounds.set_width(width() - GetScrollBarWidth());
+  contents->SetBoundsRect(bounds);
+}
+
+void FixedSizedScrollView::OnMouseEntered(const views::MouseEvent& event) {
+  // TODO(sad): This is done to make sure that the scroll view scrolls on
+  // mouse-wheel events. This is ugly, and Ben thinks this is weird. There
+  // should be a better fix for this.
+  RequestFocus();
+}
+
+void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  // Do not paint the focus border.
 }
 
 void SetupLabelForTray(views::Label* label) {

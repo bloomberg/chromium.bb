@@ -125,6 +125,9 @@ class SystemTrayDelegate {
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices) = 0;
 
+  // Toggles connection to a specific bluetooth device.
+  virtual void ToggleBluetoothConnection(const std::string& address) = 0;
+
   // Returns a list of availble IMEs.
   virtual void GetAvailableIMEList(IMEInfoList* list) = 0;
 

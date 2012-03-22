@@ -9,6 +9,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 
 class SkBitmap;
@@ -52,7 +53,7 @@ class HoverHighlightView : public views::View {
 
   // Convenience function for adding a label with padding on the left for a
   // blank icon.
-  void AddLabel(const string16& text);
+  void AddLabel(const string16& text, gfx::Font::FontStyle style);
 
  private:
   // Overridden from views::View.
@@ -63,6 +64,29 @@ class HoverHighlightView : public views::View {
   ViewClickListener* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
+};
+
+// A custom scroll-view that has a specified dimension.
+class FixedSizedScrollView : public views::ScrollView {
+ public:
+  FixedSizedScrollView();
+
+  virtual ~FixedSizedScrollView();
+
+  void SetContentsView(View* view);
+
+  void set_fixed_size(gfx::Size size) { fixed_size_ = size; }
+
+ private:
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
+  gfx::Size fixed_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
 };
 
 // Sets up a Label properly for the tray (sets color, font etc.).
