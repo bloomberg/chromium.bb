@@ -35,6 +35,9 @@ wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
 int
 wl_os_epoll_create_cloexec(void);
 
+int
+wl_os_accept_cloexec(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+
 
 /*
  * The following are for wayland-os.c and the unit tests.

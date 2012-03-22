@@ -382,3 +382,5 @@ TEST(os_wrappers_epoll_create_cloexec_fallback)
 	init_fallbacks(1);
 	do_os_wrappers_epoll_create_cloexec(2);
 }
+
+/* FIXME: add tests for wl_os_accept_cloexec() */

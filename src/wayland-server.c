@@ -902,14 +902,8 @@ socket_data(int fd, uint32_t mask, void *data)
 	int client_fd;
 
 	length = sizeof name;
-	client_fd =
-		accept4(fd, (struct sockaddr *) &name, &length, SOCK_CLOEXEC);
-	if (client_fd < 0 && errno == ENOSYS) {
-		client_fd = accept(fd, (struct sockaddr *) &name, &length);
-		if (client_fd >= 0 && fcntl(client_fd, F_SETFD, FD_CLOEXEC) == -1)
-			fprintf(stderr, "failed to set FD_CLOEXEC flag on client fd, errno: %d\n", errno);
-	}
-
+	client_fd = wl_os_accept_cloexec(fd, (struct sockaddr *) &name,
+					 &length);
 	if (client_fd < 0)
 		fprintf(stderr, "failed to accept, errno: %d\n", errno);
 

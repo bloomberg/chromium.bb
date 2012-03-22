@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -27,6 +29,7 @@
 #include <errno.h>
 #include <sys/epoll.h>
 
+#include "../config.h"
 #include "wayland-os.h"
 
 static int
@@ -140,5 +143,22 @@ wl_os_epoll_create_cloexec(void)
 #endif
 
 	fd = epoll_create(1);
+	return set_cloexec_or_close(fd);
+}
+
+int
+wl_os_accept_cloexec(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+{
+	int fd;
+
+#ifdef HAVE_ACCEPT4
+	fd = accept4(sockfd, addr, addrlen, SOCK_CLOEXEC);
+	if (fd >= 0)
+		return fd;
+	if (errno != ENOSYS)
+		return -1;
+#endif
+
+	fd = accept(sockfd, addr, addrlen);
 	return set_cloexec_or_close(fd);
 }
