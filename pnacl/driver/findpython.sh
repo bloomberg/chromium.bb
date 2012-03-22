@@ -1,4 +1,7 @@
 #!/bin/sh
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Keep this script compatible with different shells.
 # It has been tested to work with: bash, zsh, ksh93, and dash.
@@ -14,7 +17,7 @@ if test "${PYTHON}" = "notset" ; then
                 /usr/bin/python2.7 \
                 /usr/bin/python2.5 \
                 /usr/bin/python ; do
-    if "${pypath}" --version 2>&1 | grep -q "2.5\\|2.6\\|2.7"; then
+    if "${pypath}" --version 2>&1 | grep -q "Python 2.[5-7]"; then
       PYTHON="${pypath}"
       break
     fi

@@ -885,6 +885,12 @@ translator-all() {
     # .pexe which support all targets.
     translator universal srpc newlib
   fi
+
+  # Copy native libs to translator install dir
+  cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}
+
+  driver-install-translator
+
   if ${PNACL_PRUNE}; then
     sdk-clean newlib
   fi
@@ -3312,15 +3318,15 @@ driver() {
   StepBanner "DRIVER"
   driver-install newlib
   driver-install glibc
+  driver-install-translator
 }
 
-# The driver is a simple python script which changes its behavior
-# depending on the name it is invoked as.
-driver-install() {
-  local libmode=$1
-  check-libmode ${libmode}
-  local destdir="${INSTALL_ROOT}/${libmode}/bin"
+# install python scripts and redirector shell/batch scripts
+driver-install-python() {
+  local destdir="$1"
+  shift
   local pydir="${destdir}/pydir"
+
   StepBanner "DRIVER" "Installing driver adaptors to ${destdir}"
   mkdir -p "${destdir}"
   mkdir -p "${pydir}"
@@ -3329,11 +3335,11 @@ driver-install() {
   spushd "${DRIVER_DIR}"
 
   # Copy python scripts
-  cp *.py "${pydir}"
+  cp $@ driver_log.py driver_env.py *tools.py loader.py "${pydir}"
 
   # Install redirector shell/batch scripts
   cp findpython.sh "${destdir}"
-  for name in pnacl-*.py; do
+  for name in $@; do
     local dest="${destdir}/${name/.py}"
     cp redirect.sh "${dest}"
     chmod +x "${dest}"
@@ -3342,6 +3348,16 @@ driver-install() {
     fi
   done
   spopd
+}
+
+# The driver is a simple python script which changes its behavior
+# depending on the name it is invoked as.
+driver-install() {
+  local libmode=$1
+  check-libmode ${libmode}
+  local destdir="${INSTALL_ROOT}/${libmode}/bin"
+
+  driver-install-python "${destdir}" "pnacl-*.py"
 
   # Tell the driver the library mode
   echo "LIBMODE=${libmode}" > "${destdir}"/driver.conf
@@ -3360,6 +3376,15 @@ driver-install() {
       cp "/bin/cyg${name}.dll" "${destdir}"
     done
   fi
+}
+
+driver-install-translator() {
+  local destdir="${INSTALL_TRANSLATOR}/bin"
+
+  driver-install-python "${destdir}" pnacl-translate.py pnacl-nativeld.py
+
+  # Translator is newlib
+  echo "LIBMODE=newlib" > "${destdir}"/driver.conf
 }
 
 ######################################################################

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -28,10 +28,7 @@ PLATFORM_MAPPING = {
                    'pnacl_linux_x86_64',
                    'linux_arm-trusted',
                    'pnacl_translator'],
-        'arm'   : ['linux_x86_newlib',
-                   'pnacl_linux_x86_64',
-                   'linux_arm-trusted',
-                   'pnacl_translator'],
+        'arm'   : ['pnacl_translator'],
     },
     'mac': {
         'x86-32': ['mac_x86', 'mac_x86_newlib',
