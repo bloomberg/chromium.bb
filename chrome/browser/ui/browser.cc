@@ -3549,6 +3549,9 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
 
   // Discarded tabs always get reloaded.
   if (IsTabDiscarded(index)) {
+    // Log to track down crash crbug.com/119068
+    LOG(WARNING) << "Reloading discarded tab at " << index
+        << " gesture " << user_gesture;
     Reload(CURRENT_TAB);
     return;
   }
