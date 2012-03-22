@@ -313,6 +313,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
         gfx::kGLImplementationDesktopName) {
+      // Open GL path.
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
       policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
@@ -321,24 +322,28 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
       if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationSwiftShaderName ||
           cmd_line->HasSwitch(switches::kReduceGpuSandbox)) {
+        // Swiftshader path.
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                               sandbox::USER_LIMITED);
+        // UI restrictions break when we access Windows from outside our job.
+        // However, we don't want a proxy window in this process because it can
+        // introduce deadlocks where the renderer blocks on the gpu, which in
+        // turn blocks on the browser UI thread. So, instead we forgo a window
+        // message pump entirely and just add job restrictions to prevent child
+        // processes.
+        policy->SetJobLevel(sandbox::JOB_LIMITED_USER,
+                            JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
+                            JOB_OBJECT_UILIMIT_DESKTOP |
+                            JOB_OBJECT_UILIMIT_EXITWINDOWS |
+                            JOB_OBJECT_UILIMIT_DISPLAYSETTINGS);
       } else {
+        // Angle + DirectX path.
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                               sandbox::USER_RESTRICTED);
+        policy->SetJobLevel(sandbox::JOB_LOCKDOWN,
+                            JOB_OBJECT_UILIMIT_HANDLES);
       }
 
-      // UI restrictions break when we access Windows from outside our job.
-      // However, we don't want a proxy window in this process because it can
-      // introduce deadlocks where the renderer blocks on the gpu, which in
-      // turn blocks on the browser UI thread. So, instead we forgo a window
-      // message pump entirely and just add job restrictions to prevent child
-      // processes.
-      policy->SetJobLevel(sandbox::JOB_LIMITED_USER,
-                          JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                          JOB_OBJECT_UILIMIT_DESKTOP |
-                          JOB_OBJECT_UILIMIT_EXITWINDOWS |
-                          JOB_OBJECT_UILIMIT_DISPLAYSETTINGS);
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
   } else {
