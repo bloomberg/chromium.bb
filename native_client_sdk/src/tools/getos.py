@@ -10,7 +10,25 @@ Determine the name of the platform used to determine the correct Toolchain to
 invoke.
 """
 
+import optparse
+import os
+import re
+import subprocess
 import sys
+
+
+TOOL_PATH=os.path.dirname(os.path.abspath(__file__))
+
+
+def ErrOut(text):
+  sys.stderr.write(text + '\n')
+  sys.exit(1)
+  
+
+
+def GetSDKPath():
+  return os.getenv('NACL_SDK_ROOT', os.path.dirname(TOOL_PATH))
+
 
 def GetPlatform():
   if sys.platform.startswith('cygwin') or sys.platform.startswith('win'):
@@ -23,12 +41,137 @@ def GetPlatform():
     return 'linux'
   return None
 
-if __name__ == '__main__':
+
+def UseWin64():
+  arch32 = os.environ.get('PROCESSOR_ARCHITECTURE', 'unk')
+  arch64 = os.environ.get('PROCESSOR_ARCHITEW6432', 'unk')
+
+  if arch32 == 'AMD64' or arch64 == 'AMD64':
+    return True
+  return False
+
+
+def GetSystemArch(platform):
+  if platform == 'win':
+    if UseWin64():
+      return 'x86_64'
+    return 'x86_32'
+
+  if platform in ['mac', 'linux']:
+    try:
+      pobj = subprocess.Popen(['uname', '-m'],stdout= subprocess.PIPE)
+      arch, serr = pobj.communicate()
+      arch = arch.split()[0]
+    except:
+      arch = None
+  return arch
+
+
+def GetChromeArch(platform):
+  if platform == 'win':
+    if UseWin64():
+      return 'x86_64'
+    return 'x86_32'
+
+  if platform in ['mac', 'linux']:
+    chrome_path = os.getenv('CHROME_PATH', None)
+    if not chrome_path:
+      ErrOut('CHROME_PATH is undefined.')
+
+    try:
+      pobj = subprocess.Popen(['objdump', '-f', chrome_path],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+      arch, serr = pobj.communicate()
+      format = re.compile(r'(file format) ([a-zA-Z0-9_\-]+)')
+      arch = format.search(arch).group(2)
+      if '64' in arch:
+        return 'x86_64'
+      return 'x86_32'
+    except:
+      print "FAILED"
+      arch = None
+  return arch
+
+
+def GetLoaderPath(platform):
+  sdk_path = GetSDKPath()
+  arch = GetChromeArch(platform)
+  return os.path.join(sdk_path, 'tools', 'sel_ldr_' + arch)
+
+
+def GetHelperPath(platform):
+  sdk_path = GetSDKPath()
+  if platform != 'linux':
+    return ''
+  arch = GetChromeArch(platform)
+  return os.path.join(sdk_path, 'tools', 'nacl_helper_bootstrap_' + arch)
+
+
+def GetIrtBinPath(platform):
+  sdk_path = GetSDKPath()
+  arch = GetChromeArch(platform)
+  return os.path.join(sdk_path, 'tools', 'irt_%s.nexe' % arch)
+
+
+def GetPluginPath(platform):
+  sdk_path = GetSDKPath()
+  arch = GetChromeArch(platform)
+  if platform == 'win':
+    return os.path.join(sdk_path, 'tools', 'ppNaClPlugin_x86_32.dll')
+  else:
+    return os.path.join(sdk_path, 'tools', 'ppNaClPlugin_%s.so' % arch)
+
+
+def main(args):
+  parser = optparse.OptionParser()
+  parser.add_option('--arch', help='Return architecture type.',
+      action='store_true', dest='arch', default=False)
+  parser.add_option('--chrome', help='Return chrome architecture type.',
+      action='store_true', dest='chrome', default=False)
+  parser.add_option('--helper', help='Return chrome helper path.',
+      action='store_true', dest='helper', default=False)
+  parser.add_option('--irtbin', help='Return irt binary path.',
+      action='store_true', dest='irtbin', default=False)
+  parser.add_option('--loader', help='Return NEXE loader path.',
+      action='store_true', dest='loader', default=False)
+  parser.add_option('--plugin', help='Return NaCl plugin path.',
+      action='store_true', dest='plugin', default=False)
+
+  options, _ = parser.parse_args(args[1:])
+
   platform = GetPlatform()
   if platform is None:
     print 'Unknown platform.'
-    sys.exit(1)
+    return 1
 
-  print platform
-  sys.exit(0)
+  if len(args) > 2:
+    print 'Only specify one platform item.'
+    return 1
 
+  if len(args) == 1:
+    print platform
+    return 0
+
+  if len(args) == 2:
+    if options.arch:
+      out = GetSystemArch(platform)
+    if options.chrome:
+      out = GetChromeArch(platform)
+    if options.helper:
+      out = GetHelperPath(platform)
+    if options.irtbin:
+      out = GetIrtBinPath(platform)
+    if options.loader:
+      out = GetLoaderPath(platform)
+    if options.plugin:
+      out = GetPluginPath(platform)
+    print out
+    return 0
+
+  print 'Failed with args: ' + ' '.join(args)
+  return 1
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))

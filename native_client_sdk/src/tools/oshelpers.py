@@ -69,7 +69,7 @@ def CopyPath(options, src, dst):
       os.remove(dst)
 
     # Now copy to the non-existent fully qualified target
-    shutil.copyfile(src, dst)
+    shutil.copy(src, dst)
     return
 
   # Otherwise it's a directory, ignore it unless allowed

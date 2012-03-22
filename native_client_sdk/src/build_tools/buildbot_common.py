@@ -56,6 +56,12 @@ def CopyDir(src, dst, excludes=['.svn', '*/.svn']):
   oshelpers.Copy(args)
 
 
+def CopyFile(src, dst):
+  print 'cp -r %s %s' % (src, dst)
+  args = [src, dst]
+  oshelpers.Copy(args)
+
+
 def RemoveDir(dst):
   """Remove the provided path."""
   print 'rm -fr ' + dst

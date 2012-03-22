@@ -19,6 +19,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 import optparse
 import os
 import sys
+import zipfile
 
 # local includes
 import buildbot_common
@@ -185,7 +186,7 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
     src = os.path.join(NACL_DIR, tc_map[filename])
     dst = os.path.join(tc_dst_inc, filename)
     buildbot_common.MakeDir(os.path.dirname(dst))
-    oshelpers.Copy(['-v', src, dst])
+    buildbot_common.CopyFile(src, dst)
 
   # Clean out per toolchain ppapi directory
   ppapi = os.path.join(tc_dst_inc, 'ppapi')
@@ -340,6 +341,7 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
 
 EXAMPLE_MAP = {
   'newlib': [
+    'debugging',
     'fullscreen_tumbler',
     'gamepad',
     'geturl',
@@ -393,17 +395,50 @@ def CopyExamples(pepperdir, toolchains):
 
 def BuildUpdater():
   buildbot_common.BuildStep('Create Updater')
-  tooldir = os.path.join(SRC_DIR, 'out', 'sdk_tools')
+
+  naclsdkdir = os.path.join(OUT_DIR, 'nacl_sdk')
+  tooldir = os.path.join(naclsdkdir, 'sdk_tools')
+  cachedir = os.path.join(naclsdkdir, 'sdk_cache')
+  buildtoolsdir = os.path.join(SDK_SRC_DIR, 'build_tools')
+
+  # Build SDK directory
+  buildbot_common.RemoveDir(naclsdkdir)
+  buildbot_common.MakeDir(naclsdkdir)
+  buildbot_common.MakeDir(tooldir)
+  buildbot_common.MakeDir(cachedir)
+
+  # Copy launch scripts
+  buildbot_common.CopyFile(os.path.join(buildtoolsdir, 'naclsdk'), naclsdkdir)
+  buildbot_common.CopyFile(os.path.join(buildtoolsdir, 'naclsdk.bat'), 
+                           naclsdkdir)
+
+  # Copy base manifest
+  json = os.path.join(buildtoolsdir, 'json', 'naclsdk_manifest0.json')
+  buildbot_common.CopyFile(json, 
+                           os.path.join(cachedir, 'naclsdk_manifest2.json'))
+
+  # Copy SDK tools
   sdkupdate = os.path.join(SDK_SRC_DIR, 'build_tools',
                            'sdk_tools', 'sdk_update.py')
   license = os.path.join(SDK_SRC_DIR, 'LICENSE')
-  buildbot_common.RemoveDir(tooldir)
-  buildbot_common.MakeDir(tooldir)
+  buildbot_common.CopyFile(sdkupdate, tooldir)
+  buildbot_common.CopyFile(license, tooldir)
+  buildbot_common.CopyFile(CYGTAR, tooldir)
+
+  buildbot_common.RemoveFile(os.path.join(OUT_DIR, 'nacl_sdk.zip'))
+  buildbot_common.Run(['zip', '-r', 'nacl_sdk.zip',
+                      'nacl_sdk/naclsdk',
+                      'nacl_sdk/naclsdk.bat', 
+                      'nacl_sdk/sdk_tools/LICENSE',
+                      'nacl_sdk/sdk_tools/cygtar.py',
+                      'nacl_sdk/sdk_tools/sdk_update.py',
+                      'nacl_sdk/sdk_cache/naclsdk_manifest2.json'],
+                      cwd=OUT_DIR)
   args = ['-v', sdkupdate, license, CYGTAR, tooldir]
-  oshelpers.Copy(args)
-  tarname = 'sdk_tools.tgz'
-  tarfile = os.path.join(OUT_DIR, tarname)
-  buildbot_common.Run([sys.executable, CYGTAR, '-C', tooldir, '-czf', tarfile,
+  tarname = os.path.join(OUT_DIR, 'sdk_tools.tgz')
+
+  buildbot_common.RemoveFile(tarname)
+  buildbot_common.Run([sys.executable, CYGTAR, '-C', tooldir, '-czf', tarname,
        'sdk_update.py', 'LICENSE', 'cygtar.py'], cwd=NACL_DIR)
   sys.stdout.write('\n')
 
@@ -521,8 +556,8 @@ def main(args):
                             cwd=os.path.abspath(dirnode), shell=True)
 
 # Build SDK Tools
-#  if not skip_update:
-#    BuildUpdater()
+  if not skip_update:
+    BuildUpdater()
 
   return 0
 
