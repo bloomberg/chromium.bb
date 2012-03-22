@@ -4,8 +4,6 @@
 
 #include "ash/shell/window_type_launcher.h"
 
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"
@@ -325,7 +323,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == bubble_button_) {
     CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
-    Shell::GetInstance()->delegate()->LockScreen();
+    CreateLockScreen();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
   } else if (sender == system_modal_button_) {

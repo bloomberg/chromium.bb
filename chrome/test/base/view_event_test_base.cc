@@ -17,7 +17,6 @@
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
-#include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #endif
@@ -82,10 +81,6 @@ void ViewEventTestBase::SetUp() {
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
   ash::Shell::CreateInstance(NULL);
-  // The shell runs with a locked screen in tests, so we must clear the event
-  // client so it doesn't interfere with event propagation.
-  aura::client::SetEventClient(ash::Shell::GetInstance()->GetRootWindow(),
-                               NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);
 }

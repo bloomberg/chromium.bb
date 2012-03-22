@@ -42,7 +42,6 @@
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
-#include "ash/wm/event_client_impl.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
 #include "ash/wm/partial_screenshot_event_filter.h"
@@ -195,7 +194,7 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
       lock_screen_containers);
   lock_container->SetLayoutManager(
       new internal::BaseLayoutManager(root_window));
-  // TODO(beng): stopsevents
+  lock_container->set_stops_event_propagation(true);
 
   aura::Window* lock_modal_container = CreateContainer(
       internal::kShellWindowId_LockSystemModalContainer,
@@ -528,7 +527,6 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   window_cycle_controller_.reset();
-  event_client_.reset();
   monitor_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
@@ -617,8 +615,6 @@ void Shell::Init() {
 
   root_window_layout_ = new internal::RootWindowLayoutManager(root_window);
   root_window->SetLayoutManager(root_window_layout_);
-
-  event_client_.reset(new internal::EventClientImpl(root_window));
 
   if (delegate_.get())
     status_widget_ = delegate_->CreateStatusArea();
@@ -757,7 +753,9 @@ void Shell::ToggleAppList() {
 }
 
 bool Shell::IsScreenLocked() const {
-  return !delegate_.get() || delegate_->IsScreenLocked();
+  const aura::Window* lock_screen_container = GetContainer(
+      internal::kShellWindowId_LockScreenContainer);
+  return lock_screen_container->StopsEventPropagation();
 }
 
 bool Shell::IsModalWindowOpen() const {

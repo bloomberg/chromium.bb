@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "ui/aura/client/event_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/env.h"
@@ -54,6 +53,7 @@ Window::Window(WindowDelegate* delegate)
       id_(-1),
       transparent_(false),
       user_data_(NULL),
+      stops_event_propagation_(false),
       ignore_events_(false),
       hit_test_bounds_override_outer_(0),
       hit_test_bounds_override_inner_(0) {
@@ -449,24 +449,12 @@ bool Window::HasFocus() const {
 bool Window::CanFocus() const {
   if (!IsVisible() || !parent_ || (delegate_ && !delegate_->CanFocus()))
     return false;
-
-  // The client may forbid certain windows from receiving focus at a given point
-  // in time.
-  client::EventClient* client = client::GetEventClient(GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(this))
-    return false;
-
-  return parent_->CanFocus();
+  return !IsBehindStopEventsWindow() && parent_->CanFocus();
 }
 
 bool Window::CanReceiveEvents() const {
-  // The client may forbid certain windows from receiving events at a given
-  // point in time.
-  client::EventClient* client = client::GetEventClient(GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(this))
-    return false;
-
-  return parent_ && IsVisible() && parent_->CanReceiveEvents();
+  return parent_ && IsVisible() && !IsBehindStopEventsWindow() &&
+      parent_->CanReceiveEvents();
 }
 
 internal::FocusManager* Window::GetFocusManager() {
@@ -500,6 +488,15 @@ void Window::ReleaseCapture() {
 bool Window::HasCapture() {
   RootWindow* root_window = GetRootWindow();
   return root_window && root_window->capture_window() == this;
+}
+
+bool Window::StopsEventPropagation() const {
+  if (!stops_event_propagation_ || children_.empty())
+    return false;
+  aura::Window::Windows::const_iterator it =
+      std::find_if(children_.begin(), children_.end(),
+                   std::mem_fun(&aura::Window::IsVisible));
+  return it != children_.end();
 }
 
 void Window::SuppressPaint() {
@@ -656,16 +653,6 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
            rend = children_.rend();
        it != rend; ++it) {
     Window* child = *it;
-
-    if (for_event_handling) {
-      // The client may not allow events to be processed by certain subtrees.
-      client::EventClient* client = client::GetEventClient(GetRootWindow());
-      if (client && !client->CanProcessEventsWithinSubtree(child))
-        continue;
-    }
-
-    // We don't process events for invisible windows or those that have asked
-    // to ignore events.
     if (!child->IsVisible() || (for_event_handling && child->ignore_events_))
       continue;
 
@@ -676,6 +663,9 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
                                              for_event_handling);
     if (match)
       return match;
+
+    if (for_event_handling && child->StopsEventPropagation())
+      break;
   }
 
   return delegate_ ? this : NULL;
@@ -808,6 +798,17 @@ void Window::UpdateLayerName(const std::string& name) {
   }
   layer()->set_name(layer_name);
 #endif
+}
+
+bool Window::IsBehindStopEventsWindow() const {
+  Windows::const_iterator i = std::find(parent_->children().begin(),
+                                        parent_->children().end(),
+                                        this);
+  for (++i; i != parent_->children().end(); ++i) {
+    if ((*i)->StopsEventPropagation())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace aura

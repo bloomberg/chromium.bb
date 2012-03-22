@@ -7,8 +7,6 @@
 #include "ash/app_list/app_list_model.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/app_list_view.h"
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/basictypes.h"
@@ -82,7 +80,7 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
         break;
       }
       case LOCK_SCREEN: {
-        Shell::GetInstance()->delegate()->LockScreen();
+        CreateLockScreen();
         break;
       }
       case WIDGETS_WINDOW: {

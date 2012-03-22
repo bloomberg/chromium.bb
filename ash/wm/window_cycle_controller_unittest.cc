@@ -132,15 +132,21 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_FALSE(controller->IsCycling());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
-  // When the screen is locked, cycling window does not take effect.
-  Shell::GetInstance()->delegate()->LockScreen();
+  // When a screen lock window is visible, cycling window does not take effect.
+  aura::Window* lock_screen_container =
+      Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_LockScreenContainer);
+  scoped_ptr<Window> lock_screen_window(
+      CreateTestWindowWithId(-1, lock_screen_container));
+  lock_screen_window->Show();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 
-  Shell::GetInstance()->delegate()->UnlockScreen();
+  // Hiding the lock screen is equivalent to not being locked.
+  lock_screen_window->Hide();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));

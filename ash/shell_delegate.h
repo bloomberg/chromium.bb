@@ -54,14 +54,10 @@ class ASH_EXPORT ShellDelegate {
   // until e.g. a user has logged in and their profile has been loaded.
   virtual bool CanCreateLauncher() = 0;
 
-  // Invoked when a user locks the screen.
+#if defined(OS_CHROMEOS)
+  // Invoked when a user uses Ctrl-Shift-L to lock the screen.
   virtual void LockScreen() = 0;
-
-  // Unlock the screen. Currently used only for tests.
-  virtual void UnlockScreen() = 0;
-
-  // Returns true if the screen is currently locked.
-  virtual bool IsScreenLocked() const = 0;
+#endif
 
   // Invoked when a user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;

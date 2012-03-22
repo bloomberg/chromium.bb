@@ -20,9 +20,9 @@ class TestShellDelegate : public ShellDelegate {
   // Overridden from ShellDelegate:
   virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual bool CanCreateLauncher() OVERRIDE;
+#if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
-  virtual void UnlockScreen() OVERRIDE;
-  virtual bool IsScreenLocked() const OVERRIDE;
+#endif
   virtual void Exit() OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
@@ -35,8 +35,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
 
  private:
-  bool locked_;
-
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
 
