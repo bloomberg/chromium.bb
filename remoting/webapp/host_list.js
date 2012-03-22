@@ -187,8 +187,8 @@ remoting.HostList.prototype.display = function() {
     /** @type {remoting.Host} */
     var host = this.hosts_[i];
     // Validate the entry to make sure it has all the fields we expect.
-    if (host.hostName && host.hostId && host.status && host.jabberId &&
-        host.publicKey) {
+    // If the host has never sent a heartbeat, then there will be no jabberId.
+    if (host.hostName && host.hostId && host.status && host.publicKey) {
       var hostTableEntry = new remoting.HostTableEntry();
       hostTableEntry.init(host, onRename, onDelete);
       this.hostTableEntries_[i] = hostTableEntry;
