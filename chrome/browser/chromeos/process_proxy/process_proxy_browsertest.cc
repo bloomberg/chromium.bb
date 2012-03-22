@@ -93,7 +93,7 @@ class RegistryTestRunner : public TestRunner {
 
  private:
   bool ProcessReceivedCharacter(char received, size_t stream) {
-    if (stream < 0 || stream >= arraysize(left_to_check_index_))
+    if (stream >= arraysize(left_to_check_index_))
       return false;
     bool success = left_to_check_index_[stream] < expected_line_.length() &&
                    expected_line_[left_to_check_index_[stream]] == received;
