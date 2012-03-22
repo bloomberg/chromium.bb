@@ -6,8 +6,12 @@ RenderViewTest.OnHandleKeyboardEvent
 ConnectionTesterTest.DeleteWhileInProgress
 # Fails on CrOS, see http://crbug.com/104030
 GViewRequestInterceptorTest.*
-# Crash on CrOS, see http://crbub.com/115979
+# Crash on CrOS, see http://crbug.com/115979
 ClientSideDetectionHostTest.OnPhishingDetectionDoneNotPhishing
 ClientSideDetectionHostTest.OnPhishingDetectionDoneVerdictNotPhishing
 ClientSideDetectionHostTest.OnPhishingDetectionDoneInvalidVerdict
 ClientSideDetectionHostTest.OnPhishingDetectionDoneDisabled
+
+# http://crbug.com/119610
+ProfileSyncServiceSessionTest.WriteFilledSessionToNode
+ProfileSyncServiceSessionTest.ValidTabs
