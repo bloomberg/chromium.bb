@@ -28,9 +28,6 @@ cr.define('help', function() {
       uber.invokeMethodOnParent('setTitle', {title: title});
 
       $('product-license').innerHTML = localStrings.getString('productLicense');
-      if (cr.isChromeOS)
-        $('product-os-license').innerHTML =
-            localStrings.getString('productOsLicense');
 
       var productTOS = $('product-tos');
       if (productTOS)
