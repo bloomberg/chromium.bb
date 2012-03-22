@@ -753,12 +753,17 @@ html[dir=rtl] .error-message {
 
 #notification-area {
   color: #666;
-  height: 0;
-  margin: 8px auto;
-  max-width: 850px;
+  position: absolute;
   text-align: center;
+  top: 8px;
+  width: 100%;
 }
 
 #notification-area a {
   color: rgb(37, 79, 155);
+}
+
+#notification-area .butter-bar {
+  margin: 0 auto;
+  max-width: 850px;
 }
