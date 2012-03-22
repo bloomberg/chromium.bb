@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/epoll.h>
 
 #include "wayland-os.h"
 
@@ -123,4 +124,21 @@ wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
 		return -1;
 
 	return recvmsg_cloexec_fallback(sockfd, msg, flags);
+}
+
+int
+wl_os_epoll_create_cloexec(void)
+{
+	int fd;
+
+#ifdef EPOLL_CLOEXEC
+	fd = epoll_create1(EPOLL_CLOEXEC);
+	if (fd >= 0)
+		return fd;
+	if (errno != EINVAL)
+		return -1;
+#endif
+
+	fd = epoll_create(1);
+	return set_cloexec_or_close(fd);
 }

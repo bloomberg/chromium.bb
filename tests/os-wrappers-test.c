@@ -34,6 +34,7 @@
 #include <stdarg.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/epoll.h>
 
 #include "../src/wayland-private.h"
 #include "test-runner.h"
@@ -50,6 +51,9 @@ static int wrapped_calls_fcntl;
 static ssize_t (*real_recvmsg)(int, struct msghdr *, int);
 static int wrapped_calls_recvmsg;
 
+static int (*real_epoll_create1)(int);
+static int wrapped_calls_epoll_create1;
+
 static void
 init_fallbacks(int do_fallbacks)
 {
@@ -57,6 +61,7 @@ init_fallbacks(int do_fallbacks)
 	real_socket = dlsym(RTLD_NEXT, "socket");
 	real_fcntl = dlsym(RTLD_NEXT, "fcntl");
 	real_recvmsg = dlsym(RTLD_NEXT, "recvmsg");
+	real_epoll_create1 = dlsym(RTLD_NEXT, "epoll_create1");
 }
 
 __attribute__ ((visibility("default"))) int
@@ -103,6 +108,20 @@ recvmsg(int sockfd, struct msghdr *msg, int flags)
 	}
 
 	return real_recvmsg(sockfd, msg, flags);
+}
+
+__attribute__ ((visibility("default"))) int
+epoll_create1(int flags)
+{
+	wrapped_calls_epoll_create1++;
+
+	if (fall_back) {
+		wrapped_calls_epoll_create1++; /* epoll_create() not wrapped */
+		errno = EINVAL;
+		return -1;
+	}
+
+	return real_epoll_create1(flags);
 }
 
 static void
@@ -330,4 +349,36 @@ TEST(os_wrappers_recvmsg_cloexec_fallback)
 {
 	init_fallbacks(1);
 	do_os_wrappers_recvmsg_cloexec(1);
+}
+
+static void
+do_os_wrappers_epoll_create_cloexec(int n)
+{
+	int fd;
+	int nr_fds;
+
+	nr_fds = count_open_fds();
+
+	fd = wl_os_epoll_create_cloexec();
+	assert(fd >= 0);
+
+#ifdef EPOLL_CLOEXEC
+	assert(wrapped_calls_epoll_create1 == n);
+#else
+	printf("No epoll_create1.\n");
+#endif
+
+	exec_fd_leak_check(nr_fds);
+}
+
+TEST(os_wrappers_epoll_create_cloexec)
+{
+	init_fallbacks(0);
+	do_os_wrappers_epoll_create_cloexec(1);
+}
+
+TEST(os_wrappers_epoll_create_cloexec_fallback)
+{
+	init_fallbacks(1);
+	do_os_wrappers_epoll_create_cloexec(2);
 }
