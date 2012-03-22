@@ -31,6 +31,13 @@ namespace ash {
 // layout constants for Ash window frames.
 class ASH_EXPORT FramePainter {
  public:
+  // Ash windows do not have a traditional visible window frame.  Window content
+  // extends to the edge of the window.  We consider a small region outside the
+  // window bounds and an even smaller region overlapping the window to be the
+  // "non-client" area and use it for resizing.
+  static const int kResizeOutsideBoundsSize;
+  static const int kResizeInsideBoundsSize;
+
   FramePainter();
   ~FramePainter();
 

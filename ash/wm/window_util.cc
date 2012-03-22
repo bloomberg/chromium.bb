@@ -83,16 +83,6 @@ void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
-bool HasFullscreenWindow(const WindowSet& windows) {
-  for (WindowSet::const_iterator i = windows.begin(); i != windows.end(); ++i) {
-    if ((*i)->GetProperty(aura::client::kShowStateKey)
-        == ui::SHOW_STATE_FULLSCREEN) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void SetOpenWindowSplit(aura::Window* window, bool value) {
   window->SetProperty(kOpenWindowSplitKey, value);
 }

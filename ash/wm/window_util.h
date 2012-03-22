@@ -6,8 +6,6 @@
 #define ASH_WM_WINDOW_UTIL_H_
 #pragma once
 
-#include <set>
-
 #include "ash/ash_export.h"
 
 namespace aura {
@@ -47,10 +45,6 @@ ASH_EXPORT void MaximizeWindow(aura::Window* window);
 
 // Restores |window|, which must not be NULL.
 ASH_EXPORT void RestoreWindow(aura::Window* window);
-
-// Returns true if the set of |windows| contains a full-screen window.
-typedef std::set<aura::Window*> WindowSet;
-ASH_EXPORT bool HasFullscreenWindow(const WindowSet& windows);
 
 // Sets whether the window should be open in a split mode. Only applicable when
 // workspaces are used.

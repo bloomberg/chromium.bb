@@ -26,12 +26,6 @@ namespace {
 // TODO(jamescook): Border is specified to be a single pixel overlapping
 // the web content and may need to be built into the shadow layers instead.
 const int kBorderThickness = 0;
-// Ash windows do not have a traditional visible window frame.  Window content
-// extends to the edge of the window.  We consider a small region outside the
-// window bounds and an even smaller region overlapping the window to be the
-// "non-client" area and use it for resizing.
-const int kResizeOutsideBoundsSize = 6;
-const int kResizeInsideBoundsSize = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
@@ -107,6 +101,10 @@ void TileRoundRect(gfx::Canvas* canvas,
 }  // namespace
 
 namespace ash {
+
+// static
+const int FramePainter::kResizeOutsideBoundsSize = 6;
+const int FramePainter::kResizeInsideBoundsSize = 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // FramePainter, public:
