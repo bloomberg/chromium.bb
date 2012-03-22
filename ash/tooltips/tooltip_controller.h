@@ -60,16 +60,6 @@ class ASH_EXPORT TooltipController : public aura::client::TooltipClient,
 
   class Tooltip;
 
-  // Trims the tooltip to fit, setting |text| to the clipped result,
-  // |max_width| to the width (in pixels) of the clipped text and |line_count|
-  // to the number of lines of text in the tooltip. |x| and |y| give the
-  // location of the tooltip in screen coordinates.
-  static void TrimTooltipToFit(string16* text,
-                               int* max_width,
-                               int* line_count,
-                               int x,
-                               int y);
-
   void TooltipTimerFired();
 
   // Updates the tooltip if required (if there is any change in the tooltip
