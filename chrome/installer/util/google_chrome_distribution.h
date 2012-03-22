@@ -61,6 +61,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
+  virtual std::string GetHttpPipeliningTestServer() const OVERRIDE;
+
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.

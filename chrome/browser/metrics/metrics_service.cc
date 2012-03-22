@@ -175,6 +175,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
+#include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/child_process_data.h"
@@ -651,9 +652,8 @@ void MetricsService::InitializeMetricsState() {
 #if defined(OS_POSIX)
   server_url_xml_ = ASCIIToUTF16(kServerUrlXml);
   server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
-  network_stats_server_ = "chrome.googleechotest.com";
-  // TODO(simonjam): Figure out where this will be hosted.
-  http_pipelining_test_server_ = "";
+  network_stats_server_ = chrome_common_net::kEchoTestServerLocation;
+  http_pipelining_test_server_ = chrome_common_net::kPipelineTestServerBaseUrl;
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   server_url_xml_ = dist->GetStatsServerURL();

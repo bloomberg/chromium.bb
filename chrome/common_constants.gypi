@@ -25,6 +25,8 @@
           'common/env_vars.h',
           'common/net/gaia/gaia_constants.cc',
           'common/net/gaia/gaia_constants.h',
+          'common/net/test_server_locations.cc',
+          'common/net/test_server_locations.h',
           'common/pref_names.cc',
           'common/pref_names.h',
         ],

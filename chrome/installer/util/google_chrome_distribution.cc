@@ -29,6 +29,7 @@
 #include "chrome/common/attrition_experiments.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/product.h"
@@ -498,7 +499,11 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
 }
 
 std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
-  return "chrome.googleechotest.com";
+  return chrome_common_net::kEchoTestServerLocation;
+}
+
+std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
+  return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
 std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {

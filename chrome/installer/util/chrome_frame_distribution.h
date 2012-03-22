@@ -43,6 +43,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
+  virtual std::string GetHttpPipeliningTestServer() const OVERRIDE;
+
   virtual std::wstring GetUninstallLinkName() OVERRIDE;
 
   virtual std::wstring GetUninstallRegPath() OVERRIDE;

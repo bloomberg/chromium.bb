@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -90,7 +91,11 @@ std::wstring ChromeFrameDistribution::GetStatsServerURL() {
 }
 
 std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
-  return "chrome.googleechotest.com";
+  return chrome_common_net::kEchoTestServerLocation;
+}
+
+std::string ChromeFrameDistribution::GetHttpPipeliningTestServer() const {
+  return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
 std::wstring ChromeFrameDistribution::GetUninstallLinkName() {
