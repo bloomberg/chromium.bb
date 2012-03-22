@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/x509_certificate.h"
+#include "net/base/x509_util_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using content::BrowserThread;
@@ -218,7 +219,7 @@ void ShowSSLClientCertificateSelector(
   [panel setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
   [panel setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
   SecPolicyRef sslPolicy;
-  if (net::X509Certificate::CreateSSLClientPolicy(&sslPolicy) == noErr) {
+  if (net::x509_util::CreateSSLClientPolicy(&sslPolicy) == noErr) {
     [panel setPolicies:(id)sslPolicy];
     CFRelease(sslPolicy);
   }

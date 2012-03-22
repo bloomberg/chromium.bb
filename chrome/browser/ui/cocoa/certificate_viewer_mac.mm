@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "net/base/x509_certificate.h"
+#include "net/base/x509_util_mac.h"
 
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
@@ -42,7 +43,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
   // Add a basic X.509 policy, in order to match the behaviour of
   // SFCertificatePanel when no policies are specified.
   SecPolicyRef basic_policy = NULL;
-  OSStatus status = net::X509Certificate::CreateBasicX509Policy(&basic_policy);
+  OSStatus status = net::x509_util::CreateBasicX509Policy(&basic_policy);
   if (status != noErr) {
     NOTREACHED();
     return;
@@ -50,7 +51,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
   CFArrayAppendValue(policies, basic_policy);
   CFRelease(basic_policy);
 
-  status = net::X509Certificate::CreateRevocationPolicies(false, policies);
+  status = net::x509_util::CreateRevocationPolicies(false, policies);
   if (status != noErr) {
     NOTREACHED();
     return;
