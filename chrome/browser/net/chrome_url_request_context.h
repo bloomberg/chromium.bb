@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -21,9 +20,6 @@ class ChromeURLRequestContextFactory;
 class IOThread;
 class Profile;
 class ProfileIOData;
-namespace base {
-class WaitableEvent;
-}
 
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests.
@@ -98,12 +94,11 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
                                 ChromeURLRequestContextFactory* factory);
 
   // Note that GetURLRequestContext() can only be called from the IO
-  // thread (it will assert otherwise). DONTUSEME_GetCookieStore() and
+  // thread (it will assert otherwise).
   // GetIOMessageLoopProxy however can be called from any thread.
   //
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
-  virtual net::CookieStore* DONTUSEME_GetCookieStore() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetIOMessageLoopProxy() const OVERRIDE;
 
@@ -175,10 +170,6 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   void OnAcceptLanguageChange(const std::string& accept_language);
   void OnDefaultCharsetChange(const std::string& default_charset);
   void OnClearSiteDataOnExitChange(bool clear_site_data);
-
-  // Saves the cookie store to |result| and signals |completion|.
-  void GetCookieStoreAsyncHelper(base::WaitableEvent* completion,
-                                 net::CookieStore** result);
 
   PrefChangeRegistrar registrar_;
 

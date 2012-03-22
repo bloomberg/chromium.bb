@@ -32,7 +32,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // net::URLRequestContextGetter implementation.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
-  virtual net::CookieStore* DONTUSEME_GetCookieStore() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy>
       GetIOMessageLoopProxy() const OVERRIDE;
 

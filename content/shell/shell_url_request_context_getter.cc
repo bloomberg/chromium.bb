@@ -104,13 +104,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   return url_request_context_;
 }
 
-net::CookieStore* ShellURLRequestContextGetter::DONTUSEME_GetCookieStore() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    return GetURLRequestContext()->cookie_store();
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 scoped_refptr<base::MessageLoopProxy>
     ShellURLRequestContextGetter::GetIOMessageLoopProxy() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);

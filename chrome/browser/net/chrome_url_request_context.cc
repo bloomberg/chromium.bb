@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -145,30 +144,6 @@ net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   CHECK(url_request_context_.get());
 
   return url_request_context_;
-}
-
-net::CookieStore* ChromeURLRequestContextGetter::DONTUSEME_GetCookieStore() {
-  // If we are running on the IO thread this is real easy.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    return GetURLRequestContext()->cookie_store();
-
-  // If we aren't running on the IO thread, we cannot call
-  // GetURLRequestContext(). Instead we will post a task to the IO loop
-  // and wait for it to complete.
-
-  base::WaitableEvent completion(false, false);
-  net::CookieStore* result = NULL;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper,
-          this,
-          &completion,
-          &result));
-
-  completion.Wait();
-  DCHECK(result);
-  return result;
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -333,14 +308,6 @@ void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
 
   if (cookie_monster)
     cookie_monster->SetClearPersistentStoreOnExit(clear_site_data);
-}
-
-void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
-    base::WaitableEvent* completion,
-    net::CookieStore** result) {
-  // Note that CookieStore is refcounted, yet we do not add a reference.
-  *result = GetURLRequestContext()->cookie_store();
-  completion->Signal();
 }
 
 // ----------------------------------------------------------------------------
