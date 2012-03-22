@@ -412,7 +412,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
     }
 
     if (ExprSegmentAddress == node->kind) {
-      /* Note that operations like stosb, stosw, stosd, and stoq use
+      /* Note that operations like stosb, stosw, stosd, and stosq use
        * segment notation. In 64 bit mode, the second argument must
        * be a register, and be computed (using lea) so that it matches
        * a valid (sandboxed) memory offset. For example:
@@ -421,8 +421,8 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
        *    lea %rdi, [%r15+%edi*1]  ; calculate address, put in rdi
        *    stos %eax                ; implicity uses %es:(%rdi)
        *
-       * Note: we actually allow any zero-extending operations, not just
-       * an identity MOV.
+       * Note: we allow only one zero-extending operation for string
+       * instructions: an identity MOV.
        */
       int seg_prefix_reg_index;
       NaClOpKind seg_prefix_reg;
