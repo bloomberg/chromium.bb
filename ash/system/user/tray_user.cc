@@ -9,6 +9,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -279,14 +280,13 @@ class RoundedImageView : public views::View {
 
   // Set the bitmap that should be displayed from a pointer. The pointer
   // contents is copied in the receiver's bitmap.
-  void SetImage(const SkBitmap& bm) {
+  void SetImage(const SkBitmap& bm, const gfx::Size& size) {
     image_ = bm;
-    SetImageSize(gfx::Size(bm.width(), bm.height()));
-  }
+    image_size_ = size;
 
-  // Set the desired image size.
-  void SetImageSize(const gfx::Size& image_size) {
-    image_size_ = image_size;
+    // Try to get the best image quality for the avatar.
+    resized_ = skia::ImageOperations::Resize(image_,
+        skia::ImageOperations::RESIZE_BEST, size.width(), size.height());
     PreferredSizeChanged();
   }
 
@@ -303,16 +303,9 @@ class RoundedImageView : public views::View {
     path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
 
     SkPaint paint;
-    SkShader* shader = SkShader::CreateBitmapShader(image_,
+    SkShader* shader = SkShader::CreateBitmapShader(resized_,
                                                     SkShader::kRepeat_TileMode,
                                                     SkShader::kRepeat_TileMode);
-    SkMatrix shader_scale;
-    shader_scale.setScale(SkFloatToScalar(
-        static_cast<float>(image_bounds.width()) / image_.width()),
-        SkFloatToScalar(static_cast<float>(
-            image_bounds.height()) / image_.height()));
-    shader->setLocalMatrix(shader_scale);
-
     paint.setShader(shader);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     shader->unref();
@@ -321,6 +314,7 @@ class RoundedImageView : public views::View {
 
  private:
   SkBitmap image_;
+  SkBitmap resized_;
   gfx::Size image_size_;
   int corner_radius_;
 
@@ -339,8 +333,8 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   avatar_.reset(new tray::RoundedImageView(kUserIconCornerRadius));
   if (status == user::LOGGED_IN_USER || status == user::LOGGED_IN_OWNER) {
     avatar_->SetImage(
-        ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
-    avatar_->SetImageSize(gfx::Size(kUserIconSize, kUserIconSize));
+        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
   } else {
     avatar_->SetVisible(false);
   }
@@ -377,8 +371,8 @@ void TrayUser::OnUpdateRecommended() {
 
 void TrayUser::OnUserUpdate() {
   avatar_->SetImage(
-      ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
-  avatar_->SetImageSize(gfx::Size(kUserIconSize, kUserIconSize));
+      ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+      gfx::Size(kUserIconSize, kUserIconSize));
 }
 
 }  // namespace internal
