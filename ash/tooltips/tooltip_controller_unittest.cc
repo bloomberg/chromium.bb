@@ -274,6 +274,7 @@ TEST_F(TooltipControllerTest, TrimTooltipToFitTests) {
   // trimmed. Hence we may be off by 1 in the final tooltip length calculation.
   EXPECT_NEAR(tooltip_len + expect_lines - 2, tooltip.length(), 1);
 
+#if !defined(OS_WIN)
   // Tooltip with really long word gets elided.
   tooltip.clear();
   max_width = line_count = -1;
@@ -283,6 +284,7 @@ TEST_F(TooltipControllerTest, TrimTooltipToFitTests) {
   EXPECT_EQ(1, line_count);
   EXPECT_EQ(ui::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)), font,
                           max_pixel_width, ui::ELIDE_AT_END), tooltip);
+#endif
 
   // Normal small tooltip should stay as is.
   tooltip.clear();
