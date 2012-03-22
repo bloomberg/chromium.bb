@@ -17,7 +17,6 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/clock.h"
 #include "media/base/composite_filter.h"
-#include "media/base/composite_filter.h"
 #include "media/base/filter_collection.h"
 #include "media/base/filters.h"
 #include "media/base/media_log.h"
@@ -648,8 +647,6 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     // Currently only VideoDecoders have a recoverable error code.
     if (state_ == kInitVideoDecoder &&
         last_stage_status == DECODER_ERROR_NOT_SUPPORTED) {
-      pipeline_init_state_->composite->RemoveFilter(
-          pipeline_init_state_->video_decoder.get());
       state_ = kInitAudioRenderer;
     } else {
       SetError(last_stage_status);
@@ -1161,6 +1158,7 @@ bool Pipeline::InitializeAudioDecoder(
     const scoped_refptr<Demuxer>& demuxer) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(IsPipelineOk());
+  DCHECK(demuxer);
 
   scoped_refptr<DemuxerStream> stream =
       demuxer->GetStream(DemuxerStream::AUDIO);
@@ -1186,31 +1184,27 @@ bool Pipeline::InitializeVideoDecoder(
     const scoped_refptr<Demuxer>& demuxer) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(IsPipelineOk());
+  DCHECK(demuxer);
 
-  scoped_refptr<DemuxerStream> stream;
+  scoped_refptr<DemuxerStream> stream =
+      demuxer->GetStream(DemuxerStream::VIDEO);
 
-  if (demuxer) {
-    stream = demuxer->GetStream(DemuxerStream::VIDEO);
+  if (!stream)
+    return false;
 
-    if (!stream)
-      return false;
-  }
+  filter_collection_->SelectVideoDecoder(&pipeline_init_state_->video_decoder);
 
-  filter_collection_->SelectVideoDecoder(&video_decoder_);
-
-  if (!video_decoder_) {
+  if (!pipeline_init_state_->video_decoder) {
     SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return false;
   }
 
-  if (!PrepareFilter(video_decoder_))
-    return false;
-
-  pipeline_init_state_->video_decoder = video_decoder_;
-  video_decoder_->Initialize(
+  pipeline_init_state_->video_decoder->Initialize(
       stream,
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this));
+
+  video_decoder_ = pipeline_init_state_->video_decoder;
   return true;
 }
 
@@ -1355,7 +1349,6 @@ void Pipeline::OnDemuxerStopDone(const base::Closure& callback) {
   }
 
   callback.Run();
-
 }
 
 void Pipeline::DoSeek(base::TimeDelta seek_timestamp) {

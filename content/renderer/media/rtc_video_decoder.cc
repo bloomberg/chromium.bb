@@ -61,14 +61,13 @@ void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
 void RTCVideoDecoder::Play(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RTCVideoDecoder::Play,
-                                       this, callback));
+                            base::Bind(&RTCVideoDecoder::Play, this, callback));
     return;
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
-  VideoDecoder::Play(callback);
+  callback.Run();
 }
 
 void RTCVideoDecoder::Pause(const base::Closure& callback) {
@@ -83,7 +82,7 @@ void RTCVideoDecoder::Pause(const base::Closure& callback) {
 
   state_ = kPaused;
 
-  VideoDecoder::Pause(callback);
+  callback.Run();
 }
 
 void RTCVideoDecoder::Flush(const base::Closure& callback) {

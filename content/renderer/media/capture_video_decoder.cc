@@ -164,7 +164,7 @@ void CaptureVideoDecoder::PauseOnDecoderThread(const base::Closure& callback) {
   DVLOG(1) << "PauseOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kPaused;
-  media::VideoDecoder::Pause(callback);
+  callback.Run();
 }
 
 void CaptureVideoDecoder::FlushOnDecoderThread(const base::Closure& callback) {

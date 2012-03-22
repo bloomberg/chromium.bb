@@ -75,6 +75,19 @@ VideoDecoder::VideoDecoder() {}
 
 VideoDecoder::~VideoDecoder() {}
 
+void VideoDecoder::Play(const base::Closure& /* callback */) {
+  LOG(FATAL) << "VideoDecoder::Play is not supposed to be called.";
+}
+
+void VideoDecoder::Pause(const base::Closure& /* callback */) {
+  LOG(FATAL) << "VideoDecoder::Pause is not supposed to be called.";
+}
+
+void VideoDecoder::Seek(base::TimeDelta /* time */,
+                        const PipelineStatusCB& /* callback */) {
+  LOG(FATAL) << "VideoDecoder::Seek is not supposed to be called.";
+}
+
 bool VideoDecoder::HasAlpha() const {
   return false;
 }

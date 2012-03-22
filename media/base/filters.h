@@ -159,8 +159,17 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
  protected:
   VideoDecoder();
   virtual ~VideoDecoder();
-};
 
+ private:
+  // These functions will be removed later. Declare here to make sure they are
+  // not called from VideoDecoder interface anymore.
+  // TODO(xhwang): Remove them when VideoDecoder is not a Filter any more.
+  // See bug: crbug.com/108340
+  virtual void Play(const base::Closure& callback) OVERRIDE;
+  virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Seek(base::TimeDelta time,
+                    const PipelineStatusCB& callback) OVERRIDE;
+};
 
 class MEDIA_EXPORT VideoRenderer : public Filter {
  public:
@@ -170,7 +179,7 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
 
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
-  virtual void Initialize(VideoDecoder* decoder,
+  virtual void Initialize(const scoped_refptr<VideoDecoder>& decoder,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& time_cb) = 0;
@@ -179,7 +188,6 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
   // buffer.
   virtual bool HasEnded() = 0;
 };
-
 
 class MEDIA_EXPORT AudioRenderer : public Filter {
  public:
