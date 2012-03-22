@@ -94,7 +94,8 @@ bool SpellingServiceClient::RequestTextCheck(
       url, content::URLFetcher::POST, this));
   fetcher_->SetRequestContext(context);
   fetcher_->SetUploadData("application/json", request);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetLoadFlags(
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->Start();
   tag_ = tag;
   callback_ = callback;
