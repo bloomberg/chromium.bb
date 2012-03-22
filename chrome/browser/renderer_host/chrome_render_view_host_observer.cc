@@ -138,9 +138,6 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     case Extension::TYPE_UNKNOWN:
     case Extension::TYPE_THEME:
       break;
-
-    default:
-      NOTREACHED();
   }
 }
 
