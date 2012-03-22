@@ -378,6 +378,7 @@ void TrayUser::OnUpdateRecommended() {
 void TrayUser::OnUserUpdate() {
   avatar_->SetImage(
       ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
+  avatar_->SetImageSize(gfx::Size(kUserIconSize, kUserIconSize));
 }
 
 }  // namespace internal
