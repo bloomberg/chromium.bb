@@ -80,7 +80,7 @@ DeviceMode TranslateProtobufDeviceMode(
   switch (mode) {
     case em::DeviceRegisterResponse::ENTERPRISE:
       return DEVICE_MODE_ENTERPRISE;
-    case em::DeviceRegisterResponse::KIOSK:
+    case em::DeviceRegisterResponse::RETAIL:
       return DEVICE_MODE_KIOSK;
   }
   LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
@@ -177,7 +177,7 @@ void DeviceTokenFetcher::FetchTokenInternal() {
   if (!data_store_->machine_model().empty())
     request->set_machine_model(data_store_->machine_model());
   if (data_store_->known_machine_id())
-    request->set_known_machine_id(true);
+    request->set_auto_enrolled(true);
   request_job_->Start(base::Bind(&DeviceTokenFetcher::OnTokenFetchCompleted,
                                  base::Unretained(this)));
   UMA_HISTOGRAM_ENUMERATION(kMetricToken, kMetricTokenFetchRequested,

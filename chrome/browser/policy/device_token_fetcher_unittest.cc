@@ -34,10 +34,10 @@ ACTION_P(VerifyRegisterRequest, known_machine_id) {
   const em::DeviceRegisterRequest& request =
       arg0->GetRequest()->register_request();
   if (known_machine_id) {
-    EXPECT_TRUE(request.has_known_machine_id());
-    EXPECT_TRUE(request.known_machine_id());
+    EXPECT_TRUE(request.has_auto_enrolled());
+    EXPECT_TRUE(request.auto_enrolled());
   } else {
-    EXPECT_FALSE(request.has_known_machine_id());
+    EXPECT_FALSE(request.has_auto_enrolled());
   }
 }
 

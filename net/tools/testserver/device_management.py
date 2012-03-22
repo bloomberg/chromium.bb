@@ -619,7 +619,7 @@ class TestServer(object):
       dm.DeviceRegisterRequest.TT: ['google/chromeos/user'],
     }
     if machine_id in KIOSK_MACHINE_IDS:
-      enrollment_mode = dm.DeviceRegisterResponse.KIOSK
+      enrollment_mode = dm.DeviceRegisterResponse.RETAIL
     else:
       enrollment_mode = dm.DeviceRegisterResponse.ENTERPRISE
     self._registered_tokens[dmtoken] = {

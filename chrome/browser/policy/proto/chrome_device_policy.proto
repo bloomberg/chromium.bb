@@ -130,7 +130,7 @@ message ForcedLogoutTimeoutsProto {
 message ScreenSaverProto {
   // Specifies the extension ID which is to be used as a screen saver on the
   // login screen if no user activity is present. Only respected if the device
-  // is in KIOSK mode.
+  // is in RETAIL mode.
   optional string screen_saver_extension_id = 1;
 
   // Specifies the timeout before the screen saver is activated. If this field
@@ -162,7 +162,7 @@ message AutoUpdateSettingsProto {
 
 message StartUpUrlsProto {
   // Specifies the URLs to be loaded on login to the anonymous account used if
-  // the device is in KIOSK mode.
+  // the device is in RETAIL mode.
   repeated string start_up_urls = 1;
 }
 
