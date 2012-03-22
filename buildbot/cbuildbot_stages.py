@@ -12,17 +12,14 @@ import Queue
 import shutil
 import sys
 import tempfile
-import traceback
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
-from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
-from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
@@ -142,10 +139,6 @@ class PatchChangesStage(bs.BuilderStage):
 
     for patch in self.local_patches:
       patch.Apply(self._build_root)
-
-    if self.local_patches:
-      patch_root = os.path.dirname(self.local_patches[0].patch_dir)
-      cros_patch.RemovePatchRoot(patch_root)
 
 
 class SyncStage(bs.BuilderStage):

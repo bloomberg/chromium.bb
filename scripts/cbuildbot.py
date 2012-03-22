@@ -35,6 +35,7 @@ from chromite.lib import cleanup
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
 
+
 cros_lib.STRICT_SUDO = True
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -741,6 +742,12 @@ def _CreateParser():
   group.add_option('--nocgroups', action='store_false', dest='cgroups',
                     default=True,
                     help='Disable cbuildbots usage of cgroups.')
+  group.add_option('--notests', action='store_false', dest='tests',
+                    default=True,
+                    help='Override values from buildconfig and run no tests.')
+  group.add_option('--nouprev', action='store_false', dest='uprev',
+                    default=True,
+                    help='Override values from buildconfig and never uprev.')
   group.add_option('--reference-repo', action='store', default=None,
                     dest='reference_repo',
                     help='Reuse git data stored in an existing repo '
@@ -751,21 +758,14 @@ def _CreateParser():
                          'use the repo root.')
   group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
                     default=False,
-                    help=('This is running on a remote trybot machine.  '
-                          'Requires --user and --timestamp to be set.'))
+                    help=('This is running on a remote trybot machine.  '))
+  group.add_option('--resume', action='store_true',
+                    default=False,
+                    help='Skip stages already successfully completed.')
   group.add_option('--timeout', action='store', type='int', default=0,
                     help="Specify the maximum amount of time this job can run "
                          "for, at which point the build will be aborted.  If "
                          "set to zero, then there is no timeout")
-  group.add_option('--notests', action='store_false', dest='tests',
-                    default=True,
-                    help='Override values from buildconfig and run no tests.')
-  group.add_option('--nouprev', action='store_false', dest='uprev',
-                    default=True,
-                    help='Override values from buildconfig and never uprev.')
-  group.add_option('--resume', action='store_true',
-                    default=False,
-                    help='Skip stages already successfully completed.')
   group.add_option('--validation_pool', default=None,
                    help='Path to a pickled validation pool. Intended for use '
                    'only with the commit queue.')
@@ -895,14 +895,12 @@ def main(argv):
     # Verify gerrit patches are valid.
     print 'Verifying patches...'
     _PreProcessPatches(options.gerrit_patches, options.local_patches)
-
     print 'Submitting tryjob...'
     tryjob = remote_try.RemoteTryJob(options, args)
     tryjob.Submit(dryrun=options.debug)
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotConsoleLink())
-    print '**Please allow 1 minute for this job to show up on the console.**'
     sys.exit(0)
 
   if args:

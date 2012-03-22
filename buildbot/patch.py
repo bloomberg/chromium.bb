@@ -5,12 +5,9 @@
 """Module that handles the processing of patches to the source tree."""
 
 import constants
-import glob
 import logging
 import os
 import re
-import shutil
-import tempfile
 
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -41,92 +38,27 @@ class MissingChangeIDException(Exception):
   pass
 
 
-class Patch(object):
-  """Abstract class representing a Git Patch."""
+class GitRepoPatch(object):
+  """Representing a patch from a branch of a local or remote git repository."""
 
-  def __init__(self, project, tracking_branch):
+  def __init__(self, project_url, project, ref, tracking_branch):
     """Initialization of abstract Patch class.
 
     Args:
+      project_url: The url of the git repo (can be local or remote) to pull the
+                   patch from.
       project: The name of the project that the patch applies to.
+      ref: The refspec to pull from the git repo.
       tracking_branch:  The remote branch of the project the patch applies to.
     """
+    self.project_url = project_url
     self.project = project
-    self.tracking_branch = tracking_branch
+    self.ref = ref
+    self.tracking_branch = os.path.basename(tracking_branch)
 
   def ProjectDir(self, buildroot):
     """Returns the local directory where this patch will be applied."""
     return cros_lib.GetProjectDir(buildroot, self.project)
-
-  def Apply(self, buildroot, trivial):
-    """Applies the patch to specified buildroot. Implement in subclasses.
-
-    Args:
-      buildroot:  The buildroot.
-      trivial:  Only allow trivial merges when applying change.
-
-    Raises:
-      PatchException
-    """
-    raise NotImplementedError('Applies the patch to specified buildroot.')
-
-
-class GerritPatch(Patch):
-  """Object that represents a Gerrit CL."""
-  _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
-  _GIT_CHANGE_ID_RE = re.compile(r'^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
-  _PALADIN_DEPENDENCY_RE = re.compile(r'^\s*CQ-DEPEND=(.*)$', re.MULTILINE)
-  _PALADIN_BUG_RE = re.compile('(\w+)')
-
-  def __init__(self, patch_dict, internal):
-    """Construct a GerritPatch object from Gerrit query results.
-
-    Gerrit query JSON fields are documented at:
-    http://gerrit-documentation.googlecode.com/svn/Documentation/2.2.1/json.html
-
-    Args:
-      patch_dict: A dictionary containing the parsed JSON gerrit query results.
-      internal: Whether the CL is an internal CL.
-    """
-    super(GerritPatch, self).__init__(patch_dict['project'],
-                                      patch_dict['branch'])
-    self.patch_dict = patch_dict
-    self.internal = internal
-    # id - The CL's ChangeId
-    self.id = patch_dict['id']
-    # ref - The remote ref that contains the patch.
-    self.ref = patch_dict['currentPatchSet']['ref']
-    # revision - The CL's SHA1 hash.
-    self.revision = patch_dict['currentPatchSet']['revision']
-    self.patch_number = patch_dict['currentPatchSet']['number']
-    self.commit = patch_dict['currentPatchSet']['revision']
-    self.owner, _, _ = patch_dict['owner']['email'].partition('@')
-    self.gerrit_number = patch_dict['number']
-    self.url = patch_dict['url']
-    # status - Current state of this change.  Can be one of
-    # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
-    self.status = patch_dict['status']
-    # Allows a caller to specify why we can't apply this change when we
-    # HandleApplicaiton failures.
-    self.apply_error_message = ('Please re-sync, rebase, and re-upload your '
-                                'change.')
-
-  def __getnewargs__(self):
-    """Used for pickling to re-create patch object."""
-    return self.patch_dict, self.internal
-
-  def IsAlreadyMerged(self):
-    """Returns whether the patch has already been merged in Gerrit."""
-    return self.status == 'MERGED'
-
-  def _GetProjectUrl(self):
-    """Returns the url to the gerrit project."""
-    if self.internal:
-      url_prefix = constants.GERRIT_INT_SSH_URL
-    else:
-      url_prefix = self._PUBLIC_URL
-
-    return os.path.join(url_prefix, self.project)
 
   def _RebaseOnto(self, branch, upstream, project_dir, trivial):
     """Attempts to rebase FETCH_HEAD onto branch -- while not on a branch.
@@ -162,10 +94,9 @@ class GerritPatch(Patch):
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
-    url = self._GetProjectUrl()
     upstream = _GetProjectManifestBranch(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
+                        cwd=project_dir, print_cmd=False)
     try:
       self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, trivial)
       cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH],
@@ -188,12 +119,22 @@ class GerritPatch(Patch):
                           cwd=project_dir, print_cmd=False)
 
   def Apply(self, buildroot, trivial=False):
-    """Implementation of Patch.Apply().
+    """Applies the patch to specified buildroot.
+
+      buildroot:  The buildroot.
+      trivial:  Only allow trivial merges when applying change.
 
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
+    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
+    manifest_branch_base = os.path.basename(manifest_branch)
+    if self.tracking_branch != manifest_branch_base:
+      raise PatchException('branch %s for project %s is not tracking %s'
+                           % (self.ref, self.project,
+                              manifest_branch_base))
+
     project_dir = self.ProjectDir(buildroot)
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
       upstream = cros_lib.GetManifestDefaultBranch(buildroot)
@@ -202,12 +143,76 @@ class GerritPatch(Patch):
                           print_cmd=False)
     self._RebasePatch(buildroot, project_dir, trivial)
 
+  def __str__(self):
+    """Returns custom string to identify this patch."""
+    return '%s:%s' % (self.project, self.ref)
+
+
+class GerritPatch(GitRepoPatch):
+  """Object that represents a Gerrit CL."""
+  _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
+  _GIT_CHANGE_ID_RE = re.compile(r'^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
+  _PALADIN_DEPENDENCY_RE = re.compile(r'^\s*CQ-DEPEND=(.*)$', re.MULTILINE)
+  _PALADIN_BUG_RE = re.compile('(\w+)')
+
+  def __init__(self, patch_dict, internal):
+    """Construct a GerritPatch object from Gerrit query results.
+
+    Gerrit query JSON fields are documented at:
+    http://gerrit-documentation.googlecode.com/svn/Documentation/2.2.1/json.html
+
+    Args:
+      patch_dict: A dictionary containing the parsed JSON gerrit query results.
+      internal: Whether the CL is an internal CL.
+    """
+    super(GerritPatch, self).__init__(
+        self._GetProjectUrl(patch_dict['project'], internal),
+        patch_dict['project'],
+        patch_dict['currentPatchSet']['ref'],
+        patch_dict['branch'])
+
+    self.patch_dict = patch_dict
+    self.internal = internal
+    # id - The CL's ChangeId
+    self.id = patch_dict['id']
+    # revision - The CL's SHA1 hash.
+    self.revision = patch_dict['currentPatchSet']['revision']
+    self.patch_number = patch_dict['currentPatchSet']['number']
+    self.commit = patch_dict['currentPatchSet']['revision']
+    self.owner, _, _ = patch_dict['owner']['email'].partition('@')
+    self.gerrit_number = patch_dict['number']
+    self.url = patch_dict['url']
+    # status - Current state of this change.  Can be one of
+    # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
+    self.status = patch_dict['status']
+    # Allows a caller to specify why we can't apply this change when we
+    # HandleApplicaiton failures.
+    self.apply_error_message = ('Please re-sync, rebase, and re-upload your '
+                                'change.')
+
+  def __getnewargs__(self):
+    """Used for pickling to re-create patch object."""
+    return self.patch_dict, self.internal
+
+  def IsAlreadyMerged(self):
+    """Returns whether the patch has already been merged in Gerrit."""
+    return self.status == 'MERGED'
+
+  @classmethod
+  def _GetProjectUrl(cls, project, internal):
+    """Returns the url to the gerrit project."""
+    if internal:
+      url_prefix = constants.GERRIT_INT_SSH_URL
+    else:
+      url_prefix = cls._PUBLIC_URL
+
+    return os.path.join(url_prefix, project)
+
   def CommitMessage(self, buildroot):
     """Returns the commit message for the patch as a string."""
-    url = self._GetProjectUrl()
     project_dir = self.ProjectDir(buildroot)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
+                        cwd=project_dir, print_cmd=False)
     return_obj = cros_lib.RunCommand(['git', 'show', '-s', 'FETCH_HEAD'],
                                      cwd=project_dir, redirect_stdout=True,
                                      print_cmd=False)
@@ -226,11 +231,10 @@ class GerritPatch(Patch):
       MissingChangeIDException: If a dependent change is missing its ChangeID.
     """
     dependencies = []
-    url = self._GetProjectUrl()
     logging.info('Checking for Gerrit dependencies for change %s', self)
     project_dir = self.ProjectDir(buildroot)
-    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir,
-                        print_cmd=False)
+    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
+                        cwd=project_dir, print_cmd=False)
     return_obj = cros_lib.RunCommand(
         ['git', 'log', '-z', '%s..FETCH_HEAD^' %
           _GetProjectManifestBranch(buildroot, self.project)],
@@ -289,61 +293,6 @@ class GerritPatch(Patch):
     return self.id == other.id
 
 
-def RemovePatchRoot(patch_root):
-  """Removes the temporary directory storing patches."""
-  assert os.path.basename(patch_root).startswith(_TRYBOT_TEMP_PREFIX)
-  shutil.rmtree(patch_root)
-
-
-class LocalPatch(Patch):
-  """Object that represents a set of local commits that will be patched."""
-
-  def __init__(self, project, tracking_branch, patch_dir, local_branch):
-    """Construct a LocalPatch object.
-
-    Args:
-      project: Same as Patch constructor arg.
-      tracking_branch: Same as Patch constructor arg.
-      patch_dir: The directory where the .patch files are stored.
-      local_branch:  The local branch of the project that the patch came from.
-    """
-    Patch.__init__(self, project, tracking_branch)
-    self.patch_dir = patch_dir
-    self.local_branch = local_branch
-
-  def _GetFileList(self):
-    """Return a list of .patch files in sorted order."""
-    file_list = glob.glob(os.path.join(self.patch_dir, '*'))
-    file_list.sort()
-    return file_list
-
-  def Apply(self, buildroot, trivial=False):
-    """Implementation of Patch.Apply().  Does not accept trivial option.
-
-    Raises:
-      PatchException if the patch is for the wrong tracking branch.
-    """
-    assert not trivial, 'Local apply not compatible with trivial set'
-    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
-    if self.tracking_branch != manifest_branch:
-      raise PatchException('branch %s for project %s is not tracking %s'
-                           % (self.local_branch, self.project,
-                              manifest_branch))
-
-    project_dir = self.ProjectDir(buildroot)
-    try:
-      cros_lib.RunCommand(['repo', 'start', constants.PATCH_BRANCH, '.'],
-                          cwd=project_dir)
-      cros_lib.RunCommand(['git', 'am', '--3way'] + self._GetFileList(),
-                          cwd=project_dir)
-    except cros_lib.RunCommandError:
-      raise ApplyPatchException(self)
-
-  def __str__(self):
-    """Returns custom string to identify this patch."""
-    return '%s:%s' % (self.project, self.local_branch)
-
-
 def _GetRemoteTrackingBranch(project_dir, branch):
   """Get the remote tracking branch of a local branch.
 
@@ -371,20 +320,16 @@ def PrepareLocalPatches(patches, manifest_branch):
   Raises:
     PatchException if:
       1. The project branch isn't specified and the project isn't on a branch.
-      2. The project branch doesn't track a remote branch.
   """
   patch_info = []
-  patch_root = tempfile.mkdtemp(prefix=_TRYBOT_TEMP_PREFIX)
-
-  for patch_id in range(0, len(patches)):
-    project, branch = patches[patch_id].split(':')
+  for patch in patches:
+    project, branch = patch.split(':')
     project_dir = cros_lib.GetProjectDir('.', project)
 
-    patch_dir = os.path.join(patch_root, str(patch_id))
-    cmd = ['git', 'format-patch', '%s..%s' % ('m/' + manifest_branch, branch),
-           '-o', patch_dir]
-    cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
-    if not os.listdir(patch_dir):
+    cmd = ['git', 'log', '%s..%s' % ('m/' + manifest_branch, branch),
+           '--format=%H']
+    result = cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
+    if not result.output.strip():
       raise PatchException('No changes found in %s:%s' % (project, branch))
 
     # Store remote tracking branch for verification during patch stage.
@@ -394,6 +339,7 @@ def PrepareLocalPatches(patches, manifest_branch):
       raise PatchException('%s:%s needs to track a remote branch!'
                            % (project, branch))
 
-    patch_info.append(LocalPatch(project, tracking_branch, patch_dir, branch))
+    patch_info.append(GitRepoPatch(os.path.join(project_dir, '.git'), project,
+                                   branch, tracking_branch))
 
   return patch_info
