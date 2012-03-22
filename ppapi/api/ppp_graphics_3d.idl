@@ -16,7 +16,7 @@ label Chrome {
  * <code>PPP_Graphics3D</code> defines the notification interface for a 3D 
  * graphics context.
  */
-[macro="PPP_GRAPHICS_3D_INTERFACE"]
+[macro="PPP_GRAPHICS_3D_INTERFACE", iname="PPP_Graphics_3D"]
 interface PPP_Graphics3D {
   /**
    * Called when the OpenGL ES window is invalidated and needs to be repainted.

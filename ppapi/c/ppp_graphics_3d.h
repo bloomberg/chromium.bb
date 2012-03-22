@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_graphics_3d.idl modified Tue Mar 13 12:09:59 2012. */
+/* From ppp_graphics_3d.idl modified Wed Mar 21 17:35:39 2012. */
 
 #ifndef PPAPI_C_PPP_GRAPHICS_3D_H_
 #define PPAPI_C_PPP_GRAPHICS_3D_H_
@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPP_GRAPHICS_3D_INTERFACE_1_0 "PPP_Graphics3D;1.0"
+#define PPP_GRAPHICS_3D_INTERFACE_1_0 "PPP_Graphics_3D;1.0"
 #define PPP_GRAPHICS_3D_INTERFACE PPP_GRAPHICS_3D_INTERFACE_1_0
 
 /**
