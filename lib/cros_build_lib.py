@@ -564,6 +564,11 @@ def PrintBuildbotLink(text, url):
   print '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
 
 
+def PrintBuildbotStepText(text):
+  """Prints out stage text to buildbot."""
+  print '\n@@@STEP_TEXT@%(text)s@@@' % { 'text': text }
+
+
 def ListFiles(base_dir):
   """Recurively list files in a directory.
 
@@ -678,6 +683,22 @@ def FindRepoCheckoutRoot(path=None):
     return os.path.dirname(repo_dir)
   else:
     return None
+
+
+def IsProjectInternal(cwd, project):
+  """Checks if project is internal."""
+  build_root = FindRepoCheckoutRoot(cwd)
+  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
+  handler = ManifestHandler.ParseManifest(manifest_path)
+  remote = handler.GetAttributeForProject(project, 'remote')
+  if not remote:
+    raise Exception('Project %s has no remotes specified in manifest!'
+                    % project)
+  elif remote not in ('cros', 'cros-internal'):
+    raise Exception("Project %s remote is neither 'cros' nor 'cros-internal'"
+                     % project)
+
+  return remote == 'cros-internal'
 
 
 def DoesProjectExist(cwd, project):
@@ -825,6 +846,10 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
     if name == 'project':
       self.projects[attributes['name']] = attributes
 
+  def GetAttributeForProject(self, project, attribute):
+    """Gets an attribute for a project, falling back to defaults if needed."""
+    return self.projects[project].get(attribute, self.default.get(attribute))
+
 
 def GetProjectManifestBranch(buildroot, project):
   """Return the branch specified in the manifest for a project.
@@ -841,14 +866,9 @@ def GetProjectManifestBranch(buildroot, project):
   manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
   handler = ManifestHandler.ParseManifest(manifest_path)
 
-  project_branch = {}
-  for key in ['remote', 'revision']:
-    if key in handler.projects[project]:
-      project_branch[key] = handler.projects[project][key]
-    else:
-      project_branch[key] = handler.default[key]
-
-  return project_branch['remote'], project_branch['revision']
+  return tuple(
+    handler.GetAttributeForProject(key) for key in ['remote', 'revision']
+  )
 
 
 def GetProjectUserEmail(cwd):

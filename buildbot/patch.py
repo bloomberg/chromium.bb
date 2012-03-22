@@ -11,12 +11,10 @@ import re
 
 from chromite.lib import cros_build_lib as cros_lib
 
-# The prefix of the temporary directory created to store local patches.
-_TRYBOT_TEMP_PREFIX = 'trybot_patch-'
-
 
 class PatchException(Exception):
   """Exception thrown by GetGerritPatchInfo."""
+
 
 class ApplyPatchException(Exception):
   """Exception thrown if we fail to apply a patch."""
@@ -146,6 +144,34 @@ class GitRepoPatch(object):
   def __str__(self):
     """Returns custom string to identify this patch."""
     return '%s:%s' % (self.project, self.ref)
+
+
+class LocalGitRepoPatch(GitRepoPatch):
+  """Represents patch coming from an on-disk git repo."""
+
+  def Sha1Hash(self):
+    """Get the Sha1 of the branch."""
+    source_root = constants.SOURCE_ROOT
+    return cros_lib.GetGitRepoRevision(cwd=self.ProjectDir(source_root),
+                                       branch=self.ref)
+
+  def Upload(self, remote_ref, dryrun=False):
+    """Upload the patch to a remote git branch.
+
+    Arguments:
+      remote_ref: The ref on the remote host to push to.
+      dryrun: Do the git push with --dry-run
+    """
+    push_url = constants.GERRIT_SSH_URL
+    if cros_lib.IsProjectInternal(constants.SOURCE_ROOT, self.project):
+      push_url = constants.GERRIT_INT_SSH_URL
+
+    cmd = ['git', 'push', os.path.join(push_url, self.project),
+           '%s:%s' % (self.ref, remote_ref)]
+    if dryrun:
+      cmd.append('--dry-run')
+
+    cros_lib.RunCommand(cmd, cwd=self.ProjectDir(constants.SOURCE_ROOT))
 
 
 class GerritPatch(GitRepoPatch):
@@ -324,7 +350,7 @@ def PrepareLocalPatches(patches, manifest_branch):
   patch_info = []
   for patch in patches:
     project, branch = patch.split(':')
-    project_dir = cros_lib.GetProjectDir('.', project)
+    project_dir = cros_lib.GetProjectDir(constants.SOURCE_ROOT, project)
 
     cmd = ['git', 'log', '%s..%s' % ('m/' + manifest_branch, branch),
            '--format=%H']
@@ -339,7 +365,7 @@ def PrepareLocalPatches(patches, manifest_branch):
       raise PatchException('%s:%s needs to track a remote branch!'
                            % (project, branch))
 
-    patch_info.append(GitRepoPatch(os.path.join(project_dir, '.git'), project,
-                                   branch, tracking_branch))
+    patch_info.append(LocalGitRepoPatch(os.path.join(project_dir, '.git'),
+                                        project, branch, tracking_branch))
 
   return patch_info

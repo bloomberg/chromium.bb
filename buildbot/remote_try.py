@@ -1,17 +1,17 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import constants
-import datetime
 import getpass
 import json
 import os
 import shutil
 import sys
 import tempfile
+import time
 
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
@@ -26,54 +26,66 @@ class RemoteTryJob(object):
                          'chromiumos/tryjobs')
   TRYJOB_DESCRIPTION_VERSION = 1
 
-  def __init__(self, options, bots):
+  def __init__(self, options, bots, local_patches):
     """Construct the object.
 
     Args:
       options: The parsed options passed into cbuildbot.
       bots: A list of configs to run tryjobs for.
+      local_patches: A list of LocalGitRepoPatch objects.
     """
     self.options = options
     self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
     self.user_email = cros_lib.GetProjectUserEmail(cwd)
     # Name of the job that appears on the waterfall.
-    self.name = ','.join(options.gerrit_patches)
+    patch_list = options.gerrit_patches + options.local_patches
+    self.name = ','.join(patch_list)
     self.bots = bots[:]
     self.description = ('name: %s\n patches: %s\nbots: %s' %
-                        (self.name, options.gerrit_patches,
-                         self.bots))
+                        (self.name, patch_list, self.bots))
     self.buildroot = options.buildroot
     self.extra_args = []
-    self.extra_args.append('--gerrit-patches=%s'
-                      % ' '.join(options.gerrit_patches))
+    if options.gerrit_patches:
+      self.extra_args.append('--gerrit-patches=%s'
+                             % ' '.join(options.gerrit_patches))
     self.tryjob_repo = None
+    self.local_patches = local_patches
 
   @property
   def values(self):
     return {
         'user' : self.user,
         'email' : [self.user_email],
-        'name' : ','.join(self.options.gerrit_patches),
+        'name' : self.name,
         'bot' : self.bots,
         'extra_args' : self.extra_args,
         'version' : self.TRYJOB_DESCRIPTION_VERSION,}
 
   def _Submit(self, dryrun):
     """Internal submission function.  See Submit() for arg description."""
+    current_time = str(int(time.time()))
+    ref_base = os.path.join('refs/tryjobs', self.user, current_time)
+    for patch in self.local_patches:
+      sha1 = patch.Sha1Hash()[:8]
+      local_branch = os.path.basename(patch.ref)
+      ref_final = os.path.join(ref_base, local_branch, sha1)
+      patch.Upload(ref_final, dryrun=dryrun)
+      self.extra_args.append('--remote-patches=%s:%s:%s:%s'
+                             % (patch.project, local_branch, ref_final,
+                                patch.tracking_branch))
+
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.SSH_URL)
     manifest_version.CreatePushBranch(self.tryjob_repo)
 
-    current_time = datetime.datetime.utcnow()
     file_name = '%s.%s' % (self.user,
-                           current_time.strftime("%Y.%m.%d_%H.%M.%S"))
+                           current_time)
     user_dir = os.path.join(self.tryjob_repo, self.user)
     if not os.path.isdir(user_dir):
       os.mkdir(user_dir)
 
     fullpath = os.path.join(user_dir, file_name)
-    # Both commit description and contents of file contain tryjob specs.
     with open(fullpath, 'w+') as job_desc_file:
       json.dump(self.values, job_desc_file)
 

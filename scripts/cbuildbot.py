@@ -301,7 +301,8 @@ class Builder(object):
       sync_instance.Run()
       self._SetReleaseTag()
 
-      if self.gerrit_patches or self.local_patches:
+      if (self.gerrit_patches or self.local_patches
+          or self.options.remote_patches):
         self._RunStage(stages.PatchChangesStage,
                        self.gerrit_patches, self.local_patches)
 
@@ -560,17 +561,14 @@ def _RunBuildStagesWrapper(options, build_config):
 
 
 # Parser related functions
-
-
-def _CheckAndSplitLocalPatches(options):
+def _CheckLocalPatches(local_patches):
   """Do an early quick check of the passed-in patches.
 
   If the branch of a project is not specified we append the current branch the
   project is on.
   """
-  patch_args = options.local_patches.split()
-  options.local_patches = []
-  for patch in patch_args:
+  verified_patches = []
+  for patch in local_patches:
     components = patch.split(':')
     if len(components) > 2:
       msg = 'Specify local patches in project[:branch] format.'
@@ -597,12 +595,9 @@ def _CheckAndSplitLocalPatches(options):
         raise optparse.OptionValueError('Project %s does not have branch %s'
                                         % (project, branch))
 
-    options.local_patches.append(patch)
+    verified_patches.append(patch)
 
-
-def _CheckAndSplitGerritPatches(_option, _opt_str, value, parser):
-  """Early quick check of patches and convert them into a list."""
-  parser.values.gerrit_patches = value.split()
+  return verified_patches
 
 
 def _CheckBuildRootOption(_option, _opt_str, value, parser):
@@ -672,9 +667,8 @@ def _CreateParser():
                     callback=_CheckChromeRevOption,
                     help=('Revision of Chrome to use, of type '
                           '[%s]' % '|'.join(constants.VALID_CHROME_REVISIONS)))
-  parser.add_option('-g', '--gerrit-patches', action='callback',
-                    type='string', callback=_CheckAndSplitGerritPatches,
-                    metavar="'Id1 *int_Id2...IdN'",
+  parser.add_option('-g', '--gerrit-patches', action='append', default=[],
+                    type='string', metavar="'Id1 *int_Id2...IdN'",
                     help=("Space-separated list of short-form Gerrit "
                           "Change-Id's or change numbers to patch.  Please "
                           "prepend '*' to internal Change-Id's"))
@@ -682,7 +676,7 @@ def _CreateParser():
                     default=False,
                     help=('List the suggested trybot configs to use.  Use '
                           '--all to list all of the available configs.'))
-  parser.add_option('-p', '--local-patches', action='store', type='string',
+  parser.add_option('-p', '--local-patches', action='append', default=[],
                     metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
                     help=('Space-separated list of project branches with '
                           'patches to apply.  Projects are specified by name. '
@@ -756,11 +750,13 @@ def _CreateParser():
                          "default, if this option isn't given but cbuildbot "
                          'is invoked from a repo checkout, cbuildbot will '
                          'use the repo root.')
+  # Indicates this is running on a remote trybot machine.  '
   group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
-                    default=False,
-                    help=('This is running on a remote trybot machine.  '))
-  group.add_option('--resume', action='store_true',
-                    default=False,
+                    default=False, help=optparse.SUPPRESS_HELP)
+  # Patches uploaded by trybot client when run using the -p option.
+  group.add_option('--remote-patches', action='append', default=[],
+                   help=optparse.SUPPRESS_HELP)
+  group.add_option('--resume', action='store_true', default=False,
                     help='Skip stages already successfully completed.')
   group.add_option('--timeout', action='store', type='int', default=0,
                     help="Specify the maximum amount of time this job can run "
@@ -818,10 +814,7 @@ def _FinishParsing(options, args):
       cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
                    constants.CHROME_REV_SPEC)
 
-  if options.remote and options.local_patches:
-    cros_lib.Die('Local patching not yet supported with remote tryjobs.')
-
-  if options.remote and not options.gerrit_patches:
+  if options.remote and not (options.gerrit_patches or options.local_patches):
     cros_lib.Die('Must provide patches when running with --remote.')
 
   if len(args) > 1 and not options.remote:
@@ -842,6 +835,21 @@ def _FinishParsing(options, args):
     options.debug = not options.buildbot and not options.remote
 
 
+def _SplitAndFlatten(appended_items):
+  """Given a list of space-separated items, split into flattened list.
+
+  Given ['abc def', 'hij'] return ['abc', 'def', 'hij'].
+  Arguments:
+    appended_items: List of delimiter-separated items.
+
+  Returns: Flattened list.
+  """
+  new_list = []
+  for item in appended_items:
+    new_list.extend(item.split(' '))
+  return new_list
+
+
 def _PostParseCheck(options, args):
   """Perform some usage validation after we've parsed the arguments
 
@@ -849,12 +857,13 @@ def _PostParseCheck(options, args):
     options/args: The options/args object returned by optparse
   """
   if not options.resume:
+    options.gerrit_patches = _SplitAndFlatten(options.gerrit_patches)
+    options.remote_patches = _SplitAndFlatten(options.remote_patches)
     try:
       # TODO(rcui): Split this into two stages, one that parses, another that
       # validates.  Parsing step will be called by _FinishParsing().
-      if options.local_patches:
-        _CheckAndSplitLocalPatches(options)
-
+      options.local_patches = _CheckLocalPatches(
+          _SplitAndFlatten(options.local_patches))
     except optparse.OptionValueError as e:
       cros_lib.Die(str(e))
 
@@ -894,9 +903,10 @@ def main(argv):
 
     # Verify gerrit patches are valid.
     print 'Verifying patches...'
-    _PreProcessPatches(options.gerrit_patches, options.local_patches)
+    _, local_patches = _PreProcessPatches(options.gerrit_patches,
+                                          options.local_patches)
     print 'Submitting tryjob...'
-    tryjob = remote_try.RemoteTryJob(options, args)
+    tryjob = remote_try.RemoteTryJob(options, args, local_patches)
     tryjob.Submit(dryrun=options.debug)
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
@@ -944,8 +954,6 @@ def main(argv):
       parser.error("Option --buildbot requires the following binaries which "
                    "couldn't be found in $PATH: %s"
                    % (', '.join(missing)))
-
-
 
   if options.reference_repo:
     options.reference_repo = os.path.abspath(options.reference_repo)

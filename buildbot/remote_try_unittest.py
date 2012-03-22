@@ -12,6 +12,7 @@ import mox
 import os
 import re
 import sys
+import time
 import unittest
 
 import constants
@@ -29,12 +30,14 @@ class RemoteTryTests(mox.MoxTestBase):
     BOTS = ['x86-generic-paladin', 'arm-generic-paladin']
     options = mox.MockAnything()
     options.gerrit_patches = PATCHES
+    options.local_patches = []
+    self.mox.StubOutWithMock(time, 'time')
+    time.time().AndReturn(0)
     self.mox.ReplayAll()
-    job = remote_try.RemoteTryJob(options, BOTS)
+    job = remote_try.RemoteTryJob(options, BOTS, [])
     job.Submit(workdir=self.tempdir, dryrun=True)
     # Get the file that was just created.
-    created_file = sorted(glob.glob(os.path.join(self.tempdir, job.user,
-                          job.user + '*')), reverse=True)[0]
+    created_file = os.path.join(self.tempdir, job.user, '%s.0' % job.user)
     with open(created_file, 'rb') as job_desc_file:
       values = json.load(job_desc_file)
 

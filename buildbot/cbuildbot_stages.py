@@ -20,6 +20,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
+from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
@@ -139,6 +140,19 @@ class PatchChangesStage(bs.BuilderStage):
 
     for patch in self.local_patches:
       patch.Apply(self._build_root)
+
+    for patch in self._options.remote_patches:
+      # Construct the patch here because now we have buildroot.
+      project, original_branch, ref, tracking_branch = patch.split(':')
+      cros_lib.PrintBuildbotStepText('%s:%s' % (project, original_branch))
+
+      push_url = constants.GERRIT_SSH_URL
+      if cros_lib.IsProjectInternal(self._build_root, project):
+        push_url = constants.GERRIT_INT_SSH_URL
+
+      patch_object = cros_patch.GitRepoPatch(os.path.join(push_url, project),
+                                             project, ref, tracking_branch)
+      patch_object.Apply(self._build_root)
 
 
 class SyncStage(bs.BuilderStage):
