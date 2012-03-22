@@ -45,7 +45,7 @@ html[dir=rtl] #signin-right {
 }
 
 #signin-frame {
-  background-color: whitesmoke;
+  background-color: #fefefe;
   border: 1px solid lightgray;
   height: 100%;
   width: 340px;
