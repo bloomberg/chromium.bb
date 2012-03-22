@@ -11,6 +11,10 @@
   padding: 0 0 10px 0;
 }
 
+#set-wallpaper-page .content-area {
+  height: 400px;
+}
+
 #wallpaper-grid {
   margin: 0;
   width: 640px;
