@@ -2845,6 +2845,8 @@
         'browser/ui/gtk/certificate_viewer_gtk.cc',
         'browser/ui/gtk/chrome_gtk_frame.cc',
         'browser/ui/gtk/chrome_gtk_frame.h',
+        'browser/ui/gtk/chrome_to_mobile_bubble_gtk.cc',
+        'browser/ui/gtk/chrome_to_mobile_bubble_gtk.h',
         'browser/ui/gtk/collected_cookies_gtk.cc',
         'browser/ui/gtk/collected_cookies_gtk.h',
         'browser/ui/gtk/confirm_bubble_view.cc',

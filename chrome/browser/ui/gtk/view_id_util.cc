@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,9 @@ const char* GetNameFromID(ViewID id) {
 
     case VIEW_ID_STAR_BUTTON:
       return "chrome-toolbar-star-button";
+
+    case VIEW_ID_CHROME_TO_MOBILE_BUTTON:
+      return "chrome-toolbar-chrome-to-mobile-button";
 
     case VIEW_ID_LOCATION_BAR:
       return "chrome-location-bar";

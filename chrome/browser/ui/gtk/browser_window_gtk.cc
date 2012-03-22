@@ -1075,7 +1075,7 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
 }
 
 void BrowserWindowGtk::ShowChromeToMobileBubble() {
-  NOTIMPLEMENTED();
+  toolbar_->GetLocationBarView()->ShowChromeToMobileBubble();
 }
 
 bool BrowserWindowGtk::IsDownloadShelfVisible() const {

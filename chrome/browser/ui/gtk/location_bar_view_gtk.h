@@ -17,6 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -55,7 +56,8 @@ class AcceleratorGtk;
 class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public CommandUpdater::CommandObserver {
  public:
   explicit LocationBarViewGtk(Browser* browser);
   virtual ~LocationBarViewGtk();
@@ -95,6 +97,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
+
+  // Shows the Chrome To Mobile bubble.
+  void ShowChromeToMobileBubble();
 
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
@@ -144,6 +149,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Implement the CommandUpdater::CommandObserver interface.
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // Edit background color.
   static const GdkColor kBackgroundColor;
@@ -354,6 +362,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
+                       OnChromeToMobileButtonPress, GdkEventButton*);
 
   // Updates the site type area: changes the icon and shows/hides the EV
   // certificate information.
@@ -380,11 +390,15 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // available horizontal space in the location bar.
   void AdjustChildrenVisibility();
 
-  // Build the star icon.
+  // Build the star and Chrome To Mobile icons.
   void CreateStarButton();
+  void CreateChromeToMobileButton();
 
   // Update the star icon after it is toggled or the theme changes.
   void UpdateStarIcon();
+
+  // Update the chrome to mobile icon after the theme changes, etc.
+  void UpdateChromeToMobileIcon();
 
   // Returns true if we should only show the URL and none of the extras like
   // the star button or page actions.
@@ -397,6 +411,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   ui::OwnedWidgetGtk star_;
   GtkWidget* star_image_;
   bool starred_;
+
+  // The Chrome To Mobile button and image.
+  ui::OwnedWidgetGtk chrome_to_mobile_view_;
+  GtkWidget* chrome_to_mobile_image_;
 
   // An icon to the left of the address bar.
   GtkWidget* site_type_alignment_;
