@@ -234,6 +234,10 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return NULL;
   }
 
+  virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() {
+    return NULL;
+  }
+
  private:
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;

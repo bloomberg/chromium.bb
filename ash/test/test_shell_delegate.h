@@ -32,6 +32,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* t) OVERRIDE;
+  virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

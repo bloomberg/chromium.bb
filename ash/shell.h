@@ -51,6 +51,7 @@ class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
 class SystemTray;
+class UserWallpaperDelegate;
 class VideoDetector;
 class WindowCycleController;
 
@@ -196,6 +197,9 @@ class ASH_EXPORT Shell {
 
   ShellDelegate* delegate() { return delegate_.get(); }
   SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
+  UserWallpaperDelegate* user_wallpaper_delegate() {
+    return user_wallpaper_delegate_.get();
+  }
 
   Launcher* launcher() { return launcher_.get(); }
 
@@ -259,6 +263,7 @@ class ASH_EXPORT Shell {
 
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<SystemTrayDelegate> tray_delegate_;
+  scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
 
   scoped_ptr<Launcher> launcher_;
 

@@ -30,6 +30,7 @@ struct LauncherItem;
 class ScreenshotDelegate;
 class SystemTray;
 class SystemTrayDelegate;
+class UserWallpaperDelegate;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -84,6 +85,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* tray) = 0;
+
+  // Creates a user wallpaper delegate. Shell takes ownership of the delegate.
+  virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() = 0;
 };
 
 }  // namespace ash

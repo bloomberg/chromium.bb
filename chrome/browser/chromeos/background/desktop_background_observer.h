@@ -9,18 +9,22 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace ash {
+class UserWallpaperDelegate;
+}
+
 namespace chromeos {
+
+ash::UserWallpaperDelegate* CreateUserWallpaperDelegate();
 
 // Listens for background change events and passes them to the Aura shell's
 // DesktopBackgroundController class.
-class DesktopBackgroundObserver : public content::NotificationObserver{
+class DesktopBackgroundObserver : public content::NotificationObserver {
  public:
   DesktopBackgroundObserver();
   virtual ~DesktopBackgroundObserver();
 
  private:
-  // Returns the index of user selected wallpaper from a default wallpaper list.
-  int GetUserWallpaperIndex();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

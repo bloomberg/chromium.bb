@@ -23,6 +23,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "chrome/browser/chromeos/background/desktop_background_observer.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -130,6 +131,14 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
     ash::SystemTray* tray) {
 #if defined(OS_CHROMEOS)
   return chromeos::CreateSystemTrayDelegate(tray);
+#else
+  return NULL;
+#endif
+}
+
+ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
+#if defined(OS_CHROMEOS)
+  return chromeos::CreateUserWallpaperDelegate();
 #else
   return NULL;
 #endif

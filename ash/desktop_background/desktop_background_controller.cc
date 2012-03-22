@@ -21,24 +21,24 @@
 namespace ash {
 
 DesktopBackgroundController::DesktopBackgroundController() :
-  previous_wallpaper_index_(GetDefaultWallpaperIndex()),
   desktop_background_mode_(BACKGROUND_IMAGE) {
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
 }
 
-void DesktopBackgroundController::OnDesktopBackgroundChanged(int index) {
+void DesktopBackgroundController::OnDesktopBackgroundChanged() {
   internal::RootWindowLayoutManager* root_window_layout =
       Shell::GetInstance()->root_window_layout();
   if (desktop_background_mode_ == BACKGROUND_SOLID_COLOR)
     return;
 
+  int index = Shell::GetInstance()->user_wallpaper_delegate()->
+      GetUserWallpaperIndex();
   DCHECK(root_window_layout->background_widget()->widget_delegate());
   static_cast<internal::DesktopBackgroundView*>(
       root_window_layout->background_widget()->widget_delegate())->
           SetWallpaper(GetWallpaper(index));
-  previous_wallpaper_index_ = index;
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode(
@@ -49,14 +49,6 @@ void DesktopBackgroundController::SetDesktopBackgroundImageMode(
   root_window_layout->SetBackgroundWidget(
       internal::CreateDesktopBackground(wallpaper));
   desktop_background_mode_ = BACKGROUND_IMAGE;
-}
-
-void DesktopBackgroundController::SetDefaultDesktopBackgroundImage() {
-  SetDesktopBackgroundImageMode(GetWallpaper(GetDefaultWallpaperIndex()));
-}
-
-void DesktopBackgroundController::SetPreviousDesktopBackgroundImage() {
-  SetDesktopBackgroundImageMode(GetWallpaper(previous_wallpaper_index_));
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode() {

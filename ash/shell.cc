@@ -229,6 +229,22 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
                   lock_screen_related_containers);
 }
 
+// This dummy class is used for shell unit tests. We dont have chrome delegate
+// in these tests.
+class DummyUserWallpaperDelegate: public UserWallpaperDelegate {
+ public:
+  DummyUserWallpaperDelegate() {}
+
+  virtual ~DummyUserWallpaperDelegate() {}
+
+  const int GetUserWallpaperIndex() {
+    return 0;
+  }
+
+ private:
+   DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
+};
+
 class DummySystemTrayDelegate : public SystemTrayDelegate {
  public:
   DummySystemTrayDelegate()
@@ -638,6 +654,10 @@ void Shell::Init() {
 
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController);
+  if (delegate_.get())
+    user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
+  if (!user_wallpaper_delegate_.get())
+    user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
   InitLayoutManagers();
 
@@ -798,8 +818,11 @@ void Shell::InitLayoutManagers() {
       new internal::WorkspaceController(default_container));
   workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
 
-  // Create the desktop background image.
-  desktop_background_controller_->SetDefaultDesktopBackgroundImage();
+  // Create desktop background widget.
+  // TODO(bshe): We should be able to use OnDesktopBackgroundChanged function
+  // here after issue 117244 got fixed.
+  desktop_background_controller_->SetDesktopBackgroundImageMode(
+      GetWallpaper(user_wallpaper_delegate_->GetUserWallpaperIndex()));
 }
 
 void Shell::DisableWorkspaceGridLayout() {

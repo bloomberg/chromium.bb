@@ -69,5 +69,9 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(
   return NULL;
 }
 
+UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
+  return NULL;
+}
+
 }  // namespace test
 }  // namespace ash

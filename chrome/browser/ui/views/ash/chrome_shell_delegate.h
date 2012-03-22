@@ -54,6 +54,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       ash::LauncherModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
       ash::SystemTray* tray) OVERRIDE;
+  virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,

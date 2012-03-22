@@ -14,6 +14,40 @@
 
 namespace chromeos {
 
+namespace {
+
+class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
+ public:
+  UserWallpaperDelegate() {
+  }
+
+  virtual ~UserWallpaperDelegate() {
+  }
+
+  virtual const int GetUserWallpaperIndex() OVERRIDE {
+    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    // If at login screen or logged in as a guest/incognito user, then use the
+    // default wallpaper.
+    if (user_manager->IsLoggedInAsGuest() || !user_manager->IsUserLoggedIn())
+      return ash::GetDefaultWallpaperIndex();
+
+    const chromeos::User& user = user_manager->GetLoggedInUser();
+    DCHECK(!user.email().empty());
+    int index = user_manager->GetUserWallpaper(user.email());
+    DCHECK(index >=0 && index < ash::GetWallpaperCount());
+    return index;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
+};
+
+}  // namespace
+
+ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() {
+  return new chromeos::UserWallpaperDelegate();
+}
+
 DesktopBackgroundObserver::DesktopBackgroundObserver() {
   registrar_.Add(
       this,
@@ -24,25 +58,13 @@ DesktopBackgroundObserver::DesktopBackgroundObserver() {
 DesktopBackgroundObserver::~DesktopBackgroundObserver() {
 }
 
-int DesktopBackgroundObserver::GetUserWallpaperIndex() {
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  // Guest/incognito user do not have an email address.
-  if (user_manager->IsLoggedInAsGuest())
-    return ash::GetDefaultWallpaperIndex();
-  const chromeos::User& user = user_manager->GetLoggedInUser();
-  DCHECK(!user.email().empty());
-  int index = user_manager->GetUserWallpaper(user.email());
-  DCHECK(index >=0 && index < ash::GetWallpaperCount());
-  return index;
-}
-
 void DesktopBackgroundObserver::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       ash::Shell::GetInstance()->desktop_background_controller()->
-          OnDesktopBackgroundChanged(GetUserWallpaperIndex());
+          OnDesktopBackgroundChanged();
       break;
     }
     default:

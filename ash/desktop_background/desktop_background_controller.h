@@ -13,6 +13,14 @@ class SkBitmap;
 
 namespace ash {
 
+class UserWallpaperDelegate {
+ public:
+  virtual ~UserWallpaperDelegate() {}
+
+  // Gets the index of user selected wallpaper
+  virtual const int GetUserWallpaperIndex() = 0;
+};
+
 // A class to listen for login and desktop background change events and set the
 // corresponding default wallpaper in Aura shell.
 class ASH_EXPORT DesktopBackgroundController {
@@ -30,31 +38,18 @@ class ASH_EXPORT DesktopBackgroundController {
     return desktop_background_mode_;
   }
 
-  // Change the desktop background image to wallpaper with |index|.
-  void OnDesktopBackgroundChanged(int index);
+  // Change the desktop background image to user selected wallpaper.
+  void OnDesktopBackgroundChanged();
 
   // Sets the desktop background to image mode and create a new background
   // widget with |wallpaper|.
   void SetDesktopBackgroundImageMode(const SkBitmap& wallpaper);
-
-  // Sets the desktop background to image mode and create a new background
-  // widget with default wallpaper.
-  void SetDefaultDesktopBackgroundImage();
-
-  // Sets the desktop background to image mode and create a new background
-  // widget with previous selected wallpaper at run time.
-  void SetPreviousDesktopBackgroundImage();
 
   // Sets the desktop background to solid color mode and create a solid color
   // layout.
   void SetDesktopBackgroundSolidColorMode();
 
  private:
-  // We need to cache the previously used wallpaper index. So when users switch
-  // desktop background color mode at run time, we can directly switch back to
-  // the user selected wallpaper in image mode.
-  int previous_wallpaper_index_;
-
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;
 

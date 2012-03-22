@@ -923,7 +923,7 @@ void UserManagerImpl::SaveWallpaperDefaultIndex(const std::string& username,
   wallpapers_update->SetWithoutPathExpansion(username,
       new base::FundamentalValue(wallpaper_index));
   ash::Shell::GetInstance()->desktop_background_controller()->
-      OnDesktopBackgroundChanged(wallpaper_index);
+      OnDesktopBackgroundChanged();
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
