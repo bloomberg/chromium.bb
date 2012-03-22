@@ -5,20 +5,20 @@
 #include <string.h>
 
 #include "ppapi/cpp/module.h"
-#include "ppapi/tests/test_udp_socket_private_shared.h"
+#include "ppapi/tests/test_udp_socket_private.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
-REGISTER_TEST_CASE(UDPSocketPrivateShared);
+REGISTER_TEST_CASE(UDPSocketPrivate);
 
-TestUDPSocketPrivateShared::TestUDPSocketPrivateShared(
+TestUDPSocketPrivate::TestUDPSocketPrivate(
     TestingInstance* instance)
     : TestCase(instance),
       tcp_socket_private_interface_(NULL),
       udp_socket_private_interface_(NULL) {
 }
 
-bool TestUDPSocketPrivateShared::Init() {
+bool TestUDPSocketPrivate::Init() {
   tcp_socket_private_interface_ = static_cast<const PPB_TCPSocket_Private*>(
       pp::Module::Get()->GetBrowserInterface(PPB_TCPSOCKET_PRIVATE_INTERFACE));
   if (!tcp_socket_private_interface_)
@@ -41,17 +41,13 @@ bool TestUDPSocketPrivateShared::Init() {
       CheckTestingInterface();
 }
 
-void TestUDPSocketPrivateShared::RunTests(const std::string& filter) {
+void TestUDPSocketPrivate::RunTests(const std::string& filter) {
   RUN_TEST(Create, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Connect, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectFailure, filter);
 }
 
-void TestUDPSocketPrivateShared::QuitMessageLoop() {
-  testing_interface_->QuitMessageLoop(instance_->pp_instance());
-}
-
-std::string TestUDPSocketPrivateShared::GenerateNetAddress(
+std::string TestUDPSocketPrivate::GenerateNetAddress(
     PP_Resource* socket, PP_NetAddress_Private* address) {
    *socket = tcp_socket_private_interface_->Create(instance_->pp_instance());
    if (0 == *socket)
@@ -75,7 +71,7 @@ std::string TestUDPSocketPrivateShared::GenerateNetAddress(
   PASS();
 }
 
-std::string TestUDPSocketPrivateShared::CreateAndBindUDPSocket(
+std::string TestUDPSocketPrivate::CreateAndBindUDPSocket(
     PP_NetAddress_Private *address,
     PP_Resource *socket) {
   *socket = udp_socket_private_interface_->Create(instance_->pp_instance());
@@ -102,7 +98,7 @@ std::string TestUDPSocketPrivateShared::CreateAndBindUDPSocket(
   PASS();
 }
 
-std::string TestUDPSocketPrivateShared::BindUDPSocketFailure(
+std::string TestUDPSocketPrivate::BindUDPSocketFailure(
     PP_NetAddress_Private *address,
     PP_Resource *socket) {
   *socket = udp_socket_private_interface_->Create(instance_->pp_instance());
@@ -129,7 +125,7 @@ std::string TestUDPSocketPrivateShared::BindUDPSocketFailure(
   PASS();
 }
 
-std::string TestUDPSocketPrivateShared::TestCreate() {
+std::string TestUDPSocketPrivate::TestCreate() {
   PP_Resource udp_socket;
   std::string error_message;
 
@@ -147,7 +143,7 @@ std::string TestUDPSocketPrivateShared::TestCreate() {
   PASS();
 }
 
-std::string TestUDPSocketPrivateShared::TestConnect() {
+std::string TestUDPSocketPrivate::TestConnect() {
   PP_NetAddress_Private server_address, client_address;
   PP_Resource tcp_socket_server, tcp_socket_client;
   std::string error_message;
@@ -216,7 +212,7 @@ std::string TestUDPSocketPrivateShared::TestConnect() {
   PASS();
 }
 
-std::string TestUDPSocketPrivateShared::TestConnectFailure() {
+std::string TestUDPSocketPrivate::TestConnectFailure() {
   std::string error_message;
   PP_NetAddress_Private invalid_address = { 0 };
   PP_Resource socket;

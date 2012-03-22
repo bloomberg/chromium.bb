@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_SHARED_H_
-#define PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_SHARED_H_
+#ifndef PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_H_
+#define PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_H_
 
 #include "ppapi/cpp/private/tcp_socket_private.h"
 #include "ppapi/cpp/private/udp_socket_private.h"
 #include "ppapi/tests/test_case.h"
 
-class TestUDPSocketPrivateShared : public TestCase {
+class TestUDPSocketPrivate : public TestCase {
  public:
-  explicit TestUDPSocketPrivateShared(TestingInstance* instance);
+  explicit TestUDPSocketPrivate(TestingInstance* instance);
 
   // TestCase implementation.
   virtual bool Init();
   virtual void RunTests(const std::string& filter);
-
-  void QuitMessageLoop();
 
  private:
   // Creates tcp_socket and connects to www.google.com:80. After that,
@@ -41,4 +39,4 @@ class TestUDPSocketPrivateShared : public TestCase {
   uint16_t port_;
 };
 
-#endif  // PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_SHARED_H_
+#endif  // PPAPI_TESTS_TEST_UDP_SOCKET_PRIVATE_H_

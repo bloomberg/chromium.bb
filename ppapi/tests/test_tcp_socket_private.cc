@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,7 @@
 
 #include <stdlib.h>
 
-#include "ppapi/c/dev/ppb_url_util_dev.h"
-#include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/private/tcp_socket_private.h"
-#include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/tests/test_utils.h"
 
@@ -35,46 +32,13 @@ bool TestTCPSocketPrivate::Init() {
   if (!pp::TCPSocketPrivate::IsAvailable())
     return false;
 
-  // This test currently only works out-of-process (since the API is really only
-  // implemented in that case).
-  const PPB_Testing_Dev* testing = GetTestingInterface();
-  if (!testing)
-    return false;
-  if (!testing->IsOutOfProcess())
-    return false;
-
   // We need something to connect to, so we connect to the HTTP server whence we
   // came. Grab the host and port.
   if (!EnsureRunningOverHTTP())
     return false;
 
-  PP_URLComponents_Dev components;
-  pp::Var pp_url = pp::URLUtil_Dev::Get()->GetDocumentURL(instance_,
-                                                          &components);
-  if (!pp_url.is_string())
+  if (!GetLocalHostPort(instance_->pp_instance(), &host_, &port_))
     return false;
-  std::string url = pp_url.AsString();
-
-  // Double-check that we're running on HTTP.
-  if (components.scheme.len < 0)
-    return false;
-  if (url.substr(components.scheme.begin, components.scheme.len) != "http")
-    return false;
-
-  // Get host.
-  if (components.host.len < 0)
-    return false;
-  host_ = url.substr(components.host.begin, components.host.len);
-
-  // Get port (it's optional).
-  port_ = 80;  // Default value.
-  if (components.port.len > 0) {
-    int i = atoi(url.substr(components.port.begin,
-                            components.port.len).c_str());
-    if (i < 0 || i > 65535)
-      return false;
-    port_ = static_cast<uint16_t>(i);
-  }
 
   return true;
 }

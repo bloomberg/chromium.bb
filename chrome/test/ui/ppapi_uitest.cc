@@ -459,19 +459,13 @@ TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-// TODO(ygorshenin): investigate why
-// TEST_PPAPI_IN_PROCESS(TCPSocketPrivateShared) fails,
-// http://crbug.com/105860.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPSocketPrivateShared)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPSocketPrivateShared)
-TEST_PPAPI_NACL_VIA_HTTP(TCPSocketPrivateShared)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPSocketPrivate)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPSocketPrivate)
+TEST_PPAPI_NACL_VIA_HTTP(TCPSocketPrivate)
 
-// TODO(ygorshenin): investigate why
-// TEST_PPAPI_IN_PROCESS(UDPSocketPrivateShared) fails,
-// http://crbug.com/105860.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivateShared)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivateShared)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate)
+TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivate)
 
 TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
 TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
@@ -789,11 +783,6 @@ TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
 TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_ListObserver)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_ListObserver)
-
-// PPB_TCPSocket_Private currently isn't supported in-process.
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
-  RunTestViaHTTP("TCPSocketPrivate");
-}
 
 TEST_PPAPI_IN_PROCESS(Flash_SetInstanceAlwaysOnTop)
 TEST_PPAPI_IN_PROCESS(Flash_GetProxyForURL)
