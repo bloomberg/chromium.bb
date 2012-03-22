@@ -13,6 +13,7 @@
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -65,8 +66,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             monitor->work_area_insets().bottom());
 
   // Hide the shelf.
-  shelf->SetState(ShelfLayoutManager::HIDDEN,
-                  ShelfLayoutManager::AUTO_HIDE_HIDDEN);
+  shelf->SetState(ShelfLayoutManager::HIDDEN);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
@@ -80,8 +80,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
 
   // And show it again.
-  shelf->SetState(ShelfLayoutManager::VISIBLE,
-                  ShelfLayoutManager::AUTO_HIDE_HIDDEN);
+  shelf->SetState(ShelfLayoutManager::VISIBLE);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
@@ -115,8 +114,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
       manager->GetMonitorNearestWindow(Shell::GetRootWindow());
 
   // Hide the shelf.
-  shelf->SetState(ShelfLayoutManager::HIDDEN,
-                  ShelfLayoutManager::AUTO_HIDE_HIDDEN);
+  shelf->SetState(ShelfLayoutManager::HIDDEN);
   shelf->LayoutShelf();
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0, monitor->work_area_insets().bottom());
@@ -161,6 +159,46 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
   // Widget is now owned by the parent window.
   widget->Init(params);
   widget->SetFullscreen(true);
+}
+
+// Various assertions around auto-hide.
+TEST_F(ShelfLayoutManagerTest, AutoHide) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Maximize();
+  widget->Show();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  aura::RootWindow* root = Shell::GetRootWindow();
+  // LayoutShelf() forces the animation to completion, at which point the
+  // launcher should go off the screen.
+  shelf->LayoutShelf();
+  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->launcher_widget()->GetWindowScreenBounds().y());
+
+  // Move the mouse to the bottom of the screen.
+  aura::test::EventGenerator generator(root, root);
+  generator.MoveMouseTo(gfx::Point(0, root->bounds().bottom() - 1));
+
+  // Shelf should be shown again.
+  shelf->SetState(ShelfLayoutManager::AUTO_HIDE);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  shelf->LayoutShelf();
+  EXPECT_EQ(root->bounds().bottom() - shelf->shelf_height(),
+            shelf->launcher_widget()->GetWindowScreenBounds().y());
+
+  // Move mouse back up.
+  generator.MoveMouseTo(gfx::Point(0, 0));
+  shelf->SetState(ShelfLayoutManager::AUTO_HIDE);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  shelf->LayoutShelf();
+  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->launcher_widget()->GetWindowScreenBounds().y());
 }
 
 }  // namespace internal

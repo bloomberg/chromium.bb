@@ -12,7 +12,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "base/timer.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -25,9 +24,6 @@
 namespace ash {
 
 namespace {
-
-// Delay before showing the launcher after the mouse enters the view.
-const int kShowDelayMS = 300;
 
 // Max alpha of the background.
 const int kBackgroundAlpha = 128;
@@ -52,8 +48,6 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   // views::View overrides
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
   // views::WidgetDelegateView overrides:
   virtual views::Widget* GetWidget() OVERRIDE {
@@ -69,17 +63,12 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   }
 
  private:
-  // Shows the launcher.
-  void ShowLauncher();
-
   Launcher* launcher_;
 
   // Width of the status area.
   int status_width_;
 
   const internal::FocusCycler* focus_cycler_;
-
-  base::OneShotTimer<DelegateView> show_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
@@ -88,7 +77,6 @@ Launcher::DelegateView::DelegateView(Launcher* launcher)
     : launcher_(launcher),
       status_width_(0),
       focus_cycler_(NULL) {
-  set_notify_enter_exit_on_child(true);
 }
 
 Launcher::DelegateView::~DelegateView() {
@@ -111,31 +99,6 @@ void Launcher::DelegateView::Layout() {
     return;
   child_at(0)->SetBounds(0, 0, std::max(0, width() - status_width_), height());
 }
-
-void Launcher::DelegateView::OnMouseEntered(const views::MouseEvent& event) {
-  if (!show_timer_.IsRunning()) {
-    // The user may be trying to target a button near the bottom of the screen
-    // and accidentally moved into the launcher area. Delay showing.
-    show_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(kShowDelayMS),
-                      this, &DelegateView::ShowLauncher);
-  }
-}
-
-void Launcher::DelegateView::OnMouseExited(const views::MouseEvent& event) {
-  show_timer_.Stop();
-  internal::ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
-  shelf->SetState(shelf->visibility_state(),
-                  internal::ShelfLayoutManager::AUTO_HIDE_HIDDEN);
-}
-
-void Launcher::DelegateView::ShowLauncher() {
-  show_timer_.Stop();
-  internal::ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
-  shelf->SetState(shelf->visibility_state(),
-                  internal::ShelfLayoutManager::AUTO_HIDE_SHOWN);
-}
-
 
 // Launcher --------------------------------------------------------------------
 

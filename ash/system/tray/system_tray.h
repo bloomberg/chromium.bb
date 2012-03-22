@@ -62,6 +62,9 @@ class ASH_EXPORT SystemTray : public views::View,
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
+  // Returns true if a bubble is currently showing.
+  bool showing_bubble() const { return bubble_ != NULL; }
+
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Sets whether the tray paints a background. Default is true, but is set to

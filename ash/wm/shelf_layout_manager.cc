@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/auto_reset.h"
+#include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -21,8 +23,8 @@ namespace internal {
 
 namespace {
 
-// Height of the shelf when auto-hidden.
-const int kAutoHideHeight = 2;
+// Delay before showing/hiding the launcher after the mouse enters the launcher.
+const int kAutoHideDelayMS = 300;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -33,6 +35,69 @@ ui::Layer* GetLayer(views::Widget* widget) {
 // static
 const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 
+// static
+const int ShelfLayoutManager::kAutoHideHeight = 2;
+
+// Notifies ShelfLayoutManager any time the mouse moves.
+class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
+ public:
+  explicit AutoHideEventFilter(ShelfLayoutManager* shelf);
+  virtual ~AutoHideEventFilter();
+
+  // Overridden from aura::EventFilter:
+  virtual bool PreHandleKeyEvent(aura::Window* target,
+                                 aura::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(aura::Window* target,
+                                   aura::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
+                                              aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
+
+ private:
+  ShelfLayoutManager* shelf_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
+};
+
+ShelfLayoutManager::AutoHideEventFilter::AutoHideEventFilter(
+    ShelfLayoutManager* shelf)
+    : shelf_(shelf) {
+  Shell::GetInstance()->AddRootWindowEventFilter(this);
+}
+
+ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
+  Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+}
+
+bool ShelfLayoutManager::AutoHideEventFilter::PreHandleKeyEvent(
+    aura::Window* target,
+    aura::KeyEvent* event) {
+  return false;  // Always let the event propagate.
+}
+
+bool ShelfLayoutManager::AutoHideEventFilter::PreHandleMouseEvent(
+    aura::Window* target,
+    aura::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_MOVED)
+    shelf_->UpdateAutoHideState();
+  return false;  // Not handled.
+}
+
+ui::TouchStatus ShelfLayoutManager::AutoHideEventFilter::PreHandleTouchEvent(
+    aura::Window* target,
+    aura::TouchEvent* event) {
+  return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
+}
+
+ui::GestureStatus
+ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, public:
 
@@ -41,9 +106,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       shelf_height_(status->GetWindowScreenBounds().height()),
       launcher_(NULL),
       status_(status),
-      window_overlaps_shelf_(false),
-      root_window_(NULL) {
-  root_window_ = status->GetNativeView()->GetRootWindow();
+      window_overlaps_shelf_(false) {
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -95,14 +158,24 @@ void ShelfLayoutManager::LayoutShelf() {
       target_bounds.work_area_insets);
 }
 
-void ShelfLayoutManager::SetState(VisibilityState visibility_state,
-                                  AutoHideState auto_hide_state) {
+void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   State state;
   state.visibility_state = visibility_state;
-  state.auto_hide_state = auto_hide_state;
+  state.auto_hide_state = CalculateAutoHideState(visibility_state);
 
   if (state_.Equals(state))
     return;  // Nothing changed.
+
+  if (state.visibility_state == AUTO_HIDE) {
+    // When state is AUTO_HIDE we need to track when the mouse is over the
+    // launcher to unhide the shelf. AutoHideEventFilter does that for us.
+    if (!event_filter_.get())
+      event_filter_.reset(new AutoHideEventFilter(this));
+  } else {
+    event_filter_.reset(NULL);
+  }
+
+  auto_hide_timer_.Stop();
 
   // Animating the background when transitioning from auto-hide & hidden to
   // visibile is janking. Update the background immediately in this case.
@@ -136,6 +209,21 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state,
       Shell::GetRootWindow(),
       target_bounds.work_area_insets);
   UpdateShelfBackground(change_type);
+}
+
+void ShelfLayoutManager::UpdateAutoHideState() {
+  if (CalculateAutoHideState(state_.visibility_state) !=
+      state_.auto_hide_state) {
+    // Don't change state immediately. Instead delay for a bit.
+    if (!auto_hide_timer_.IsRunning()) {
+      auto_hide_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
+          this, &ShelfLayoutManager::UpdateAutoHideStateNow);
+    }
+  } else {
+    auto_hide_timer_.Stop();
+  }
 }
 
 void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
@@ -179,7 +267,8 @@ void ShelfLayoutManager::StopAnimating() {
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) const {
-  const gfx::Rect& available_bounds(root_window_->bounds());
+  const gfx::Rect& available_bounds(
+      status_->GetNativeView()->GetRootWindow()->bounds());
   int y = available_bounds.bottom();
   int shelf_height = 0;
   int work_area_delta = 0;
@@ -226,6 +315,26 @@ void ShelfLayoutManager::UpdateShelfBackground(
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
   return window_overlaps_shelf_ || state_.visibility_state == AUTO_HIDE;
+}
+
+void ShelfLayoutManager::UpdateAutoHideStateNow() {
+  SetState(state_.visibility_state);
+}
+
+ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
+    VisibilityState visibility_state) const {
+  if (visibility_state != AUTO_HIDE || !launcher_widget())
+    return AUTO_HIDE_HIDDEN;
+
+  Shell* shell = Shell::GetInstance();
+  if (shell->tray()->showing_bubble())
+    return AUTO_HIDE_SHOWN;  // Always show if a bubble is open from the shelf.
+
+  aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
+  bool mouse_over_launcher =
+      launcher_widget()->GetWindowScreenBounds().Contains(
+          root->last_mouse_location());
+  return mouse_over_launcher ? AUTO_HIDE_SHOWN : AUTO_HIDE_HIDDEN;
 }
 
 }  // namespace internal

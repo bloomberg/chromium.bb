@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shadow_types.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/logging.h"
 #include "base/timer.h"
@@ -528,6 +529,8 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 
   bubble_->Show();
+
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
@@ -575,6 +578,7 @@ void SystemTray::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(popup_, widget);
   popup_ = NULL;
   bubble_ = NULL;
+  Shell::GetInstance()->shelf()->UpdateAutoHideState();
 }
 
 void SystemTray::UpdateBackground(int alpha) {

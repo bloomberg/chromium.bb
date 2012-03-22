@@ -10,13 +10,10 @@
 #include "ash/launcher/launcher.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/timer.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
-
-namespace aura {
-class RootWindow;
-}
 
 namespace views {
 class Widget;
@@ -57,6 +54,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // the invisible parts of the launcher.
   static const int kWorkspaceAreaBottomInset;
 
+  // Height of the shelf when auto-hidden.
+  static const int kAutoHideHeight;
+
   explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
 
@@ -85,10 +85,12 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   void LayoutShelf();
 
   // Sets the visibility of the shelf to |state|.
-  void SetState(VisibilityState visibility_state,
-                AutoHideState auto_hide_state);
+  void SetState(VisibilityState visibility_state);
   VisibilityState visibility_state() const { return state_.visibility_state; }
   AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
+
+  // Invoked by the shelf/launcher when the auto-hide state may have changed.
+  void UpdateAutoHideState();
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
@@ -104,6 +106,8 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
  private:
+  class AutoHideEventFilter;
+
   struct TargetBounds {
     TargetBounds() : opacity(0.0f) {}
 
@@ -142,6 +146,13 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // Returns whether the launcher should draw a background.
   bool GetLauncherPaintsBackground() const;
 
+  // Updates the auto hide state immediately.
+  void UpdateAutoHideStateNow();
+
+  // Returns the AutoHideState. This value is determined from the launcher and
+  // tray.
+  AutoHideState CalculateAutoHideState(VisibilityState visibility_state) const;
+
   // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
   // again from SetChildBounds().
   bool in_layout_;
@@ -158,7 +169,11 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;
 
-  aura::RootWindow* root_window_;
+  base::OneShotTimer<ShelfLayoutManager> auto_hide_timer_;
+
+  // EventFilter used to detect when user moves the mouse over the launcher to
+  // trigger showing the launcher.
+  scoped_ptr<AutoHideEventFilter> event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

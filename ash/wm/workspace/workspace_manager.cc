@@ -159,8 +159,7 @@ gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
 
 void WorkspaceManager::UpdateShelfVisibility() {
   if (!shelf_ || !active_workspace_) {
-    shelf_->SetState(ShelfLayoutManager::VISIBLE,
-                     ShelfLayoutManager::AUTO_HIDE_SHOWN);
+    shelf_->SetState(ShelfLayoutManager::VISIBLE);
     shelf_->SetWindowOverlapsShelf(false);
     return;
   }
@@ -193,14 +192,11 @@ void WorkspaceManager::UpdateShelfVisibility() {
 
   ShelfLayoutManager::VisibilityState visibility_state =
       ShelfLayoutManager::VISIBLE;
-  ShelfLayoutManager::AutoHideState auto_hide_state =
-      shelf_->auto_hide_state();
-  if (has_full_screen_window) {
+  if (has_full_screen_window)
     visibility_state = ShelfLayoutManager::HIDDEN;
-  } else if (has_max_window) {
+  else if (has_max_window)
     visibility_state = ShelfLayoutManager::AUTO_HIDE;
-  }
-  shelf_->SetState(visibility_state, auto_hide_state);
+  shelf_->SetState(visibility_state);
   shelf_->SetWindowOverlapsShelf(window_overlaps_launcher);
 }
 

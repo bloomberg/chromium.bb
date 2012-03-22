@@ -1010,4 +1010,25 @@ TEST(LayerAnimatorTest, ImmediatelySettingNewTargetDoesNotLeak) {
   CheckApproximatelyEqual(delegate.GetBoundsForAnimation(), target_bounds);
 }
 
+// Verifies GetTargetOpacity() works when multiple sequences are scheduled.
+TEST(LayerAnimatorTest, GetTargetOpacity) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  animator->set_disable_timer_for_test(true);
+  TestLayerAnimationDelegate delegate;
+  animator->SetDelegate(&delegate);
+
+  delegate.SetOpacityFromAnimation(0.0);
+
+  {
+    ScopedLayerAnimationSettings settings(animator.get());
+    animator->SetOpacity(0.5);
+    EXPECT_EQ(0.5, animator->GetTargetOpacity());
+
+    // Because the strategy is ENQUEUE_NEW_ANIMATION the target should now be 1.
+    animator->SetOpacity(1.0);
+    EXPECT_EQ(1.0, animator->GetTargetOpacity());
+  }
+}
+
 }  // namespace ui

@@ -534,9 +534,9 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
 
 void LayerAnimator::GetTargetValue(
     LayerAnimationElement::TargetValue* target) const {
-  for (RunningAnimations::const_iterator iter = running_animations_.begin();
-       iter != running_animations_.end(); ++iter) {
-    (*iter).sequence->GetTargetValue(target);
+  for (AnimationQueue::const_iterator iter = animation_queue_.begin();
+       iter != animation_queue_.end(); ++iter) {
+    (*iter)->GetTargetValue(target);
   }
 }
 
