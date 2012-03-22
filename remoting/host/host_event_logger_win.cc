@@ -92,7 +92,7 @@ void HostEventLoggerWin::OnClientRouteChange(
     const std::string& jid,
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  std::vector<string16> strings(4);
+  std::vector<string16> strings(5);
   strings[0] = ASCIIToUTF16(jid);
   strings[1] = ASCIIToUTF16(route.remote_address.ToString());
   strings[2] = ASCIIToUTF16(route.local_address.ToString());
