@@ -65,11 +65,15 @@ class ModuleSystem : public NativeHandler {
     natives_enabled_ = natives_enabled;
   }
 
-  // Create an object which delegates all property accesses to the object that
-  // |source| evaluates to. The source is evaluated lazily on access to any of
-  // the object's properties.
-  static v8::Handle<v8::Object> CreateLazyObject(const std::string& source_name,
-                                                 v8::Handle<v8::String> source);
+  static v8::Handle<v8::Value> GetterRouter(v8::Local<v8::String> property,
+                                            const v8::AccessorInfo& info);
+
+  // Make |object|.|field| lazily evaluate to the result of
+  // require(|module_name|)[|module_field|].
+  void SetLazyField(v8::Handle<v8::Object> object,
+                    const std::string& field,
+                    const std::string& module_name,
+                    const std::string& module_field);
 
  private:
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;

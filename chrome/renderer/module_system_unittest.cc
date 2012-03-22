@@ -167,33 +167,17 @@ TEST_F(ModuleSystemTest, TestDisableNativesPreventsNativeModulesBeingLoaded) {
   module_system_->Require("test");
 }
 
-TEST_F(ModuleSystemTest, TestLazyObject) {
-  v8::Handle<v8::String> source = v8::String::New("({x: 5})");
-  v8::Handle<v8::Object> lazy_object =
-      ModuleSystem::CreateLazyObject("lazy.js", source);
-  v8::Context::GetCurrent()->Global()->Set(v8::String::New("lazy"),
-                                           lazy_object);
-  RegisterModule("test",
-      "var assert = requireNative('assert');"
-      "assert.AssertTrue(lazy.x == 5);"
-      "assert.AssertTrue(lazy.x == 5);");
-  module_system_->Require("test");
-}
+TEST_F(ModuleSystemTest, TestLazyField) {
+  RegisterModule("lazy",
+      "exports.x = 5;");
 
-TEST_F(ModuleSystemTest, TestLazyInstanceOnlyGetsEvaledOnce) {
-  v8::Context::GetCurrent()->Global()->Set(v8::String::New("evalCount"),
-                                           v8::Integer::New(0));
-  v8::Handle<v8::String> source = v8::String::New("evalCount++; ({x: 5})");
-  v8::Handle<v8::Object> lazy_object =
-      ModuleSystem::CreateLazyObject("lazy.js", source);
-  v8::Context::GetCurrent()->Global()->Set(v8::String::New("lazy"),
-                                           lazy_object);
+  v8::Handle<v8::Object> object = v8::Object::New();
+  v8::Context::GetCurrent()->Global()->Set(v8::String::New("object"), object);
+
+  module_system_->SetLazyField(object, "blah", "lazy", "x");
+
   RegisterModule("test",
       "var assert = requireNative('assert');"
-      "assert.AssertTrue(evalCount == 0);"
-      "lazy.x;"
-      "assert.AssertTrue(evalCount == 1);"
-      "lazy.x;"
-      "assert.AssertTrue(evalCount == 1);");
+      "assert.AssertTrue(object.blah == 5);");
   module_system_->Require("test");
 }

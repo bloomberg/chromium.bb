@@ -8,43 +8,9 @@
 
 namespace {
 
-const char* kLazyObjectSource = "lazy_object_source";
-const char* kLazyObjectName = "lazy_object_name";
-const char* kLazyObject = "lazy_object";
-
-v8::Handle<v8::Object> EvaluateLazySource(v8::Handle<v8::Object> object) {
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Value> source_value =
-      object->GetHiddenValue(v8::String::New(kLazyObjectSource));
-  CHECK(!source_value.IsEmpty());
-  v8::Handle<v8::String> source = v8::Handle<v8::String>::Cast(source_value);
-  v8::Handle<v8::Value> name =
-      object->GetHiddenValue(v8::String::New(kLazyObjectName));
-  CHECK(!name.IsEmpty());
-  CHECK(name->IsString());
-  v8::Handle<v8::Script> script = v8::Script::New(source, name);
-  v8::Handle<v8::Value> result = script->Run();
-  CHECK(result->IsObject());
-  return handle_scope.Close(v8::Handle<v8::Object>::Cast(result));
-}
-
-v8::Handle<v8::Value> LazyObjectGetter(
-    const v8::Local<v8::String> property,
-    const v8::AccessorInfo& info) {
-  v8::HandleScope handle_scope;
-  v8::Handle<v8::Object> object = info.Holder();
-  v8::Handle<v8::String> lazy_object_name = v8::String::New(kLazyObject);
-  v8::Handle<v8::Value> lazy_object_value =
-      object->GetHiddenValue(lazy_object_name);
-  CHECK(lazy_object_value.IsEmpty() || lazy_object_value->IsObject());
-  v8::Handle<v8::Object> lazy_object =
-      v8::Handle<v8::Object>::Cast(lazy_object_value);
-  if (lazy_object.IsEmpty()) {
-    lazy_object = EvaluateLazySource(object);
-    object->SetHiddenValue(lazy_object_name, lazy_object);
-  }
-  return handle_scope.Close(lazy_object->Get(property));
-}
+const char* kModuleSystem = "module_system";
+const char* kModuleName = "module_name";
+const char* kModuleField = "module_field";
 
 } // namespace
 
@@ -114,17 +80,42 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
 }
 
 // static
-v8::Handle<v8::Object> ModuleSystem::CreateLazyObject(
-    const std::string& source_name, v8::Handle<v8::String> source) {
+v8::Handle<v8::Value> ModuleSystem::GetterRouter(
+    v8::Local<v8::String> property, const v8::AccessorInfo& info) {
+  CHECK(!info.Data().IsEmpty());
+  CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope;
-  v8::Handle<v8::ObjectTemplate> object_template = v8::ObjectTemplate::New();
-  object_template->SetNamedPropertyHandler(LazyObjectGetter, NULL);
-  v8::Handle<v8::Object> object = object_template->NewInstance();
-  object->SetHiddenValue(v8::String::New(kLazyObjectSource), source);
-  object->SetHiddenValue(v8::String::New(kLazyObjectName),
-                         v8::String::New(source_name.c_str()));
+  v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
+  v8::Handle<v8::Value> module_system_value =
+      parameters->Get(v8::String::New(kModuleSystem));
+  ModuleSystem* module_system = static_cast<ModuleSystem*>(
+      v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
-  return handle_scope.Close(object);
+  v8::Handle<v8::Object> module = module_system->RequireForJsInner(
+      parameters->Get(v8::String::New(kModuleName))->ToString())->ToObject();
+
+  v8::Handle<v8::String> field =
+      parameters->Get(v8::String::New(kModuleField))->ToString();
+
+  return handle_scope.Close(module->Get(field));
+}
+
+void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
+                                const std::string& field,
+                                const std::string& module_name,
+                                const std::string& module_field) {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Object> parameters = v8::Object::New();
+  parameters->Set(v8::String::New(kModuleName),
+                  v8::String::New(module_name.c_str()));
+  parameters->Set(v8::String::New(kModuleField),
+                  v8::String::New(module_field.c_str()));
+  parameters->Set(v8::String::New(kModuleSystem), v8::External::New(this));
+
+  object->SetAccessor(v8::String::New(field.c_str()),
+                      &ModuleSystem::GetterRouter,
+                      NULL,
+                      parameters);
 }
 
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
