@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/origin_bound_cert_service.h"
+#include "net/base/server_bound_cert_service.h"
 
 #include <algorithm>
 #include <limits>
@@ -21,8 +21,8 @@
 #include "crypto/ec_private_key.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
-#include "net/base/origin_bound_cert_store.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/base/server_bound_cert_store.h"
 #include "net/base/x509_certificate.h"
 #include "net/base/x509_util.h"
 

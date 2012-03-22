@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/origin_bound_cert_service.h"
+#include "net/base/server_bound_cert_service.h"
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/asn1_util.h"
-#include "net/base/default_origin_bound_cert_store.h"
+#include "net/base/default_server_bound_cert_store.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/x509_certificate.h"

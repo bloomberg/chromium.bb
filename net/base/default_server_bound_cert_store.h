@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_DEFAULT_ORIGIN_BOUND_CERT_STORE_H_
-#define NET_BASE_DEFAULT_ORIGIN_BOUND_CERT_STORE_H_
+#ifndef NET_BASE_DEFAULT_SERVER_BOUND_CERT_STORE_H_
+#define NET_BASE_DEFAULT_SERVER_BOUND_CERT_STORE_H_
 #pragma once
 
 #include <map>
@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "net/base/net_export.h"
-#include "net/base/origin_bound_cert_store.h"
+#include "net/base/server_bound_cert_store.h"
 
 class Task;
 

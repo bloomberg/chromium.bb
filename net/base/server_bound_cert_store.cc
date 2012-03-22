@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/origin_bound_cert_store.h"
+#include "net/base/server_bound_cert_store.h"
 
 namespace net {
 

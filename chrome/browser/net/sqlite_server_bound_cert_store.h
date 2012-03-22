@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_
-#define CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_
+#ifndef CHROME_BROWSER_NET_SQLITE_SERVER_BOUND_CERT_STORE_H_
+#define CHROME_BROWSER_NET_SQLITE_SERVER_BOUND_CERT_STORE_H_
 #pragma once
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/default_origin_bound_cert_store.h"
+#include "net/base/default_server_bound_cert_store.h"
 
 class FilePath;
 
@@ -42,4 +42,4 @@ class SQLiteServerBoundCertStore
   DISALLOW_COPY_AND_ASSIGN(SQLiteServerBoundCertStore);
 };
 
-#endif  // CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_
+#endif  // CHROME_BROWSER_NET_SQLITE_SERVER_BOUND_CERT_STORE_H_

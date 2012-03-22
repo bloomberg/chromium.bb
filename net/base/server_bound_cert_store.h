@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_ORIGIN_BOUND_CERT_STORE_H_
-#define NET_BASE_ORIGIN_BOUND_CERT_STORE_H_
+#ifndef NET_BASE_SERVER_BOUND_CERT_STORE_H_
+#define NET_BASE_SERVER_BOUND_CERT_STORE_H_
 #pragma once
 
 #include <string>
@@ -114,4 +114,4 @@ class NET_EXPORT ServerBoundCertStore {
 
 }  // namespace net
 
-#endif  // NET_BASE_ORIGIN_BOUND_CERT_STORE_H_
+#endif  // NET_BASE_SERVER_BOUND_CERT_STORE_H_

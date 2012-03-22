@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_ORIGIN_BOUND_CERT_SERVICE_H_
-#define NET_BASE_ORIGIN_BOUND_CERT_SERVICE_H_
+#ifndef NET_BASE_SERVER_BOUND_CERT_SERVICE_H_
+#define NET_BASE_SERVER_BOUND_CERT_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/ssl_client_cert_type.h"
@@ -132,4 +132,4 @@ class NET_EXPORT ServerBoundCertService
 
 }  // namespace net
 
-#endif  // NET_BASE_ORIGIN_BOUND_CERT_SERVICE_H_
+#endif  // NET_BASE_SERVER_BOUND_CERT_SERVICE_H_
