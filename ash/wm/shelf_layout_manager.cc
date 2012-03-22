@@ -310,7 +310,8 @@ void ShelfLayoutManager::UpdateShelfBackground(
     launcher_->SetPaintsBackground(launcher_paints, type);
   // SystemTray normally draws a background, but we don't want it to draw a
   // background when the launcher does.
-  Shell::GetInstance()->tray()->SetPaintsBackground(!launcher_paints, type);
+  if (Shell::GetInstance()->tray())
+    Shell::GetInstance()->tray()->SetPaintsBackground(!launcher_paints, type);
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
@@ -327,7 +328,7 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();
-  if (shell->tray()->showing_bubble())
+  if (shell->tray() && shell->tray()->showing_bubble())
     return AUTO_HIDE_SHOWN;  // Always show if a bubble is open from the shelf.
 
   aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
