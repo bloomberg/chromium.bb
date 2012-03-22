@@ -418,8 +418,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser() {
     Browser* browser = BrowserList::GetLastActive();
-    if (!browser)
-      browser = Browser::NewEmptyWindow(ProfileManager::GetDefaultProfile());
+    if (!browser) {
+      browser = Browser::OpenEmptyWindow(
+          ProfileManager::GetDefaultProfileOrOffTheRecord());
+    }
     return browser;
   }
 
