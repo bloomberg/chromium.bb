@@ -183,6 +183,23 @@ def _CheckNoFRIEND_TEST(input_api, output_api):
       'FRIEND_TEST_ALL_PREFIXES() instead.\n' + '\n'.join(problems))]
 
 
+def _CheckNoScopedAllowIO(input_api, output_api):
+  """Make sure that ScopedAllowIO is not used."""
+  problems = []
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      if 'ScopedAllowIO' in line:
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('New code should not use '
+      'ScopedAllowIO. Post a task to the blocking pool or the FILE thread '
+      'instead.\n' + '\n'.join(problems))]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -196,6 +213,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
+  results.extend(_CheckNoScopedAllowIO(input_api, output_api))
   return results
 
 
