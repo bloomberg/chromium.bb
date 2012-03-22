@@ -1162,6 +1162,41 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+surface_opacity_binding(struct wl_input_device *device, uint32_t time,
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
+{
+	int step = 15;
+	struct shell_surface *shsurf;
+	struct weston_surface *surface =
+		(struct weston_surface *) device->pointer_focus;
+
+	if (surface == NULL)
+		return;
+
+	shsurf = get_shell_surface(surface);
+	if (!shsurf)
+		return;
+
+	switch (shsurf->type) {
+		case SHELL_SURFACE_BACKGROUND:
+		case SHELL_SURFACE_SCREENSAVER:
+			return;
+		default:
+			break;
+	}
+
+	surface->alpha += value * step;
+
+	if (surface->alpha > 255)
+		surface->alpha = 255;
+	if (surface->alpha < step)
+		surface->alpha = step;
+
+	surface->geometry.dirty = 1;
+	weston_surface_damage(surface);
+}
+
+static void
 zoom_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
 {
@@ -2070,6 +2105,9 @@ shell_init(struct weston_compositor *ec)
 					terminate_binding, ec);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
 					click_to_activate_binding, ec);
+	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
+					MODIFIER_SUPER | MODIFIER_ALT,
+					surface_opacity_binding, NULL);
 	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
 					MODIFIER_SUPER, zoom_binding, NULL);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
