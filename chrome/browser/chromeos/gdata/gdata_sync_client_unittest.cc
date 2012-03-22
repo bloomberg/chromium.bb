@@ -26,7 +26,7 @@ class GDataSyncClientTest : public testing::Test {
   GDataSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         mock_file_system_(new MockGDataFileSystem),
-        sync_client_(new GDataSyncClient) {
+        sync_client_(new GDataSyncClient(mock_file_system_.get())) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -40,7 +40,7 @@ class GDataSyncClientTest : public testing::Test {
     EXPECT_CALL(*mock_file_system_, RemoveObserver(sync_client_.get()))
         .Times(1);
 
-    sync_client_->Initialize(mock_file_system_.get());
+    sync_client_->Initialize();
   }
 
   MessageLoopForUI message_loop_;

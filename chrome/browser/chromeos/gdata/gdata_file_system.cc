@@ -18,14 +18,10 @@
 #include "base/platform_file.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -575,17 +571,13 @@ GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
 // GDataFileSystem class implementatsion.
 
 GDataFileSystem::GDataFileSystem(Profile* profile,
-                                 DocumentsServiceInterface* documents_service,
-                                 GDataSyncClientInterface* sync_client)
+                                 DocumentsServiceInterface* documents_service)
     : profile_(profile),
       documents_service_(documents_service),
-      gdata_uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
-      gdata_download_observer_(new GDataDownloadObserver()),
       on_cache_initialized_(new base::WaitableEvent(
           true /* manual reset*/, false /* initially not signaled*/)),
       cache_initialization_started_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      sync_client_(sync_client) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -605,16 +597,7 @@ void GDataFileSystem::Initialize() {
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDownloadsDir));
 
   documents_service_->Initialize(profile_);
-  sync_client_->Initialize(this);
 
-  // download_manager will be NULL for unit tests.
-  content::DownloadManager* download_manager =
-    g_browser_process->download_status_updater() ?
-        DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
-        NULL;
-  gdata_download_observer_->Initialize(
-      GetGDataTempDownloadFolderPath(),
-      gdata_uploader_.get(), download_manager);
   root_.reset(new GDataRootDirectory(this));
   root_->set_file_name(kGDataRootDirectory);
 }
@@ -2522,45 +2505,6 @@ void GDataFileSystem::GetFromCacheInternal(
                  base::Bind(&GDataFileSystem::OnGetFromCache,
                             weak_ptr_factory_.GetWeakPtr()),
                  base::MessageLoopProxy::current()));
-}
-
-//========================= GDataFileSystemFactory =============================
-
-// static
-GDataFileSystem* GDataFileSystemFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<GDataFileSystem*>(
-      GetInstance()->GetServiceForProfile(profile, true));
-}
-
-// static
-GDataFileSystem* GDataFileSystemFactory::FindForProfile(
-    Profile* profile) {
-  return static_cast<GDataFileSystem*>(
-      GetInstance()->GetServiceForProfile(profile, false));
-}
-
-// static
-GDataFileSystemFactory* GDataFileSystemFactory::GetInstance() {
-  return Singleton<GDataFileSystemFactory>::get();
-}
-
-GDataFileSystemFactory::GDataFileSystemFactory()
-    : ProfileKeyedServiceFactory("GDataFileSystem",
-                                 ProfileDependencyManager::GetInstance()) {
-  DependsOn(DownloadServiceFactory::GetInstance());
-}
-
-GDataFileSystemFactory::~GDataFileSystemFactory() {
-}
-
-ProfileKeyedService* GDataFileSystemFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  GDataFileSystem* file_system = new GDataFileSystem(profile,
-                                                     new DocumentsService,
-                                                     new GDataSyncClient);
-  file_system->Initialize();
-  return file_system;
 }
 
 }  // namespace gdata

@@ -65,8 +65,8 @@ void ScanPinnedDirectory(const FilePath& directory,
 
 }  // namespace
 
-GDataSyncClient::GDataSyncClient()
-    : file_system_(NULL),
+GDataSyncClient::GDataSyncClient(GDataFileSystemInterface* file_system)
+    : file_system_(file_system),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -77,10 +77,9 @@ GDataSyncClient::~GDataSyncClient() {
     file_system_->RemoveObserver(this);
 }
 
-void GDataSyncClient::Initialize(GDataFileSystemInterface* file_system) {
+void GDataSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_system_ = file_system;
   file_system_->AddObserver(this);
 }
 

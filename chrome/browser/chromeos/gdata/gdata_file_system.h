@@ -33,8 +33,6 @@ class WaitableEvent;
 namespace gdata {
 
 class DocumentsServiceInterface;
-class GDataDownloadObserver;
-class GDataSyncClientInterface;
 
 // Callback for completion of cache operation.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -341,11 +339,14 @@ class GDataFileSystemInterface {
 };
 
 // The production implementation of GDataFileSystemInterface.
-class GDataFileSystem : public GDataFileSystemInterface,
-                        public ProfileKeyedService {
+class GDataFileSystem : public GDataFileSystemInterface {
  public:
-  // ProfileKeyedService override:
-  virtual void Shutdown() OVERRIDE;
+  GDataFileSystem(Profile* profile,
+                  DocumentsServiceInterface* documents_service);
+  virtual ~GDataFileSystem();
+
+  // Shuts down the file system. All pending operations are canceled.
+  void Shutdown();
 
   // GDataFileSystem overrides.
   virtual void Initialize() OVERRIDE;
@@ -397,7 +398,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
  private:
   friend class GDataUploader;
-  friend class GDataFileSystemFactory;
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
@@ -459,11 +459,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
-
-  GDataFileSystem(Profile* profile,
-                  DocumentsServiceInterface* documents_service,
-                  GDataSyncClientInterface* sync_client);
-  virtual ~GDataFileSystem();
 
   // Finds file object by |file_path| and returns the file info.
   // Returns NULL if it does not find the file.
@@ -876,16 +871,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   base::Lock lock_;
 
-  // The profile hosts the GDataFileSystem.
+  // The profile hosts the GDataFileSystem via GDataSystemService.
   Profile* profile_;
 
   // The document service for the GDataFileSystem.
   scoped_ptr<DocumentsServiceInterface> documents_service_;
-
-  // File content uploader.
-  scoped_ptr<GDataUploader> gdata_uploader_;
-  // Downloads observer.
-  scoped_ptr<GDataDownloadObserver> gdata_download_observer_;
 
   // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
   FilePath gdata_cache_path_;
@@ -903,32 +893,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 
   ObserverList<Observer> observers_;
-  scoped_ptr<GDataSyncClientInterface> sync_client_;
-};
-
-// Singleton that owns all GDataFileSystems and associates them with
-// Profiles.
-class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
- public:
-  // Returns the GDataFileSystem for |profile|, creating it if it is not
-  // yet created.
-  static GDataFileSystem* GetForProfile(Profile* profile);
-  // Returns the GDataFileSystem that is already associated with |profile|,
-  // if it is not yet created it will return NULL.
-  static GDataFileSystem* FindForProfile(Profile* profile);
-
-  // Returns the GDataFileSystemFactory instance.
-  static GDataFileSystemFactory* GetInstance();
-
- private:
-  friend struct DefaultSingletonTraits<GDataFileSystemFactory>;
-
-  GDataFileSystemFactory();
-  virtual ~GDataFileSystemFactory();
-
-  // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
 };
 
 }  // namespace gdata

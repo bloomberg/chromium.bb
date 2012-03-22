@@ -18,7 +18,7 @@ class MockGDataSyncClient : public GDataSyncClientInterface {
   MockGDataSyncClient();
   virtual ~MockGDataSyncClient();
 
-  MOCK_METHOD1(Initialize, void(GDataFileSystemInterface* file_system));
+  MOCK_METHOD0(Initialize, void());
   MOCK_METHOD0(OnCacheInitialized, void());
   MOCK_METHOD2(OnFilePinned, void(const std::string& resource_id,
                                   const std::string& md5));

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -991,10 +992,10 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     case chromeos::MOUNT_TYPE_GDATA: {
-      gdata::GDataFileSystem* file_system =
-          gdata::GDataFileSystemFactory::GetForProfile(profile_);
-      if (file_system) {
-        file_system->Authenticate(
+      gdata::GDataSystemService* system_service =
+          gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+      if (system_service) {
+        system_service->file_system()->Authenticate(
             base::Bind(&AddMountFunction::OnGDataAuthentication,
                        this));
       }
@@ -1031,8 +1032,12 @@ void AddMountFunction::AddGDataMountPoint() {
       render_view_host()->GetProcess()->GetID(), mount_point,
       file_handler_util::GetReadWritePermissions());
 
-  provider->AddRemoteMountPoint(mount_point,
-                                new gdata::GDataFileSystemProxy(profile_));
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DCHECK(system_service);
+  provider->AddRemoteMountPoint(
+      mount_point,
+      new gdata::GDataFileSystemProxy(system_service->file_system()));
 }
 
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
@@ -1586,12 +1591,13 @@ bool GetGDataFilePropertiesFunction::RunImpl() {
   }
 
   base::ListValue* file_properties = new base::ListValue;
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  DCHECK(file_system);
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DCHECK(system_service);
   for (std::vector<FilePath>::size_type i = 0; i < file_paths.size(); ++i) {
     FilePropertiesDelegate property_delegate;
-    file_system->FindFileByPathSync(file_paths[i], &property_delegate);
+    system_service->file_system()->FindFileByPathSync(file_paths[i],
+                                                      &property_delegate);
     base::DictionaryValue* property_dict = new base::DictionaryValue;
     property_delegate.CopyProperties(property_dict);
     property_dict->SetString("fileUrl", file_urls[i].spec());
@@ -1728,13 +1734,13 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
     return;
   }
 
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  DCHECK(file_system);
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DCHECK(system_service);
 
   // Get the file on the top of the queue.
   FilePath gdata_path = remaining_gdata_paths_.front();
-  file_system->GetFile(
+  system_service->file_system()->GetFile(
       gdata_path,
       base::Bind(&GetGDataFilesFunction::OnFileReady, this));
 }
@@ -1772,13 +1778,13 @@ GetFileTransfersFunction::GetFileTransfersFunction() {}
 GetFileTransfersFunction::~GetFileTransfersFunction() {}
 
 ListValue* GetFileTransfersFunction::GetFileTransfersList() {
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  if (!file_system)
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service)
     return NULL;
 
   std::vector<gdata::GDataOperationRegistry::ProgressStatus>
-      list = file_system->GetProgressStatusList();
+      list = system_service->file_system()->GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
       profile_, source_url_.GetOrigin(), list);
 }
@@ -1826,9 +1832,9 @@ bool CancelFileTransfersFunction::RunImpl() {
 void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gdata::GDataFileSystem* file_system =
-      gdata::GDataFileSystemFactory::GetForProfile(profile_);
-  if (!file_system) {
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service) {
     SendResponse(false);
     return;
   }
@@ -1838,7 +1844,9 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
     FilePath file_path = gdata::util::ExtractGDataPath(files[i].path);
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
-    result->SetBoolean("canceled", file_system->CancelOperation(file_path));
+    result->SetBoolean(
+        "canceled",
+        system_service->file_system()->CancelOperation(file_path));
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             FilePath("gdata").Append(file_path),

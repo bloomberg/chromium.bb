@@ -91,22 +91,19 @@ class GDataFileSystemTest : public testing::Test {
 
     callback_helper_ = new CallbackHelper;
 
-    // Allocate and keep pointers to the mocks, and inject them into the
-    // GDataFileSystem object, which will own the mock objects.
+    // Allocate and keep a pointer to the mock, and inject it into the
+    // GDataFileSystem object, which will own the mock object.
     mock_doc_service_ = new MockDocumentsService;
-    mock_sync_client_ = new MockGDataSyncClient;
 
     EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
-                                       mock_doc_service_,
-                                       mock_sync_client_);
-
-    // Initialize() is called inside file_system_->Initialize().
-    EXPECT_CALL(*mock_sync_client_, Initialize(file_system_)).Times(1);
+                                       mock_doc_service_);
     file_system_->Initialize();
-    file_system_->AddObserver(mock_sync_client_);
+
+    mock_sync_client_.reset(new MockGDataSyncClient);
+    file_system_->AddObserver(mock_sync_client_.get());
 
     RunAllPendingForCache();
   }
@@ -570,7 +567,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
-  MockGDataSyncClient* mock_sync_client_;
+  scoped_ptr<MockGDataSyncClient> mock_sync_client_;
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;

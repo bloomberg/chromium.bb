@@ -11,6 +11,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -68,8 +70,9 @@ base::FileUtilProxy::Entry GDataFileToFileUtilProxyEntry(
 
 // GDataFileSystemProxy class implementation.
 
-GDataFileSystemProxy::GDataFileSystemProxy(Profile* profile)
-    : file_system_(GDataFileSystemFactory::GetForProfile(profile)) {
+GDataFileSystemProxy::GDataFileSystemProxy(
+    GDataFileSystemInterface* file_system)
+    : file_system_(file_system) {
   // Should be created from the file browser extension API (AddMountFunction)
   // on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

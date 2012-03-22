@@ -13,6 +13,7 @@
 #include "content/public/browser/download_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 
@@ -68,10 +69,10 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
   RecordFileSelected(path);
 
   if (download_manager_) {
-    gdata::GDataFileSystem* file_system =
-        gdata::GDataFileSystemFactory::GetForProfile(
+    gdata::GDataSystemService* system_service =
+        gdata::GDataSystemServiceFactory::GetForProfile(
             ProfileManager::GetDefaultProfile());
-    if (file_system && gdata::util::IsUnderGDataMountPoint(path)) {
+    if (system_service && gdata::util::IsUnderGDataMountPoint(path)) {
       // If we're trying to download a file into gdata, save path in external
       // data.
       content::DownloadItem* download =
@@ -81,7 +82,7 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
         download->SetDisplayName(path.BaseName());
 
         const FilePath download_cache_path =
-            file_system->GetGDataTempDownloadFolderPath();
+            system_service->file_system()->GetGDataTempDownloadFolderPath();
 
         // Swap the gdata path with a local path. Local path must be created
         // on the IO thread pool.

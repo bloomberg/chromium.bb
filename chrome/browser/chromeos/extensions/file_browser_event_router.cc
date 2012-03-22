@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -27,7 +28,8 @@ using chromeos::disks::DiskMountManager;
 using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
 using gdata::GDataFileSystem;
-using gdata::GDataFileSystemFactory;
+using gdata::GDataSystemService;
+using gdata::GDataSystemServiceFactory;
 
 namespace {
   const char kDiskAddedEventType[] = "added";
@@ -99,10 +101,10 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
   }
   DiskMountManager::GetInstance()->RemoveObserver(this);
 
-  GDataFileSystem* file_system =
-      GDataFileSystemFactory::FindForProfile(profile_);
-  if (file_system)
-    file_system->RemoveOperationObserver(this);
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::FindForProfile(profile_);
+  if (system_service)
+    system_service->file_system()->RemoveOperationObserver(this);
 
   profile_ = NULL;
 }
@@ -120,13 +122,13 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   disk_mount_manager->AddObserver(this);
   disk_mount_manager->RequestMountInfoRefresh();
 
-  GDataFileSystem* file_system =
-      GDataFileSystemFactory::GetForProfile(profile_);
-  if (!file_system) {
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service) {
     NOTREACHED();
     return;
   }
-  file_system->AddOperationObserver(this);
+  system_service->file_system()->AddOperationObserver(this);
 }
 
 // File watch setup routines.
@@ -607,7 +609,7 @@ FileBrowserEventRouterFactory::GetInstance() {
 FileBrowserEventRouterFactory::FileBrowserEventRouterFactory()
     : RefcountedProfileKeyedServiceFactory("FileBrowserEventRouter",
           ProfileDependencyManager::GetInstance()) {
-  DependsOn(GDataFileSystemFactory::GetInstance());
+  DependsOn(GDataSystemServiceFactory::GetInstance());
 }
 
 FileBrowserEventRouterFactory::~FileBrowserEventRouterFactory() {

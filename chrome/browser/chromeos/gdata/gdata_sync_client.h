@@ -37,9 +37,8 @@ namespace gdata {
 // The interface class is defined to make GDataSyncClient mockable.
 class GDataSyncClientInterface : public GDataFileSystem::Observer {
  public:
-  // Initializes the GDataSyncClient. |file_system| is used to access to the
-  // cache (ex. store a file to the cache when the file is downloaded).
-  virtual void Initialize(GDataFileSystemInterface* file_system) = 0;
+  // Initializes the GDataSyncClient.
+  virtual void Initialize() = 0;
 
   virtual ~GDataSyncClientInterface() {}
 };
@@ -47,11 +46,13 @@ class GDataSyncClientInterface : public GDataFileSystem::Observer {
 // The production implementation of GDataSyncClientInterface.
 class GDataSyncClient : public GDataSyncClientInterface {
  public:
-  GDataSyncClient();
+  // |file_system| is used to access to the
+  // cache (ex. store a file to the cache when the file is downloaded).
+  explicit GDataSyncClient(GDataFileSystemInterface* file_system);
   virtual ~GDataSyncClient();
 
   // GDataSyncClientInterface overrides.
-  virtual void Initialize(GDataFileSystemInterface* file_system) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // GDataFileSystem::Observer overrides.
   virtual void OnCacheInitialized() OVERRIDE;

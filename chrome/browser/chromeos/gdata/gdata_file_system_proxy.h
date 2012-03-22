@@ -5,19 +5,21 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
 
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 class Profile;
 
 namespace gdata {
 
+class GDataFileBase;
+class GDataFileSystemInterface;
+
 // The interface class for remote file system proxy.
 class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
   // |profile| is used to create GDataFileSystem, which is a per-profile
   // instance.
-  explicit GDataFileSystemProxy(Profile* profile);
+  explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system);
   virtual ~GDataFileSystemProxy();
 
   // fileapi::RemoteFileSystemProxyInterface overrides.
@@ -83,7 +85,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
   // the time Profile is removed, the file manager is already gone). Hence
   // it's safe to use this as a raw pointer.
-  GDataFileSystem* file_system_;
+  GDataFileSystemInterface* file_system_;
 };
 
 }  // namespace chromeos
