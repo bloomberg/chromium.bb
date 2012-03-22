@@ -39,7 +39,6 @@ podrow {
 }
 
 .pod.focused {
-  background-color: #ebebeb;
   cursor: default;
 }
 
