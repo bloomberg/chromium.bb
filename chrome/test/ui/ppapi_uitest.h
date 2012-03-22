@@ -26,7 +26,6 @@ class PPAPITestBase : public InProcessBrowserTest {
   // instance object vars.
   void RunTestAndReload(const std::string& test_case);
   void RunTestViaHTTP(const std::string& test_case);
-  void RunTestWithSSLServer(const std::string& test_case);
   void RunTestWithWebSocketServer(const std::string& test_case);
   std::string StripPrefixes(const std::string& test_name);
 
@@ -34,15 +33,6 @@ class PPAPITestBase : public InProcessBrowserTest {
   // Runs the test for a tab given the tab that's already navigated to the
   // given URL.
   void RunTestURL(const GURL& test_url);
-  // Run the given |test_case| on a HTTP test server whose document root is
-  // specified by |document_root|. |extra_params| will be passed as URL
-  // parameters to the test.
-  void RunHTTPTestServer(const FilePath& document_root,
-                         const std::string& test_case,
-                         const std::string& extra_params);
-  // Return the document root for the HTTP server on which tests will be run.
-  // The result is placed in |document_root|. False is returned upon failure.
-  bool GetHTTPDocumentRoot(FilePath* document_root);
 };
 
 // In-process plugin test runner.  See OutOfProcessPPAPITest below for the

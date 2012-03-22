@@ -31,7 +31,6 @@ TestingInstance::TestingInstance(PP_Instance instance)
       current_case_(NULL),
       executed_tests_(false),
       nacl_mode_(false),
-      ssl_server_port_(-1),
       websocket_port_(-1) {
   callback_factory_.Initialize(this);
 }
@@ -52,8 +51,6 @@ bool TestingInstance::Init(uint32_t argc,
       protocol_ = argv[i];
     } else if (std::strcmp(argn[i], "websocket_port") == 0) {
       websocket_port_ = atoi(argv[i]);
-    } else if (std::strcmp(argn[i], "ssl_server_port") == 0) {
-      ssl_server_port_ = atoi(argv[i]);
     }
   }
   // Create the proper test case from the argument.

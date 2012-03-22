@@ -82,8 +82,6 @@ pp::InstancePrivate {
     return protocol_;
   }
 
-  int ssl_server_port() { return ssl_server_port_; }
-
   int websocket_port() { return websocket_port_; }
 
   // Posts a message to the test page to eval() the script.
@@ -150,9 +148,6 @@ pp::InstancePrivate {
   // String representing the protocol.  Used for detecting whether we're running
   // with http.
   std::string protocol_;
-
-  // SSL server port.
-  int ssl_server_port_;
 
   // WebSocket port.
   int websocket_port_;
