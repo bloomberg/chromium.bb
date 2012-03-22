@@ -1034,11 +1034,6 @@ void RenderWidgetHostViewMac::ForceTextureReload() {
   plugin_container_manager_.ForceTextureReload();
 }
 
-void RenderWidgetHostViewMac::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
-  [cocoa_view_ gotUnhandledWheelEvent];
-}
-
 void RenderWidgetHostViewMac::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
 }
@@ -1081,6 +1076,11 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 
   if (render_widget_host_)
     render_widget_host_->LostMouseLock();
+}
+
+void RenderWidgetHostViewMac::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  [cocoa_view_ gotUnhandledWheelEvent];
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {

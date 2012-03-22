@@ -11,7 +11,8 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-class InternalWebIntentsDispatcherTest : public RenderViewHostTestHarness {
+class InternalWebIntentsDispatcherTest
+    : public content::RenderViewHostTestHarness {
  public:
   InternalWebIntentsDispatcherTest() {
     replied_ = 0;

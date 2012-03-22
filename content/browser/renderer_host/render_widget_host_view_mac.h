@@ -190,8 +190,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual bool CopyFromCompositingSurface(
       const gfx::Size& size,
@@ -292,9 +290,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
-
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
 
   void KillSelf();
 

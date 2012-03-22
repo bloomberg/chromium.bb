@@ -35,7 +35,6 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/renderer_host/resource_request_info_impl.h",
-  "+content/browser/tab_contents/test_tab_contents.h",
   # TODO(asanka): see http://codereview.chromium.org/9141031
   "+content/browser/download/download_state_info.h",
   # TODO(ben): http://crbug.com/118410 will fix the following:

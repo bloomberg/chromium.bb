@@ -84,8 +84,7 @@ class WebContentsTester {
   // in question have been made.
   virtual int GetNumberOfFocusCalls() = 0;
 
-  // TODO(joi): Rename this and other hacker_style virtual methods.
-  virtual content::RenderViewHost* pending_rvh() const = 0;
+  virtual content::RenderViewHost* GetPendingRenderViewHost() const = 0;
 
   // Creates a pending navigation to the given URL with the default parameters
   // and then commits the load with a page ID one larger than any seen. This

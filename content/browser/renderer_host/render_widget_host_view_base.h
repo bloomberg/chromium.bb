@@ -49,11 +49,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual const SkBitmap& GetBackground() OVERRIDE;
   virtual bool IsShowingContextMenu() const OVERRIDE;
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
-  virtual BrowserAccessibilityManager*
-      GetBrowserAccessibilityManager() const OVERRIDE;
   virtual bool IsMouseLocked() OVERRIDE;
+  virtual void UnhandledWheelEvent(
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetPopupType(WebKit::WebPopupType popup_type) OVERRIDE;
   virtual WebKit::WebPopupType GetPopupType() OVERRIDE;
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const OVERRIDE;
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 

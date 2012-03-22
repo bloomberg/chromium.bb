@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::RenderViewHostTester;
 
 class WebApplicationTest : public TabContentsWrapperTestHarness {
  public:
@@ -35,7 +36,8 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.description = description;
   web_app_info.app_url = url;
 
-  rvh_tester()->TestOnMessageReceived(
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
       ExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(contents_wrapper(), &info);

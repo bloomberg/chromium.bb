@@ -13,6 +13,7 @@
 #endif
 
 using content::RenderViewHostTester;
+using content::RenderViewHostTestHarness;
 
 ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()
     : RenderViewHostTestHarness() {

@@ -569,11 +569,6 @@ gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
   return window_->GetScreenBounds();
 }
 
-void RenderWidgetHostViewAura::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
-  // Not needed. Mac-only.
-}
-
 void RenderWidgetHostViewAura::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
   // The ACKs for the touch-events arrive in the same sequence as they were

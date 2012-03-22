@@ -50,11 +50,6 @@ const SkBitmap& RenderWidgetHostViewBase::GetBackground() {
   return background_;
 }
 
-BrowserAccessibilityManager*
-    RenderWidgetHostViewBase::GetBrowserAccessibilityManager() const {
-  return browser_accessibility_manager_.get();
-}
-
 void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
                                                 size_t offset,
                                                 const ui::Range& range) {
@@ -77,12 +72,22 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
   return mouse_locked_;
 }
 
+void RenderWidgetHostViewBase::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  // Most implementations don't need to do anything here.
+}
+
 void RenderWidgetHostViewBase::SetPopupType(WebKit::WebPopupType popup_type) {
   popup_type_ = popup_type;
 }
 
 WebKit::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
   return popup_type_;
+}
+
+BrowserAccessibilityManager*
+    RenderWidgetHostViewBase::GetBrowserAccessibilityManager() const {
+  return browser_accessibility_manager_.get();
 }
 
 void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(

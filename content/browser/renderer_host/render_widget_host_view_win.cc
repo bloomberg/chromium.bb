@@ -924,10 +924,6 @@ bool RenderWidgetHostViewWin::CopyFromCompositingSurface(
       size, output->getTopDevice()->accessBitmap(true).getPixels());
 }
 
-void RenderWidgetHostViewWin::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
-}
-
 void RenderWidgetHostViewWin::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
   if (type == WebKit::WebInputEvent::TouchStart)

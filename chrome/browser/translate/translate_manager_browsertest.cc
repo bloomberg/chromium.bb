@@ -74,7 +74,8 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
 
   void SimulateOnTranslateLanguageDetermined(const std::string& lang,
                                              bool page_translatable) {
-    rvh_tester()->TestOnMessageReceived(
+    RenderViewHostTester::TestOnMessageReceived(
+        rvh(),
         ChromeViewHostMsg_TranslateLanguageDetermined(
             0, lang, page_translatable));
   }
@@ -366,8 +367,10 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ("en", target_lang);
 
   // Simulate the render notifying the translation has been done.
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
@@ -382,8 +385,10 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ("en", target_lang);
   // Simulate the render notifying the translation has been done.
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, new_original_lang, "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, new_original_lang, "en", TranslateErrors::NONE));
   // infobar is now invalid.
   TranslateInfoBarDelegate* new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
@@ -397,7 +402,8 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
   // Simulate the render notifying the translation has been done.
-  rvh_tester()->TestOnMessageReceived(
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
       ChromeViewHostMsg_PageTranslated(
           0, 0, new_original_lang, new_target_lang, TranslateErrors::NONE));
   // infobar is now invalid.
@@ -457,8 +463,10 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
 
   // Simulate the render notifying the translation has been done, the server
   // having detected the page was in a known and supported language.
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
@@ -473,8 +481,10 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      1, 0, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          1, 0, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
@@ -486,8 +496,10 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      2, 0, "", "en", TranslateErrors::UNKNOWN_LANGUAGE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          2, 0, "", "en", TranslateErrors::UNKNOWN_LANGUAGE));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
@@ -686,8 +698,10 @@ TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
 
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // Now navigate to a new page in the same language.
   process()->sink().ClearMessages();
@@ -860,8 +874,10 @@ TEST_F(TranslateManagerTest, TranslateCloseInfoBarInPageNavigation) {
   infobar->Translate();
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
@@ -890,8 +906,10 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
   infobar->Translate();
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
   // The after translate infobar is showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
@@ -929,8 +947,10 @@ TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
   SimulateTranslateScriptURLFetch(true);
   // Simulate the render notifying the translation has been done, but it
   // reports a language we don't support.
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "qbz", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "qbz", "en", TranslateErrors::NONE));
 
   // An error infobar should be showing to report that we don't support this
   // language.
@@ -1247,8 +1267,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
 
   // Let's simulate the page being translated.
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // The translate menu should now be disabled.
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
@@ -1283,8 +1305,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "de", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "de", "en", TranslateErrors::NONE));
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
   // No message expected since the translation should have been ignored.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
@@ -1410,8 +1434,10 @@ TEST_F(TranslateManagerTest, ScriptExpires) {
   process()->sink().ClearMessages();
   infobar->Translate();
   SimulateTranslateScriptURLFetch(true);
-  rvh_tester()->TestOnMessageReceived(ChromeViewHostMsg_PageTranslated(
-      0, 0, "fr", "en", TranslateErrors::NONE));
+  RenderViewHostTester::TestOnMessageReceived(
+      rvh(),
+      ChromeViewHostMsg_PageTranslated(
+          0, 0, "fr", "en", TranslateErrors::NONE));
 
   // A task should have been posted to clear the script, run it.
   MessageLoop::current()->RunAllPending();

@@ -17,9 +17,9 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_tree_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +28,7 @@ using content::OpenURLParams;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHost;
+using content::RenderWidgetHostViewPort;
 using content::Referrer;
 
 namespace {
@@ -76,10 +77,9 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        PlatformTreeDifferenceTest) {
-  content::RenderWidgetHostView* host_view =
-      browser()->GetSelectedWebContents()->GetRenderWidgetHostView();
+  RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
+          browser()->GetSelectedWebContents()->GetRenderWidgetHostView());
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
-  // TODO(joi): Remove this dependency
   RenderViewHostImpl* view_host =
       static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));
   view_host->set_save_accessibility_tree_for_testing(true);

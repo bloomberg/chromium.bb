@@ -61,8 +61,6 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual GdkEventButton* GetLastMouseDown() OVERRIDE;
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual bool CopyFromCompositingSurface(
       const gfx::Size& size,

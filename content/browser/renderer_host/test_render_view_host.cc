@@ -287,10 +287,6 @@ void TestRenderViewHost::SimulateWasRestored() {
   WasRestored();
 }
 
-bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
-  return OnMessageReceived(msg);
-}
-
 void TestRenderViewHost::TestOnMsgStartDragging(
     const WebDropData& drop_data) {
   WebKit::WebDragOperationsMask drag_operation = WebKit::WebDragOperationEvery;

@@ -269,7 +269,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Send an update title message and make sure it works.
   const string16 ntp_title = ASCIIToUTF16("NTP Title");
   WebKit::WebTextDirection direction = WebKit::WebTextDirectionLeftToRight;
-  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(
+  EXPECT_TRUE(ntp_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 0, ntp_title, direction)));
   EXPECT_EQ(ntp_title, contents()->GetTitle());
 
@@ -291,7 +291,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 
   // The new RVH should be able to update its title.
   const string16 dest_title = ASCIIToUTF16("Google");
-  EXPECT_TRUE(dest_rvh->TestOnMessageReceived(
+  EXPECT_TRUE(dest_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 101, dest_title,
                               direction)));
   EXPECT_EQ(dest_title, contents()->GetTitle());
@@ -299,7 +299,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   // The old renderer, being slow, now updates the title. It should be filtered
   // out and not take effect.
   EXPECT_TRUE(ntp_rvh->is_swapped_out());
-  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(
+  EXPECT_TRUE(ntp_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 0, ntp_title, direction)));
   EXPECT_EQ(dest_title, contents()->GetTitle());
 
@@ -317,7 +317,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
       rvh()->GetRoutingID(), kNtpUrl, msg, false, &result, &unused);
   // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
   before_unload_msg.EnableMessagePumping();
-  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(before_unload_msg));
+  EXPECT_TRUE(ntp_rvh->OnMessageReceived(before_unload_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 
   // Also test RunJavaScriptMessage.
@@ -326,7 +326,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
       rvh()->GetRoutingID(), msg, msg, kNtpUrl,
       ui::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
   js_msg.EnableMessagePumping();
-  EXPECT_TRUE(ntp_rvh->TestOnMessageReceived(js_msg));
+  EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
 }
 
@@ -351,7 +351,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   controller().LoadURL(
       kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderView for FirePageBeforeUnload.
-  test_rvh()->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  test_rvh()->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
   ASSERT_TRUE(pending_rvh());  // New pending RenderViewHost will be created.
   RenderViewHost* last_rvh = pending_rvh();

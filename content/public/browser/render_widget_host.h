@@ -265,13 +265,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // IPC::Channel::Listener::OnMessageReceived.  Intended only for
   // test code.
 
-  // TODO(joi): Remove this and convert the single test using it to
-  // get the TabContentsWrapper from
-  // browser()->GetSelectedWebContents() and then call its
-  // translate_tab_helper() to get at the object that dispatches its
-  // method.
-  virtual bool OnMessageReceivedForTesting(const IPC::Message& msg) = 0;
-
   // Add a keyboard listener that can handle key presses without requiring
   // focus.
   virtual void AddKeyboardListener(KeyboardListener* listener) = 0;

@@ -1142,10 +1142,6 @@ void RenderWidgetHostViewGtk::DestroyPluginContainer(
   plugin_container_manager_.DestroyPluginContainer(id);
 }
 
-void RenderWidgetHostViewGtk::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
-}
-
 void RenderWidgetHostViewGtk::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
 }

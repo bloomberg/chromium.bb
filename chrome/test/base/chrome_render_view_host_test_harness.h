@@ -17,7 +17,8 @@ class WebContents;
 
 // Wrapper around RenderViewHostTestHarness that uses a TestingProfile as
 // browser context instead of a TestBrowserContext.
-class ChromeRenderViewHostTestHarness : public RenderViewHostTestHarness {
+class ChromeRenderViewHostTestHarness
+    : public content::RenderViewHostTestHarness {
  public:
   ChromeRenderViewHostTestHarness();
   virtual ~ChromeRenderViewHostTestHarness();

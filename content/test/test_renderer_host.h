@@ -57,6 +57,11 @@ class RenderViewHostTester {
   // constructed while a RenderViewHostTestEnabler is in play.
   static bool IsRenderViewHostSwappedOut(RenderViewHost* rvh);
 
+  // Calls the RenderViewHosts' private OnMessageReceived function with the
+  // given message.
+  static bool TestOnMessageReceived(RenderViewHost* rvh,
+                                    const IPC::Message& msg);
+
   virtual ~RenderViewHostTester() {}
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
@@ -90,10 +95,6 @@ class RenderViewHostTester {
   // tell it it has been hidden or restored from having been hidden.
   virtual void SimulateWasHidden() = 0;
   virtual void SimulateWasRestored() = 0;
-
-  // Calls the RenderViewHosts' private OnMessageReceived function with the
-  // given message.
-  virtual bool TestOnMessageReceived(const IPC::Message& msg) = 0;
 };
 
 // You can instantiate only one class like this at a time.  During its
@@ -179,8 +180,5 @@ class RenderViewHostTestHarness : public testing::Test {
 };
 
 }  // namespace content
-
-// TODO(joi): Remove this after converting all clients.
-using content::RenderViewHostTestHarness;
 
 #endif  // CONTENT_TEST_TEST_RENDERER_HOST_H_

@@ -112,8 +112,6 @@ class ExecuteNotificationObserver : public NotificationObserver {
 // will not be able to traverse pages back and forward. We need to determine
 // if we want to bring that and other functionality down into this object so
 // it can be shared by others.
-//
-// TODO(joi): Move to content namespace.
 class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
       public RenderWidgetHostImpl {

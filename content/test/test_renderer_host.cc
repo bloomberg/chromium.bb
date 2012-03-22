@@ -107,6 +107,12 @@ bool RenderViewHostTester::IsRenderViewHostSwappedOut(RenderViewHost* rvh) {
   return static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out();
 }
 
+// static
+bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
+                                                 const IPC::Message& msg) {
+  return static_cast<RenderViewHostImpl*>(rvh)->OnMessageReceived(msg);
+}
+
 RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())) {

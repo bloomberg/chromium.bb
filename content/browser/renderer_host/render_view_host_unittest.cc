@@ -181,7 +181,7 @@ TEST_F(RenderViewHostTest, BadMessageHandlerRenderViewHost) {
   // two payload items but the one we construct has none.
   IPC::Message message(0, ViewHostMsg_UpdateTargetURL::ID,
                        IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->TestOnMessageReceived(message);
+  test_rvh()->OnMessageReceived(message);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
@@ -193,7 +193,7 @@ TEST_F(RenderViewHostTest, BadMessageHandlerRenderWidgetHost) {
   // one payload item but the one we construct has none.
   IPC::Message message(0, ViewHostMsg_UpdateRect::ID,
                        IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->TestOnMessageReceived(message);
+  test_rvh()->OnMessageReceived(message);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
@@ -206,7 +206,7 @@ TEST_F(RenderViewHostTest, BadMessageHandlerInputEventAck) {
   // OnMsgInputEventAck() processing.
   IPC::Message message(0, ViewHostMsg_HandleInputEvent_ACK::ID,
                        IPC::Message::PRIORITY_NORMAL);
-  test_rvh()->TestOnMessageReceived(message);
+  test_rvh()->OnMessageReceived(message);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 

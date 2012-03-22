@@ -165,7 +165,7 @@ TEST_F(NavigationControllerTest, LoadURL) {
   // commit.
   test_rvh()->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(
-      contents()->pending_rvh())->SendNavigate(1, url2);
+      contents()->GetPendingRenderViewHost())->SendNavigate(1, url2);
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
@@ -301,7 +301,7 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
   test_rvh()->SendShouldCloseACK(true);
   const GURL kNewURL("http://see");
   static_cast<TestRenderViewHost*>(
-      contents()->pending_rvh())->SendNavigate(3, kNewURL);
+      contents()->GetPendingRenderViewHost())->SendNavigate(3, kNewURL);
 
   // There should no longer be any pending entry, and the third navigation we
   // just made should be committed.
@@ -475,7 +475,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortCancelsPending) {
   params.error_description = string16();
   params.url = kNewURL;
   params.showing_repost_interstitial = false;
-  test_rvh()->TestOnMessageReceived(
+  test_rvh()->OnMessageReceived(
           ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                       params));
 
@@ -517,7 +517,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
 
   // Now the navigation redirects.
   const GURL kRedirectURL("http://bee");
-  test_rvh()->TestOnMessageReceived(
+  test_rvh()->OnMessageReceived(
       ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
                                              -1,  // pending page_id
                                              GURL(),  // opener
@@ -537,7 +537,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   params.error_description = string16();
   params.url = kRedirectURL;
   params.showing_repost_interstitial = false;
-  test_rvh()->TestOnMessageReceived(
+  test_rvh()->OnMessageReceived(
           ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                       params));
 
@@ -1646,9 +1646,9 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   fail_load_params.error_description = string16();
   fail_load_params.url = url;
   fail_load_params.showing_repost_interstitial = false;
-  rvh->TestOnMessageReceived(
-          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                      fail_load_params));
+  rvh->OnMessageReceived(
+      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                  fail_load_params));
 
   // Now the pending restored entry commits.
   ViewHostMsg_FrameNavigate_Params params;

@@ -125,19 +125,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
 #endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(TOOLKIT_USES_GTK)
 
-  // TODO(joi): May be able to move into impl if RWHVMacDelegate stops
-  // being exposed to Chrome.
-  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
-
   // Subclasses should override this method to do what is appropriate to set
   // the custom background for their platform.
   virtual void SetBackground(const SkBitmap& background) = 0;
   virtual const SkBitmap& GetBackground() = 0;
-
-  // TODO(joi): Remove this when we remove the dependency by chrome/
-  // on browser_accessibility* files in content.
-  virtual BrowserAccessibilityManager*
-      GetBrowserAccessibilityManager() const = 0;
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // The region specified will be transparent to mouse clicks.

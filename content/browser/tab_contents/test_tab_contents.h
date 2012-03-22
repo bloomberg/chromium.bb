@@ -33,7 +33,7 @@ class TestTabContents : public TabContents, public content::WebContentsTester {
   // WebContentsTester implementation.
   virtual void CommitPendingNavigation() OVERRIDE;
   virtual int GetNumberOfFocusCalls() OVERRIDE;
-  virtual content::RenderViewHost* pending_rvh() const OVERRIDE;
+  virtual content::RenderViewHost* GetPendingRenderViewHost() const OVERRIDE;
   virtual void NavigateAndCommit(const GURL& url) OVERRIDE;
   virtual void ProceedWithCrossSiteNavigation() OVERRIDE;
   virtual void TestDidNavigate(content::RenderViewHost* render_view_host,

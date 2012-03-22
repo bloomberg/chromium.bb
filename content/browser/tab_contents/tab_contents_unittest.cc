@@ -369,7 +369,7 @@ TEST_F(TabContentsTest, UpdateMaxPageID) {
 TEST_F(TabContentsTest, SimpleNavigation) {
   TestRenderViewHost* orig_rvh = test_rvh();
   SiteInstance* instance1 = contents()->GetSiteInstance();
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 
   // Navigate to URL
   const GURL url("http://www.google.com");
@@ -432,7 +432,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh =
-      static_cast<TestRenderViewHost*>(contents()->pending_rvh());
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
   pending_rvh->set_delete_counter(&pending_rvh_delete_count);
 
@@ -449,7 +449,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
   // We keep the original RVH around, swapped out.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsSwappedOut(orig_rvh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
@@ -459,7 +459,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   // We should use the same RVH as before, swapping it back in.
   controller().GoBack();
   TestRenderViewHost* goback_rvh =
-      static_cast<TestRenderViewHost*>(contents()->pending_rvh());
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   EXPECT_EQ(orig_rvh, goback_rvh);
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
@@ -512,7 +512,7 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   RenderViewHost* new_rvh = rvh();
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
   EXPECT_NE(orig_rvh, new_rvh);
   EXPECT_EQ(orig_rvh_delete_count, 1);
 
@@ -523,7 +523,7 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(new_rvh, rvh());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 
   // Close tab and ensure RVHs are deleted.
   DeleteContents();
@@ -561,7 +561,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
       std::string());
   orig_rvh->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_a =
-      static_cast<TestRenderViewHost*>(contents()->pending_rvh());
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   contents()->TestDidNavigate(
       pending_rvh_a, 1, url2a, content::PAGE_TRANSITION_TYPED);
   SiteInstance* instance2a = contents()->GetSiteInstance();
@@ -576,7 +576,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
       static_cast<TestRenderViewHost*>(contents2.GetRenderViewHost());
   rvh2->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_b =
-      static_cast<TestRenderViewHost*>(contents2.pending_rvh());
+      static_cast<TestRenderViewHost*>(contents2.GetPendingRenderViewHost());
   EXPECT_TRUE(pending_rvh_b != NULL);
   EXPECT_TRUE(contents2.cross_navigation_pending());
 
@@ -663,7 +663,7 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, false, base::TimeTicks(), base::TimeTicks()));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->cross_navigation_pending());
@@ -673,12 +673,12 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
-      contents()->pending_rvh());
+      contents()->GetPendingRenderViewHost());
 
   // We won't hear DidNavigate until the onunload handler has finished running.
   // (No way to simulate that here, but it involves a call from RDH to
@@ -691,7 +691,7 @@ TEST_F(TabContentsTest, CrossSiteUnloadHandlers) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, rvh());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }
 
 // Test that during a slow cross-site navigation, the original renderer can
@@ -715,7 +715,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
@@ -728,7 +728,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationPreempted) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, rvh());
   EXPECT_EQ(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }
 
 TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
@@ -756,11 +756,11 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* google_rvh =
-      static_cast<TestRenderViewHost*>(contents()->pending_rvh());
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
 
   // Simulate beforeunload approval.
   EXPECT_TRUE(ntp_rvh->is_waiting_for_beforeunload_ack());
-  ntp_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  ntp_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
 
   // DidNavigate from the pending page.
@@ -772,7 +772,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_NE(instance1, instance2);
-  EXPECT_FALSE(contents()->pending_rvh());
+  EXPECT_FALSE(contents()->GetPendingRenderViewHost());
   EXPECT_EQ(url2, entry2->GetURL());
   EXPECT_EQ(instance2,
             NavigationEntryImpl::FromNavigationEntry(entry2)->site_instance());
@@ -792,7 +792,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(google_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(instance2, instance3);
-  EXPECT_FALSE(contents()->pending_rvh());
+  EXPECT_FALSE(contents()->GetPendingRenderViewHost());
   EXPECT_EQ(url3, entry3->GetURL());
   EXPECT_EQ(instance3,
             NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
@@ -805,12 +805,12 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   // Before that commits, go back again.
   controller().GoBack();
   EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_TRUE(contents()->pending_rvh());
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
 
   // Simulate beforeunload approval.
   EXPECT_TRUE(google_rvh->is_waiting_for_beforeunload_ack());
-  google_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  google_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
 
   // DidNavigate from the first back. This aborts the second back's pending RVH.
@@ -860,7 +860,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationNotPreemptedByFrame) {
 
   // Now simulate the onbeforeunload approval and verify the navigation is
   // not canceled.
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->cross_navigation_pending());
@@ -885,7 +885,7 @@ TEST_F(TabContentsTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* pending_rvh =
-      static_cast<TestRenderViewHost*>(contents()->pending_rvh());
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
 
@@ -925,11 +925,11 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = static_cast<TestRenderViewHost*>(
-      contents()->pending_rvh());
+      contents()->GetPendingRenderViewHost());
 
   // Simulate the pending renderer's response, which leads to an unload request
   // being sent to orig_rvh.
@@ -946,7 +946,7 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
 
   // Verify that the pending navigation is still in progress.
   EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_TRUE(contents()->pending_rvh() != NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() != NULL);
 
   // DidNavigate from the pending page should commit it.
   contents()->TestDidNavigate(
@@ -955,7 +955,7 @@ TEST_F(TabContentsTest, CrossSiteCantPreemptAfterUnload) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, rvh());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }
 
 // Test that a cross-site navigation that doesn't commit after the unload
@@ -978,7 +978,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationCanceled) {
   controller().LoadURL(
       url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rvh->is_waiting_for_beforeunload_ack());
-  orig_rvh->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  orig_rvh->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       0, true, base::TimeTicks(), base::TimeTicks()));
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
@@ -998,7 +998,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationCanceled) {
   EXPECT_EQ(orig_rvh, rvh());
   EXPECT_FALSE(orig_rvh->is_swapped_out());
   EXPECT_EQ(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
+  EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }
 
 // Test that NavigationEntries have the correct content state after going
@@ -1450,7 +1450,7 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenGoBack) {
   interstitial->TestDidNavigate(2, interstitial_url);
 
   // Crash the renderer
-  test_rvh()->TestOnMessageReceived(
+  test_rvh()->OnMessageReceived(
       ViewHostMsg_RenderViewGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
@@ -1487,7 +1487,7 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenNavigate) {
   interstitial->Show();
 
   // Crash the renderer
-  test_rvh()->TestOnMessageReceived(
+  test_rvh()->OnMessageReceived(
       ViewHostMsg_RenderViewGone(
           0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 

@@ -31,11 +31,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/mock_render_process_host.h"
+#include "content/test/test_renderer_host.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 using content::RenderViewHost;
+using content::RenderViewHostTester;
 using content::WebContents;
 
 static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
@@ -691,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Get translation bar.
-  render_view_host()->OnMessageReceivedForTesting(
+  RenderViewHostTester::TestOnMessageReceived(
+      render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
   TranslateInfoBarDelegate* infobar =
       browser()->GetSelectedTabContentsWrapper()->infobar_tab_helper()->

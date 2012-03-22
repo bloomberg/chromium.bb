@@ -244,9 +244,14 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void UnlockMouse() = 0;
   virtual bool IsMouseLocked() = 0;
 
+  // Called when a mousewheel event was not processed by the renderer.
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+
   virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
   virtual WebKit::WebPopupType GetPopupType() = 0;
 
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const = 0;
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
   }

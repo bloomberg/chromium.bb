@@ -73,8 +73,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
 #endif  // !defined(TOOLKIT_VIEWS)
 #endif  // defined(TOOLKIT_USES_GTK)
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
   virtual bool CopyFromCompositingSurface(
       const gfx::Size& size,
              skia::PlatformCanvas* output) OVERRIDE;
@@ -232,7 +230,6 @@ class TestRenderViewHost
   virtual void SimulateSwapOutACK() OVERRIDE;
   virtual void SimulateWasHidden() OVERRIDE;
   virtual void SimulateWasRestored() OVERRIDE;
-  virtual bool TestOnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void TestOnMsgStartDragging(const WebDropData& drop_data);
 
@@ -301,7 +298,8 @@ class TestRenderViewHost
 #endif
 
 // Adds methods to get straight at the impl classes.
-class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
+class RenderViewHostImplTestHarness
+    : public content::RenderViewHostTestHarness {
  public:
   RenderViewHostImplTestHarness();
   virtual ~RenderViewHostImplTestHarness();

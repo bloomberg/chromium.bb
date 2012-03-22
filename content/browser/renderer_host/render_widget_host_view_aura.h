@@ -65,8 +65,6 @@ class RenderWidgetHostViewAura
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-  virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual bool CopyFromCompositingSurface(
       const gfx::Size& size,

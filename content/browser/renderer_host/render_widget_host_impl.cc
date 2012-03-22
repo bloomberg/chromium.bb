@@ -206,11 +206,6 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::AsRenderWidgetHostImpl() {
   return this;
 }
 
-bool RenderWidgetHostImpl::OnMessageReceivedForTesting(
-    const IPC::Message& msg) {
-  return OnMessageReceived(msg);
-}
-
 gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {
   if (view_)
     return view_->GetNativeViewId();
