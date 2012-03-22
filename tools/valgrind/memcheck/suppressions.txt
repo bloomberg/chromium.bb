@@ -848,15 +848,6 @@
    fun:_ZN12AboutHandler10AboutCrashEv
 }
 {
-   # Minor commandline options leak in v8
-   # See http://code.google.com/p/v8/issues/detail?id=275
-   v8_bug_275
-   Memcheck:Leak
-   fun:_Znaj
-   ...
-   fun:_ZN2v88internal8FlagList18SetFlagsFromStringEPKci
-}
-{
    # Non-joinable thread doesn't clean up all state on program exit
    # very common in ui tests
    bug_16096 (WontFix)
