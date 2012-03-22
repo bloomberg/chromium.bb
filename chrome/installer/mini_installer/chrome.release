@@ -59,3 +59,4 @@ default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 gcswf32.dll: %(VersionDir)s\
 plugin.vch: %(VersionDir)s\
 FlashPlayerCPLApp.cpl: %(VersionDir)s\
+FlashPlayerApp.exe: %(VersionDir)s\
