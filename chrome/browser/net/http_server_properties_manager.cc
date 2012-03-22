@@ -140,7 +140,7 @@ HttpServerPropertiesManager::alternate_protocol_map() const {
   return http_server_properties_impl_->alternate_protocol_map();
 }
 
-const spdy::SpdySettings&
+const net::SpdySettings&
 HttpServerPropertiesManager::GetSpdySettings(
     const net::HostPortPair& host_port_pair) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -150,7 +150,7 @@ HttpServerPropertiesManager::GetSpdySettings(
 // Saves settings for a host.
 bool HttpServerPropertiesManager::SetSpdySettings(
     const net::HostPortPair& host_port_pair,
-    const spdy::SpdySettings& settings) {
+    const net::SpdySettings& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool persist = http_server_properties_impl_->SetSpdySettings(
       host_port_pair, settings);
@@ -161,7 +161,7 @@ bool HttpServerPropertiesManager::SetSpdySettings(
 
 bool HttpServerPropertiesManager::SetSpdySetting(
     const net::HostPortPair& host_port_pair,
-    const spdy::SpdySetting& setting) {
+    const net::SpdySetting& setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool persist = http_server_properties_impl_->SetSpdySetting(
       host_port_pair, setting);
@@ -428,7 +428,7 @@ struct ServerPref {
         pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   ServerPref(bool supports_spdy,
-             const spdy::SpdySettings* settings,
+             const net::SpdySettings* settings,
              const net::PortAlternateProtocolPair* alternate_protocol)
       : supports_spdy(supports_spdy),
         settings(settings),
@@ -436,7 +436,7 @@ struct ServerPref {
         pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   bool supports_spdy;
-  const spdy::SpdySettings* settings;
+  const net::SpdySettings* settings;
   const net::PortAlternateProtocolPair* alternate_protocol;
   net::HttpPipelinedHostCapability pipeline_capability;
 };

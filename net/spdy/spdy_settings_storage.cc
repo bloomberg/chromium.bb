@@ -14,27 +14,27 @@ SpdySettingsStorage::SpdySettingsStorage() {
 SpdySettingsStorage::~SpdySettingsStorage() {
 }
 
-const spdy::SpdySettings& SpdySettingsStorage::Get(
+const SpdySettings& SpdySettingsStorage::Get(
     const HostPortPair& host_port_pair) const {
   SettingsMap::const_iterator it = settings_map_.find(host_port_pair);
   if (it == settings_map_.end()) {
-    CR_DEFINE_STATIC_LOCAL(spdy::SpdySettings, kEmpty, ());
+    CR_DEFINE_STATIC_LOCAL(SpdySettings, kEmpty, ());
     return kEmpty;
   }
   return it->second;
 }
 
 void SpdySettingsStorage::Set(const HostPortPair& host_port_pair,
-                              const spdy::SpdySettings& settings) {
-  spdy::SpdySettings persistent_settings;
+                              const SpdySettings& settings) {
+  SpdySettings persistent_settings;
 
   // Iterate through the list, and only copy those settings which are marked
   // for persistence.
-  spdy::SpdySettings::const_iterator it;
+  SpdySettings::const_iterator it;
   for (it = settings.begin(); it != settings.end(); ++it) {
-    spdy::SettingsFlagsAndId id = it->first;
-    if (id.flags() & spdy::SETTINGS_FLAG_PLEASE_PERSIST) {
-      spdy::SettingsFlagsAndId new_id(spdy::SETTINGS_FLAG_PERSISTED, id.id());
+    SettingsFlagsAndId id = it->first;
+    if (id.flags() & SETTINGS_FLAG_PLEASE_PERSIST) {
+      SettingsFlagsAndId new_id(SETTINGS_FLAG_PERSISTED, id.id());
       persistent_settings.push_back(std::make_pair(new_id, it->second));
     }
   }

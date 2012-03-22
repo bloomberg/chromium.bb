@@ -13,31 +13,6 @@
 #include "net/tools/flip_server/http_interface.h"
 #include "net/tools/flip_server/spdy_util.h"
 
-using spdy::kSpdyStreamMaximumWindowSize;
-using spdy::CONTROL_FLAG_NONE;
-using spdy::DATA_FLAG_COMPRESSED;
-using spdy::DATA_FLAG_FIN;
-using spdy::RST_STREAM;
-using spdy::SETTINGS_MAX_CONCURRENT_STREAMS;
-using spdy::SYN_REPLY;
-using spdy::SYN_STREAM;
-using spdy::BufferedSpdyFramer;
-using spdy::SettingsFlagsAndId;
-using spdy::SpdyControlFrame;
-using spdy::SpdySettingsControlFrame;
-using spdy::SpdyDataFlags;
-using spdy::SpdyDataFrame;
-using spdy::SpdyRstStreamControlFrame;
-using spdy::SpdyFrame;
-using spdy::SpdyFramer;
-using spdy::SpdyFramerVisitorInterface;
-using spdy::SpdyHeaderBlock;
-using spdy::SpdySetting;
-using spdy::SpdySettings;
-using spdy::SpdyStreamId;
-using spdy::SpdySynReplyControlFrame;
-using spdy::SpdySynStreamControlFrame;
-
 namespace net {
 
 // static
@@ -147,7 +122,7 @@ SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
 
 int SpdySM::SpdyHandleNewStream(
     const SpdySynStreamControlFrame* syn_stream,
-    const linked_ptr<spdy::SpdyHeaderBlock>& headers,
+    const linked_ptr<SpdyHeaderBlock>& headers,
     std::string &http_data,
     bool* is_https_scheme) {
   *is_https_scheme = false;
@@ -226,8 +201,8 @@ void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
     interface->ProcessWriteInput(data, len);
 }
 
-void SpdySM::OnSynStream(const spdy::SpdySynStreamControlFrame& syn_stream,
-                         const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+void SpdySM::OnSynStream(const SpdySynStreamControlFrame& syn_stream,
+                         const linked_ptr<SpdyHeaderBlock>& headers) {
   std::string http_data;
   bool is_https_scheme;
   int ret = SpdyHandleNewStream(&syn_stream, headers, http_data,
@@ -259,21 +234,21 @@ void SpdySM::OnSynStream(const spdy::SpdySynStreamControlFrame& syn_stream,
   }
 }
 
-void SpdySM::OnSynReply(const spdy::SpdySynReplyControlFrame& frame,
-                        const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+void SpdySM::OnSynReply(const SpdySynReplyControlFrame& frame,
+                        const linked_ptr<SpdyHeaderBlock>& headers) {
   // TODO(willchan): if there is an error parsing headers, we
   // should send a RST_STREAM.
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply("
           << frame.stream_id() << ")";
 }
 
-void SpdySM::OnHeaders(const spdy::SpdyHeadersControlFrame& frame,
-                       const linked_ptr<spdy::SpdyHeaderBlock>& headers) {
+void SpdySM::OnHeaders(const SpdyHeadersControlFrame& frame,
+                       const linked_ptr<SpdyHeaderBlock>& headers) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnHeaders("
           << frame.stream_id() << ")";
 }
 
-void SpdySM::OnRstStream(const spdy::SpdyRstStreamControlFrame& frame) {
+void SpdySM::OnRstStream(const SpdyRstStreamControlFrame& frame) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnRstStream("
           << frame.stream_id() << ")";
   client_output_ordering_.RemoveStreamId(frame.stream_id());

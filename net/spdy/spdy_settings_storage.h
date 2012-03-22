@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,17 +25,17 @@ class NET_EXPORT_PRIVATE SpdySettingsStorage {
   // If no settings are stored, returns an empty set of settings.
   // NOTE: Since settings_map_ may be cleared, don't store the address of the
   // return value.
-  const spdy::SpdySettings& Get(const HostPortPair& host_port_pair) const;
+  const SpdySettings& Get(const HostPortPair& host_port_pair) const;
 
   // Saves settings for a host.
   void Set(const HostPortPair& host_port_pair,
-           const spdy::SpdySettings& settings);
+           const SpdySettings& settings);
 
   // Clears out the settings_map_ object.
   void Clear();
 
  private:
-  typedef std::map<HostPortPair, spdy::SpdySettings> SettingsMap;
+  typedef std::map<HostPortPair, SpdySettings> SettingsMap;
 
   SettingsMap settings_map_;
 

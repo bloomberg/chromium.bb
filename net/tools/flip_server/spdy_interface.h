@@ -23,7 +23,7 @@ namespace net {
 class FlipAcceptor;
 class MemoryCache;
 
-class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
+class SpdySM : public BufferedSpdyFramerVisitorInterface,
                public SMInterface {
  public:
   SpdySM(SMConnection* connection,
@@ -55,35 +55,35 @@ class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
   SMInterface* NewConnectionInterface();
   SMInterface* FindOrMakeNewSMConnectionInterface(std::string server_ip,
                                                   std::string server_port);
-  int SpdyHandleNewStream(const spdy::SpdySynStreamControlFrame* frame,
-                          const linked_ptr<spdy::SpdyHeaderBlock>& headers,
+  int SpdyHandleNewStream(const SpdySynStreamControlFrame* frame,
+                          const linked_ptr<SpdyHeaderBlock>& headers,
                           std::string& http_data,
                           bool* is_https_scheme);
 
   // BufferedSpdyFramerVisitorInterface:
   virtual void OnError(int error_code) OVERRIDE {}
-  virtual void OnStreamError(spdy::SpdyStreamId stream_id,
+  virtual void OnStreamError(SpdyStreamId stream_id,
                              const std::string& description) OVERRIDE {}
   virtual void OnRstStream(
-      const spdy::SpdyRstStreamControlFrame& frame) OVERRIDE;
-  virtual void OnGoAway(const spdy::SpdyGoAwayControlFrame& frame) OVERRIDE {}
-  virtual void OnPing(const spdy::SpdyPingControlFrame& frame) OVERRIDE {}
+      const SpdyRstStreamControlFrame& frame) OVERRIDE;
+  virtual void OnGoAway(const SpdyGoAwayControlFrame& frame) OVERRIDE {}
+  virtual void OnPing(const SpdyPingControlFrame& frame) OVERRIDE {}
   virtual void OnWindowUpdate(
-      const spdy::SpdyWindowUpdateControlFrame& frame) OVERRIDE {}
-  virtual void OnStreamFrameData(spdy::SpdyStreamId stream_id,
+      const SpdyWindowUpdateControlFrame& frame) OVERRIDE {}
+  virtual void OnStreamFrameData(SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len) OVERRIDE;
   virtual void OnSetting(
-      spdy::SpdySettingsIds id, uint8 flags, uint32 value)  OVERRIDE {}
+      SpdySettingsIds id, uint8 flags, uint32 value)  OVERRIDE {}
   virtual void OnSynStream(
-      const spdy::SpdySynStreamControlFrame& frame,
-      const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
+      const SpdySynStreamControlFrame& frame,
+      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
   virtual void OnSynReply(
-      const spdy::SpdySynReplyControlFrame& frame,
-      const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
+      const SpdySynReplyControlFrame& frame,
+      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
   virtual void OnHeaders(
-      const spdy::SpdyHeadersControlFrame& frame,
-      const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;
+      const SpdyHeadersControlFrame& frame,
+      const linked_ptr<SpdyHeaderBlock>& headers) OVERRIDE;
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
@@ -116,7 +116,7 @@ class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
                               const BalsaHeaders& headers) OVERRIDE;
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) OVERRIDE;
-  spdy::BufferedSpdyFramer* spdy_framer() {
+  BufferedSpdyFramer* spdy_framer() {
       return buffered_spdy_framer_;
   }
 
@@ -130,16 +130,16 @@ class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
   void SendErrorNotFoundImpl(uint32 stream_id);
   void SendOKResponseImpl(uint32 stream_id, std::string* output);
   void KillStream(uint32 stream_id);
-  void CopyHeaders(spdy::SpdyHeaderBlock& dest, const BalsaHeaders& headers);
+  void CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers);
   size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers);
   size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers);
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
-                         spdy::SpdyDataFlags flags, bool compress);
+                         SpdyDataFlags flags, bool compress);
   void EnqueueDataFrame(DataFrame* df);
   virtual void GetOutput() OVERRIDE;
  private:
   uint64 seq_num_;
-  spdy::BufferedSpdyFramer* buffered_spdy_framer_;
+  BufferedSpdyFramer* buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.
                              // Use this to fail fast when junk is sent to our
                              // port.
