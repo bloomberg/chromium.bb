@@ -59,6 +59,9 @@ class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
 
+  // Returns true if system tray should be visible on startup.
+  virtual bool GetTrayVisibilityOnStartup() = 0;
+
   // Gets information about the logged in user.
   virtual const std::string GetUserDisplayName() const = 0;
   virtual const std::string GetUserEmail() const = 0;

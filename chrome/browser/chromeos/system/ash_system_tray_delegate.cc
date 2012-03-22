@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -155,6 +156,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from ash::SystemTrayDelegate:
+  virtual bool GetTrayVisibilityOnStartup() OVERRIDE {
+    return !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled();
+  }
+
   virtual const std::string GetUserDisplayName() const OVERRIDE {
     return UserManager::Get()->GetLoggedInUser().GetDisplayName();
   }

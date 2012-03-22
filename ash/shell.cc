@@ -259,6 +259,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
  private:
 
+  virtual bool GetTrayVisibilityOnStartup() OVERRIDE { return true; }
+
   // Overridden from SystemTrayDelegate:
   virtual const std::string GetUserDisplayName() const OVERRIDE {
     return "Über tray Über tray Über tray Über tray";
@@ -648,6 +650,8 @@ void Shell::Init() {
     tray_->AddTrayItem(tray_date);
     tray_->AddTrayItem(tray_accessibility);
     tray_->AddTrayItem(tray_caps_lock);
+
+    tray_->SetVisible(tray_delegate_->GetTrayVisibilityOnStartup());
   }
   if (!status_widget_)
     status_widget_ = internal::CreateStatusArea(tray_.get());

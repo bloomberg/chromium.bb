@@ -507,6 +507,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
     if (view)
       container_->AddChildViewAt(new TrayItemContainer(view), 0);
   }
+  SetVisible(true);
   PreferredSizeChanged();
 }
 
