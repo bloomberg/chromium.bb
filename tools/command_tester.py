@@ -283,7 +283,7 @@ def ProcessOptions(argv):
     opts, args = getopt.getopt(argv, '', [x + '='  for x in GlobalSettings])
   except getopt.GetoptError, err:
     Print(str(err))  # will print something like 'option -a not recognized'
-    sys.exit(-1)
+    sys.exit(1)
 
   for o, a in opts:
     # strip the leading '--'
@@ -535,7 +535,7 @@ def DoRun(command, stdin_data):
                            GlobalSettings['using_nacl_signal_handler'],
                            exit_status, None, None):
       Print(FailureMessage(total_time))
-      return (-1, stdout, stderr)
+      return (1, stdout, stderr)
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
@@ -549,18 +549,18 @@ def DoRun(command, stdin_data):
                            exit_status, stdout, stderr):
       PrintStdStreams(stdout, stderr)
       Print(FailureMessage(total_time))
-      return (-1, stdout, stderr)
+      return (1, stdout, stderr)
     if not CheckGoldenOutput(stdout, stderr):
       Print(FailureMessage(total_time))
-      return (-1, stdout, stderr)
+      return (1, stdout, stderr)
     success, stdout, stderr = ProcessLogOutputSingle(stdout, stderr)
     if not success:
       Print(FailureMessage(total_time) + ' ProcessLogOutputSingle failed!')
-      return (-1, stdout, stderr)
+      return (1, stdout, stderr)
 
   if not CheckTimeBounds(total_time):
     Print(FailureMessage(total_time))
-    return (-1, stdout, stderr)
+    return (1, stdout, stderr)
 
   Print(SuccessMessage(total_time))
   return (0, stdout, stderr)
@@ -626,7 +626,7 @@ def Main(argv):
   if not success:
     # Bogus time, since only ProcessLogOutputCombined failed.
     Print(FailureMessage(0.0) + ' ProcessLogOutputCombined failed!')
-    return -1
+    return 1
   return 0
 
 if __name__ == '__main__':

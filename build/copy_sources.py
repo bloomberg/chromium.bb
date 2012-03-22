@@ -1,5 +1,7 @@
 #!/usr/bin/python
-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os
 import shutil
@@ -15,7 +17,7 @@ def ErrOut(text):
   print '\n\n'
   print ' '.join(sys.argv)
   print text
-  sys.exit(-1)
+  sys.exit(1)
 
 
 def MakeDir(outdir):
@@ -26,11 +28,11 @@ def MakeDir(outdir):
 def Main(argv):
   if len(argv) != 3:
     print 'Expecting: copy_sources.py <source file> <dest file/dir>'
-    return -1
+    return 1
 
   if not os.path.exists(argv[1]):
     print 'File not found: %s' % argv[1]
-    return -1
+    return 1
 
   shutil.copy(argv[1], argv[2])
   return 0
