@@ -72,7 +72,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin +
-                        (available_height - font.GetHeight()) / 2, width,
+                        (available_height - font.GetHeight() + 1) / 2, width,
                         font.GetHeight());
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   canvas->DrawStringInt(title(), font, fg_color,
