@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
 #include "grit/virtual_driver_setup_resources.h"
@@ -70,6 +71,7 @@ void DeleteOmahaKeys() {
   if (key.Open(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
                DELETE) != ERROR_SUCCESS) {
     LOG(ERROR) << "Unable to open key to delete";
+    return;
   }
   if (key.DeleteKey(L"") != ERROR_SUCCESS) {
     LOG(ERROR) << "Unable to delete key";
@@ -198,7 +200,10 @@ UINT CALLBACK CabinetCallback(PVOID data,
     FILE_IN_CABINET_INFO* info =
         reinterpret_cast<FILE_IN_CABINET_INFO*>(param1);
     for (int i = 0; i < arraysize(kDependencyList); i++) {
-      if (wcsstr(info->NameInCabinet, kDependencyList[i])) {
+      FilePath base_name(info->NameInCabinet);
+      base_name = base_name.BaseName();
+      if (FilePath::CompareEqualIgnoreCase(base_name.value().c_str(),
+                                           kDependencyList[i])) {
         StringCchCopy(info->FullTargetName, MAX_PATH,
                       temp_path->Append(kDependencyList[i]).value().c_str());
         return FILEOP_DOIT;
@@ -211,26 +216,47 @@ UINT CALLBACK CabinetCallback(PVOID data,
 }
 
 void ReadyPpdDependencies(const FilePath& install_path) {
-  CORE_PRINTER_DRIVER driver;
-  GetCorePrinterDrivers(NULL,
-                        NULL,
-                        L"{D20EA372-DD35-4950-9ED8-A6335AFE79F0}",
-                        1,
-                        &driver);
-  DWORD size = MAX_PATH;
-  wchar_t package_path[MAX_PATH];
-  GetPrinterDriverPackagePath(NULL,
-                              NULL,
-                              NULL,
-                              driver.szPackageID,
-                              package_path,
-                              MAX_PATH,
-                              &size);
+  base::win::Version version = base::win::GetVersion();
+  if (version >= base::win::VERSION_VISTA) {
+    // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
+    // Vista and later. Winspool.drv must be delayloaded so these calls don't
+    // create problems on XP.
+    DWORD size = MAX_PATH;
+    wchar_t package_path[MAX_PATH] = {0};
+    CORE_PRINTER_DRIVER driver;
+    GetCorePrinterDrivers(NULL,
+                          NULL,
+                          L"{D20EA372-DD35-4950-9ED8-A6335AFE79F0}",
+                          1,
+                          &driver);
+    GetPrinterDriverPackagePath(NULL,
+                                NULL,
+                                NULL,
+                                driver.szPackageID,
+                                package_path,
+                                MAX_PATH,
+                                &size);
+    SetupIterateCabinet(package_path,
+                        0,
+                        CabinetCallback,
+                        const_cast<FilePath*>(&install_path));
+  } else {
+    // PS driver files are in the sp3 cab.
+    FilePath package_path;
+    PathService::Get(base::DIR_WINDOWS, &package_path);
+    package_path = package_path.Append(L"Driver Cache\\i386\\sp3.cab");
+    SetupIterateCabinet(package_path.value().c_str(),
+                        0,
+                        CabinetCallback,
+                        const_cast<FilePath*>(&install_path));
 
-  SetupIterateCabinet(package_path,
-                      0,
-                      CabinetCallback,
-                      const_cast<FilePath*>(&install_path));
+    // The XPS driver files are just sitting uncompressed in the driver cache.
+    FilePath xps_path;
+    PathService::Get(base::DIR_WINDOWS, &xps_path);
+    xps_path = xps_path.Append(L"Driver Cache\\i386");
+    xps_path = xps_path.Append(kDriverName);
+    file_util::CopyFile(xps_path, install_path.Append(kDriverName));
+  }
 }
 
 HRESULT InstallPpd(const FilePath& install_path) {
@@ -383,10 +409,24 @@ void CleanupUninstall() {
   ::RegDeleteKey(HKEY_LOCAL_MACHINE, kUninstallRegistry);
 }
 
+bool IsOSSupported() {
+  // We don't support XP service pack 2 or older.
+  base::win::Version version = base::win::GetVersion();
+  return (version > base::win::VERSION_XP) ||
+      ((version == base::win::VERSION_XP) &&
+       (base::win::OSInfo::GetInstance()->service_pack().major >= 3));
+}
+
 HRESULT InstallVirtualDriver(const FilePath& install_path) {
   HRESULT result = S_OK;
+
+  if (!IsOSSupported()) {
+    LOG(ERROR) << "Requires XP SP3 or later.";
+    return ERROR_OLD_WIN_VERSION;
+  }
+
   if (!file_util::CreateDirectory(install_path)) {
-    LOG(ERROR) << "Can't create install directory";
+    LOG(ERROR) << "Can't create install directory.";
     return ERROR_ACCESS_DENIED;
   }
   SetupUninstall(install_path);
