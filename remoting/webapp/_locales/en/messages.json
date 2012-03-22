@@ -312,6 +312,10 @@
     "message": "Reconnect",
     "description": "Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page."
   },
+  "RETRY": {
+    "message": "Retry",
+    "description": "Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page."
+  },
   "SIGN_OUT_BUTTON": {
     "message": "Sign out",
     "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."

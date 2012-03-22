@@ -470,6 +470,7 @@
             'webapp/verify-webapp.py',
             '<(PRODUCT_DIR)/remoting/webapp_verified.stamp',
             'webapp/_locales/en/messages.json',
+            'webapp/client_screen.js',
             'webapp/main.html',
             'webapp/host_table_entry.js',
             'webapp/manifest.json',

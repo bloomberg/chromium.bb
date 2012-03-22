@@ -196,6 +196,7 @@ function onClientStateChange_(oldState, newState) {
   } else if (newState == remoting.ClientSession.State.CONNECTED) {
     if (remoting.clientSession) {
       clearPin = true;
+      setConnectionInterruptedButtonsText_();
       remoting.setMode(remoting.AppMode.IN_SESSION);
       remoting.toolbar.center();
       remoting.toolbar.preview();
@@ -327,6 +328,20 @@ function showConnectError_(errorTag) {
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
   }
+}
+
+/**
+ * Set the text on the buttons shown under the error message so that they are
+ * easy to understand in the case where a successful connection failed, as
+ * opposed to the case where a connection never succeeded.
+ */
+function setConnectionInterruptedButtonsText_() {
+  var button1 = document.getElementById('client-reconnect-button');
+  l10n.localizeElementFromTag(button1, /*i18n-content*/'RECONNECT');
+  button1.removeAttribute('autofocus');
+  var button2 = document.getElementById('client-finished-me2me-button');
+  l10n.localizeElementFromTag(button2, /*i18n-content*/'OK');
+  button2.setAttribute('autofocus', 'autofocus');
 }
 
 /**
