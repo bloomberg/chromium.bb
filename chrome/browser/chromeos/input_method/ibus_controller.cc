@@ -18,11 +18,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/input_method/ibus_input_methods.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
+#include "chrome/browser/chromeos/input_method/input_methods.h"
 
 namespace chromeos {
 namespace input_method {
@@ -806,11 +806,11 @@ class IBusControllerImpl : public IBusController {
   void UpdateUI(const char* current_global_engine_id) {
     DCHECK(current_global_engine_id);
 
-    const IBusEngineInfo* engine_info = NULL;
-    for (size_t i = 0; i < arraysize(kIBusEngines); ++i) {
-      if (kIBusEngines[i].input_method_id ==
+    const InputMethodsInfo* engine_info = NULL;
+    for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+      if (kInputMethods[i].input_method_id ==
           std::string(current_global_engine_id)) {
-        engine_info = &kIBusEngines[i];
+        engine_info = &kInputMethods[i];
         break;
       }
     }
