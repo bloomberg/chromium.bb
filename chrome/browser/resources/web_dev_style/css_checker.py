@@ -72,7 +72,7 @@ class CSSChecker(object):
       return (line.find('}') >= 0 and re.search(r'[^ }]', line))
 
     def colons_have_space_after(line):
-      return re.search(r':(?!\/\/)\S(?!.*[{,]\s*$)', line)
+      return re.search(r':(?!//)\S[^;]+;\s*', line)
 
     def favor_single_quotes(line):
       return line.find('"') >= 0
@@ -89,7 +89,7 @@ class CSSChecker(object):
       return re.search(small_seconds, line)
 
     def one_rule_per_line(line):
-      return re.search('(.*:(?!\/\/)){2,}(?!.*[,{]\s*$)', line)
+      return re.search(r'[_a-zA-Z0-9-]:(?!//)[^;]+;\s*[^ }]\s*', line)
 
     any_reg = re.compile(r':(?:-webkit-)?any\(.*?\)', re.DOTALL)
     multi_sels = re.compile(r'(?:}[\n\s]*)?([^,]+,(?=[^{}]+?{).*[,{])\s*$',

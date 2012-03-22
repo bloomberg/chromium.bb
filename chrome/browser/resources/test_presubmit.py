@@ -292,7 +292,7 @@ blah /* hey! */
 
   def testCssCloseBraceOnNewLine(self):
     self.VerifyContentsProducesOutput("""
-@media { /* TODO(dbeam) Fix this case.
+@media { /* TODO(dbeam) Fix this case. */
   .rule {
     display: block;
   }}
@@ -304,7 +304,11 @@ blah /* hey! */
 
   def testCssColonsHaveSpaceAfter(self):
     self.VerifyContentsProducesOutput("""
-div:not(.class):not([attr]) /* We should not catch this. */ {
+div:not(.class):not([attr=5]), /* We should not catch this. */
+div:not(.class):not([attr]) /* Nor this. */ {
+  background: -webkit-linear-gradient(left, red,
+                                      80% blah blee blar);
+  color: red;
   display:block;
 }""", """
 - Colons (:) should have a space after them.
@@ -351,7 +355,11 @@ html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
 
   def testCssOneRulePerLine(self):
     self.VerifyContentsProducesOutput("""
+a:not([hidden]):not(.custom-appearance):not([version=1]):first-of-type,
+a:not([hidden]):not(.custom-appearance):not([version=1]):first-of-type ~
+    input[type='checkbox']:not([hidden]),
 div {
+  background: url(chrome://resources/BLAH);
   rule: value; /* rule: value; */
   rule: value; rule: value;
 }""", """
