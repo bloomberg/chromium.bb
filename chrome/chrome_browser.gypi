@@ -4501,6 +4501,8 @@
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/downloads_'],
+            ['exclude', '^browser/ui/webui/feedback_'],
+            ['exclude', '^browser/ui/webui/help/'],
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
             ['exclude', '^browser/ui/webui/print_preview/'],

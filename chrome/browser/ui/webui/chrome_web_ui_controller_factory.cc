@@ -182,16 +182,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<ConstrainedHtmlUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
-  if (url.host() == chrome::kChromeUIFeedbackHost)
-    return &NewWebUI<FeedbackUI>;
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewWebUI<GpuInternalsUI>;
-  if (url.host() == chrome::kChromeUIHelpFrameHost)
-    return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
@@ -229,15 +225,17 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
    * OS Specific #defines
    ***************************************************************************/
 #if !defined(OS_ANDROID)
-  // Android uses the native download manager.
+  // These pages are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  // Android doesn't use the Options/Options2 pages.
+  if (url.host() == chrome::kChromeUIFeedbackHost)
+    return &NewWebUI<FeedbackUI>;
+  if (url.host() == chrome::kChromeUIHelpFrameHost)
+    return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options2::OptionsUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
     return &NewWebUI<OptionsUI>;
-  // Android doesn't support print/print-preview
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
           prefs::kPrintPreviewDisabled)) {
