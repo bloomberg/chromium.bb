@@ -588,7 +588,6 @@
         'remoting_protocol',
         'differ_block',
         '../crypto/crypto.gyp:crypto',
-        '../content/content.gyp:content_common'
       ],
       'sources': [
         'host/capturer.h',
@@ -811,6 +810,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../media/media.gyp:media',
+        # TODO(hclam): Remove this dependency once we don't use URLFetcher.
+        '../content/content.gyp:content_common',
       ],
       'sources': [
         'host/host_event_logger.h',
