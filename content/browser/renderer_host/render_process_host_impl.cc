@@ -1270,8 +1270,9 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
 }
 
 void RenderProcessHostImpl::OnShutdownRequest() {
-  // Don't shutdown if there are pending RenderViews being swapped back in.
-  if (pending_views_)
+  // Don't shut down if there are more RenderViews than the one asking to
+  // close, or if there are pending RenderViews being swapped back in.
+  if (pending_views_ || render_widget_hosts_.size() > 1)
     return;
 
   // Notify any tabs that might have swapped out renderers from this process.
