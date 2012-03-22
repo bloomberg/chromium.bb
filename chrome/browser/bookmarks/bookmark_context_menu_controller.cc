@@ -113,7 +113,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW: {
       WindowOpenDisposition initial_disposition;
       if (id == IDC_BOOKMARK_BAR_OPEN_ALL) {
-        initial_disposition = NEW_FOREGROUND_TAB;
+        initial_disposition = NEW_BACKGROUND_TAB;
         content::RecordAction(
             UserMetricsAction("BookmarkBar_ContextMenu_OpenAll"));
       } else if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW) {
