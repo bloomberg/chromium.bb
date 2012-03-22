@@ -1163,7 +1163,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 zoom_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
@@ -1172,12 +1172,8 @@ zoom_binding(struct wl_input_device *device, uint32_t time,
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
 						device->x, device->y, NULL)) {
-			if (state && key == KEY_UP) {
-				output->zoom.active = 1;
-				output->zoom.level -= output->zoom.increment;
-			}
-			if (state && key == KEY_DOWN)
-				output->zoom.level += output->zoom.increment;
+			output->zoom.active = 1;
+			output->zoom.level += output->zoom.increment * -value;
 
 			if (output->zoom.level >= 1.0) {
 				output->zoom.active = 0;
@@ -2074,10 +2070,8 @@ shell_init(struct weston_compositor *ec)
 					terminate_binding, ec);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
 					click_to_activate_binding, ec);
-	weston_compositor_add_binding(ec, KEY_UP, 0, 0, MODIFIER_SUPER,
-					zoom_binding, shell);
-	weston_compositor_add_binding(ec, KEY_DOWN, 0, 0, MODIFIER_SUPER,
-					zoom_binding, shell);
+	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
+					MODIFIER_SUPER, zoom_binding, NULL);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
 					MODIFIER_SUPER | MODIFIER_ALT,
 					rotate_binding, NULL);
