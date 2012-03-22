@@ -461,7 +461,13 @@ int TestMain() {
   RUN_TEST(test_deleting_zero_size);
   RUN_TEST(test_deleting_code_from_invalid_ranges);
   RUN_TEST(test_stress);
+  /*
+   * TODO(ncbray) reenable when kernel bug is fixed.
+   * http://code.google.com/p/nativeclient/issues/detail?id=2678
+   */
+#ifndef __arm__
   RUN_TEST(test_threaded_loads);
+#endif
 
   /* Test again to make sure we didn't run out of space. */
   RUN_TEST(test_loading_code);
