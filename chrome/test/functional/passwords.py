@@ -13,7 +13,7 @@ import test_utils
 class PasswordTest(pyauto.PyUITest):
   """Tests that passwords work correctly."""
 
-  INFOBAR_BUTTON_TEXT = 'Save password'
+  INFOBAR_TYPE = 'password_infobar'
 
   def Debug(self):
     """Test method for experimentation.
@@ -81,36 +81,43 @@ class PasswordTest(pyauto.PyUITest):
                 self.ExecuteJavascript(js_template % 'Passwd',
                                       tab_index, window_index) != ''))
 
-  def _InfobarButtonContainsText(self, search_text, windex, tab_index):
-    """Identifies whether an infobar button exists with the specified text.
+  def _GetInfobarIndexByType(self, infobar_type, windex, tab_index):
+    """Returns the index of the infobar of the given type.
 
     Args:
-      search_text: The text to search for on the infobar buttons.
+      infobar_type: The infobar type to look for.
       windex: Window index.
       tab_index: Tab index.
 
     Returns:
-      True, if search_text is found in the buttons, or False otherwise.
+      Index of infobar for infobar type, or None if not found.
     """
-    infobar = (
+    infobar_list = (
         self.GetBrowserInfo()['windows'][windex]['tabs'][tab_index] \
             ['infobars'])
-    for infobar_info in infobar:
-      if search_text in infobar_info['buttons']:
-        return True
-    return False
+    for infobar in infobar_list:
+      if infobar_type == infobar['type']:
+        return infobar_list.index(infobar)
+    return None
 
-  def _WaitForSavePasswordInfobar(self, windex=0, tab_index=0):
-    """Wait for and asserts that the save password infobar appears.
+  def _GetIndexForSavePasswordInfobar(self, windex=0, tab_index=0):
+    """Waits for save password infobar to appear and returns its index.
 
     Args:
       windex: Window index. Defaults to 0 (first window).
       tab_index: Tab index. Defaults to 0 (first tab).
+
+    Returns:
+      Index of infobar for infobar type.
     """
     self.assertTrue(
-        self.WaitUntil(lambda: self._InfobarButtonContainsText(
-            self.INFOBAR_BUTTON_TEXT, windex, tab_index)),
+        self.WaitUntil(lambda: self._GetInfobarIndexByType(
+            self.INFOBAR_TYPE, windex, tab_index)),
         msg='Save password infobar did not appear.')
+    # Return the infobar index.
+    # TODO(dyu): Use the return value in future tests.
+    return self._GetInfobarIndexByType(
+        self.INFOBAR_TYPE, windex, tab_index)
 
   def testSavePassword(self):
     """Test saving a password and getting saved passwords."""
@@ -156,9 +163,9 @@ class PasswordTest(pyauto.PyUITest):
     self.WaitUntil(
         lambda: self.GetDOMValue('document.readyState'),
         expect_retval='complete')
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
-    self.assertEqual(infobar[0]['type'], 'confirm_infobar')
+    self.assertEqual(infobar[0]['type'], 'password_infobar')
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url_https)
@@ -172,14 +179,14 @@ class PasswordTest(pyauto.PyUITest):
     creds1 = self.GetPrivateInfo()['test_google_account']
     test_utils.GoogleAccountsLogin(
         self, creds1['username'], creds1['password'])
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.assertEquals(1, len(self.GetSavedPasswords()))
     self.AppendTab(pyauto.GURL(creds1['logout_url']))
     creds2 = self.GetPrivateInfo()['test_google_account_2']
     test_utils.GoogleAccountsLogin(
         self, creds2['username'], creds2['password'], tab_index=1)
-    self._WaitForSavePasswordInfobar(tab_index=1)
+    self._GetIndexForSavePasswordInfobar(tab_index=1)
     # Selecting 'Never for this site' option on password infobar.
     self.PerformActionOnInfobar('cancel', infobar_index=0, tab_index=1)
 
@@ -197,7 +204,7 @@ class PasswordTest(pyauto.PyUITest):
     password = creds['password']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
@@ -221,7 +228,7 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     self.NavigateToURL('chrome://history')
     self.assertTrue(self.WaitForInfobarCount(0))
@@ -234,7 +241,7 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(0))
@@ -291,7 +298,7 @@ class PasswordTest(pyauto.PyUITest):
     password = creds['password']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
-    self._WaitForSavePasswordInfobar()
+    self._GetIndexForSavePasswordInfobar()
     self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
