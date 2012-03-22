@@ -34,6 +34,7 @@
 
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
@@ -65,7 +66,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
                             struct nacl_abi_timeval   *tv,
                             struct nacl_abi_timezone  *tz) {
   int32_t                 retval;
-  uintptr_t               sysaddr;
   struct nacl_abi_timeval now;
 
   UNREFERENCED_PARAMETER(tz);
@@ -76,8 +76,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
           (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tv, sizeof tv);
-
   /*
    * tz is not supported in linux, nor is it supported by glibc, since
    * tzset(3) and the zoneinfo file should be used instead.
@@ -86,18 +84,14 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
    * applications?
    */
 
-  if (kNaClBadAddress == sysaddr) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-
   retval = NaClGetTimeOfDay(&now);
   if (0 == retval) {
     CHECK(now.nacl_abi_tv_usec >= 0);
     CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
-    *(struct nacl_abi_timeval volatile *) sysaddr = now;
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) tv, &now, sizeof now)) {
+      retval = -NACL_ABI_EFAULT;
+    }
   }
-cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
@@ -138,47 +132,6 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
   return retval;
 }
 
-int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
-                         struct nacl_abi_timespec *req,
-                         struct nacl_abi_timespec *rem) {
-  uintptr_t                 sys_req;
-  int                       retval = -NACL_ABI_EINVAL;
-  struct nacl_abi_timespec  host_req;
-
-  UNREFERENCED_PARAMETER(rem);
-
-  NaClLog(3,
-          ("Entered NaClSysNanosleep(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"x)\n"),
-          (uintptr_t) natp, (uintptr_t) req, (uintptr_t) rem);
-
-  NaClSysCommonThreadSyscallEnter(natp);
-
-  sys_req = NaClUserToSysAddrRange(natp->nap, (uintptr_t) req, sizeof *req);
-  if (kNaClBadAddress == sys_req) {
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-
-  /* copy once */
-  host_req = *(struct nacl_abi_timespec *) sys_req;
-  /*
-   * We assume that we do not need to normalize the time request values.
-   *
-   * If bogus values can cause the underlying OS to get into trouble,
-   * then we need more checking here.
-   */
-
-  NaClLog(4, "NaClSysNanosleep(time = %d.%09ld S)\n",
-          host_req.tv_sec, host_req.tv_nsec);
-
-  retval = NaClNanosleep(&host_req, NULL);
-
-cleanup:
-  NaClSysCommonThreadSyscallLeave(natp);
-  return retval;
-}
-
 int32_t NaClSysSched_Yield(struct NaClAppThread *natp) {
   SwitchToThread();
   return 0;
@@ -189,7 +142,7 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
                        int32_t              *result) {
   int32_t         retval = -NACL_ABI_EINVAL;
   static int32_t  number_of_workers = 0;
-  uintptr_t       sysaddr;
+  int32_t         result_value;
 
   NaClLog(3,
           ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
@@ -198,14 +151,6 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) result,
-                                   sizeof(*result));
-  if (kNaClBadAddress == sysaddr) {
-    retval = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
-
   switch (name) {
     case NACL_ABI__SC_NPROCESSORS_ONLN: {
       if (0 == number_of_workers) {
@@ -213,18 +158,24 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
         GetSystemInfo(&si);
         number_of_workers = (int32_t)si.dwNumberOfProcessors;
       }
-      *(int32_t*)sysaddr = number_of_workers;
+      result_value = number_of_workers;
       break;
     }
     case NACL_ABI__SC_SENDMSG_MAX_SIZE: {
       /* TODO(sehr,bsy): this value needs to be determined at run time. */
       const int32_t kImcSendMsgMaxSize = 1 << 16;
-      *(int32_t*)sysaddr = kImcSendMsgMaxSize;
+      result_value = kImcSendMsgMaxSize;
       break;
     }
-    default:
+    default: {
       retval = -NACL_ABI_EINVAL;
       goto cleanup;
+    }
+  }
+  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) result, &result_value,
+                         sizeof result_value)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
   }
   retval = 0;
 cleanup:

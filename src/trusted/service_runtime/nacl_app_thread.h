@@ -110,10 +110,10 @@ struct NaClAppThread {
    * should be automatically released.
    */
 
-  uintptr_t                 *syscall_args;
+  uintptr_t                 usr_syscall_args;
   /*
-   * user's sp translated to system address, used for accessing syscall
-   * arguments
+   * user's syscall argument address, relative to untrusted user
+   * address.  the syscall arglist is on the untrusted stack.
    */
 
   /* Stack for signal handling, registered with sigaltstack(). */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -116,9 +116,9 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   sp_sys = NaClUserToSysStackAddr(nap, sp_user);
   /*
    * sp_sys points to the top of user stack where there is a retaddr to
-   * trampoline slot
+   * trampoline slot.  NB: on x86-64, NaCl*StackAddr does no range check.
    */
-  tramp_ret = *(uintptr_t *)sp_sys;
+  tramp_ret = *(uintptr_t *) sp_sys;
   tramp_ret = NaClUserToSysStackAddr(nap, tramp_ret);
 
   sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
@@ -134,11 +134,23 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    */
   user_ret = *(uintptr_t *) (sp_sys + NACL_USERRET_FIX);
   /*
-   * Fix the user stack, throw away return addresses from the top of the stack.
-   * After this fix, the first argument to a system call must be on the top of
-   * the user stack (see user stack layout above)
+   * usr_syscall_args is used by Decoder functions in
+   * nacl_syscall_handlers.c which is automatically generated file and
+   * placed in the
+   * scons-out/.../gen/native_client/src/trusted/service_runtime/
+   * directory.  usr_syscall_args must point to the first argument of
+   * a system call. System call arguments are placed on the untrusted
+   * user stack.
+   *
+   * We save the user address for user syscall arguments fetching and
+   * for VM range locking.
    */
-  sp_sys += NACL_SYSARGS_FIX;
+  natp->usr_syscall_args = NaClRawUserStackAddrNormalize(sp_user +
+                                                         NACL_SYSARGS_FIX);
+  /*
+   * Fix the user stack, throw away return addresses from the top of
+   * the stack.
+   */
   sp_user += NACL_SYSCALLRET_FIX;
   NaClSetThreadCtxSp(user, sp_user);
 
@@ -151,16 +163,6 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
             "handler 0x%08"NACL_PRIxPTR"\n",
             sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
 #endif
-    /*
-     * syscall_args is used by Decoder functions in
-     * nacl_syscall_handlers.c which is automatically generated file
-     * and placed in the
-     * scons-out/.../gen/native_client/src/trusted/service_runtime/
-     * directory.  syscall_args must point to the first argument of a
-     * system call. System call arguments are placed on the untrusted
-     * user stack.
-     */
-    natp->syscall_args = (uintptr_t *) sp_sys;
     natp->sysret = (*(nap->syscall_table[sysnum].handler))(natp);
   }
 #if !BENCHMARK
@@ -189,7 +191,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * before switching back to user module, we need to make sure that the
    * user_ret is properly sandboxed.
    */
-  user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t)user_ret);
+  user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t) user_ret);
   /*
    * After this NaClAppThreadSetSuspendState() call, we should not
    * claim any mutexes, otherwise we risk deadlock.  Note that if

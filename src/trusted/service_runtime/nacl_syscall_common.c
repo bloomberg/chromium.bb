@@ -24,6 +24,7 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
@@ -40,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
@@ -367,7 +369,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
 
 int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
                                 int32_t               *stack_flag) {
-  uintptr_t sys_stack_flag;
+  uint32_t  zero = 0;
 
   NaClLog(4, "NaclCommonSysThreadExit(0x%08"NACL_PRIxPTR", "
           "0x%08"NACL_PRIxPTR"\n",
@@ -383,20 +385,12 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
     NaClLog(4,
             "NaClCommonSysThreadExit: stack_flag is %"NACL_PRIxPTR"\n",
             (uintptr_t) stack_flag);
-    sys_stack_flag = NaClUserToSysAddrRange(natp->nap,
-                                            (uintptr_t) stack_flag,
-                                            sizeof(int32_t));
-    NaClLog(4,
-            "NaClCommonSysThreadExit: sys_stack_flag is %"NACL_PRIxPTR"\n",
-            sys_stack_flag);
-    if (kNaClBadAddress != sys_stack_flag) {
-      /*
-       * We don't return failure if the address is illegal because
-       * this function is not supposed to return.
-       */
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) stack_flag,
+                           &zero, sizeof zero)) {
       NaClLog(4,
-              "NaClCommonSysThreadExit: clearing stack flag\n");
-      *(volatile int32_t *) sys_stack_flag = 0;
+              ("NaClCommonSysThreadExit: ignoring invalid"
+               " stack_flag 0x%"NACL_PRIxPTR"\n"),
+              (uintptr_t) stack_flag);
     }
   }
 
@@ -408,7 +402,6 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
 int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
                                  int32_t              *desc_addr) {
   int32_t   retval = -NACL_ABI_EINVAL;
-  uintptr_t sysaddr;
   int32_t   desc;
 
   NaClLog(3,
@@ -418,23 +411,24 @@ int32_t NaClCommonSysNameService(struct NaClAppThread *natp,
           (uintptr_t) desc_addr);
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) desc_addr,
-                                   sizeof(uint32_t));
-  if (kNaClBadAddress == sysaddr) {
+  if (!NaClCopyInFromUser(natp->nap, &desc,
+                          (uintptr_t) desc_addr, sizeof desc)) {
     NaClLog(LOG_ERROR,
             "Invalid address argument to NaClCommonSysNameService\n");
     retval = -NACL_ABI_EFAULT;
     goto done;
   }
 
-  desc = *(int32_t volatile *) sysaddr;
   if (-1 == desc) {
     /* read */
     desc = NaClSetAvail(natp->nap,
                         NaClDescRef(natp->nap->name_service_conn_cap));
-    *(int32_t volatile *) sysaddr = desc;
-    retval = 0;
+    if (NaClCopyOutToUser(natp->nap, (uintptr_t) desc_addr,
+                          &desc, sizeof desc)) {
+      retval = 0;
+    } else {
+      retval = -NACL_ABI_EFAULT;
+    }
   } else {
     struct NaClDesc *desc_obj_ptr = NaClGetDesc(natp->nap, desc);
 
@@ -517,9 +511,7 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
                           int                   flags,
                           int                   mode) {
   uint32_t             retval = -NACL_ABI_EINVAL;
-  uintptr_t            sysaddr;
   char                 path[NACL_CONFIG_PATH_MAX];
-  size_t               len;
   nacl_host_stat_t     stbuf;
   int                  allowed_flags;
 
@@ -529,10 +521,18 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddr(natp->nap, (uintptr_t) pathname);
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(LOG_ERROR, "Invalid address for pathname\n");
-    retval = -NACL_ABI_EFAULT;
+  /*
+   * NaClCopyInFromUserZStr may (try to) get bytes that is outside the
+   * app's address space and generate a fault.
+   */
+  if (!NaClCopyInFromUserZStr(natp->nap, path, sizeof path,
+                              (uintptr_t) pathname)) {
+    if (path[0] == '\0') {
+      NaClLog(LOG_ERROR, "Invalid address for pathname\n");
+      retval = -NACL_ABI_EFAULT;
+    } else {
+      retval = -NACL_ABI_ENAMETOOLONG;
+    }
     goto cleanup;
   }
   allowed_flags = (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT
@@ -545,34 +545,6 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
   if (0 != (mode & ~0600)) {
     NaClLog(1, "IGNORING Invalid access mode bits 0%o\n", mode);
     mode &= 0600;
-  }
-  NaClLog(4, " attempting to copy path via sysaddr 0x%08"NACL_PRIxPTR
-          "\n", sysaddr);
-  NaClLog(4, " first 4 bytes: %.4s\n", (char *) sysaddr);
-  /*
-   * strncpy may (try to) get bytes that is outside the app's address
-   * space and generate a fault.
-   */
-  strncpy(path, (char *) sysaddr, sizeof path);
-  /*
-   * survived the copy, but did there happen to be data beyond the end?
-   */
-  path[sizeof path - 1] = '\0';  /* always null terminate */
-  NaClLog(1, "NaClSysOpen: Path: %s\n", path);
-  len = strlen(path);
-  /*
-   * make sure sysaddr is a string, and the whole string is in app
-   * address space...
-   *
-   * address space is convex, so it is impossible for beginning and
-   * end to be both in the address space and yet have an intermediate
-   * byte not be in the address space.
-   */
-  if (kNaClBadAddress == NaClUserToSysAddr(natp->nap,
-                                           len + (uintptr_t) pathname)) {
-    NaClLog(LOG_ERROR, "String ends outside addrspace\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
   }
 
   retval = NaClOpenAclCheck(natp->nap, path, flags, mode);
@@ -685,6 +657,11 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
     goto cleanup;
   }
 
+  /*
+   * Generic NaClCopyOutToUser is not sufficient, since buffer size
+   * |count| is arbitrary and we wouldn't want to have to allocate
+   * memory in trusted address space to match.
+   */
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) dirp, count);
   if (kNaClBadAddress == sysaddr) {
     NaClLog(4, " illegal address for directory data\n");
@@ -699,10 +676,16 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
   if (count > INT32_MAX) {
     count = INT32_MAX;
   }
+  /*
+   * TODO(bsy): grab addr space lock; getdents should not normally
+   * block, though if the directory is on a networked filesystem this
+   * could, and cause mmap to be slower on Windows.
+   */
   getdents_ret = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Getdents)(ndp,
                             (void *) sysaddr,
                             count);
+  /* TODO(bsy): drop addr space lock */
   if ((getdents_ret < INT32_MIN && !NaClSSizeIsNegErrno(&getdents_ret))
       || INT32_MAX < getdents_ret) {
     /* This should never happen, because we already clamped the input count */
@@ -767,8 +750,10 @@ int32_t NaClCommonSysRead(struct NaClAppThread  *natp,
     count = INT32_MAX;
   }
 
+  /* TODO(bsy): lock memory region [buf, buf+count-1] */
   read_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                  Read)(ndp, (void *) sysaddr, count);
+  /* TODO(bsy): unlock memory region [buf, buf+count-1] */
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
     NaClLog(8, "read result: %.*s\n",
@@ -830,8 +815,10 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
     count = INT32_MAX;
   }
 
+  /* TODO(bsy): lock memory region [buf, buf+count-1] */
   write_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Write)(ndp, (void *) sysaddr, count);
+  /* TODO(bsy): unlock memory region [buf, buf+count-1] */
 
   NaClDescUnref(ndp);
 
@@ -845,14 +832,13 @@ cleanup:
 }
 
 /*
- * This is not lseek64, so the return value on success can be
- * E_OVERFLOW if it does not fit in a 32-bit off_t.
+ * This implements 64-bit offsets, so we use |offp| as an in/out
+ * address so we can have a 64 bit return value.
  */
 int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
                            int                  d,
                            nacl_abi_off_t       *offp,
                            int                  whence) {
-  uintptr_t       sysaddr;
   nacl_abi_off_t  offset;
   nacl_off64_t    retval64;
   int32_t         retval = -NACL_ABI_EINVAL;
@@ -871,12 +857,11 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) offp, sizeof offset);
-  if (kNaClBadAddress == sysaddr) {
+  if (!NaClCopyInFromUser(natp->nap, &offset,
+                          (uintptr_t) offp, sizeof offset)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unref;
   }
-  offset = *(nacl_abi_off_t volatile *) sysaddr;
   NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
 
   retval64 = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
@@ -884,8 +869,13 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
   if (NaClOff64IsNegErrno(&retval64)) {
     retval = (int32_t) retval64;
   } else {
-    *(nacl_abi_off_t volatile *) sysaddr = retval64;
-    retval = 0;
+    if (NaClCopyOutToUser(natp->nap, (uintptr_t) offp,
+                          &retval64, sizeof retval64)) {
+      retval = 0;
+    } else {
+      NaClLog(LOG_FATAL,
+              "NaClCommonSysLseek: in/out ptr became invalid at copyout?\n");
+    }
   }
 cleanup_unref:
   NaClDescUnref(ndp);
@@ -937,8 +927,20 @@ int32_t NaClCommonSysIoctl(struct NaClAppThread *natp,
     goto cleanup_unref;
   }
 
+  /*
+   * We need a virtual function that, given request, returns max
+   * anticipated buffer size so we can do the right thing wrt VM locks
+   * if the ioctl might be blocking.  For now, we assume that ioctls
+   * aren't.  Since we have at least 1 guard page, even if |arg|
+   * points to near the end of the address space, we should be fine
+   * for reasonable sizes of arguments from the point of view of
+   * staying within the untrusted address space.
+   *
+   * TODO(bsy): take VM lock
+   */
   retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
             Ioctl)(ndp, request, (void *) sysaddr);
+  /* TODO(bsy): drop VM lock */
 cleanup_unref:
   NaClDescUnref(ndp);
 cleanup:
@@ -951,8 +953,8 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
                            int                  d,
                            struct nacl_abi_stat *nasp) {
   int32_t               retval = -NACL_ABI_EINVAL;
-  uintptr_t             sysaddr;
   struct NaClDesc       *ndp;
+  struct nacl_abi_stat  result;
 
   NaClLog(3,
           ("Entered NaClSysFstat(0x%08"NACL_PRIxPTR
@@ -973,13 +975,13 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) nasp, sizeof *nasp);
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(4, "bad addr\n");
-    retval = -NACL_ABI_EFAULT;
-  } else {
-    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
-              Fstat)(ndp, (struct nacl_abi_stat *) sysaddr);
+  retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
+            Fstat)(ndp, &result);
+  if (0 == retval) {
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) nasp,
+                           &result, sizeof result)) {
+      retval = -NACL_ABI_EFAULT;
+    }
   }
 
   NaClDescUnref(ndp);
@@ -993,10 +995,7 @@ int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
                           const char            *pathname,
                           struct nacl_abi_stat  *buf) {
   int32_t             retval = -NACL_ABI_EINVAL;
-  uintptr_t           syspathaddr;
-  uintptr_t           sysbufaddr;
   char                path[NACL_CONFIG_PATH_MAX];
-  size_t              len;
   nacl_host_stat_t    stbuf;
 
   NaClLog(3,
@@ -1006,44 +1005,15 @@ int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  syspathaddr = NaClUserToSysAddr(natp->nap, (uintptr_t) pathname);
-  if (kNaClBadAddress == syspathaddr) {
-    NaClLog(LOG_ERROR, "Invalid address for pathname\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-  /*
-   * strncpy may (try to) get bytes that is outside the app's address
-   * space and generate a fault.
-   */
-  strncpy(path, (char *) syspathaddr, sizeof path);
-  /*
-   * survived the copy, but did there happen to be data beyond the end?
-   */
-  path[sizeof path - 1] = '\0';  /* always null terminate */
-  NaClLog(2, "NaClCommonSysStat: Path: %s\n", path);
-  len = strlen(path);
-  /*
-   * make sure sysaddr is a string, and the whole string is in app
-   * address space...
-   *
-   * address space is convex, so it is impossible for beginning and
-   * end to be both in the address space and yet have an intermediate
-   * byte not be in the address space.
-   */
-  if (kNaClBadAddress == NaClUserToSysAddr(natp->nap,
-                                           len + (uintptr_t) pathname)) {
-    NaClLog(LOG_ERROR, "String ends outside addrspace\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-
-  /*
-   * Make sure result buffer is in the app's address space.
-   */
-  sysbufaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) buf, sizeof *buf);
-  if (kNaClBadAddress == sysbufaddr) {
-    retval = -NACL_ABI_EFAULT;
+  if (!NaClCopyInFromUserZStr(natp->nap, path, sizeof path,
+                              (uintptr_t) pathname)) {
+    if (path[0] == '\0') {
+      NaClLog(LOG_ERROR, "NaClCommonSysStat: Invalid address for pathname\n");
+      retval = -NACL_ABI_EFAULT;
+    } else {
+      NaClLog(LOG_ERROR, "NaClCommonSysStat: pathname string too long\n");
+      retval = -NACL_ABI_ENAMETOOLONG;
+    }
     goto cleanup;
   }
 
@@ -1057,9 +1027,14 @@ int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
    */
   retval = NaClHostDescStat(path, &stbuf);
   if (0 == retval) {
-    retval = NaClAbiStatHostDescStatXlateCtor((struct nacl_abi_stat *)
-                                              sysbufaddr,
+    struct nacl_abi_stat abi_stbuf;
+
+    retval = NaClAbiStatHostDescStatXlateCtor(&abi_stbuf,
                                               &stbuf);
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) buf,
+                           &abi_stbuf, sizeof abi_stbuf)) {
+      retval = -NACL_ABI_EFAULT;
+    }
   }
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -1866,8 +1841,8 @@ int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
    */
 
   int32_t                     retval = -NACL_ABI_EINVAL;
-  uintptr_t                   sys_sap;
   struct NaClDesc             *pair[2];
+  int32_t                     usr_pair[2];
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_MakeBoundSock(0x%08"NACL_PRIxPTR","
@@ -1876,23 +1851,34 @@ int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sys_sap = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) sap,
-                                   2 * sizeof *sap);
-  if (kNaClBadAddress == sys_sap) {
-    NaClLog(3, " illegal address\n");
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-
   retval = NaClCommonDescMakeBoundSock(pair);
   if (0 != retval) {
     goto cleanup;
   }
 
-  ((int32_t *) sys_sap)[0] = NaClSetAvail(natp->nap, pair[0]);
-  ((int32_t *) sys_sap)[1] = NaClSetAvail(natp->nap, pair[1]);
+  usr_pair[0] = NaClSetAvail(natp->nap, pair[0]);
+  usr_pair[1] = NaClSetAvail(natp->nap, pair[1]);
+  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) sap,
+                         usr_pair, sizeof usr_pair)) {
+    /*
+     * NB: The descriptors were briefly observable to untrusted code
+     * in this window, even though the syscall had not returned yet,
+     * and another thread which guesses their numbers could actually
+     * use them, so the NaClDescSafeUnref inside NaClSetDesc below
+     * might not actually deallocate right away.  To avoid this, we
+     * could grab the descriptor lock and hold it until after the
+     * copyout is done, but that imposes an ordering between the
+     * descriptor lock and the VM lock which can cause problems
+     * elsewhere.
+     */
+    NaClSetDesc(natp->nap, usr_pair[0], NULL);
+    NaClSetDesc(natp->nap, usr_pair[1], NULL);
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
   retval = 0;
+
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
 
@@ -1969,6 +1955,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   struct NaClAbiNaClImcMsgHdr   kern_nanimh;
   struct NaClAbiNaClImcMsgIoVec kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
   struct NaClImcMsgIoVec        kern_iov[NACL_ABI_IMC_IOVEC_MAX];
+  int32_t                       usr_desc[NACL_ABI_IMC_USER_DESC_MAX];
   /* kernel-side representatin of descriptors */
   struct NaClDesc               *kern_desc[NACL_ABI_IMC_USER_DESC_MAX];
   struct NaClImcTypedMsgHdr     kern_msg_hdr;
@@ -1982,17 +1969,13 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) nanimhp,
-                                   sizeof *nanimhp);
-  if (kNaClBadAddress == sysaddr) {
+  if (!NaClCopyInFromUser(natp->nap, &kern_nanimh, (uintptr_t) nanimhp,
+                          sizeof kern_nanimh)) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
   }
-
-  kern_nanimh = *(struct NaClAbiNaClImcMsgHdr volatile *) sysaddr;
-  /* copy before validating */
+  /* copy before validating contents */
 
   /*
    * Some of these checks duplicate checks that will be done in the
@@ -2016,18 +1999,12 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   }
 
   if (kern_nanimh.iov_length > 0) {
-    sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nanimh.iov,
-                                     (kern_nanimh.iov_length
-                                      * sizeof kern_naiov[0]));
-    if (kNaClBadAddress == sysaddr) {
+    if (!NaClCopyInFromUser(natp->nap, kern_naiov, (uintptr_t) kern_nanimh.iov,
+                            (kern_nanimh.iov_length * sizeof kern_naiov[0]))) {
       NaClLog(4, "gather/scatter array not in user address space\n");
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
     }
-
-    memcpy(kern_naiov, (void *) sysaddr,
-           kern_nanimh.iov_length * sizeof kern_naiov[0]);
 
     for (i = 0; i < kern_nanimh.iov_length; ++i) {
       sysaddr = NaClUserToSysAddrRange(natp->nap,
@@ -2061,27 +2038,18 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
     kern_msg_hdr.ndescv = 0;
     kern_msg_hdr.ndesc_length = 0;
   } else {
-    sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nanimh.descv,
-                                     kern_nanimh.desc_length * sizeof(int32_t));
-    if (kNaClBadAddress == sysaddr) {
+    if (!NaClCopyInFromUser(natp->nap, usr_desc, kern_nanimh.descv,
+                            kern_nanimh.desc_length * sizeof usr_desc[0])) {
       retval = -NACL_ABI_EFAULT;
       goto cleanup;
     }
 
-    /*
-     * NB: for each descv entry, we read from NaCl app address space
-     * exactly once.
-     */
     for (i = 0; i < kern_nanimh.desc_length; ++i) {
-      int32_t user_desc = ((volatile int32_t *) sysaddr)[i];
-      /* fetch it once */
-
-      if (kKnownInvalidDescNumber == user_desc) {
+      if (kKnownInvalidDescNumber == usr_desc[i]) {
         kern_desc[i] = (struct NaClDesc *) NaClDescInvalidMake();
       } else {
         /* NaCl modules are ILP32, so this works on ILP32 and LP64 systems */
-        kern_desc[i] = NaClGetDesc(natp->nap, user_desc);
+        kern_desc[i] = NaClGetDesc(natp->nap, usr_desc[i]);
       }
       if (NULL == kern_desc[i]) {
         retval = -NACL_ABI_EBADF;
@@ -2093,7 +2061,9 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   }
   kern_msg_hdr.flags = kern_nanimh.flags;
 
+  /* TODO(bsy): lock user memory ranges in kern_naiov */
   ssize_retval = NACL_VTBL(NaClDesc, ndp)->SendMsg(ndp, &kern_msg_hdr, flags);
+  /* TODO(bsy): unlock user memory ranges in kern_naiov */
 
   if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /*
@@ -2145,13 +2115,12 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
   int32_t                               retval = -NACL_ABI_EINVAL;
   ssize_t                               ssize_retval;
   uintptr_t                             sysaddr;
-  struct NaClAbiNaClImcMsgHdr volatile  *kern_nanimhp;
   size_t                                i;
   struct NaClDesc                       *ndp;
   struct NaClAbiNaClImcMsgHdr           kern_nanimh;
   struct NaClAbiNaClImcMsgIoVec         kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
   struct NaClImcMsgIoVec                kern_iov[NACL_ABI_IMC_IOVEC_MAX];
-  int32_t volatile                      *kern_descv;
+  int32_t                               usr_desc[NACL_ABI_IMC_USER_DESC_MAX];
   struct NaClImcTypedMsgHdr             recv_hdr;
   struct NaClDesc                       *new_desc[NACL_ABI_IMC_DESC_MAX];
   nacl_abi_size_t                       num_user_desc;
@@ -2168,16 +2137,12 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
    * First, we validate user-supplied message headers before
    * allocating a receive buffer.
    */
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) nanimhp,
-                                   sizeof *nanimhp);
-  if (kNaClBadAddress == sysaddr) {
+  if (!NaClCopyInFromUser(natp->nap, &kern_nanimh, (uintptr_t) nanimhp,
+                          sizeof kern_nanimh)) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
   }
-  kern_nanimhp = (struct NaClAbiNaClImcMsgHdr volatile *) sysaddr;
-  kern_nanimh = *kern_nanimhp;
   /* copy before validating */
 
   if (kern_nanimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
@@ -2194,21 +2159,16 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
   }
 
   if (kern_nanimh.iov_length > 0) {
-    sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nanimh.iov,
-                                     (kern_nanimh.iov_length
-                                      * sizeof kern_naiov[0]));
-    if (kNaClBadAddress == sysaddr) {
-      NaClLog(4, "gather/scatter array not in user address space\n");
-      retval = -NACL_ABI_EFAULT;
-      goto cleanup_leave;
-    }
     /*
      * Copy IOV array into kernel space.  Validate this snapshot and do
      * user->kernel address conversions on this snapshot.
      */
-    memcpy(kern_naiov, (void *) sysaddr,
-           kern_nanimh.iov_length * sizeof kern_naiov[0]);
+    if (!NaClCopyInFromUser(natp->nap, kern_naiov, (uintptr_t) kern_nanimh.iov,
+                            (kern_nanimh.iov_length * sizeof kern_naiov[0]))) {
+      NaClLog(4, "gather/scatter array not in user address space\n");
+      retval = -NACL_ABI_EFAULT;
+      goto cleanup_leave;
+    }
     /*
      * Convert every IOV base from user to system address, validate
      * range of bytes are really in user address space.
@@ -2236,10 +2196,6 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
     }
-    kern_descv = (int32_t volatile *) sysaddr;
-  } else {
-    /* ensure we will SEGV if there's a bug below */
-    kern_descv = (int32_t volatile *) NULL;
   }
 
   ndp = NaClGetDesc(natp->nap, d);
@@ -2258,8 +2214,10 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
+  /* TODO(bsy): lock user memory ranges in kern_naiov */
   ssize_retval = NACL_VTBL(NaClDesc, ndp)->RecvMsg(ndp, &recv_hdr, flags,
       (struct NaClDescQuotaInterface *) natp->nap->reverse_quota_interface);
+  /* TODO(bsy): unlock user memory ranges in kern_naiov */
   /*
    * retval is number of user payload bytes received and excludes the
    * header bytes.
@@ -2301,18 +2259,32 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
   }
 
   invalid_desc = (struct NaClDesc *) NaClDescInvalidMake();
+  /* prepare to write out to user space the descriptor numbers */
   for (i = 0; i < num_user_desc; ++i) {
-    /* write out to user space the descriptor numbers */
     if (invalid_desc == new_desc[i]) {
-      kern_descv[i] = kKnownInvalidDescNumber;
+      usr_desc[i] = kKnownInvalidDescNumber;
+      NaClDescUnref(new_desc[i]);
     } else {
-      kern_descv[i] = NaClSetAvail(natp->nap, new_desc[i]);
+      usr_desc[i] = NaClSetAvail(natp->nap, new_desc[i]);
     }
     new_desc[i] = NULL;
   }
+  if (0 != num_user_desc &&
+      !NaClCopyOutToUser(natp->nap, (uintptr_t) kern_nanimh.descv, usr_desc,
+                         num_user_desc * sizeof usr_desc[0])) {
+    NaClLog(LOG_FATAL,
+            ("NaClCommonSysImc_RecvMsg: in/out ptr (descv %"NACL_PRIxPTR
+             ") became invalid at copyout?\n"),
+            (uintptr_t) kern_nanimh.descv);
+  }
 
   kern_nanimh.desc_length = num_user_desc;
-  *kern_nanimhp = kern_nanimh;
+  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) nanimhp, &kern_nanimh,
+                         sizeof kern_nanimh)) {
+    NaClLog(LOG_FATAL,
+            "NaClCommonSysImc_RecvMsg: in/out ptr (iov) became"
+            " invalid at copyout?\n");
+  }
   /* copy out updated desc count, flags */
  cleanup:
   if (retval < 0) {
@@ -2382,8 +2354,7 @@ cleanup:
 
 int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
                                     uint32_t             descs_out) {
-  uintptr_t               sysaddr;
-  volatile int32_t        *descs_out_trusted;
+  int32_t                 usr_pair[2];
   struct NaClDesc         *pair[2];
   int32_t                 retval;
 
@@ -2394,27 +2365,23 @@ int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sysaddr = NaClUserToSysAddrRange(natp->nap, descs_out,
-                                   2 * sizeof(*descs_out_trusted));
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(1,
-            ("NaClCommonSysImc_Socket_Pair: bad output descriptor array "
-             " (0x%08"NACL_PRIx32")\n"),
-            descs_out);
-    retval = -NACL_ABI_EFAULT;
-    goto cleanup;
-  }
-  descs_out_trusted = (volatile int32_t *) sysaddr;
-
   retval = NaClCommonDescSocketPair(pair);
   if (0 != retval) {
     goto cleanup;
   }
 
-  descs_out_trusted[0] = NaClSetAvail(natp->nap, pair[0]);
-  descs_out_trusted[1] = NaClSetAvail(natp->nap, pair[1]);
+  usr_pair[0] = NaClSetAvail(natp->nap, pair[0]);
+  usr_pair[1] = NaClSetAvail(natp->nap, pair[1]);
 
+  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) descs_out, usr_pair,
+                         sizeof usr_pair)) {
+    NaClSetDesc(natp->nap, usr_pair[0], NULL);
+    NaClSetDesc(natp->nap, usr_pair[1], NULL);
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
   retval = 0;
+
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
@@ -2765,7 +2732,6 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
   int32_t                  retval = -NACL_ABI_EINVAL;
   struct NaClDesc          *cv_desc;
   struct NaClDesc          *mutex_desc;
-  uintptr_t                sys_ts;
   struct nacl_abi_timespec trusted_ts;
 
   NaClLog(3,
@@ -2775,15 +2741,12 @@ int32_t NaClCommonSysCond_Timed_Wait_Abs(struct NaClAppThread     *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  sys_ts = NaClUserToSysAddrRange(natp->nap,
-                                  (uintptr_t) ts,
-                                  sizeof(*ts));
-  if (kNaClBadAddress == sys_ts) {
+  if (!NaClCopyInFromUser(natp->nap, &trusted_ts,
+                          (uintptr_t) ts, sizeof trusted_ts)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
   /* TODO(gregoryd): validate ts - do we have a limit for time to wait? */
-  memcpy(&trusted_ts, (void *) sys_ts, sizeof(trusted_ts));
 
   cv_desc = NaClGetDesc(natp->nap, cond_handle);
   if (NULL == cv_desc) {
@@ -2921,28 +2884,86 @@ cleanup:
   return retval;
 }
 
+int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
+                         struct nacl_abi_timespec *req,
+                         struct nacl_abi_timespec *rem) {
+  struct nacl_abi_timespec  t_sleep;
+  struct nacl_abi_timespec  t_rem;
+  struct nacl_abi_timespec  *remptr;
+  int                       retval = -NACL_ABI_EINVAL;
+
+  NaClLog(3,
+          ("Entered NaClSysNanosleep(0x%08"NACL_PRIxPTR
+           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"x)\n"),
+          (uintptr_t) natp, (uintptr_t) req, (uintptr_t) rem);
+
+  NaClSysCommonThreadSyscallEnter(natp);
+
+  /* do the check before we sleep */
+  if (NULL != rem && kNaClBadAddress ==
+      NaClUserToSysAddrRange(natp->nap, (uintptr_t) rem, sizeof *rem)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
+  if (!NaClCopyInFromUser(natp->nap, &t_sleep,
+                          (uintptr_t) req, sizeof t_sleep)) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+
+  remptr = (NULL == rem) ? NULL : &t_rem;
+  /* NULL != remptr \equiv NULL != rem */
+
+  /*
+   * We assume that we do not need to normalize the time request values.
+   *
+   * If bogus values can cause the underlying OS to get into trouble,
+   * then we need more checking here.
+   */
+  NaClLog(4, "NaClSysNanosleep(time = %"NACL_PRId64".%09"NACL_PRId64" S)\n",
+          (int64_t) t_sleep.tv_sec, (int64_t) t_sleep.tv_nsec);
+  retval = NaClNanosleep(&t_sleep, remptr);
+  NaClLog(4, "NaClNanosleep returned %d\n", retval);
+
+  if (-EINTR == retval && NULL != rem &&
+      !NaClCopyOutToUser(natp->nap, (uintptr_t) rem, remptr, sizeof *remptr)) {
+    NaClLog(LOG_FATAL, "NaClSysNanosleep: check rem failed at copyout\n");
+  }
+
+cleanup:
+  NaClLog(4, "nanosleep done.\n");
+  NaClSysCommonThreadSyscallLeave(natp);
+  return retval;
+}
 
 int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
                                        uint32_t             handler_addr,
                                        uint32_t             old_handler) {
-  uintptr_t safe_old_handler;
+  int32_t rv = -NACL_ABI_EINVAL;
+
   if (!natp->nap->enable_exception_handling) {
-    return -NACL_ABI_ENOSYS;
+    rv = -NACL_ABI_ENOSYS;
+    goto no_lock_exit;
   }
   if (!NaClIsValidJumpTarget(natp->nap, handler_addr)) {
-    return -NACL_ABI_EFAULT;
-  }
-  safe_old_handler = NaClUserToSysAddrNullOkay(natp->nap, old_handler);
-  if (kNaClBadAddress == safe_old_handler) {
-    return -NACL_ABI_EINVAL;
+    rv = -NACL_ABI_EFAULT;
+    goto no_lock_exit;
   }
   NaClXMutexLock(&natp->nap->exception_mu);
-  if (old_handler) {
-    *(volatile uint32_t *) safe_old_handler = natp->nap->exception_handler;
+  if (0 != old_handler &&
+      !NaClCopyOutToUser(natp->nap, (uintptr_t) old_handler,
+                         &natp->nap->exception_handler,
+                         sizeof natp->nap->exception_handler)) {
+    rv = -NACL_ABI_EFAULT;
+    goto unlock_exit;
   }
   natp->nap->exception_handler = handler_addr;
+  rv = 0;
+ unlock_exit:
   NaClXMutexUnlock(&natp->nap->exception_mu);
-  return 0;
+ no_lock_exit:
+  return rv;
 }
 
 int32_t NaClCommonSysException_Stack(struct NaClAppThread *natp,
@@ -3083,26 +3104,18 @@ int32_t NaClCommonSysClockGetCommon(struct NaClAppThread  *natp,
                                         nacl_clockid_t            clk_id,
                                         struct nacl_abi_timespec  *tp)) {
   int                       retval = -NACL_ABI_EINVAL;
-  uintptr_t                 sysaddr;
   struct nacl_abi_timespec  out_buf;
 
   NaClSysCommonThreadSyscallEnter(natp);
   if (!NaClIsValidClockId(clk_id)) {
     goto done;
   }
-  sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) ts_addr, sizeof(out_buf));
-  if (kNaClBadAddress == sysaddr) {
-    NaClLog(1,
-            ("NaClSysCommonSysClockGetCommon: bad timespec address "
-             " (0x%08"NACL_PRIx32")\n"),
-            ts_addr);
-    retval = -NACL_ABI_EFAULT;
-    goto done;
-  }
   retval = (*timefunc)((nacl_clockid_t) clk_id, &out_buf);
   if (0 == retval) {
-    *(struct nacl_abi_timespec volatile *) sysaddr = out_buf;
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) ts_addr,
+                           &out_buf, sizeof out_buf)) {
+      retval = -NACL_ABI_EFAULT;
+    }
   }
  done:
   return retval;

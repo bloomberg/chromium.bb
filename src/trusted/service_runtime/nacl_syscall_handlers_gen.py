@@ -264,7 +264,10 @@ def MemoryArgStruct(architecture, name, alist):
   return """\
   struct %(name)sArgs {
 %(members)s
-  } p = *(struct %(name)sArgs *) natp->syscall_args;
+  } p;
+  if (!NaClCopyInFromUser(natp->nap, &p, natp->usr_syscall_args, sizeof p)) {
+    return -NACL_ABI_EFAULT;
+  }
 
 """ % values
 

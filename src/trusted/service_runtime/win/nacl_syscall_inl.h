@@ -1,7 +1,7 @@
 /*
- * Copyright 2008  The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -10,11 +10,6 @@
 
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_WIN_NACL_SYSCALL_INL_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_WIN_NACL_SYSCALL_INL_H_
-
-static INLINE uintptr_t NaClAppArg(struct NaClAppThread *natp,
-                                   int                  wordnum) {
-  return natp->syscall_args[wordnum];
-}
 
 /*
  * Syscall return value mapper.  The posix wrappers in windows return

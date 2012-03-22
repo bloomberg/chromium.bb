@@ -144,6 +144,17 @@ static INLINE uintptr_t NaClSysToUserStackAddr(struct NaClApp *nap,
 
 #endif
 
+/*
+ * Normalize a user address space address.  This function is really a
+ * no-op for 32-bit sandboxes, but for x86-64 where rsp contains a
+ * true 64-bit address, we must discard the high 32 bits to make the
+ * stack address a proper user-space address.  After normalization,
+ * the address can be used with NaClUserToSys etc.
+ */
+static INLINE uint32_t NaClRawUserStackAddrNormalize(uintptr_t  stack_addr) {
+  return (uint32_t) stack_addr;
+}
+
 static INLINE uintptr_t NaClEndOfStaticText(struct NaClApp *nap) {
   return nap->static_text_end;
 }
