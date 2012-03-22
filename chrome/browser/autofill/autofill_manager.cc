@@ -643,10 +643,14 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 }
 
 void AutofillManager::OnShowAutofillDialog() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
   Browser* browser = BrowserList::GetLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
+#endif  // #if defined(OS_ANDROID)
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
