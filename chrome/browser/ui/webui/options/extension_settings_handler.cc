@@ -16,7 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -313,8 +313,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   if (enable_str == "true") {
     ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      ShowExtensionDisabledDialog(extension_service_,
-                                  Profile::FromWebUI(web_ui()), extension);
+      extensions::ShowExtensionDisabledDialog(
+          extension_service_, Profile::FromWebUI(web_ui()), extension);
     } else {
       extension_service_->EnableExtension(extension_id);
     }

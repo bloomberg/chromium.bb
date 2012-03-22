@@ -51,7 +51,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -4427,7 +4427,7 @@ void Browser::Observe(int type,
             content::Details<const Extension>(details).ptr();
         if (service->extension_prefs()->DidExtensionEscalatePermissions(
                 extension->id()))
-          ShowExtensionDisabledUI(service, profile_, extension);
+          extensions::ShowExtensionDisabledUI(service, profile_, extension);
       }
       break;
     }

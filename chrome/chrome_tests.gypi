@@ -2686,6 +2686,7 @@
         'browser/extensions/extension_devtools_browsertest.cc',
         'browser/extensions/extension_devtools_browsertest.h',
         'browser/extensions/extension_devtools_browsertests.cc',
+        'browser/extensions/extension_disabled_ui_browsertest.cc',
         'browser/extensions/extension_dom_clipboard_apitest.cc',
         'browser/extensions/extension_fileapi_apitest.cc',
         'browser/extensions/extension_font_settings_apitest.cc',
