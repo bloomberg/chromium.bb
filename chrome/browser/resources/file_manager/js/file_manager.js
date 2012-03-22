@@ -2462,7 +2462,11 @@ FileManager.prototype = {
           if (!this.isAvaliableOffline_(props[i], FileType.getType(urls[i]))) {
             this.alert.showHtml(
                 str('OFFLINE_HEADER'),
-                strf('OFFLINE_MESSAGE', str('OFFLINE_COLUMN_LABEL')));
+                strf(
+                    urls.length == 1 ?
+                        'OFFLINE_MESSAGE' :
+                        'OFFLINE_MESSAGE_PLURAL',
+                    str('OFFLINE_COLUMN_LABEL')));
             return;
           }
         }
@@ -3174,7 +3178,16 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
+    var self = this;
     function callback(props) {
+      if (props.errorCode) {
+        // TODO(serya): Do not show the message if unpin failed.
+        cacheEntryDateAndSize(entry, function() {
+          self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
+              strf('GDATA_OUT_OF_SPACE_MESSAGE',
+                  util.bytesToSi(entry.cachedSize_)));
+        });
+      }
       checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
     }
 

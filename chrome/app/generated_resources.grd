@@ -10356,8 +10356,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_OFFLINE_HEADER" desc="Message informing the user that the browser is offline.">
         You are offline
       </message>
-      <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE" desc="Message informing the selected how to make the file available offline.">
+      <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE" desc="Message informing the user how to make the selected file available offline.">
         To save this file for offline use, get back online and&lt;br&gt;select the '$1' checkbox for this file.
+      </message>
+      <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user how to make multiple selected files available offline.">
+        To save these files for offline use, get back online and&lt;br&gt;select the '$1' checkbox for these files.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
+        You have run out of space
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
+        To save this file offline you must free up an additional $1 of space:&lt;br&gt;
+         &lt;ul&gt;&lt;li&gt;unpin files that you no longer need to access offline&lt;/li&gt;
+        &lt;li&gt;delete files from your Downloads folder&lt;/li&gt; &lt;/ul&gt;
       </message>
       <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
 	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
