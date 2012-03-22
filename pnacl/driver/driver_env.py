@@ -197,7 +197,7 @@ INITIAL_ENV = {
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
 
   # Use the default command line arguments to the sandboxed translator.
-  'USE_DEFAULT_CMD_LINE': '0',
+  'USE_DEFAULT_CMD_LINE': '1',
 }
 
 ######################################################################
