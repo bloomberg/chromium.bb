@@ -25,6 +25,10 @@ class Size;
 namespace views {
 class Widget;
 }
+namespace content {
+class WebContentsViewDelegate;
+class WebDragDestDelegate;
+}
 
 // Views-specific implementation of the WebContentsView.
 class TabContentsViewViews : public views::Widget,
@@ -34,7 +38,8 @@ class TabContentsViewViews : public views::Widget,
   // The corresponding WebContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  explicit TabContentsViewViews(content::WebContents* web_contents);
+  explicit TabContentsViewViews(content::WebContents* web_contents,
+                                content::WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewViews();
 
   NativeTabContentsView* native_tab_contents_view() const {
@@ -106,6 +111,7 @@ class TabContentsViewViews : public views::Widget,
   virtual void OnNativeTabContentsViewDraggingEnded() OVERRIDE;
   virtual views::internal::NativeWidgetDelegate*
       AsNativeWidgetDelegate() OVERRIDE;
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
 
   // Overridden from views::Widget:
   virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE;
@@ -138,6 +144,10 @@ class TabContentsViewViews : public views::Widget,
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<TabContentsViewViews> close_tab_timer_;
+
+  // Chrome specific functionality (to make it easier for this class to
+  // eventually move to content).
+  scoped_ptr<content::WebContentsViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

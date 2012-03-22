@@ -16,6 +16,7 @@ class DropTargetEvent;
 
 namespace content {
 class WebContents;
+class WebDragDestDelegate;
 }
 
 namespace ui {
@@ -63,6 +64,8 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   internal::NativeTabContentsViewDelegate* delegate_;
 
   WebKit::WebDragOperationsMask current_drag_op_;
+
+  content::WebDragDestDelegate* drag_dest_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabContentsViewAura);
 };

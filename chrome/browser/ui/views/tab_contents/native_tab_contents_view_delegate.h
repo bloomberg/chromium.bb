@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 namespace content {
 class WebContents;
+class WebDragDestDelegate;
 }
 namespace gfx {
 class Size;
@@ -43,6 +44,8 @@ class NativeTabContentsViewDelegate {
   virtual void OnNativeTabContentsViewDraggingEnded() = 0;
 
   virtual views::internal::NativeWidgetDelegate* AsNativeWidgetDelegate() = 0;
+
+  virtual content::WebDragDestDelegate* GetDragDestDelegate() = 0;
 };
 
 }  // namespace internal

@@ -20,6 +20,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
@@ -37,11 +38,14 @@ using WebKit::WebInputEvent;
 using content::RenderViewHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
+using content::WebContentsViewDelegate;
 
-TabContentsViewViews::TabContentsViewViews(WebContents* web_contents)
+TabContentsViewViews::TabContentsViewViews(WebContents* web_contents,
+                                           WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       native_tab_contents_view_(NULL),
-      close_tab_after_drag_ends_(false) {
+      close_tab_after_drag_ends_(false),
+      delegate_(delegate) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -395,6 +399,12 @@ void TabContentsViewViews::OnNativeTabContentsViewDraggingEnded() {
 views::internal::NativeWidgetDelegate*
     TabContentsViewViews::AsNativeWidgetDelegate() {
   return this;
+}
+
+content::WebDragDestDelegate* TabContentsViewViews::GetDragDestDelegate() {
+  if (delegate_.get())
+    return delegate_->GetDragDestDelegate();
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -108,7 +108,9 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(USE_AURA)
+#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_aura.h"
+#elif defined(OS_WIN)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_win.h"
 #endif
 
@@ -360,7 +362,8 @@ content::WebContentsView*
     ChromeContentBrowserClient::OverrideCreateWebContentsView(
         WebContents* web_contents) {
 #if defined(TOOLKIT_VIEWS)
-  return new TabContentsViewViews(web_contents);
+  return new TabContentsViewViews(web_contents,
+                                  GetWebContentsViewDelegate(web_contents));
 #endif
   return NULL;
 }
@@ -376,6 +379,8 @@ content::WebContentsViewDelegate*
   return
       chrome_web_contents_view_delegate_mac::CreateWebContentsViewDelegateMac(
           web_contents);
+#elif defined(USE_AURA)
+  return new ChromeWebContentsViewDelegateAura(web_contents);
 #else
   return NULL;
 #endif

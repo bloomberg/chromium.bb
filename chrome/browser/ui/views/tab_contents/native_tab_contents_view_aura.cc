@@ -13,6 +13,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/web_drag_dest_delegate.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/event.h"
@@ -163,7 +164,8 @@ NativeTabContentsViewAura::NativeTabContentsViewAura(
     internal::NativeTabContentsViewDelegate* delegate)
     : views::NativeWidgetAura(delegate->AsNativeWidgetDelegate()),
       delegate_(delegate),
-      current_drag_op_(WebKit::WebDragOperationNone) {
+      current_drag_op_(WebKit::WebDragOperationNone),
+      drag_dest_delegate_(NULL) {
 }
 
 NativeTabContentsViewAura::~NativeTabContentsViewAura() {
@@ -192,6 +194,9 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
 #else
   NOTIMPLEMENTED() << "Need to animate in";
 #endif
+
+  if (delegate_)
+    drag_dest_delegate_ = delegate_->GetDragDestDelegate();
 
   // Hide the widget to prevent it from showing up on the root window. This is
   // needed for TabContentses that aren't immediately added to the tabstrip,
@@ -314,6 +319,9 @@ bool NativeTabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
 void NativeTabContentsViewAura::OnDragEntered(
     const aura::DropTargetEvent& event) {
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->DragInitialize(GetWebContents());
+
   WebDropData drop_data;
   PrepareWebDropData(&drop_data, event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
@@ -322,6 +330,11 @@ void NativeTabContentsViewAura::OnDragEntered(
       GetNativeView()->GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
+
+  if (drag_dest_delegate_) {
+    drag_dest_delegate_->OnReceiveDragData(event.data());
+    drag_dest_delegate_->OnDragEnter();
+  }
 }
 
 int NativeTabContentsViewAura::OnDragUpdated(
@@ -331,11 +344,17 @@ int NativeTabContentsViewAura::OnDragUpdated(
       GetNativeView()->GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op);
+
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDragOver();
+
   return ConvertFromWeb(current_drag_op_);
 }
 
 void NativeTabContentsViewAura::OnDragExited() {
   GetWebContents()->GetRenderViewHost()->DragTargetDragLeave();
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDragLeave();
 }
 
 int NativeTabContentsViewAura::OnPerformDrop(
@@ -343,6 +362,8 @@ int NativeTabContentsViewAura::OnPerformDrop(
   GetWebContents()->GetRenderViewHost()->DragTargetDrop(
       event.location(),
       GetNativeView()->GetRootWindow()->last_mouse_location());
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDrop();
   return current_drag_op_;
 }
 
