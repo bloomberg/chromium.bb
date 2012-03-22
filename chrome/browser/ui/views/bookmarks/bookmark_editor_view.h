@@ -25,7 +25,7 @@
 
 namespace views {
 class Label;
-class Menu2;
+class MenuRunner;
 class TextButton;
 class TreeView;
 }
@@ -224,6 +224,8 @@ class BookmarkEditorView : public BookmarkEditor,
   void UpdateExpandedNodes(EditorNode* editor_node,
                            BookmarkExpandedStateTracker::Nodes* expanded_nodes);
 
+  ui::SimpleMenuModel* GetMenuModel();
+
   // Profile the entry is from.
   Profile* profile_;
 
@@ -255,10 +257,8 @@ class BookmarkEditorView : public BookmarkEditor,
   const EditDetails details_;
 
   // The context menu.
-  scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
-#if !defined(USE_AURA)
-  scoped_ptr<views::Menu2> context_menu_;
-#endif
+  scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   // Mode used to create nodes from.
   BookmarkModel* bb_model_;
