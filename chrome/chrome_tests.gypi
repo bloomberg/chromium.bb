@@ -1532,6 +1532,7 @@
         'browser/language_usage_metrics_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
         'browser/media/media_internals_unittest.cc',
+        'browser/media_gallery/media_gallery_database_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_response_unittest.cc',
