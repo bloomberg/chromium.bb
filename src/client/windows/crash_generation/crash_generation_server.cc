@@ -793,6 +793,7 @@ void CALLBACK CrashGenerationServer::OnClientEnd(void* context, BOOLEAN) {
   CrashGenerationServer* crash_server = client_info->crash_server();
   assert(crash_server);
 
+  client_info->UnregisterWaits();
   InterlockedIncrement(&crash_server->cleanup_item_count_);
 
   if (!QueueUserWorkItem(CleanupClient, context, WT_EXECUTEDEFAULT)) {
