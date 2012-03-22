@@ -467,9 +467,13 @@ TEST_F(RenderWidgetHostTest, Background) {
   EXPECT_EQ(4, view->GetBackground().width());
   EXPECT_EQ(4, view->GetBackground().height());
   EXPECT_EQ(background.getSize(), view->GetBackground().getSize());
+  background.lockPixels();
+  view->GetBackground().lockPixels();
   EXPECT_TRUE(0 == memcmp(background.getPixels(),
                           view->GetBackground().getPixels(),
                           background.getSize()));
+  view->GetBackground().unlockPixels();
+  background.unlockPixels();
 
   const IPC::Message* set_background =
       process_->sink().GetUniqueMessageMatching(ViewMsg_SetBackground::ID);
@@ -477,9 +481,13 @@ TEST_F(RenderWidgetHostTest, Background) {
   Tuple1<SkBitmap> sent_background;
   ViewMsg_SetBackground::Read(set_background, &sent_background);
   EXPECT_EQ(background.getSize(), sent_background.a.getSize());
+  background.lockPixels();
+  sent_background.a.lockPixels();
   EXPECT_TRUE(0 == memcmp(background.getPixels(),
                           sent_background.a.getPixels(),
                           background.getSize()));
+  sent_background.a.unlockPixels();
+  background.unlockPixels();
 
 #if defined(OS_LINUX) || defined(USE_AURA)
   // See the comment above |InitAsChild(NULL)|.
