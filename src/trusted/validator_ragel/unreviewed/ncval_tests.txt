@@ -39,6 +39,7 @@ TESTS64 += jmp-16
 TESTS64 += lea
 TESTS64 += lea-add-rsp
 TESTS64 += lea-rsp
+TESTS64 += mmx
 TESTS64 += mov-esi-nop-use
 TESTS64 += mov_esp_add_rsp_r15
 TESTS64 += mov-lea-rbp
@@ -121,8 +122,13 @@ TESTS64 += x87
 #     TESTS64=movs_test
 # http://code.google.com/p/nativeclient/issues/detail?id=2650
 #     TESTS64=prefix-2
-# need more investigation:
-#     TESTS64=mmx prefix-single strings sse
+# http://code.google.com/p/nativeclient/issues/detail?id=2671
+#     TESTS64=prefix-single
+# http://code.google.com/p/nativeclient/issues/detail?id=2680
+#     TESTS64=strings
+# http://code.google.com/p/nativeclient/issues/detail?id=2681
+# http://code.google.com/p/nativeclient/issues/detail?id=2682
+#     TESTS64=sse
 
 # These tests pass.
 TESTS32 =  addr16

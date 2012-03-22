@@ -44,6 +44,9 @@ movd Ed Pq, 0x0f 0x6e, Fn0000_0001_EDX_MMX
 movd Pq Ed, 0x0f 0x7e, Fn0000_0001_EDX_MMX
 movq Eq Pq, rexw 0x0f 0x6e, amd64 Fn0000_0001_EDX_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 Fn0000_0001_EDX_MMX
+######## MOVQ ##################################################################
+movq Qq Pq, 0x0f 0x6f, Fn0000_0001_EDX_MMX
+movq Pq Qq, 0x0f 0x7f, Fn0000_0001_EDX_MMX
 ######## MOVDQ2Q ###############################################################
 movdq2q Uq Pq, 0xf2 0x0f 0xd6, Fn0000_0001_EDX_SSE2
 ######## MOVQ2DQ ###############################################################
