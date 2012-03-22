@@ -6,18 +6,21 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 // static
 bool ExtensionResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
-    const WebKit::WebFrame* frame,
+    WebKit::WebFrame* frame,
     const ExtensionSet* loaded_extensions) {
   CHECK(resource_url.SchemeIs(chrome::kExtensionScheme));
 
@@ -59,8 +62,14 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
       !(page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
           !extension->devtools_url().is_empty()) &&
       !extension->IsResourceWebAccessible(resource_url.path())) {
-    LOG(ERROR) << "Denying load of " << resource_url.spec() << " which "
-               << "is not a web accessible resource.";
+    std::string message = base::StringPrintf(
+        "Denying load of %s. Resources must be listed in the "
+        "web_accessible_resources manifest key in order to be loaded by web "
+        "pages.",
+        resource_url.spec().c_str());
+    frame->addMessageToConsole(
+        WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
+                                  WebKit::WebString::fromUTF8(message)));
     return false;
   }
 

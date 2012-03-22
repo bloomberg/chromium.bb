@@ -17,7 +17,7 @@ class ExtensionResourceRequestPolicy {
  public:
   // Returns true if the |resource_url| can be requested from |frame_url|.
   static bool CanRequestResource(const GURL& resource_url,
-                                 const WebKit::WebFrame* frame,
+                                 WebKit::WebFrame* frame,
                                  const ExtensionSet* loaded_extensions);
 
  private:
