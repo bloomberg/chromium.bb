@@ -145,7 +145,7 @@
     "location": "component"
   },
   "tabs": {
-    "extension_types": ["extension", "packaged_app"]
+    "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "terminalPrivate": {
     "extension_types": ["extension", "packaged_app", "platform_app"],

@@ -184,3 +184,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowModalDialogs) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;
 }
+
+// Tests that platform apps can use the chrome.windows.* API.
+#if defined(USE_AURA)
+// On Aura, this currently fails because the window width is returned as 256
+// instead of 250. See http://crbug.com/119410.
+#define MAYBE_WindowsApi FAILS_WindowsApi
+#else
+#define MAYBE_WindowsApi WindowsApi
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WindowsApi) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
+}

@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -560,6 +561,15 @@ bool CreateWindowFunction::RunImpl() {
           window_type = Browser::TYPE_PANEL;
         else
           window_type = Browser::TYPE_POPUP;
+      } else if (type_str == keys::kWindowTypeValueShell &&
+          GetExtension()->is_platform_app()) {
+        GURL window_url =
+            urls.empty() ? GetExtension()->GetFullLaunchURL() : urls[0];
+        ShellWindow* shell_window =
+            ShellWindow::Create(window_profile, GetExtension(), window_url);
+        result_.reset(shell_window->extension_window_controller()->
+            CreateWindowValueWithTabs());
+        return true;
       } else if (type_str != keys::kWindowTypeValueNormal) {
         error_ = keys::kInvalidWindowTypeError;
         return false;

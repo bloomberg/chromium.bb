@@ -28,6 +28,9 @@ class ShellWindow : public content::NotificationObserver,
  public:
   content::WebContents* web_contents() const { return host_->host_contents(); }
   const SessionID& session_id() const { return session_id_; }
+  const ExtensionWindowController* extension_window_controller() const {
+    return extension_window_controller_.get();
+  }
 
   static ShellWindow* Create(Profile* profile,
                              const Extension* extension,

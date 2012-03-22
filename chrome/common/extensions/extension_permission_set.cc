@@ -345,6 +345,8 @@ void ExtensionAPIPermission::RegisterAllPermissions(
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
+  // TODO(mihaip): Remove this alias for platform apps, and only give them
+  // access to the chrome.windows.* APIs, but not the chrome.tabs.* ones.
   info->RegisterAlias("tabs", kWindowsPermission);
 }
 
