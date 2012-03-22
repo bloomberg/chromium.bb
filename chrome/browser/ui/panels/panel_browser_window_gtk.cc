@@ -586,7 +586,6 @@ void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
 
 void PanelBrowserWindowGtk::AnimationProgressed(
     const ui::Animation* animation) {
-  DCHECK(!drag_widget_);
   DCHECK(window_size_known_);
 
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
