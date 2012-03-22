@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 
@@ -94,6 +95,37 @@ DictionaryValue* GoogleServiceAuthError::ToValue() const {
     value->SetString("networkError", net::ErrorToString(network_error_));
   }
   return value;
+}
+
+std::string GoogleServiceAuthError::ToString() const {
+  switch (state_) {
+    case NONE:
+      return "";
+    case INVALID_GAIA_CREDENTIALS:
+      return "Invalid credentials.";
+    case USER_NOT_SIGNED_UP:
+      return "Not authorized.";
+    case CONNECTION_FAILED:
+      return base::StringPrintf("Connection failed (%d).", network_error_);
+    case CAPTCHA_REQUIRED:
+      return base::StringPrintf("CAPTCHA required (%s).",
+                                captcha_.token.c_str());
+    case ACCOUNT_DELETED:
+      return "Account deleted.";
+    case ACCOUNT_DISABLED:
+      return "Account disabled.";
+    case SERVICE_UNAVAILABLE:
+      return "Service unavailable; try again later.";
+    case TWO_FACTOR:
+      return "2-step verification required.";
+    case REQUEST_CANCELED:
+      return "Request canceled.";
+    case HOSTED_NOT_ALLOWED:
+      return "Google account required.";
+    default:
+      NOTREACHED();
+      return std::string();
+  }
 }
 
 GoogleServiceAuthError::GoogleServiceAuthError(State s, int error)

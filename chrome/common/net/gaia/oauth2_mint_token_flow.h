@@ -35,6 +35,17 @@ class OAuth2MintTokenFlow
     virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) { }
   };
 
+  // An interceptor for tests.
+  class InterceptorForTests {
+   public:
+    // Returns true if the success callback should be called and false for
+    // failures.
+    virtual bool DoIntercept(const OAuth2MintTokenFlow* flow,
+                             std::string* access_token,
+                             GoogleServiceAuthError* error) = 0;
+  };
+  static void SetInterceptorForTests(InterceptorForTests* interceptor);
+
   OAuth2MintTokenFlow(net::URLRequestContextGetter* context,
                       Delegate* delegate);
   virtual ~OAuth2MintTokenFlow();
@@ -57,11 +68,11 @@ class OAuth2MintTokenFlow
   const std::string& client_id() const { return client_id_; }
 
  protected:
-  // Helper to create an instnace of access token fetcher.
+  // Helper to create an instance of access token fetcher.
   // Caller owns the returned instance.
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher();
 
-  // Helper to create an instnace of mint token fetcher.
+  // Helper to create an instance of mint token fetcher.
   // Caller owns the returned instance.
   virtual OAuth2MintTokenFetcher* CreateMintTokenFetcher();
 

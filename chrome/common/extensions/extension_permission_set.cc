@@ -198,7 +198,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kUnlimitedStorage, "unlimitedStorage", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
 
-
   // Register hosted and packaged app permissions.
   info->RegisterPermission(
       kAppNotifications, "appNotifications", 0,

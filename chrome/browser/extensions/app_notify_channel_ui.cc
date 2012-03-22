@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -86,11 +85,18 @@ void AppNotifyChannelUIImpl::InfoBar::InfoBarDismissed() {
 }
 
 
-AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(Browser* browser,
-                                               TabContentsWrapper* wrapper,
-                                               const std::string& app_name)
-    : browser_(browser), wrapper_(wrapper), app_name_(app_name),
-      delegate_(NULL), observing_sync_(false), wizard_shown_to_user_(false) {
+AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(
+    Profile* profile,
+    TabContentsWrapper* wrapper,
+    const std::string& app_name,
+    AppNotifyChannelUI::UIType ui_type)
+    : profile_(profile->GetOriginalProfile()),
+      wrapper_(wrapper),
+      app_name_(app_name),
+      ui_type_(ui_type),
+      delegate_(NULL),
+      observing_sync_(false),
+      wizard_shown_to_user_(false) {
 }
 
 AppNotifyChannelUIImpl::~AppNotifyChannelUIImpl() {
@@ -105,8 +111,13 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
   delegate_ = delegate;
 
   if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-          browser_->profile()->GetOriginalProfile())) {
+          profile_)) {
     delegate_->OnSyncSetupResult(false);
+    return;
+  }
+
+  if (ui_type_ == NO_INFOBAR) {
+    OnInfoBarResult(true);
     return;
   }
 
@@ -118,8 +129,7 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
-    LoginUIServiceFactory::GetForProfile(
-        browser_->profile()->GetOriginalProfile())->ShowLoginUI(true);
+    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(true);
   } else {
     delegate_->OnSyncSetupResult(false);
   }
@@ -127,8 +137,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
 
 void AppNotifyChannelUIImpl::OnStateChanged() {
   ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          browser_->profile()->GetOriginalProfile());
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   bool wizard_visible = sync_service->WizardIsVisible();
   // ProfileSyncService raises OnStateChanged many times. Even multiple
   // times before the wizard actually becomes visible for the first time.
@@ -148,12 +157,12 @@ void AppNotifyChannelUIImpl::StartObservingSync() {
   CHECK(!observing_sync_);
   observing_sync_ = true;
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      browser_->profile()->GetOriginalProfile())->AddObserver(this);
+      profile_)->AddObserver(this);
 }
 
 void AppNotifyChannelUIImpl::StopObservingSync() {
   CHECK(observing_sync_);
   observing_sync_ = false;
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      browser_->profile()->GetOriginalProfile())->RemoveObserver(this);
+      profile_)->RemoveObserver(this);
 }
