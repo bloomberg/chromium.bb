@@ -124,11 +124,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                    content::NotificationService::AllSources());
+    if (GetUserLoginStatus() == ash::user::LOGGED_IN_NONE) {
+      registrar_.Add(this,
+                     chrome::NOTIFICATION_SESSION_STARTED,
+                     content::NotificationService::AllSources());
+    }
     registrar_.Add(this,
-                   chrome::NOTIFICATION_SESSION_STARTED,
+                   chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
-
-    SetProfile(ProfileManager::GetDefaultProfile());
 
     network_icon_large_->SetResourceSize(NetworkMenuIcon::SIZE_LARGE);
 
@@ -618,6 +621,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         } else {
           NOTREACHED();
         }
+        break;
+      }
+      case chrome::NOTIFICATION_PROFILE_CREATED: {
+        SetProfile(content::Source<Profile>(source).ptr());
+        registrar_.Remove(this,
+                          chrome::NOTIFICATION_PROFILE_CREATED,
+                          content::NotificationService::AllSources());
         break;
       }
       case chrome::NOTIFICATION_SESSION_STARTED: {
