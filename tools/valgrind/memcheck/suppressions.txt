@@ -5769,13 +5769,13 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileEv
-   fun:_ZN8chromeos12_GLOBAL__N_118SystemTrayDelegateC1EPN3ash10SystemTrayE
-   fun:_ZN8chromeos24CreateSystemTrayDelegateEPN3ash10SystemTrayE
-   fun:_ZN19ChromeShellDelegate24CreateSystemTrayDelegateEPN3ash10SystemTrayE
+   fun:_ZN22ChromeLauncherDelegateC1EP7ProfilePN3ash13LauncherModelE
+   fun:_ZN19ChromeShellDelegate22CreateLauncherDelegateEPN3ash13LauncherModelE
+   fun:_ZN3ash8LauncherC1EPN4aura6WindowE
+   fun:_ZN3ash5Shell14CreateLauncherEv
    fun:_ZN3ash5Shell4InitEv
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
-   fun:_ZN22ChromeBrowserMainParts14PreProfileInitEv
 }
 
 #-----------------------------------------------------------------------
