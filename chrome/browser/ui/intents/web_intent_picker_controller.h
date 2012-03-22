@@ -75,6 +75,7 @@ class WebIntentPickerController : public content::NotificationObserver,
  private:
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
+  friend class WebIntentPickerControllerIncognitoBrowserTest;
   friend class InvokingTabObserver;
 
   // Gets a notification when the return message is sent to the source tab,

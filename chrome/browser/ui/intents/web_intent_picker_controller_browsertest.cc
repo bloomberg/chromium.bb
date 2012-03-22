@@ -192,10 +192,10 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
         new FakeURLFetcherFactory(default_url_fetcher_factory_.get()));
 
     web_data_service_ =
-        browser()->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
+        GetBrowser()->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
     favicon_service_ =
-        browser()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
-    controller_ = browser()->
+        GetBrowser()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    controller_ = GetBrowser()->
         GetSelectedTabContentsWrapper()->web_intent_picker_controller();
 
     controller_->set_picker(&picker_);
@@ -203,6 +203,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
     CreateFakeIcon();
   }
+
+  virtual Browser* GetBrowser() { return browser(); }
 
   void AddWebIntentService(const string16& action, const GURL& service_url) {
     webkit_glue::WebIntentServiceData service;
@@ -355,4 +357,29 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
+}
+
+class WebIntentPickerControllerIncognitoBrowserTest :
+    public WebIntentPickerControllerBrowserTest {
+ public:
+  WebIntentPickerControllerIncognitoBrowserTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    incognito_browser_ = CreateIncognitoBrowser();
+    WebIntentPickerControllerBrowserTest::SetUpOnMainThread();
+  }
+
+  virtual Browser* GetBrowser() OVERRIDE { return incognito_browser_; }
+
+  int pending_async_count() { return controller_->pending_async_count_; }
+
+ private:
+  Browser* incognito_browser_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerIncognitoBrowserTest,
+                       ShowDialogShouldntCrash) {
+  controller_->ShowDialog(GetBrowser(), kAction1, kType);
+  // This should do nothing for now.
+  EXPECT_EQ(0, pending_async_count());
 }

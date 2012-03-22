@@ -123,6 +123,11 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
   if (picker_shown_)
     return;
 
+  // TODO(binji): Figure out what to do when intents are invoked from incognito
+  // mode.
+  if (wrapper_->profile()->IsOffTheRecord())
+    return;
+
   picker_model_->Clear();
 
   // If picker is non-NULL, it was set by a test.
