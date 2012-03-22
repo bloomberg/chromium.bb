@@ -23,6 +23,8 @@
 #include "base/base_paths_win.h"
 #elif defined(OS_LINUX)
 #include "base/nix/xdg_util.h"
+#elif defined(OS_MACOSX)
+#include "base/base_paths_mac.h"
 #endif
 
 using content::BrowserThread;
@@ -107,6 +109,9 @@ FilePath ShellBrowserContext::GetPath() {
                                                  kXdgConfigHomeEnvVar,
                                                  kDotConfigDir));
   path_ = config_dir.Append("content_shell");
+#elif defined(OS_MACOSX)
+  CHECK(PathService::Get(base::DIR_APP_DATA, &path_));
+  path_ = path_.Append("Chromium Content Shell");
 #else
   NOTIMPLEMENTED();
 #endif
