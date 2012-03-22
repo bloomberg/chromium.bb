@@ -520,6 +520,16 @@ input_handle_button(void *data,
 }
 
 static void
+input_handle_axis(void *data, struct wl_input_device *input_device,
+			uint32_t time, uint32_t axis, int32_t value)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_axis(c->base.input_device, time, axis, value);
+}
+
+static void
 input_handle_key(void *data, struct wl_input_device *input_device,
 		  uint32_t time, uint32_t key, uint32_t state)
 {
@@ -586,6 +596,7 @@ input_handle_keyboard_leave(void *data,
 static const struct wl_input_device_listener input_device_listener = {
 	input_handle_motion,
 	input_handle_button,
+	input_handle_axis,
 	input_handle_key,
 	input_handle_pointer_enter,
 	input_handle_pointer_leave,

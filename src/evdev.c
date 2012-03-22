@@ -227,8 +227,8 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 }
 
 static inline void
-evdev_process_relative_motion(struct evdev_input_device *device,
-			      struct input_event *e)
+evdev_process_relative(struct evdev_input_device *device,
+			      struct input_event *e, uint32_t time)
 {
 	switch (e->code) {
 	case REL_X:
@@ -238,6 +238,16 @@ evdev_process_relative_motion(struct evdev_input_device *device,
 	case REL_Y:
 		device->rel.dy += e->value;
 		device->type |= EVDEV_RELATIVE_MOTION;
+		break;
+	case REL_WHEEL:
+		notify_axis(&device->master->base.input_device,
+			      time,
+			      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL, e->value);
+		break;
+	case REL_HWHEEL:
+		notify_axis(&device->master->base.input_device,
+			      time,
+			      WL_INPUT_DEVICE_AXIS_HORIZONTAL_SCROLL, e->value);
 		break;
 	}
 }
@@ -344,7 +354,7 @@ evdev_process_events(struct evdev_input_device *device,
 			evdev_flush_motion(device, time);
 		switch (e->type) {
 		case EV_REL:
-			evdev_process_relative_motion(device, e);
+			evdev_process_relative(device, e, time);
 			break;
 		case EV_ABS:
 			evdev_process_absolute(device, e);

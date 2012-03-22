@@ -370,6 +370,9 @@ void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state);
 void
+notify_axis(struct wl_input_device *device,
+	      uint32_t time, uint32_t axis, int32_t value);
+void
 notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state);
 

@@ -485,14 +485,28 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 		button = BTN_RIGHT;
 		break;
 	case 4:
+		if (state)
+			notify_axis(c->base.input_device,
+				      weston_compositor_get_time(),
+				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL, 1);
+		return;
 	case 5:
+		if (state)
+			notify_axis(c->base.input_device,
+				      weston_compositor_get_time(),
+				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL, -1);
+		return;
 	case 6:
+		if (state)
+			notify_axis(c->base.input_device,
+				      weston_compositor_get_time(),
+				      WL_INPUT_DEVICE_AXIS_HORIZONTAL_SCROLL, 1);
+		return;
 	case 7:
-		/* X11 sends wheel events as buttons events.  But
-		 * linux input treats as REL_WHEEL, therefore not
-		 * button type at all. When we update the input
-		 * protocol and get the 'axis' event, we'll send
-		 * scroll events as axis events. */
+		if (state)
+			notify_axis(c->base.input_device,
+				      weston_compositor_get_time(),
+				      WL_INPUT_DEVICE_AXIS_HORIZONTAL_SCROLL, -1);
 		return;
 	}
 

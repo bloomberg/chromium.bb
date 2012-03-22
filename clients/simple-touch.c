@@ -112,6 +112,12 @@ input_device_handle_button(void *data,
 }
 
 static void
+input_device_handle_axis(void *data, struct wl_input_device *input_device,
+			uint32_t time, uint32_t axis, int32_t value)
+{
+}
+
+static void
 input_device_handle_key(void *data, struct wl_input_device *input_device,
 			uint32_t time, uint32_t key, uint32_t state)
 {
@@ -227,6 +233,7 @@ input_device_handle_touch_cancel(void *data,
 static const struct wl_input_device_listener input_device_listener = {
 	input_device_handle_motion,
 	input_device_handle_button,
+	input_device_handle_axis,
 	input_device_handle_key,
 	input_device_handle_pointer_enter,
 	input_device_handle_pointer_leave,

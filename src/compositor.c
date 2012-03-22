@@ -1549,6 +1549,20 @@ notify_button(struct wl_input_device *device,
 
 }
 
+WL_EXPORT void
+notify_axis(struct wl_input_device *device,
+	      uint32_t time, uint32_t axis, int32_t value)
+{
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *compositor = wd->compositor;
+
+	weston_compositor_activity(compositor);
+
+	if (device->pointer_focus_resource)
+		wl_resource_post_event(device->pointer_focus_resource,
+				WL_INPUT_DEVICE_AXIS, time, axis, value);
+}
+
 static void
 update_modifier_state(struct weston_input_device *device,
 		      uint32_t key, uint32_t state)
