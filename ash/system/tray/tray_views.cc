@@ -85,5 +85,13 @@ void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
   SchedulePaint();
 }
 
+void SetupLabelForTray(views::Label* label) {
+  label->SetFont(
+      label->font().DeriveFont(2, gfx::Font::BOLD));
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetEnabledColor(SK_ColorWHITE);
+  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+}
+
 }  // namespace internal
 }  // namespace ash

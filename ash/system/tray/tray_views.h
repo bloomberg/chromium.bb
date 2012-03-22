@@ -13,6 +13,10 @@
 
 class SkBitmap;
 
+namespace views {
+class Label;
+}
+
 namespace ash {
 namespace internal {
 
@@ -60,6 +64,9 @@ class HoverHighlightView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };
+
+// Sets up a Label properly for the tray (sets color, font etc.).
+void SetupLabelForTray(views::Label* label);
 
 }  // namespace internal
 }  // namespace ash

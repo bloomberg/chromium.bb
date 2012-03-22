@@ -8,6 +8,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -42,11 +43,7 @@ TrayDate::~TrayDate() {
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(tray::DateView::TIME));
-  date_tray_->label()->SetFont(
-      date_tray_->label()->font().DeriveFont(2, gfx::Font::BOLD));
-  date_tray_->label()->SetAutoColorReadabilityEnabled(false);
-  date_tray_->label()->SetEnabledColor(SK_ColorWHITE);
-
+  SetupLabelForTray(date_tray_->label());
   return date_tray_.get();
 }
 

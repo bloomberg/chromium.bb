@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/font.h"
@@ -36,10 +37,7 @@ void TrayIME::UpdateTrayLabel() {
 
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   tray_label_.reset(new views::Label);
-  tray_label_->SetFont(
-      tray_label_->font().DeriveFont(2, gfx::Font::BOLD));
-  tray_label_->SetAutoColorReadabilityEnabled(false);
-  tray_label_->SetEnabledColor(SK_ColorWHITE);
+  SetupLabelForTray(tray_label_.get());
   return tray_label_.get();
 }
 
