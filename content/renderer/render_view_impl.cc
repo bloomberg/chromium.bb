@@ -2247,12 +2247,28 @@ void RenderViewImpl::loadURLExternally(
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
     const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
-  // TODO(creis): Remove this when we fix OnSwapOut to not need a navigation.
+  Referrer referrer(
+      GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+      GetReferrerPolicyFromRequest(request));
+
   if (is_swapped_out_) {
-    // It is possible for in-progress navigations to arrive here just after we
-    // are swapped out, including iframes.  We should cancel them.
-    if (request.url() != GURL(chrome::kSwappedOutURL))
+    if (request.url() != GURL(chrome::kSwappedOutURL)) {
+      // Targeted links may try to navigate a swapped out frame.  Allow the
+      // browser process to navigate the tab instead.  Note that it is also
+      // possible for non-targeted navigations (from this view) to arrive
+      // here just after we are swapped out.  It's ok to send them to the
+      // browser, as long as they're for the top level frame.
+      // TODO(creis): Ensure this supports targeted form submissions when
+      // fixing http://crbug.com/101395.
+      if (frame->parent() == NULL) {
+        OpenURL(frame, request.url(), referrer, default_policy);
+        return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+      }
+
+      // We should otherwise ignore in-process iframe navigations, if they
+      // arrive just after we are swapped out.
       return WebKit::WebNavigationPolicyIgnore;
+    }
 
     // Allow chrome::kSwappedOutURL to complete.
     return default_policy;
@@ -2282,9 +2298,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // TODO(cevans): revisit whether this origin check is still necessary once
     // crbug.com/101395 is fixed.
     if (frame_url.GetOrigin() != url.GetOrigin()) {
-      Referrer referrer(
-          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          GetReferrerPolicyFromRequest(request));
       OpenURL(frame, url, referrer, default_policy);
       return WebKit::WebNavigationPolicyIgnore;
     }
@@ -2298,9 +2311,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
         IsNonLocalTopLevelNavigation(url, frame, type);
     if (browser_handles_top_level_requests ||
         renderer_preferences_.browser_handles_all_requests) {
-      Referrer referrer(
-          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          GetReferrerPolicyFromRequest(request));
       // Reset these counters as the RenderView could be reused for the next
       // navigation.
       page_id_ = -1;
@@ -2354,9 +2364,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     }
 
     if (should_fork) {
-      Referrer referrer(
-          GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          GetReferrerPolicyFromRequest(request));
       OpenURL(
           frame, url, send_referrer ? referrer : Referrer(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.

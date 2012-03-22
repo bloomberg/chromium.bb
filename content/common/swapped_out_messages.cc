@@ -19,6 +19,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_HandleInputEvent_ACK::ID:
     case ViewHostMsg_PaintAtSize_ACK::ID:
     case ViewHostMsg_UpdateRect::ID:
+    // Allow targeted navigations while swapped out.
+    case ViewHostMsg_OpenURL::ID:
+    case ViewHostMsg_Focus::ID:
     // Handled by RenderView.
     case ViewHostMsg_RenderViewGone::ID:
     case ViewHostMsg_ShouldClose_ACK::ID:
