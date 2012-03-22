@@ -37,3 +37,4 @@ NPAPIVisiblePluginTester.PluginReferrerTest
 AudioUILayoutTest.AudioConstructor
 AudioUILayoutTest.AudioConstructorSrc
 AudioUILayoutTest.AudioPlayEvent
+AudioUILayoutTest.MediaDocumentAudioSize
