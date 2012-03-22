@@ -215,6 +215,24 @@ message SyncEntity {
   // |insert_after_item_id|.  Clients should set both values so that they
   // result in a consistent ordering regardless of which choice the server
   // makes.
+  //
+  // This is deprecated: clients should set |ordinal_in_parent|
+  // instead.  But until the production servers fully support
+  // |ordinal_in_parent|, clients should set all three position fields
+  // (|position_in_parent|, |insert_after_item_id|, and
+  // |ordinal_in_parent| in commits) and continue to respect any
+  // |position_in_parent| values returned by CommitResponses.
+  //
+  // Similarly, when |ordinal_in_parent| is absent in a GetUpdates and
+  // |position_in_parent| is present, clients should continue to honor
+  // the |position_in_parent| value (after transforming it as
+  // described below).
+  //
+  // When both |ordinal_in_parent| and |position_in_parent| are set,
+  // the first 8 bytes of |ordinal_in_parent| must be equal to the
+  // bytes of flip-sign-bit(|position_in_parent|) in big-endian order
+  // (MSB first), and if those bytes are all zero, a 9th byte equal to
+  // 128 must be added.
   optional int64 position_in_parent = 15;
 
   // Contains the ID of the element (under the same parent) after which this
@@ -225,11 +243,7 @@ message SyncEntity {
   // communicate position.
   //
   // Present only in CommitMessage.
-  //
-  // This is being deprecated: clients should now explicitly set
-  // an absolute |position_in_parent| value at commit time.  In the
-  // interim, clients should supply both values and continue to honor
-  // the |position_in_parent| value returned in the CommitResponse.
+  // This is deprecated: see comment for |position_in_parent| above.
   optional string insert_after_item_id = 16;
 
   // Arbitrary key/value pairs associated with this item.
@@ -290,6 +304,31 @@ message SyncEntity {
   // May be returned in GetUpdatesMessage and sent up in CommitMessage.
   //
   optional string client_defined_unique_tag = 23;
+
+  // Supplies an ordinal for this item, relative to other items with the
+  // same parent.  Ordinals are ordered lexicographically bytewise.
+  // Ordinals must be a least 8 bytes (for backwards compatibility), and
+  // must not be all zeroes.
+  //
+  // Clients should not make sure that each item they know of has a
+  // unique ordinal-in-parent.  However, updates from the server might
+  // break this invariant.  In that case, among the items with the
+  // same ordinal-in-parent, a client should randomly pick one, and
+  // then perturb the ordinal-in-parents of all the other ones (within
+  // the bounds of the preceding and succeeding ordinal-in-parent)
+  // until they're unique; a byte of randomness per item should be
+  // more than enough.
+  //
+  // Available in version 31+.
+  //
+  // Present in both GetUpdatesResponse and CommitMessage.
+  //
+  // In a CommitMessage context, server implementations may choose whether
+  // to compute a position based on this field, |position_in_parent|, or
+  // |insert_after_item_id|.  Clients should set all values so that they
+  // result in a consistent ordering regardless of which choice the server
+  // makes.
+  optional bytes ordinal_in_parent = 24;
 };
 
 // This message contains diagnostic information used to correlate
@@ -460,7 +499,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 30];
+  optional int32 protocol_version = 2 [default = 31];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
