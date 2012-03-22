@@ -263,28 +263,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
                           "ogjcoiohnmldgjemafoockdghcjciccf"));
   notification_listener.Reset();
 
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdateBadKey) {
-  NotificationListener notification_listener;
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
-  // Note: This interceptor gets requests on the IO thread.
-  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
-
-  // Install version 2 of the extension.
-  ExtensionTestMessageListener listener2("v2 installed", false);
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(service->disabled_extensions()->is_empty());
-  const Extension* extension =
-      InstallExtension(basedir.AppendASCII("v2.crx"), 1);
-  ASSERT_TRUE(extension);
-  listener2.WaitUntilSatisfied();
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
-  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
-  ASSERT_EQ("2.0", extension->VersionString());
-
   // Now try doing an update to version 3, which has been incorrectly
   // signed. This should fail.
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
