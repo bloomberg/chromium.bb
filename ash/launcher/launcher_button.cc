@@ -156,8 +156,8 @@ bool LauncherButton::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void LauncherButton::OnMouseReleased(const views::MouseEvent& event) {
-  host_->MouseReleasedOnButton(this, false);
   CustomButton::OnMouseReleased(event);
+  host_->MouseReleasedOnButton(this, false);
 }
 
 void LauncherButton::OnMouseCaptureLost() {

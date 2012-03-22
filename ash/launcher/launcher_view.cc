@@ -694,6 +694,10 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
 
 void LauncherView::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
+  // Do not handle mouse release during drag.
+  if (dragging_)
+    return;
+
   if (sender == overflow_button_)
     ShowOverflowMenu();
 
