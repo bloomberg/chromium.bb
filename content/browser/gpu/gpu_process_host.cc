@@ -579,7 +579,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       params.size,
       params.surface_handle,
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-                 GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                 host_id_,
                  params.route_id));
 }
 
