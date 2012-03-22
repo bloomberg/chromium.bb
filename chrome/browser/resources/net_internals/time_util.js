@@ -24,8 +24,8 @@ var timeutil = (function() {
    * The browser gives us times in terms of "time ticks" in milliseconds.
    * This function converts the tick count to a Date() object.
    *
-   * @param {String} timeTicks.
-   * @returns {Date} The time that |timeTicks| represents.
+   * @param {String} timeTicks A time represented in "time ticks".
+   * @return {Date} The time that |timeTicks| represents.
    */
   function convertTimeTicksToDate(timeTicks) {
     var timeStampMs = timeTickOffset + (timeTicks - 0);
@@ -35,7 +35,7 @@ var timeutil = (function() {
   /**
    * Returns the current time.
    *
-   * @returns {number} Milliseconds since the Unix epoch.
+   * @return {number} Milliseconds since the Unix epoch.
    */
   function getCurrentTime() {
     return (new Date()).getTime();
@@ -44,9 +44,9 @@ var timeutil = (function() {
   /**
    * Adds an HTML representation of |date| to |parentNode|.
    *
-   * @param {DomNode} parentNode
-   * @param {Date} date
-   * @returns {DomNode} The node containing the date/time.
+   * @param {DomNode} parentNode The node that will contain the new node.
+   * @param {Date} date The date to be displayed.
+   * @return {DomNode} The new node containing the date/time.
    */
   function addNodeWithDate(parentNode, date) {
     var span = addNodeWithText(parentNode, 'span', dateToString(date));
@@ -57,8 +57,8 @@ var timeutil = (function() {
   /**
    * Returns a string representation of |date|.
    *
-   * @param {Date} date
-   * @returns {String}
+   * @param {Date} date The date to be represented.
+   * @return {String} A string representation of |date|.
    */
   function dateToString(date) {
     var dateStr = date.getFullYear() + '-' +
@@ -75,6 +75,9 @@ var timeutil = (function() {
 
   /**
    * Prefixes enough zeros to |num| so that it has length |len|.
+   * @param {number} num The number to be padded.
+   * @param {number} len The desired length of the returned string.
+   * @return {string} The zero-padded representation of |num|.
    */
   function zeroPad_(num, len) {
     var str = num + '';

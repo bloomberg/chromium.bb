@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ var TablePrinter = (function() {
     /**
      * Adds a column to the current row, setting its value to cellText.
      *
-     * @returns {!TablePrinterCell} the cell that was added.
+     * @return {!TablePrinterCell} the cell that was added.
      */
     addCell: function(cellText) {
       var r = this.rows_[this.rows_.length - 1];
@@ -73,7 +73,7 @@ var TablePrinter = (function() {
      * Adds a header row, if not already present, and adds a new column to it,
      * setting its contents to |headerText|.
      *
-     * @returns {!TablePrinterCell} the cell that was added.
+     * @return {!TablePrinterCell} the cell that was added.
      */
     addHeaderCell: function(headerText) {
       // Insert empty new row at start of |rows_| if currently no header row.

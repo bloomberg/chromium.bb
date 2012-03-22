@@ -47,7 +47,7 @@ printLogEntriesAsText = function(logEntries, parent) {
       tablePrinter.addRow();
 
       tablePrinter.addCell('t=');
-      var date = timeutil.convertTimeTicksToDate(entry.orig.time) ;
+      var date = timeutil.convertTimeTicksToDate(entry.orig.time);
       var tCell = tablePrinter.addCell(date.getTime());
       tCell.alignRight = true;
       tablePrinter.addCell(' [st=');

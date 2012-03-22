@@ -152,7 +152,7 @@ var HSTSView = (function() {
       if (result.dynamic_spki_hashes)
         hashes.push(result.dynamic_spki_hashes);
 
-      t.textContent = hashes.join(",");
+      t.textContent = hashes.join(',');
       yellowFade(this.queryOutputDiv_);
     }
   };

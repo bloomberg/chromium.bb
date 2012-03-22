@@ -148,7 +148,7 @@ var TimelineGraphView = (function() {
     },
 
     // Returns the total length of the graph, in pixels.
-    getLength_ : function() {
+    getLength_: function() {
       var timeRange = this.endTime_ - this.startTime_;
       // Math.floor is used to ignore the last partial area, of length less
       // than |scale_|.

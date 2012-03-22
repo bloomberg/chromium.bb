@@ -62,8 +62,8 @@ var TimelineView = (function() {
   TimelineView.GRAPH_DIV_ID = 'timeline-view-graph-div';
   TimelineView.GRAPH_CANVAS_ID = 'timeline-view-graph-canvas';
   TimelineView.SELECTION_DIV_ID = 'timeline-view-selection-div';
-  TimelineView.SELECTION_TOGGLE_ID = 'timeline-view-selection-toggle'
-  TimelineView.SELECTION_UL_ID = 'timeline-view-selection-ul'
+  TimelineView.SELECTION_TOGGLE_ID = 'timeline-view-selection-toggle';
+  TimelineView.SELECTION_UL_ID = 'timeline-view-selection-ul';
   TimelineView.SCROLLBAR_DIV_ID = 'timeline-view-scrollbar-div';
   TimelineView.SCROLLBAR_INNER_DIV_ID = 'timeline-view-scrollbar-inner-div';
 

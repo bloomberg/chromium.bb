@@ -161,7 +161,7 @@ var ExportView = (function() {
       var value = this.userCommentsTextArea_.value;
 
       // Reset the class name in case we had hilighted it earlier.
-      this.userCommentsTextArea_.className = ''
+      this.userCommentsTextArea_.className = '';
 
       // We don't accept empty explanations. We don't care what is entered, as
       // long as there is something (a single whitespace would work).

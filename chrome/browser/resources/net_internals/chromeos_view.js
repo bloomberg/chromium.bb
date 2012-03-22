@@ -36,8 +36,8 @@ var CrosView = (function() {
   /**
    *  Set the passcode var, and trigger onc import.
    *
+   *  @param {string} value The passcode value.
    *  @private
-   *  @param {string} passcode
    */
   function setPasscode_(value) {
     passcode = value;

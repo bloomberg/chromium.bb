@@ -617,7 +617,7 @@ var EventsView = (function() {
     if (!source1.isInactive() && source2.isInactive())
       return -1;
     if (source1.isInactive() && !source2.isInactive())
-      return  1;
+      return 1;
     if (source1.isInactive()) {
       var deltaEndTime = source1.getEndTime() - source2.getEndTime();
       if (deltaEndTime != 0) {

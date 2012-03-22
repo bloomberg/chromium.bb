@@ -1,15 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
+ * @fileoverview
  * LogGroupEntry is a wrapper around log entries, which makes it easier to
  * find the corresponding start/end of events.
  *
  * This is used internally by the log and timeline views to pretty print
  * collections of log entries.
- *
- * @fileoverview
  */
 
 // TODO(eroman): document these methods!
@@ -28,7 +27,7 @@ var LogGroupEntry = (function() {
     },
 
     isEnd: function() {
-      return this.orig.phase == LogEventPhase.PHASE_END
+      return this.orig.phase == LogEventPhase.PHASE_END;
     },
 
     getDepth: function() {

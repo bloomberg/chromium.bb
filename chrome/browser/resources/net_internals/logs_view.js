@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,16 +58,16 @@ var LogsView = (function() {
    */
   var LOG_FILTER_LIST = [
     {
-      key:'syslog',
+      key: 'syslog',
     },
     {
-      key:'ui_log',
+      key: 'ui_log',
     },
     {
-      key:'chrome_system_log',
+      key: 'chrome_system_log',
     },
     {
-      key:'chrome_log',
+      key: 'chrome_log',
     }
   ];
 
