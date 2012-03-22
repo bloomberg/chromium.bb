@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const OVERRIDE;
+  // Note that a return value of false could mean an error in collection or
+  // that there are currently no background apps running. However, the action
+  // which results is the same in both cases (thus far).
   virtual bool GetBackgroundStatusOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
