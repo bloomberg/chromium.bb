@@ -35,7 +35,8 @@ const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrome.exe";
 const wchar_t kChromePathRegValue[] = L"PathToChromeExe";
 #endif
 const wchar_t kIePath[] = L"Internet Explorer\\iexplore.exe";
-const char kChromeInstallUrl[] = "http://www.google.com/chrome";
+const char kChromeInstallUrl[] =
+    "http://google.com/cloudprint/learn/chrome.html";
 
 const wchar_t kChromePathRegKey[] = L"Software\\Google\\CloudPrint";
 

@@ -37,6 +37,7 @@ const wchar_t kUninstallRegistry[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
     L"{74AA24E0-AC50-4B28-BA46-9CF05467C9B7}";
 const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
+const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
 
 void SetOmahaKeys() {
   base::win::RegKey key;
@@ -280,7 +281,7 @@ HRESULT InstallPpd(const FilePath& install_path) {
   string16 manufacturer = cloud_print::LoadLocalString(IDS_GOOGLE);
   driver_info.pszMfgName = const_cast<LPWSTR>(manufacturer.c_str());
   driver_info.pszProvider = const_cast<LPWSTR>(manufacturer.c_str());
-  driver_info.pszOEMUrl = L"http://www.google.com/cloudprint";
+  driver_info.pszOEMUrl = const_cast<LPWSTR>(kGcpUrl);
   driver_info.dwlDriverVersion = GetVersionNumber();
   string16 driver_name = cloud_print::LoadLocalString(IDS_DRIVER_NAME);
   driver_info.pName = const_cast<LPWSTR>(driver_name.c_str());
@@ -333,6 +334,7 @@ HRESULT InstallPrinter(void) {
   printer_info.pDriverName = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pPrinterName = const_cast<LPWSTR>(driver_name.c_str());
   printer_info.pComment =  const_cast<LPWSTR>(driver_name.c_str());
+  printer_info.pLocation = const_cast<LPWSTR>(kGcpUrl);
   string16 port_name;
   printer_info.pPortName = const_cast<LPWSTR>(cloud_print::kPortName);
   printer_info.Attributes = PRINTER_ATTRIBUTE_DIRECT|PRINTER_ATTRIBUTE_LOCAL;
