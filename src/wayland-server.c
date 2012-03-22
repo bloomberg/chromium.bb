@@ -906,8 +906,8 @@ socket_data(int fd, uint32_t mask, void *data)
 					 &length);
 	if (client_fd < 0)
 		fprintf(stderr, "failed to accept, errno: %d\n", errno);
-
-	wl_client_create(display, client_fd);
+	else
+		wl_client_create(display, client_fd);
 
 	return 1;
 }
