@@ -30,22 +30,44 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+// Padding around the "content" of a tab, occupied by the tab border graphics.
+#if defined(USE_ASH)
+static const int kLeftPadding = 21;
+static const int kTopPadding = 8;
+static const int kRightPadding = 20;
+static const int kBottomPadding = 5;
+#else
 static const int kLeftPadding = 16;
 static const int kTopPadding = 6;
 static const int kRightPadding = 15;
 static const int kBottomPadding = 5;
+#endif
+
+// Height of the shadow at the top of the tab image assets.
+#if defined(USE_ASH)
+static const int kDropShadowHeight = 4;
+#else
 static const int kDropShadowHeight = 2;
+#endif
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
+// Additional vertical offset for title text relative to top of tab.
+#if defined(USE_ASH)
+static const int kTitleTextOffsetY = 2;
+#else
+static const int kTitleTextOffsetY = 0;
+#endif
 static const int kTitleCloseButtonSpacing = 3;
 static const int kStandardTitleWidth = 175;
+// Additional vertical offset for close button relative to top of tab.
+#if defined(USE_ASH)
+static const int kCloseButtonVertFuzz = 1;
+#else
 static const int kCloseButtonVertFuzz = 0;
+#endif
 static const int kTabIconSize = gfx::kFaviconSize;
 static const int kCloseButtonHorzFuzz = 5;
 static const int kTouchModeMinimumWidth = 160;
-
-// Vertical adjustment to the favicon when the tab has a large icon.
-static const int kAppTapFaviconVerticalAdjustment = 2;
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
@@ -56,7 +78,6 @@ static const int kMiniTabRendererAsNormalTabWidth =
 
 // How opaque to make the hover state (out of 1).
 static const double kHoverOpacity = 0.33;
-static const double kHoverSlideOpacity = 0.5;
 
 // Opacity for non-active selected tabs.
 static const double kSelectedTabOpacity = .45;
@@ -295,7 +316,8 @@ void Tab::Layout() {
   }
 
   int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
-  int title_top = kTopPadding + (content_height - font_height()) / 2;
+  int title_top =
+      kTopPadding + kTitleTextOffsetY + (content_height - font_height()) / 2;
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
     // If the user has big fonts, the title will appear rendered too far down

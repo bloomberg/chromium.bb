@@ -16,6 +16,7 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -38,13 +39,18 @@ const int kTabstripLeftSpacing = 4;
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
 // Space between top of window and top of tabstrip for restored windows.
-const int kTabstripTopSpacingRestored = 10;
+const int kTabstripTopSpacingRestored = 8;
 // Space between top of window and top of tabstrip for maximized windows.
 // Place them flush to the top to make them clickable when the cursor is at
 // the screen edge.
 const int kTabstripTopSpacingMaximized = 0;
-// Height of the shadow of the tab images in the tab strip.
-const int kTabShadowHeight = 1;
+// Height of the shadow in the tab image, used to ensure clicks in the shadow
+// area still drag restored windows.  This keeps the clickable area large enough
+// to hit easily.
+const int kTabShadowHeight = 4;
+// Height of the shadow of the content area, at the top of the toolbar.
+const int kContentShadowHeight = 1;
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,7 +139,19 @@ gfx::Rect BrowserNonClientFrameViewAura::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewAura::NonClientHitTest(const gfx::Point& point) {
-  return frame_painter_->NonClientHitTest(this, point);
+  int hit_test = frame_painter_->NonClientHitTest(this, point);
+  // When the window is restored we want a large click target above the tabs
+  // to drag the window, so redirect clicks in the tab's shadow to caption.
+  if (hit_test == HTCLIENT && !frame()->IsMaximized()) {
+    // Convert point to client coordinates.
+    gfx::Point client_point(point);
+    View::ConvertPointToView(this, frame()->client_view(), &client_point);
+    // Report hits in shadow at top of tabstrip as caption.
+    gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
+    if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
+      hit_test = HTCAPTION;
+  }
+  return hit_test;
 }
 
 void BrowserNonClientFrameViewAura::GetWindowMask(const gfx::Size& size,
@@ -274,7 +292,7 @@ void BrowserNonClientFrameViewAura::LayoutAvatar() {
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = frame()->IsMaximized() ?
-      NonClientTopBorderHeight(false) + kTabShadowHeight:
+      NonClientTopBorderHeight(false) + kContentShadowHeight:
       avatar_restored_y;
   gfx::Rect avatar_bounds(kAvatarSideSpacing,
                           avatar_y,
@@ -322,12 +340,15 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
       x, bottom_y,
       w, theme_toolbar->height());
 
+  // The content area line has a shadow that extends a couple of pixels above
+  // the toolbar bounds.
+  const int kContentShadowHeight = 2;
   SkBitmap* toolbar_center =
       tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
   canvas->TileImageInt(*toolbar_center,
                        0, 0,
-                       x, y,
-                       w, split_point);
+                       x, y - kContentShadowHeight,
+                       w, split_point + kContentShadowHeight + 1);
 
   // Draw the content/toolbar separator.
   canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,

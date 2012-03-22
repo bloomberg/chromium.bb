@@ -51,10 +51,21 @@
 
 using views::DropTargetEvent;
 
+// Offset for the new tab button to bring it closer to the rightmost tab.
+#if defined(USE_ASH)
+static const int kNewTabButtonHOffset = -11;
+static const int kNewTabButtonVOffset = 7;
+#else
 static const int kNewTabButtonHOffset = -5;
 static const int kNewTabButtonVOffset = 5;
-static const int kSuspendAnimationsTimeMs = 200;
+#endif
+// Amount the left edge of a tab is offset from the rectangle of the tab's
+// favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
+#if defined(USE_ASH)
+static const int kTabHOffset = -28;
+#else
 static const int kTabHOffset = -16;
+#endif
 static const int kTabStripAnimationVSlop = 40;
 // Inactive tabs in a native frame are slightly transparent.
 static const int kNativeFrameInactiveTabAlpha = 200;
@@ -169,6 +180,7 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
   // These values are defined by the shape of the new tab bitmap. Should that
   // bitmap ever change, these values will need to be updated. They're so
   // custom it's not really worth defining constants for.
+  // These values are correct for regular and USE_ASH versions of the bitmap.
   path->moveTo(0, 1);
   path->lineTo(w - 7, 1);
   path->lineTo(w - 4, 4);

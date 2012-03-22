@@ -83,6 +83,14 @@ static const int kButtonSpacing = 0;
 static const int kButtonSpacing = 1;
 #endif
 
+// The content area line has a shadow that extends a couple of pixels above
+// the toolbar bounds.
+#if defined(USE_ASH)
+const int kContentShadowHeight = 2;
+#else
+const int kContentShadowHeight = 0;
+#endif
+
 // The length of time to run the upgrade notification animation (the time it
 // takes one pulse to run its course and go back to its original brightness).
 static const int kPulseDuration = 2000;
@@ -514,7 +522,8 @@ gfx::Size ToolbarView::GetPreferredSize() {
       normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
     }
 
-    return gfx::Size(min_width, normal_background.height());
+    return gfx::Size(min_width,
+                     normal_background.height() - kContentShadowHeight);
   }
 
   int vertical_spacing = PopupTopSpacing() +
