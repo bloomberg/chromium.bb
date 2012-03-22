@@ -83,6 +83,9 @@
       <div i18n-content="productName"></div>
       <div i18n-content="productCopyright"></div>
       <div id="product-license"></div>
+<if expr="pp_ifdef('chromeos')">
+      <div id="product-os-license"></div>
+</if>
 <if expr="pp_ifdef('_google_chrome')">
       <div id="product-tos"></div>
 </if>
