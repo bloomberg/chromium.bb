@@ -4,9 +4,18 @@
 
 [
   {
-    "namespace": "experimental.topSites",
-    "nodoc": true,
-    "types": [],
+    "namespace": "topSites",
+    "types": [
+      {
+        "id": "MostVisitedURL",
+        "type": "object",
+        "description": "An object encapsulating a most visited URL, such as the URLs on the new tab page.",
+        "properties": {
+          "url": {"type": "string", "description": "The most visited URL."},
+          "title": {"type": "string", "description": "The title of the page"}
+        }
+      }
+    ],
     "functions": [
       {
         "name": "get",
@@ -20,19 +29,7 @@
               {
                 "type": "array",
                 "name": "data",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string",
-                      "description": "Page title"
-                    },
-                    "url": {
-                      "type": "string",
-                      "description": "Page url"
-                    }
-                  }
-                }
+                "items": {"$ref": "MostVisitedURL"}
               }
             ]
           }

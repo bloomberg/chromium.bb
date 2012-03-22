@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.topSites module, which is part of the Google Chrome  extension APIs."><title>chrome.topSites - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -165,7 +165,7 @@
                 </ul>
               </li>
               <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li class="leftNavSelected">chrome.* APIs</li>
+              <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
           </li>
@@ -185,67 +185,267 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.* APIs</h1>
+        <h1 class="page_title">chrome.topSites</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#supported">Supported APIs</a>
+              <a href="#manifest">Notes</a>
               <ol>
               </ol>
             </li><li>
-              <a href="#experimental">Experimental APIs</a>
+              <a href="#manifest">Manifest</a>
               <ol>
               </ol>
             </li><li>
-              <a href="#conventions">API conventions</a>
+              <a href="#examples">Examples</a>
               <ol>
               </ol>
             </li>
+              <li>
+                <a href="#apiReference">API reference: chrome.topSites</a>
+                <ol>
+                  <li>
+            <a href="#global-methods">Methods</a>
+            <ol>
+              <li>
+                <a href="#method-get">get</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#type-MostVisitedURL">MostVisitedURL</a>
+                <ol>
+                </ol>
+              </li>
+            </ol>
+          </li>
+                </ol>
+              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<h2 id="manifest">Notes</h2>
 <p>
-Google Chrome provides APIs such as
-<code>chrome.bookmarks</code> and <code>chrome.tab</code>
-so that extensions can interact with the browser.
+The top sites module allows access to the top sites that are displayed on
+the new tab page.
 </p>
-<h2 id="supported">Supported APIs</h2>
+<h2 id="manifest">Manifest</h2>
 <p>
-Here are the supported chrome.* APIs:
+You must declare the "topSites" permission in your extension's manifest
+to use this API.
 </p>
-<ul>
-  <li><a href="bookmarks.html" js="">bookmarks</a></li><li><a href="browserAction.html" js="">browserAction</a></li><li><a href="browsingData.html" js="">browsingData</a></li><li><a href="contentSettings.html" js="">contentSettings</a></li><li><a href="contextMenus.html" js="">contextMenus</a></li><li><a href="cookies.html" js="">cookies</a></li><li><a href="debugger.html" js="">debugger</a></li><li><a href="extension.html" js="">extension</a></li><li><a href="fileBrowserHandler.html" js="">fileBrowserHandler</a></li><li><a href="history.html" js="">history</a></li><li><a href="i18n.html" js="">i18n</a></li><li><a href="idle.html" js="">idle</a></li><li><a href="input.ime.html" js="">input.ime</a></li><li><a href="management.html" js="">management</a></li><li><a href="omnibox.html" js="">omnibox</a></li><li><a href="pageAction.html" js="">pageAction</a></li><li><a href="pageCapture.html" js="">pageCapture</a></li><li><a href="permissions.html" js="">permissions</a></li><li><a href="privacy.html" js="">privacy</a></li><li><a href="proxy.html" js="">proxy</a></li><li><a href="storage.html" js="">storage</a></li><li><a href="tabs.html" js="">tabs</a></li><li><a href="topSites.html" js="">topSites</a></li><li><a href="tts.html" js="">tts</a></li><li><a href="ttsEngine.html" js="">ttsEngine</a></li><li><a href="types.html" js="">types</a></li><li><a href="webNavigation.html" js="">webNavigation</a></li><li><a href="webRequest.html" js="">webRequest</a></li><li><a href="webstore.html" js="">webstore</a></li><li><a href="windows.html" js="">windows</a></li>
-</ul>
-<h2 id="experimental">Experimental APIs</h2>
+<pre>{
+  "name": "My extension",
+  ...
+<b>  "permissions": [
+    "topSites",
+  ]</b>,
+  ...
+}</pre>
+<h2 id="examples">Examples</h2>
 <p>
-Google Chrome also has
-<a href="experimental.html">experimental APIs</a>,
-some of which will become supported APIs
-in future releases of Chrome.
+You can find samples of this API in
+<a href="samples.html#topsites">Samples</a>.
 </p>
-<h2 id="conventions">API conventions</h2>
-<p>
-Unless the doc says otherwise,
-methods in the chrome.* APIs are <b>asynchronous</b>:
-they return immediately,
-without waiting for the operation to finish.
-If you need to know the outcome of an operation,
-then you pass a callback function into the method.
-For more information, watch this video:
-</p>
-<p>
-<iframe title="YouTube video player" width="640" height="390" src="http://www.youtube.com/embed/bmxr75CV36A?rel=0" frameborder="0" allowfullscreen=""></iframe>
-</p>
+<!-- END AUTHORED CONTENT -->
 </div>
         <!-- API PAGE -->
-         <!-- /apiPage -->
+        <div class="apiPage">
+        <a name="apiReference"></a>
+        <h2>API reference: chrome.topSites</h2>
+          <!-- PROPERTIES -->
+           <!-- /apiGroup -->
+          <!-- METHODS -->
+          <div id="methodsTemplate" class="apiGroup">
+            <a name="global-methods"></a>
+            <h3>Methods</h3>
+            <!-- iterates over all functions -->
+            <div class="apiItem">
+              <a name="method-get"></a> <!-- method-anchor -->
+              <h4>get</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.topSites.get</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Gets a list of top sites.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of MostVisitedURL data</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="topSites.html#type-MostVisitedURL">MostVisitedURL</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div>  <!-- /apiItem -->
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-MostVisitedURL"></a>
+              <h4>MostVisitedURL</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>An object encapsulating a most visited URL, such as the URLs on the new tab page.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The most visited URL.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>title</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The title of the page</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
+        </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->

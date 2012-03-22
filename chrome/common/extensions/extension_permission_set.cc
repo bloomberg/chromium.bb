@@ -256,6 +256,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kTab, "tabs", IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs, kFlagNone);
   info->RegisterPermission(
+      kTopSites, "topSites", IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
+      ExtensionPermissionMessage::kBrowsingHistory, kFlagNone);
+  info->RegisterPermission(
       kTts, "tts", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(

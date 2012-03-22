@@ -133,6 +133,7 @@ class ExtensionAPIPermission {
     kSystemPrivate,
     kTab,
     kTerminalPrivate,
+    kTopSites,
     kTts,
     kTtsEngine,
     kUnlimitedStorage,

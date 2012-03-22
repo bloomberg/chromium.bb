@@ -154,6 +154,9 @@
       "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
     ]
   },
+  "topSites": {
+    "extension_types": ["extension", "packaged_app"]
+  },
   "tts": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },

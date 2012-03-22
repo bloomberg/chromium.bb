@@ -228,6 +228,7 @@
     "chrome.tabs.remove": "tabs.html#method-remove",
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest",
     "chrome.tabs.update": "tabs.html#method-update",
+    "chrome.topSites.get": "topSites.html#method-get",
     "chrome.tts.getVoices": "tts.html#method-getVoices",
     "chrome.tts.isSpeaking": "tts.html#method-isSpeaking",
     "chrome.tts.speak": "tts.html#method-speak",
@@ -1749,12 +1750,14 @@
       "zip_path": "examples\/api\/notifications.zip"
     },
     {
-      "api_calls": [],
+      "api_calls": [
+        "chrome.topSites.get"
+      ],
       "crx_path": null,
       "description": "extension to prototype new NTP designs",
       "features": [
         "chrome_url_overrides",
-        "experimental"
+        "topSites"
       ],
       "icon": null,
       "id": "2df34c9db20549bd52f2dec3d59d564853bdefac",
@@ -1762,17 +1765,16 @@
       "packaged_app": false,
       "path": "examples\/api\/topsites\/magic8ball\/",
       "protocols": [
-        "chrome:\/\/",
         "chrome:\/\/"
       ],
-      "search_string": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES EXPERIMENTAL",
+      "search_string": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES TOPSITES CHROME.TOPSITES.GET",
       "source_files": [
         "manifest.json",
         "newTab.css",
         "newTab.html",
         "newTab.js"
       ],
-      "source_hash": "4d7cc6f66c8bee44ae3857b7dcb7bdae7c3e60f5",
+      "source_hash": "e31b2a10f0fa1455d7bd14f5da5f157efff99ec7",
       "zip_path": "examples\/api\/topsites\/magic8ball.zip"
     },
     {

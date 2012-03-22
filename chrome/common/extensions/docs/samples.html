@@ -238,7 +238,7 @@
   "6444e5c8ae112a6a433909c5e770669cd16e2e5f": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
   "3aea027164cb9b732ba4a8c51cb93708891726ef": "NEWS READER (BY GOOGLE) DISPLAYS THE LATEST STORIES FROM GOOGLE NEWS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.EXTENSION.GETURL CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE",
   "f799e26ceef2367cf836f24bcb47df4398b0df58": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS",
-  "2df34c9db20549bd52f2dec3d59d564853bdefac": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES EXPERIMENTAL",
+  "2df34c9db20549bd52f2dec3d59d564853bdefac": "NTP PROTOTYPING EXTENSION EXTENSION TO PROTOTYPE NEW NTP DESIGNS CHROME_URL_OVERRIDES TOPSITES CHROME.TOPSITES.GET",
   "e787b322bddbc6289bb31b7d7550b1bf6456a80b": "OMNIBOX EXAMPLE TO USE, TYPE OMNIX PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE CHROME.OMNIBOX.ONINPUTCHANGED CHROME.OMNIBOX.ONINPUTENTERED",
   "8d0a50b57c26bb498be592e871001ffed91541b4": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW",
   "80b86ccc6e8520660fa591caa565826f0ed1b12c": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED",
@@ -319,6 +319,8 @@
         <a href="javascript:void(0);" onclick="setFilter('chrome.storage', this)">chrome.storage</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.tabs', this)">chrome.tabs</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.topSites', this)">chrome.topSites</a><span>, </span>
       </span><span>
         <a href="javascript:void(0);" onclick="setFilter('chrome.tts', this)">chrome.tts</a><span>, </span>
       </span><span>
@@ -2518,10 +2520,17 @@
       <strong>chrome_url_overrides</strong>
       <span> and</span>
     </span><span>
-      <strong>experimental</strong>
+      <strong>topSites</strong>
     </span>
   </p>
   <p>extension to prototype new NTP designs</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="topSites.html#method-get">chrome.topSites.get</a></code>
+      </li>
+    </ul>
+  </div>
   <div class="sourcefiles"><strong>Source files:</strong>
     <ul>
       <li>

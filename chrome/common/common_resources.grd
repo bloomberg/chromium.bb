@@ -42,7 +42,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SERIAL" file="extensions\api\experimental.serial.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SOCKET" file="extensions\api\experimental.socket.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT" file="extensions\api\experimental.speechInput.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_TOPSITES" file="extensions\api\experimental.topSites.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_WEBREQUEST" file="extensions\api\experimental.webRequest.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXTENSION" file="extensions\api\extension.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\fileBrowserHandler.json" type="BINDATA" />
@@ -68,6 +67,7 @@
       <include name="IDR_EXTENSION_API_JSON_TABS" file="extensions\api\tabs.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TERMINALPRIVATE" file="extensions\api\terminalPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TEST" file="extensions\api\test.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_TOPSITES" file="extensions\api\topSites.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TTS" file="extensions\api\tts.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TTSENGINE" file="extensions\api\ttsEngine.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TYPES" file="extensions\api\types.json" type="BINDATA" />
