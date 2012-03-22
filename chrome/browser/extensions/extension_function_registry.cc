@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/declarative/declarative_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
-#include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
@@ -481,12 +480,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SendMouseEventOffscreenTabFunction>();
   RegisterFunction<ToDataUrlOffscreenTabFunction>();
   RegisterFunction<UpdateOffscreenTabFunction>();
-
-  // Media Gallery
-  RegisterFunction<extensions::GetMediaGalleriesFunction>();
-  RegisterFunction<extensions::OpenMediaGalleryManagerFunction>();
-  RegisterFunction<extensions::AssembleMediaFileFunction>();
-  RegisterFunction<extensions::ParseMediaFileMetadataFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);
