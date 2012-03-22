@@ -9,10 +9,15 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -28,7 +33,8 @@ const int kUserInfoHorizontalPadding = 14;
 const int kUserInfoVerticalPadding = 10;
 const int kUserInfoPaddingBetweenItems = 3;
 
-const int kUserIconSize = 32;
+const int kUserIconSize = 27;
+const int kUserIconCornerRadius = 2;
 
 const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
@@ -260,6 +266,67 @@ class UserView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };
 
+// A custom image view with rounded edges.
+class RoundedImageView : public views::View {
+ public:
+  // Constructs a new rounded image view with rounded corners of radius
+  // |corner_radius|.
+  explicit RoundedImageView(int corner_radius) : corner_radius_(corner_radius) {
+  }
+
+  virtual ~RoundedImageView() {
+  }
+
+  // Set the bitmap that should be displayed from a pointer. The pointer
+  // contents is copied in the receiver's bitmap.
+  void SetImage(const SkBitmap& bm) {
+    image_ = bm;
+    SetImageSize(gfx::Size(bm.width(), bm.height()));
+  }
+
+  // Set the desired image size.
+  void SetImageSize(const gfx::Size& image_size) {
+    image_size_ = image_size;
+    PreferredSizeChanged();
+  }
+
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return image_size_;
+  }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    View::OnPaint(canvas);
+    gfx::Rect image_bounds(image_size_);
+    const SkScalar kRadius = SkIntToScalar(corner_radius_);
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
+
+    SkPaint paint;
+    SkShader* shader = SkShader::CreateBitmapShader(image_,
+                                                    SkShader::kRepeat_TileMode,
+                                                    SkShader::kRepeat_TileMode);
+    SkMatrix shader_scale;
+    shader_scale.setScale(SkFloatToScalar(
+        static_cast<float>(image_bounds.width()) / image_.width()),
+        SkFloatToScalar(static_cast<float>(
+            image_bounds.height()) / image_.height()));
+    shader->setLocalMatrix(shader_scale);
+
+    paint.setShader(shader);
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    shader->unref();
+    canvas->sk_canvas()->drawPath(path, paint);
+  }
+
+ private:
+  SkBitmap image_;
+  gfx::Size image_size_;
+  int corner_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedImageView);
+};
+
 }  // namespace tray
 
 TrayUser::TrayUser() {
@@ -269,7 +336,7 @@ TrayUser::~TrayUser() {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  avatar_.reset(new views::ImageView);
+  avatar_.reset(new tray::RoundedImageView(kUserIconCornerRadius));
   if (status == user::LOGGED_IN_USER || status == user::LOGGED_IN_OWNER) {
     avatar_->SetImage(
         ash::Shell::GetInstance()->tray_delegate()->GetUserImage());

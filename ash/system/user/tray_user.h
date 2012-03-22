@@ -19,6 +19,7 @@ namespace internal {
 
 namespace tray {
 class UserView;
+class RoundedImageView;
 }
 
 class TrayUser : public SystemTrayItem,
@@ -44,7 +45,7 @@ class TrayUser : public SystemTrayItem,
   virtual void OnUserUpdate() OVERRIDE;
 
   scoped_ptr<tray::UserView> user_;
-  scoped_ptr<views::ImageView> avatar_;
+  scoped_ptr<tray::RoundedImageView> avatar_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };

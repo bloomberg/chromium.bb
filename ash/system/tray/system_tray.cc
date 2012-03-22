@@ -258,7 +258,7 @@ class SystemTrayBackground : public views::Background {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(SkColorSetARGB(alpha_, 0, 0, 0));
     SkPath path;
-    gfx::Rect bounds(view->GetContentsBounds());
+    gfx::Rect bounds(view->bounds());
     SkScalar radius = SkIntToScalar(4);
     path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
     canvas->sk_canvas()->drawPath(path, paint);
@@ -411,8 +411,10 @@ SystemTray::SystemTray()
           background_animator_(this, 0, kTrayBackgroundAlpha)) {
   container_ = new views::View;
   container_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 5, 0, kTrayPaddingBetweenItems));
+      views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
   container_->set_background(background_);
+  container_->set_border(
+      views::Border::CreateEmptyBorder(1, kTrayPaddingBetweenItems, 1, 1));
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);
