@@ -691,21 +691,18 @@ NPObject* JavaBoundObject::Create(const JavaRef<jobject>& object) {
 }
 
 JavaBoundObject::JavaBoundObject(const JavaRef<jobject>& object)
-    : java_object_(object.env()->NewGlobalRef(object.obj())) {
+    : java_object_(object) {
   // We don't do anything with our Java object when first created. We do it all
   // lazily when a method is first invoked.
 }
 
 JavaBoundObject::~JavaBoundObject() {
-  // Use the current thread's JNI env to release our global ref to the Java
-  // object.
-  AttachCurrentThread()->DeleteGlobalRef(java_object_);
 }
 
 jobject JavaBoundObject::GetJavaObject(NPObject* object) {
   DCHECK_EQ(&JavaNPObject::kNPClass, object->_class);
   JavaBoundObject* jbo = reinterpret_cast<JavaNPObject*>(object)->bound_object;
-  return jbo->java_object_;
+  return jbo->java_object_.obj();
 }
 
 bool JavaBoundObject::HasMethod(const std::string& name) const {
@@ -746,8 +743,8 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
   }
 
   // Call
-  *result = CallJNIMethod(java_object_, method->return_type(), method->id(),
-                          &parameters[0]);
+  *result = CallJNIMethod(java_object_.obj(), method->return_type(),
+                          method->id(), &parameters[0]);
   return true;
 }
 
@@ -758,7 +755,7 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(java_object_,  GetMethodIDFromClassName(
+      env->CallObjectMethod(java_object_.obj(),  GetMethodIDFromClassName(
           env,
           kJavaLangObject,
           kGetClass,

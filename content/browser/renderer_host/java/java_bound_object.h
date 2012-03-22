@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,10 +44,9 @@ class JavaBoundObject {
 
   void EnsureMethodsAreSetUp() const;
 
-  // Global ref to the underlying Java object. We use a naked jobject, rather
-  // than a ScopedJavaGlobalRef, as the global ref will be added and dropped on
-  // different threads.
-  jobject java_object_;
+  // The global ref to the underlying Java object that this JavaBoundObject
+  // instance represents.
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   // Map of public methods, from method name to Method instance. Multiple
   // entries will be present for overloaded methods. Note that we can't use

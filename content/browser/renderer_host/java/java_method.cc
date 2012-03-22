@@ -95,7 +95,7 @@ JavaMethod::JavaMethod(const base::android::JavaRef<jobject>& method)
     : java_method_(method),
       have_calculated_num_parameters_(false),
       id_(NULL) {
-  JNIEnv* env = java_method_.env();
+  JNIEnv* env = AttachCurrentThread();
   // On construction, we do nothing except get the name. Everything else is
   // done lazily.
   ScopedJavaLocalRef<jstring> name(env, static_cast<jstring>(
@@ -139,7 +139,7 @@ void JavaMethod::EnsureNumParametersIsSetUp() const {
   // The number of parameters will be used frequently when determining
   // whether to call this method. We don't get the ID etc until actually
   // required.
-  JNIEnv* env = java_method_.env();
+  JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jarray> parameters(env, static_cast<jarray>(
       env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
           env,
@@ -155,7 +155,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
   }
 
   // Get the parameters
-  JNIEnv* env = java_method_.env();
+  JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> parameters(env, static_cast<jobjectArray>(
       env->CallObjectMethod(java_method_.obj(), GetMethodIDFromClassName(
           env,
