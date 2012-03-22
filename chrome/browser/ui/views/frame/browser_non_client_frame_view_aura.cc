@@ -181,9 +181,12 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
                               canvas,
                               GetThemeFrameBitmap(),
                               GetThemeFrameOverlayBitmap());
-  frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
+  if (browser_view()->ShouldShowWindowTitle())
+    frame_painter_->PaintTitleBar(this, canvas, BrowserFrame::GetTitleFont());
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);
+  else
+    PaintContentEdge(canvas);
 }
 
 void BrowserNonClientFrameViewAura::Layout() {
@@ -274,14 +277,15 @@ int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
     return kTabstripTopSpacingRestored;
   if (frame()->IsFullscreen())
     return 0;
-  if (frame()->IsMaximized())
-    return kTabstripTopSpacingMaximized;
-  if (frame()->widget_delegate() &&
-      frame()->widget_delegate()->ShouldShowWindowTitle()) {
-    // For popups ensure we have enough space to see the full window buttons.
-    return close_button_->bounds().bottom();
+  // Windows with tab strips need a smaller non-client area.
+  if (browser_view()->IsTabStripVisible()) {
+    if (frame()->IsMaximized())
+      return kTabstripTopSpacingMaximized;
+    return kTabstripTopSpacingRestored;
   }
-  return kTabstripTopSpacingRestored;
+  // For windows without a tab strip (popups, etc.) ensure we have enough space
+  // to see the window caption buttons and the content separator line.
+  return close_button_->bounds().bottom() + kClientEdgeThickness;
 }
 
 void BrowserNonClientFrameViewAura::LayoutAvatar() {
@@ -355,6 +359,12 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
                              toolbar_bounds.bottom() - kClientEdgeThickness,
                              w - (2 * kClientEdgeThickness),
                              kClientEdgeThickness),
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+}
+
+void BrowserNonClientFrameViewAura::PaintContentEdge(gfx::Canvas* canvas) {
+  canvas->FillRect(gfx::Rect(0, close_button_->bounds().bottom(),
+                             width(), kClientEdgeThickness),
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 

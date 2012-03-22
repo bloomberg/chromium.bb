@@ -68,6 +68,10 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
+  // Windows without a toolbar need to draw their own line under the header,
+  // above the content area.
+  void PaintContentEdge(gfx::Canvas* canvas);
+
   // Returns the correct bitmap for the frame header based on activation state
   // and incognito mode.
   const SkBitmap* GetThemeFrameBitmap() const;

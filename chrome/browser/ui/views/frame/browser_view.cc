@@ -1464,6 +1464,11 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 }
 
 bool BrowserView::ShouldShowWindowTitle() const {
+#if defined(USE_ASH)
+  // For Ash only, app windows do not show a title. crbug.com/119411
+  if (browser_->is_app())
+    return false;
+#endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
 
@@ -1484,6 +1489,11 @@ SkBitmap BrowserView::GetWindowIcon() {
 }
 
 bool BrowserView::ShouldShowWindowIcon() const {
+#if defined(USE_ASH)
+  // For Ash only, app windows do not show an icon. crbug.com/119411
+  if (browser_->is_app())
+    return false;
+#endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
 }
 
