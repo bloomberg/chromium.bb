@@ -85,4 +85,6 @@ const char kEnableAccel2DCanvas[] = "enable-accelerated-2d-canvas";
 
 const char kEnableAccelCompositing[] = "enable-accelerated-compositing";
 
+const char kEnableSmoothScrolling[] = "enable-smooth-scrolling";
+
 }  // namespace test_shell

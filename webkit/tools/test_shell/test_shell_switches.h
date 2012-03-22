@@ -34,6 +34,7 @@ extern const char kHeapProfiler[];
 extern const char kAllowExternalPages[];
 extern const char kEnableAccel2DCanvas[];
 extern const char kEnableAccelCompositing[];
+extern const char kEnableSmoothScrolling[];
 
 }  // namespace test_shell
 

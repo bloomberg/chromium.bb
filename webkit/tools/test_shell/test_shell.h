@@ -234,7 +234,7 @@ public:
     static void SetAccelerated2dCanvasEnabled(bool enabled);
     static void SetAcceleratedCompositingEnabled(bool enabled);
 
-    WebPreferences* GetWebPreferences() { return web_prefs_; }
+    static WebPreferences* GetWebPreferences();
 
     // Some layout tests hardcode a file:///tmp/LayoutTests URL.  We get around
     // this by substituting "tmp" with the path to the LayoutTests parent dir.

@@ -35,6 +35,7 @@
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/extensions/v8/profiler_extension.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -200,6 +201,9 @@ int main(int argc, char* argv[]) {
 
   if (parsed_command_line.HasSwitch(test_shell::kAllowScriptsToCloseWindows))
     TestShell::SetAllowScriptsToCloseWindows();
+
+  if (parsed_command_line.HasSwitch(test_shell::kEnableSmoothScrolling))
+    TestShell::GetWebPreferences()->enable_scroll_animator = true;
 
   // Disable user themes for layout tests so pixel tests are consistent.
 #if defined(OS_WIN)

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -362,6 +362,12 @@ void TestShell::ResetWebPreferences() {
           web_prefs_->allow_universal_access_from_file_urls = true;
         web_prefs_->visual_word_movement_enabled = false;
     }
+}
+
+// static
+WebPreferences* TestShell::GetWebPreferences() {
+  DCHECK(web_prefs_);
+  return web_prefs_;
 }
 
 // static
