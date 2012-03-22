@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -60,23 +61,23 @@ void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
 }
 
 void GDataUploader::UpdateUpload(int upload_id,
-                                 const FilePath& file_path,
-                                 int64 file_size,
-                                 bool download_complete) {
+                                 content::DownloadItem* download) {
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
-  // Update file_size and download_complete.
+  const int64 file_size = download->GetReceivedBytes();
+
+  // Update file_size and all_bytes_present.
   DVLOG(1) << "Updating file size from " << upload_file_info->file_size
            << " to " << file_size;
   upload_file_info->file_size = file_size;
-  upload_file_info->download_complete = download_complete;
+  upload_file_info->all_bytes_present = download->AllDataSaved();
 
   // Resume upload if necessary and possible.
   if (upload_file_info->upload_paused &&
-      (upload_file_info->download_complete ||
-      upload_file_info->SizeRemaining() >= kUploadChunkSize)) {
+      (upload_file_info->all_bytes_present ||
+      upload_file_info->SizeRemaining() > kUploadChunkSize)) {
     DVLOG(1) << "Resuming upload " << upload_file_info->title;
     upload_file_info->upload_paused = false;
     UploadNextChunk(upload_file_info);
@@ -89,14 +90,19 @@ void GDataUploader::UpdateUpload(int upload_id,
     // Reset number of file open tries if file_path has changed.
     // This can happen when the file gets renamed from the intermediate
     // 'foo.crdownload' to the final 'foo' path.
-    if (upload_file_info->file_path != file_path)
+    if (upload_file_info->file_path != download->GetFullPath())
       upload_file_info->num_file_open_tries = 0;
-    upload_file_info->file_path = file_path;
+    upload_file_info->file_path = download->GetFullPath();
     // Disallow further retries.
     upload_file_info->should_retry_file_open = false;
 
     OpenFile(upload_file_info);
   }
+
+#ifdef WAIT_FOR_DOWNLOAD_COMPLETE
+  if (download->IsComplete())
+    UploadComplete(upload_file_info);
+#endif
 }
 
 UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) {
@@ -206,9 +212,9 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
                                      upload_file_info->buf_len);
 
   // Update the content length if the file_size is known.
-  if (upload_file_info->download_complete)
+  if (upload_file_info->all_bytes_present)
     upload_file_info->content_length = upload_file_info->file_size;
-  else if (bytes_to_read < kUploadChunkSize) {
+  else if (bytes_to_read <= kUploadChunkSize) {
     DVLOG(1) << "Paused upload " << upload_file_info->title;
     upload_file_info->upload_paused = true;
     return;
@@ -246,8 +252,7 @@ void GDataUploader::ReadCompletionCallback(
                                 bytes_read - 1;
 
   file_system_->ResumeUpload(
-      ResumeUploadParams(upload_file_info->file_path,
-                         upload_file_info->title,
+      ResumeUploadParams(upload_file_info->title,
                          upload_file_info->start_range,
                          upload_file_info->end_range,
                          upload_file_info->content_length,
@@ -262,7 +267,8 @@ void GDataUploader::ReadCompletionCallback(
 
 void GDataUploader::OnResumeUploadResponseReceived(
     int upload_id,
-    const ResumeUploadResponse& response) {
+    const ResumeUploadResponse& response,
+    scoped_ptr<DocumentEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
@@ -274,7 +280,10 @@ void GDataUploader::OnResumeUploadResponseReceived(
              << upload_file_info->title;
 
     // Done uploading.
-    RemovePendingUpload(upload_file_info);
+    upload_file_info->entry = entry.Pass();
+#ifndef WAIT_FOR_DOWNLOAD_COMPLETE
+    UploadComplete(upload_file_info);
+#endif
     return;
   }
 
@@ -309,6 +318,14 @@ void GDataUploader::OnResumeUploadResponseReceived(
 
   // Continue uploading.
   UploadNextChunk(upload_file_info);
+}
+
+void GDataUploader::UploadComplete(UploadFileInfo* upload_file_info) {
+  DVLOG(1) << "UploadComplete " << upload_file_info->entry.get();
+  file_system_->AddDownloadedFile(upload_file_info->gdata_path.DirName(),
+                                  upload_file_info->entry.Pass(),
+                                  upload_file_info->file_path);
+  RemovePendingUpload(upload_file_info);
 }
 
 }  // namespace gdata

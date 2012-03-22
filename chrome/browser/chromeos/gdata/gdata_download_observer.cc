@@ -189,10 +189,7 @@ void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
   if (!external_data)
     return;
 
-  gdata_uploader_->UpdateUpload(external_data->upload_id(),
-                                download->GetFullPath(),
-                                download->GetReceivedBytes(),
-                                download->AllDataSaved());
+  gdata_uploader_->UpdateUpload(external_data->upload_id(), download);
 }
 
 bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
@@ -226,7 +223,7 @@ UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
   upload_file_info->content_length = download->AllDataSaved() ?
                                      download->GetReceivedBytes() : -1;
 
-  upload_file_info->download_complete = download->AllDataSaved();
+  upload_file_info->all_bytes_present = download->AllDataSaved();
 
   return upload_file_info;
 }

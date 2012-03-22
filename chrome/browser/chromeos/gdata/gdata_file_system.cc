@@ -6,6 +6,8 @@
 
 #include <errno.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
@@ -1196,29 +1198,19 @@ void GDataFileSystem::ResumeUpload(
           params,
           base::Bind(&GDataFileSystem::OnResumeUpload,
                      weak_ptr_factory_.GetWeakPtr(),
-                     params.local_file_path,
-                     params.virtual_path,
                      base::MessageLoopProxy::current(),
                      callback));
 }
 
 void GDataFileSystem::OnResumeUpload(
-    const FilePath& local_file_path,
-    const FilePath& virtual_file_path,
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     const ResumeFileUploadCallback& callback,
     const ResumeUploadResponse& response,
     scoped_ptr<DocumentEntry> new_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // We are done if entry has been created, add new entry to the file system
-  // and cache.
-  if (new_entry.get()) {
-    AddDownloadedFile(virtual_file_path.DirName(),
-                      new_entry.get(),
-                      local_file_path);
-  }
   if (!callback.is_null())
-    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, response));
+    message_loop_proxy->PostTask(FROM_HERE,
+        base::Bind(callback, response, base::Passed(&new_entry)));
 }
 
 
@@ -2039,7 +2031,7 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
 }
 
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
-  LOG(WARNING) << "Content changed of " << directory_path.value();
+  DVLOG(1) << "Content changed of " << directory_path.value();
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
@@ -2150,11 +2142,11 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
 }
 
 void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
-                                        DocumentEntry* entry,
+                                        scoped_ptr<gdata::DocumentEntry> entry,
                                         const FilePath& file_content_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry) {
+  if (!entry.get()) {
     NOTREACHED();
     return;
   }
@@ -2172,7 +2164,7 @@ void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
       return;
 
     scoped_ptr<GDataFileBase> new_file(
-        GDataFileBase::FromDocumentEntry(parent_dir, entry, root_.get()));
+        GDataFileBase::FromDocumentEntry(parent_dir, entry.get(), root_.get()));
     if (!new_file.get())
       return;
 
@@ -2268,7 +2260,6 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
                  callback,
                  files_to_delete,
                  base::MessageLoopProxy::current()));
-
 }
 
 void GDataFileSystem::Pin(const std::string& resource_id,

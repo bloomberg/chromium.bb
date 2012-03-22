@@ -34,7 +34,6 @@ InitiateUploadParams::~InitiateUploadParams() {
 }
 
 ResumeUploadParams::ResumeUploadParams(
-    const FilePath& local_file_path,
     const std::string& title,
     int64 start_range,
     int64 end_range,
@@ -42,8 +41,7 @@ ResumeUploadParams::ResumeUploadParams(
     const std::string& content_type,
     scoped_refptr<net::IOBuffer> buf,
     const GURL& upload_location,
-    const FilePath& virtual_path) : local_file_path(local_file_path),
-                                    title(title),
+    const FilePath& virtual_path) : title(title),
                                     start_range(start_range),
                                     end_range(end_range),
                                     content_length(content_length),

@@ -16,6 +16,10 @@
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+class DownloadItem;
+}
+
 namespace gdata {
 
 class DocumentsService;
@@ -30,11 +34,8 @@ class GDataUploader {
   // Uploads a file specified by |upload_file_info|. Transfers ownership.
   void UploadFile(UploadFileInfo* upload_file_info);
 
-  // Updates file path, size and download_completed status of streaming upload.
-  void UpdateUpload(int upload_id,
-                    const FilePath& file_path,
-                    int64 file_size,
-                    bool download_complete);
+  // Updates attributes of streaming upload.
+  void UpdateUpload(int upload_id, content::DownloadItem* download);
 
  private:
   // Lookup UploadFileInfo* in pending_uploads_.
@@ -65,10 +66,13 @@ class GDataUploader {
 
   // DocumentsService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(int upload_id,
-                                      const ResumeUploadResponse& response);
+                                      const ResumeUploadResponse& response,
+                                      scoped_ptr<DocumentEntry> entry);
+
+  // When upload completes, move the file into the gdata cache.
+  void UploadComplete(UploadFileInfo* upload_file_info);
 
   // Private data.
-
   GDataFileSystem* file_system_;
 
   int next_upload_id_;  // id counter.

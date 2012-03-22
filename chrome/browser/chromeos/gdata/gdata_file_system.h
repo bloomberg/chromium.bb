@@ -81,7 +81,8 @@ typedef base::Callback<void(base::PlatformFileError error,
 
 // Callback type for DocumentServiceInterface::ResumeUpload.
 typedef base::Callback<void(
-    const ResumeUploadResponse& response)> ResumeFileUploadCallback;
+    const ResumeUploadResponse& response,
+    scoped_ptr<DocumentEntry> entry)> ResumeFileUploadCallback;
 
 
 // Delegate class used to deal with results synchronous read-only search
@@ -331,6 +332,12 @@ class GDataFileSystemInterface {
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
+
+  // Creates a new file from |entry| under |virtual_dir_path|. Stored its
+  // content from |file_content_path| into the cache.
+  virtual void AddDownloadedFile(const FilePath& virtual_dir_path,
+                                 scoped_ptr<DocumentEntry> entry,
+                                 const FilePath& file_content_path) = 0;
 };
 
 // The production implementation of GDataFileSystemInterface.
@@ -384,6 +391,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
+  virtual void AddDownloadedFile(const FilePath& virtual_dir_path,
+                                 scoped_ptr<DocumentEntry> entry,
+                                 const FilePath& file_content_path) OVERRIDE;
 
  private:
   friend class GDataUploader;
@@ -610,12 +620,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for handling file upload resume requests.
   void OnResumeUpload(
-      const FilePath& local_file_path,
-      const FilePath& virtual_file_path,
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const ResumeFileUploadCallback& callback,
       const ResumeUploadResponse& response,
-      scoped_ptr<gdata::DocumentEntry> new_entry);
+      scoped_ptr<DocumentEntry> new_entry);
 
   // Renames a file or directory at |file_path| on in-memory snapshot
   // of the file system. Returns PLATFORM_FILE_OK if successful.
@@ -724,12 +732,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                             const std::string& md5,
                             CacheSubdir subdir_id,
                             CachedFileOrigin file_orign);
-
-  // Creates a new file from |entry| under |virtual_dir_path|. Stored its
-  // content from |file_content_path| into the cache.
-  void AddDownloadedFile(const FilePath& virtual_dir_path,
-                         gdata::DocumentEntry* entry,
-                         const FilePath& file_content_path);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
   // Initializes cache if it has not been initialized.

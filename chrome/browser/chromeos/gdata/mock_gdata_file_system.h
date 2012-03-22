@@ -63,6 +63,12 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_CONST_METHOD0(GetGDataCachePinnedDirectory, FilePath());
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
+
+  // scoped_ptr can't be copied.
+  // TODO(achuith): Figure out how to mock this.
+  virtual void AddDownloadedFile(const FilePath&,
+                    scoped_ptr<DocumentEntry> entry,
+                    const FilePath& file_content_path) OVERRIDE {}
 };
 
 }  // namespace gdata

@@ -37,8 +37,7 @@ struct ResumeUploadResponse {
 
 // Struct for passing params needed for DocumentsService::ResumeUpload() calls.
 struct ResumeUploadParams {
-  ResumeUploadParams(const FilePath& local_file_path,
-                     const std::string& title,
+  ResumeUploadParams(const std::string& title,
                      int64 start_range,
                      int64 end_range,
                      int64 content_length,
@@ -48,7 +47,6 @@ struct ResumeUploadParams {
                      const FilePath& virtual_path);
   ~ResumeUploadParams();
 
-  FilePath local_file_path;   // Location of local copy of file to upload.
   std::string title;  // Title to be used for file to be uploaded.
   int64 start_range;  // Start of range of contents currently stored in |buf|.
   int64 end_range;  // End of range of contents currently stored in |buf|.

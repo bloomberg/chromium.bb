@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 #include "base/string_number_conversions.h"
+#include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
 namespace gdata {
 
@@ -16,7 +17,7 @@ UploadFileInfo::UploadFileInfo()
       buf_len(0),
       start_range(0),
       end_range(-1),
-      download_complete(false),
+      all_bytes_present(false),
       upload_paused(false),
       should_retry_file_open(false),
       num_file_open_tries(0) {
