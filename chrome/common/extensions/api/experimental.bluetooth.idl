@@ -1,0 +1,112 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Bluetooth API.
+// TODO(bryeung): mark this API as ChromeOS only (see crbug.com/119398).
+
+[nodoc] namespace experimental.bluetooth {
+  dictionary Device {
+    DOMString address;
+    DOMString name;
+  };
+
+  dictionary Socket {
+    long id;
+  };
+
+  // TODO(bryeung): This is a temporary hack until Blobs are supported
+  dictionary Blob {
+    DOMString data;
+  };
+
+  dictionary OutOfBandPairingData {
+    // Simple Pairing Hash C
+    // Always 16 octets long.
+    // TODO(bryeung): this should really be an octet[]
+    DOMString hash;
+
+    // Simple Pairing Randomizer R
+    // Always 16 octets long.
+    // TODO(bryeung): this should really be an octet[]
+    DOMString randomizer;
+  };
+
+  // Reports failures via chrome.extension.lastError.
+  callback ResultCallback = void ();
+  callback BooleanCallback = void (boolean result);
+  callback AddressCallback = void (DOMString result);
+  callback DevicesCallback = void (Device[] result);
+  callback SocketCallback = void (Socket result);
+  callback DataCallback = void (Blob result);
+  callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
+
+  interface Functions {
+    // Checks if the system has bluetooth support.
+    // |callback| : Called with the boolean result.
+    static void isAvailable(BooleanCallback callback);
+
+    // Checks if the system's bluetooth module has power.
+    // |callback| : Called with the boolean result.
+    static void isPowered(BooleanCallback callback);
+
+    // Get the bluetooth address of the system's bluetooth module.
+    // |callback| : Called with the address, or null if there was an error.
+    static void getAddress(AddressCallback callback);
+
+    // Get a list of bluetooth devices that support a service.
+    // |service|  : The UUID of the desired service.
+    // |callback| : Called with an array of Device objects, all of which
+    //              provide |service|.
+    static void getDevicesWithService(
+        DOMString service, DevicesCallback callback);
+
+    // Connect to a service on a device.
+    // |device|   : The target device.
+    // |service|  : The target service UUID.
+    // |callback| : Called when the connection is established with a Socket
+    //              that can be used to communicate with |device|.
+    static void connect(
+        Device device, DOMString service, SocketCallback callback);
+
+    // Close a bluetooth connection.
+    // |socket|   : The socket to disconnect.
+    // |callback| : Called to indicate success or failure.
+    static void disconnect(Socket socket, optional ResultCallback callback);
+
+    // Read data from a bluetooth connection.
+    // |socket|   : The socket to read from.
+    // |callback| : Called with the data when it is available.
+    static void read(Socket socket, DataCallback callback);
+
+    // Write data to a bluetooth connection.
+    // |socket|   : The socket to write to.
+    // |data|     : The data to write.
+    // |callback| : Called to indicate success or failure.
+    static void write(
+        Socket socket, Blob data, optional ResultCallback callback);
+
+    // Get the local Out of Band Pairing data.
+    // |callback| : Called with the data.
+    static void getOutOfBandPairingData(OutOfBandPairingDataCallback callback);
+
+    // Set the Out of Band Pairing data for the bluetooth device at |address|.
+    // |address|  : The bluetooth address of the device sending the data.
+    // |data|     : The data.
+    // |callback| : Called to indicate success or failure.
+    static void setOutOfBandPairingData(
+        DOMString address,
+        OutOfBandPairingData data,
+        optional ResultCallback callback);
+  };
+
+  interface Events {
+    // Fired when the availability of bluetooth on the system changes.
+    // |available| : True if bluetooth is available, false otherwise.
+    static void onAvailabilityChanged(boolean available);
+
+    // Fired when the power state of bluetooth on the system changes.
+    // |powered| : True if bluetooth is powered, false otherwise.
+    static void onPowerChanged(boolean has_power);
+  };
+};

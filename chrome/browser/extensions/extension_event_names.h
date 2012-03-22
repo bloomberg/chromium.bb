@@ -57,6 +57,12 @@ extern const char kOnTerminalProcessOutput[];
 // OffscreenTabs.
 extern const char kOnOffscreenTabUpdated[];
 
+#if defined(OS_CHROMEOS)
+// Bluetooth.
+extern const char kBluetoothOnAvailabilityChanged[];
+extern const char kBluetoothOnPowerChanged[];
+#endif
+
 };  // namespace extension_event_names
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_

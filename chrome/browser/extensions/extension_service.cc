@@ -106,6 +106,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -547,6 +548,9 @@ void ExtensionService::InitEventRouters() {
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(
       profile_)->ObserveFileSystemEvents();
+
+  bluetooth_event_router_.reset(
+      new chromeos::ExtensionBluetoothEventRouter(profile_));
 
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter);

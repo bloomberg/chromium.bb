@@ -62,6 +62,8 @@
         'browser/extensions/api/api_resource_event_notifier.h',
         'browser/extensions/api/app/app_api.cc',
         'browser/extensions/api/app/app_api.h',
+        'browser/extensions/api/bluetooth/bluetooth_api.cc',
+        'browser/extensions/api/bluetooth/bluetooth_api.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/declarative/declarative_api.cc',

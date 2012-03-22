@@ -67,6 +67,7 @@ class SyncData;
 class Version;
 
 namespace chromeos {
+class ExtensionBluetoothEventRouter;
 class ExtensionInputMethodEventRouter;
 }
 
@@ -471,6 +472,9 @@ class ExtensionService
   }
 
 #if defined(OS_CHROMEOS)
+  chromeos::ExtensionBluetoothEventRouter* bluetooth_event_router() {
+    return bluetooth_event_router_.get();
+  }
   chromeos::ExtensionInputMethodEventRouter* input_method_event_router() {
     return input_method_event_router_.get();
   }
@@ -801,6 +805,7 @@ class ExtensionService
   scoped_ptr<ExtensionWebNavigationEventRouter> web_navigation_event_router_;
 
 #if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::ExtensionBluetoothEventRouter> bluetooth_event_router_;
   scoped_ptr<chromeos::ExtensionInputMethodEventRouter>
       input_method_event_router_;
 #endif

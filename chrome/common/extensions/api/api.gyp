@@ -24,6 +24,7 @@
           'windows.json',
         ],
         'idl_schema_files': [
+          'experimental.bluetooth.idl',
           'experimental.dns.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',

@@ -507,6 +507,8 @@
         'browser/chromeos/disks/disk_mount_manager.h',
         'browser/chromeos/enterprise_extension_observer.cc',
         'browser/chromeos/enterprise_extension_observer.h',
+        'browser/chromeos/extensions/bluetooth_event_router.cc',
+        'browser/chromeos/extensions/bluetooth_event_router.h',
         'browser/chromeos/extensions/file_browser_event_router.cc',
         'browser/chromeos/extensions/file_browser_event_router.h',
         'browser/chromeos/extensions/file_browser_notifications.cc',
