@@ -37,11 +37,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup();
 
-  // Initialize the new NaCl process, returning true on success. On success,
-  // the NaCl process host will assume responsibility for sending the reply
-  // message. On failure, the reply will not be sent and this is the caller's
-  // responsibility to avoid hanging the renderer.
-  bool Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
+  // Initialize the new NaCl process. Result is returned by sending ipc
+  // message reply_msg.
+  void Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
               int socket_count,
               IPC::Message* reply_msg);
 
@@ -74,6 +72,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   class DebugContext;
 
   scoped_refptr<DebugContext> debug_context_;
+
+  // This field becomes true when the broker successfully launched
+  // the NaCl loader.
+  bool process_launched_by_broker_;
 #endif
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.

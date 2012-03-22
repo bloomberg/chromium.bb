@@ -235,7 +235,11 @@ static bool RunningOnWOW64() {
 #endif
 
 NaClProcessHost::NaClProcessHost(const std::wstring& url)
-    : reply_msg_(NULL),
+    :
+#if defined(OS_WIN)
+      process_launched_by_broker_(false),
+#endif
+      reply_msg_(NULL),
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       enable_exception_handling_(false) {
@@ -287,14 +291,8 @@ NaClProcessHost::~NaClProcessHost() {
     chrome_render_message_filter_->Send(reply_msg_);
   }
 #if defined(OS_WIN)
-  if (RunningOnWOW64()) {
-    // If the nacl-gdb switch is not empty, the NaCl loader has been launched
-    // without the broker and so we shouldn't inform the broker about
-    // the loader termination.
-    if (CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kNaClGdb).empty()) {
-      NaClBrokerService::GetInstance()->OnLoaderDied();
-    }
+  if (process_launched_by_broker_) {
+    NaClBrokerService::GetInstance()->OnLoaderDied();
   }
   if (debug_context_ != NULL) {
     debug_context_->SetChildProcessHost(NULL);
@@ -330,22 +328,27 @@ void NaClProcessHost::EarlyStartup() {
 #endif
 }
 
-bool NaClProcessHost::Launch(
+void NaClProcessHost::Launch(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     int socket_count,
     IPC::Message* reply_msg) {
+  chrome_render_message_filter_ = chrome_render_message_filter;
+  reply_msg_ = reply_msg;
+
   // Place an arbitrary limit on the number of sockets to limit
   // exposure in case the renderer is compromised.  We can increase
   // this if necessary.
   if (socket_count > 8) {
-    return false;
+    delete this;
+    return;
   }
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in OnProcessLaunched, below.
   if (!NaClBrowser::GetInstance()->EnsureIrtAvailable()) {
     LOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
-    return false;
+    delete this;
+    return;
   }
 
   // Rather than creating a socket pair in the renderer, and passing
@@ -360,8 +363,10 @@ bool NaClProcessHost::Launch(
   for (int i = 0; i < socket_count; i++) {
     nacl::Handle pair[2];
     // Create a connected socket
-    if (nacl::SocketPair(pair) == -1)
-      return false;
+    if (nacl::SocketPair(pair) == -1) {
+      delete this;
+      return;
+    }
     internal_->sockets_for_renderer.push_back(pair[0]);
     internal_->sockets_for_sel_ldr.push_back(pair[1]);
     SetCloseOnExec(pair[0]);
@@ -370,14 +375,8 @@ bool NaClProcessHost::Launch(
 
   // Launch the process
   if (!LaunchSelLdr()) {
-    return false;
+    delete this;
   }
-
-  chrome_render_message_filter_ = chrome_render_message_filter;
-
-  // On success, we take responsibility for sending the reply.
-  reply_msg_ = reply_msg;
-  return true;
 }
 
 scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(
@@ -485,6 +484,9 @@ bool NaClProcessHost::LaunchSelLdr() {
 }
 
 void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
+#if defined(OS_WIN)
+  process_launched_by_broker_ = true;
+#endif
   process_->SetHandle(handle);
   OnProcessLaunched();
 }
