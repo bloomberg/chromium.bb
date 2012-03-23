@@ -6,6 +6,7 @@
 
 #include "base/event_types.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
@@ -95,13 +96,19 @@ void PrepareDragData(const WebDropData& drop_data,
     provider->SetURL(drop_data.url, drop_data.url_title);
   if (!drop_data.text_html.empty())
     provider->SetHtml(drop_data.text_html, drop_data.html_base_url);
+  if (!drop_data.filenames.empty()) {
+    std::vector<FilePath> paths;
+    for (std::vector<string16>::const_iterator it = drop_data.filenames.begin();
+        it != drop_data.filenames.end(); ++it)
+      paths.push_back(FilePath::FromUTF8Unsafe(UTF16ToUTF8(*it)));
+    provider->SetFilenames(paths);
+  }
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
     provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                              pickle);
   }
-  // TODO(varunjain): support files. http://crbug.com/118471
 }
 
 // Utility to fill a WebDropData object from ui::OSExchangeData.
@@ -122,13 +129,18 @@ void PrepareWebDropData(WebDropData* drop_data,
 
   data.GetHtml(&drop_data->text_html, &drop_data->html_base_url);
 
+  std::vector<FilePath> files;
+  if (data.GetFilenames(&files) && !files.empty()) {
+    for (std::vector<FilePath>::const_iterator it = files.begin();
+        it != files.end(); ++it)
+      drop_data->filenames.push_back(UTF8ToUTF16(it->AsUTF8Unsafe()));
+  }
+
   Pickle pickle;
   if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                           &pickle))
     ui::ReadCustomDataIntoMap(pickle.data(), pickle.size(),
                               &drop_data->custom_data);
-
-  // TODO(varunjain): support files. http://crbug.com/118471
 }
 
 // Utilities to convert between WebKit::WebDragOperationsMask and

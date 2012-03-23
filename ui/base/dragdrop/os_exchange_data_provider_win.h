@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,6 +152,9 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual void SetString(const string16& data);
   virtual void SetURL(const GURL& url, const string16& title);
   virtual void SetFilename(const FilePath& path);
+  virtual void SetFilenames(const std::vector<FilePath>& paths) {
+    NOTREACHED();
+  }
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
   virtual void SetFileContents(const FilePath& filename,
@@ -161,6 +164,10 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool GetString(string16* data) const;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const;
   virtual bool GetFilename(FilePath* path) const;
+  virtual bool GetFilenames(std::vector<FilePath>* paths) const {
+    NOTREACHED();
+    return false;
+  }
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
   virtual bool GetFileContents(FilePath* filename,

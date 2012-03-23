@@ -96,11 +96,13 @@ class UI_EXPORT OSExchangeData {
     virtual void SetString(const string16& data) = 0;
     virtual void SetURL(const GURL& url, const string16& title) = 0;
     virtual void SetFilename(const FilePath& path) = 0;
+    virtual void SetFilenames(const std::vector<FilePath>& paths) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
 
     virtual bool GetString(string16* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
     virtual bool GetFilename(FilePath* path) const = 0;
+    virtual bool GetFilenames(std::vector<FilePath>* paths) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
@@ -154,6 +156,8 @@ class UI_EXPORT OSExchangeData {
   void SetURL(const GURL& url, const string16& title);
   // A full path to a file.
   void SetFilename(const FilePath& path);
+  // Full path to one or more files.
+  void SetFilenames(const std::vector<FilePath>& paths);
   // Adds pickled data of the specified format.
   void SetPickledData(CustomFormat format, const Pickle& data);
 
@@ -165,6 +169,7 @@ class UI_EXPORT OSExchangeData {
   bool GetURLAndTitle(GURL* url, string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(FilePath* path) const;
+  bool GetFilenames(std::vector<FilePath>* paths) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually

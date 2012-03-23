@@ -39,6 +39,10 @@ void OSExchangeData::SetFilename(const FilePath& path) {
   provider_->SetFilename(path);
 }
 
+void OSExchangeData::SetFilenames(const std::vector<FilePath>& paths) {
+  provider_->SetFilenames(paths);
+}
+
 void OSExchangeData::SetPickledData(CustomFormat format, const Pickle& data) {
   provider_->SetPickledData(format, data);
 }
@@ -53,6 +57,10 @@ bool OSExchangeData::GetURLAndTitle(GURL* url, string16* title) const {
 
 bool OSExchangeData::GetFilename(FilePath* path) const {
   return provider_->GetFilename(path);
+}
+
+bool OSExchangeData::GetFilenames(std::vector<FilePath>* paths) const {
+  return provider_->GetFilenames(paths);
 }
 
 bool OSExchangeData::GetPickledData(CustomFormat format, Pickle* data) const {

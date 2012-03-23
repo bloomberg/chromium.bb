@@ -28,11 +28,13 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   virtual void SetString(const string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;
   virtual void SetFilename(const FilePath& path) OVERRIDE;
+  virtual void SetFilenames(const std::vector<FilePath>& paths) OVERRIDE;
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data) OVERRIDE;
   virtual bool GetString(string16* data) const OVERRIDE;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const OVERRIDE;
   virtual bool GetFilename(FilePath* path) const OVERRIDE;
+  virtual bool GetFilenames(std::vector<FilePath>* paths) const OVERRIDE;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const OVERRIDE;
   virtual bool HasString() const OVERRIDE;
@@ -76,7 +78,7 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   string16 title_;
 
   // File name.
-  FilePath filename_;
+  std::vector<FilePath> filenames_;
 
   // PICKLED_DATA contents.
   PickleData pickle_data_;

@@ -54,8 +54,9 @@ WebDropData::WebDropData(const WebDragData& drag_data) {
         file_description_filename = item.title;
         break;
       case WebDragData::Item::StorageTypeFilename:
-        // We don't currently use this.
-        NOTREACHED();
+        // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
+        filenames.push_back(item.filenameData);
+        break;
     }
   }
 }
