@@ -37,7 +37,6 @@ void OptionsUITest::VerifyTitle(scoped_refptr<TabProxy> tab) {
   std::wstring title;
   EXPECT_TRUE(tab->GetTabTitle(&title));
   string16 expected_title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
-  NOTIMPLEMENTED() << title;
   EXPECT_NE(WideToUTF16Hack(title).find(expected_title), string16::npos);
 }
 
