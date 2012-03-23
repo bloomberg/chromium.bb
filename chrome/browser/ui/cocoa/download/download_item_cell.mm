@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,7 @@ using content::DownloadItem;
       break;
     case DownloadItem::IN_PROGRESS:
       percentDone_ = downloadModel->download()->IsPaused() ?
-          -1 : downloadModel->download()->PercentComplete();
+          -1 : downloadModel->PercentComplete();
       break;
     default:
       NOTREACHED();

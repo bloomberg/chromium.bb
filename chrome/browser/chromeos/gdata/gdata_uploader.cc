@@ -70,14 +70,15 @@ void GDataUploader::UpdateUpload(int upload_id,
 
   // Update file_size and all_bytes_present.
   DVLOG(1) << "Updating file size from " << upload_file_info->file_size
-           << " to " << file_size;
+           << " to " << file_size
+           << (download->AllDataSaved() ? " (Complete)" : " (In-progress)");
   upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = download->AllDataSaved();
 
   // Resume upload if necessary and possible.
   if (upload_file_info->upload_paused &&
       (upload_file_info->all_bytes_present ||
-      upload_file_info->SizeRemaining() > kUploadChunkSize)) {
+       upload_file_info->SizeRemaining() > kUploadChunkSize)) {
     DVLOG(1) << "Resuming upload " << upload_file_info->title;
     upload_file_info->upload_paused = false;
     UploadNextChunk(upload_file_info);
@@ -99,21 +100,33 @@ void GDataUploader::UpdateUpload(int upload_id,
     OpenFile(upload_file_info);
   }
 
-#ifdef WAIT_FOR_DOWNLOAD_COMPLETE
   if (download->IsComplete())
     UploadComplete(upload_file_info);
-#endif
 }
 
-UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) {
+int64 GDataUploader::GetUploadedBytes(int upload_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UploadFileInfo* upload_info = GetUploadFileInfo(upload_id);
+  // We return the start_range as the count of uploaded bytes since that is the
+  // start of the next or currently uploading chunk.
+  // TODO(asanka): Use a finer grained progress value than this. We end up
+  //               reporting progress in kUploadChunkSize increments.
+  return upload_info ? upload_info->start_range : 0;
+}
+
+UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfoMap::iterator it = pending_uploads_.find(upload_id);
+  UploadFileInfoMap::const_iterator it = pending_uploads_.find(upload_id);
+  DVLOG_IF(1, it == pending_uploads_.end()) << "No upload found for id "
+                                            << upload_id;
   return it != pending_uploads_.end() ? it->second : NULL;
 }
 
 void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
   pending_uploads_.erase(upload_file_info->upload_id);
+  if (!upload_file_info->completion_callback.is_null())
+    upload_file_info->completion_callback.Run();
   // The file stream is closed by the destructor asynchronously.
   delete upload_file_info->file_stream;
   delete upload_file_info;
@@ -208,13 +221,19 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
+  const int64 bytes_remaining = upload_file_info->SizeRemaining();
   const int bytes_to_read = std::min(upload_file_info->SizeRemaining(),
                                      upload_file_info->buf_len);
 
   // Update the content length if the file_size is known.
   if (upload_file_info->all_bytes_present)
     upload_file_info->content_length = upload_file_info->file_size;
-  else if (bytes_to_read <= kUploadChunkSize) {
+  else if (bytes_remaining == bytes_to_read) {
+    // Wait for more data if this is the last chunk we have and we don't know
+    // whether we've reached the end of the file. We won't know how much data to
+    // expect until the transfer is complete (the Content-Length might be
+    // incorrect or absent). If we've sent the last chunk out already when we
+    // find out there's no more data, we won't be able to complete the upload.
     DVLOG(1) << "Paused upload " << upload_file_info->title;
     upload_file_info->upload_paused = true;
     return;
@@ -260,9 +279,9 @@ void GDataUploader::ReadCompletionCallback(
                          upload_file_info->buf,
                          upload_file_info->upload_location,
                          upload_file_info->gdata_path),
-       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                  uploader_factory_.GetWeakPtr(),
-                  upload_file_info->upload_id));
+      base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
+                 uploader_factory_.GetWeakPtr(),
+                 upload_file_info->upload_id));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
@@ -281,9 +300,10 @@ void GDataUploader::OnResumeUploadResponseReceived(
 
     // Done uploading.
     upload_file_info->entry = entry.Pass();
-#ifndef WAIT_FOR_DOWNLOAD_COMPLETE
-    UploadComplete(upload_file_info);
-#endif
+    if (!upload_file_info->completion_callback.is_null()) {
+      upload_file_info->completion_callback.Run();
+      upload_file_info->completion_callback.Reset();
+    }
     return;
   }
 

@@ -37,9 +37,12 @@ class GDataUploader {
   // Updates attributes of streaming upload.
   void UpdateUpload(int upload_id, content::DownloadItem* download);
 
+  // Returns the count of bytes confirmed as uploaded so far.
+  int64 GetUploadedBytes(int upload_id) const;
+
  private:
   // Lookup UploadFileInfo* in pending_uploads_.
-  UploadFileInfo* GetUploadFileInfo(int upload_id);
+  UploadFileInfo* GetUploadFileInfo(int upload_id) const;
 
   // Destroys |upload_file_info|.
   void RemovePendingUpload(UploadFileInfo* upload_file_info);

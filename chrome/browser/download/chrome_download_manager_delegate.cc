@@ -43,6 +43,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #endif
 
@@ -204,6 +205,12 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
             item->GetId()));
     return false;
   }
+#endif
+#if defined(OS_CHROMEOS)
+  // If there's a GData upload associated with this download, we wait until that
+  // is complete before allowing the download item to complete.
+  if (!gdata::GDataDownloadObserver::IsReadyToComplete(item))
+    return false;
 #endif
   return true;
 }

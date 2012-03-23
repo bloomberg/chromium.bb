@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H__
 #pragma once
 
-#include <set>
+#include <map>
 
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -34,6 +36,22 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   static void SetGDataPath(content::DownloadItem* download,
                            const FilePath& gdata_path);
 
+  // Checks if there is a GData upload associated with |download|
+  static bool IsGDataDownload(content::DownloadItem* download);
+
+  // Checks if |download| is ready to complete. Returns true if |download| has
+  // no GData upload associated with it or if the GData upload has already
+  // completed. This method is called by the ChromeDownloadManagerDelegate to
+  // check if the download is ready to complete.
+  static bool IsReadyToComplete(content::DownloadItem* download);
+
+  // Returns the count of bytes confirmed as uploaded so far for |download|.
+  static int64 GetUploadedBytes(content::DownloadItem* download);
+
+  // Returns the progress of the upload of |download| as a percentage. If the
+  // progress is unknown, returns -1.
+  static int PercentComplete(content::DownloadItem* download);
+
  private:
   // Gets the gdata_path from external data in |download|.
   // GetGDataPath may return an empty path in case SetGDataPath was not
@@ -54,6 +72,9 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void AddPendingDownload(content::DownloadItem* download);
   void RemovePendingDownload(content::DownloadItem* download);
 
+  // Remove our external data and remove our observers from |download|
+  void DetachFromDownload(content::DownloadItem* download);
+
   // Starts the upload of a downloaded/downloading file.
   void UploadDownloadItem(content::DownloadItem* download);
 
@@ -64,7 +85,12 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   bool ShouldUpload(content::DownloadItem* download);
 
   // Creates UploadFileInfo and initializes it using DownloadItem*.
-  static UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
+  UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
+
+  // Callback invoked by GDataUploader when the upload associated with
+  // |download_id| has completed. This function invokes the
+  // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
+  void OnUploadComplete(int32 download_id);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.
@@ -72,8 +98,10 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;
 
-  typedef std::set<content::DownloadItem*> DownloadSet;
-  DownloadSet pending_downloads_;
+  typedef std::map<int32, content::DownloadItem*> DownloadMap;
+  DownloadMap pending_downloads_;
+
+  base::WeakPtrFactory<GDataDownloadObserver> weak_ptr_factory_;
 
   // Temporary download location directory.
   FilePath temp_download_path_;

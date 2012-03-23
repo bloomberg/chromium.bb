@@ -864,7 +864,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
     download_util::PaintDownloadProgress(&canvas,
         allocation.x, allocation.y,
         progress_angle_,
-        get_download()->PercentComplete(),
+        download_model_->PercentComplete(),
         download_util::SMALL);
   }
 

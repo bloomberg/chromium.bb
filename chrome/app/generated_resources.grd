@@ -2295,9 +2295,19 @@ are declared in build/common.gypi.
                desc="When starting a download, let the user know we're starting the download.">
         Starting...
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_DOWNLOAD_STATUS_WAITING"
+                 desc="Displayed as the status for download items associated with GData uploads. Indicates that we are waiting for the download portion to progress far enough to begin uploading.">
+          Downloading...
+        </message>
+      </if>
       <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS"
                desc="Size and units downloaded, time remaining.">
         <ph name="DOWNLOAD_RECEIVED">$1<ex>54kB</ex></ph>/<ph name="DOWNLOAD_TOTAL">$2<ex>154MB</ex></ph>, <ph name="TIME_LEFT">$3<ex>5s</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_SIZES_ONLY"
+               desc="Size and units downloaded.">
+        <ph name="DOWNLOAD_RECEIVED">$1<ex>54kB</ex></ph>/<ph name="DOWNLOAD_TOTAL">$2<ex>154MB</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_STATUS_OPEN_IN"
                desc="Time left until the file download completes and the file is opened.">

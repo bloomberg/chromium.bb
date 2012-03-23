@@ -35,6 +35,9 @@ class BaseDownloadItemModel {
   // Get the status text to display.
   virtual string16 GetStatusText() = 0;
 
+  // Rough percent complete. Returns -1 if the progress is unknown.
+  virtual int PercentComplete() const = 0;
+
   // Get the warning text to display for a dangerous download. The |base_width|
   // is the maximum width of an embedded filename (if there is one). The metrics
   // for the filename will be based on |font|. Should only be called if
@@ -66,6 +69,7 @@ class DownloadItemModel : public BaseDownloadItemModel {
   // BaseDownloadItemModel
   virtual void CancelTask() OVERRIDE;
   virtual string16 GetStatusText() OVERRIDE;
+  virtual int PercentComplete() const OVERRIDE;
   virtual string16 GetWarningText(const gfx::Font& font,
                                   int base_width) OVERRIDE;
   virtual string16 GetWarningConfirmButtonText() OVERRIDE;

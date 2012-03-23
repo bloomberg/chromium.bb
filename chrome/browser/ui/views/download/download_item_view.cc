@@ -849,7 +849,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       if (download_->IsInProgress()) {
         download_util::PaintDownloadProgress(canvas, this, 0, 0,
                                              progress_angle_,
-                                             download_->PercentComplete(),
+                                             model_->PercentComplete(),
                                              download_util::SMALL);
       } else if (download_->IsComplete() &&
                  complete_animation_.get() &&

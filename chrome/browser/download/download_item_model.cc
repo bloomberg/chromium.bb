@@ -19,6 +19,10 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/text/text_elider.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#endif
+
 using base::TimeDelta;
 using content::DownloadItem;
 
@@ -35,7 +39,14 @@ void DownloadItemModel::CancelTask() {
 
 string16 DownloadItemModel::GetStatusText() {
   int64 size = download_->GetReceivedBytes();
-  int64 total = download_->GetTotalBytes();
+  int64 total = download_->AllDataSaved() ? size : download_->GetTotalBytes();
+  bool is_gdata = false;
+#if defined(OS_CHROMEOS)
+  is_gdata = gdata::GDataDownloadObserver::IsGDataDownload(download_);
+  // For GData downloads, the size is the count of bytes uploaded.
+  if (is_gdata)
+    size = gdata::GDataDownloadObserver::GetUploadedBytes(download_);
+#endif
 
   ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
   string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
@@ -48,11 +59,12 @@ string16 DownloadItemModel::GetStatusText() {
   string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
       ui::FormatBytesWithUnits(total, amount_units, true));
 
+  // TODO(asanka): Calculate a TimeRemaining() for GData uploads.
   TimeDelta remaining;
   string16 simple_time;
   if (download_->IsInProgress() && download_->IsPaused()) {
     simple_time = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
-  } else if (download_->TimeRemaining(&remaining)) {
+  } else if (!is_gdata && download_->TimeRemaining(&remaining)) {
     simple_time = download_->GetOpenWhenComplete() ?
                       TimeFormat::TimeRemainingShort(remaining) :
                       TimeFormat::TimeRemaining(remaining);
@@ -61,6 +73,15 @@ string16 DownloadItemModel::GetStatusText() {
   string16 status_text;
   switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
+#if defined(OS_CHROMEOS)
+      if (is_gdata && size == 0) {
+        // We haven't started the upload yet. The download needs to progress
+        // further before we will see any upload progress. Show "Downloading..."
+        // until we start uploading.
+        status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_WAITING);
+        break;
+      }
+#endif
       if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_) &&
           download_->AllDataSaved() &&
           download_->GetState() == DownloadItem::IN_PROGRESS) {
@@ -77,15 +98,19 @@ string16 DownloadItemModel::GetStatusText() {
                                                    simple_time);
         }
       } else {
-        if (simple_time.empty()) {
+        if (!simple_time.empty()) {
+          status_text = l10n_util::GetStringFUTF16(
+              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size, simple_total,
+              simple_time);
+        } else if (total > 0 && size > 0) {
+          status_text = l10n_util::GetStringFUTF16(
+              IDS_DOWNLOAD_STATUS_IN_PROGRESS_SIZES_ONLY,
+              simple_size, simple_total);
+        } else {
           // Instead of displaying "0 B" we keep the "Starting..." string.
           status_text = (size == 0)
               ? l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)
               : ui::FormatBytes(size);
-        } else {
-          status_text = l10n_util::GetStringFUTF16(
-              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size, simple_total,
-              simple_time);
         }
       }
       break;
@@ -111,6 +136,16 @@ string16 DownloadItemModel::GetStatusText() {
   }
 
   return status_text;
+}
+
+int DownloadItemModel::PercentComplete() const {
+#if defined(OS_CHROMEOS)
+  // For GData uploads, progress is based on the number of bytes
+  // uploaded. Progress is unknown until the upload starts.
+  if (gdata::GDataDownloadObserver::IsGDataDownload(download_))
+    return gdata::GDataDownloadObserver::PercentComplete(download_);
+#endif
+  return download_->PercentComplete();
 }
 
 string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
