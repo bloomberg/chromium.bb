@@ -104,7 +104,8 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* background = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND);
+  static GdkPixbuf* background = rb.GetNativeImageNamed(
+      IDR_ABOUT_BACKGROUND).ToGdkPixbuf();
 
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(

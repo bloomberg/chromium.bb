@@ -72,10 +72,10 @@ SadTabGtk::SadTabGtk(WebContents* web_contents, Kind kind)
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(centering), vbox);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   // Add center-aligned image.
-  GtkWidget* image = gtk_image_new_from_pixbuf(
-      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          kind == CRASHED ? IDR_SAD_TAB : IDR_KILLED_TAB));
+  GtkWidget* image = gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(
+      kind == CRASHED ? IDR_SAD_TAB : IDR_KILLED_TAB).ToGdkPixbuf());
   gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
 

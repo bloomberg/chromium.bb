@@ -330,12 +330,6 @@ Image::operator const SkBitmap&() const {
   return *ToSkBitmap();
 }
 
-#if defined(TOOLKIT_USES_GTK)
-Image::operator GdkPixbuf*() const {
-  return ToGdkPixbuf();
-}
-#endif
-
 #if defined(OS_MACOSX)
 Image::operator NSImage*() const {
   return ToNSImage();

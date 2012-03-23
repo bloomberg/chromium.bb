@@ -133,9 +133,9 @@ GList* GetIconList() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   GList* icon_list = NULL;
   icon_list = g_list_append(icon_list,
-                            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32));
+      rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32).ToGdkPixbuf());
   icon_list = g_list_append(icon_list,
-                            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
+      rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
   return icon_list;
 }
 
@@ -149,7 +149,7 @@ GList* GetIconList() {
 GdkPixbuf* GetAvatarIcon(Profile* profile) {
   if (profile->IsOffTheRecord()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    return rb.GetNativeImageNamed(IDR_OTR_ICON);
+    return rb.GetNativeImageNamed(IDR_OTR_ICON).ToGdkPixbuf();
   }
 
   const ProfileInfoCache& cache =
@@ -162,7 +162,7 @@ GdkPixbuf* GetAvatarIcon(Profile* profile) {
   const size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
 
   return (index != std::string::npos ?
-          cache.GetAvatarIconOfProfileAtIndex(index) :
+          cache.GetAvatarIconOfProfileAtIndex(index).ToGdkPixbuf() :
           static_cast<GdkPixbuf*>(NULL));
 }
 
@@ -202,7 +202,7 @@ GdkPixbuf* GetChromeIcon(GtkIconTheme* theme, const int size) {
     default: CHECK(false); break;
   }
 
-  return gdk_pixbuf_copy(rb.GetNativeImageNamed(id));
+  return gdk_pixbuf_copy(rb.GetNativeImageNamed(id).ToGdkPixbuf());
 }
 
 // Adds |emblem| to the bottom-right corner of |icon|.

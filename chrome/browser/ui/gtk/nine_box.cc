@@ -78,7 +78,7 @@ NineBox::NineBox(int image, int top_margin, int bottom_margin, int left_margin,
                  int right_margin)
     : unref_images_on_destroy_(true) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  GdkPixbuf* pixbuf = rb.GetNativeImageNamed(image);
+  GdkPixbuf* pixbuf = rb.GetNativeImageNamed(image).ToGdkPixbuf();
   int width = gdk_pixbuf_get_width(pixbuf);
   int height = gdk_pixbuf_get_height(pixbuf);
   int inset_width = left_margin + right_margin;

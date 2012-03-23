@@ -633,10 +633,10 @@ void DownloadItemGtk::UpdateDangerIcon() {
   } else {
     // Set the warning icon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    int pixbuf_id = download_model_->IsMalicious() ?
-        IDR_SAFEBROWSING_WARNING : IDR_WARNING;
-    GdkPixbuf* download_pixbuf = rb.GetNativeImageNamed(pixbuf_id);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
+    int pixbuf_id = download_model_->IsMalicious() ? IDR_SAFEBROWSING_WARNING
+                                                   : IDR_WARNING;
+    gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_),
+                              rb.GetNativeImageNamed(pixbuf_id).ToGdkPixbuf());
   }
 }
 

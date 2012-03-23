@@ -120,9 +120,7 @@ class UI_EXPORT Image {
   // DEPRECATED ----------------------------------------------------------------
   // Conversion handlers. These wrap the ToType() variants.
   operator const SkBitmap&() const;
-#if defined(TOOLKIT_USES_GTK)
-  operator GdkPixbuf*() const;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   operator NSImage*() const;
 #endif
   // ---------------------------------------------------------------------------

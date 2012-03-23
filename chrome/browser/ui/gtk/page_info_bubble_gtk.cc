@@ -172,7 +172,7 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
     const PageInfoModel::SectionInfo& section) {
   GtkWidget* section_box = gtk_hbox_new(FALSE, ui::kControlSpacing);
 
-  GdkPixbuf* pixbuf = *model_.GetIconImage(section.icon_id);
+  GdkPixbuf* pixbuf = model_.GetIconImage(section.icon_id)->ToGdkPixbuf();
   if (pixbuf) {
     GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
     gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE, 0);

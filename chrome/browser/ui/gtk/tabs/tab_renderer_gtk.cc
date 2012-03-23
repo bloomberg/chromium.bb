@@ -1114,15 +1114,18 @@ void TabRendererGtk::InitResources() {
 
   // Grab the pixel sizes of our masking images.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  GdkPixbuf* tab_active_l = rb.GetNativeImageNamed(IDR_TAB_ACTIVE_LEFT);
+  GdkPixbuf* tab_active_l = rb.GetNativeImageNamed(
+      IDR_TAB_ACTIVE_LEFT).ToGdkPixbuf();
   tab_active_l_width_ = gdk_pixbuf_get_width(tab_active_l);
   tab_active_l_height_ = gdk_pixbuf_get_height(tab_active_l);
 
-  GdkPixbuf* tab_inactive_l = rb.GetNativeImageNamed(IDR_TAB_INACTIVE_LEFT);
+  GdkPixbuf* tab_inactive_l = rb.GetNativeImageNamed(
+      IDR_TAB_INACTIVE_LEFT).ToGdkPixbuf();
   tab_inactive_l_height_ = gdk_pixbuf_get_height(tab_inactive_l);
 
-  close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
-  close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
+  GdkPixbuf* tab_close = rb.GetNativeImageNamed(IDR_TAB_CLOSE).ToGdkPixbuf();
+  close_button_width_ = gdk_pixbuf_get_width(tab_close);
+  close_button_height_ = gdk_pixbuf_get_height(tab_close);
 
   const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
   title_font_ = new gfx::Font(base_font.GetFontName(), kFontPixelSize);

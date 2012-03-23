@@ -646,7 +646,7 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
-            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
+            rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
       } else {
         GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
@@ -654,7 +654,7 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
       }
     } else {
       gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
-          rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16));
+          rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
     }
     throbber_.Reset();
   }

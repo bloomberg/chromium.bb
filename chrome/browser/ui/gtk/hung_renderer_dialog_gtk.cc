@@ -139,7 +139,8 @@ void HungRendererDialogGtk::Init() {
   GtkWidget* icon_vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), icon_vbox, FALSE, FALSE, 0);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(IDR_FROZEN_TAB_ICON);
+  GdkPixbuf* icon_pixbuf = rb.GetNativeImageNamed(
+      IDR_FROZEN_TAB_ICON).ToGdkPixbuf();
   GtkWidget* icon = gtk_image_new_from_pixbuf(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_vbox), icon, FALSE, FALSE, 0);
 

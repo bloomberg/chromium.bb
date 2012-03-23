@@ -246,17 +246,16 @@ void EditSearchEngineDialog::EnableControls() {
 void EditSearchEngineDialog::UpdateImage(GtkWidget* image,
                                          bool is_valid,
                                          int invalid_message_id) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (is_valid) {
     gtk_widget_set_has_tooltip(image, FALSE);
     gtk_image_set_from_pixbuf(GTK_IMAGE(image),
-        ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_INPUT_GOOD));
+        rb.GetNativeImageNamed(IDR_INPUT_GOOD).ToGdkPixbuf());
   } else {
     gtk_widget_set_tooltip_text(
         image, l10n_util::GetStringUTF8(invalid_message_id).c_str());
     gtk_image_set_from_pixbuf(GTK_IMAGE(image),
-        ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_INPUT_ALERT));
+        rb.GetNativeImageNamed(IDR_INPUT_ALERT).ToGdkPixbuf());
   }
 }
 

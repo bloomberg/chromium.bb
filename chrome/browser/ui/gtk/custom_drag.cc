@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,7 @@ CustomDrag::~CustomDrag() {
 
 void CustomDrag::OnDragBegin(GtkWidget* widget, GdkDragContext* drag_context) {
   if (image_)
-    gtk_drag_set_icon_pixbuf(drag_context, *image_, 0, 0);
+    gtk_drag_set_icon_pixbuf(drag_context, image_->ToGdkPixbuf(), 0, 0);
 }
 
 void CustomDrag::OnDragEnd(GtkWidget* widget, GdkDragContext* drag_context) {
@@ -111,7 +111,7 @@ void DownloadItemDrag::SetSource(GtkWidget* widget,
                    G_CALLBACK(OnDragDataGetStandalone), item);
 
   if (icon)
-    gtk_drag_source_set_icon_pixbuf(widget, *icon);
+    gtk_drag_source_set_icon_pixbuf(widget, icon->ToGdkPixbuf());
 }
 
 // static

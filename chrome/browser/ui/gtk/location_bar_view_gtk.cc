@@ -247,7 +247,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   tab_to_search_magnifier_ = gtk_image_new_from_pixbuf(
-      rb.GetNativeImageNamed(IDR_KEYWORD_SEARCH_MAGNIFIER));
+      rb.GetNativeImageNamed(IDR_KEYWORD_SEARCH_MAGNIFIER).ToGdkPixbuf());
   gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_magnifier_,
                      FALSE, FALSE, 0);
   gtk_util::CenterWidgetInHBox(tab_to_search_hbox, tab_to_search_label_hbox,
@@ -287,7 +287,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
       theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_leading_label_, FALSE);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
-      rb.GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
+      rb.GetNativeImageNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB).ToGdkPixbuf());
   tab_to_search_hint_trailing_label_ =
       theme_service_->BuildLabel("", kHintTextColor);
   gtk_widget_set_sensitive(tab_to_search_hint_trailing_label_, FALSE);
@@ -1019,7 +1019,7 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
     } else {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
-                                rb.GetNativeImageNamed(IDR_OMNIBOX_SEARCH));
+          rb.GetNativeImageNamed(IDR_OMNIBOX_SEARCH).ToGdkPixbuf());
     }
   }
 }
