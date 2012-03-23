@@ -82,9 +82,9 @@ void TextfieldExample::ButtonPressed(Button* sender,
     name_->SetText(empty);
     password_->SetText(empty);
   } else if (sender == append_) {
-    name_->AppendText(WideToUTF16(L"[append]"));
+    name_->AppendText(ASCIIToUTF16("[append]"));
   } else if (sender == set_) {
-    name_->SetText(WideToUTF16(L"[set]"));
+    name_->SetText(ASCIIToUTF16("[set]"));
   } else if (sender == set_style_) {
     if (!name_->text().empty()) {
       gfx::StyleRange color;

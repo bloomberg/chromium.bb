@@ -35,19 +35,19 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
-  enum {
-    kGroupMakeDecision,
+  enum GroupID {
+    GROUP_MAKE_DECISION,
   };
 
-  enum {
-    kCommandDoSomething,
-    kCommandSelectAscii,
-    kCommandSelectUtf8,
-    kCommandSelectUtf16,
-    kCommandCheckApple,
-    kCommandCheckOrange,
-    kCommandCheckKiwi,
-    kCommandGoHome,
+  enum CommandID {
+    COMMAND_DO_SOMETHING,
+    COMMAND_SELECT_ASCII,
+    COMMAND_SELECT_UTF8,
+    COMMAND_SELECT_UTF16,
+    COMMAND_CHECK_APPLE,
+    COMMAND_CHECK_ORANGE,
+    COMMAND_CHECK_KIWI,
+    COMMAND_GO_HOME,
   };
 
   scoped_ptr<ui::SimpleMenuModel> submenu_;
@@ -79,24 +79,24 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
 
 ExampleMenuModel::ExampleMenuModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      current_encoding_command_id_(kCommandSelectAscii) {
-  AddItem(kCommandDoSomething, WideToUTF16(L"Do Something"));
+      current_encoding_command_id_(COMMAND_SELECT_ASCII) {
+  AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something"));
   AddSeparator();
-  AddRadioItem(kCommandSelectAscii,
-               WideToUTF16(L"ASCII"), kGroupMakeDecision);
-  AddRadioItem(kCommandSelectUtf8,
-               WideToUTF16(L"UTF-8"), kGroupMakeDecision);
-  AddRadioItem(kCommandSelectUtf16,
-               WideToUTF16(L"UTF-16"), kGroupMakeDecision);
+  AddRadioItem(COMMAND_SELECT_ASCII, ASCIIToUTF16("ASCII"),
+               GROUP_MAKE_DECISION);
+  AddRadioItem(COMMAND_SELECT_UTF8, ASCIIToUTF16("UTF-8"),
+               GROUP_MAKE_DECISION);
+  AddRadioItem(COMMAND_SELECT_UTF16, ASCIIToUTF16("UTF-16"),
+               GROUP_MAKE_DECISION);
   AddSeparator();
-  AddCheckItem(kCommandCheckApple, WideToUTF16(L"Apple"));
-  AddCheckItem(kCommandCheckOrange, WideToUTF16(L"Orange"));
-  AddCheckItem(kCommandCheckKiwi, WideToUTF16(L"Kiwi"));
+  AddCheckItem(COMMAND_CHECK_APPLE, ASCIIToUTF16("Apple"));
+  AddCheckItem(COMMAND_CHECK_ORANGE, ASCIIToUTF16("Orange"));
+  AddCheckItem(COMMAND_CHECK_KIWI, ASCIIToUTF16("Kiwi"));
   AddSeparator();
-  AddItem(kCommandGoHome, WideToUTF16(L"Go Home"));
+  AddItem(COMMAND_GO_HOME, ASCIIToUTF16("Go Home"));
 
   submenu_.reset(new ui::SimpleMenuModel(this));
-  submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
+  submenu_->AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something 2"));
   AddSubMenu(0, ASCIIToUTF16("Submenu"), submenu_.get());
 }
 
@@ -113,8 +113,8 @@ bool ExampleMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ExampleMenuModel::IsCommandIdEnabled(int command_id) const {
-  // All commands are enabled except for kCommandGoHome.
-  return command_id != kCommandGoHome;
+  // All commands are enabled except for COMMAND_GO_HOME.
+  return command_id != COMMAND_GO_HOME;
 }
 
 bool ExampleMenuModel::GetAcceleratorForCommandId(
@@ -126,49 +126,50 @@ bool ExampleMenuModel::GetAcceleratorForCommandId(
 
 void ExampleMenuModel::ExecuteCommand(int command_id) {
   switch (command_id) {
-    case kCommandDoSomething: {
+    case COMMAND_DO_SOMETHING: {
       LOG(INFO) << "Done something";
       break;
     }
 
     // Radio items.
-    case kCommandSelectAscii: {
-      current_encoding_command_id_ = kCommandSelectAscii;
+    case COMMAND_SELECT_ASCII: {
+      current_encoding_command_id_ = COMMAND_SELECT_ASCII;
       LOG(INFO) << "Selected ASCII";
       break;
     }
-    case kCommandSelectUtf8: {
-      current_encoding_command_id_ = kCommandSelectUtf8;
+    case COMMAND_SELECT_UTF8: {
+      current_encoding_command_id_ = COMMAND_SELECT_UTF8;
       LOG(INFO) << "Selected UTF-8";
       break;
     }
-    case kCommandSelectUtf16: {
-      current_encoding_command_id_ = kCommandSelectUtf16;
+    case COMMAND_SELECT_UTF16: {
+      current_encoding_command_id_ = COMMAND_SELECT_UTF16;
       LOG(INFO) << "Selected UTF-16";
       break;
     }
 
     // Check items.
-    case kCommandCheckApple:
-    case kCommandCheckOrange:
-    case kCommandCheckKiwi: {
+    case COMMAND_CHECK_APPLE:
+    case COMMAND_CHECK_ORANGE:
+    case COMMAND_CHECK_KIWI: {
       // Print what fruit is checked.
       const char* checked_fruit = "";
-      if (command_id == kCommandCheckApple) {
+      if (command_id == COMMAND_CHECK_APPLE)
         checked_fruit = "Apple";
-      } else if (command_id == kCommandCheckOrange) {
+      else if (command_id == COMMAND_CHECK_ORANGE)
         checked_fruit = "Orange";
-      } else if (command_id == kCommandCheckKiwi) {
+      else if (command_id == COMMAND_CHECK_KIWI)
         checked_fruit = "Kiwi";
-      }
-      LOG(INFO) << "Checked " << checked_fruit;
 
       // Update the check status.
       std::set<int>::iterator iter = checked_fruits_.find(command_id);
-      if (iter == checked_fruits_.end())
+      if (iter == checked_fruits_.end()) {
+        VLOG(1) << "Checked " << checked_fruit;
         checked_fruits_.insert(command_id);
-      else
+      } else {
+        VLOG(1) << "Unchecked " << checked_fruit;
         checked_fruits_.erase(iter);
+      }
       break;
     }
   }
