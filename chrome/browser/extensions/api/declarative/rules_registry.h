@@ -37,7 +37,7 @@ class RulesRegistry
     : public base::RefCountedThreadSafe<RulesRegistry,
                                         RulesRegistryDeleteTraits> {
  public:
-  typedef extensions::api::experimental::Rule Rule;
+  typedef extensions::api::experimental_declarative::Rule Rule;
 
   // Registers |rules|, owned by |extension_id| to this RulesRegistry.
   // If a concrete RuleRegistry does not support some of the rules,
