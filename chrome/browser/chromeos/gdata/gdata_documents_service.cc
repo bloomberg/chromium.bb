@@ -67,14 +67,10 @@ DocumentsService::DocumentsService()
 }
 
 DocumentsService::~DocumentsService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   gdata_auth_service_->RemoveObserver(this);
 }
 
 void DocumentsService::Initialize(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   profile_ = profile;
   // AddObserver() should be called before Initialize() as it could change
   // the refresh token.
@@ -222,10 +218,9 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
 
 void DocumentsService::StartOperationOnUIThread(
     GDataOperationInterface* operation) {
-  // The re-authenticatation callback will run on UI thread.
   operation->SetReAuthenticateCallback(
       base::Bind(&DocumentsService::RetryOperation,
-                 weak_ptr_bound_to_ui_thread_));
+                 weak_ptr_factory_.GetWeakPtr()));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -242,7 +237,7 @@ void DocumentsService::StartOperation(GDataOperationInterface* operation) {
     gdata_auth_service_->StartAuthentication(
         operation_registry_.get(),
         base::Bind(&DocumentsService::OnOperationAuthRefresh,
-                   weak_ptr_bound_to_ui_thread_,
+                   weak_ptr_factory_.GetWeakPtr(),
                    operation));
     return;
   }
