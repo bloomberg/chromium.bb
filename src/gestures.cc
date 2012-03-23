@@ -9,6 +9,7 @@
 #include <base/string_util.h>
 
 #include "gestures/include/accel_filter_interpreter.h"
+#include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/iir_filter_interpreter.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
@@ -188,6 +189,7 @@ GestureInterpreter::GestureInterpreter(int version)
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get());
   temp = new IirFilterInterpreter(prop_reg_.get(), temp);
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);
+  temp = new BoxFilterInterpreter(prop_reg_.get(), temp);
   temp = new SensorJumpFilterInterpreter(prop_reg_.get(), temp);
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp);
   temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp);
