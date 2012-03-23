@@ -220,7 +220,9 @@ gfx::Size AppListItemView::GetPreferredSizeForIconSize(
   int left_right_padding = 20;
   if (min_title_width == 0) {
     const gfx::Font& title_font = GetTitleFontForIconSize(icon_size);
-    min_title_width = kMinTitleChars * title_font.GetAverageCharacterWidth();
+    // Use big char such as 'G' to calculate min title width.
+    min_title_width = kMinTitleChars *
+        title_font.GetStringWidth(ASCIIToUTF16("G"));
     left_right_padding = kLeftRightPaddingChars *
         title_font.GetAverageCharacterWidth();
   }
