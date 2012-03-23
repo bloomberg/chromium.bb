@@ -159,6 +159,7 @@ class IMEDetailedView : public views::View,
       if (ime_find != ime_map_.end()) {
         std::string ime_id = ime_find->second;
         delegate->SwitchIME(ime_id);
+        GetWidget()->Close();
       } else {
         std::map<views::View*, std::string>::const_iterator prop_find;
         prop_find = property_map_.find(sender);
