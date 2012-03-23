@@ -163,6 +163,8 @@ extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
+extern const char kEnableSpdy3[];
+extern const char kEnableSpdyFlowControl[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncTabs[];
 extern const char kDisableSyncTabs[];

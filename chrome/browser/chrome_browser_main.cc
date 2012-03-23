@@ -806,6 +806,35 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     if (value > 0)
       net::SpdySession::set_max_concurrent_streams(value);
   }
+
+  if (parsed_command_line().HasSwitch(switches::kEnableSpdy3)) {
+    net::HttpStreamFactory::EnableSPDY3();
+  } else if (parsed_command_line().HasSwitch(
+             switches::kEnableSpdyFlowControl)) {
+    net::HttpStreamFactory::EnableFlowControl();
+  } else {
+    const base::FieldTrial::Probability kSpdyDivisor = 100;
+    base::FieldTrial::Probability flow_control_probability = 5;
+    base::FieldTrial::Probability spdy3_probability = 0;
+
+    // After October 30, 2012 builds, it will always be in default group
+    // (disable_spdy_protocol_test).
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial(
+            "SpdyProtocolTest", kSpdyDivisor, "disable_spdy_protocol_test",
+            2012, 10, 30));
+
+    int spdy3_grp = trial->AppendGroup("spdy3", spdy3_probability);
+    int flow_control_grp = trial->AppendGroup(
+        "flow_control", flow_control_probability);
+
+    int trial_grp = trial->group();
+    if (trial_grp == spdy3_grp) {
+      net::HttpStreamFactory::EnableSPDY3();
+    } else if (trial_grp == flow_control_grp) {
+      net::HttpStreamFactory::EnableFlowControl();
+    }
+  }
 }
 
 // If --socket-reuse-policy is not specified, run an A/B test for choosing the

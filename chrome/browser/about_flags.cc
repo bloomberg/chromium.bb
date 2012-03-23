@@ -441,6 +441,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableHttpPipelining)
   },
   {
+    "enable-spdy3",
+    IDS_FLAGS_ENABLE_SPDY3_NAME,
+    IDS_FLAGS_ENABLE_SPDY3_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSpdy3)
+  },
+  {
+    "enable-spdy-flow-control",
+    IDS_FLAGS_ENABLE_SPDY_FLOW_CONTROL_NAME,
+    IDS_FLAGS_ENABLE_SPDY_FLOW_CONTROL_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSpdyFlowControl)
+  },
+  {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,
