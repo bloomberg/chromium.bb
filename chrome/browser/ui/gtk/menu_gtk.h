@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/gtk/g_object_weak_ref.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/point.h"
@@ -164,13 +163,15 @@ class MenuGtk {
   // Focus out event handler for the menu.
   CHROMEGTK_CALLBACK_1(MenuGtk, gboolean, OnMenuFocusOut, GdkEventFocus*);
 
-  // Lets dynamic submenu models know when they have been closed.
-  static void OnSubmenuHidden(GtkWidget* widget, gpointer userdata);
+  // Handles building dynamic submenus on demand when they are shown.
+  CHROMEGTK_CALLBACK_0(MenuGtk, void, OnSubMenuShow);
 
-  // Scheduled by OnSubmenuHidden() to avoid delivering MenuClosed notifications
-  // before ActivatedAt notifications. |menuitem| is the menu item containing
-  // the submenu that was hidden.
-  static void OnSubmenuHiddenCallback(const GObjectWeakRef& menuitem);
+  // Handles trearing down dynamic submenus when they have been closed.
+  CHROMEGTK_CALLBACK_0(MenuGtk, void, OnSubMenuHidden);
+
+  // Scheduled by OnSubMenuHidden() to avoid deleting submenus when hidden
+  // before pending activations within them are delivered.
+  static void OnSubMenuHiddenCallback(GtkWidget* submenu);
 
   // Sets the enable/disabled state and dynamic labels on our menu items.
   static void SetButtonItemInfo(GtkWidget* button, gpointer userdata);

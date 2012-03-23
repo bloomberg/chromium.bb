@@ -54,7 +54,7 @@ ui::MenuModel* ModelForMenuItem(GtkMenuItem* menu_item) {
       g_object_get_data(G_OBJECT(menu_item), "model"));
 }
 
-void SetupButtonShowHandler(GtkWidget* button,
+void SetUpButtonShowHandler(GtkWidget* button,
                             ui::ButtonMenuItemModel* model,
                             int index) {
   g_object_set_data(G_OBJECT(button), "button-model",
@@ -501,10 +501,13 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
 
     if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       GtkWidget* submenu = gtk_menu_new();
+      g_object_set_data(G_OBJECT(submenu), "menu-item", menu_item);
       ui::MenuModel* submenu_model = model->GetSubmenuModelAt(i);
       g_object_set_data(G_OBJECT(menu_item), "submenu-model", submenu_model);
-      // We will build the submenu on demand when activated.
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+      // We will populate the submenu on demand when shown.
+      g_signal_connect(submenu, "show", G_CALLBACK(OnSubMenuShowThunk), this);
+      g_signal_connect(submenu, "hide", G_CALLBACK(OnSubMenuHiddenThunk), this);
     }
 
     ui::AcceleratorGtk accelerator;
@@ -560,7 +563,7 @@ GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
                   UTF16ToUTF8(model->GetLabelAt(i))).c_str());
         }
 
-        SetupButtonShowHandler(button, model, i);
+        SetUpButtonShowHandler(button, model, i);
         break;
       }
       case ui::ButtonMenuItemModel::TYPE_BUTTON_LABEL: {
@@ -571,7 +574,7 @@ GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
             GTK_BUTTON(button),
             gfx::RemoveWindowsStyleAccelerators(
                 UTF16ToUTF8(model->GetLabelAt(i))).c_str());
-        SetupButtonShowHandler(button, model, i);
+        SetUpButtonShowHandler(button, model, i);
         break;
       }
     }
@@ -590,58 +593,30 @@ GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
   return menu_item;
 }
 
-void MenuGtk::OnMenuItemActivated(GtkWidget* menuitem) {
+void MenuGtk::OnMenuItemActivated(GtkWidget* menu_item) {
   if (block_activation_)
     return;
 
-  ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menuitem));
+  ui::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(menu_item));
 
-  // We receive activation messages when highlighting a menu that has a
-  // submenu. We build submenus on demand, and tear them down on hide, to
-  // allow submenu models to be constructed and destroyed on demand.
-  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menuitem));
+  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
   if (submenu) {
-    int id;
-    if (!GetMenuItemID(menuitem, &id))
-      return;
-
-    ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
-        g_object_get_data(G_OBJECT(menuitem), "submenu-model"));
-    // Some non-dynamic menus might have submenus without submenu models.
-    // (For example, the input methods context menu for input fields.)
-    if (!submenu_model)
-      return;
-
-    // This might be just the temporary stub submenu, or it might be a full
-    // submenu that we built but never destroyed. (This can happen if we briefly
-    // hover over a submenu but never actually show it; we get the activation
-    // event but no hide event.) We want to destroy it either way.
-    gtk_widget_destroy(submenu);
-
-    submenu_model->MenuWillShow();
-
-    submenu = gtk_menu_new();
-    BuildSubmenuFromModel(submenu_model, submenu);
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
-
-    // Update all the menu item info in the newly-generated menu.
-    gtk_container_foreach(GTK_CONTAINER(submenu), SetMenuItemInfo, this);
-
-    // Hook up the hide signal so the submenu knows when it is hidden.
-    g_signal_connect(submenu, "hide", G_CALLBACK(OnSubmenuHidden),
-                     implicit_cast<gpointer>(menuitem));
+    // We receive activation messages when highlighting a menu that has a
+    // submenu. We build submenus on show, and tear them down on hide, to
+    // allow submenu models to be constructed and destroyed on demand. So,
+    // there's nothing further to do here in that case.
     return;
   }
 
   // The activate signal is sent to radio items as they get deselected;
   // ignore it in this case.
-  if (GTK_IS_RADIO_MENU_ITEM(menuitem) &&
-      !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem))) {
+  if (GTK_IS_RADIO_MENU_ITEM(menu_item) &&
+      !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item))) {
     return;
   }
 
   int id;
-  if (!GetMenuItemID(menuitem, &id))
+  if (!GetMenuItemID(menu_item, &id))
     return;
 
   // The menu item can still be activated by hotkeys even if it is disabled.
@@ -778,48 +753,53 @@ gboolean MenuGtk::OnMenuFocusOut(GtkWidget* widget, GdkEventFocus* event) {
   return TRUE;
 }
 
-// static
-void MenuGtk::OnSubmenuHidden(GtkWidget* widget, gpointer userdata) {
-  GtkWidget* menuitem = static_cast<GtkWidget*>(userdata);
-  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menuitem));
-  DCHECK_EQ(widget, submenu);
-  if (widget != submenu)
-    return;
-  // This method is called before we've actually processed menu activations.
-  // If we were to handle it right away, we might lose the activations. So,
-  // we handle it a little later on. We use a weak reference to the menu item
-  // to be sure we won't end up calling this on a destroyed object.
+void MenuGtk::OnSubMenuShow(GtkWidget* submenu) {
+  GtkWidget* menu_item = static_cast<GtkWidget*>(
+      g_object_get_data(G_OBJECT(submenu), "menu-item"));
+
+  // Notify the submenu model that the menu will be shown.
+  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
+      g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
+  submenu_model->MenuWillShow();
+
+  // Actually build the submenu and attach it to the parent menu item.
+  BuildSubmenuFromModel(submenu_model, submenu);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+
+  // Update all the menu item info in the newly-generated menu.
+  gtk_container_foreach(GTK_CONTAINER(submenu), SetMenuItemInfo, this);
+}
+
+void MenuGtk::OnSubMenuHidden(GtkWidget* submenu) {
+  GtkWidget* menu_item = static_cast<GtkWidget*>(
+      g_object_get_data(G_OBJECT(submenu), "menu-item"));
+
+  // Increase the reference count of the old submenu. We get this hide
+  // notification before we've actually processed menu activations, so if we
+  // were to end up deleting the submenu now, we might lose the activation. We
+  // post a task to delete it later, after the activation has been processed.
+  g_object_ref(G_OBJECT(submenu));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&MenuGtk::OnSubmenuHiddenCallback, GObjectWeakRef(menuitem)));
+      base::Bind(&MenuGtk::OnSubMenuHiddenCallback, submenu));
+
+  // Notify the submenu model that the menu has been hidden.
+  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
+      g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
+  submenu_model->MenuClosed();
+
+  // Build a new submenu, which will be populated when it is next shown.
+  submenu = gtk_menu_new();
+  g_object_set_data(G_OBJECT(submenu), "menu-item", menu_item);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+  g_signal_connect(submenu, "show", G_CALLBACK(OnSubMenuShowThunk), this);
+  g_signal_connect(submenu, "hide", G_CALLBACK(OnSubMenuHiddenThunk), this);
 }
 
 // static
-void MenuGtk::OnSubmenuHiddenCallback(const GObjectWeakRef& menuitem) {
-  // Check that the weak reference is still there.
-  if (!menuitem.get())
-    return;
-
-  GtkWidget* submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menuitem.get()));
-  DCHECK(submenu);
-  if (!submenu)
-    return;
-  ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
-      g_object_get_data(menuitem.get(), "submenu-model"));
-  DCHECK(submenu_model);
-  if (!submenu_model)
-    return;
-
-  // Destroy the dynamic submenu now so that its model can be safely destroyed
-  // as well (e.g. for the bookmarks model); it will be rebuilt if necessary.
-  gtk_widget_destroy(submenu);
-  submenu = gtk_menu_new();
-  // We don't need to do any further setup here. This temporary submenu
-  // will be destroyed and rebuilt before being shown anyway.
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem.get()), submenu);
-
-  // Notify the submenu model that the menu has been hidden.
-  submenu_model->MenuClosed();
+void MenuGtk::OnSubMenuHiddenCallback(GtkWidget* submenu) {
+  // See OnSubMenuHidden() above.
+  g_object_unref(G_OBJECT(submenu));
 }
 
 // static
