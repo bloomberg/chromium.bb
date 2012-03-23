@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/pdf/SkPDFDevice.h"
 #include "third_party/skia/include/pdf/SkPDFDocument.h"
+#include "third_party/skia/include/pdf/SkPDFFont.h"
+#include "third_party/skia/include/pdf/SkPDFPage.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -93,18 +95,21 @@ bool PdfMetafileSkia::FinishDocument() {
     FinishPage();
 
   data_->current_page_ = NULL;
+  base::hash_set<SkFontID> font_set;
 
-  int font_counts[SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1];
-  // Work around bug in skia for the moment.
-  memset(font_counts, 0, sizeof(font_counts));
-  data_->pdf_doc_.getCountOfFontTypes(font_counts);
-  for (int type = 0;
-       type <= SkAdvancedTypefaceMetrics::kNotEmbeddable_Font;
-       type++) {
-    for (int count = 0; count < font_counts[type]; count++) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "PrintPreview.FontType", type,
-          SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
+  const SkTDArray<SkPDFPage*>& pages = data_->pdf_doc_.getPages();
+  for (int page_number = 0; page_number < pages.count(); page_number++) {
+    const SkTDArray<SkPDFFont*>& font_resources =
+        pages[page_number]->getFontResources();
+    for (int font = 0; font < font_resources.count(); font++) {
+      SkFontID font_id = font_resources[font]->typeface()->uniqueID();
+      if (font_set.find(font_id) == font_set.end()) {
+        font_set.insert(font_id);
+        UMA_HISTOGRAM_ENUMERATION(
+            "PrintPreview.FontType",
+            font_resources[font]->getType(),
+            SkAdvancedTypefaceMetrics::kNotEmbeddable_Font + 1);
+      }
     }
   }
 
