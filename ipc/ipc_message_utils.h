@@ -228,7 +228,7 @@ template <>
 struct ParamTraits<long> {
   typedef long param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteLong(p);
+    m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
@@ -241,7 +241,7 @@ template <>
 struct ParamTraits<unsigned long> {
   typedef unsigned long param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteLong(p);
+    m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
