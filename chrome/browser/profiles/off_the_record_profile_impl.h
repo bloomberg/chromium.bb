@@ -27,7 +27,6 @@ using base::TimeDelta;
 //
 ////////////////////////////////////////////////////////////////////////////////
 class OffTheRecordProfileImpl : public Profile,
-                                public BrowserList::Observer,
                                 public content::NotificationObserver {
  public:
   explicit OffTheRecordProfileImpl(Profile* real_profile);
@@ -87,8 +86,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void InitChromeOSPreferences() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
