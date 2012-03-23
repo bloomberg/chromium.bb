@@ -393,6 +393,13 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
 
     {0, 0, 0, 0, 50, 0, kX0 + kBig, kY + kSml, fid++, 0},
     {0, 0, 0, 0, 50, 0, kX1 + kBig, kY + kSml, fid++, 0},
+
+    // Vertical movement with Warp - shouldn't scroll
+    {0, 0, 0, 0, 50, 0, kX0, kY, fid++, 0},
+    {0, 0, 0, 0, 50, 0, kX1, kY, fid--, 0},
+
+    {0, 0, 0, 0, 50, 0, kX0, kY + kBig, fid++, GESTURES_FINGER_WARP_Y},
+    {0, 0, 0, 0, 50, 0, kX1, kY + kBig, fid++, GESTURES_FINGER_WARP_Y},
   };
   ssize_t idx = 0;
   HardwareStateAnScrollExpectations hardware_states[] = {
@@ -408,6 +415,10 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
     { { 0.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
     { { 1.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
     { { 1.010, 0, 2, 2, &finger_states[idx++ * 4 + 2] }, kBig,    0 },
+
+    { { 0.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.010, 0, 2, 2, &finger_states[idx++ * 4 + 2] },    0,    0 },
   };
 
   for (size_t i = 0; i < arraysize(hardware_states); i++) {

@@ -1173,13 +1173,17 @@ void ImmediateInterpreter::FillResultGesture(
       if (fabsf(current->pressure - prev->pressure) >
           max_pressure_change_.val_)
         break;
+      float dx = current->position_x - prev->position_x;
+      if (current->flags & GESTURES_FINGER_WARP_X)
+        dx = 0.0;
+      float dy = current->position_y - prev->position_y;
+      if (current->flags & GESTURES_FINGER_WARP_Y)
+        dy = 0.0;
       result_ = Gesture(kGestureMove,
                         prev_state_.timestamp,
                         hwstate.timestamp,
-                        current->position_x -
-                        prev->position_x,
-                        current->position_y -
-                        prev->position_y);
+                        dx,
+                        dy);
       break;
     }
     case kGestureTypeScroll: {
@@ -1196,7 +1200,11 @@ void ImmediateInterpreter::FillResultGesture(
         if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_.val_)
           return;
         float local_dx = fs->position_x - prev->position_x;
+        if (fs->flags & GESTURES_FINGER_WARP_X)
+          local_dx = 0.0;
         float local_dy = fs->position_y - prev->position_y;
+        if (fs->flags & GESTURES_FINGER_WARP_Y)
+          local_dy = 0.0;
         float local_max_mag_sq = local_dx * local_dx + local_dy * local_dy;
         if (local_max_mag_sq > max_mag_sq) {
           max_mag_sq = local_max_mag_sq;
