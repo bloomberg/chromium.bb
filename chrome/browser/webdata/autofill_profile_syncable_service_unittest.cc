@@ -169,7 +169,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
 
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.release());
+      syncable::AUTOFILL_PROFILE, data_list,
+      sync_processor_.PassAs<SyncChangeProcessor>());
   autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
 }
 
@@ -199,7 +200,8 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   SyncDataList data_list;
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncable::AUTOFILL_PROFILE, data_list, sync_processor_.release());
+      syncable::AUTOFILL_PROFILE, data_list,
+      sync_processor_.PassAs<SyncChangeProcessor>());
 
   SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);

@@ -79,9 +79,10 @@ AutocompleteSyncableService::AutocompleteSyncableService()
 SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
+  DCHECK(sync_processor.get());
   VLOG(1) << "Associating Autocomplete: MergeDataAndStartSyncing";
 
   std::vector<AutofillEntry> entries;
@@ -97,7 +98,7 @@ SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     new_db_entries[it->key()] = std::make_pair(SyncChange::ACTION_ADD, it);
   }
 
-  sync_processor_.reset(sync_processor);
+  sync_processor_ = sync_processor.Pass();
 
   std::vector<AutofillEntry> new_synced_entries;
   // Go through and check for all the entries that sync already knows about.

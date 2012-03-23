@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "chrome/browser/sync/api/syncable_service_mock.h"
+#include "chrome/browser/sync/api/fake_syncable_service.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
@@ -41,7 +41,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
         db_syncable_service_(NULL) {}
 
   virtual ~SyncSharedChangeProcessorTest() {
-    EXPECT_FALSE(db_syncable_service_);
+    EXPECT_FALSE(db_syncable_service_.get());
   }
 
  protected:
@@ -85,16 +85,15 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   // Used by SetUp().
   void SetUpDBSyncableService() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    DCHECK(!db_syncable_service_);
-    db_syncable_service_ = new NiceMock<SyncableServiceMock>();
+    DCHECK(!db_syncable_service_.get());
+    db_syncable_service_.reset(new FakeSyncableService());
   }
 
   // Used by TearDown().
   void TearDownDBSyncableService() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    DCHECK(db_syncable_service_);
-    delete db_syncable_service_;
-    db_syncable_service_ = NULL;
+    DCHECK(db_syncable_service_.get());
+    db_syncable_service_.reset();
   }
 
   // Used by Connect().  The SharedChangeProcessor is passed in
@@ -104,7 +103,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     EXPECT_CALL(sync_factory_, GetSyncableServiceForType(syncable::AUTOFILL)).
-        WillOnce(GetWeakPtrToSyncableService(db_syncable_service_));
+        WillOnce(GetWeakPtrToSyncableService(db_syncable_service_.get()));
     EXPECT_TRUE(shared_change_processor->Connect(&sync_factory_,
                                                  &sync_service_,
                                                  &error_handler_,
@@ -121,7 +120,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
   StrictMock<DataTypeErrorHandlerMock> error_handler_;
 
   // Used only on DB thread.
-  NiceMock<SyncableServiceMock>* db_syncable_service_;
+  scoped_ptr<FakeSyncableService> db_syncable_service_;
 };
 
 // Simply connect the shared change processor.  It should succeed, and

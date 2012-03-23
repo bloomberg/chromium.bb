@@ -48,7 +48,7 @@ class SettingsBackend : public SyncableService {
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
@@ -88,7 +88,7 @@ class SettingsBackend : public SyncableService {
   syncable::ModelType sync_type_;
 
   // Current sync processor, if any.
-  SyncChangeProcessor* sync_processor_;
+  scoped_ptr<SyncChangeProcessor> sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsBackend);
 };

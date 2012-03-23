@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class PrefModelAssociator
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
   // Returns the list of preference names that are registered as syncable, and
@@ -141,7 +141,7 @@ class PrefModelAssociator
   PrefService* pref_service_;
 
   // Sync's SyncChange handler. We push all our changes through this.
-  SyncChangeProcessor* sync_processor_;
+  scoped_ptr<SyncChangeProcessor> sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

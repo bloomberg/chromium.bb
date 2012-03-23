@@ -413,8 +413,6 @@
       'sources': [
         'browser/sync/api/fake_syncable_service.cc',
         'browser/sync/api/fake_syncable_service.h',
-        'browser/sync/api/syncable_service_mock.cc',
-        'browser/sync/api/syncable_service_mock.h',
       ],
     },
     {

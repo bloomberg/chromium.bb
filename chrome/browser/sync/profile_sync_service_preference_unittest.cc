@@ -41,8 +41,8 @@
 
 using base::JSONReader;
 using browser_sync::GenericChangeProcessor;
+using browser_sync::SharedChangeProcessor;
 using browser_sync::UIDataTypeController;
-using browser_sync::SyncBackendHost;
 using sync_api::ChangeRecord;
 using testing::_;
 using testing::Invoke;
@@ -134,8 +134,10 @@ class ProfileSyncServicePreferenceTest
                                     factory,
                                     profile_.get(),
                                     service_.get());
-     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _)).
-         WillOnce(CreateAndSaveChangeProcessor(&change_processor_));
+    EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
+        WillOnce(Return(new SharedChangeProcessor()));
+    EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _)).
+        WillOnce(CreateAndSaveChangeProcessor(&change_processor_));
     service_->RegisterDataTypeController(dtc_);
     TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");

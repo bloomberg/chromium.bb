@@ -31,6 +31,10 @@ using testing::SetArgumentPointee;
 namespace browser_sync {
 namespace {
 
+ACTION(MakeSharedChangeProcessor) {
+  return new SharedChangeProcessor();
+}
+
 ACTION_P(ReturnAndRelease, change_processor) {
   return change_processor->release();
 }
@@ -78,7 +82,12 @@ class SyncAppNotificationDataTypeControllerTest
     SetStartExpectations();
   }
 
-  virtual void TearDown() { }
+  virtual void TearDown() {
+    // Must be done before we pump the loop.
+    syncable_service_.StopSyncing(syncable::APP_NOTIFICATIONS);
+    app_notif_dtc_ = NULL;
+    PumpLoop();
+  }
 
  protected:
   // Waits until the file thread executes all tasks queued up so far.
@@ -111,6 +120,8 @@ class SyncAppNotificationDataTypeControllerTest
     EXPECT_CALL(*profile_sync_factory_,
                 GetSyncableServiceForType(syncable::APP_NOTIFICATIONS)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
+    EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
+        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*profile_sync_factory_, CreateGenericChangeProcessor(_, _, _)).
         WillOnce(ReturnAndRelease(&change_processor_));
   }

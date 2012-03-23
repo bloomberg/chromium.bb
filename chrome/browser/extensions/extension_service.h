@@ -419,7 +419,7 @@ class ExtensionService
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError ProcessSyncChanges(
@@ -591,13 +591,16 @@ class ExtensionService
     SyncBundle();
     ~SyncBundle();
 
+    void Reset();
+
     bool HasExtensionId(const std::string& id) const;
     bool HasPendingExtensionId(const std::string& id) const;
 
+    // Note: all members of the struct need to be explicitly cleared in Reset().
     ExtensionFilter filter;
     std::set<std::string> synced_extensions;
     std::map<std::string, ExtensionSyncData> pending_sync_data;
-    SyncChangeProcessor* sync_processor;
+    scoped_ptr<SyncChangeProcessor> sync_processor;
   };
 
   // Contains Extension data that can change during the life of the process,

@@ -59,9 +59,10 @@ AutofillProfileSyncableService::AutofillProfileSyncableService()
 SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
+  DCHECK(sync_processor.get());
   DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
   if (!LoadAutofillData(&profiles_.get())) {
@@ -84,7 +85,7 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     }
   }
 
-  sync_processor_.reset(sync_processor);
+  sync_processor_ = sync_processor.Pass();
 
   GUIDToProfileMap remaining_profiles;
   CreateGUIDToProfileMap(profiles_.get(), &remaining_profiles);

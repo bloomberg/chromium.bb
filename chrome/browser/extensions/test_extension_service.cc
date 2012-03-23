@@ -68,7 +68,7 @@ void TestExtensionService::CheckForUpdatesSoon() {
 SyncError TestExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   ADD_FAILURE();
   return SyncError();
 }

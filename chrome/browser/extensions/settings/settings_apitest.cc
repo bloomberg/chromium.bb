@@ -42,6 +42,28 @@ class NoopSyncChangeProcessor : public SyncChangeProcessor {
   virtual ~NoopSyncChangeProcessor() {};
 };
 
+class SyncChangeProcessorDelegate : public SyncChangeProcessor {
+ public:
+  explicit SyncChangeProcessorDelegate(SyncChangeProcessor* recipient)
+      : recipient_(recipient) {
+    DCHECK(recipient_);
+  }
+  virtual ~SyncChangeProcessorDelegate() {}
+
+  // SyncChangeProcessor implementation.
+  virtual SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const SyncChangeList& change_list) OVERRIDE {
+    return recipient_->ProcessSyncChanges(from_here, change_list);
+  }
+
+ private:
+  // The recipient of all sync changes.
+  SyncChangeProcessor* recipient_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
+};
+
 }  // namespace
 
 class ExtensionSettingsApiTest : public ExtensionApiTest {
@@ -139,7 +161,8 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     EXPECT_FALSE(settings_service->MergeDataAndStartSyncing(
         kModelType,
         SyncDataList(),
-        sync_processor).IsSet());
+        scoped_ptr<SyncChangeProcessor>(
+            new SyncChangeProcessorDelegate(sync_processor))).IsSet());
   }
 
   void SendChangesToSyncableService(

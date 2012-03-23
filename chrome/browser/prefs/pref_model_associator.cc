@@ -22,14 +22,12 @@ using syncable::PREFERENCES;
 PrefModelAssociator::PrefModelAssociator()
     : models_associated_(false),
       processing_syncer_changes_(false),
-      pref_service_(NULL),
-      sync_processor_(NULL) {
+      pref_service_(NULL) {
   DCHECK(CalledOnValidThread());
 }
 
 PrefModelAssociator::~PrefModelAssociator() {
   DCHECK(CalledOnValidThread());
-  sync_processor_ = NULL;
   pref_service_ = NULL;
 }
 
@@ -109,12 +107,13 @@ void PrefModelAssociator::InitPrefAndAssociate(
 SyncError PrefModelAssociator::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   DCHECK_EQ(type, PREFERENCES);
   DCHECK(CalledOnValidThread());
   DCHECK(pref_service_);
-  DCHECK(!sync_processor_);
-  sync_processor_ = sync_processor;
+  DCHECK(!sync_processor_.get());
+  DCHECK(sync_processor.get());
+  sync_processor_ = sync_processor.Pass();
 
   SyncChangeList new_changes;
   std::set<std::string> remaining_preferences = registered_preferences_;
@@ -161,7 +160,7 @@ SyncError PrefModelAssociator::MergeDataAndStartSyncing(
 void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, PREFERENCES);
   models_associated_ = false;
-  sync_processor_ = NULL;
+  sync_processor_.reset();
 }
 
 Value* PrefModelAssociator::MergePreference(
@@ -425,8 +424,6 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
 
   SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-  if (error.IsSet())
-    StopSyncing(PREFERENCES);
 }
 
 void PrefModelAssociator::SetPrefService(PrefService* pref_service) {

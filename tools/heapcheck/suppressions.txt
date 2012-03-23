@@ -1766,40 +1766,6 @@
    fun:chromeos::DesktopNotificationsTest::SetUp
 }
 {
-   bug_117098_a
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::SupportsWeakPtr::AsWeakPtr
-   fun:ProfileSyncServicePreferenceTest::StartSyncService
-}
-{
-   bug_117098_b
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::_Vector_base::_M_allocate
-   fun:std::vector::_M_insert_aux
-   fun:std::vector::push_back
-   fun:browser_sync::GenericChangeProcessor::ApplyChangesFromSyncModel
-}
-{
-   bug_117098_c
-   Heapcheck:Leak
-   fun:CreateAndSaveChangeProcessorActionP::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:CreateAndSaveChangeProcessorActionP::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::ActionResultHolder::PerformAction
-   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:ProfileSyncComponentsFactoryMock::CreateGenericChangeProcessor
-   fun:browser_sync::UIDataTypeController::Associate
-   fun:browser_sync::UIDataTypeController::Start
-   fun:browser_sync::DataTypeManagerImpl::StartNextType
-   fun:browser_sync::DataTypeManagerImpl::DownloadReady
-}
-{
    bug_117389
    Heapcheck:Leak
    ...

@@ -140,6 +140,7 @@ SyncError SyncableSettingsStorage::StartSyncing(
          type == syncable::APP_SETTINGS);
   DCHECK_EQ(sync_type_, syncable::UNSPECIFIED);
   DCHECK(!sync_processor_);
+  DCHECK(sync_processor);
   DCHECK(synced_keys_.empty());
 
   sync_type_ = type;

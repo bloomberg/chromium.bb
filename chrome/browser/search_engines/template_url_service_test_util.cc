@@ -237,3 +237,7 @@ TestingProfile* TemplateURLServiceTestUtil::profile() const {
 void TemplateURLServiceTestUtil::StartIOThread() {
   profile_->StartIOThread();
 }
+
+void TemplateURLServiceTestUtil::PumpLoop() {
+  message_loop_.RunAllPending();
+}

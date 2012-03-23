@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/api/syncable_service_mock.h"
+#include "chrome/browser/sync/api/fake_syncable_service.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/shared_change_processor_mock.h"
@@ -204,9 +204,6 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
         WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*change_processor_, GetSyncData(_)).
         WillOnce(Return(SyncError()));
-    EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
-        WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
-                       Return(SyncError())));
     EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   }
 
@@ -218,11 +215,9 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*dtc_mock_, StopModels());
     EXPECT_CALL(*change_processor_, Disconnect()).WillOnce(Return(true));
     EXPECT_CALL(service_, DeactivateDataType(_));
-    EXPECT_CALL(syncable_service_, StopSyncing(_));
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(syncable_service_, StopSyncing(_));
     EXPECT_CALL(*dtc_mock_, StopModels()).Times(AtLeast(1));
     if (DataTypeController::IsUnrecoverableResult(result))
       EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
@@ -242,7 +237,7 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
   StrictMock<ProfileSyncServiceMock> service_;
   StartCallbackMock start_callback_;
   // Must be destroyed after new_non_frontend_dtc_.
-  SyncableServiceMock syncable_service_;
+  FakeSyncableService syncable_service_;
   scoped_refptr<NewNonFrontendDataTypeControllerFake> new_non_frontend_dtc_;
   scoped_refptr<NewNonFrontendDataTypeControllerMock> dtc_mock_;
   scoped_refptr<SharedChangeProcessorMock> change_processor_;
@@ -270,9 +265,6 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartFirstRun) {
       WillOnce(DoAll(SetArgumentPointee<0>(false), Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError()));
-  EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
-    WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
-                   Return(SyncError())));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
@@ -314,13 +306,12 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAssociationFailed) {
       WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError()));
-  EXPECT_CALL(syncable_service_, MergeDataAndStartSyncing(_,_,_)).
-    WillOnce(DoAll(SaveChangeProcessor(&saved_change_processor_),
-                   Return(SyncError(FROM_HERE, "failed", AUTOFILL_PROFILE))));
   EXPECT_CALL(*dtc_mock_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, new_non_frontend_dtc_->state());
+  syncable_service_.set_merge_data_and_start_syncing_error(
+      SyncError(FROM_HERE, "Sync Error", new_non_frontend_dtc_->type()));
   new_non_frontend_dtc_->Start(
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   WaitForDTC();

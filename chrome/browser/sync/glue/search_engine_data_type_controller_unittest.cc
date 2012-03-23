@@ -29,6 +29,10 @@ using testing::SetArgumentPointee;
 namespace browser_sync {
 namespace {
 
+ACTION(MakeSharedChangeProcessor) {
+  return new SharedChangeProcessor();
+}
+
 ACTION_P(ReturnAndRelease, change_processor) {
   return change_processor->release();
 }
@@ -51,6 +55,9 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    // Must be done before we pump the loop.
+    syncable_service_.StopSyncing(syncable::SEARCH_ENGINES);
+    search_engine_dtc_ = NULL;
     test_util_.TearDown();
   }
 
@@ -65,6 +72,8 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(*profile_sync_factory_,
                 GetSyncableServiceForType(syncable::SEARCH_ENGINES)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
+    EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
+        WillOnce(MakeSharedChangeProcessor());
     EXPECT_CALL(*profile_sync_factory_, CreateGenericChangeProcessor(_, _, _)).
         WillOnce(ReturnAndRelease(&change_processor_));
   }
@@ -194,6 +203,9 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
       base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
   // This should cause search_engine_dtc_->Stop() to be called.
   search_engine_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  test_util_.PumpLoop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
+  EXPECT_FALSE(syncable_service_.syncing());
 }
 
 }  // namespace

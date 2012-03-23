@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/glue/generic_change_processor.h"
+#include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,6 +59,13 @@ void UIDataTypeController::Start(const StartCallback& start_callback) {
 
   start_callback_ = start_callback;
 
+  // Since we can't be called multiple times before Stop() is called,
+  // |shared_change_processor_| must be NULL here.
+  DCHECK(!shared_change_processor_.get());
+  shared_change_processor_ =
+      profile_sync_factory_->CreateSharedChangeProcessor();
+  DCHECK(shared_change_processor_.get());
+
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -84,58 +91,54 @@ bool UIDataTypeController::StartModels() {
 
 void UIDataTypeController::Associate() {
   DCHECK_EQ(state_, ASSOCIATING);
-  local_service_ = profile_sync_factory_->GetSyncableServiceForType(type());
+
+  // Connect |shared_change_processor_| to the syncer and get the
+  // SyncableService associated with type().
+  local_service_ = shared_change_processor_->Connect(profile_sync_factory_,
+                                                     sync_service_,
+                                                     this,
+                                                     type());
   if (!local_service_.get()) {
-    SyncError error(FROM_HERE, "Failed to connect to syncable service.",
-                    type());
+    SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
-  // We maintain ownership until MergeDataAndStartSyncing is called.
-  scoped_ptr<GenericChangeProcessor> sync_processor(
-      profile_sync_factory_->CreateGenericChangeProcessor(
-          sync_service_, this, local_service_));
-
-  if (!sync_processor->CryptoReadyIfNecessary(type())) {
+  if (!shared_change_processor_->CryptoReadyIfNecessary()) {
     StartFailed(NEEDS_CRYPTO, SyncError());
     return;
   }
 
   bool sync_has_nodes = false;
-  if (!sync_processor->SyncModelHasUserCreatedNodes(type(), &sync_has_nodes)) {
+  if (!shared_change_processor_->SyncModelHasUserCreatedNodes(
+          &sync_has_nodes)) {
     SyncError error(FROM_HERE, "Failed to load sync nodes", type());
     StartFailed(UNRECOVERABLE_ERROR, error);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
+  SyncError error;
   SyncDataList initial_sync_data;
-  SyncError error = sync_processor->GetSyncDataForType(
-      type(), &initial_sync_data);
+  error = shared_change_processor_->GetSyncData(&initial_sync_data);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);
     return;
   }
 
-  // TODO(zea): this should use scoped_ptr<T>::Pass semantics.
-  GenericChangeProcessor* saved_sync_processor = sync_processor.get();
-  // Takes ownership of sync_processor.
-  error = local_service_->MergeDataAndStartSyncing(type(),
-                                                   initial_sync_data,
-                                                   sync_processor.release());
-  if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
-    return;
-  }
+  // Passes a reference to |shared_change_processor_|.
+  error = local_service_->MergeDataAndStartSyncing(
+      type(),
+      initial_sync_data,
+      scoped_ptr<SyncChangeProcessor>(
+          new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
+  if (error.IsSet()) {
+    StartFailed(ASSOCIATION_FAILED, error);
+    return;
+  }
 
-  sync_service_->ActivateDataType(type(), model_safe_group(),
-                                  saved_sync_processor);
-
-  // StartDone(..) invokes the DataTypeManager callback, which can lead to a
-  // call to Stop() if one of the other data types being started generates an
-  // error.
+  shared_change_processor_->ActivateDataType(model_safe_group());
   state_ = RUNNING;
   StartDone(sync_has_nodes ? OK : OK_FIRST_RUN);
 }
@@ -152,6 +155,11 @@ void UIDataTypeController::StartFailed(StartResult result,
     state_ = NOT_RUNNING;
   }
   RecordStartFailure(result);
+
+  if (shared_change_processor_.get()) {
+    shared_change_processor_->Disconnect();
+    shared_change_processor_ = NULL;
+  }
 
   // We have to release the callback before we call it, since it's possible
   // invoking the callback will trigger a call to Stop(), which will get
@@ -175,6 +183,12 @@ void UIDataTypeController::StartDone(StartResult result) {
 void UIDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(syncable::IsRealDataType(type_));
+
+  if (shared_change_processor_.get()) {
+    shared_change_processor_->Disconnect();
+    shared_change_processor_ = NULL;
+  }
+
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
   if (state_ == MODEL_STARTING) {

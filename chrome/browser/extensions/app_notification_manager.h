@@ -73,7 +73,7 @@ class AppNotificationManager
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
  private:
@@ -155,7 +155,7 @@ class AppNotificationManager
   scoped_ptr<AppNotificationStorage> storage_;
 
   // Sync change processor we use to push all our changes.
-  SyncChangeProcessor* sync_processor_;
+  scoped_ptr<SyncChangeProcessor> sync_processor_;
   // Whether the sync model is associated with the local model.
   // In other words, whether we are ready to apply sync changes.
   bool models_associated_;

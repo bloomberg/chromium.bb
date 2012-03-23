@@ -66,7 +66,6 @@ const unsigned int AppNotificationManager::kMaxNotificationPerApp = 5;
 
 AppNotificationManager::AppNotificationManager(Profile* profile)
     : profile_(profile),
-      sync_processor_(NULL),
       models_associated_(false),
       processing_syncer_changes_(false) {
   registrar_.Add(this,
@@ -383,15 +382,16 @@ SyncError AppNotificationManager::ProcessSyncChanges(
 SyncError AppNotificationManager::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // AppNotificationDataTypeController ensures that modei is fully should before
   // this method is called by waiting until the load notification is received
   // from AppNotificationManager.
   DCHECK(loaded());
   DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
-  DCHECK(!sync_processor_);
-  sync_processor_ = sync_processor;
+  DCHECK(!sync_processor_.get());
+  DCHECK(sync_processor.get());
+  sync_processor_ = sync_processor.Pass();
 
   // We may add, or remove notifications here, so ensure we don't step on
   // our own toes.
@@ -443,7 +443,7 @@ SyncError AppNotificationManager::MergeDataAndStartSyncing(
 void AppNotificationManager::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
   models_associated_ = false;
-  sync_processor_ = NULL;
+  sync_processor_.reset();
 }
 
 void AppNotificationManager::SyncAddChange(const AppNotification& notif) {

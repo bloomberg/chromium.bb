@@ -115,7 +115,6 @@ TemplateURLService::TemplateURLService(Profile* profile)
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
-      sync_processor_(NULL),
       pending_synced_default_search_(false) {
   DCHECK(profile_);
   Init(NULL, 0);
@@ -134,7 +133,6 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
-      sync_processor_(NULL),
       pending_synced_default_search_(false) {
   Init(initializers, count);
 }
@@ -824,11 +822,12 @@ SyncError TemplateURLService::ProcessSyncChanges(
 SyncError TemplateURLService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   DCHECK(loaded());
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
-  DCHECK(!sync_processor_);
-  sync_processor_ = sync_processor;
+  DCHECK(!sync_processor_.get());
+  DCHECK(sync_processor.get());
+  sync_processor_ = sync_processor.Pass();
 
   // We just started syncing, so set our wait-for-default flag if we are
   // expecting a default from Sync.
@@ -936,7 +935,7 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
 void TemplateURLService::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
   models_associated_ = false;
-  sync_processor_ = NULL;
+  sync_processor_.reset();
 }
 
 void TemplateURLService::ProcessTemplateURLChange(
@@ -1603,7 +1602,8 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
 
     // If we are syncing, we want to set the synced pref that will notify other
     // instances to change their default to this new search provider.
-    if (sync_processor_ && url && !url->sync_guid().empty() && GetPrefs()) {
+    if (sync_processor_.get() && url && !url->sync_guid().empty() &&
+        GetPrefs()) {
       GetPrefs()->SetString(prefs::kSyncedDefaultSearchProviderGUID,
                             url->sync_guid());
     }
@@ -1849,7 +1849,7 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
 void TemplateURLService::SetDefaultSearchProviderIfNewlySynced(
     const std::string& guid) {
   // If we're not syncing or if default search is managed by policy, ignore.
-  if (!sync_processor_ || is_default_search_managed_)
+  if (!sync_processor_.get() || is_default_search_managed_)
     return;
 
   PrefService* prefs = GetPrefs();

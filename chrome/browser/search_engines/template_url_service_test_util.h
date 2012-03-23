@@ -86,6 +86,9 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // Starts an I/O thread.
   void StartIOThread();
 
+  // Runs all pending tasks on the UI loop.
+  void PumpLoop();
+
  private:
   MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work

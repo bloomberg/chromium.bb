@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/shared_change_processor.h"
 
 class Profile;
 class ProfileSyncService;
@@ -90,6 +91,23 @@ class UIDataTypeController : public DataTypeController {
 
   // The sync datatype being controlled.
   syncable::ModelType type_;
+
+  // Sync's interface to the datatype. All sync changes for |type_| are pushed
+  // through it to the datatype as well as vice versa.
+  //
+  // Lifetime: it gets created when Start()) is called, and a reference to it
+  // is passed to |local_service_| during Associate(). We release our reference
+  // when Stop() or StartFailed() is called, and |local_service_| releases its
+  // reference when local_service_->StopSyncing() is called or when it is
+  // destroyed.
+  //
+  // Note: we use refcounting here primarily so that we can keep a uniform
+  // SyncableService API, whether the datatype lives on the UI thread or not
+  // (a SyncableService takes ownership of its SyncChangeProcessor when
+  // MergeDataAndStartSyncing is called). This will help us eventually merge the
+  // two datatype controller implementations (for ui and non-ui thread
+  // datatypes).
+  scoped_refptr<SharedChangeProcessor> shared_change_processor_;
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object.

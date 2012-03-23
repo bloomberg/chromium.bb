@@ -1266,11 +1266,17 @@ namespace {
 }  // namespace
 
 ExtensionService::SyncBundle::SyncBundle()
-  : filter(IsSyncableNone),
-    sync_processor(NULL) {
+  : filter(IsSyncableNone) {
 }
 
 ExtensionService::SyncBundle::~SyncBundle() {
+}
+
+void ExtensionService::SyncBundle::Reset() {
+  filter = IsSyncableNone;
+  synced_extensions.clear();
+  pending_sync_data.clear();
+  sync_processor.reset();
 }
 
 bool ExtensionService::SyncBundle::HasExtensionId(const std::string& id) const {
@@ -1335,9 +1341,7 @@ ExtensionService::SyncBundle* ExtensionService::GetSyncBundleForModelType(
 SyncError ExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
-  CHECK(sync_processor);
-
+    scoped_ptr<SyncChangeProcessor> sync_processor) {
   SyncBundle* bundle = NULL;
 
   switch (type) {
@@ -1354,8 +1358,9 @@ SyncError ExtensionService::MergeDataAndStartSyncing(
     default:
       LOG(FATAL) << "Got " << type << " ModelType";
   }
-
-  bundle->sync_processor = sync_processor;
+  DCHECK(!bundle->sync_processor.get());
+  DCHECK(sync_processor.get());
+  bundle->sync_processor = sync_processor.Pass();
 
   // Process extensions from sync.
   for (SyncDataList::const_iterator i = initial_sync_data.begin();
@@ -1391,8 +1396,7 @@ SyncError ExtensionService::MergeDataAndStartSyncing(
 void ExtensionService::StopSyncing(syncable::ModelType type) {
   SyncBundle* bundle = GetSyncBundleForModelType(type);
   CHECK(bundle);
-  // This is the simplest way to clear out the bundle.
-  *bundle = SyncBundle();
+  bundle->Reset();
 }
 
 SyncDataList ExtensionService::GetAllSyncData(syncable::ModelType type) const {

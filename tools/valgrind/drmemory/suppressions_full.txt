@@ -1228,31 +1228,6 @@ name=http://crbug.com/100608
 *!SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
 
 LEAK
-name=http://crbug.com/117538 a
-...
-*!ProfileSyncComponentsFactoryMock::CreateGenericChangeProcessor
-*!browser_sync::UIDataTypeController::Associate
-*!browser_sync::UIDataTypeController::Start
-*!browser_sync::DataTypeManagerImpl::StartNextType
-*!browser_sync::DataTypeManagerImpl::DownloadReady
-
-LEAK
-name=http://crbug.com/117538 b
-...
-*!ProfileSyncComponentsFactoryMock::CreateSharedChangeProcessor
-*!browser_sync::NewNonFrontendDataTypeController::Start
-*!browser_sync::DataTypeManagerImpl::StartNextType
-*!browser_sync::DataTypeManagerImpl::DownloadReady
-
-LEAK
-name=http://crbug.com/117538 c
-...
-*!ProfileSyncComponentsFactoryMock::CreateDataTypeManager
-*!ProfileSyncService::ConfigureDataTypeManager
-*!ProfileSyncService::OnBackendInitialized
-*!TestProfileSyncService::OnBackendInitialized
-
-LEAK
 name=http://crbug.com/117539
 *!generic_cpp_alloc
 *!operator new

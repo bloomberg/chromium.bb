@@ -127,11 +127,36 @@ class TestChangeProcessor : public SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
+class SyncChangeProcessorDelegate : public SyncChangeProcessor {
+ public:
+  explicit SyncChangeProcessorDelegate(SyncChangeProcessor* recipient)
+      : recipient_(recipient) {
+    DCHECK(recipient_);
+  }
+  virtual ~SyncChangeProcessorDelegate() {}
+
+  // SyncChangeProcessor implementation.
+  virtual SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const SyncChangeList& change_list) OVERRIDE {
+    return recipient_->ProcessSyncChanges(from_here, change_list);
+  }
+
+ private:
+  // The recipient of all sync changes.
+  SyncChangeProcessor* recipient_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
+};
+
 class TemplateURLServiceSyncTest : public testing::Test {
  public:
   typedef TemplateURLService::SyncDataMap SyncDataMap;
 
-  TemplateURLServiceSyncTest() {}
+  TemplateURLServiceSyncTest()
+      : sync_processor_(new TestChangeProcessor),
+        sync_processor_delegate_(new SyncChangeProcessorDelegate(
+            sync_processor_.get())) {}
 
   virtual void SetUp() {
     profile_a_.reset(new TestingProfile);
@@ -153,7 +178,10 @@ class TemplateURLServiceSyncTest : public testing::Test {
   // involve syncing two models.
   TemplateURLService* model_a() { return model_a_.get(); }
   TemplateURLService* model_b() { return model_b_.get(); }
-  TestChangeProcessor* processor() { return &processor_; }
+  TestChangeProcessor* processor() { return sync_processor_.get(); }
+  scoped_ptr<SyncChangeProcessor> PassProcessor() {
+    return sync_processor_delegate_.PassAs<SyncChangeProcessor>();
+  }
 
   // Create a TemplateURL with some test values. The caller owns the returned
   // TemplateURL*.
@@ -275,7 +303,8 @@ class TemplateURLServiceSyncTest : public testing::Test {
   scoped_ptr<TemplateURLService> model_b_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
-  TestChangeProcessor processor_;
+  scoped_ptr<TestChangeProcessor> sync_processor_;
+  scoped_ptr<SyncChangeProcessorDelegate> sync_processor_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceSyncTest);
 };
@@ -518,7 +547,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
 
 TEST_F(TemplateURLServiceSyncTest, StartSyncEmpty) {
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, SyncDataList(),
-                                    processor());
+                                    PassProcessor());
 
   EXPECT_EQ(0U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   EXPECT_EQ(0, processor()->change_list_size());
@@ -528,7 +557,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeIntoEmpty) {
   SyncDataList initial_data = CreateInitialSyncData();
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   // We expect the model to have accepted all of the initial sync data. Search
@@ -552,7 +581,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeInAllNewData) {
   SyncDataList initial_data = CreateInitialSyncData();
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   EXPECT_EQ(6U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   // We expect the model to have accepted all of the initial sync data. Search
@@ -585,7 +614,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncIsTheSame) {
   }
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   for (SyncDataList::const_iterator iter = initial_data.begin();
@@ -618,7 +647,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeUpdateFromSync) {
       TemplateURLService::CreateSyncDataFromTemplateURL(*turl2_older));
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   // Both were local updates, so we expect the same count.
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -651,7 +680,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromOlderSyncData) {
                                      "http://unique.com", "ccc"));  // add
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   // The dupe results in a merge. The other two should be added to the model.
   EXPECT_EQ(5U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -711,7 +740,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromNewerSyncData) {
                                      "http://unique.com", "ccc", 10));  // add
 
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   // The dupe results in a merge. The other two should be added to the model.
   EXPECT_EQ(5U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -750,7 +779,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeAddFromNewerSyncData) {
 TEST_F(TemplateURLServiceSyncTest, ProcessChangesEmptyModel) {
   // We initially have no data.
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, SyncDataList(),
-                                    processor());
+                                    PassProcessor());
 
   // Set up a bunch of ADDs.
   SyncChangeList changes;
@@ -772,7 +801,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesEmptyModel) {
 
 TEST_F(TemplateURLServiceSyncTest, ProcessChangesNoConflicts) {
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), processor());
+                                    CreateInitialSyncData(), PassProcessor());
 
   // Process different types of changes, without conflicts.
   SyncChangeList changes;
@@ -801,7 +830,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesNoConflicts) {
 
 TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsSyncWins) {
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), processor());
+                                    CreateInitialSyncData(), PassProcessor());
 
   // Process different types of changes, with conflicts. Note that all this data
   // has a newer timestamp, so Sync will win in these scenarios.
@@ -837,7 +866,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsSyncWins) {
 
 TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsLocalWins) {
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), processor());
+                                    CreateInitialSyncData(), PassProcessor());
 
   // Process different types of changes, with conflicts. Note that all this data
   // has an older timestamp, so the local data will win in these scenarios.
@@ -884,7 +913,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
   // Ensure that ProcessTemplateURLChange is called and pushes the correct
   // changes to Sync whenever local changes are made to TemplateURLs.
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), processor());
+                                    CreateInitialSyncData(), PassProcessor());
 
   // Add a new search engine.
   TemplateURL* new_turl =
@@ -919,12 +948,15 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
 TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsBasic) {
   // Start off B with some empty data.
   model_b()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                      CreateInitialSyncData(), processor());
+                                      CreateInitialSyncData(), PassProcessor());
 
   // Merge A and B. All of B's data should transfer over to A, which initially
   // has no data.
+  scoped_ptr<SyncChangeProcessorDelegate> delegate_b(
+      new SyncChangeProcessorDelegate(model_b()));
   model_a()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      model_b()->GetAllSyncData(syncable::SEARCH_ENGINES), model_b());
+      model_b()->GetAllSyncData(syncable::SEARCH_ENGINES),
+      delegate_b.PassAs<SyncChangeProcessor>());
 
   // They should be consistent.
   AssertEquals(model_a()->GetAllSyncData(syncable::SEARCH_ENGINES),
@@ -934,7 +966,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsBasic) {
 TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
   // Start off B with some empty data.
   model_b()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                      CreateInitialSyncData(), processor());
+                                      CreateInitialSyncData(), PassProcessor());
 
   // Set up A so we have some interesting duplicates and conflicts.
   model_a()->Add(CreateTestTemplateURL(ASCIIToUTF16("key4"), "http://key4.com",
@@ -947,8 +979,11 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
                                        "key6", 10));  // Conflict with key1
 
   // Merge A and B.
+  scoped_ptr<SyncChangeProcessorDelegate> delegate_b(
+      new SyncChangeProcessorDelegate(model_b()));
   model_a()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      model_b()->GetAllSyncData(syncable::SEARCH_ENGINES), model_b());
+      model_b()->GetAllSyncData(syncable::SEARCH_ENGINES),
+      delegate_b.PassAs<SyncChangeProcessor>());
 
   // They should be consistent.
   AssertEquals(model_a()->GetAllSyncData(syncable::SEARCH_ENGINES),
@@ -957,7 +992,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwoClientsDupesAndConflicts) {
 
 TEST_F(TemplateURLServiceSyncTest, StopSyncing) {
   SyncError error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      CreateInitialSyncData(), processor());
+      CreateInitialSyncData(), PassProcessor());
   ASSERT_FALSE(error.IsSet());
   model()->StopSyncing(syncable::SEARCH_ENGINES);
 
@@ -976,7 +1011,7 @@ TEST_F(TemplateURLServiceSyncTest, StopSyncing) {
 TEST_F(TemplateURLServiceSyncTest, SyncErrorOnInitialSync) {
   processor()->set_erroneous(true);
   SyncError error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      CreateInitialSyncData(), processor());
+      CreateInitialSyncData(), PassProcessor());
   EXPECT_TRUE(error.IsSet());
 
   // Ensure that if the initial merge was erroneous, then subsequence attempts
@@ -999,7 +1034,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncErrorOnLaterSync) {
   // Ensure that if the SyncProcessor succeeds in the initial merge, but fails
   // in future ProcessSyncChanges, we still return an error.
   SyncError error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      CreateInitialSyncData(), processor());
+      CreateInitialSyncData(), PassProcessor());
   ASSERT_FALSE(error.IsSet());
 
   SyncChangeList changes;
@@ -1021,7 +1056,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
                                      "key1", 10));  // earlier
 
   SyncError error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-      initial_data, processor());
+      initial_data, PassProcessor());
   ASSERT_FALSE(error.IsSet());
 
   // We should have updated the original TemplateURL with Sync's version.
@@ -1041,8 +1076,10 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   // Remerge the data again. This simulates shutting down and syncing again
   // at a different time, but the cloud data has not changed.
   model()->StopSyncing(syncable::SEARCH_ENGINES);
+  sync_processor_delegate_.reset(new SyncChangeProcessorDelegate(
+      sync_processor_.get()));
   error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                            initial_data, processor());
+                                            initial_data, PassProcessor());
   ASSERT_FALSE(error.IsSet());
 
   // Check that the TemplateURL was not modified.
@@ -1054,7 +1091,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
 TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
   SyncDataList initial_data = CreateInitialSyncData();
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
   model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key2"));
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1115,7 +1152,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultArrivesAfterStartup) {
   // destined to become the new default.
   SyncDataList initial_data = CreateInitialSyncData();
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   // Ensure that the new default has been set.
   EXPECT_EQ(4U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1143,7 +1180,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultAlreadySetOnStartup) {
   // Now sync the initial data.
   SyncDataList initial_data = CreateInitialSyncData();
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
 
   // Ensure that the new entries were added and the default has not changed.
   EXPECT_EQ(4U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1155,7 +1192,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   // default search provider.
   SyncDataList initial_data = CreateInitialSyncData();
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
-                                    processor());
+                                    PassProcessor());
   model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key2"));
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1211,7 +1248,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
 
   // The key1 entry should be a duplicate of the default.
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), processor());
+                                    CreateInitialSyncData(), PassProcessor());
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   EXPECT_FALSE(model()->GetTemplateURLForGUID("whateverguid"));

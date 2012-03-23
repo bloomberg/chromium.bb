@@ -128,7 +128,8 @@ void NewNonFrontendDataTypeController::
   error = local_service_->MergeDataAndStartSyncing(
       type(),
       initial_sync_data,
-      new SharedChangeProcessorRef(shared_change_processor));
+      scoped_ptr<SyncChangeProcessor>(
+          new SharedChangeProcessorRef(shared_change_processor)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
     StartFailed(ASSOCIATION_FAILED, error);

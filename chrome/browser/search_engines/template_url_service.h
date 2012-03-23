@@ -273,7 +273,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      SyncChangeProcessor* sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
   // Processes a local TemplateURL change for Sync. |turl| is the TemplateURL
@@ -584,7 +584,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool processing_syncer_changes_;
 
   // Sync's SyncChange handler. We push all our changes through this.
-  SyncChangeProcessor* sync_processor_;
+  scoped_ptr<SyncChangeProcessor> sync_processor_;
 
   // Whether or not we are waiting on the default search provider to come in
   // from Sync. This is to facilitate the fact that changes to the value of
