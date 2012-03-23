@@ -49,6 +49,8 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE },
     { "enableTapToClick",
       IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION },
+    { "naturalScroll",
+      IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION },
     { "primaryMouseRight",
       IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION },
   };

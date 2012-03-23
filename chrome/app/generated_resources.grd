@@ -12503,6 +12503,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
         Enable tap-to-click
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables natural scrolling.">
+        Enable simple scrolling
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
         Speed:
       </message>
