@@ -145,6 +145,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets input focus on the passkey or pincode field if appropriate.
+     */
+    didShowPage: function() {
+      if (!$('bluetooth-pincode').hidden)
+        $('bluetooth-pincode').focus();
+      else if (!$('bluetooth-passkey').hidden)
+        $('bluetooth-passkey').focus();
+    },
+
+    /**
      * Configures the overlay for pairing a device.
      * @param {Object} device Description of the bluetooth device.
      */
@@ -315,10 +325,7 @@ cr.define('options', function() {
    */
   BluetoothPairing.showDialog = function(device) {
     BluetoothPairing.getInstance().update(device);
-    var overlay = OptionsPage.getTopmostVisiblePage();
-    var dialog = BluetoothPairing.getInstance();
-    if (overlay != dialog)
-      OptionsPage.showPageByName('bluetoothPairing', false);
+    OptionsPage.showPageByName('bluetoothPairing', false);
   };
 
   /**
