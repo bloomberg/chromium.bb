@@ -317,3 +317,54 @@ TEST(connection_demarshal)
 
 	release_marshal_data(&data);
 }
+
+static void
+marshal_demarshal(struct marshal_data *data, 
+		  void (*func)(void), int size, const char *format, ...)
+{
+	struct wl_closure *closure;
+	static const int opcode = 4444;
+	static struct wl_object sender = { NULL, NULL, 1234 };
+	struct wl_message message = { "test", format, NULL };
+	struct wl_map objects;
+	struct wl_object object;
+	va_list ap;
+	uint32_t msg[1] = { 1234 };
+
+	va_start(ap, format);
+	closure = wl_connection_vmarshal(data->write_connection,
+					 &sender, opcode, ap, &message);
+	va_end(ap);
+
+	assert(closure);
+	assert(wl_closure_send(closure, data->write_connection) == 0);
+	wl_closure_destroy(closure);
+	assert(data->write_mask ==
+	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
+	assert(wl_connection_data(data->write_connection,
+				  WL_CONNECTION_WRITABLE) == 0);
+	assert(data->write_mask == WL_CONNECTION_READABLE);
+
+	assert(wl_connection_data(data->read_connection,
+				  WL_CONNECTION_READABLE) == size);
+
+	wl_map_init(&objects);
+	object.id = msg[0];
+	closure = wl_connection_demarshal(data->read_connection,
+					  size, &objects, &message);
+	wl_closure_invoke(closure, &object, func, msg);
+
+	wl_closure_destroy(closure);
+}
+
+TEST(connection_marshal_demarshal)
+{
+	struct marshal_data data;
+
+	setup_marshal_data(&data);
+
+	marshal_demarshal(&data, (void *) validate_demarshal_s, 24,
+			  "s", "superdude");
+
+	release_marshal_data(&data);
+}
