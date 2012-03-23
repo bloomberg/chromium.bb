@@ -364,6 +364,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<PinGDataFileFunction>();
   RegisterFunction<GetFileLocationsFunction>();
   RegisterFunction<GetGDataFilesFunction>();
+  RegisterFunction<GetFileTransfersFunction>();
+  RegisterFunction<CancelFileTransfersFunction>();
+  RegisterFunction<TransferFileFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();

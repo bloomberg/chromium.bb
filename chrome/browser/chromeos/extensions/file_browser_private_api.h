@@ -505,7 +505,7 @@ class GetFileTransfersFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTransfers");
 };
 
-// Implements the chrome.fileBrowserPrivate.cancelTransfer method.
+// Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
 class CancelFileTransfersFunction : public FileBrowserFunction {
  public:
   CancelFileTransfersFunction();
@@ -517,7 +517,28 @@ class CancelFileTransfersFunction : public FileBrowserFunction {
 
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.cancelTransfers");
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.cancelFileTransfers");
+};
+
+// Implements the chrome.fileBrowserPrivate.transferFile method.
+class TransferFileFunction : public FileBrowserFunction {
+ public:
+  TransferFileFunction();
+  virtual ~TransferFileFunction();
+
+ protected:
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Helper callback for handling response from
+  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread()
+  void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+
+  // Helper callback for handling response from GDataFileSystem::TransferFile().
+  void OnTransferCompleted(base::PlatformFileError error);
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.transferFile");
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

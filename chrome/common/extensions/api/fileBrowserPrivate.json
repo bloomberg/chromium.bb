@@ -716,6 +716,29 @@
         ]
       },
       {
+        "name": "transferFile",
+        "description": "Transfers file from local to remote file system.",
+        "parameters": [
+          {
+            "name": "sourceFileUrl",
+            "type": "string",
+            "description": "Source file from the local file system."
+          },
+          {
+            "name": "destinationFileUrl",
+            "type": "string",
+            "description": "Destination file on the remote file system."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Completion callback. chrome.extension.lastError will be set if there was an error.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "cancelFileTransfers",
         "description": "Cancels ongoing file transfers for selected files.",
         "parameters": [

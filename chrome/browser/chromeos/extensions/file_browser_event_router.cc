@@ -264,8 +264,11 @@ void FileBrowserEventRouter::HandleProgressUpdateForExtensionAPI(
           file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
           list));
 
+  ListValue args;
+  args.Append(event_list.release());
+
   std::string args_json;
-  base::JSONWriter::Write(event_list.get(),
+  base::JSONWriter::Write(&args,
                           &args_json);
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(

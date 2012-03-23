@@ -202,6 +202,16 @@ class GDataFileSystemInterface {
   virtual void FindFileByPathSync(const FilePath& file_path,
                                   FindFileDelegate* delegate) = 0;
 
+  // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
+  // |local_file_path| must be a file from the local file system,
+  // |remote_dest_file_path| is the virtual destination path within gdata file
+  // system.
+  //
+  // Can be called from any thread.
+  virtual void TransferFile(const FilePath& local_file_path,
+                            const FilePath& remote_dest_file_path,
+                            const FileOperationCallback& callback) = 0;
+
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
   // |dest_file_path| is expected to be of the same type of |src_file_path|
@@ -369,6 +379,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                    const FindFileCallback& callback) OVERRIDE;
   virtual void FindFileByPathSync(const FilePath& file_path,
                                   FindFileDelegate* delegate) OVERRIDE;
+  virtual void TransferFile(const FilePath& local_file_path,
+                            const FilePath& remote_dest_file_path,
+                            const FileOperationCallback& callback) OVERRIDE;
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;

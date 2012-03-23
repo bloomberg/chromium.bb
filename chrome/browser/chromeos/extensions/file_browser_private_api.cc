@@ -1829,7 +1829,7 @@ CancelFileTransfersFunction::~CancelFileTransfersFunction() {}
 
 bool CancelFileTransfersFunction::RunImpl() {
   ListValue* url_list = NULL;
-  if (args_->GetList(0, &url_list)) {
+  if (!args_->GetList(0, &url_list)) {
     SendResponse(false);
     return false;
   }
@@ -1870,7 +1870,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
         system_service->file_system()->CancelOperation(file_path));
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
-            FilePath("gdata").Append(file_path),
+            gdata::util::GetSpecialRemoteRootPath().Append(file_path),
             source_url_.GetOrigin(),
             &file_url)) {
       result->SetString("fileUrl", file_url.spec());
@@ -1880,4 +1880,62 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
   }
   result_.reset(responses.release());
   SendResponse(true);
+}
+
+TransferFileFunction::TransferFileFunction() {}
+
+TransferFileFunction::~TransferFileFunction() {}
+
+bool TransferFileFunction::RunImpl() {
+  std::string local_file_url;
+  std::string remote_file_url;
+  if (args_->GetString(0, &local_file_url) ||
+      args_->GetString(1, &remote_file_url)) {
+    return false;
+  }
+
+  UrlList file_urls;
+  file_urls.push_back(GURL(local_file_url));
+  file_urls.push_back(GURL(remote_file_url));
+
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&TransferFileFunction::GetLocalPathsResponseOnUIThread,
+                 this));
+  return true;
+}
+
+void TransferFileFunction::GetLocalPathsResponseOnUIThread(
+    const SelectedFileInfoList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!files.size() != 2U) {
+    SendResponse(false);
+    return;
+  }
+
+  const FilePath& local_source_file = files[0].path;
+  const FilePath& remote_destination_file = files[1].path;
+  if (gdata::util::IsUnderGDataMountPoint(local_source_file) ||
+      !gdata::util::IsUnderGDataMountPoint(remote_destination_file)) {
+    SendResponse(false);
+    return;
+  }
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service) {
+    SendResponse(false);
+    return;
+  }
+
+  system_service->file_system()->TransferFile(
+      local_source_file,
+      remote_destination_file,
+      base::Bind(&TransferFileFunction::OnTransferCompleted,
+                 this));
+}
+
+void TransferFileFunction::OnTransferCompleted(
+    base::PlatformFileError error) {
+  SendResponse(error == base::PLATFORM_FILE_OK);
 }

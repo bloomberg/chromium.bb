@@ -528,6 +528,17 @@ void GDataFileSystem::LoadFeedFromServer(
                  callback));
 }
 
+void GDataFileSystem::TransferFile(const FilePath& local_file_path,
+                                   const FilePath& remote_dest_file_path,
+                                   const FileOperationCallback& callback) {
+  // TODO(zelidrag): Wire this with GDataUploader stack.
+  if (!callback.is_null()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_EMPTY));
+  }
+  return;
+}
+
 void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {

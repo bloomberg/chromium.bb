@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -175,7 +176,8 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-          FilePath(status.file_path),
+          gdata::util::GetSpecialRemoteRootPath().Append(
+              FilePath(status.file_path)),
           origin_url,
           &file_url)) {
     result->SetString("fileUrl", file_url.spec());

@@ -27,6 +27,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     const FindFileCallback& callback));
   MOCK_METHOD2(FindFileByPathSync, void(const FilePath& file_path,
                                         FindFileDelegate* delegate));
+  MOCK_METHOD3(TransferFile, void(const FilePath& local_file_path,
+                                  const FilePath& remote_dest_file_path,
+                                  const FileOperationCallback& callback));
   MOCK_METHOD3(Copy, void(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback));
