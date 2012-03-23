@@ -16,4 +16,4 @@ ClientSideDetectionHostTest.OnPhishingDetectionDoneDisabled
 ProfileSyncServiceSessionTest.WriteFilledSessionToNode
 ProfileSyncServiceSessionTest.ValidTabs
 # Timeouts and unaddrs on CrOS. http://crbug.com/119712
-GDataFilesystemTest.*
+GDataFileSystemTest.*
