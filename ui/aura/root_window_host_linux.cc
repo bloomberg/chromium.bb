@@ -6,17 +6,13 @@
 
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
 #include <algorithm>
 
 #include "base/message_pump_x.h"
-#include "base/stl_util.h"
 #include "ui/aura/cursor.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_change_observer_x11.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -280,8 +276,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(aura::kCursorNull),
       cursor_shown_(true),
-      bounds_(bounds),
-      focus_when_shown_(false) {
+      bounds_(bounds) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -304,6 +299,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
+  XSelectInput(xdisplay_, x_root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
   if (base::MessagePumpForUI::HasXInput2())
@@ -365,6 +361,13 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
         root_window_->SetCapture(NULL);
       break;
     case ConfigureNotify: {
+      if (xev->xconfigure.window == x_root_window_) {
+        Env::GetInstance()->monitor_manager()->OnNativeMonitorResized(
+            gfx::Size(xev->xconfigure.width, xev->xconfigure.height));
+        handled = true;
+        break;
+      }
+
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
 
@@ -438,7 +441,7 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
     case MapNotify: {
       // If there's no window manager running, we need to assign the X input
       // focus to our host window.
-      if (!IsWindowManagerPresent() && focus_when_shown_)
+      if (!IsWindowManagerPresent())
         XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
       handled = true;
       break;
@@ -480,12 +483,6 @@ base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
       handled = root_window_->DispatchMouseEvent(&mouseev);
       break;
     }
-    default: {
-      // TODO(oshima): We probably should change DispatcherLinux so
-      // that it can directly dispatch the event to montor change
-      // observer.
-      Env::GetInstance()->monitor_change_observer()->Dispatch(xev);
-    }
   }
   return handled ? base::MessagePumpDispatcher::EVENT_PROCESSED :
       base::MessagePumpDispatcher::EVENT_IGNORED;
@@ -513,10 +510,8 @@ gfx::Rect RootWindowHostLinux::GetBounds() const {
 
 void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   bool size_changed = bounds_.size() != bounds.size();
-  if (bounds == bounds_) {
-    root_window_->SchedulePaintInRect(root_window_->bounds());
+  if (bounds == bounds_)
     return;
-  }
   if (bounds.size() != bounds_.size())
     XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
   if (bounds.origin() != bounds_.origin())
@@ -596,17 +591,6 @@ void RootWindowHostLinux::UnConfineCursor() {
 void RootWindowHostLinux::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, None, xwindow_, 0, 0, 0, 0, location.x(),
       location.y());
-}
-
-void RootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
-  static const char* k_NET_WM_USER_TIME = "_NET_WM_USER_TIME";
-  focus_when_shown_ = focus_when_shown;
-  if (IsWindowManagerPresent() && !focus_when_shown_) {
-    ui::SetIntProperty(xwindow_,
-                       k_NET_WM_USER_TIME,
-                       k_NET_WM_USER_TIME,
-                       0);
-  }
 }
 
 void RootWindowHostLinux::PostNativeEvent(

@@ -90,10 +90,6 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/aura/monitor_change_observer_x11.h"
-#endif
-
 namespace ash {
 
 namespace {
@@ -508,9 +504,6 @@ Shell::~Shell() {
   // The system tray needs to be reset before all the windows are destroyed.
   tray_.reset();
 
-  // Desroy secondary monitor's widgets before all the windows are destroyed.
-  monitor_controller_.reset();
-
   // Delete containers now so that child windows does not access
   // observers when they are destructed.
   aura::RootWindow* root_window = GetRootWindow();
@@ -545,9 +538,6 @@ Shell* Shell::CreateInstance(ShellDelegate* delegate) {
   CHECK(!instance_);
   aura::Env::GetInstance()->SetMonitorManager(
       new internal::MultiMonitorManager());
-#if defined(USE_X11)
-  aura::Env::GetInstance()->monitor_change_observer()->NotifyMonitorChange();
-#endif
   instance_ = new Shell(delegate);
   instance_->Init();
   return instance_;

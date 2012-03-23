@@ -12,7 +12,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/monitor/multi_monitor_manager.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -398,12 +397,6 @@ bool AcceleratorController::AcceleratorPressed(
       return HandlePrintLayerHierarchy();
     case PRINT_WINDOW_HIERARCHY:
       return HandlePrintWindowHierarchy();
-    case ADD_REMOVE_MONITOR:
-      internal::MultiMonitorManager::AddRemoveMonitor();
-      return true;
-    case CYCLE_MONITOR:
-      internal::MultiMonitorManager::CycleMonitor();
-      return true;
 #endif
     default:
       NOTREACHED() << "Unhandled action " << it->second;

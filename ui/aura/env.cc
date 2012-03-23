@@ -9,10 +9,6 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/compositor.h"
 
-#if defined(USE_X11)
-#include "ui/aura/monitor_change_observer_x11.h"
-#endif
-
 namespace aura {
 
 // static
@@ -24,11 +20,9 @@ Env* Env::instance_ = NULL;
 Env::Env()
     : mouse_button_flags_(0),
       stacking_client_(NULL),
-      monitor_manager_(new internal::SingleMonitorManager)
-#if defined(USE_X11)
-    , monitor_change_observer_(new MonitorChangeObserverX11())
-#endif
+      monitor_manager_(NULL)
 {
+  SetMonitorManager(new internal::SingleMonitorManager());
 #if !defined(OS_MACOSX)
   dispatcher_.reset(CreateDispatcher());
 #endif
