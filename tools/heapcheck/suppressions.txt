@@ -1830,3 +1830,17 @@
    ...
    fun:SelectFileDialogExtensionTest_SelfDeleting_Test::TestBody
 }
+{
+   bug_119714_a
+   Heapcheck:Leak
+   ...
+   fun:*AudioInputControllerTest_CreateAndClose_Test*
+}
+{
+   # This should be removed soon!  It's a pretty broad suppression.
+   bug_119714_b
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:base::Thread::ThreadMain
+   fun:base::::ThreadFunc
+}
