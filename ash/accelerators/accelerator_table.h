@@ -63,8 +63,14 @@ struct AcceleratorData {
 // Accelerators handled by AcceleratorController.
 extern const AcceleratorData kAcceleratorData[];
 
-// The numbers of elements in kAcceleratorData.
+// The number of elements in kAcceleratorData.
 extern const size_t kAcceleratorDataLength;
+
+// Actions allowed while screen is locked.
+extern const AcceleratorAction kActionsAllowedWhileLocked[];
+
+// The number of elements in kActionsAllowedWhileLocked.
+extern const size_t kActionsAllowedWhileLockedLength;
 
 }  // namespace ash
 

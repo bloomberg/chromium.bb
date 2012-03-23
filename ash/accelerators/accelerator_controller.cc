@@ -216,6 +216,11 @@ AcceleratorController::~AcceleratorController() {
 }
 
 void AcceleratorController::Init() {
+  for (size_t i = 0; i < kActionsAllowedWhileLockedLength; ++i) {
+    CHECK(actions_allowed_while_locked_.insert(
+        kActionsAllowedWhileLocked[i]).second);
+  }
+
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     ui::Accelerator accelerator(kAcceleratorData[i].keycode,
                                 kAcceleratorData[i].shift,
@@ -281,6 +286,14 @@ bool AcceleratorController::AcceleratorPressed(
   std::map<ui::Accelerator, int>::const_iterator it =
       accelerators_.find(accelerator);
   DCHECK(it != accelerators_.end());
+  AcceleratorAction action = static_cast<AcceleratorAction>(it->second);
+
+  if (ash::Shell::GetInstance()->IsScreenLocked() &&
+      actions_allowed_while_locked_.find(action) ==
+      actions_allowed_while_locked_.end()) {
+    return false;
+  }
+
   switch (static_cast<AcceleratorAction>(it->second)) {
     case CYCLE_BACKWARD_MRU:
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,

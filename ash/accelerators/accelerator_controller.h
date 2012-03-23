@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -92,6 +93,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.
   std::map<ui::Accelerator, int> accelerators_;
+
+  // Actions allowed when the screen is locked.
+  std::set<int> actions_allowed_while_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

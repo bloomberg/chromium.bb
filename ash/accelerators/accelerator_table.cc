@@ -109,4 +109,27 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
+const AcceleratorAction kActionsAllowedWhileLocked[] = {
+  BRIGHTNESS_DOWN,
+  BRIGHTNESS_UP,
+  EXIT,
+  NEXT_IME,
+  PREVIOUS_IME,
+  SWITCH_IME,  // Switch to another IME depending on the accelerator.
+  TAKE_SCREENSHOT,
+  TAKE_PARTIAL_SCREENSHOT,
+  VOLUME_DOWN,
+  VOLUME_MUTE,
+  VOLUME_UP,
+  ROTATE_WINDOWS,
+#if !defined(NDEBUG)
+  PRINT_LAYER_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
+  ROTATE_SCREEN,
+#endif
+};
+
+const size_t kActionsAllowedWhileLockedLength =
+    arraysize(kActionsAllowedWhileLocked);
+
 }  // namespace ash
