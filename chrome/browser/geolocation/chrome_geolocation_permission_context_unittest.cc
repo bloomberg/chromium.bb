@@ -141,8 +141,8 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
 
  private:
   // TabContentsWrapperTestHarness:
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   content::TestBrowserThread ui_thread_;
   content::MockGeolocation mock_geolocation_;
@@ -241,6 +241,7 @@ void GeolocationPermissionContextTests::SetUp() {
 }
 
 void GeolocationPermissionContextTests::TearDown() {
+  extra_tabs_.reset();
   mock_geolocation_.TearDown();
   TabContentsWrapperTestHarness::TearDown();
 }
@@ -473,8 +474,6 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
   infobar_1->InfoBarClosed();
-
-  extra_tabs_.reset();
 }
 
 TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
@@ -530,8 +529,6 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
   infobar_1->InfoBarClosed();
-
-  extra_tabs_.reset();
 }
 
 TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
