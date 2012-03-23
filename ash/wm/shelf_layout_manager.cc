@@ -24,7 +24,7 @@ namespace internal {
 namespace {
 
 // Delay before showing/hiding the launcher after the mouse enters the launcher.
-const int kAutoHideDelayMS = 300;
+const int kAutoHideDelayMS = 500;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
