@@ -1018,6 +1018,11 @@ bool AddMountFunction::RunImpl() {
   return true;
 }
 
+void AddMountFunction::GrantFilePermissionsToHost(const FilePath& path,
+                                                  int permissions) {
+  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+      render_view_host()->GetProcess()->GetID(), path, permissions);
+}
 
 void AddMountFunction::AddGDataMountPoint() {
   fileapi::ExternalFileSystemMountPointProvider* provider =
@@ -1028,16 +1033,32 @@ void AddMountFunction::AddGDataMountPoint() {
 
   // Grant R/W permissions to gdata 'folder'. File API layer still
   // expects this to be satisfied.
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      render_view_host()->GetProcess()->GetID(), mount_point,
-      file_handler_util::GetReadWritePermissions());
+  GrantFilePermissionsToHost(mount_point,
+                             file_handler_util::GetReadWritePermissions());
 
+  // Grant R/W permission for tmp and pinned cache folder.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   DCHECK(system_service);
+  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
+
+  // We check permissions for raw cache file paths only for read-only
+  // operations (when fileEntry.file() is called), so read only permissions
+  // should be sufficient for all cache paths. For the rest of supported
+  // operations the file access check is done for gdata/ paths.
+  GrantFilePermissionsToHost(gdata_file_system->GetGDataCacheTmpDirectory(),
+                             file_handler_util::GetReadOnlyPermissions());
+  GrantFilePermissionsToHost(
+      gdata_file_system->GetGDataCachePersistentDirectory(),
+      file_handler_util::GetReadOnlyPermissions());
+
   provider->AddRemoteMountPoint(
       mount_point,
-      new gdata::GDataFileSystemProxy(system_service->file_system()));
+      new gdata::GDataFileSystemProxy(gdata_file_system));
+
+  FilePath mount_point_virtual;
+  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
+    provider->GrantFileAccessToExtension(extension_id(), mount_point_virtual);
 }
 
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {

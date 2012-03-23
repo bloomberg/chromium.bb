@@ -9,6 +9,7 @@
 #include <string>
 
 class FilePath;
+class Profile;
 
 namespace gdata {
 namespace util {
@@ -30,6 +31,12 @@ bool IsUnderGDataMountPoint(const FilePath& path);
 // Examples: ExtractGDatPath("/special/gdata/foo.txt") => "gdata/foo.txt"
 FilePath ExtractGDataPath(const FilePath& path);
 
+// Grants read-only file access permissions to the process whose id is |pid|
+// with ChildProcessSecurityPolicy for all possible cache paths that may be
+// given to the specified file.
+void SetPermissionsForGDataCacheFiles(Profile* profile,
+                                      int pid,
+                                      const FilePath& path);
 }  // namespace util
 }  // namespace gdata
 

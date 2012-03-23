@@ -328,6 +328,17 @@ class GDataFileSystemInterface {
   // <user_profile_dir>/GCache/v1/pinned
   virtual FilePath GetGDataCachePinnedDirectory() const = 0;
 
+  // Returns the pinned sub-directory under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1/pinned
+  virtual FilePath GetGDataCachePersistentDirectory() const = 0;
+
+  // Returns absolute path of the file if it were cached or to be cached.
+  virtual FilePath GetCacheFilePath(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      CachedFileOrigin file_orign) const = 0;
+
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
@@ -391,6 +402,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
   virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
   virtual FilePath GetGDataTempDownloadFolderPath() const OVERRIDE;
   virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
+  virtual FilePath GetGDataCachePersistentDirectory() const OVERRIDE;
+  virtual FilePath GetCacheFilePath(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddDownloadedFile(const FilePath& virtual_dir_path,
@@ -759,13 +776,6 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // - handles eviction when disk runs out of space
   // - uploads dirty files to gdata server.
   // - etc.
-
-  // Returns absolute path of the file if it were cached or to be cached.
-  FilePath GetCacheFilePath(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
-      CachedFileOrigin file_orign);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
   // Initializes cache if it has not been initialized.

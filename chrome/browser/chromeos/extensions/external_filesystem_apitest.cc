@@ -4,25 +4,25 @@
 
 #include "base/file_util.h"
 #include "base/platform_file.h"
+#include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
-#endif
 
 using ::testing::_;
 using content::BrowserContext;
 
-#if defined(OS_CHROMEOS)
-
 // These should match the counterparts in remote.js.
-const char kTestFileName[] = "hello.txt";
+const char kTestDirPath[] = "/test_dir";
+const char kTestFilePath[] = "/test_dir/hello.txt";
 const char kTestFileContents[] = "hello, world";
 
 namespace {
@@ -129,14 +129,19 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
   RemoteFileSystemExtensionApiTest()
-      : test_mount_point_("/tmp"),
-        mock_remote_file_system_proxy_(NULL) {
+      : mock_remote_file_system_proxy_(NULL) {
   }
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
   virtual void SetUp() OVERRIDE {
-    file_util::CreateTemporaryFile(&test_file_path_);
+    FilePath tmp_dir_path;
+    PathService::Get(base::DIR_TEMP, &tmp_dir_path);
+
+    ASSERT_TRUE(test_mount_point_.CreateUniqueTempDirUnderPath(tmp_dir_path));
+
+    file_util::CreateTemporaryFileInDir(test_mount_point_.path(),
+                                        &test_file_path_);
     file_util::WriteFile(test_file_path_,
                          kTestFileContents,
                          sizeof(kTestFileContents) - 1);
@@ -148,12 +153,6 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUp();
   }
 
-  virtual void TearDown() OVERRIDE {
-    file_util::Delete(test_file_path_, false);
-
-    ExtensionApiTest::TearDown();
-  }
-
   // Adds a remote mount point at at mount point /tmp.
   void AddTmpMountPoint() {
     fileapi::ExternalFileSystemMountPointProvider* provider =
@@ -161,14 +160,18 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
             external_provider();
     mock_remote_file_system_proxy_ = new MockRemoteFileSystemProxy;
     // Take the ownership of mock_remote_file_system_proxy_.
-    provider->AddRemoteMountPoint(test_mount_point_,
-                                  mock_remote_file_system_proxy_);
+    provider->AddRemoteMountPoint(test_mount_point_.path(),
+                                mock_remote_file_system_proxy_);
+  }
+
+  std::string GetPathOnMountPoint(const std::string& path) {
+    return test_mount_point_.path().BaseName().value() + path;
   }
 
  protected:
   base::PlatformFileInfo test_file_info_;
   FilePath test_file_path_;
-  FilePath test_mount_point_;
+  ScopedTempDir test_mount_point_;
   MockRemoteFileSystemProxy* mock_remote_file_system_proxy_;
 };
 
@@ -202,16 +205,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
   AddTmpMountPoint();
-
   // The test directory is created first.
-  const GURL test_dir_url = GetExpectedURL("tmp/test_dir");
+  const GURL test_dir_url =
+      GetExpectedURL(GetPathOnMountPoint(kTestDirPath));
   EXPECT_CALL(*mock_remote_file_system_proxy_,
               CreateDirectory(test_dir_url, false, false, _))
       .WillOnce(MockCreateDirectory(base::PLATFORM_FILE_OK));
 
   // Then GetFileInfo() is called over "tmp/test_dir/hello.txt".
-  const std::string expected_path =
-      std::string("tmp/test_dir/") + kTestFileName;
+  const std::string expected_path = GetPathOnMountPoint(kTestFilePath);
   GURL expected_url = GetExpectedURL(expected_path);
   EXPECT_CALL(*mock_remote_file_system_proxy_,
               GetFileInfo(expected_url, _))
@@ -229,9 +231,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
           // Returns the path to the temporary file on the local drive.
           test_file_path_,
           scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
-
-  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
-                                           "remote.html")) << message_;
+  ASSERT_TRUE(RunComponentExtensionSubtest(
+      "filebrowser_component",
+      "remote.html#" + GetPathOnMountPoint(""))) << message_;
 }
-
-#endif

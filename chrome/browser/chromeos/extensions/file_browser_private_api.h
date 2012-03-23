@@ -233,6 +233,8 @@ class AddMountFunction
  private:
   // Sends gdata mount event to renderers.
   void RaiseGDataMountEvent(gdata::GDataErrorCode error);
+  // Gives the extension renderer file permissions for the given path.
+  void GrantFilePermissionsToHost(const FilePath& path, int permissions);
   // Adds gdata mount point.
   void AddGDataMountPoint();
   // A callback method to handle the result of GData authentication request.

@@ -74,8 +74,20 @@ TestRunner.prototype.errorCallback_ = function(error) {
   chrome.test.fail(msg);
 };
 
+function getDirFromLocationHref() {
+  var loc = window.location.href;
+  console.log("Opening tab " + loc);
+  if (loc.indexOf("#") == -1 ) {
+    console.log("No params in url, faling back to default.");
+    return "tmp";
+  }
+
+  loc = unescape(loc.substr(loc.indexOf("#") + 1));
+  return (loc[0] == '/') ? loc.substring(1) : loc;
+}
+
 function TestRunner() {
-  this.fileCreator_ = new TestFileCreator('tmp',
+  this.fileCreator_ = new TestFileCreator(getDirFromLocationHref(),
                                           false /* shouldRandomize */);
 }
 

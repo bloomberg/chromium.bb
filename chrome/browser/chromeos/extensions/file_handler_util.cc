@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -51,6 +52,10 @@ const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
                                       base::PLATFORM_FILE_ASYNC |
                                       base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
+const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
+                                     base::PLATFORM_FILE_READ |
+                                     base::PLATFORM_FILE_EXCLUSIVE_READ |
+                                     base::PLATFORM_FILE_ASYNC;
 
 // Returns process id of the process the extension is running in.
 int ExtractProcessFromExtensionId(const std::string& extension_id,
@@ -166,6 +171,10 @@ void SortLastUsedHandlerList(LastUsedHandlerList *list) {
 
 int GetReadWritePermissions() {
   return kReadWriteFilePermissions;
+}
+
+int GetReadOnlyPermissions() {
+  return kReadOnlyFilePermissions;
 }
 
 std::string MakeTaskID(const std::string& extension_id,
@@ -391,17 +400,17 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
 
-    if (!file_util::PathExists(final_file_path) ||
-        file_util::IsLink(final_file_path) ||
-        !file_util::GetFileInfo(final_file_path, &file_info))
-      return false;
+    bool is_gdata_file = gdata::util::IsUnderGDataMountPoint(final_file_path);
 
-    // TODO(zelidrag): Let's just prevent all symlinks for now. We don't want a
-    // USB drive content to point to something in the rest of the file system.
-    // Ideally, we should permit symlinks within the boundary of the same
-    // virtual mount point.
-    if (file_info.is_symbolic_link)
-      return false;
+    // If the file is under gdata mount point, there is no actual file to be
+    // found on the final_file_path.
+    if (!is_gdata_file) {
+      if (!file_util::PathExists(final_file_path) ||
+          file_util::IsLink(final_file_path) ||
+          !file_util::GetFileInfo(final_file_path, &file_info)) {
+        return false;
+      }
+    }
 
     // TODO(tbarzic): Add explicit R/W + R/O permissions for non-component
     // extensions.
@@ -412,6 +421,11 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
         handler_pid_,
         final_file_path,
         GetReadWritePermissions());
+
+    if (is_gdata_file) {
+      gdata::util::SetPermissionsForGDataCacheFiles(profile_, handler_pid_,
+          final_file_path);
+    }
 
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and

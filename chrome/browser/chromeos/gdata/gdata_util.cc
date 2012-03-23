@@ -9,8 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/common/libxml_utils.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "content/public/browser/child_process_security_policy.h"
 
 namespace gdata {
 namespace util {
@@ -24,6 +28,11 @@ const char kGDataMountPointPath[] = "/special/gdata";
 const FilePath::CharType* kGDataMountPointPathComponents[] = {
   "/", "special", "gdata"
 };
+
+const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
+                                     base::PLATFORM_FILE_READ |
+                                     base::PLATFORM_FILE_EXCLUSIVE_READ |
+                                     base::PLATFORM_FILE_ASYNC;
 
 }  // namespace
 
@@ -64,6 +73,52 @@ FilePath ExtractGDataPath(const FilePath& path) {
     extracted = extracted.Append(components[i]);
   }
   return extracted;
+}
+
+
+void SetPermissionsForGDataCacheFiles(Profile* profile,
+                                      int pid,
+                                      const FilePath& path) {
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile);
+  DCHECK(system_service);
+
+  GDataFileSystem* file_system = system_service->file_system();
+  DCHECK(file_system);
+
+  GDataFileProperties file_properties;
+  file_system->GetFileInfoFromPath(path, &file_properties);
+
+  std::string resource_id = file_properties.resource_id;
+  std::string file_md5 = file_properties.file_md5;
+
+  // We check permissions for raw cache file paths only for read-only
+  // operations (when fileEntry.file() is called), so read only permissions
+  // should be sufficient for all cache paths. For the rest of supported
+  // operations the file access check is done for gdata/ paths.
+  std::vector<std::pair<FilePath, int> > cache_paths;
+  cache_paths.push_back(std::make_pair(
+      file_system->GetCacheFilePath(resource_id, file_md5,
+          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataFileSystem::CACHED_FILE_FROM_SERVER),
+      kReadOnlyFilePermissions));
+  // TODO(tbarzic): When we start supporting openFile operation, we may have to
+  // change permission for localy modified files to match handler's permissions.
+  cache_paths.push_back(std::make_pair(
+      file_system->GetCacheFilePath(resource_id, file_md5,
+          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataFileSystem::CACHED_FILE_LOCALLY_MODIFIED),
+     kReadOnlyFilePermissions));
+  cache_paths.push_back(std::make_pair(
+      file_system->GetCacheFilePath(resource_id, file_md5,
+          GDataRootDirectory::CACHE_TYPE_TMP,
+          GDataFileSystem::CACHED_FILE_FROM_SERVER),
+      kReadOnlyFilePermissions));
+
+  for (size_t i = 0; i < cache_paths.size(); i++) {
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        pid, cache_paths[i].first, cache_paths[i].second);
+  }
 }
 
 }  // namespace util

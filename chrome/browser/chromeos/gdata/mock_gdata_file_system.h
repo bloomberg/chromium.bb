@@ -61,6 +61,12 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_CONST_METHOD0(GetGDataCacheTmpDirectory, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDownloadFolderPath, FilePath());
   MOCK_CONST_METHOD0(GetGDataCachePinnedDirectory, FilePath());
+  MOCK_CONST_METHOD0(GetGDataCachePersistentDirectory, FilePath());
+  MOCK_CONST_METHOD4(GetCacheFilePath, FilePath(
+      const std::string&,
+      const std::string&,
+      GDataRootDirectory::CacheSubDirectoryType,
+      CachedFileOrigin));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
 

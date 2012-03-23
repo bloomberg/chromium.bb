@@ -17,15 +17,22 @@ class Profile;
 
 namespace file_handler_util {
 
+// Gets read-write file access permission flags.
 int GetReadWritePermissions();
+// Gets read-only file access permission flags.
+int GetReadOnlyPermissions();
 
+// Generates file task id for the file actin specified by the extension.
 std::string MakeTaskID(const std::string& extension_id,
                        const std::string& action_id);
 
+// Extracts action and extension id bound to the file task.
 bool CrackTaskID(const std::string& task_id,
                  std::string* target_extension_id,
                  std::string* action_id);
 
+// Struct that keeps track of when a handler was `last used.
+// It is used to determine default file action for a file.
 struct LastUsedHandler {
   LastUsedHandler(int t, const FileBrowserHandler* h, URLPatternSet p)
       : timestamp(t),
@@ -40,14 +47,19 @@ struct LastUsedHandler {
 
 typedef std::vector<LastUsedHandler> LastUsedHandlerList;
 
+// Generates list of tasks common for all files in |file_list|.
+// The resulting list is sorted by last usage time.
 bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
                      LastUsedHandlerList* named_action_list);
 
+// Find the default task for a file whose url is |url|. (The default task is the
+// task that is assigned to file browser task button by default).
 bool GetDefaultTask(Profile* profile,
                     const GURL& url,
                     const FileBrowserHandler** handler);
 
+// Helper class for executing file browser file action.
 class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
  public:
 

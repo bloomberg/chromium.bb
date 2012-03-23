@@ -1098,6 +1098,10 @@ FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
   return cache_paths_[GDataRootDirectory::CACHE_TYPE_PINNED];
 }
 
+FilePath GDataFileSystem::GetGDataCachePersistentDirectory() const {
+  return cache_paths_[GDataRootDirectory::CACHE_TYPE_PERSISTENT];
+}
+
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
@@ -2013,8 +2017,9 @@ FilePath GDataFileSystem::GetCacheFilePath(
     const std::string& resource_id,
     const std::string& md5,
     GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
-    CachedFileOrigin file_origin) {
+    CachedFileOrigin file_origin) const {
   DCHECK(sub_dir_type != GDataRootDirectory::CACHE_TYPE_META);
+
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
