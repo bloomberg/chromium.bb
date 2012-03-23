@@ -864,8 +864,9 @@ void Shell::InitLayoutManagers() {
   // Create desktop background widget.
   // TODO(bshe): We should be able to use OnDesktopBackgroundChanged function
   // here after issue 117244 got fixed.
+  int index = user_wallpaper_delegate_->GetUserWallpaperIndex();
   desktop_background_controller_->SetDesktopBackgroundImageMode(
-      GetWallpaper(user_wallpaper_delegate_->GetUserWallpaperIndex()));
+      GetWallpaper(index), GetWallpaperInfo(index).layout);
 }
 
 void Shell::DisableWorkspaceGridLayout() {

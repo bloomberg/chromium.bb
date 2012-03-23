@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/desktop_background/desktop_background_resources.h"
 #include "base/basictypes.h"
 
 class SkBitmap;
@@ -42,8 +43,9 @@ class ASH_EXPORT DesktopBackgroundController {
   void OnDesktopBackgroundChanged();
 
   // Sets the desktop background to image mode and create a new background
-  // widget with |wallpaper|.
-  void SetDesktopBackgroundImageMode(const SkBitmap& wallpaper);
+  // widget with |wallpaper| and image |layout|.
+  void SetDesktopBackgroundImageMode(const SkBitmap& wallpaper,
+                                     ImageLayout layout);
 
   // Sets the desktop background to solid color mode and create a solid color
   // layout.

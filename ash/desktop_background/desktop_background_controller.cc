@@ -4,7 +4,6 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 
-#include "ash/desktop_background/desktop_background_resources.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
@@ -38,16 +37,16 @@ void DesktopBackgroundController::OnDesktopBackgroundChanged() {
   DCHECK(root_window_layout->background_widget()->widget_delegate());
   static_cast<internal::DesktopBackgroundView*>(
       root_window_layout->background_widget()->widget_delegate())->
-          SetWallpaper(GetWallpaper(index));
+          SetWallpaper(GetWallpaper(index), GetWallpaperInfo(index).layout);
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode(
-    const SkBitmap& wallpaper) {
+    const SkBitmap& wallpaper, ImageLayout layout) {
   internal::RootWindowLayoutManager* root_window_layout =
       Shell::GetInstance()->root_window_layout();
   root_window_layout->SetBackgroundLayer(NULL);
   root_window_layout->SetBackgroundWidget(
-      internal::CreateDesktopBackground(wallpaper));
+      internal::CreateDesktopBackground(wallpaper, layout));
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
