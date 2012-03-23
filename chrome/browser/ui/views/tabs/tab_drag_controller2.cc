@@ -599,6 +599,13 @@ void TabDragController2::ContinueDragging() {
       return;
     }
     if (is_dragging_window_) {
+#if defined(USE_ASH)
+      // ReleaseMouseCapture() is going to result in calling back to us (because
+      // it results in a move). That'll cause all sorts of problems.  Reset the
+      // observer so we don't get notified and process the event.
+      move_loop_browser_view_->set_move_observer(NULL);
+      move_loop_browser_view_ = NULL;
+#endif
       BrowserView* browser_view = GetAttachedBrowserView();
       // Need to release the drag controller before starting the move loop as
       // it's going to trigger capture lost, which cancels drag.
@@ -617,7 +624,7 @@ void TabDragController2::ContinueDragging() {
       // leading to all sorts of flicker. So, on windows, instead we process
       // the move after the loop completes. But on chromeos, we can do tab
       // swapping now to avoid the tab flashing issue(crbug.com/116329).
-#if defined(OS_CHROMEOS)
+#if defined(USE_ASH)
       is_dragging_window_ = false;
       Detach();
       gfx::Point screen_point(GetCursorScreenPoint());
@@ -994,8 +1001,11 @@ void TabDragController2::RunMoveLoop() {
   if (destroyed)
     return;
   destroyed_ = NULL;
-  move_loop_browser_view_->set_move_observer(NULL);
-  move_loop_browser_view_ = NULL;
+  // Under chromeos we immediately set the |move_loop_browser_view_| to NULL.
+  if (move_loop_browser_view_) {
+    move_loop_browser_view_->set_move_observer(NULL);
+    move_loop_browser_view_ = NULL;
+  }
   is_dragging_window_ = false;
   waiting_for_run_loop_to_exit_ = false;
   if (end_run_loop_behavior_ == END_RUN_LOOP_CONTINUE_DRAGGING) {
