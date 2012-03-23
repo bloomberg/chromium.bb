@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,9 @@
 #include "ui/base/l10n/l10n_util.h"
 
 void ShowProfileErrorDialog(int message_id) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
   // Parent the dialog to the current browser. During startup there may be no
   // browser.
   Browser* browser = BrowserList::GetLastActive();
@@ -20,4 +23,5 @@ void ShowProfileErrorDialog(int message_id) {
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringUTF16(message_id));
+#endif
 }
