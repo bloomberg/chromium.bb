@@ -76,7 +76,7 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
 
   virtual ~NonActivatableSettingsBubble() {}
 
-  virtual bool CanActivate() OVERRIDE const {
+  virtual bool CanActivate() const OVERRIDE {
     return false;
   }
 
