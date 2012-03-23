@@ -62,7 +62,7 @@ static const int kNewTabButtonVOffset = 5;
 // Amount the left edge of a tab is offset from the rectangle of the tab's
 // favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
 #if defined(USE_ASH)
-static const int kTabHOffset = -28;
+static const int kTabHOffset = -27;
 #else
 static const int kTabHOffset = -16;
 #endif

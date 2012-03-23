@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,12 @@ namespace {
 const SkScalar kTabCapWidth = 15;
 const SkScalar kTabTopCurveWidth = 4;
 const SkScalar kTabBottomCurveWidth = 3;
+#if defined(USE_ASH)
+// Ash has shadows in the left and right part of the tab.
+const SkScalar kTabInset = 6;
+#else
+const SkScalar kTabInset = 0;
+#endif
 
 }  // namespace
 
@@ -23,22 +29,24 @@ void TabResources::GetHitTestMask(int width, int height, gfx::Path* path) {
   SkScalar h = SkIntToScalar(height);
   SkScalar w = SkIntToScalar(width);
 
-  path->moveTo(0, h);
+  SkScalar left = kTabInset;
+  path->moveTo(left, h);
 
   // Left end cap.
-  path->lineTo(kTabBottomCurveWidth, h - kTabBottomCurveWidth);
-  path->lineTo(kTabCapWidth - kTabTopCurveWidth, kTabTopCurveWidth);
-  path->lineTo(kTabCapWidth, 0);
+  path->lineTo(left + kTabBottomCurveWidth, h - kTabBottomCurveWidth);
+  path->lineTo(left + kTabCapWidth - kTabTopCurveWidth, kTabTopCurveWidth);
+  path->lineTo(left + kTabCapWidth, 0);
 
   // Connect to the right cap.
-  path->lineTo(w - kTabCapWidth, 0);
+  SkScalar right = w - kTabInset;
+  path->lineTo(right - kTabCapWidth, 0);
 
   // Right end cap.
-  path->lineTo(w - kTabCapWidth + kTabTopCurveWidth, kTabTopCurveWidth);
-  path->lineTo(w - kTabBottomCurveWidth, h - kTabBottomCurveWidth);
-  path->lineTo(w, h);
+  path->lineTo(right - kTabCapWidth + kTabTopCurveWidth, kTabTopCurveWidth);
+  path->lineTo(right - kTabBottomCurveWidth, h - kTabBottomCurveWidth);
+  path->lineTo(right, h);
 
   // Close out the path.
-  path->lineTo(0, h);
+  path->lineTo(left, h);
   path->close();
 }

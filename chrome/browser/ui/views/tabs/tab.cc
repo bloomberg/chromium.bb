@@ -53,7 +53,7 @@ static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
 // Additional vertical offset for title text relative to top of tab.
 #if defined(USE_ASH)
-static const int kTitleTextOffsetY = 2;
+static const int kTitleTextOffsetY = 1;
 #else
 static const int kTitleTextOffsetY = 0;
 #endif

@@ -35,11 +35,11 @@ const int kAvatarBottomSpacing = 2;
 // it on the left, and between it and the tabstrip on the right).
 const int kAvatarSideSpacing = 2;
 // Space between left edge of window and tabstrip.
-const int kTabstripLeftSpacing = 4;
+const int kTabstripLeftSpacing = 0;
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
 // Space between top of window and top of tabstrip for restored windows.
-const int kTabstripTopSpacingRestored = 8;
+const int kTabstripTopSpacingRestored = 7;
 // Space between top of window and top of tabstrip for maximized windows.
 // Place them flush to the top to make them clickable when the cursor is at
 // the screen edge.
