@@ -1219,7 +1219,8 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_TRUE(FindFile(dest_file_path) == NULL);
 }
 
-TEST_F(GDataFileSystemTest, RemoveFiles) {
+// Race in shutdown. http://crbug.com/119712
+TEST_F(GDataFileSystemTest, DISABLED_RemoveFiles) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
