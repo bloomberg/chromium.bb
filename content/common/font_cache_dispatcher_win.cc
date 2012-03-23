@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,11 +56,13 @@ class FontCache {
     if (cache_[font_name].ref_count_ == 0) {  // Requested font is new to cache.
       cache_[font_name].ref_count_ = 1;
     } else {  // Requested font is already in cache, release old handles.
+      SelectObject(cache_[font_name].dc_, cache_[font_name].old_font_);
       DeleteObject(cache_[font_name].font_);
-      DeleteDC(cache_[font_name].dc_);
+      ReleaseDC(NULL, cache_[font_name].dc_);
     }
     cache_[font_name].font_ = font_handle;
     cache_[font_name].dc_ = hdc;
+    cache_[font_name].old_font_ = old_font;
     cache_[font_name].ref_count_ += ref_count_inc;
   }
 
@@ -97,19 +99,23 @@ class FontCache {
  private:
   struct CacheElement {
     CacheElement()
-        : font_(NULL), dc_(NULL), ref_count_(0) {
+        : font_(NULL), old_font_(NULL), dc_(NULL), ref_count_(0) {
     }
 
     ~CacheElement() {
       if (font_) {
+        if (dc_ && old_font_) {
+          SelectObject(dc_, old_font_);
+        }
         DeleteObject(font_);
       }
       if (dc_) {
-        DeleteDC(dc_);
+        ReleaseDC(NULL, dc_);
       }
     }
 
     HFONT font_;
+    HGDIOBJ old_font_;
     HDC dc_;
     int ref_count_;
   };
