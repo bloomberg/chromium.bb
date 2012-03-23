@@ -14,13 +14,21 @@ BASE_DOWNLOAD_URL = \
 
 PLATFORM_MAPPING = {
     'windows': {
-        'x86-32': ['win_x86', 'win_x86_newlib', 'pnacl_translator'],
-        'x86-64': ['win_x86', 'win_x86_newlib', 'pnacl_translator'],
+        'x86-32': ['win_x86',
+                   'win_x86_newlib',
+                   # When the pnacl windows tests are enabled, uncomment this.
+                   # 'pnacl_win_x86_32',
+                   'pnacl_translator'],
+        'x86-64': ['win_x86',
+                   'win_x86_newlib',
+                   # When the pnacl windows tests are enabled, uncomment this.
+                   # 'pnacl_win_x86_32',
+                   'pnacl_translator'],
     },
     'linux': {
         'x86-32': ['linux_x86',
                    'linux_x86_newlib',
-                   'pnacl_linux_i686',
+                   'pnacl_linux_x86_32',
                    'linux_arm-trusted',
                    'pnacl_translator'],
         'x86-64': ['linux_x86',
@@ -31,10 +39,14 @@ PLATFORM_MAPPING = {
         'arm'   : ['pnacl_translator'],
     },
     'mac': {
-        'x86-32': ['mac_x86', 'mac_x86_newlib',
-                   'pnacl_darwin_i386', 'pnacl_translator'],
-        'x86-64': ['mac_x86', 'mac_x86_newlib',
-                   'pnacl_darwin_i386', 'pnacl_translator'],
+        'x86-32': ['mac_x86',
+                   'mac_x86_newlib',
+                   'pnacl_mac_x86_32',
+                   'pnacl_translator'],
+        'x86-64': ['mac_x86',
+                   'mac_x86_newlib',
+                   'pnacl_mac_x86_32',
+                   'pnacl_translator'],
     },
 }
 

@@ -52,12 +52,17 @@ NACL_PLATFORM_DIR_MAP = {
 
 def _PlatformSubdirs(env):
   if env.Bit('bitcode'):
+    os = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     import platform
     machine = platform.machine()
-    # Make Windows python consistent with Cygwin python
-    if machine == 'x86':
-      machine = 'i686'
-    name = 'pnacl_%s_%s' % (platform.system().lower(), machine)
+    # x86 or i[0-9]86 should be converted to x86_32
+    if re.match(r'x86$|i[0-9]86', machine):
+      machine = 'x86_32'
+    elif machine == 'x86_64':
+      # Windows and Mac toolchains are only available as 32-bit binaries.
+      if os == 'win' or os == 'mac':
+        machine = 'x86_32'
+    name = 'pnacl_%s_%s' % (os, machine)
   else:
     platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     arch = env['BUILD_ARCHITECTURE']

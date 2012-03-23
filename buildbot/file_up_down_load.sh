@@ -102,10 +102,10 @@ ShowRecentArmTrustedToolchains() {
 
 #@ label should be in :
 #@
-#@ pnacl_linux_i686
+#@ pnacl_linux_x86_32
 #@ pnacl_linux_x86_64
-#@ pnacl_darwin_i386
-#@ pnacl_windows_i686
+#@ pnacl_mac_x86_32
+#@ pnacl_win_x86_32
 
 UploadArmUntrustedToolchains() {
   local rev=$1

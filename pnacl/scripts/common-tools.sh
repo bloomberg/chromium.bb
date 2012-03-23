@@ -67,6 +67,7 @@ elif [[ "${BUILD_PLATFORM}" =~ cygwin_nt ]]; then
   SO_DIR=bin  # On Windows, DLLs are placed in bin/
               # because the dynamic loader searches %PATH%
 elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
+  BUILD_PLATFORM=mac
   BUILD_PLATFORM_MAC=true
   SCONS_BUILD_PLATFORM=mac
   # force 32 bit host because build is also 32 bit on mac (no 64bit nacl)
@@ -114,6 +115,7 @@ HOST_ARCH_X8664=false
 HOST_ARCH_ARM=false
 if [ "${HOST_ARCH}" == "i386" ] ||
    [ "${HOST_ARCH}" == "i686" ] ; then
+  HOST_ARCH=x86_32
   HOST_ARCH_X8632=true
 elif [ "${HOST_ARCH}" == "x86_64" ] ; then
   HOST_ARCH_X8664=true
