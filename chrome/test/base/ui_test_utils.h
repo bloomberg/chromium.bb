@@ -119,8 +119,6 @@ void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 void WaitForLoadStop(content::WebContents* tab);
 
 // Waits for a new browser to be created, returning the browser.
-// TODO(dubroy): Remove this race hazard (http://crbug.com/119521).
-// Use BrowserAddedObserver instead.
 Browser* WaitForNewBrowser();
 
 // Opens |url| in an incognito browser window with the incognito profile of
@@ -414,7 +412,6 @@ class WindowedNotificationObserver : public content::NotificationObserver {
   // NotificationService::AllSources().
   WindowedNotificationObserver(int notification_type,
                                const content::NotificationSource& source);
-
   virtual ~WindowedNotificationObserver();
 
   // Wait until the specified notification occurs.  If the notification was
@@ -510,24 +507,6 @@ class TitleWatcher : public content::NotificationObserver {
   bool quit_loop_on_observation_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
-};
-
-// Convenience class for waiting for a new browser to be created.
-// Like WindowedNotificationObserver, this class provides a safe, non-racey
-// way to wait for a new browser to be created.
-class BrowserAddedObserver {
- public:
-  BrowserAddedObserver();
-  ~BrowserAddedObserver();
-
-  // Wait for a new browser to be created, and return a pointer to it.
-  Browser* WaitForSingleNewBrowser();
-
- private:
-  WindowedNotificationObserver notification_observer_;
-  std::set<Browser*> original_browsers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
 
 // See SendKeyPressAndWait.  This function additionally performs a check on the

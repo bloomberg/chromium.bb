@@ -32,6 +32,7 @@ cr.define('ntp', function() {
       this.menu = new Menu;
       cr.ui.decorate(this.menu, Menu);
       this.menu.classList.add('footer-menu');
+      this.menu.addEventListener('click', this.onClick_.bind(this), true);
       this.menu.addEventListener('contextmenu',
                                  this.onContextMenu_.bind(this), true);
       document.body.appendChild(this.menu);
@@ -51,6 +52,15 @@ cr.define('ntp', function() {
     recordUmaEvent_: function(eventId) {
       chrome.send('metricsHandler:recordInHistogram',
           ['NewTabPage.OtherSessionsMenu', eventId, HISTOGRAM_EVENT_LIMIT]);
+    },
+
+    /**
+     * Handle a click event for an object in the menu's DOM subtree.
+     */
+    onClick_: function(e) {
+      // Only record the action if it occurred on one of the menu items.
+      if (findAncestorByClass(e.target, 'footer-menu-item'))
+        this.recordUmaEvent_(HISTOGRAM_EVENT.LINK_CLICKED);
     },
 
     /**
@@ -76,21 +86,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Create a custom click handler for a link, so that clicking on a link
-     * restores the session (including back stack) rather than just opening
-     * the URL.
-     */
-    makeClickHandler_: function(sessionTag, windowId, tabId) {
-      var self = this;
-      return function(e) {
-        self.recordUmaEvent_(HISTOGRAM_EVENT.LINK_CLICKED);
-        chrome.send('openForeignSession', [sessionTag, windowId, tabId,
-            e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
-        e.preventDefault();
-      };
-    },
-
-    /**
      * Add the UI for a foreign session to the menu.
      * @param {Object} session Object describing the foreign session.
      */
@@ -113,9 +108,6 @@ cr.define('ntp', function() {
           a.textContent = tab.title;
           a.href = tab.url;
           a.style.backgroundImage = 'url(chrome://favicon/' + tab.url + ')';
-          var clickHandler = this.makeClickHandler_(
-              session.tag, String(window.sessionId), String(tab.sessionId));
-          a.addEventListener('click', clickHandler);
           section.appendChild(a);
         }
       }

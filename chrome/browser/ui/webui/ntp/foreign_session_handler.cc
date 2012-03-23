@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_source.h"
@@ -133,13 +132,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
 void ForeignSessionHandler::HandleOpenForeignSession(
     const ListValue* args) {
   size_t num_args = args->GetSize();
-  // Expect either 2 or 8 args. For restoring an entire window, only
-  // two arguments are required -- the session tag and the window id.
-  // To restore a tab, the additional args required are the tab id,
-  // and 4 properties of the event object (button, altKey, ctrlKey,
-  // metaKey, shiftKey) for determining how to open the tab.
-  if (num_args != 8U && num_args != 2U) {
-    LOG(ERROR) << "openForeignSession called with " << args->GetSize()
+  if (num_args > 3U || num_args == 0) {
+    LOG(ERROR) << "openForeignWindow called with only " << args->GetSize()
                << " arguments.";
     return;
   }
@@ -151,7 +145,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
     return;
   }
 
-  // Extract window number (always provided).
+  // Extract window number.
   std::string window_num_str;
   int window_num = kInvalidId;
   if (num_args >= 2 && (!args->GetString(1, &window_num_str) ||
@@ -163,7 +157,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
   // Extract tab id.
   std::string tab_id_str;
   SessionID::id_type tab_id = kInvalidId;
-  if (num_args >= 3 && (!args->GetString(2, &tab_id_str) ||
+  if (num_args == 3 && (!args->GetString(2, &tab_id_str) ||
       !base::StringToInt(tab_id_str, &tab_id))) {
     LOG(ERROR) << "Failed to extract tab SessionID.";
     return;
@@ -180,9 +174,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
       LOG(ERROR) << "Failed to load foreign tab.";
       return;
     }
-    WindowOpenDisposition disposition =
-        web_ui_util::GetDispositionFromClick(args, 3);
-    SessionRestore::RestoreForeignSessionTab(profile, *tab, disposition);
+    SessionRestore::RestoreForeignSessionTab(profile, *tab);
   } else {
     std::vector<const SessionWindow*> windows;
     // Note: we don't own the ForeignSessions themselves.

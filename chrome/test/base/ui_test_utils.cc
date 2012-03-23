@@ -976,23 +976,6 @@ void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
 TitleWatcher::~TitleWatcher() {
 }
 
-BrowserAddedObserver::BrowserAddedObserver()
-    : notification_observer_(
-          chrome::NOTIFICATION_BROWSER_OPENED,
-          content::NotificationService::AllSources()) {
-  original_browsers_.insert(BrowserList::begin(), BrowserList::end());
-}
-
-BrowserAddedObserver::~BrowserAddedObserver() {
-}
-
-Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
-  notification_observer_.Wait();
-  // Ensure that only a single new browser has appeared.
-  EXPECT_EQ(original_browsers_.size() + 1, BrowserList::size());
-  return GetBrowserNotInSet(original_browsers_);
-}
-
 const string16& TitleWatcher::WaitAndGetTitle() {
   if (expected_title_observed_)
     return observed_title_;
