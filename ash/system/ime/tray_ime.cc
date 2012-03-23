@@ -35,7 +35,7 @@ class IMEDefaultView : public TrayItemMore {
         kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    views::ImageView* icon = new views::ImageView;
+    views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
     icon->SetImage(bundle.GetImageNamed(
         IDR_AURA_UBER_TRAY_IME).ToSkBitmap());
     AddChildView(icon);

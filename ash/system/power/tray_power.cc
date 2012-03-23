@@ -38,7 +38,7 @@ namespace {
 const int kBatteryImageHeight = 25;
 const int kBatteryImageWidth = 25;
 // Number of different power states.
-const int kNumPowerImages = 16;
+const int kNumPowerImages = 15;
 }
 
 namespace tray {
@@ -127,7 +127,8 @@ class PowerPopupView : public views::Label {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     if (hour && min) {
       SetText(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS,
-          UTF8ToUTF16(base::DoubleToString(supply_status_.battery_percentage)),
+          base::IntToString16(
+              static_cast<int>(supply_status_.battery_percentage)),
           base::IntToString16(hour),
           base::IntToString16(min)));
     } else {

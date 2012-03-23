@@ -35,9 +35,9 @@ class BluetoothDefaultView : public TrayItemMore {
         kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    views::ImageView* icon = new views::ImageView;
+    views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
     icon->SetImage(bundle.GetImageNamed(
-        IDR_AURA_UBER_TRAY_BLUETOOTH_LARGE).ToSkBitmap());
+        IDR_AURA_UBER_TRAY_BLUETOOTH).ToSkBitmap());
     AddChildView(icon);
 
     label_ = new views::Label;
@@ -177,7 +177,7 @@ class BluetoothDetailedView : public views::View,
 }  // namespace tray
 
 TrayBluetooth::TrayBluetooth()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_BLUETOOTH_SMALL) {
+    : TrayImageItem(IDR_AURA_UBER_TRAY_BLUETOOTH) {
 }
 
 TrayBluetooth::~TrayBluetooth() {

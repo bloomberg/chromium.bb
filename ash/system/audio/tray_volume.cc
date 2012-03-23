@@ -27,9 +27,9 @@ namespace ash {
 namespace internal {
 
 namespace {
-const int kVolumeImageWidth = 44;
-const int kVolumeImageHeight = 44;
-const int kVolumeLevel = 5;
+const int kVolumeImageWidth = 25;
+const int kVolumeImageHeight = 25;
+const int kVolumeLevel = 4;
 }
 
 namespace tray {
@@ -39,8 +39,10 @@ class VolumeButton : public views::ToggleImageButton {
   explicit VolumeButton(views::ButtonListener* listener)
       : views::ToggleImageButton(listener),
         image_index_(-1) {
+    SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
     image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
+    SetPreferredSize(gfx::Size(kTrayPopupItemHeight, kTrayPopupItemHeight));
     Update();
   }
 
@@ -70,6 +72,12 @@ class VolumeButton : public views::ToggleImageButton {
 
  private:
   // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    gfx::Size size = views::ToggleImageButton::GetPreferredSize();
+    size.set_height(kTrayPopupItemHeight);
+    return size;
+  }
+
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     views::ToggleImageButton::OnPaint(canvas);
 

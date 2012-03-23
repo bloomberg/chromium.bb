@@ -11,8 +11,9 @@ namespace ash {
 const int kTrayPaddingBetweenItems = 8;
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupPaddingHorizontal = 18;
-const int kTrayPopupPaddingBetweenItems = 5;
+const int kTrayPopupPaddingBetweenItems = 10;
 
+const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 27;
 
 const SkColor kBackgroundColor = SK_ColorWHITE;

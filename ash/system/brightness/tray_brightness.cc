@@ -9,6 +9,7 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,7 +34,7 @@ class BrightnessView : public views::View,
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
-    views::ImageView* icon = new views::ImageView();
+    views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
     gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_BRIGHTNESS);
     icon->SetImage(image.ToSkBitmap());

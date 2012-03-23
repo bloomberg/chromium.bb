@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -30,7 +31,8 @@ class SettingsView : public views::View {
         ash::kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* icon = new views::ImageView;
+    views::ImageView* icon =
+        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
     icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
     AddChildView(icon);
 

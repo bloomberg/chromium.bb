@@ -21,16 +21,20 @@ class Label;
 namespace ash {
 namespace internal {
 
-// An image view with that always has a fixed width (kTrayPopupDetailsIconWidth)
-class FixedWidthImageView : public views::ImageView {
+// An image view with a specified width and height (kTrayPopupDetailsIconWidth).
+// If the specified width or height is zero, then the image size is used for
+// that dimension.
+class FixedSizedImageView : public views::ImageView {
  public:
-  FixedWidthImageView();
-  virtual ~FixedWidthImageView();
+  FixedSizedImageView(int width, int height);
+  virtual ~FixedSizedImageView();
 
  private:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(FixedWidthImageView);
+  int width_;
+  int height_;
+  DISALLOW_COPY_AND_ASSIGN(FixedSizedImageView);
 };
 
 class ViewClickListener {

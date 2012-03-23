@@ -46,12 +46,14 @@ class NetworkTrayView : public views::View {
   explicit NetworkTrayView(ResourceSize size) : resource_size_(size) {
     SetLayoutManager(new views::FillLayout());
 
-    image_view_ = new views::ImageView;
+    image_view_ = resource_size_ == LARGE ?
+        new FixedSizedImageView(0, kTrayPopupItemHeight) :
+        new views::ImageView;
     AddChildView(image_view_);
 
     NetworkIconInfo info;
     Shell::GetInstance()->tray_delegate()->
-        GetMostRelevantNetworkIcon(&info, resource_size_ == LARGE);
+        GetMostRelevantNetworkIcon(&info, false);
     Update(info);
   }
 
@@ -86,7 +88,7 @@ class NetworkDefaultView : public TrayItemMore {
 
     NetworkIconInfo info;
     Shell::GetInstance()->tray_delegate()->
-        GetMostRelevantNetworkIcon(&info, true);
+        GetMostRelevantNetworkIcon(&info, false);
     Update(info);
   }
 

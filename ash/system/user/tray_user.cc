@@ -216,7 +216,10 @@ class UserView : public views::View,
     username_ = new views::Label(UTF8ToUTF16(tray->GetUserDisplayName()));
     username_->SetFont(username_->font().DeriveFont(2));
     username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    user->AddChildView(username_);
+    // Username is not made visible yet, because chromeos does not have support
+    // for that yet. See http://crosbug/23624
+    username_->SetVisible(false);
+    AddChildView(username_);
 
     email_ = new views::Label(UTF8ToUTF16(tray->GetUserEmail()));
     email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -288,6 +291,7 @@ class RoundedImageView : public views::View {
     resized_ = skia::ImageOperations::Resize(image_,
         skia::ImageOperations::RESIZE_BEST, size.width(), size.height());
     PreferredSizeChanged();
+    SchedulePaint();
   }
 
   // Overridden from views::View.

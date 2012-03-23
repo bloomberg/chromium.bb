@@ -21,19 +21,22 @@ const int kIconPaddingLeft = 5;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FixedWidthImageView
+// FixedSizedImageView
 
-FixedWidthImageView::FixedWidthImageView() {
+FixedSizedImageView::FixedSizedImageView(int width, int height)
+    : width_(width),
+      height_(height) {
   SetHorizontalAlignment(views::ImageView::CENTER);
   SetVerticalAlignment(views::ImageView::CENTER);
 }
 
-FixedWidthImageView::~FixedWidthImageView() {
+FixedSizedImageView::~FixedSizedImageView() {
 }
 
-gfx::Size FixedWidthImageView::GetPreferredSize() {
+gfx::Size FixedSizedImageView::GetPreferredSize() {
   gfx::Size size = views::ImageView::GetPreferredSize();
-  return gfx::Size(kTrayPopupDetailsIconWidth, size.height());
+  return gfx::Size(width_ ? width_ : size.width(),
+                   height_ ? height_ : size.height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +55,8 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
                                          gfx::Font::FontStyle style) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
-  views::ImageView* image_view = new FixedWidthImageView;
+  views::ImageView* image_view =
+      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   image_view->SetImage(image);
   AddChildView(image_view);
 
@@ -133,7 +137,8 @@ views::View* CreateDetailedHeaderEntry(int string_id,
   HoverHighlightView* container = new HoverHighlightView(listener);
   container->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, 5));
-  views::ImageView* back = new FixedWidthImageView;
+  views::ImageView* back =
+      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
   container->AddChildView(back);
   views::Label* header = new views::Label(rb.GetLocalizedString(string_id));
