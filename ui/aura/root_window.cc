@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
@@ -190,6 +191,11 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   KeyEvent translated_event(*event);
   if (translated_event.key_code() == ui::VKEY_UNKNOWN)
     return false;
+  client::EventClient* client = client::GetEventClient(GetRootWindow());
+  if (client && !client->CanProcessEventsWithinSubtree(focused_window_)) {
+    SetFocusedWindow(NULL, NULL);
+    return false;
+  }
   return ProcessKeyEvent(focused_window_, &translated_event);
 }
 

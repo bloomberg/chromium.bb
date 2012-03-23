@@ -15,7 +15,7 @@
 namespace ash {
 namespace test {
 
-TestShellDelegate::TestShellDelegate() {
+TestShellDelegate::TestShellDelegate() : locked_(false) {
 }
 
 TestShellDelegate::~TestShellDelegate() {
@@ -29,10 +29,17 @@ bool TestShellDelegate::CanCreateLauncher() {
   return true;
 }
 
-#if defined(OS_CHROMEOS)
 void TestShellDelegate::LockScreen() {
+  locked_ = true;
 }
-#endif
+
+void TestShellDelegate::UnlockScreen() {
+  locked_ = false;
+}
+
+bool TestShellDelegate::IsScreenLocked() const {
+  return locked_;
+}
 
 void TestShellDelegate::Exit() {
 }

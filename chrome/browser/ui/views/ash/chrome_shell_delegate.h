@@ -41,9 +41,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   // ash::ShellDelegate overrides;
   virtual views::Widget* CreateStatusArea() OVERRIDE;
   virtual bool CanCreateLauncher() OVERRIDE;
-#if defined(OS_CHROMEOS)
   virtual void LockScreen() OVERRIDE;
-#endif
+  virtual void UnlockScreen() OVERRIDE;
+  virtual bool IsScreenLocked() const OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(

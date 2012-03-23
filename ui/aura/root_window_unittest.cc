@@ -5,13 +5,16 @@
 #include "ui/aura/root_window.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -197,6 +200,154 @@ TEST_F(RootWindowTest, TranslatedEvent) {
       ui::ET_MOUSE_ENTERED, root.flags());
   EXPECT_EQ("50,50", translated_event.location().ToString());
   EXPECT_EQ("100,100", translated_event.root_location().ToString());
+}
+
+namespace {
+
+class TestEventClient : public client::EventClient {
+ public:
+  static const int kNonLockWindowId = 100;
+  static const int kLockWindowId = 200;
+
+  explicit TestEventClient(RootWindow* root_window)
+      : root_window_(root_window),
+        lock_(false) {
+    client::SetEventClient(root_window_, this);
+    Window* lock_window =
+        test::CreateTestWindowWithBounds(root_window_->bounds(), root_window_);
+    lock_window->set_id(kLockWindowId);
+    Window* non_lock_window =
+        test::CreateTestWindowWithBounds(root_window_->bounds(), root_window_);
+    non_lock_window->set_id(kNonLockWindowId);
+  }
+  virtual ~TestEventClient() {
+    client::SetEventClient(root_window_, NULL);
+  }
+
+  // Starts/stops locking. Locking prevents windows other than those inside
+  // the lock container from receiving events, getting focus etc.
+  void Lock() {
+    lock_ = true;
+  }
+  void Unlock() {
+    lock_ = false;
+  }
+
+  Window* GetLockWindow() {
+    return const_cast<Window*>(
+        static_cast<const TestEventClient*>(this)->GetLockWindow());
+  }
+  const Window* GetLockWindow() const {
+    return root_window_->GetChildById(kLockWindowId);
+  }
+  Window* GetNonLockWindow() {
+    return root_window_->GetChildById(kNonLockWindowId);
+  }
+
+ private:
+  // Overridden from client::EventClient:
+  virtual bool CanProcessEventsWithinSubtree(
+      const Window* window) const OVERRIDE {
+    return lock_ ? GetLockWindow()->Contains(window) : true;
+  }
+
+  RootWindow* root_window_;
+  bool lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEventClient);
+};
+
+class TestEventFilter : public aura::EventFilter {
+ public:
+  TestEventFilter() {
+    Reset();
+  }
+  virtual ~TestEventFilter() {}
+
+  void Reset() {
+    mouse_event_count_ = 0;
+  }
+
+  int mouse_event_count() const { return mouse_event_count_; }
+
+ private:
+  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+    return true;
+  }
+  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+    ++mouse_event_count_;
+    return true;
+  }
+  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
+                                              TouchEvent* event) OVERRIDE {
+    return ui::TOUCH_STATUS_UNKNOWN;
+  }
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      Window* target,
+      GestureEvent* event) OVERRIDE {
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+  int mouse_event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEventFilter);
+};
+
+}  // namespace
+
+TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
+  TestEventClient client(root_window());
+  test::TestWindowDelegate d;
+
+  TestEventFilter* nonlock_ef = new TestEventFilter;
+  TestEventFilter* lock_ef = new TestEventFilter;
+  client.GetNonLockWindow()->SetEventFilter(nonlock_ef);
+  client.GetLockWindow()->SetEventFilter(lock_ef);
+
+  Window* w1 = test::CreateTestWindowWithBounds(gfx::Rect(10, 10, 20, 20),
+                                                client.GetNonLockWindow());
+  w1->set_id(1);
+  Window* w2 = test::CreateTestWindowWithBounds(gfx::Rect(30, 30, 20, 20),
+                                                client.GetNonLockWindow());
+  w2->set_id(2);
+  scoped_ptr<Window> w3(
+      test::CreateTestWindowWithDelegate(&d, 3, gfx::Rect(20, 20, 20, 20),
+                                         client.GetLockWindow()));
+
+  w1->Focus();
+  EXPECT_TRUE(w1->GetFocusManager()->IsFocusedWindow(w1));
+
+  client.Lock();
+
+  // Since we're locked, the attempt to focus w2 will be ignored.
+  w2->Focus();
+  EXPECT_TRUE(w1->GetFocusManager()->IsFocusedWindow(w1));
+  EXPECT_FALSE(w1->GetFocusManager()->IsFocusedWindow(w2));
+
+  {
+    // Attempting to send a key event to w1 (not in the lock container) should
+    // cause focus to be reset.
+    test::EventGenerator generator(root_window());
+    generator.PressKey(ui::VKEY_SPACE, 0);
+    EXPECT_EQ(NULL, w1->GetFocusManager()->GetFocusedWindow());
+  }
+
+  {
+    // Events sent to a window not in the lock container will not be processed.
+    // i.e. never sent to the non-lock container's event filter.
+    test::EventGenerator generator(root_window(), w1);
+    generator.PressLeftButton();
+    EXPECT_EQ(0, nonlock_ef->mouse_event_count());
+
+    // Events sent to a window in the lock container will be processed.
+    test::EventGenerator generator3(root_window(), w3.get());
+    generator3.PressLeftButton();
+    EXPECT_EQ(1, lock_ef->mouse_event_count());
+  }
+
+  // Prevent w3 from being deleted by the hierarchy since its delegate is owned
+  // by this scope.
+  w3->parent()->RemoveChild(w3.get());
 }
 
 TEST_F(RootWindowTest, IgnoreUnknownKeys) {

@@ -38,6 +38,8 @@
         'client/drag_drop_client.h',
         'client/drag_drop_delegate.cc',
         'client/drag_drop_delegate.h',
+        'client/event_client.cc',
+        'client/event_client.h',
         'client/stacking_client.cc',
         'client/stacking_client.h',
         'client/tooltip_client.cc',

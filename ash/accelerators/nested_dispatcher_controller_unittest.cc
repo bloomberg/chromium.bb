@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -114,14 +115,10 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   MockDispatcher inner_dispatcher;
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
-  scoped_ptr<aura::Window>associated_window(aura::test::CreateTestWindowWithId(
+  scoped_ptr<aura::Window> associated_window(aura::test::CreateTestWindowWithId(
       0, default_container));
-  scoped_ptr<aura::Window>mock_lock_container(
-      aura::test::CreateTestWindowWithId(0, default_container));
-  mock_lock_container->set_stops_event_propagation(true);
-  aura::test::CreateTestWindowWithId(0, mock_lock_container.get());
-  EXPECT_TRUE(aura::test::WindowIsAbove(mock_lock_container.get(),
-      associated_window.get()));
+
+  Shell::GetInstance()->delegate()->LockScreen();
   DispatchKeyReleaseA();
   aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
@@ -129,6 +126,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
       associated_window.get(),
       true /* nestable_tasks_allowed */);
   EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
+  Shell::GetInstance()->delegate()->UnlockScreen();
 }
 
 // Aura window above lock screen in z order.
@@ -139,7 +137,6 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
       internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window>mock_lock_container(
       aura::test::CreateTestWindowWithId(0, default_container));
-  mock_lock_container->set_stops_event_propagation(true);
   aura::test::CreateTestWindowWithId(0, mock_lock_container.get());
   scoped_ptr<aura::Window>associated_window(aura::test::CreateTestWindowWithId(
       0, default_container));

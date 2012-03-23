@@ -218,15 +218,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void AddObserver(WindowObserver* observer);
   void RemoveObserver(WindowObserver* observer);
 
-  // When set to true, this Window will stop propagation of all events targeted
-  // at Windows below it in the z-order, but only if this Window has children.
-  // This is used to implement lock-screen type functionality where we do not
-  // want events to be sent to running logged-in windows when the lock screen is
-  // displayed.
-  void set_stops_event_propagation(bool stops_event_propagation) {
-    stops_event_propagation_ = stops_event_propagation;
-  }
-
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
   // Sets the window to grab hits for an area extending |outer| pixels outside
@@ -294,10 +285,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns true if this window has a mouse capture.
   bool HasCapture();
 
-  // Returns true if this window is currently stopping event
-  // propagation for any windows behind it in the z-order.
-  bool StopsEventPropagation() const;
-
   // Suppresses painting window content by disgarding damaged rect and ignoring
   // new paint requests.
   void SuppressPaint();
@@ -358,8 +345,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // If |return_tightest| is true, returns the tightest-containing (i.e.
   // furthest down the hierarchy) Window containing the point; otherwise,
   // returns the loosest.  If |for_event_handling| is true, then hit-test masks
-  // and StopsEventPropagation() are honored; otherwise, only bounds checks are
-  // performed.
+  // are honored; otherwise, only bounds checks are performed.
   Window* GetWindowForPoint(const gfx::Point& local_point,
                             bool return_tightest,
                             bool for_event_handling);
@@ -391,10 +377,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
-
-  // Returns true if this window is behind a window that stops event
-  // propagation.
-  bool IsBehindStopEventsWindow() const;
 
   client::WindowType type_;
 
@@ -436,10 +418,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   scoped_ptr<LayoutManager> layout_manager_;
 
   void* user_data_;
-
-  // When true, events are not sent to windows behind this one in the z-order,
-  // provided this window has children. See set_stops_event_propagation().
-  bool stops_event_propagation_;
 
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;
