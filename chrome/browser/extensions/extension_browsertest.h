@@ -121,10 +121,6 @@ class ExtensionBrowserTest
   // Waits until an extension is loaded.
   void WaitForExtensionLoad();
 
-  // Waits for an extension load error. Returns true if the error really
-  // happened.
-  bool WaitForExtensionLoadError();
-
   // Wait for the specified extension to crash. Returns true if it really
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id);
@@ -141,7 +137,6 @@ class ExtensionBrowserTest
   FilePath test_data_dir_;
   std::string last_loaded_extension_id_;
   int extension_installs_observed_;
-  int extension_load_errors_observed_;
 
  private:
   // Temporary directory for testing.

@@ -59,9 +59,6 @@
   "devtools": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
-  "dns": {
-    "extension_types": ["platform_app"]
-  },
   "experimental": {
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
@@ -136,9 +133,6 @@
   },
   "proxy": {
     "extension_types": ["extension", "packaged_app", "platform_app"]
-  },
-  "serial": {
-    "extension_types": ["platform_app"]
   },
   "socket": {
     "extension_types": ["platform_app"]
