@@ -41,7 +41,6 @@ MonitorChangeObserverX11::MonitorChangeObserverX11()
   XRRSelectInput(xdisplay_, x_root_window_, RRScreenChangeNotifyMask);
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
-  NotifyMonitorChange();
 }
 
 MonitorChangeObserverX11::~MonitorChangeObserverX11() {
