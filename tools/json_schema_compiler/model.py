@@ -306,7 +306,6 @@ class PropertyType(object):
 def UnixName(name):
   """Returns the unix_style name for a given lowerCamelCase string.
   """
-  name = name.replace('.', '_')
   return '_'.join([x.lower()
       for x in re.findall('[A-Z][a-z_]*', name[0].upper() + name[1:])])
 

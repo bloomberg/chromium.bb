@@ -93,19 +93,16 @@ class SchemaBundleGenerator(object):
   def GenerateSchemasHeader(self):
     """Generates a code.Code object for the generated schemas .h file"""
     c = code.Code()
-    c.Append('#include <map>')
-    c.Append('#include <string>')
-    c.Append();
-    c.Append('#include "base/string_piece.h"')
+    c.Append('namespace base {')
+    c.Append('class ListValue;')
+    c.Append('}')
     c.Append()
     c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
     c.Append()
-    c.Sblock('class GeneratedSchemas {')
-    c.Append('public:')
-    c.Append('// Puts all API schemas in |schemas|.')
-    c.Append('static void Get('
-                 'std::map<std::string, base::StringPiece>* schemas);')
-    c.Eblock('};');
+    c.Sblock("class GeneratedSchemas {")
+    c.Append("public:")
+    c.Append("static base::ListValue* Get();")
+    c.Eblock("};");
     c.Append()
     c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())
     c.Append()
@@ -119,23 +116,32 @@ class SchemaBundleGenerator(object):
     c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
                                              'generated_schemas.h')))
     c.Append()
+    c.Append('#include "base/json/json_reader.h"')
+    c.Append('#include "base/values.h"')
+    c.Append()
+    c.Append('using base::ListValue;')
+    c.Append()
     c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
     c.Append()
-    c.Append('// static')
-    c.Sblock('void GeneratedSchemas::Get('
-                 'std::map<std::string, base::StringPiece>* schemas) {')
+    c.Sblock('ListValue* GeneratedSchemas::Get() {')
+    c.Append('ListValue* list = new ListValue();')
     for api in self._api_defs:
-      namespace = self._model.namespaces[api.get('namespace')]
-      # JSON parsing code expects lists of schemas, so dump a singleton list.
-      json_content = json.dumps([api], indent=2)
+      c.Sblock('{')
+      c.Sblock('const char tmp[] =')
+      json_content = json.dumps(api, indent=2)
       json_content = json_content.replace('"', '\\"')
       lines = json_content.split('\n')
-      c.Append('(*schemas)["%s"] = ' % namespace.name)
-      for index, line in enumerate(lines):
-        line = '    "%s"' % line
+      for index,line in enumerate(lines):
+        line = '"%s"' % line
         if index == len(lines) - 1:
           line += ';'
         c.Append(line)
+      c.Eblock()
+      c.Append('Value* val = base::JSONReader::Read(std::string(tmp), false);')
+      c.Append('list->Append(val);')
+      c.Eblock('}')
+
+    c.Append('return list;')
     c.Eblock('}')
     c.Append()
     c.Concat(self._cpp_type_generator.GetRootNamespaceEnd())

@@ -13,11 +13,11 @@
 #include "chrome/common/extensions/api/experimental.declarative.h"
 #include "content/public/browser/browser_thread.h"
 
-using extensions::api::experimental_declarative::Rule;
+using extensions::api::experimental::Rule;
 
-namespace AddRules = extensions::api::experimental_declarative::AddRules;
-namespace GetRules = extensions::api::experimental_declarative::GetRules;
-namespace RemoveRules = extensions::api::experimental_declarative::RemoveRules;
+namespace AddRules = extensions::api::experimental::AddRules;
+namespace GetRules = extensions::api::experimental::GetRules;
+namespace RemoveRules = extensions::api::experimental::RemoveRules;
 
 namespace {
 
