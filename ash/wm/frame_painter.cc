@@ -257,6 +257,10 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                         close_button_->x() - button_separator_->width(),
                         close_button_->y());
 
+  // We don't need the extra lightness in the edges when we're maximized.
+  if (frame_->IsMaximized())
+    return;
+
   // Draw the top corners and edge.
   int top_left_height = top_left_corner_->height();
   canvas->DrawBitmapInt(*top_left_corner_,

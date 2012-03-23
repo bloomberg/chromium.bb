@@ -337,22 +337,35 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
   // source y position.  If you have to debug this code use an image editor
   // to paint a diagonal line through the toolbar image and ensure it lines up
   // across the tab and toolbar.
-  bool restored = !frame()->IsMaximized();
   canvas->TileImageInt(
       *theme_toolbar,
-      x, bottom_y - GetHorizontalTabStripVerticalOffset(restored),
+      x, bottom_y - GetHorizontalTabStripVerticalOffset(false),
       x, bottom_y,
       w, theme_toolbar->height());
 
   // The content area line has a shadow that extends a couple of pixels above
   // the toolbar bounds.
   const int kContentShadowHeight = 2;
-  SkBitmap* toolbar_center =
-      tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
-  canvas->TileImageInt(*toolbar_center,
+  SkBitmap* toolbar_top =
+      tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_TOP);
+  canvas->TileImageInt(*toolbar_top,
                        0, 0,
                        x, y - kContentShadowHeight,
                        w, split_point + kContentShadowHeight + 1);
+
+  // Draw the "lightening" shade line around the edges of the toolbar.
+  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_LEFT);
+  canvas->TileImageInt(*toolbar_left,
+                       0, 0,
+                       x + kClientEdgeThickness,
+                       y + kClientEdgeThickness + kContentShadowHeight,
+                       toolbar_left->width(), theme_toolbar->height());
+  SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_RIGHT);
+  canvas->TileImageInt(*toolbar_right,
+                       0, 0,
+                       w - toolbar_right->width() - 2 * kClientEdgeThickness,
+                       y + kClientEdgeThickness + kContentShadowHeight,
+                       toolbar_right->width(), theme_toolbar->height());
 
   // Draw the content/toolbar separator.
   canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,

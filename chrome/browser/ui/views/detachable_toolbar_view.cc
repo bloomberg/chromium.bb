@@ -33,6 +33,19 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
   canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), 0, 0,
                        view->width(), view->height());
+#if defined(USE_ASH)
+  // Ash provides additional lightening at the edges of the toolbar.
+  SkBitmap* toolbar_left = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_LEFT);
+  canvas->TileImageInt(*toolbar_left,
+                       0, 0,
+                       0, 0,
+                       toolbar_left->width(), view->height());
+  SkBitmap* toolbar_right = tp->GetBitmapNamed(IDR_TOOLBAR_SHADE_RIGHT);
+  canvas->TileImageInt(*toolbar_right,
+                       0, 0,
+                       view->width() - toolbar_right->width(), 0,
+                       toolbar_right->width(), view->height());
+#endif
 }
 
 // static
