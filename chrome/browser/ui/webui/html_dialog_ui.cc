@@ -104,6 +104,14 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(content::WebUI* web_ui)
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {
 }
 
+std::string HtmlDialogUIDelegate::GetDialogName() const {
+  return std::string();
+}
+
+void HtmlDialogUIDelegate::GetMinimumDialogSize(gfx::Size* size) const {
+  GetDialogSize(size);
+}
+
 bool HtmlDialogUIDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return false;

@@ -72,7 +72,7 @@ HtmlDialogView::~HtmlDialogView() {
 gfx::Size HtmlDialogView::GetPreferredSize() {
   gfx::Size out;
   if (delegate_)
-    delegate_->GetDialogSize(&out);
+    delegate_->GetMinimumDialogSize(&out);
   return out;
 }
 
@@ -107,6 +107,12 @@ string16 HtmlDialogView::GetWindowTitle() const {
   if (delegate_)
     return delegate_->GetDialogTitle();
   return string16();
+}
+
+std::string HtmlDialogView::GetWindowName() const {
+  if (delegate_)
+    return delegate_->GetDialogName();
+  return std::string();
 }
 
 void HtmlDialogView::WindowClosing() {
@@ -167,6 +173,11 @@ void HtmlDialogView::GetDialogSize(gfx::Size* size) const {
     delegate_->GetDialogSize(size);
 }
 
+void HtmlDialogView::GetMinimumDialogSize(gfx::Size* size) const {
+  if (delegate_)
+    delegate_->GetMinimumDialogSize(size);
+}
+
 std::string HtmlDialogView::GetDialogArgs() const {
   if (delegate_)
     return delegate_->GetDialogArgs();
@@ -176,15 +187,17 @@ std::string HtmlDialogView::GetDialogArgs() const {
 void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
   HtmlDialogTabContentsDelegate::Detach();
   if (delegate_) {
-    HtmlDialogUIDelegate* dialog_delegate = delegate_;
-    delegate_ = NULL;  // We will not communicate further with the delegate.
-
     // Store the dialog content area size.
-    dialog_delegate->StoreDialogSize(GetContentsBounds().size());
-
-    dialog_delegate->OnDialogClosed(json_retval);
+    delegate_->StoreDialogSize(GetContentsBounds().size());
   }
-  GetWidget()->Close();
+
+  if (GetWidget())
+    GetWidget()->Close();
+
+  if (delegate_) {
+    delegate_->OnDialogClosed(json_retval);
+    delegate_ = NULL;  // We will not communicate further with the delegate.
+  }
 }
 
 void HtmlDialogView::OnCloseContents(WebContents* source,
@@ -283,6 +296,13 @@ void HtmlDialogView::InitDialog() {
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
       web_contents->GetPropertyBag(), this);
   tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
+
+  if (delegate_) {
+    gfx::Size out;
+    delegate_->GetDialogSize(&out);
+    if (!out.IsEmpty() && GetWidget())
+      GetWidget()->CenterWindow(out);
+  }
 
   DOMView::LoadURL(GetDialogContentURL());
 }

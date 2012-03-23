@@ -452,6 +452,10 @@ void Widget::SetSize(const gfx::Size& size) {
   native_widget_->SetSize(size);
 }
 
+void Widget::CenterWindow(const gfx::Size& size) {
+  native_widget_->CenterWindow(size);
+}
+
 void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
   gfx::Rect work_area =
       gfx::Screen::GetMonitorWorkAreaNearestPoint(bounds.origin());
