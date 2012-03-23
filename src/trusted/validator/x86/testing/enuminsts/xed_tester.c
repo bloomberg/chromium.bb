@@ -6,20 +6,23 @@
 
 /*
  * xed_tester.c
- * Implements a xed decoder that can be used as a NaClEnumeratorTester.
+ * Implements a xed decoder that can be used as a NaClEnumeratorDecoder.
  */
-
-#include <string.h>
-#include "xed-interface.h"
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
+#include <string.h>
+#include "xed-interface.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/ncinstbuffer.h"
+#include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
+
 #define kBufferSize 1024
 
-/* Defines the virtual table for this tester. */
+/* Defines the virtual table for the xed decoder. */
 struct {
-  /* The virtual table that implements this tester. */
-  NaClEnumeratorTester _base;
+  /* The virtual table that implements this decoder. */
+  NaClEnumeratorDecoder _base;
   /* Defines the xed state to use to parse instructions. */
   xed_state_t _xed_state;
   /* Defines the pc_address to assume when disassembling. */
@@ -30,7 +33,6 @@ struct {
   xed_inst_t const *_xed_inst;
   /* Defines if there were errors parsing the instruction. */
   xed_error_enum_t _xed_error;
-
   /* Defines whether we have disassembled the xed instruction. */
   Bool _has_xed_disasm;
   /* If _has_xed_disam is true, the corresponding disassembly. */
@@ -39,52 +41,56 @@ struct {
   char _xed_opcode[kBufferSize];
   /* Stores the corresponding operands of the instruction mnemonic. */
   char _xed_operands[kBufferSize];
-  /* True if ConditionallyPrintInst should print a value. */
-  Bool _print_conditionally;
-} xed_tester;
+} xed_decoder;
 
 
 
 /* Initialize xed state before we try to decode anything. */
 static void XedSetup() {
   xed_tables_init();
-  xed_state_zero(&xed_tester._xed_state);
+  xed_state_zero(&xed_decoder._xed_state);
 
   /* dstate.stack_addr_width = XED_ADDRESS_WIDTH_32b; */
 #if (NACL_TARGET_SUBARCH == 32)
-  xed_tester._xed_state.mmode = XED_MACHINE_MODE_LONG_COMPAT_32;
+  xed_decoder._xed_state.mmode = XED_MACHINE_MODE_LONG_COMPAT_32;
 #endif
 #if (NACL_TARGET_SUBARCH == 64)
-  xed_tester._xed_state.mmode = XED_MACHINE_MODE_LONG_64;
+  xed_decoder._xed_state.mmode = XED_MACHINE_MODE_LONG_64;
 #endif
 }
 
 /* Defines the function to parse the first instruction. */
 static void ParseInst(NaClEnumerator* enumerator, int pc_address) {
-  xed_tester._has_xed_disasm = FALSE;
-  xed_tester._pc_address = pc_address;
-  xed_tester._xed_disasm[0] = 0;
-  xed_tester._xed_opcode[0] = 0;
-  xed_tester._xed_operands[0] = 0;
-  xed_tester._xed_inst = NULL;
-  xed_decoded_inst_set_input_chip(&xed_tester._xedd, XED_CHIP_CORE2);
-  xed_decoded_inst_zero_set_mode(&xed_tester._xedd, &xed_tester._xed_state);
-  xed_tester._xed_error = xed_decode
-      (&xed_tester._xedd, (const xed_uint8_t*)enumerator->_itext,
+  xed_decoder._has_xed_disasm = FALSE;
+  xed_decoder._pc_address = pc_address;
+  xed_decoder._xed_disasm[0] = 0;
+  xed_decoder._xed_opcode[0] = 0;
+  xed_decoder._xed_operands[0] = 0;
+  xed_decoder._xed_inst = NULL;
+  xed_decoded_inst_set_input_chip(&xed_decoder._xedd, XED_CHIP_CORE2);
+  xed_decoded_inst_zero_set_mode(&xed_decoder._xedd, &xed_decoder._xed_state);
+  xed_decoder._xed_error = xed_decode
+      (&xed_decoder._xedd, (const xed_uint8_t*)enumerator->_itext,
        enumerator->_num_bytes);
+}
+
+/* Returns true if the instruction parsed a legal instruction. */
+static Bool IsInstLegal(NaClEnumerator* enumerator) {
+  return (xed_decoder._xedd._decoded_length != 0) &&
+      (XED_ERROR_NONE == xed_decoder._xed_error);
 }
 
 /* Returns the disassembled instruction. */
 static const char* Disassemble(NaClEnumerator* enumerator) {
-  if (!xed_tester._has_xed_disasm) {
-    if (xed_tester._xedd._decoded_length == 0) {
-      strcpy(xed_tester._xed_disasm, "[illegal instruction]");
+  if (!xed_decoder._has_xed_disasm) {
+    if (xed_decoder._xedd._decoded_length == 0) {
+      strcpy(xed_decoder._xed_disasm, "[illegal instruction]");
     }
-    xed_format_intel(&xed_tester._xedd, xed_tester._xed_disasm,
-                     kBufferSize, xed_tester._pc_address);
-    xed_tester._has_xed_disasm = TRUE;
+    xed_format_intel(&xed_decoder._xedd, xed_decoder._xed_disasm,
+                     kBufferSize, xed_decoder._pc_address);
+    xed_decoder._has_xed_disasm = TRUE;
   }
-  return xed_tester._xed_disasm;
+  return xed_decoder._xed_disasm;
 }
 
 /* Returns the mnemonic name for the disassembled instruction. */
@@ -95,7 +101,7 @@ static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
   int char0 = 0;
 
   /* First see if we have cached it. If so, return it. */
-  if (xed_tester._xed_opcode[0] != 0) return xed_tester._xed_opcode;
+  if (xed_decoder._xed_opcode[0] != 0) return xed_decoder._xed_opcode;
 
   /* If reached, we haven't cached it, so find the name from the
    * disassembled instruction, and cache it.
@@ -104,21 +110,21 @@ static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
 
   /* Remove while prefixes found (i.e. ignore ordering) to get opcode. */
   while (1) {
-    xtmp = SkipPrefix(xtmp, "lock", strlen("lock"));
-    xtmp = SkipPrefix(xtmp, "repne", strlen("repne"));
-    xtmp = SkipPrefix(xtmp, "rep", strlen("rep"));
-    xtmp = SkipPrefix(xtmp, "hint-not-taken", strlen("hint-not-taken"));
-    xtmp = SkipPrefix(xtmp, "hint-taken", strlen("hint-taken"));
-    xtmp = SkipPrefix(xtmp, "addr16", strlen("addr16"));
-    xtmp = SkipPrefix(xtmp, "addr32", strlen("addr32"));
-    xtmp = SkipPrefix(xtmp, "data16", strlen("data16"));
+    xtmp = SkipPrefix(xtmp, "lock");
+    xtmp = SkipPrefix(xtmp, "repne");
+    xtmp = SkipPrefix(xtmp, "rep");
+    xtmp = SkipPrefix(xtmp, "hint-not-taken");
+    xtmp = SkipPrefix(xtmp, "hint-taken");
+    xtmp = SkipPrefix(xtmp, "addr16");
+    xtmp = SkipPrefix(xtmp, "addr32");
+    xtmp = SkipPrefix(xtmp, "data16");
     if (xtmp == prev_xtmp) break;
     prev_xtmp = xtmp;
   }
-  strncpyto(xed_tester._xed_opcode, xtmp, kBufferSize - char0, ' ');
+  strncpyto(xed_decoder._xed_opcode, xtmp, kBufferSize - char0, ' ');
 
   /* Cache operand text to be processed before returning. */
-  xtmp += strlen(xed_tester._xed_opcode);
+  xtmp += strlen(xed_decoder._xed_opcode);
 
   /* Remove uninteresting decorations.
    * NOTE: these patterns need to be ordered from most to least specific
@@ -131,70 +137,63 @@ static const char* GetInstMnemonic(NaClEnumerator* enumerator) {
   CleanString(xtmp, "ptr ");
   CleanString(xtmp, "far ");
 
-  strncpy(xed_tester._xed_operands, strip(xtmp), kBufferSize);
+  cstrncpy(xed_decoder._xed_operands, strip(xtmp), kBufferSize);
   free(allocated);
-  return xed_tester._xed_opcode;
+  return xed_decoder._xed_opcode;
 }
 
 static const char* GetInstOperandsText(NaClEnumerator* enumerator) {
   /* Force caching of operands and return. */
-  if (xed_tester._xed_operands[0] == 0) GetInstMnemonic(enumerator);
-  return xed_tester._xed_operands;
+  if (xed_decoder._xed_operands[0] == 0) GetInstMnemonic(enumerator);
+  return xed_decoder._xed_operands;
 }
 
 /* Prints out the disassembled instruction. */
 static void PrintInst(NaClEnumerator* enumerator) {
-  if (xed_tester._xedd._decoded_length) {
-    int i;
-    if (enumerator->_print_opcode_bytes_only) {
-      for (i = 0; i < xed_tester._xedd._decoded_length; ++i) {
-        printf("%02x", enumerator->_itext[i]);
+  int i;
+  if (enumerator->_print_opcode_bytes_only) {
+    for (i = 0; i < xed_decoder._xedd._decoded_length; ++i) {
+      printf("%02x", enumerator->_itext[i]);
+    }
+    printf("\n");
+  } else {
+    size_t opcode_size;
+    if (!enumerator->_print_enumerated_instruction) {
+      NaClPcAddress pc_address = (NaClPcAddress) xed_decoder._pc_address;
+      printf("  XED: %"NACL_PRIxNaClPcAddressAll": ", pc_address);
+    }
+    /* Since xed doesn't print out opcode sequence, and it is
+     * useful to know, add it to the print out. Note: Use same
+     * spacing scheme as nacl decoder, so things line up.
+     */
+    size_t num_bytes = MAX_INST_LENGTH;
+    if (enumerator->_num_bytes > num_bytes)
+      num_bytes = enumerator->_num_bytes;
+    for (i = 0; i < num_bytes; ++i) {
+      if (i < xed_decoder._xedd._decoded_length) {
+        printf("%02x ", enumerator->_itext[i]);
+      } else if (!enumerator->_print_enumerated_instruction) {
+        printf("   ");
       }
-      printf("\n");
+    }
+    if (enumerator->_print_enumerated_instruction) {
+      printf("#%s %s\n", GetInstMnemonic(enumerator),
+             GetInstOperandsText(enumerator));
     } else {
-      if (!enumerator->_print_enumerated_instruction) {
-        printf("  XED: ");
-      }
-      /* Since xed doesn't print out opcode sequence, and it is
-       * useful to know, add it to the print out.
-       */
-      for (i = 0; i < enumerator->_num_bytes; ++i) {
-        if (i < xed_tester._xedd._decoded_length) {
-          printf("%02x ", enumerator->_itext[i]);
-        } else if (!enumerator->_print_enumerated_instruction) {
-          printf("   ");
-        }
-      }
-      if (enumerator->_print_enumerated_instruction) {
-        printf("#%s %s\n", GetInstMnemonic(enumerator),
-               GetInstOperandsText(enumerator));
-      } else {
-        /* Note: spacing added so that it lines up with nacl output. */
-        printf(":\t\t      %s\n", Disassemble(enumerator));
-      }
+      printf("%s\n", Disassemble(enumerator));
     }
   }
 }
 
-static Bool ConditionallyPrintInst(NaClEnumerator* enumerator) {
-  if (xed_tester._print_conditionally) PrintInst(enumerator);
-  return xed_tester._print_conditionally;
-}
-
-static void SetConditionalPrinting(NaClEnumerator* enumerator,
-                                   Bool new_value) {
-  xed_tester._print_conditionally = new_value;
-}
-
 static size_t InstLength(NaClEnumerator* enumerator) {
-  return (size_t) xed_tester._xedd._decoded_length;
+  return (size_t) xed_decoder._xedd._decoded_length;
 }
 
 static inline xed_inst_t const* GetXedInst() {
-  if (xed_tester._xed_inst == NULL) {
-    xed_tester._xed_inst = xed_decoded_inst_inst(&xed_tester._xedd);
+  if (xed_decoder._xed_inst == NULL) {
+    xed_decoder._xed_inst = xed_decoded_inst_inst(&xed_decoder._xedd);
   }
-  return xed_tester._xed_inst;
+  return xed_decoder._xed_inst;
 }
 
 static size_t GetNumOperands(NaClEnumerator* enumerator) {
@@ -231,7 +230,7 @@ static Bool WritesToReservedReg(NaClEnumerator* enumerator,
   xed_operand_t const* op = xed_inst_operand(xi, n);
   xed_operand_enum_t op_name = xed_operand_name(op);
   return xed_operand_is_register(op_name) &&
-      IsReservedReg(xed_decoded_inst_get_reg(&xed_tester._xedd, op_name)) &&
+      IsReservedReg(xed_decoded_inst_get_reg(&xed_decoder._xedd, op_name)) &&
       IsWriteAction(xed_operand_rw(op));
 }
 #elif NACL_TARGET_SUBARCH == 32
@@ -243,27 +242,34 @@ static Bool WritesToReservedReg(NaClEnumerator* enumerator,
 #error("Bad NACL_TARGET_SUBARCH")
 #endif
 
-static Bool IsInstLegal(NaClEnumerator* enumerator) {
-  return (xed_tester._xedd._decoded_length != 0) &&
-      (XED_ERROR_NONE == xed_tester._xed_error);
+static const char* Usage() {
+  return "Runs xed to decode instructions.";
 }
 
-/* Defines the registry function that creates a xed tester, and returns
- * the tester to be registered.
+static void InstallFlag(NaClEnumerator* enumerator,
+                        const char* flag_name,
+                        void* flag_address) {
+}
+
+/* Defines the registry function that creates a xed decoder, and returns
+ * the decoder to be registered.
  */
-NaClEnumeratorTester* RegisterXedTester() {
+NaClEnumeratorDecoder* RegisterXedDecoder() {
   XedSetup();
-  xed_tester._print_conditionally = FALSE;
-  xed_tester._base._id_name = "xed";
-  xed_tester._base._parse_inst_fn = ParseInst;
-  xed_tester._base._inst_length_fn = InstLength;
-  xed_tester._base._print_inst_fn = PrintInst;
-  xed_tester._base._conditionally_print_inst_fn = ConditionallyPrintInst;
-  xed_tester._base._set_conditional_printing_fn = SetConditionalPrinting;
-  xed_tester._base._get_inst_mnemonic_fn = GetInstMnemonic;
-  xed_tester._base._get_inst_num_operands_fn = GetNumOperands;
-  xed_tester._base._get_inst_operands_text_fn = GetInstOperandsText;
-  xed_tester._base._writes_to_reserved_reg_fn = WritesToReservedReg;
-  xed_tester._base._maybe_inst_validates_fn = IsInstLegal;
-  return &xed_tester._base;
+  xed_decoder._base._id_name = "xed";
+  xed_decoder._base._legal_only = TRUE;
+  xed_decoder._base._print_only = FALSE;
+  xed_decoder._base._parse_inst_fn = ParseInst;
+  xed_decoder._base._inst_length_fn = InstLength;
+  xed_decoder._base._print_inst_fn = PrintInst;
+  xed_decoder._base._get_inst_mnemonic_fn = GetInstMnemonic;
+  xed_decoder._base._get_inst_num_operands_fn = GetNumOperands;
+  xed_decoder._base._get_inst_operands_text_fn = GetInstOperandsText;
+  xed_decoder._base._writes_to_reserved_reg_fn = WritesToReservedReg;
+  xed_decoder._base._is_inst_legal_fn = IsInstLegal;
+  xed_decoder._base._maybe_inst_validates_fn = NULL;
+  xed_decoder._base._segment_validates_fn = NULL;
+  xed_decoder._base._install_flag_fn = InstallFlag;
+  xed_decoder._base._usage_message = "Runs xed to decode instructions.";
+  return &xed_decoder._base;
 }

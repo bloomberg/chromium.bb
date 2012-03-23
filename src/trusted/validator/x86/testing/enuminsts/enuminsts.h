@@ -18,13 +18,13 @@
 #include "native_client/src/shared/utils/types.h"
 
 /* Structure holding decoder/validation tool to test. */
-struct NaClEnumeratorTester;
+struct NaClEnumeratorDecoder;
 
 /* Defines the maximum length of an instruction. */
 #define NACL_ENUM_MAX_INSTRUCTION_BYTES 30
 
-/* Defines the maximum number of enumeration testers one can run. */
-#define NACL_MAX_ENUM_TESTERS 2
+/* Defines the maximum number of enumeration decoders one can run. */
+#define NACL_MAX_ENUM_DECODERS 2
 
 /*
  * Defines the data structure used by the driver to enumerate possible
@@ -38,11 +38,11 @@ typedef struct NaClEnumerator {
   /* Defines the actual number of bytes to be tried within _itext. */
   size_t _num_bytes;
 
-  /* Defines the two enumerator testers to apply. */
-  struct NaClEnumeratorTester* _tester[NACL_MAX_ENUM_TESTERS];
+  /* Defines the two enumerator decoders to apply. */
+  struct NaClEnumeratorDecoder* _decoder[NACL_MAX_ENUM_DECODERS];
 
-  /* Defines the number of testers being applied. */
-  size_t _num_testers;
+  /* Defines the number of decoders being applied. */
+  size_t _num_decoders;
 
   /* Defines flag defining if only opcode bytes should be printed. */
   Bool _print_opcode_bytes_only;
@@ -59,47 +59,34 @@ typedef struct NaClEnumerator {
  * array of the enumerator. Assumes that the length of the first instruction
  * must be no larger than the _num_bytes field of the enumerator.
  */
-typedef void (*NaClTesterParseInstFn)(NaClEnumerator* enmerator,
-                                      int pc_address);
+typedef void (*NaClDecoderParseInstFn)(NaClEnumerator* enmerator,
+                                       int pc_address);
 
 /* Defines the (virtual) function that returns the number of bytes in the
  * disassembled instruction.
  */
-typedef size_t (*NaClTesterInstLengthFn)(NaClEnumerator* enumerator);
+typedef size_t (*NaClDecoderInstLengthFn)(NaClEnumerator* enumerator);
 
 /* Defines the (virtual) function that prints out the textual description
  * of the parsed instruction.
  */
-typedef void (*NaClTesterPrintInstFn)(NaClEnumerator* enumerator);
-
-/* Defines a (virtual) function that prints out the textual description
- * of the parsed instruction conditionally, based on the callback to
- * the NaClTesterSetConditionalPrintingFn (virtual) function (defined below).
- * Returns true if printing occurs.
- */
-typedef Bool (*NaClTesterConditionallyPrintInstFn)(NaClEnumerator* enumerator);
-
-/* Defines a (virtual) function to set the behaviour of the virtual
- * NaClTesterConditionallyPrintInstFn (defined above).
- */
-typedef void (*NaClTesterSetConditionalPrintingFn)(NaClEnumerator* enumerator,
-                                                   Bool new_value);
+typedef void (*NaClDecoderPrintInstFn)(NaClEnumerator* enumerator);
 
 /* Defines the (virtual) function that returns the instruction mnemonic
  * for the disassembled instruction.
  */
-typedef const char* (*NaClTesterGetInstMnemonicFn)(NaClEnumerator* enumerator);
+typedef const char* (*NaClDecoderGetInstMnemonicFn)(NaClEnumerator* enumerator);
 
 /* Defines the (virtual) function that returns the number of operands in
  * the disassembled instruction.
  */
-typedef size_t (*NaClTesterGetInstNumOperandsFn)(NaClEnumerator* enumerator);
+typedef size_t (*NaClDecoderGetInstNumOperandsFn)(NaClEnumerator* enumerator);
 
 /* Defines the (virtual) function that returns a text string describing the
  * operands of the instruciton (i.e. less the instruction mnemonic).
  */
 typedef const char*
-(*NaClTesterGetInstOperandsTextFn)(NaClEnumerator* enumerator);
+(*NaClDecoderGetInstOperandsTextFn)(NaClEnumerator* enumerator);
 
 /* Defines the (virtual) function that returns true if operand n of the
  * disassembled instruction is a write to one of the registers RSP, RBP,
@@ -107,15 +94,36 @@ typedef const char*
  * should simply return FALSE).
  */
 typedef Bool
-(*NaClTesterOperandWritesToReservedRegFn)(NaClEnumerator* enumerator, size_t n);
+(*NaClDecoderOperandWritesToReservedRegFn)(NaClEnumerator* enumerator,
+                                           size_t n);
 
-/* Defines the (virtual) function that tests (to the limit it can) that the
- * insruction is legal, and validates. For any instruction that is legal, but
- * one can't prove that it will validate (in context of surrounding
- * instructions) should return true.
+/* Defines the (virtual) function that tests that the instruction is legal.
  */
 typedef Bool
-(*NaClTesterMaybeInstValidatesFn)(NaClEnumerator* enumerator);
+(*NaClDecoderIsInstLegalFn)(NaClEnumerator *enumerator);
+
+/* Defines the (virtual) function that tests that the instruction
+ * validates to the level the tester can test validation.
+ */
+typedef Bool
+(*NaClDecoderMaybeInstValidatesFn)(NaClEnumerator* enumerator);
+
+/* Defines the (virtual) function that tests (to the limit it can) that
+ * the given code segment validates. If the tester can't run the validator
+ * on the segment, it should return true.
+ */
+typedef Bool
+(*NaClDecoderMaybeSegmentValidatesFn)(NaClEnumerator* enumerator,
+                                      uint8_t* segment,
+                                      size_t size,
+                                      int pc_address);
+
+/* Defines the (virtual) function that processes the given global flag,
+ * in terms of the corresponding tester.
+ */
+typedef void (*NaClDecoderInstallFlagFn)(NaClEnumerator* enumerator,
+                                         const char* flag_name,
+                                         void* flag_address);
 
 /*
  * Defines the structure to hold a decoder/validation tool. Note that
@@ -123,79 +131,86 @@ typedef Bool
  *
  * Note: This struct acts like a C++ class with single inhertence. Derived
  * classes should define this as the first field in the struct, so that
- * they can be casted up to a NaClEnumeratorTester pointer.
+ * they can be casted up to a NaClEnumeratorDecoder pointer.
+ *
+ * Note: Because not all decoders implement NaCl validation, some virtuals
+ * are optional, and can be defined using NULL. In addition, some decoders
+ * may not implement a full decoder, making it hard to define operands
+ * of an instruction. Hence, the following virtual functions (i.e. fields)
+ * are optional:
+ *    _get_inst_mnemonic_fn
+ *    _get_inst_num_operands_fn
+ *    _get_inst_operands_text_fn;
+ *    _writes_to_reserved_reg_fn;
+ *    _maybe_inst_validates_fn;
+ *    _segment_validates_fn;
  */
-typedef struct NaClEnumeratorTester {
+typedef struct NaClEnumeratorDecoder {
   /* The identifying name for the tester. */
   const char* _id_name;
+  /* True if the legal filter should be applied to this tester. That is,
+   * only report on instructions this tester finds to be a legal instruction.
+   * When false, filter out instructions that are illegal.
+   */
+  Bool _legal_only;
+  /* True if we should should not run comparison tests, but only print. */
+  Bool _print_only;
   /*
    * Parses the first instruction in the itext array of the enumerator. Assumes
    * that the length of the first instruction must be <= the _num_bytes field
    * of the enumerator.
    */
-  NaClTesterParseInstFn _parse_inst_fn;
+  NaClDecoderParseInstFn _parse_inst_fn;
   /*
    * Returns the number of bytes in the disassembled instruction.
    */
-  NaClTesterInstLengthFn _inst_length_fn;
+  NaClDecoderInstLengthFn _inst_length_fn;
   /*
    * Prints out the disassembled instruction.
    */
-  NaClTesterPrintInstFn _print_inst_fn;
-  /*
-   * Prints out the disassembled instruction conditionally, based on
-   * calls to the _set_conditional_printing_fn.
-   */
-  NaClTesterConditionallyPrintInstFn _conditionally_print_inst_fn;
-  /*
-   * Function to call to define if _set_conditional_printing_fn should
-   * conditionally print.
-   */
-  NaClTesterSetConditionalPrintingFn _set_conditional_printing_fn;
+  NaClDecoderPrintInstFn _print_inst_fn;
   /*
    * Returns the mnemonic name of the disassembled instruction.
+   * If not implemented, use NULL;
    */
-  NaClTesterGetInstMnemonicFn _get_inst_mnemonic_fn;
+  NaClDecoderGetInstMnemonicFn _get_inst_mnemonic_fn;
   /*
    * Returns the number of operands in the disassembled instruction.
+   * If not implemented, use NULL;
    */
-  NaClTesterGetInstNumOperandsFn _get_inst_num_operands_fn;
+  NaClDecoderGetInstNumOperandsFn _get_inst_num_operands_fn;
   /*
    * Returns a text string containing the operands of the disassembled
-   * instruction.
+   * instruction. If not implemented, use NULL;
    */
-  NaClTesterGetInstOperandsTextFn _get_inst_operands_text_fn;
+  NaClDecoderGetInstOperandsTextFn _get_inst_operands_text_fn;
   /*
    * Returns true if operand n of the disassembled instruction can be
-   * proven to be a write to registers RSP, RBP, or R15.
+   * proven to be a write to registers RSP, RBP, or R15. If not implemented,
+   * use NULL.
    */
-  NaClTesterOperandWritesToReservedRegFn _writes_to_reserved_reg_fn;
+  NaClDecoderOperandWritesToReservedRegFn _writes_to_reserved_reg_fn;
   /*
-   * Returns true if the instruction is legal, and to the best we can
-   * check, it validates.
+   * Returns true if the instruction is legal, according to the tester.
    */
-  NaClTesterMaybeInstValidatesFn _maybe_inst_validates_fn;
-} NaClEnumeratorTester;
-
-/***************************************************************************
- * The following are helper functions to make it easier to write a tester. *
- * The following are a set of simple ASCII string processing routines
- * used to parse/transform Xed and NaCl disassembler output.
- ***************************************************************************/
-
-/* If string s begins with string prefix, return a pointer to the
- * first byte after the prefix. Else return s.
- * PRECONDITION: plen == strlen(prefix)
- */
-char *SkipPrefix(char *s, const char *prefix, int plen);
-
-/* Return a pointer to s with leading spaces removed. */
-char *strip(char *s);
-
-/* Copy src to dest, stoping at character c. */
-void strncpyto(char *dest, const char *src, size_t n, char c);
-
-/* Remove all instances of substring ss in string s, modifying s in place. */
-void CleanString(char *s, const char *ss);
+  NaClDecoderIsInstLegalFn _is_inst_legal_fn;
+  /*
+   * Returns true if the instruction will validate. If not implemented,
+   * use NULL. This function should only be implemented for decoders that
+   * define a nacl validator.
+   */
+  NaClDecoderMaybeInstValidatesFn _maybe_inst_validates_fn;
+  /*
+   * Returns true if the segment should validate, to the best we can
+   * check with this tester. If not implemented, use NULL;
+   */
+  NaClDecoderMaybeSegmentValidatesFn _segment_validates_fn;
+  /* Processes the given command line flag. */
+  NaClDecoderInstallFlagFn _install_flag_fn;
+  /* Holds the usage message to printed for the decoder in the (command-line)
+   * usage function.
+   */
+  const char* _usage_message;
+} NaClEnumeratorDecoder;
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_TESTING_ENUMINSTS_ENUMINST_H_ */

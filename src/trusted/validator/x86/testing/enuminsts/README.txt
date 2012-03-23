@@ -2,9 +2,7 @@ Copyright (c) 2012 The Native Client Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that be
 found in the LICENSE file.
 
-tests/enuminsts
-
-exhaustive instruction enumeration test for x86 Native Client decoder.
+Exhaustive instruction enumeration test for x86 Native Client decoder.
 
 This test performs an exhaustive enumeration of x86 instructions,
 comparing the NaCl decoder to the xed decoder from Intel. It currently
@@ -34,10 +32,23 @@ nacl revision 6688. It is intended to be used as a base line to
 compare decoders in later revisions. Currently, there isn't an
 executable enuminst-32-6688.
 
-To generate an enumeration of (potentially) valid xed instructions,
-run the following (where XX in { 32 , 64}):
+Enumerating NaCl instructions that aren't legal xed instructions
+----------------------------------------------------------------
 
-    ./enuminsts-XX --print=xed --printenum > tmp-XX.txt
+One source of severe problems with a NaCl validator is that it might
+accept instructions that are illegal, but none the less get validated
+as legal. To test this, run (where XX in { 32 , 64 }):
+
+    ./enuminsts-64 --illegal=xed --print=nacl --nacllegal
+
+Enumerating Instructions That are xed and NaCl
+----------------------------------------------
+
+To generate an enumeration of (potentially) valid xed instructions,
+that are also legal in the NaCl decoder, run the following (where XX
+in { 32 , 64}):
+
+    ./enuminsts-XX --print=xed --nacl --printenum > tmp-XX.txt
     sort -b -u tmp-XX.txt > XedGood-XX.txt
 
 Note: The code will not print out legal xed instructions if the
@@ -49,7 +60,7 @@ To run manual tests to see what instructions decode (using the x86-64
 decoder) the same way as xed does, run the following commands:
 
     ./enuminsts-64-6688 --print=nacl --opcode_bytes > bytes.base
-    ./enuminsts-64 --print-nacl --opcode_bytes > bytes.new
+    ./enuminsts-64 --xed --print=nacl --opcode_bytes > bytes.new
     sort -u bytes.base > bytes-sorted.base
     sort -u bytes.new > bytes-sorted.new
     diff bytes-sorted.base bytes-sorted.new
@@ -72,12 +83,17 @@ than xed, using the x86-64 decoder, run the following commands:
 
     ./enuminsts-64-6688 --checkoperands --nacllegal --nops \
           --xedimplemented > problems.base
-    ./enuminsts-64 --checkoperands --nacllegal --nops \
+    ./enuminsts-64 --xed --nacl --checkoperands --nacllegal --nops \
           --xedimplemented > problems.new
     diff problems.base problems.new
 
 The first two lines generate error reports for differences between xed
 and the x86-64 decoder.
+
+The --xed argument defines that the xed decoder should be used while
+the --nacl argument defines that the nacl decoder should also be used.
+By default, unless specified otherwise, only opcode byte sequences
+that are legal by each decoder will be processed.
 
 The --checkoperands argument forces additional checks.  By default,
 only the bytes of the instruction, and the opcode name is
@@ -105,7 +121,7 @@ problems.base.
 To run manual tests to see what instructions are decoded differently
 than xed, using the NaCl x86-32 decoder, run the following command:
 
-    ./enuminsts-32 --nacllegal --nops --xedimplemented
+    ./enuminsts-32 --xed --nacl --nacllegal --nops --xedimplemented
 
 Note that the command line arguments are the same as for
 ./enuminst-64, other than --checkoperands is not used. The reason for
