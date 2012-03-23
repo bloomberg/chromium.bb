@@ -34,10 +34,8 @@ class NET_EXPORT FilePathWatcherWrapper
   virtual ~FilePathWatcherWrapper();
 
   // Starts watching the file at |path|. Returns true if Watch succeeds.
-  // If so, the delegate will call callback.Run(true) from OnFilePathChanged and
-  // callback.Run(false) from OnFilePathError. After failure the watch is
-  // cancelled and will have to be restarted. If called again, the previous
-  // watch is cancelled.
+  // If so, |callback| will be called with true on change and false on error.
+  // After failure the watch is cancelled and will have to be restarted.
   bool Watch(const FilePath& path,
              const base::Callback<void(bool succeeded)>& callback);
 
