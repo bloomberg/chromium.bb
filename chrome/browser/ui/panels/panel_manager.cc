@@ -165,6 +165,7 @@ void PanelManager::OnPanelClosed(Panel* panel) {
     full_screen_mode_timer_.Stop();
 
   drag_controller_->OnPanelClosed(panel);
+  resize_controller_->OnPanelClosed(panel);
   panel->panel_strip()->RemovePanel(panel);
 
   content::NotificationService::current()->Notify(

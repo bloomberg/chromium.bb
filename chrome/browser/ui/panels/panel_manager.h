@@ -105,6 +105,12 @@ class PanelManager : public DisplaySettingsProvider::Observer {
     return drag_controller_.get();
   }
 
+#ifdef UNIT_TEST
+  PanelResizeController* resize_controller() const {
+    return resize_controller_.get();
+  }
+#endif
+
   DisplaySettingsProvider* display_settings_provider() const {
     return display_settings_provider_.get();
   }

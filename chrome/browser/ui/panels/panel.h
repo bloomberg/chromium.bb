@@ -252,6 +252,8 @@ class Panel : public BrowserWindow,
 
   bool draggable() const;
 
+  bool CanResizeByMouse() const;
+
   AttentionMode attention_mode() const { return attention_mode_; }
   void set_attention_mode(AttentionMode attention_mode) {
     attention_mode_ = attention_mode;

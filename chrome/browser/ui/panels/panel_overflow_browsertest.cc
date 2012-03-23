@@ -247,6 +247,11 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CheckPanelProperties) {
   EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel3->attention_mode());
   EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel4->attention_mode());
 
+  EXPECT_FALSE(panel1->CanResizeByMouse());
+  EXPECT_FALSE(panel2->CanResizeByMouse());
+  EXPECT_FALSE(panel3->CanResizeByMouse());
+  EXPECT_FALSE(panel4->CanResizeByMouse());
+
   // Make sure last panel really did overflow.
   WaitForLayoutModeChanged(panel4, PanelStrip::IN_OVERFLOW);
   EXPECT_FALSE(panel4->has_temporary_layout());

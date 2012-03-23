@@ -29,6 +29,9 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   EXPECT_TRUE(panel1->draggable());
   EXPECT_TRUE(panel2->draggable());
 
+  EXPECT_TRUE(panel1->CanResizeByMouse());
+  EXPECT_TRUE(panel2->CanResizeByMouse());
+
   Panel::AttentionMode expected_attention_mode =
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                          Panel::USE_SYSTEM_ATTENTION);
