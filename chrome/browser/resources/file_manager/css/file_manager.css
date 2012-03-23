@@ -247,7 +247,7 @@ li.root-item > * {
 }
 
 li.root-item > .root-label {
-  max-width: 81px;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

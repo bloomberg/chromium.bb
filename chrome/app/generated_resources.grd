@@ -10046,8 +10046,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
         External Storage
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" desc="/gdata directory label.">
-        Docs
+      <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" translateable="false" desc="/gdata directory label.">
+        Google Docs
       </message>
       <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
         External Storage
@@ -10366,36 +10366,45 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Computing selection...
       </message>
       <message name="IDS_FILE_BROWSER_ONE_FILE_SELECTED" desc="One file selected.">
-        One file selected, $1
+        One file selected, <ph name="FILE_SIZE">$1<ex>3.3 MB</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_ONE_DIRECTORY_SELECTED" desc="One directory selected.">
         One folder selected
       </message>
       <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
-        $1 files selected, $2
+        <ph name="SELCTED_FILE_COUNT">$1<ex>13</ex></ph> files selected, <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_MANY_DIRECTORIES_SELECTED" desc="Many directories selected.">
-        $1 folders selected
+        <ph name="SELCTED_FOLDERS_COUNT">$1<ex>2</ex></ph> folders selected
       </message>
       <message name="IDS_FILE_BROWSER_MANY_ENTRIES_SELECTED" desc="Many items (both files and directories) selected.">
-        $1 items selected, $2
+        <ph name="SELCTED_FILES_COUNT">$1<ex>21</ex></ph> items selected, <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_OFFLINE_HEADER" desc="Message informing the user that the browser is offline.">
         You are offline
       </message>
       <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE" desc="Message informing the user how to make the selected file available offline.">
-        To save this file for offline use, get back online and&lt;br&gt;select the '$1' checkbox for this file.
+        To save this file for offline use, get back online and&lt;br&gt;select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> checkbox for this file.
       </message>
       <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user how to make multiple selected files available offline.">
-        To save these files for offline use, get back online and&lt;br&gt;select the '$1' checkbox for these files.
+        To save these files for offline use, get back online and&lt;br&gt;select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> checkbox for these files.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google docs product name." translateable="false">
+        Google Docs
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
         You have run out of space
       </message>
+      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER_SERVER" desc="Message informing the user that there is not enough space on server side to store a new file.">
+        You have run out of space in <ph name="PRODUCT_NAME">'$1'<ex>'Google Docs'</ex></ph>
+      </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
-        To save this file offline you must free up an additional $1 of space:&lt;br&gt;
-         &lt;ul&gt;&lt;li&gt;unpin files that you no longer need to access offline&lt;/li&gt;
-        &lt;li&gt;delete files from your Downloads folder&lt;/li&gt; &lt;/ul&gt;
+        To save this file offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;</ph>
+        <ph name="MARKUP_2">&lt;ul&gt;&lt;li&gt;</ph>unpin files that you no longer need to access offline<ph name="MARKUP_3">&lt;/li&gt;</ph>
+        <ph name="MARKUP_4">&lt;ul&gt;&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;</ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_ON_SERVER" desc="Message informing the user how to make more space available on Google Docs server side.">
+        You do not have enough space in <ph name="PRODUCT_NAME">'$1'<ex>'Google Docs'</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
 	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
