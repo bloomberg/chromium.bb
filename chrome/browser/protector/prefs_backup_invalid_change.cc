@@ -47,10 +47,14 @@ class PrefsBackupInvalidChange : public BasePrefsChange {
   // Applies default settings values when appropriate.
   void ApplyDefaults(Profile* profile);
 
+  // True if session startup prefs have been reset.
+  bool startup_pref_reset_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefsBackupInvalidChange);
 };
 
-PrefsBackupInvalidChange::PrefsBackupInvalidChange() {
+PrefsBackupInvalidChange::PrefsBackupInvalidChange()
+    : startup_pref_reset_(false) {
 }
 
 PrefsBackupInvalidChange::~PrefsBackupInvalidChange() {
@@ -83,16 +87,15 @@ void PrefsBackupInvalidChange::Timeout() {
 }
 
 int PrefsBackupInvalidChange::GetBadgeIconID() const {
-  // Use icons for startup settings change.
-  return IDR_HOMEPAGE_CHANGE_BADGE;
+  return IDR_UPDATE_BADGE4;
 }
 
 int PrefsBackupInvalidChange::GetMenuItemIconID() const {
-  return IDR_HOMEPAGE_CHANGE_MENU;
+  return IDR_UPDATE_MENU4;
 }
 
 int PrefsBackupInvalidChange::GetBubbleIconID() const {
-  return IDR_HOMEPAGE_CHANGE_ALERT;
+  return IDR_INPUT_ALERT;
 }
 
 string16 PrefsBackupInvalidChange::GetBubbleTitle() const {
@@ -100,7 +103,10 @@ string16 PrefsBackupInvalidChange::GetBubbleTitle() const {
 }
 
 string16 PrefsBackupInvalidChange::GetBubbleMessage() const {
-  return l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_NO_BACKUP_BUBBLE_MESSAGE);
+  return startup_pref_reset_ ?
+      l10n_util::GetStringUTF16(
+          IDS_SETTING_CHANGE_NO_BACKUP_STARTUP_RESET_BUBBLE_MESSAGE) :
+      l10n_util::GetStringUTF16(IDS_SETTING_CHANGE_NO_BACKUP_BUBBLE_MESSAGE);
 }
 
 string16 PrefsBackupInvalidChange::GetApplyButtonText() const {
@@ -120,6 +126,7 @@ void PrefsBackupInvalidChange::ApplyDefaults(Profile* profile) {
     // session will be lost).
     startup_pref.type = SessionStartupPref::GetDefaultStartupType();
     SessionStartupPref::SetStartupPref(prefs, startup_pref);
+    startup_pref_reset_ = true;
   }
 }
 

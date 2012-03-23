@@ -1271,7 +1271,7 @@ are declared in build/common.gypi.
         Arrr! Something tried to commandeer the pages you'd like to see at startup!
       </message>
       <message name="IDS_CHANGE_STARTUP_SETTINGS_RESTORE" desc="The title of the button that accepts new startup settings to restore the session. Must be kept short.">
-        Change to restoring open pages
+        Change to restore open pages
       </message>
       <message name="IDS_CHANGE_STARTUP_SETTINGS_NTP" desc="The title of the button that accepts new startup settings to open the NTP. Must be kept short.">
         Change to New Tab Page
@@ -1285,6 +1285,9 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_SETTING_CHANGE_NO_BACKUP_BUBBLE_MESSAGE" desc="The text of the generic settings change notification.">
         Arrr! Something tried to commandeer your settings!
+      </message>
+      <message name="IDS_SETTING_CHANGE_NO_BACKUP_STARTUP_RESET_BUBBLE_MESSAGE" desc="The text of the generic settings change notification, additionally informing user that the startup settings have been reset to defaults.">
+        Arrr! Something tried to commandeer your settings! We weren't sure what to do, so the statup page has been reset to the default.
       </message>
       <message name="IDS_EDIT_SETTINGS" desc="The title of the button that opens a settings page, allowing user to edit changed settings">
         Edit settings...
