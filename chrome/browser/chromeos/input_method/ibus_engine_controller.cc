@@ -135,10 +135,6 @@ class IBusEngineControllerImpl : public IBusEngineController {
     // Check the IBus connection status.
     bool result = true;
     if (ibus_bus_is_connected(ibus_)) {
-      if (!g_factory_) {
-        g_factory_ = ibus_factory_new(ibus_bus_get_connection(ibus_));
-      }
-
       VLOG(1) << "ibus_bus_is_connected(). IBus connection is ready.";
       result = MaybeCreateComponent();
     }
@@ -630,10 +626,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     g_return_if_fail(user_data);
     IBusEngineControllerImpl* self
         = static_cast<IBusEngineControllerImpl*>(user_data);
-    if (!g_factory_) {
-      g_factory_ = ibus_factory_new(ibus_bus_get_connection(bus));
-    }
-
+    DCHECK(ibus_bus_is_connected(self->ibus_));
     if (!self->MaybeCreateComponent()) {
       LOG(ERROR) << "MaybeCreateComponent() failed";
       return;
@@ -643,11 +636,14 @@ class IBusEngineControllerImpl : public IBusEngineController {
   // Handles "disconnected" signal from ibus-daemon.
   static void IBusBusDisconnectedCallback(IBusBus* bus, gpointer user_data) {
     LOG(WARNING) << "IBus connection is terminated.";
-    g_factory_ = NULL;
+    if (g_factory_) {
+      g_object_unref(g_factory_);
+      g_factory_ = NULL;
+    }
   }
 
   bool MaybeCreateComponent() {
-    if (!ibus_ || !ibus_bus_is_connected(ibus_) || !g_factory_) {
+    if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
       return false;
     }
 
@@ -660,6 +656,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                                   "",
                                                   "",
                                                   "");
+    g_object_ref_sink(component);
     ibus_component_add_engine(component,
                               ibus_engine_desc_new(engine_id_.c_str(),
                                                    description_.c_str(),
@@ -669,6 +666,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
                                                    engine_name_.c_str(),
                                                    "",
                                                    layout_.c_str()));
+
+    if (!g_factory_) {
+      g_factory_ = ibus_factory_new(ibus_bus_get_connection(ibus_));
+      g_object_ref_sink(g_factory_);
+    }
 
     ibus_factory_add_engine(g_factory_, engine_id_.c_str(),
                             IBUS_TYPE_CHROMEOS_ENGINE);
