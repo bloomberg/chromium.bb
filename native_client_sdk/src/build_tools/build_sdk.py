@@ -481,7 +481,7 @@ def main(args):
 
 
   if options.examples: skip_examples = False
-  if options.update: skip_update = False
+  skip_update = not options.update
 
   if options.archive and (options.examples or options.skip_tar):
     parser.error('Incompatible arguments with archive.')
