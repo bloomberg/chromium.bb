@@ -5756,10 +5756,10 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN15DownloadService18GetDownloadManagerEv
-   fun:_ZN5gdata15GDataFileSystem10InitializeEv
-   fun:_ZNK5gdata22GDataFileSystemFactory23BuildServiceInstanceForEP7Profile
+   fun:_ZN5gdata18GDataSystemService10InitializeEv
+   fun:_ZNK5gdata25GDataSystemServiceFactory23BuildServiceInstanceForEP7Profile
    fun:_ZN26ProfileKeyedServiceFactory20GetServiceForProfileEP7Profileb
-   fun:_ZN5gdata22GDataFileSystemFactory13GetForProfileEP7Profile
+   fun:_ZN5gdata25GDataSystemServiceFactory13GetForProfileEP7Profile
    fun:_ZN22FileBrowserEventRouter23ObserveFileSystemEventsEv
    fun:_ZN16ExtensionService16InitEventRoutersEv
    fun:_ZN11ProfileImpl14InitExtensionsEb
