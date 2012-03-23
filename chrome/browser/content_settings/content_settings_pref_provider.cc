@@ -663,7 +663,7 @@ void PrefProvider::CanonicalizeContentSettingsExceptions(
          ParsePatternString(pattern_str);
     if (!pattern_pair.first.IsValid() ||
         !pattern_pair.second.IsValid()) {
-      LOG(DFATAL) << "Invalid pattern strings: " << pattern_str;
+      LOG(ERROR) << "Invalid pattern strings: " << pattern_str;
       continue;
     }
 
