@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -13,6 +15,9 @@
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace gdata {
 
@@ -23,12 +28,16 @@ GDataSystemService::GDataSystemService(Profile* profile)
       uploader_(new GDataUploader(file_system_.get())),
       download_observer_(new GDataDownloadObserver),
       sync_client_(new GDataSyncClient(file_system_.get())) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 GDataSystemService::~GDataSystemService() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void GDataSystemService::Initialize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   file_system_->Initialize();
 
   content::DownloadManager* download_manager =
@@ -43,7 +52,16 @@ void GDataSystemService::Initialize() {
 }
 
 void GDataSystemService::Shutdown() {
-  file_system_->Shutdown();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  file_system_->ShutdownOnUIThread();
+  // Delete file_system_ on IO thread, because file_system_ owns a weak
+  // ptr factory that needs to be deleted on the IO thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&base::DeletePointer<GDataFileSystem>,
+                 file_system_.release()));
 }
 
 //===================== GDataSystemServiceFactory =============================

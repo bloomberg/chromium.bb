@@ -190,7 +190,7 @@ class GDataFileSystemInterface {
   // Finds file info by using virtual |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //
-  // Can be called from any thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void FindFileByPathAsync(const FilePath& file_path,
                                    const FindFileCallback& callback) = 0;
 
@@ -198,7 +198,8 @@ class GDataFileSystemInterface {
   // content refreshing and will invoke one of |delegate| methods directly as
   // it executes.
   //
-  // Can be called from any thread.
+  // Can be called from UI/IO thread. |delegate| is run on the calling thread
+  // synchronously.
   virtual void FindFileByPathSync(const FilePath& file_path,
                                   FindFileDelegate* delegate) = 0;
 
@@ -219,7 +220,7 @@ class GDataFileSystemInterface {
   // of |dest_file_path| need to be present in the in-memory representation
   // of the file system.
   //
-  // Can be called from any thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) = 0;
@@ -239,7 +240,7 @@ class GDataFileSystemInterface {
   // of |dest_file_path| need to be present in the in-memory representation
   // of the file system.
   //
-  // Can be called from any thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Move(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) = 0;
@@ -253,7 +254,7 @@ class GDataFileSystemInterface {
   // TODO(zelidrag): Wire |is_recursive| through gdata api
   // (find appropriate calls for it).
   //
-  // Can be called from any thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Remove(const FilePath& file_path,
                       bool is_recursive,
                       const FileOperationCallback& callback) = 0;
@@ -263,7 +264,7 @@ class GDataFileSystemInterface {
   // |directory_path|. If |is_recursive| is true, the call creates parent
   // directories as needed just like mkdir -p does.
   //
-  // Can be called from any thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void CreateDirectory(const FilePath& directory_path,
                                bool is_exclusive,
                                bool is_recursive,
@@ -274,7 +275,7 @@ class GDataFileSystemInterface {
   // system in order to be retrieved. If the file is not cached, the file
   // will be downloaded through gdata api.
   //
-  // Can be called from any thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void GetFile(const FilePath& file_path,
                        const GetFileCallback& callback) = 0;
 
@@ -357,8 +358,10 @@ class GDataFileSystem : public GDataFileSystemInterface {
                   DocumentsServiceInterface* documents_service);
   virtual ~GDataFileSystem();
 
-  // Shuts down the file system. All pending operations are canceled.
-  void Shutdown();
+  // Shuts down the file system on UI thread. All pending operations are
+  // canceled. Most parts of shutdown happens here. The destructor is only
+  // used to release objects on the IO thread.
+  void ShutdownOnUIThread();
 
   // GDataFileSystem overrides.
   virtual void Initialize() OVERRIDE;
@@ -515,6 +518,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
                               const FilePath& file_path)>
       FilePathUpdateCallback;
 
+  // Returns a WeakPtr for the current thread.
+  base::WeakPtr<GDataFileSystem> GetWeakPtrForCurrentThread();
+
   // Finds file object by |file_path| and returns the file info.
   // Returns NULL if it does not find the file.
   GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
@@ -523,7 +529,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // |content_type| and |content_length|. The operation will place the newly
   // created file entity into |destination_directory|.
   //
-  // Can be called from any thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void InitiateUpload(const std::string& file_name,
                       const std::string& content_type,
                       int64 content_length,
@@ -533,7 +539,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   // Resumes upload operation for chunk of file defined in |params..
   //
-  // Can be called from any thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeFileUploadCallback& callback);
 
@@ -1008,8 +1014,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   bool in_shutdown_;  // True if GDatafileSystem is shutting down.
 
-  base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
-  base::WeakPtr<GDataFileSystem> weak_ptr_bound_to_ui_thread_;
+  // WeakPtrFactory and WeakPtr bound to the UI thread.
+  scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;
+  base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
+
+  // WeakPtrFactory bound to the IO thread. Created when needed.
+  scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > io_weak_ptr_factory_;
 
   ObserverList<Observer> observers_;
 };
