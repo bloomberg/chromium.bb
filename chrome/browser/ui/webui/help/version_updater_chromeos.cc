@@ -84,8 +84,13 @@ void VersionUpdaterCros::UpdateStatusChanged(
       progress = static_cast<int>(status.download_progress * 100.0);
       // Fall through.
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
+      my_status = UPDATING;
+      break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
+      // Once download is finished progress is at 100%, is should no go down
+      // while status is the same.
+      progress = 100;
       my_status = UPDATING;
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
