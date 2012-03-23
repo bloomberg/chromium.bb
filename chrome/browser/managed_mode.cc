@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -30,14 +32,43 @@ bool ManagedMode::IsInManagedMode() {
 }
 
 // static
-bool ManagedMode::EnterManagedMode() {
-  SetInManagedMode(true);
-  return true;
+bool ManagedMode::EnterManagedMode(Profile* profile) {
+  bool confirmed = PlatformConfirmEnter();
+  if (confirmed) {
+    // Close all other profiles.
+    // TODO(bauerb): This may not close all windows, for example if there is an
+    // onbeforeunload handler. We should cancel entering managed mode in that
+    // case.
+    std::vector<Profile*> profiles =
+        g_browser_process->profile_manager()->GetLoadedProfiles();
+    for (std::vector<Profile*>::iterator it = profiles.begin();
+         it != profiles.end(); ++it) {
+      if (*it != profile)
+        BrowserList::CloseAllBrowsersWithProfile(*it);
+    }
+
+    SetInManagedMode(true);
+  }
+  return confirmed;
 }
 
 // static
 void ManagedMode::LeaveManagedMode() {
-  SetInManagedMode(false);
+  bool confirmed = PlatformConfirmLeave();
+  if (confirmed)
+    SetInManagedMode(false);
+}
+
+// static
+bool ManagedMode::PlatformConfirmEnter() {
+  // TODO(bauerb): Show platform-specific confirmation dialog.
+  return true;
+}
+
+// static
+bool ManagedMode::PlatformConfirmLeave() {
+  // TODO(bauerb): Show platform-specific confirmation dialog.
+  return true;
 }
 
 // static

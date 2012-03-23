@@ -39,7 +39,7 @@ bool EnterManagedModeFunction::RunImpl() {
     // TODO(pamg): WIP. Show modal password dialog and save hashed password. Set
     //     |confirmed| to false if user cancels dialog.
 
-    confirmed = ManagedMode::EnterManagedMode();
+    confirmed = ManagedMode::EnterManagedMode(profile());
   }
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);

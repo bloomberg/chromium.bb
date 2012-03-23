@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MANAGED_MODE_H_
 
 class PrefService;
+class Profile;
 
 class ManagedMode {
  public:
@@ -13,10 +14,15 @@ class ManagedMode {
   static bool IsInManagedMode();
 
   // Returns true iff managed mode was entered sucessfully.
-  static bool EnterManagedMode();
+  static bool EnterManagedMode(Profile* profile);
   static void LeaveManagedMode();
 
  private:
+  // Platform-specific methods that confirm whether we can enter or leave
+  // managed mode.
+  static bool PlatformConfirmEnter();
+  static bool PlatformConfirmLeave();
+
   static void SetInManagedMode(bool in_managed_mode);
 };
 
