@@ -7,6 +7,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "grit/ui_resources.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/label.h"
@@ -45,6 +46,7 @@ gfx::Size FixedSizedImageView::GetPreferredSize() {
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : listener_(listener) {
   set_notify_enter_exit_on_child(true);
+  set_focusable(true);
 }
 
 HoverHighlightView::~HoverHighlightView() {
@@ -63,6 +65,8 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
   views::Label* label = new views::Label(text);
   label->SetFont(label->font().DeriveFont(0, style));
   AddChildView(label);
+
+  accessible_name_ = text;
 }
 
 void HoverHighlightView::AddLabel(const string16& text,
@@ -74,6 +78,19 @@ void HoverHighlightView::AddLabel(const string16& text,
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label->SetFont(label->font().DeriveFont(0, style));
   AddChildView(label);
+
+  accessible_name_ = text;
+}
+
+bool HoverHighlightView::OnKeyPressed(const views::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
+    if (!listener_)
+      return false;
+    listener_->ClickedOn(this);
+    return true;
+  }
+  return false;
 }
 
 bool HoverHighlightView::OnMousePressed(const views::MouseEvent& event) {
@@ -92,6 +109,11 @@ void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
 void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
   set_background(NULL);
   SchedulePaint();
+}
+
+void HoverHighlightView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = accessible_name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

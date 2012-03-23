@@ -51,6 +51,7 @@ class TrayButton : public views::TextButton {
         hover_border_(views::Border::CreateSolidBorder(1, kButtonStrokeColor)) {
     set_alignment(ALIGN_CENTER);
     set_border(NULL);
+    set_focusable(true);
   }
 
   virtual ~TrayButton() {}

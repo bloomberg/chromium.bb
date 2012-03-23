@@ -27,13 +27,20 @@ class TrayItemMore : public views::View {
 
   void AddMore();
 
+  void SetAccessibleName(const string16& name);
+
+  // Overridden from View:
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
  private:
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
   SystemTrayItem* owner_;
   views::ImageView* more_;
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayItemMore);
 };

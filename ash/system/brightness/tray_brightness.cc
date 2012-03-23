@@ -45,6 +45,7 @@ class BrightnessView : public views::View,
     // level of the system. So start with a random value.
     // http://crosbug.com/26935
     slider_->SetValue(0.8f);
+    slider_->set_focusable(true);
     AddChildView(slider_);
   }
 

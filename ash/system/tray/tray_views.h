@@ -61,11 +61,14 @@ class HoverHighlightView : public views::View {
 
  private:
   // Overridden from views::View.
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   ViewClickListener* listener_;
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };

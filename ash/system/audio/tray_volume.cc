@@ -115,6 +115,7 @@ class VolumeView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(delegate->GetVolumeLevel());
+    slider_->set_focusable(true);
     AddChildView(slider_);
   }
 

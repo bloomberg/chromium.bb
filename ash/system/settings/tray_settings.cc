@@ -13,6 +13,7 @@
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -39,14 +40,34 @@ class SettingsView : public views::View {
     label_ = new views::Label(rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP));
     AddChildView(label_);
+
+    set_focusable(true);
   }
 
   virtual ~SettingsView() {}
 
   // Overridden from views::View.
+  bool OnKeyPressed(const views::KeyEvent& event) {
+    if (event.key_code() == ui::VKEY_SPACE ||
+        event.key_code() == ui::VKEY_RETURN) {
+      ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
+      return true;
+    }
+    return false;
+  }
+
+  // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
     return true;
+  }
+
+  // Overridden from views::View.
+  void GetAccessibleState(ui::AccessibleViewState* state) {
+    state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    state->name = rb.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP);
   }
 
  private:

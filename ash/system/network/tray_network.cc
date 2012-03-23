@@ -97,6 +97,7 @@ class NetworkDefaultView : public TrayItemMore {
   void Update(const NetworkIconInfo& info) {
     icon_->Update(info);
     label_->SetText(info.description);
+    SetAccessibleName(info.description);
   }
 
  private:
