@@ -103,7 +103,7 @@ cr.define('options', function() {
           return;
 
         if (!this.dialogPref)
-          updatePreferenceValue_();
+          this.updatePreferenceValue_();
       });
     },
 
