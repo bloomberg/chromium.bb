@@ -16,6 +16,7 @@ OBJECTS=\
 	$(OBJDIR)/lookahead_filter_interpreter.o \
 	$(OBJDIR)/prop_registry.o \
 	$(OBJDIR)/scaling_filter_interpreter.o \
+	$(OBJDIR)/sensor_jump_filter_interpreter.o \
 	$(OBJDIR)/split_correcting_filter_interpreter.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o \
 	$(OBJDIR)/t5r2_correcting_filter_interpreter.o
@@ -34,6 +35,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/map_unittest.o \
 	$(OBJDIR)/prop_registry_unittest.o \
 	$(OBJDIR)/scaling_filter_interpreter_unittest.o \
+	$(OBJDIR)/sensor_jump_filter_interpreter_unittest.o \
 	$(OBJDIR)/set_unittest.o \
 	$(OBJDIR)/split_correcting_filter_interpreter_unittest.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter_unittest.o \

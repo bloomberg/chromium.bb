@@ -17,6 +17,7 @@
 #include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
+#include "gestures/include/sensor_jump_filter_interpreter.h"
 #include "gestures/include/split_correcting_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
@@ -187,6 +188,7 @@ GestureInterpreter::GestureInterpreter(int version)
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get());
   temp = new IirFilterInterpreter(prop_reg_.get(), temp);
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);
+  temp = new SensorJumpFilterInterpreter(prop_reg_.get(), temp);
   temp = new AccelFilterInterpreter(prop_reg_.get(), temp);
   temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp);
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp);
