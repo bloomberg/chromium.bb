@@ -170,6 +170,10 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveObserver(CompositorObserver* observer);
   bool HasObserver(CompositorObserver* observer);
 
+  // Returns whether a draw is pending, that is, if we're between the Draw call
+  // and the OnCompositingEnded.
+  bool DrawPending() const { return swap_posted_; }
+
   // Internal functions, called back by command-buffer contexts on swap buffer
   // events.
 
