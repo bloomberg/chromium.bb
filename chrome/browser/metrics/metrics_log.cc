@@ -503,7 +503,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 }
 
 void MetricsLog::WritePluginList(
-    const std::vector<webkit::WebPluginInfo>& plugin_list) {
+    const std::vector<webkit::WebPluginInfo>& plugin_list,
+    bool write_as_xml) {
   DCHECK(!locked());
 
   PluginPrefs* plugin_prefs = GetPluginPrefs();
@@ -513,49 +514,41 @@ void MetricsLog::WritePluginList(
   for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
            plugin_list.begin();
        iter != plugin_list.end(); ++iter) {
-    std::string base64_name_hash;
-    uint64 numeric_name_hash_ignored;
-    CreateHashes(UTF16ToUTF8(iter->name),
-                 &base64_name_hash,
-                 &numeric_name_hash_ignored);
+    if (write_as_xml) {
+      std::string base64_name_hash;
+      uint64 numeric_hash_ignored;
+      CreateHashes(UTF16ToUTF8(iter->name), &base64_name_hash,
+                   &numeric_hash_ignored);
 
-    std::string filename_bytes = iter->path.BaseName().AsUTF8Unsafe();
-    std::string base64_filename_hash;
-    uint64 numeric_filename_hash;
-    CreateHashes(filename_bytes,
-                 &base64_filename_hash,
-                 &numeric_filename_hash);
+      std::string filename_bytes = iter->path.BaseName().AsUTF8Unsafe();
+      std::string base64_filename_hash;
+      CreateHashes(filename_bytes, &base64_filename_hash,
+                   &numeric_hash_ignored);
 
-    // Write the XML version.
-    OPEN_ELEMENT_FOR_SCOPE("plugin");
+      // Write the XML version.
+      OPEN_ELEMENT_FOR_SCOPE("plugin");
 
-    // Plugin name and filename are hashed for the privacy of those
-    // testing unreleased new extensions.
-    WriteAttribute("name", base64_name_hash);
-    WriteAttribute("filename", base64_filename_hash);
-    WriteAttribute("version", UTF16ToUTF8(iter->version));
-    if (plugin_prefs)
-      WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
-
-    // Write the protobuf version.
-    SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
-    SetPluginInfo(*iter, plugin_prefs, plugin);
+      // Plugin name and filename are hashed for the privacy of those
+      // testing unreleased new extensions.
+      WriteAttribute("name", base64_name_hash);
+      WriteAttribute("filename", base64_filename_hash);
+      WriteAttribute("version", UTF16ToUTF8(iter->version));
+      if (plugin_prefs)
+        WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
+    } else {
+      // Write the protobuf version.
+      SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
+      SetPluginInfo(*iter, plugin_prefs, plugin);
+    }
   }
 }
 
 void MetricsLog::WriteInstallElement() {
-  std::string install_date = GetInstallDate(GetPrefService());
-
   // Write the XML version.
+  // We'll write the protobuf version in RecordEnvironmentProto().
   OPEN_ELEMENT_FOR_SCOPE("install");
-  WriteAttribute("installdate", install_date);
+  WriteAttribute("installdate", GetInstallDate(GetPrefService()));
   WriteIntAttribute("buildid", 0);  // We're using appversion instead.
-
-  // Write the protobuf version.
-  int numeric_install_date;
-  bool success = base::StringToInt(install_date, &numeric_install_date);
-  DCHECK(success);
-  uma_proto()->mutable_system_profile()->set_install_date(numeric_install_date);
 }
 
 void MetricsLog::RecordEnvironment(
@@ -570,56 +563,36 @@ void MetricsLog::RecordEnvironment(
 
   WriteInstallElement();
 
-  WritePluginList(plugin_list);
+  // Write the XML version.
+  // We'll write the protobuf version in RecordEnvironmentProto().
+  bool write_as_xml = true;
+  WritePluginList(plugin_list, write_as_xml);
 
   WriteStabilityElement(plugin_list, pref);
 
-  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  system_profile->set_application_locale(
-      content::GetContentClient()->browser()->GetApplicationLocale());
-
-  SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
   {
-    std::string cpu_architecture = base::SysInfo::CPUArchitecture();
-
     // Write the XML version.
+    // We'll write the protobuf version in RecordEnvironmentProto().
     OPEN_ELEMENT_FOR_SCOPE("cpu");
-    WriteAttribute("arch", cpu_architecture);
-
-    // Write the protobuf version.
-    hardware->set_cpu_architecture(cpu_architecture);
+    WriteAttribute("arch", base::SysInfo::CPUArchitecture());
   }
 
   {
-    int system_memory_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
-
     // Write the XML version.
+    // We'll write the protobuf version in RecordEnvironmentProto().
     OPEN_ELEMENT_FOR_SCOPE("memory");
-    WriteIntAttribute("mb", system_memory_mb);
+    WriteIntAttribute("mb", base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)
     WriteIntAttribute("dllbase", reinterpret_cast<int>(&__ImageBase));
 #endif
-
-    // Write the protobuf version.
-    hardware->set_system_ram_mb(system_memory_mb);
-#if defined(OS_WIN)
-    hardware->set_dll_base(reinterpret_cast<uint64>(&__ImageBase));
-#endif
   }
 
   {
-    std::string os_name = base::SysInfo::OperatingSystemName();
-    std::string os_version = base::SysInfo::OperatingSystemVersion();
-
     // Write the XML version.
+    // We'll write the protobuf version in RecordEnvironmentProto().
     OPEN_ELEMENT_FOR_SCOPE("os");
-    WriteAttribute("name", os_name);
-    WriteAttribute("version", os_version);
-
-    // Write the protobuf version.
-    SystemProfileProto::OS* os = system_profile->mutable_os();
-    os->set_name(os_name);
-    os->set_version(os_version);
+    WriteAttribute("name", base::SysInfo::OperatingSystemName());
+    WriteAttribute("version", base::SysInfo::OperatingSystemVersion());
   }
 
   {
@@ -628,38 +601,20 @@ void MetricsLog::RecordEnvironment(
         GpuDataManager::GetInstance()->GetGPUInfo();
 
     // Write the XML version.
+    // We'll write the protobuf version in RecordEnvironmentProto().
     WriteIntAttribute("vendorid", gpu_info.vendor_id);
     WriteIntAttribute("deviceid", gpu_info.device_id);
-
-    // Write the protobuf version.
-    SystemProfileProto::Hardware::Graphics* gpu = hardware->mutable_gpu();
-    gpu->set_vendor_id(gpu_info.vendor_id);
-    gpu->set_device_id(gpu_info.device_id);
-    gpu->set_driver_version(gpu_info.driver_version);
-    gpu->set_driver_date(gpu_info.driver_date);
-    SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
-        gpu_performance = gpu->mutable_performance_statistics();
-    gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
-    gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
-    gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
   }
 
   {
     const gfx::Size display_size = GetScreenSize();
-    int display_width = display_size.width();
-    int display_height = display_size.height();
-    int screen_count = GetScreenCount();
 
     // Write the XML version.
+    // We'll write the protobuf version in RecordEnvironmentProto().
     OPEN_ELEMENT_FOR_SCOPE("display");
-    WriteIntAttribute("xsize", display_width);
-    WriteIntAttribute("ysize", display_height);
-    WriteIntAttribute("screens", screen_count);
-
-    // Write the protobuf version.
-    hardware->set_primary_screen_width(display_width);
-    hardware->set_primary_screen_height(display_height);
-    hardware->set_screen_count(screen_count);
+    WriteIntAttribute("xsize", display_size.width());
+    WriteIntAttribute("ysize", display_size.height());
+    WriteIntAttribute("screens", GetScreenCount());
   }
 
   {
@@ -696,6 +651,53 @@ void MetricsLog::RecordEnvironment(
 
   if (profile_metrics)
     WriteAllProfilesMetrics(*profile_metrics);
+
+  RecordEnvironmentProto(plugin_list);
+}
+
+void MetricsLog::RecordEnvironmentProto(
+    const std::vector<webkit::WebPluginInfo>& plugin_list) {
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+  int install_date;
+  bool success = base::StringToInt(GetInstallDate(GetPrefService()),
+                                   &install_date);
+  DCHECK(success);
+  system_profile->set_install_date(install_date);
+
+  system_profile->set_application_locale(
+      content::GetContentClient()->browser()->GetApplicationLocale());
+
+  SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
+  hardware->set_cpu_architecture(base::SysInfo::CPUArchitecture());
+  hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
+#if defined(OS_WIN)
+  hardware->set_dll_base(reinterpret_cast<uint64>(&__ImageBase));
+#endif
+
+  SystemProfileProto::OS* os = system_profile->mutable_os();
+  os->set_name(base::SysInfo::OperatingSystemName());
+  os->set_version(base::SysInfo::OperatingSystemVersion());
+
+  const content::GPUInfo& gpu_info =
+      GpuDataManager::GetInstance()->GetGPUInfo();
+  SystemProfileProto::Hardware::Graphics* gpu = hardware->mutable_gpu();
+  gpu->set_vendor_id(gpu_info.vendor_id);
+  gpu->set_device_id(gpu_info.device_id);
+  gpu->set_driver_version(gpu_info.driver_version);
+  gpu->set_driver_date(gpu_info.driver_date);
+  SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
+      gpu_performance = gpu->mutable_performance_statistics();
+  gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
+  gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
+  gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
+
+  const gfx::Size display_size = GetScreenSize();
+  hardware->set_primary_screen_width(display_size.width());
+  hardware->set_primary_screen_height(display_size.height());
+  hardware->set_screen_count(GetScreenCount());
+
+  bool write_as_xml = false;
+  WritePluginList(plugin_list, write_as_xml);
 
   std::vector<NameGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);

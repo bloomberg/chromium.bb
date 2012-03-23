@@ -60,6 +60,14 @@ class MetricsLog : public MetricsLogBase {
       const std::vector<webkit::WebPluginInfo>& plugin_list,
       const base::DictionaryValue* profile_metrics);
 
+  // Records the current operating environment.  Takes the list of installed
+  // plugins as a parameter because that can't be obtained synchronously from
+  // the UI thread.  This is exposed as a separate method from the
+  // |RecordEnvironment()| method above because we record the environment with
+  // *each* protobuf upload, but only with the initial XML upload.
+  void RecordEnvironmentProto(
+      const std::vector<webkit::WebPluginInfo>& plugin_list);
+
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
   void RecordOmniboxOpenedURL(const AutocompleteLog& log);
@@ -113,9 +121,11 @@ class MetricsLog : public MetricsLogBase {
   // chromium processes (ones that don't crash, and keep on running).
   void WriteRealtimeStabilityAttributes(PrefService* pref);
 
-  // Writes the list of installed plugins.
+  // Writes the list of installed plugins.  If |write_as_xml| is true, writes
+  // the XML version.  Otherwise, writes the protobuf version.
   void WritePluginList(
-      const std::vector<webkit::WebPluginInfo>& plugin_list);
+      const std::vector<webkit::WebPluginInfo>& plugin_list,
+      bool write_as_xml);
 
   // Within the profile group, write basic install info including appversion.
   void WriteInstallElement();

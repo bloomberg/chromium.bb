@@ -88,27 +88,36 @@ class TestMetricsLog : public MetricsLog {
 }  // namespace
 
 class MetricsLogTest : public testing::Test {
+ protected:
+  void TestRecordEnvironment(bool proto_only) {
+    TestMetricsLog log(kClientId, kSessionId);
+
+    std::vector<webkit::WebPluginInfo> plugins;
+    if (proto_only)
+      log.RecordEnvironmentProto(plugins);
+    else
+      log.RecordEnvironment(plugins, NULL);
+
+    const metrics::SystemProfileProto& system_profile = log.system_profile();
+    ASSERT_EQ(arraysize(kFieldTrialIds),
+              static_cast<size_t>(system_profile.field_trial_size()));
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i);
+      EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+      EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+    }
+
+    // TODO(isherman): Verify other data written into the protobuf as a result
+    // of this call.
+  }
 };
 
 TEST_F(MetricsLogTest, RecordEnvironment) {
-  // Everything except build_timestamp and app_version
-  TestMetricsLog log(kClientId, kSessionId);
-
-  std::vector<webkit::WebPluginInfo> plugins;
-  log.RecordEnvironment(plugins, NULL);
-
-  const metrics::SystemProfileProto& system_profile = log.system_profile();
-  ASSERT_EQ(arraysize(kFieldTrialIds),
-            static_cast<size_t>(system_profile.field_trial_size()));
-  for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
-    const metrics::SystemProfileProto::FieldTrial& field_trial =
-        system_profile.field_trial(i);
-    EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
-    EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
-  }
-
-  // TODO(isherman): Verify other data written into the protobuf as a result of
-  // this call.
+  // Test that recording the environment works via both of the public methods
+  // RecordEnvironment() and RecordEnvironmentProto().
+  TestRecordEnvironment(false);
+  TestRecordEnvironment(true);
 }
 
 #if defined(OS_CHROMEOS)

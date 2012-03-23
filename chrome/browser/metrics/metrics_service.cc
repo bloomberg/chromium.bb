@@ -866,6 +866,7 @@ void MetricsService::StopRecording() {
   MetricsLog* current_log =
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
+  current_log->RecordEnvironmentProto(plugins_);
   current_log->RecordIncrementalStabilityElements(plugins_);
   RecordCurrentHistograms();
 
