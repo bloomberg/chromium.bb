@@ -367,7 +367,8 @@ std::string GetDriverInfo(HANDLE printer) {
   for (size_t i = 0; i < arraysize(info); ++i) {
     std::replace(info[i].begin(), info[i].end(), ';', ',');
     driver_info.append(info[i]);
-    driver_info.append(";");
+    if (i < arraysize(info) - 1)
+      driver_info.append(";");
   }
   return driver_info;
 }
