@@ -162,7 +162,7 @@ TEST_F(ShelfLayoutManagerTest, DontReferenceLauncherAfterDeletion) {
 }
 
 // Various assertions around auto-hide.
-TEST_F(ShelfLayoutManagerTest, AutoHide) {
+TEST_F(ShelfLayoutManagerTest, DISABLED_AutoHide) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);

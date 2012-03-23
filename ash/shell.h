@@ -60,6 +60,7 @@ class ActivationController;
 class AcceleratorFilter;
 class AppList;
 class DragDropController;
+class EventClientImpl;
 class FocusCycler;
 class InputMethodEventFilter;
 class MonitorController;
@@ -283,6 +284,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
+  scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.

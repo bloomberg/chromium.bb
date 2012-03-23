@@ -32,7 +32,6 @@ ROW_ROOTWINDOW,
 ROW_TRANSIENTCHILDREN,
 ROW_TRANSIENTPARENT,
 ROW_USERDATA,
-ROW_STOPSEVENTPROPAGATION,
 ROW_IGNOREEVENTS,
 ROW_CANFOCUS,
 ROW_HITTESTBOUNDSOVERRIDE,
@@ -137,9 +136,6 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
                                   window_->transient_parent());
     case ROW_USERDATA:
       return PropertyWithVoidStar("User Data: ", window_->user_data());
-    case ROW_STOPSEVENTPROPAGATION:
-      return PropertyWithBool("Stops event propagation: ",
-                              window_->StopsEventPropagation());
     case ROW_IGNOREEVENTS:
       return PropertyWithBool("Can receive events: ",
                               window_->CanReceiveEvents());

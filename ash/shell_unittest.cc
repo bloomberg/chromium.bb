@@ -5,6 +5,7 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_layout_manager.h"
@@ -244,46 +245,9 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 }
 
 TEST_F(ShellTest, IsScreenLocked) {
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
-
-  // A normal window does not lock the screen.
-  views::Widget* widget = CreateTestWindow(widget_params);
-  widget->Show();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-  widget->Hide();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-
-  // A modal window with a normal window as parent does not locks the screen.
-  views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), widget->GetNativeView());
-  modal_widget->Show();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-  modal_widget->Close();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-  widget->Close();
-
-  // A lock screen window locks the screen.
-  views::Widget* lock_widget = CreateTestWindow(widget_params);
-  ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_LockScreenContainer)->
-      AddChild(lock_widget->GetNativeView());
-  lock_widget->Show();
+  ash::Shell::GetInstance()->delegate()->LockScreen();
   EXPECT_TRUE(Shell::GetInstance()->IsScreenLocked());
-  lock_widget->Hide();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-
-  // A modal window with a lock window as parent does not lock the screen. The
-  // screen is locked only when a lock window is visible.
-  views::Widget* lock_modal_widget = views::Widget::CreateWindowWithParent(
-      new ModalWindow(), lock_widget->GetNativeView());
-  lock_modal_widget->Show();
-  EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
-  lock_widget->Show();
-  EXPECT_TRUE(Shell::GetInstance()->IsScreenLocked());
-  lock_modal_widget->Close();
-  EXPECT_TRUE(Shell::GetInstance()->IsScreenLocked());
-  lock_widget->Close();
+  ash::Shell::GetInstance()->delegate()->UnlockScreen();
   EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
 }
 

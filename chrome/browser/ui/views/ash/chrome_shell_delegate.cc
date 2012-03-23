@@ -9,6 +9,7 @@
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
@@ -89,14 +90,29 @@ bool ChromeShellDelegate::CanCreateLauncher() {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
 void ChromeShellDelegate::LockScreen() {
+#if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
         NotifyScreenLockRequested();
   }
-}
 #endif
+}
+
+void ChromeShellDelegate::UnlockScreen() {
+  // This is used only for testing thus far.
+  NOTIMPLEMENTED();
+}
+
+bool ChromeShellDelegate::IsScreenLocked() const {
+#if defined(OS_CHROMEOS)
+  if (!chromeos::ScreenLocker::default_screen_locker())
+    return false;
+  return chromeos::ScreenLocker::default_screen_locker()->locked();
+#else
+  return false;
+#endif
+}
 
 void ChromeShellDelegate::Exit() {
   BrowserList::AttemptUserExit();
