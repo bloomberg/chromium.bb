@@ -4267,12 +4267,16 @@ void RenderViewImpl::OnSetRendererPrefs(
       renderer_prefs.thumb_inactive_color,
       renderer_prefs.thumb_active_color,
       renderer_prefs.track_color);
+#endif
 
+#if defined(USE_ASH) || defined(TOOLKIT_USES_GTK)
   if (webview()) {
+#if defined(TOOLKIT_USES_GTK)
     webview()->setScrollbarColors(
         renderer_prefs.thumb_inactive_color,
         renderer_prefs.thumb_active_color,
         renderer_prefs.track_color);
+#endif
     webview()->setSelectionColors(
         renderer_prefs.active_selection_bg_color,
         renderer_prefs.active_selection_fg_color,
@@ -4281,6 +4285,7 @@ void RenderViewImpl::OnSetRendererPrefs(
     webview()->themeChanged();
   }
 #endif
+
   // If the zoom level for this page matches the old zoom default, and this
   // is not a plugin, update the zoom level to match the new default.
   if (webview() && !webview()->mainFrame()->document().isPluginDocument() &&
