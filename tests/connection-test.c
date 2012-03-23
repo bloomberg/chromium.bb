@@ -364,6 +364,14 @@ TEST(connection_marshal_demarshal)
 
 	setup_marshal_data(&data);
 
+	data.value.u = 889911;
+	marshal_demarshal(&data, (void *) validate_demarshal_u,
+			  12, "u", data.value.u);
+
+	data.value.i = -13;
+	marshal_demarshal(&data, (void *) validate_demarshal_i,
+			  12, "i", data.value.i);
+
 	data.value.s = "cookie robots";
 	marshal_demarshal(&data, (void *) validate_demarshal_s,
 			  28, "s", data.value.s);
