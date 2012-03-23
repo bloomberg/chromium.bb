@@ -111,6 +111,9 @@ class NetworkDetailedView : public views::View,
       : login_(login),
         header_(NULL),
         airplane_(NULL),
+        mobile_account_(NULL),
+        other_wifi_(NULL),
+        other_mobile_(NULL),
         toggle_wifi_(NULL),
         toggle_mobile_(NULL),
         settings_(NULL),
@@ -128,6 +131,9 @@ class NetworkDetailedView : public views::View,
 
     header_ = NULL;
     airplane_ = NULL;
+    mobile_account_ = NULL;
+    other_wifi_ = NULL;
+    other_mobile_ = NULL;
     toggle_wifi_ = NULL;
     toggle_mobile_ = NULL;
     settings_ = NULL;
@@ -135,6 +141,7 @@ class NetworkDetailedView : public views::View,
 
     AppendHeaderEntry();
     AppendNetworkEntries();
+    AppendNetworkExtra();
     AppendNetworkToggles();
     AppendSettingsEntry();
 
@@ -148,8 +155,9 @@ class NetworkDetailedView : public views::View,
   }
 
   void AppendNetworkEntries() {
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     std::vector<NetworkIconInfo> list;
-    Shell::GetInstance()->tray_delegate()->GetAvailableNetworks(&list);
+    delegate->GetAvailableNetworks(&list);
     FixedSizedScrollView* scroller = new FixedSizedScrollView;
     views::View* networks = new views::View;
     networks->SetLayoutManager(new views::BoxLayout(
@@ -161,6 +169,25 @@ class NetworkDetailedView : public views::View,
       networks->AddChildView(container);
       network_map_[container] = list[i].service_path;
     }
+
+    if (login_ != user::LOGGED_IN_NONE) {
+      std::string carrier_id, topup_url;
+      if (delegate->GetCellularCarrierInfo(&carrier_id, &topup_url)) {
+        if (carrier_id != carrier_id_) {
+          carrier_id_ = carrier_id;
+          if (!topup_url.empty())
+            topup_url_ = topup_url;
+        }
+        if (!topup_url_.empty()) {
+          HoverHighlightView* container = new HoverHighlightView(this);
+          container->AddLabel(ui::ResourceBundle::GetSharedInstance().
+              GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT));
+          AddChildView(container);
+          mobile_account_ = container;
+        }
+      }
+    }
+
     scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
         SkColorSetARGB(25, 0, 0, 0)));
     scroller->set_fixed_size(
@@ -169,6 +196,29 @@ class NetworkDetailedView : public views::View,
                   kNetworkListHeight));
     scroller->SetContentsView(networks);
     AddChildView(scroller);
+  }
+
+  void AppendNetworkExtra() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    if (delegate->GetWifiEnabled()) {
+      HoverHighlightView* container = new HoverHighlightView(this);
+      container->AddLabel(rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_OTHER_WIFI));
+      AddChildView(container);
+      other_wifi_ = container;
+    }
+
+    if (delegate->GetCellularEnabled()) {
+      if (delegate->GetCellularScanSupported()) {
+        HoverHighlightView* container = new HoverHighlightView(this);
+        container->AddLabel(rb.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
+        AddChildView(container);
+        other_mobile_ = container;
+      }
+    }
   }
 
   void AppendNetworkToggles() {
@@ -237,6 +287,12 @@ class NetworkDetailedView : public views::View,
       delegate->ShowNetworkSettings();
     } else if (sender == proxy_settings_) {
       delegate->ChangeProxySettings();
+    } else if (sender == mobile_account_) {
+      delegate->ShowCellularTopupURL(topup_url_);
+    } else if (sender == other_wifi_) {
+      delegate->ShowOtherWifi();
+    } else if (sender == other_mobile_) {
+      delegate->ShowOtherCellular();
     } else if (sender == toggle_wifi_) {
       delegate->ToggleWifi();
     } else if (sender == toggle_mobile_) {
@@ -253,10 +309,16 @@ class NetworkDetailedView : public views::View,
     }
   }
 
+  std::string carrier_id_;
+  std::string topup_url_;
+
   user::LoginStatus login_;
   std::map<views::View*, std::string> network_map_;
   views::View* header_;
   views::View* airplane_;
+  views::View* mobile_account_;
+  views::View* other_wifi_;
+  views::View* other_mobile_;
   views::View* toggle_wifi_;
   views::View* toggle_mobile_;
   views::View* settings_;

@@ -409,6 +409,12 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
       observer->OnBluetoothRefresh();
   }
 
+  virtual void ShowOtherWifi() OVERRIDE {
+  }
+
+  virtual void ShowOtherCellular() OVERRIDE {
+  }
+
   virtual bool GetWifiAvailable() OVERRIDE {
     return true;
   }
@@ -431,6 +437,18 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual bool GetBluetoothEnabled() OVERRIDE {
     return bluetooth_enabled_;
+  }
+
+  virtual bool GetCellularScanSupported() OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetCellularCarrierInfo(std::string* carrier_id,
+                                      std::string* toup_url) OVERRIDE {
+    return false;
+  }
+
+  virtual void ShowCellularTopupURL(const std::string& topup_url) OVERRIDE {
   }
 
   virtual void ChangeProxySettings() OVERRIDE {
