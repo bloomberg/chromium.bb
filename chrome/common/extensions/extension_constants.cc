@@ -73,9 +73,6 @@ const char kName[] = "name";
 const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
 const char kNaClModulesPath[] = "path";
-const char kOAuth2[] = "oauth2";
-const char kOAuth2ClientId[] = "oauth2.client_id";
-const char kOAuth2Scopes[] = "oauth2.scopes";
 const char kOfflineEnabled[] = "offline_enabled";
 const char kOmnibox[] = "omnibox";
 const char kOmniboxKeyword[] = "omnibox.keyword";
@@ -333,10 +330,6 @@ const char kInvalidNaClModulesPath[] =
     "Invalid value for 'nacl_modules[*].path'.";
 const char kInvalidNaClModulesMIMEType[] =
     "Invalid value for 'nacl_modules[*].mime_type'.";
-const char kInvalidOAuth2ClientId[] =
-    "Invalid value for 'oauth2.client_id'.";
-const char kInvalidOAuth2Scopes[] =
-    "Invalid value for 'oauth2.scopes'.";
 const char kInvalidOfflineEnabled[] =
     "Invalid value for 'offline_enabled'.";
 const char kInvalidOmniboxKeyword[] =

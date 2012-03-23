@@ -191,8 +191,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
   }
 
   AppNotifyChannelUI* ui = new AppNotifyChannelUIImpl(
-      profile, tab_contents_wrapper(), extension->name(),
-      AppNotifyChannelUI::NOTIFICATION_INFOBAR);
+      GetBrowser(), tab_contents_wrapper(), extension->name());
 
   scoped_refptr<AppNotifyChannelSetup> channel_setup(
       new AppNotifyChannelSetup(profile,
