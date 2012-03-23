@@ -428,6 +428,29 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
+  virtual void GetNetworkAddresses(std::string* ip_address,
+                                   std::string* ethernet_mac_address,
+                                   std::string* wifi_mac_address) OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    if (crosnet->Connected())
+      *ip_address = crosnet->IPAddress();
+    else
+      *ip_address = std::string();
+
+    *ethernet_mac_address = std::string();
+    const NetworkDevice* ether = crosnet->FindEthernetDevice();
+    if (ether)
+      crosnet->GetIPConfigs(ether->device_path(), ethernet_mac_address,
+          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+
+    *wifi_mac_address = std::string();
+    const NetworkDevice* wifi = crosnet->wifi_enabled() ?
+        crosnet->FindWifiDevice() : NULL;
+    if (wifi)
+      crosnet->GetIPConfigs(wifi->device_path(), wifi_mac_address,
+          NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
+  }
+
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     Network* network = crosnet->FindNetworkByPath(network_id);

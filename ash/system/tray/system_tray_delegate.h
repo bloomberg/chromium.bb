@@ -169,6 +169,12 @@ class SystemTrayDelegate {
   // Connects to the network specified by the unique id.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
 
+  // Gets the network IP address, and the mac addresses for the ethernet and
+  // wifi devices. If any of this is unavailable, empty strings are returned.
+  virtual void GetNetworkAddresses(std::string* ip_address,
+                                   std::string* ethernet_mac_address,
+                                   std::string* wifi_mac_address) = 0;
+
   // Shous UI to add a new bluetooth device.
   virtual void AddBluetoothDevice() = 0;
 

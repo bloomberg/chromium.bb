@@ -382,6 +382,14 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
   }
 
+  virtual void GetNetworkAddresses(std::string* ip_address,
+                                   std::string* ethernet_mac_address,
+                                   std::string* wifi_mac_address) OVERRIDE {
+    *ip_address = "127.0.0.1";
+    *ethernet_mac_address = "00:11:22:33:44:55";
+    *wifi_mac_address = "66:77:88:99:00:11";
+  }
+
   virtual void AddBluetoothDevice() OVERRIDE {
   }
 

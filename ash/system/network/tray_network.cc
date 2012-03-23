@@ -5,6 +5,7 @@
 #include "ash/system/network/tray_network.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -13,21 +14,75 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 // Height of the list of networks in the popup.
 const int kNetworkListHeight = 160;
+
+// Creates a row of labels.
+views::View* CreateTextLabels(const string16& text_label,
+                              const std::string& text_string) {
+  const SkColor text_color = SkColorSetARGB(127, 0, 0, 0);
+  views::View* view = new views::View;
+  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+        0, 0, 1));
+
+  views::Label* label = new views::Label(text_label);
+  label->SetFont(label->font().DeriveFont(-1));
+  label->SetEnabledColor(text_color);
+  view->AddChildView(label);
+
+  label = new views::Label(UTF8ToUTF16(": "));
+  label->SetFont(label->font().DeriveFont(-1));
+  label->SetEnabledColor(text_color);
+  view->AddChildView(label);
+
+  label = new views::Label(UTF8ToUTF16(text_string));
+  label->SetFont(label->font().DeriveFont(-1));
+  label->SetEnabledColor(text_color);
+  view->AddChildView(label);
+
+  return view;
+}
+
+// A bubble you canno activate.
+class NonActivatableSettingsBubble : public views::BubbleDelegateView {
+ public:
+  NonActivatableSettingsBubble(views::View* anchor, views::View* content)
+      : views::BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT) {
+    set_use_focusless(true);
+    set_parent_window(ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_SettingBubbleContainer));
+    SetLayoutManager(new views::FillLayout());
+    AddChildView(content);
+  }
+
+  virtual ~NonActivatableSettingsBubble() {}
+
+  virtual bool CanActivate() OVERRIDE const {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NonActivatableSettingsBubble);
+};
 
 }
 
@@ -109,6 +164,7 @@ class NetworkDefaultView : public TrayItemMore {
 };
 
 class NetworkDetailedView : public views::View,
+                            public views::ButtonListener,
                             public ViewClickListener {
  public:
   explicit NetworkDetailedView(user::LoginStatus login)
@@ -121,14 +177,18 @@ class NetworkDetailedView : public views::View,
         toggle_wifi_(NULL),
         toggle_mobile_(NULL),
         settings_(NULL),
-        proxy_settings_(NULL) {
+        proxy_settings_(NULL),
+        info_bubble_(NULL) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     Update();
   }
 
-  virtual ~NetworkDetailedView() {}
+  virtual ~NetworkDetailedView() {
+    if (info_bubble_)
+      info_bubble_->GetWidget()->CloseNow();
+  }
 
   void Update() {
     RemoveAllChildViews(true);
@@ -155,6 +215,13 @@ class NetworkDetailedView : public views::View,
  private:
   void AppendHeaderEntry() {
     header_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_NETWORK, this);
+
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    info_icon_ = new views::ImageButton(this);
+    info_icon_->SetImage(views::CustomButton::BS_NORMAL,
+        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_INFO).ToSkBitmap());
+    header_->AddChildView(info_icon_);
+
     AddChildView(header_);
   }
 
@@ -282,10 +349,68 @@ class NetworkDetailedView : public views::View,
     }
   }
 
+  views::View* CreateNetworkInfoView() {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    std::string ip_address, ethernet_address, wifi_address;
+    Shell::GetInstance()->tray_delegate()->GetNetworkAddresses(&ip_address,
+        &ethernet_address, &wifi_address);
+
+    views::View* container = new views::View;
+    container->SetLayoutManager(new
+        views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+    container->set_border(views::Border::CreateEmptyBorder(0, 20, 0, 0));
+
+    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_IP), ip_address));
+    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_ETHERNET), ethernet_address));
+    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
+
+    return container;
+  }
+
+  void ToggleInfoBubble() {
+    if (info_bubble_) {
+      info_bubble_->GetWidget()->CloseNow();
+      info_bubble_ = NULL;
+      return;
+    }
+    info_bubble_ = new NonActivatableSettingsBubble(
+        info_icon_, CreateNetworkInfoView());
+    views::BubbleDelegateView::CreateBubble(info_bubble_);
+    info_bubble_->Show();
+  }
+
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    views::View::Layout();
+
+    // Align the network info view and icon.
+    gfx::Rect header_bounds = header_->bounds();
+    gfx::Size icon_size = info_icon_->size();
+
+    info_icon_->SetBounds(
+        header_->width() - icon_size.width() - kTrayPopupPaddingHorizontal, 3,
+        icon_size.width(), icon_size.height());
+  }
+
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    ToggleInfoBubble();
+  }
+
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
+    // If the info bubble was visible, close it when some other item is clicked
+    // on.
+    if (info_bubble_) {
+      info_bubble_->GetWidget()->Close();
+      info_bubble_ = NULL;
+    }
     if (sender == header_) {
       Shell::GetInstance()->tray()->ShowDefaultView();
     } else if (sender == settings_) {
@@ -321,6 +446,7 @@ class NetworkDetailedView : public views::View,
   std::map<views::View*, std::string> network_map_;
   views::View* header_;
   views::View* airplane_;
+  views::ImageButton* info_icon_;
   views::View* mobile_account_;
   views::View* other_wifi_;
   views::View* other_mobile_;
@@ -328,6 +454,9 @@ class NetworkDetailedView : public views::View,
   views::View* toggle_mobile_;
   views::View* settings_;
   views::View* proxy_settings_;
+
+  views::BubbleDelegateView* info_bubble_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkDetailedView);
 };
 

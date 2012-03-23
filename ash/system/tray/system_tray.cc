@@ -445,13 +445,13 @@ SystemTray::SystemTray()
 }
 
 SystemTray::~SystemTray() {
-  if (popup_)
-    popup_->CloseNow();
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
       ++it) {
     (*it)->DestroyTrayView();
   }
+  if (popup_)
+    popup_->CloseNow();
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
