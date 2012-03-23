@@ -15,6 +15,7 @@ import subprocess
 import sys
 import signal
 import platform
+import tempfile
 import threading
 import Queue
 import artools
@@ -231,6 +232,24 @@ DriverArgPatterns = [
  ]
 
 
+def ShouldExpandCommandFile(arg):
+  """ On windows, we may be given files with commandline arguments.
+  Read in the arguments so that they can be handled as usual. """
+  if IsWindowsPython() and arg.startswith('@'):
+    possible_file = pathtools.normalize(arg[1:])
+    return pathtools.isfile(possible_file)
+  else:
+    return False
+
+def DoExpandCommandFile(argv, i):
+  arg = argv[i]
+  fd = DriverOpen(pathtools.normalize(arg[1:]), 'r')
+  more_args = fd.read().split()
+  fd.close()
+  new_argv = argv[:i] + more_args + argv[i+1:]
+  return new_argv
+
+
 def ParseArgs(argv, patternlist, must_match = True):
   """ Parse argv using the patterns in patternlist
       Returns: (matched, unmatched)
@@ -239,6 +258,8 @@ def ParseArgs(argv, patternlist, must_match = True):
   unmatched = []
   i = 0
   while i < len(argv):
+    if ShouldExpandCommandFile(argv[i]):
+      argv = DoExpandCommandFile(argv, i)
     num_matched, action, groups = MatchOne(argv, i, patternlist)
     if num_matched == 0:
       if must_match:
@@ -803,6 +824,24 @@ class RunConfig():
         Log.Fatal('Unknown parameter to Run(): %s = %s', k, v)
       setattr(self, k, v)
 
+
+def ArgsTooLongForWindows(args):
+  """ Detect when a command line might be too long for Windows.  """
+  if not IsWindowsPython():
+    return False
+  else:
+    return len(' '.join(args)) > 8191
+
+def ConvertArgsToFile(args):
+  fd, outfile = tempfile.mkstemp()
+  # Remember to delete this file afterwards.
+  TempFiles.add(outfile)
+  cmd = args[0]
+  other_args = args[1:]
+  os.write(fd, ' '.join(other_args))
+  os.close(fd)
+  return [cmd, '@' + outfile]
+
 def Run(args, **config_overrides):
   """ Run: Run a command.
       Returns: (exit code, stdout_contents, stderr_contents) """
@@ -850,9 +889,20 @@ def Run(args, **config_overrides):
     stderr_pipe = open(os.devnull)
 
   try:
-    p = subprocess.Popen(args, stdin=stdin_pipe,
-                               stdout=stdout_pipe,
-                               stderr=stderr_pipe )
+    # If we have too long of a cmdline on windows, running it would fail.
+    # Attempt to use a file with the command line options instead in that case.
+    if ArgsTooLongForWindows(args):
+      actual_args = ConvertArgsToFile(args)
+      if conf.log_command:
+        Log.Info('Wrote long commandline to file for Windows: ' +
+                 StringifyCommand(actual_args))
+
+    else:
+      actual_args = args
+    p = subprocess.Popen(actual_args,
+                         stdin=stdin_pipe,
+                         stdout=stdout_pipe,
+                         stderr=stderr_pipe)
   except Exception, e:
     msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args, conf.stdin))
     if conf.log_command:
