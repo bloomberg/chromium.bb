@@ -432,6 +432,11 @@ bool EGLImageTransportSurface::PostSubBuffer(
       front_surface_->size() == expected_size;
 
   const gfx::Rect new_damage_rect(x, y, width, height);
+
+  // An empty damage rect is a successful no-op.
+  if (new_damage_rect.IsEmpty())
+    return true;
+
   if (surfaces_same_size) {
     std::vector<gfx::Rect> regions_to_copy;
     GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
