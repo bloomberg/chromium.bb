@@ -780,7 +780,8 @@ TEST_F(ContextMenuTest, CFCopyLinkAddress) {
 }
 
 // Test CF text field context menu - cut.
-TEST_F(ContextMenuTest, CFTxtFieldCut) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldCut) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
@@ -803,7 +804,8 @@ TEST_F(ContextMenuTest, CFTxtFieldCut) {
 }
 
 // Test CF text field context menu - copy.
-TEST_F(ContextMenuTest, CFTxtFieldCopy) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldCopy) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
@@ -828,7 +830,8 @@ TEST_F(ContextMenuTest, CFTxtFieldCopy) {
 }
 
 // Test CF text field context menu - paste.
-TEST_F(ContextMenuTest, DISABLED_CFTxtFieldPaste) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldPaste) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
@@ -851,7 +854,8 @@ TEST_F(ContextMenuTest, DISABLED_CFTxtFieldPaste) {
 }
 
 // Test CF text field context menu - delete.
-TEST_F(ContextMenuTest, CFTxtFieldDelete) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldDelete) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
@@ -891,7 +895,8 @@ TEST_F(ContextMenuTest, CFTxtFieldSelectAll) {
 }
 
 // Test CF text field context menu - undo.
-TEST_F(ContextMenuTest, CFTxtFieldUndo) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldUndo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
 
@@ -918,7 +923,8 @@ TEST_F(ContextMenuTest, CFTxtFieldUndo) {
 }
 
 // Test CF text field context menu - redo.
-TEST_F(ContextMenuTest, CFTxtFieldRedo) {
+// Times out sporadically http://crbug.com/119660.
+TEST_F(ContextMenuTest, FLAKY_CFTxtFieldRedo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   AccObjectMatcher txtfield_matcher(L"", L"editable text");
   InSequence expect_in_sequence_for_scope;
