@@ -92,7 +92,7 @@ void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
     host->GetDelegate()->WorkerCrashed();
 }
 
-WorkerProcessHost::WorkerProcessHost(content::ResourceContext* resource_context)
+WorkerProcessHost::WorkerProcessHost(ResourceContext* resource_context)
     : resource_context_(resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(resource_context);
@@ -198,7 +198,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
       cmd_line);
 
   fileapi::FileSystemContext* file_system_context =
-      ResourceContext::GetFileSystemContext(resource_context_);
+      GetFileSystemContextForResourceContext(resource_context_);
   ChildProcessSecurityPolicyImpl::GetInstance()->AddWorker(
       process_->GetData().id, render_process_id);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -266,7 +266,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
   process_->GetHost()->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
       request_context,
-      ResourceContext::GetFileSystemContext(resource_context_),
+      GetFileSystemContextForResourceContext(resource_context_),
       content::GetChromeBlobStorageContextForResourceContext(
           resource_context_)));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(

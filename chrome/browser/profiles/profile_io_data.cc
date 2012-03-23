@@ -41,7 +41,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -54,9 +53,6 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/blob/blob_url_request_job_factory.h"
-#include "webkit/fileapi/file_system_url_request_job_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -67,7 +63,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
 using content::ResourceDispatcherHost;
-using content::ResourceRequestInfoImpl;
 
 namespace {
 
@@ -147,30 +142,6 @@ class ProtocolHandlerRegistryInterceptor
   const scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryInterceptor);
-};
-
-// TODO(darin): Move this class to src/content
-class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
- public:
-  ChromeBlobProtocolHandler(
-      webkit_blob::BlobStorageController* blob_storage_controller,
-      base::MessageLoopProxy* loop_proxy)
-      : webkit_blob::BlobProtocolHandler(blob_storage_controller,
-                                         loop_proxy) {}
-
-  virtual ~ChromeBlobProtocolHandler() {}
-
- private:
-  virtual scoped_refptr<webkit_blob::BlobData>
-      LookupBlobData(net::URLRequest* request) const {
-    const ResourceRequestInfoImpl* info =
-        ResourceRequestInfoImpl::ForRequest(request);
-    if (!info)
-      return NULL;
-    return info->requested_blob_data();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBlobProtocolHandler);
 };
 
 Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
@@ -488,25 +459,11 @@ void ProfileIOData::LazyInitialize() const {
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeUIScheme,
       ChromeURLDataManagerBackend::CreateProtocolHandler(
-          chrome_url_data_manager_backend_.get(),
-          ResourceContext::GetAppCacheService(&resource_context_),
-          ResourceContext::GetBlobStorageController(&resource_context_)));
+          chrome_url_data_manager_backend_.get()));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kBlobScheme,
-      new ChromeBlobProtocolHandler(
-          ResourceContext::GetBlobStorageController(&resource_context_),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kFileSystemScheme,
-      CreateFileSystemProtocolHandler(
-          ResourceContext::GetFileSystemContext(&resource_context_),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
   // Install the GView request interceptor that will redirect requests

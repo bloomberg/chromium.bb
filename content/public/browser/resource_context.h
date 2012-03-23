@@ -12,17 +12,9 @@ namespace appcache {
 class AppCacheService;
 }
 
-namespace fileapi {
-class FileSystemContext;
-}
-
 namespace net {
 class HostResolver;
 class URLRequestContext;
-}
-
-namespace webkit_blob {
-class BlobStorageController;
 }
 
 namespace content {
@@ -35,10 +27,6 @@ class MediaObserver;
 class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
   static appcache::AppCacheService* GetAppCacheService(
-      ResourceContext* resource_context);
-  static fileapi::FileSystemContext* GetFileSystemContext(
-      ResourceContext* resource_context);
-  static webkit_blob::BlobStorageController* GetBlobStorageController(
       ResourceContext* resource_context);
 
   virtual ~ResourceContext() {}

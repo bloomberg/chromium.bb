@@ -20,16 +20,9 @@ class GURL;
 class RefCountedMemory;
 class URLRequestChromeJob;
 
-namespace appcache {
-class AppCacheService;
-}
-
 namespace net {
 class URLRequest;
 class URLRequestJob;
-}
-namespace webkit_blob {
-class BlobStorageController;
 }
 
 // ChromeURLDataManagerBackend is used internally by ChromeURLDataManager on the
@@ -45,9 +38,7 @@ class ChromeURLDataManagerBackend {
 
   // Invoked to create the protocol handler for chrome://.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
-      ChromeURLDataManagerBackend* backend,
-      appcache::AppCacheService* appcache_service,
-      webkit_blob::BlobStorageController* blob_storage_controller);
+      ChromeURLDataManagerBackend* backend);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(ChromeURLDataManager::DataSource* source);

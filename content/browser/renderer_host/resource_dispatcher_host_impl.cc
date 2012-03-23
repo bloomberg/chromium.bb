@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/renderer_host/throttling_resource_handler.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service_impl.h"
@@ -55,7 +56,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host_delegate.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -743,7 +743,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data) {
-    ResourceContext::GetBlobStorageController(resource_context)->
+    GetBlobStorageControllerForResourceContext(resource_context)->
         ResolveBlobReferencesInUploadData(request_data.upload_data.get());
   }
 
@@ -914,7 +914,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobStorageController* controller =
-        ResourceContext::GetBlobStorageController(resource_context);
+        GetBlobStorageControllerForResourceContext(resource_context);
     extra_info->set_requested_blob_data(
         controller->GetBlobDataFromUrl(request->url()));
   }

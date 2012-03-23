@@ -39,13 +39,17 @@ CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // About URLs (including schemes).
 CONTENT_EXPORT extern const char kAboutBlankURL[];
+CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
+CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
+CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];
 CONTENT_EXPORT extern const char kChromeUICrashURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuCleanURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuHangURL[];
 CONTENT_EXPORT extern const char kChromeUIHangURL[];
 CONTENT_EXPORT extern const char kChromeUIKillURL[];
+CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
 // Special URL used to start a navigation to an error page.

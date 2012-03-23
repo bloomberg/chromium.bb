@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/view_http_cache_job_factory.h"
+#include "content/browser/net/view_http_cache_job_factory.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"

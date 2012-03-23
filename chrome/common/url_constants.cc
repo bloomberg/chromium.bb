@@ -56,7 +56,6 @@ const char kChromeUIKeyboardURL[] = "chrome://keyboard/";
 const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
 const char kChromeUIMemoryURL[] = "chrome://memory/";
 const char kChromeUINetInternalsURL[] = "chrome://net-internals/";
-const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUINewProfile[] = "chrome://newprofile/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
@@ -113,9 +112,7 @@ const char kChromeUITabModalConfirmDialogURL[] =
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
 const char kChromeUIAboutHost[] = "about";
-const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlankHost[] = "blank";
-const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUICacheHost[] = "cache";
 const char kChromeUICertificateViewerHost[] = "view-cert";
@@ -160,7 +157,6 @@ const char kChromeUIMemoryHost[] = "memory";
 const char kChromeUIMemoryRedirectHost[] = "memory-redirect";
 const char kChromeUINetInternalsHost[] = "net-internals";
 const char kChromeUINetworkActionPredictorHost[] = "network-action-predictor";
-const char kChromeUINetworkViewCacheHost[] = "view-http-cache";
 const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPluginsHost[] = "plugins";

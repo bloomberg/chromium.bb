@@ -60,9 +60,8 @@
 #include "content/test/test_file_error_injector.h"
 #include "content/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/blob_data.h"
-#include "webkit/blob/blob_storage_controller.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -2431,8 +2430,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
 // downloaded through a blob: URL.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
   ASSERT_TRUE(InitialSetup(false));
-  const char kBlobUrl[] = "blob:test-download-url";
-  GURL blob_url(kBlobUrl);
+
 #if defined(OS_WIN)
   // On Windows, if SafeBrowsing is enabled, certain file types (.exe, .cab,
   // .msi) will be handled by the DownloadProtectionService. However, if the URL
@@ -2443,25 +2441,19 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
 #else
   const char kFilename[] = "foo.jar";
 #endif
-  std::string content_disposition = "attachment; filename=";
-  content_disposition += kFilename;
 
-  webkit_blob::BlobStorageController* blob_controller =
-      content::ResourceContext::GetBlobStorageController(
-          DownloadManagerForBrowser(browser())->GetBrowserContext()->
-          GetResourceContext());
-  scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
-  blob_data->AppendData("foo");
-  blob_controller->AddFinishedBlob(blob_url, blob_data.get());
-  blob_data = blob_controller->GetBlobDataFromUrl(blob_url);
-  blob_data->set_content_type("application/octet-stream");
-  blob_data->set_content_disposition(content_disposition);
+  std::string path("files/downloads/download-dangerous-blob.html?filename=");
+  path += kFilename;
+
+  // Need to use http urls because the blob js doesn't work on file urls for
+  // security reasons.
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL(path));
 
   DownloadTestObserver* observer(DangerousDownloadWaiter(
       browser(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
-  ui_test_utils::NavigateToURL(browser(), blob_url);
+  ui_test_utils::NavigateToURL(browser(), url);
   observer->WaitForFinished();
-  blob_controller->RemoveBlob(blob_url);
 
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());

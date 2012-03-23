@@ -1,0 +1,15 @@
+<html>
+<body>
+<a download="foo.exe" href="">link</a>
+<script>
+  bb = new WebKitBlobBuilder
+  bb.append('foo')
+  b = bb.getBlob()
+  document.querySelector('a[download]').href = webkitURL.createObjectURL(b)
+
+  url = window.location.href
+  document.querySelector('a[download]').download = url.substr(url.indexOf('=') + 1)
+  document.querySelector('a[download]').click() 
+</script>
+</body>
+</html>

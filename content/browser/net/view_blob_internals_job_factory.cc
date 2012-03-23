@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/view_blob_internals_job_factory.h"
+#include "content/browser/net/view_blob_internals_job_factory.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "webkit/blob/view_blob_internals_job.h"
 

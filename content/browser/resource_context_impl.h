@@ -10,6 +10,14 @@
 class IndexedDBContextImpl;
 class ChromeBlobStorageContext;
 
+namespace fileapi {
+class FileSystemContext;
+}
+
+namespace webkit_blob {
+class BlobStorageController;
+}
+
 namespace webkit_database {
 class DatabaseTracker;
 }
@@ -22,7 +30,11 @@ class HostZoomMap;
 // Getters for objects that are part of BrowserContext which are also used on
 // the IO thread. These are only accessed by content so they're not on the
 // public API.
+webkit_blob::BlobStorageController* GetBlobStorageControllerForResourceContext(
+    ResourceContext* resource_context);
 webkit_database::DatabaseTracker* GetDatabaseTrackerForResourceContext(
+    ResourceContext* resource_context);
+fileapi::FileSystemContext* GetFileSystemContextForResourceContext(
     ResourceContext* resource_context);
 IndexedDBContextImpl* GetIndexedDBContextForResourceContext(
     ResourceContext* resource_context);

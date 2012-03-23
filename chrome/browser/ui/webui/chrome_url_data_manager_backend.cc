@@ -18,8 +18,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/view_blob_internals_job_factory.h"
-#include "chrome/browser/net/view_http_cache_job_factory.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,8 +32,6 @@
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "webkit/appcache/appcache_service.h"
-#include "webkit/appcache/view_appcache_internals_job.h"
 
 using content::BrowserThread;
 
@@ -319,18 +315,10 @@ void URLRequestChromeJob::StartAsync() {
 
 namespace {
 
-bool IsViewAppCacheInternalsURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeUIScheme) &&
-         url.host() == chrome::kChromeUIAppCacheInternalsHost;
-}
-
 class ChromeProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  ChromeProtocolHandler(
-      ChromeURLDataManagerBackend* backend,
-      appcache::AppCacheService* appcache_service,
-      webkit_blob::BlobStorageController* blob_storage_controller);
+  explicit ChromeProtocolHandler(ChromeURLDataManagerBackend* backend);
   ~ChromeProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
@@ -339,39 +327,19 @@ class ChromeProtocolHandler
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
   ChromeURLDataManagerBackend* const backend_;
-  appcache::AppCacheService* const appcache_service_;
-  webkit_blob::BlobStorageController* const blob_storage_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
 };
 
 ChromeProtocolHandler::ChromeProtocolHandler(
-    ChromeURLDataManagerBackend* backend,
-    appcache::AppCacheService* appcache_service,
-    webkit_blob::BlobStorageController* blob_storage_controller)
-    : backend_(backend),
-      appcache_service_(appcache_service),
-      blob_storage_controller_(blob_storage_controller) {}
+    ChromeURLDataManagerBackend* backend)
+    : backend_(backend) {}
 
 ChromeProtocolHandler::~ChromeProtocolHandler() {}
 
 net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
     net::URLRequest* request) const {
   DCHECK(request);
-
-  // Next check for chrome://view-http-cache/*, which uses its own job type.
-  if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
-    return ViewHttpCacheJobFactory::CreateJobForRequest(request);
-
-  // Next check for chrome://appcache-internals/, which uses its own job type.
-  if (IsViewAppCacheInternalsURL(request->url()))
-    return appcache::ViewAppCacheInternalsJobFactory::CreateJobForRequest(
-        request, appcache_service_);
-
-  // Next check for chrome://blob-internals/, which uses its own job type.
-  if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))
-    return ViewBlobInternalsJobFactory::CreateJobForRequest(
-        request, blob_storage_controller_);
 
   // Fall back to using a custom handler
   return new URLRequestChromeJob(request, backend_);
@@ -395,14 +363,9 @@ ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
 // static
 net::URLRequestJobFactory::ProtocolHandler*
 ChromeURLDataManagerBackend::CreateProtocolHandler(
-    ChromeURLDataManagerBackend* backend,
-    appcache::AppCacheService* appcache_service,
-    webkit_blob::BlobStorageController* blob_storage_controller) {
-  DCHECK(appcache_service);
-  DCHECK(blob_storage_controller);
+    ChromeURLDataManagerBackend* backend) {
   DCHECK(backend);
-  return new ChromeProtocolHandler(
-      backend, appcache_service, blob_storage_controller);
+  return new ChromeProtocolHandler(backend);
 }
 
 void ChromeURLDataManagerBackend::AddDataSource(
