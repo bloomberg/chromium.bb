@@ -127,7 +127,7 @@ namespace {
 // REVIEWERS: Do not let anyone increment this. We need to drive the number of
 // raw accessed services down to zero. DO NOT LET PEOPLE REGRESS THIS UNLESS
 // THE PATCH ITSELF IS MAKING PROGRESS ON PKSF REFACTORING.
-COMPILE_ASSERT(sizeof(ProfileImpl) <= 720u, profile_impl_size_unexpected);
+COMPILE_ASSERT(sizeof(ProfileImpl) <= 744u, profile_impl_size_unexpected);
 #endif
 
 // Delay, in milliseconds, before we explicitly create the SessionService.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,10 @@ void WebKitThread::InternalWebKitThread::Init() {
 void WebKitThread::InternalWebKitThread::CleanUp() {
   DCHECK(webkit_platform_support_.get());
   WebKit::shutdown();
+  // Delete BrowserWebKitPlatformSupportImpl now while on the same thread that
+  // constructed it. (This prevents the WebKit shared timer from being destroyed
+  // on a different thread than the one using it.)
+  webkit_platform_support_.reset();
 }
 
 }  // namespace content
