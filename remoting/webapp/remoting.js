@@ -52,9 +52,10 @@ remoting.init = function() {
     document.getElementById('current-email').innerText = email;
   }
 
-  window.addEventListener('focus', pluginGotFocus_, false);
+  // The focus and paste hooks are disabled until crbug.com/119838 is fixed.
+  //window.addEventListener('focus', pluginGotFocus_, false);
   window.addEventListener('blur', pluginLostFocus_, false);
-  window.addEventListener('paste', pluginGotPaste_, false);
+  //window.addEventListener('paste', pluginGotPaste_, false);
 
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
