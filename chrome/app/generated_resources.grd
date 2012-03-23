@@ -15309,6 +15309,26 @@ Battery full
       More suggestions
     </message>
 
+    <!-- Web Intents common actions -->
+    <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">
+      Which service should be used for sharing?
+    </message>
+    <message name="IDS_WEB_INTENTS_ACTION_EDIT" desc="Question asking the user to pick a service for the 'edit' action.">
+      Which service should be used for editing?
+    </message>
+    <message name="IDS_WEB_INTENTS_ACTION_VIEW" desc="Question asking the user to pick a service for the 'viewing' action.">
+      Which service should be used for viewing?
+    </message>
+    <message name="IDS_WEB_INTENTS_ACTION_PICK" desc="Question asking the user to pick a service for the 'pick' action.">
+      Which service should be used for picking?
+    </message>
+    <message name="IDS_WEB_INTENTS_ACTION_SUBSCRIBE" desc="Question asking the user to pick a service for the 'subscribe' action.">
+      Which service should be used for subscribing?
+    </message>
+    <message name="IDS_WEB_INTENTS_ACTION_SAVE" desc="Question asking the user to pick a service for the 'save' action.">
+      Which service should be used for saving?
+    </message>
+
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
       Parts of this PDF document could not be displayed. Open in Adobe Reader?
