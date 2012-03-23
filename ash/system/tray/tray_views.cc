@@ -158,7 +158,7 @@ views::View* CreateDetailedHeaderEntry(int string_id,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(listener);
   container->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, 5));
+      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
   views::ImageView* back =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());

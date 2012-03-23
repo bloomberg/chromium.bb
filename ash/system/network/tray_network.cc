@@ -36,17 +36,17 @@ namespace internal {
 
 namespace tray {
 
-enum ResourceSize {
-  SMALL,
-  LARGE,
+enum ColorTheme {
+  LIGHT,
+  DARK,
 };
 
 class NetworkTrayView : public views::View {
  public:
-  explicit NetworkTrayView(ResourceSize size) : resource_size_(size) {
+  explicit NetworkTrayView(ColorTheme size) : color_theme_(size) {
     SetLayoutManager(new views::FillLayout());
 
-    image_view_ = resource_size_ == LARGE ?
+    image_view_ = color_theme_ == DARK ?
         new FixedSizedImageView(0, kTrayPopupItemHeight) :
         new views::ImageView;
     AddChildView(image_view_);
@@ -66,7 +66,7 @@ class NetworkTrayView : public views::View {
 
  private:
   views::ImageView* image_view_;
-  ResourceSize resource_size_;
+  ColorTheme color_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
@@ -78,7 +78,7 @@ class NetworkDefaultView : public TrayItemMore {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
-    icon_ = new NetworkTrayView(LARGE);
+    icon_ = new NetworkTrayView(DARK);
     AddChildView(icon_);
 
     label_ = new views::Label();
@@ -86,17 +86,18 @@ class NetworkDefaultView : public TrayItemMore {
 
     AddMore();
 
-    NetworkIconInfo info;
-    Shell::GetInstance()->tray_delegate()->
-        GetMostRelevantNetworkIcon(&info, false);
-    Update(info);
+    Update();
   }
 
   virtual ~NetworkDefaultView() {}
 
-  void Update(const NetworkIconInfo& info) {
+  void Update() {
+    NetworkIconInfo info;
+    Shell::GetInstance()->tray_delegate()->
+        GetMostRelevantNetworkIcon(&info, true);
     icon_->Update(info);
     label_->SetText(info.description);
+    label_->parent()->Layout();
     SetAccessibleName(info.description);
   }
 
@@ -339,7 +340,7 @@ TrayNetwork::~TrayNetwork() {
 }
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
-  tray_.reset(new tray::NetworkTrayView(tray::SMALL));
+  tray_.reset(new tray::NetworkTrayView(tray::LIGHT));
   return tray_.get();
 }
 
@@ -369,7 +370,7 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
   if (tray_.get())
     tray_->Update(info);
   if (default_.get())
-    default_->Update(info);
+    default_->Update();
   if (detailed_.get())
     detailed_->Update();
 }
