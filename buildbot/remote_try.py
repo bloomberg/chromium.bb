@@ -46,7 +46,9 @@ class RemoteTryJob(object):
                              'chromeos/tryjobs')
 
   # In version 3, remote patches have an extra field.
-  TRYJOB_FORMAT_VERSION = 3
+  # In version 4, cherry-picking is the norm, thus multiple patches are
+  # generated.
+  TRYJOB_FORMAT_VERSION = 4
   TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
   TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
 

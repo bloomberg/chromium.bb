@@ -175,7 +175,8 @@ I am the first commit.
     # verifies the machinery doesn't scream when we try
     # landing it a second time.
     patch.Apply(git1, self.DEFAULT_TRACKING)
-    patch.Apply(git1, self.DEFAULT_TRACKING)
+    self.assertRaises(cros_patch.PatchAlreadyApplied, patch.Apply, git1,
+                      self.DEFAULT_TRACKING)
 
   def testCleanlyApply(self):
     git1, git2, patch = self._CommonGitSetup()
@@ -634,18 +635,6 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
         cros_patch.PrepareLocalPatches,
         self.manifest, self.patches)
 
-
-class ApplyLocalPatchesTests(mox.MoxTestBase):
-
-  def testWrongTrackingBranch(self):
-    """When the original patch branch does not track buildroot's branch."""
-
-    # Use external patches for this test (thus the False).
-    patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
-                                    'my/project', 'mybranch',
-                                    'master', False)
-    self.assertRaises(cros_patch.PatchException, patch.Apply,
-                      '/tmp/notadirectory', 'origin/R19')
 
 if __name__ == '__main__':
   logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
