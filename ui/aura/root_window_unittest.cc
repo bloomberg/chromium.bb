@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -52,6 +53,41 @@ class NonClientDelegate : public test::TestWindowDelegate {
   int mouse_event_count_;
   gfx::Point mouse_event_location_;
   int mouse_event_flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonClientDelegate);
+};
+
+// A simple EventFilter that keeps track of the number of key events that it's
+// seen.
+class TestEventFilter : public EventFilter {
+ public:
+  TestEventFilter() : num_key_events_(0) {}
+  virtual ~TestEventFilter() {}
+
+  int num_key_events() const { return num_key_events_; }
+
+  // EventFilter overrides:
+  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+    num_key_events_++;
+    return true;
+  }
+  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+    return false;
+  }
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      Window* target, TouchEvent* event) OVERRIDE {
+    return ui::TOUCH_STATUS_UNKNOWN;
+  }
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      Window* target, GestureEvent* event) OVERRIDE {
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+ private:
+  // How many key events have been received?
+  int num_key_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEventFilter);
 };
 
 }  // namespace
@@ -161,6 +197,19 @@ TEST_F(RootWindowTest, TranslatedEvent) {
       ui::ET_MOUSE_ENTERED, root.flags());
   EXPECT_EQ("50,50", translated_event.location().ToString());
   EXPECT_EQ("100,100", translated_event.root_location().ToString());
+}
+
+TEST_F(RootWindowTest, IgnoreUnknownKeys) {
+  TestEventFilter* filter = new TestEventFilter;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+  EXPECT_FALSE(root_window()->DispatchKeyEvent(&unknown_event));
+  EXPECT_EQ(0, filter->num_key_events());
+
+  KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  EXPECT_TRUE(root_window()->DispatchKeyEvent(&known_event));
+  EXPECT_EQ(1, filter->num_key_events());
 }
 
 }  // namespace aura

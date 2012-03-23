@@ -188,6 +188,8 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
 bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   DispatchHeldMouseMove();
   KeyEvent translated_event(*event);
+  if (translated_event.key_code() == ui::VKEY_UNKNOWN)
+    return false;
   return ProcessKeyEvent(focused_window_, &translated_event);
 }
 

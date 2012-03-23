@@ -249,11 +249,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Initializes the root window.
   void Init();
 
-  // We hold and aggregregate mouse drags as a way of throttling resizes
-  // when HoldMouseMoves() is called. The following methods are used to
-  // dispatch held and newly incoming mouse events, typically when an event
-  // other than a mouse drag needs dispatching or a matching ReleaseMouseMoves()
-  // is called.
+  // We hold and aggregate mouse drags as a way of throttling resizes when
+  // HoldMouseMoves() is called. The following methods are used to dispatch held
+  // and newly incoming mouse events, typically when an event other than a mouse
+  // drag needs dispatching or a matching ReleaseMouseMoves() is called.
   bool DispatchMouseEventImpl(MouseEvent* event);
   void DispatchHeldMouseMove();
 
