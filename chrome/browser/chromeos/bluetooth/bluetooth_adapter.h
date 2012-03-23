@@ -123,10 +123,13 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // returned device pointers to determine which they are.
   typedef std::vector<BluetoothDevice*> DeviceList;
   DeviceList GetDevices();
+  typedef std::vector<const BluetoothDevice*> ConstDeviceList;
+  ConstDeviceList GetDevices() const;
 
   // Returns a pointer to the device with the given address |address| or
   // NULL if no such device is known.
   BluetoothDevice* GetDevice(const std::string& address);
+  const BluetoothDevice* GetDevice(const std::string& address) const;
 
   // Creates the instance for the default adapter, whichever that may
   // be at the time. Use IsPresent() and the AdapterPresentChanged() observer

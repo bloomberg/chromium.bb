@@ -299,8 +299,20 @@ void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
 }
 
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
+  ConstDeviceList const_devices =
+      const_cast<const BluetoothAdapter *>(this)->GetDevices();
+
   DeviceList devices;
-  for (DevicesMap::iterator iter = devices_.begin();
+  for (ConstDeviceList::const_iterator i = const_devices.begin();
+      i != const_devices.end(); ++i)
+    devices.push_back(const_cast<BluetoothDevice *>(*i));
+
+  return devices;
+}
+
+BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
+  ConstDeviceList devices;
+  for (DevicesMap::const_iterator iter = devices_.begin();
        iter != devices_.end(); ++iter)
     devices.push_back(iter->second);
 
@@ -308,7 +320,13 @@ BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
 }
 
 BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
-  DevicesMap::iterator iter = devices_.find(address);
+  return const_cast<BluetoothDevice *>(
+      const_cast<const BluetoothAdapter *>(this)->GetDevice(address));
+}
+
+const BluetoothDevice* BluetoothAdapter::GetDevice(
+    const std::string& address) const {
+  DevicesMap::const_iterator iter = devices_.find(address);
   if (iter != devices_.end())
     return iter->second;
 
