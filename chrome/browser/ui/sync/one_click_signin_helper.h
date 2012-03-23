@@ -33,7 +33,7 @@ class OneClickSigninHelper : public content::WebContentsObserver {
   static bool CanOffer(content::WebContents* web_contents,
                        bool check_connected);
 
-  // Looks for the X-Google-Accounts-SignIn response header, and if found,
+  // Looks for the Google-Accounts-SignIn response header, and if found,
   // tries to display an infobar in the tab contents identified by the
   // child/route id.
   static void ShowInfoBarIfPossible(net::URLRequest* request,

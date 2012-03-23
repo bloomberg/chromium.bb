@@ -344,7 +344,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
-  // See if the response contains the X-Google-Accounts-SignIn header.  If so,
+  // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
   OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
