@@ -3,30 +3,22 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
 
   /**
    * Encapsulated handling of the keyboard overlay.
    * @constructor
    */
   function KeyboardOverlay() {
-    OptionsPage.call(this, 'keyboard-overlay',
-                     templateData.keyboardOverlayTitle, 'keyboard-overlay');
+    options.SettingsDialog.call(this, 'keyboard-overlay',
+        templateData.keyboardOverlayTitle,
+        'keyboard-overlay',
+        $('keyboard-confirm'), $('keyboard-cancel'));
   }
 
   cr.addSingletonGetter(KeyboardOverlay);
 
   KeyboardOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
-
-    /** @inheritDoc */
-    initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
-
-      $('keyboard-overlay-dismiss-button').onclick = function() {
-        OptionsPage.closeOverlay();
-      };
-    }
+    __proto__: options.SettingsDialog.prototype,
   };
 
   // Export

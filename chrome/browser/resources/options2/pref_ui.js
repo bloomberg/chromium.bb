@@ -545,70 +545,93 @@ cr.define('options', function() {
     __proto__: HTMLSelectElement.prototype,
 
     /**
+     * @type {string} The stored value of the preference that this select
+     *     controls.
+     */
+    prefValue_: null,
+
+    /**
     * Initialization function for the cr.ui framework.
     */
     decorate: function() {
       var self = this;
 
       // Listen to pref changes.
-      Preferences.getInstance().addEventListener(this.pref,
-          function(event) {
-            var value = event.value && event.value['value'] != undefined ?
-                event.value['value'] : event.value;
+      Preferences.getInstance().addEventListener(this.pref, function(event) {
+        var value = event.value && event.value['value'] != undefined ?
+            event.value['value'] : event.value;
 
-            // Make sure |value| is a string, because the value is stored as a
-            // string in the HTMLOptionElement.
-            value = value.toString();
+        // Make sure |value| is a string, because the value is stored as a
+        // string in the HTMLOptionElement.
+        value = value.toString();
 
-            updateElementState_(self, event);
-
-            var found = false;
-            for (var i = 0; i < self.options.length; i++) {
-              if (self.options[i].value == value) {
-                self.selectedIndex = i;
-                found = true;
-              }
-            }
-
-            // Item not found, select first item.
-            if (!found)
-              self.selectedIndex = 0;
-
-            if (self.onchange != undefined)
-              self.onchange(event);
-          });
+        updateElementState_(self, event);
+        self.prefValue_ = value;
+        self.resetPrefState();
+      });
 
       // Listen to user events.
-      this.addEventListener('change',
-          function(e) {
-            if (!self.dataType) {
-              console.error('undefined data type for <select> pref');
-              return;
-            }
+      this.addEventListener('change', function(event) {
+        if (!this.dialogPref)
+          this.updatePreference_(prefValue);
+      });
+    },
 
-            switch (self.dataType) {
-              case 'number':
-                Preferences.setIntegerPref(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
-                break;
-              case 'double':
-                Preferences.setDoublePref(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
-                break;
-              case 'boolean':
-                var option = self.options[self.selectedIndex];
-                var value = (option.value == 'true') ? true : false;
-                Preferences.setBooleanPref(self.pref, value, self.metric);
-                break;
-              case 'string':
-                Preferences.setStringPref(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
-                break;
-              default:
-                console.error('unknown data type for <select> pref: ' +
-                              self.dataType);
-            }
-          });
+    /**
+     * Resets the input to the stored value.
+     */
+    resetPrefState: function() {
+      var found = false;
+      for (var i = 0; i < this.options.length; i++) {
+        if (this.options[i].value == this.prefValue_) {
+          this.selectedIndex = i;
+          found = true;
+        }
+      }
+
+      // Item not found, select first item.
+      if (!found)
+        this.selectedIndex = 0;
+
+      if (this.onchange)
+        this.onchange(event);
+    },
+
+    /**
+     * Updates the preference to the currently selected value.
+     */
+    updatePreference_: function() {
+      if (!this.dataType) {
+        console.error('undefined data type for <select> pref');
+        return;
+      }
+
+      var prefValue = this.options[this.selectedIndex].value;
+      switch (this.dataType) {
+        case 'number':
+          Preferences.setIntegerPref(this.pref, prefValue, this.metric);
+          break;
+        case 'double':
+          Preferences.setDoublePref(this.pref, prefValue, this.metric);
+          break;
+        case 'boolean':
+          var value = (prefValue == 'true');
+          Preferences.setBooleanPref(this.pref, value, this.metric);
+          break;
+        case 'string':
+          Preferences.setStringPref(this.pref, prefValue, this.metric);
+          break;
+        default:
+          console.error('unknown data type for <select> pref: ' +
+                        this.dataType);
+      }
+    },
+
+    /**
+     * Called by SettingsDialog to save the stored value to preferences.
+     */
+    savePrefState: function() {
+      this.updatePreference_();
     },
 
     /**
@@ -631,6 +654,14 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefSelect, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
+   * A special preference type specific to dialogs. These preferences are reset
+   * when the dialog is shown and are not saved until the user confirms the
+   * dialog.
+   * @type {boolean}
+   */
+  cr.defineProperty(PrefSelect, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * The user metric string.
