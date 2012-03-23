@@ -485,35 +485,43 @@ void ExtensionDispatcher::DidCreateScriptContext(
   switch (context_type) {
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
+      // TODO(kalman): see comment below about ExtensionAPI.
+      module_system->Require("app");
+      module_system->Require("webstore");
       break;
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT: {
       module_system->Require("json_schema");
       module_system->Require("event_bindings");
       module_system->Require("miscellaneous_bindings");
       module_system->Require("schema_generated_bindings");
       module_system->Require("apitest");
+
+      // TODO(kalman): move this code back out of the switch and execute it
+      // regardless of |context_type|. ExtensionAPI knows how to return the
+      // correct APIs, however, until it doesn't have a 2MB overhead we can't
+      // load it in every process.
+      scoped_ptr<std::set<std::string> > apis =
+        ExtensionAPI::GetInstance()->GetAPIsForContext(
+            context_type, extension, url_info.url());
+      for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
+          ++i) {
+        module_system->Require(*i);
+      }
+
       break;
+    }
   }
 
-  scoped_ptr<std::set<std::string> > apis =
-      ExtensionAPI::GetInstance()->GetAPIsForContext(
-          context_type, extension, url_info.url());
-
-  // TODO(kalman): this is probably the most unfortunate thing I've ever had
-  // to write. We really need to factor things differently to delete the
-  // concept of a test extension ID.
+  // TODO(kalman): this is probably the most unfortunate thing I've ever had to
+  // write. We really need to factor things differently to delete the concept
+  // of a test extension ID.
   if (IsTestExtensionId(extension_id)) {
     module_system->Require("miscellaneous_bindings");
     module_system->Require("schema_generated_bindings");
-    apis->insert("extension");
-  }
-
-  for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
-      ++i) {
-    module_system->Require(*i);
+    module_system->Require("extension");
   }
 
   module_system->set_natives_enabled(false);

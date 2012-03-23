@@ -563,16 +563,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
-// Fails on Win, see http://crbug.com/119276
-#if defined(OS_WIN)
-#define MAYBE_BackForwardNotStale FAILS_BackForwardNotStale
-#else
-#define MAYBE_BackForwardNotStale BackForwardNotStale
-#endif
 // Test for http://crbug.com/93427.  Ensure that cross-site navigations
 // do not cause back/forward navigations to be considered stale by the
 // renderer.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, MAYBE_BackForwardNotStale) {
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server(
