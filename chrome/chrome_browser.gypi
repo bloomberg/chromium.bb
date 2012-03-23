@@ -1326,7 +1326,6 @@
         'browser/mac/master_prefs.mm',
         'browser/mac/relauncher.cc',
         'browser/mac/relauncher.h',
-        'browser/mac/scoped_ioobject.h',
         'browser/mac/scoped_launch_data.h',
         'browser/managed_mode.cc',
         'browser/managed_mode.h',

@@ -27,11 +27,11 @@
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/dock.h"
-#include "chrome/browser/mac/scoped_ioobject.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
@@ -84,7 +84,7 @@ io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
     LOG(ERROR) << "IORegistryEntryCreateIterator: " << kr;
     return NULL;
   }
-  ScopedIOObject<io_iterator_t> iterator(iterator_ref);
+  base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
   iterator_ref = NULL;
 
   // Look at each of the ancestor services, beginning with the parent,
@@ -92,7 +92,8 @@ io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
   // service matches the class used for disk images, the media resides on a
   // disk image, and the disk image file's path can be determined by examining
   // the image-path property.
-  for (ScopedIOObject<io_service_t> ancestor(IOIteratorNext(iterator));
+  for (base::mac::ScopedIOObject<io_service_t> ancestor(
+           IOIteratorNext(iterator));
        ancestor;
        ancestor.reset(IOIteratorNext(iterator))) {
     if (IOObjectConformsTo(ancestor, disk_image_class)) {
@@ -113,7 +114,8 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
     image_path->clear();
   }
 
-  ScopedIOObject<io_service_t> hdix_drive(CopyHDIXDriveServiceForMedia(media));
+  base::mac::ScopedIOObject<io_service_t> hdix_drive(
+      CopyHDIXDriveServiceForMedia(media));
   if (!hdix_drive) {
     return false;
   }
@@ -210,16 +212,17 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
     LOG(ERROR) << "IOServiceGetMatchingServices: " << kr;
     return false;
   }
-  ScopedIOObject<io_iterator_t> iterator(iterator_ref);
+  base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
   iterator_ref = NULL;
 
   // There needs to be exactly one matching service.
-  ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));
+  base::mac::ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));
   if (!media) {
     LOG(ERROR) << "IOIteratorNext: no service";
     return false;
   }
-  ScopedIOObject<io_service_t> unexpected_service(IOIteratorNext(iterator));
+  base::mac::ScopedIOObject<io_service_t> unexpected_service(
+      IOIteratorNext(iterator));
   if (unexpected_service) {
     LOG(ERROR) << "IOIteratorNext: too many services";
     return false;
@@ -626,7 +629,7 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
     return;
   }
 
-  ScopedIOObject<io_service_t> media(DADiskCopyIOMedia(disk));
+  base::mac::ScopedIOObject<io_service_t> media(DADiskCopyIOMedia(disk));
   if (!media.get()) {
     LOG(ERROR) << "DADiskCopyIOMedia";
     return;

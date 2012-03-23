@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_SCOPED_IOOBJECT_H_
-#define CHROME_BROWSER_MAC_SCOPED_IOOBJECT_H_
+#ifndef BASE_MAC_SCOPED_IOOBJECT_H_
+#define BASE_MAC_SCOPED_IOOBJECT_H_
 #pragma once
 
 #include <IOKit/IOKitLib.h>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+
+namespace base {
+namespace mac {
 
 // Just like ScopedCFTypeRef but for io_object_t and subclasses.
 template<typename IOT>
@@ -66,4 +69,7 @@ class ScopedIOObject {
   DISALLOW_COPY_AND_ASSIGN(ScopedIOObject);
 };
 
-#endif  // CHROME_BROWSER_MAC_SCOPED_IOOBJECT_H_
+}  // namespace mac
+}  // namespace base
+
+#endif  // BASE_MAC_SCOPED_IOOBJECT_H_
