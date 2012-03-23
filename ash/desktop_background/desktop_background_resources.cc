@@ -5,6 +5,7 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -562,14 +563,25 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
 };
 
 const int kDefaultWallpaperCount = arraysize(kDefaultWallpapers);
+
+#if defined(GOOGLE_CHROME_BUILD)
+const int kLastRandomWallpaperIndex = 12;
+#else
 const int kDefaultWallpaperIndex = 0;
+#endif
 
 }  // namespace
 
 namespace ash {
 
 int GetDefaultWallpaperIndex() {
+#if defined(GOOGLE_CHROME_BUILD)
+  DCHECK(kLastRandomWallpaperIndex < kDefaultWallpaperCount);
+  return base::RandInt(0,
+      std::min(kLastRandomWallpaperIndex, kDefaultWallpaperCount - 1));
+#else
   return kDefaultWallpaperIndex;
+#endif
 }
 
 int GetWallpaperCount() {
