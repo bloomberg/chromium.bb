@@ -163,7 +163,11 @@ bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
   visible_size_.SetSize(width, height);
 
   // TODO(vrk): Provide natural size when aspect ratio support is implemented.
-  host()->SetNaturalVideoSize(visible_size_);
+
+  // TODO(xhwang) host() can be NULL after r128289.  Remove this check when
+  // it is no longer needed.
+  if (host())
+    host()->SetNaturalVideoSize(visible_size_);
   return true;
 }
 
