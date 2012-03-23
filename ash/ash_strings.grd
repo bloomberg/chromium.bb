@@ -267,6 +267,12 @@ This file contains the strings for ash.
 Battery: <ph name="percentage">$1<ex>56</ex></ph>%
 <ph name="hour">$2</ph>h <ph name="minute">$3</ph>m
       </message>
+      <message name="IDS_ASH_SECONDARY_MONITOR" desc="The message shown on the secondary monitors.">
+        This screen intentionally left blank
+      </message>
+      <message name="IDS_ASH_SECONDARY_MONITOR_SHORTCUT" desc="The shortcut text on the secondary monitors.">
+        Ctrl + 
+      </message>
     </messages>
   </release>
 </grit>
