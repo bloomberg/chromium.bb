@@ -252,6 +252,8 @@ class RenderWidgetHostViewGtkWidget {
     // Disable the GtkIMContext object.
     host_view->im_context_->OnFocusOut();
 
+    host_view->set_last_mouse_down(NULL);
+
     return TRUE;
   }
 
