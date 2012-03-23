@@ -142,6 +142,11 @@ void AppListModelView::Layout() {
     return;
 
   gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(icon_size);
+  tile_size.set_width(std::max(rect.width() / (cols_ + 1),
+                               tile_size.width()));
+  tile_size.set_height(std::max(rect.height() / (rows + 1),
+                                tile_size.height()));
+
   gfx::Rect grid_rect = rect.Center(gfx::Size(tile_size.width() * cols_,
                                               tile_size.height() * rows));
   grid_rect = grid_rect.Intersect(rect);

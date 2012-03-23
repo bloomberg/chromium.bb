@@ -26,7 +26,6 @@ namespace ash {
 namespace {
 
 const int kTopBottomPadding = 10;
-const int kLeftRightPadding = 20;
 const int kIconTitleSpacing = 10;
 
 const SkColor kTitleColor = SK_ColorWHITE;
@@ -49,6 +48,8 @@ const int kBoldFontSize = 14;
 const int kMinFontSize = 12;
 
 const int kMinTitleChars = 15;
+
+const int kLeftRightPaddingChars = 1;
 
 const gfx::Font& GetTitleFontForIconSize(const gfx::Size& size) {
   static int icon_height;
@@ -213,14 +214,20 @@ AppListItemView::~AppListItemView() {
 gfx::Size AppListItemView::GetPreferredSizeForIconSize(
     const gfx::Size& icon_size) {
   int min_title_width = g_min_title_width;
+  // Fixed 20px is used for left/right padding before switching to padding
+  // based on number of chars. It is also a number used for test case
+  // AppList.ModelViewCalculateLayout.
+  int left_right_padding = 20;
   if (min_title_width == 0) {
     const gfx::Font& title_font = GetTitleFontForIconSize(icon_size);
     min_title_width = kMinTitleChars * title_font.GetAverageCharacterWidth();
+    left_right_padding = kLeftRightPaddingChars *
+        title_font.GetAverageCharacterWidth();
   }
 
   int dimension = std::max(icon_size.width() * 2, min_title_width);
   gfx::Size size(dimension, dimension);
-  size.Enlarge(kLeftRightPadding, kTopBottomPadding);
+  size.Enlarge(left_right_padding, kTopBottomPadding);
   return size;
 }
 
@@ -268,7 +275,10 @@ gfx::Size AppListItemView::GetPreferredSize() {
 
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  rect.Inset(kLeftRightPadding, kTopBottomPadding);
+
+  int left_right_padding = kLeftRightPaddingChars *
+      title_->font().GetAverageCharacterWidth();
+  rect.Inset(left_right_padding, kTopBottomPadding);
 
   gfx::Size title_size = title_->GetPreferredSize();
   int height = icon_size_.height() + kIconTitleSpacing +

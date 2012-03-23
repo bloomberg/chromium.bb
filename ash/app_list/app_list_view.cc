@@ -20,10 +20,6 @@ namespace ash {
 
 namespace {
 
-// Margins in pixels from work area edges.
-const int kLeftRightMargin = 45;
-const int kTopBottomMargin = 32;
-
 // 0.2 black
 const SkColor kBackgroundColor = SkColorSetARGB(0x33, 0, 0, 0);
 
@@ -127,7 +123,6 @@ void AppListView::Layout() {
   workarea.Offset(-origin.x(), -origin.y());
 
   rect = rect.Intersect(workarea);
-  rect.Inset(kLeftRightMargin, kTopBottomMargin);
   model_view_->SetBoundsRect(rect);
 }
 
