@@ -783,8 +783,11 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
     return false;
 
   // Store the handle before it gets changed.
-  base::ProcessHandle handle = GetHandle();
-  ProcessDied(handle, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0, false);
+  RendererClosedDetails details(GetHandle());
+  DCHECK_EQ(details.status, base::TERMINATION_STATUS_NORMAL_TERMINATION);
+  DCHECK_EQ(details.exit_code, 0);
+  DCHECK_EQ(details.was_alive, false);
+  ProcessDied(&details);
   fast_shutdown_started_ = true;
   return true;
 }
@@ -968,19 +971,16 @@ void RenderProcessHostImpl::OnChannelError() {
     return;
 
   // Store the handle before it gets changed.
-  base::ProcessHandle handle = GetHandle();
-
+  RendererClosedDetails details(GetHandle());
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
-  int exit_code = 0;
-  base::TerminationStatus status =
-      child_process_launcher_.get() ?
-      child_process_launcher_->GetChildTerminationStatus(&exit_code) :
+  details.status = child_process_launcher_.get() ?
+      child_process_launcher_->GetChildTerminationStatus(&details.exit_code) :
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
 #if defined(OS_WIN)
   if (!run_renderer_in_process()) {
-    if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+    if (details.status == base::TERMINATION_STATUS_STILL_RUNNING) {
       HANDLE process = child_process_launcher_->GetHandle();
       child_process_watcher_.StartWatching(
           new base::WaitableEvent(process), this);
@@ -988,19 +988,20 @@ void RenderProcessHostImpl::OnChannelError() {
     }
   }
 #endif
-  ProcessDied(handle, status, exit_code, false);
-}
+  details.was_alive = false;
+  ProcessDied(&details);
+  }
 
 // Called when the renderer process handle has been signaled.
 void RenderProcessHostImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined (OS_WIN)
-  base::ProcessHandle handle = GetHandle();
-  int exit_code = 0;
-  base::TerminationStatus status =
-      base::GetTerminationStatus(waitable_event->Release(), &exit_code);
+  RendererClosedDetails details(GetHandle());
+  details.status = base::GetTerminationStatus(waitable_event->Release(),
+                                              &details.exit_code);
   delete waitable_event;
-  ProcessDied(handle, status, exit_code, true);
+  details.was_alive = true;
+  ProcessDied(&details);
 #endif
 }
 
@@ -1234,21 +1235,17 @@ content::RenderProcessHost*
   return NULL;
 }
 
-void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
-                                           base::TerminationStatus status,
-                                           int exit_code,
-                                           bool was_alive) {
+void RenderProcessHostImpl::ProcessDied(RendererClosedDetails* details) {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
   // The OnChannelError notification can fire multiple times due to nested sync
   // calls to a renderer. If we don't have a valid channel here it means we
   // already handled the error.
 
-  RendererClosedDetails details(handle, status, exit_code, was_alive);
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::Source<RenderProcessHost>(this),
-      content::Details<RendererClosedDetails>(&details));
+      content::Details<RendererClosedDetails>(details));
 
   child_process_launcher_.reset();
   channel_.reset();
@@ -1258,8 +1255,8 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
   while (!iter.IsAtEnd()) {
     RenderWidgetHostImpl::From(iter.GetCurrentValue())->OnMessageReceived(
         ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
-                                   static_cast<int>(status),
-                                   exit_code));
+                                   static_cast<int>(details->status),
+                                   details->exit_code));
     iter.Advance();
   }
 

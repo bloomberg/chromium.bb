@@ -21,10 +21,12 @@
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics/metrics_service_base.h"
-#include "content/public/common/process_type.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
+#include "content/public/common/url_fetcher_delegate.h"
+
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -269,9 +271,9 @@ class MetricsService : public content::NotificationObserver,
   void IncrementLongPrefsValue(const char* path);
 
   // Records a renderer process crash.
-  void LogRendererCrash(content::RenderProcessHost* host,
-                        base::TerminationStatus status,
-                        bool was_alive);
+  void LogRendererCrash(
+      content::RenderProcessHost* host,
+      const content::RenderProcessHost::RendererClosedDetails& process_details);
 
   // Records a renderer process hang.
   void LogRendererHang();
