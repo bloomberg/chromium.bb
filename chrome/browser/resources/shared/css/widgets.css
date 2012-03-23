@@ -33,7 +33,7 @@ button:not(.custom-appearance):not(.link-button),
 input[type='button']:not(.custom-appearance):not(.link-button),
 input[type='submit']:not(.custom-appearance):not(.link-button),
 select {
-  height: 2em;
+  min-height: 2em;
   min-width: 4em;
 <if expr="pp_ifdef('chromeos')">
   /* Without this rule, chromeos button text is too high on the button. */
