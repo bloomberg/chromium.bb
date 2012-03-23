@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/common/child_process_host.h"
 
-NaClBrokerHost::NaClBrokerHost()
-    : stopping_(false) {
+NaClBrokerHost::NaClBrokerHost() {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_BROKER, this));
 }
@@ -72,6 +71,5 @@ void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
 }
 
 void NaClBrokerHost::StopBroker() {
-  stopping_ = true;
   process_->Send(new NaClProcessMsg_StopBroker());
 }
