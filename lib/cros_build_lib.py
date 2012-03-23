@@ -866,9 +866,8 @@ def GetProjectManifestBranch(buildroot, project):
   manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
   handler = ManifestHandler.ParseManifest(manifest_path)
 
-  return tuple(
-    handler.GetAttributeForProject(key) for key in ['remote', 'revision']
-  )
+  return tuple(handler.GetAttributeForProject(project, key)
+               for key in ['remote', 'revision'])
 
 
 def GetProjectUserEmail(cwd):
