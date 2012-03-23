@@ -41,6 +41,17 @@ struct ASH_EXPORT BluetoothDeviceInfo {
 
 typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
 
+struct ASH_EXPORT IMEPropertyInfo {
+  IMEPropertyInfo();
+  ~IMEPropertyInfo();
+
+  bool selected;
+  std::string key;
+  string16 name;
+};
+
+typedef std::vector<IMEPropertyInfo> IMEPropertyInfoList;
+
 struct ASH_EXPORT IMEInfo {
   IMEInfo();
   ~IMEInfo();
@@ -137,8 +148,14 @@ class SystemTrayDelegate {
   // Returns a list of availble IMEs.
   virtual void GetAvailableIMEList(IMEInfoList* list) = 0;
 
+  // Returns a list of properties for the currently selected IME.
+  virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list) = 0;
+
   // Switches to the selected input method.
   virtual void SwitchIME(const std::string& ime_id) = 0;
+
+  // Activates an IME property.
+  virtual void ActivateIMEProperty(const std::string& key) = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more

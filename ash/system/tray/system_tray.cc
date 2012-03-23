@@ -400,6 +400,13 @@ IMEInfo::IMEInfo()
 IMEInfo::~IMEInfo() {
 }
 
+IMEPropertyInfo::IMEPropertyInfo()
+    : selected(false) {
+}
+
+IMEPropertyInfo::~IMEPropertyInfo() {
+}
+
 SystemTray::SystemTray()
     : items_(),
       accessibility_observer_(NULL),

@@ -336,8 +336,32 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
+  virtual void GetCurrentIMEProperties(
+      ash::IMEPropertyInfoList* list) OVERRIDE {
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+    input_method::InputMethodPropertyList properties =
+        manager->GetCurrentInputMethodProperties();
+    for (size_t i = 0; i < properties.size(); ++i) {
+      ash::IMEPropertyInfo property;
+      // Do not show the item not in the selection item.
+      if (!properties[i].is_selection_item)
+        continue;
+      property.key = properties[i].key;
+      property.name = util->TranslateString(properties[i].label);
+      property.selected = properties[i].is_selection_item_checked;
+      list->push_back(property);
+    }
+  }
+
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
     input_method::InputMethodManager::GetInstance()->ChangeInputMethod(ime_id);
+  }
+
+  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
+    input_method::InputMethodManager::GetInstance()->SetImePropertyActivated(
+        key, true);
   }
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,

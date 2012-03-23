@@ -65,28 +65,37 @@ class IMEDefaultView : public TrayItemMore {
 class IMEDetailedView : public views::View,
                         public ViewClickListener {
  public:
-  explicit IMEDetailedView(SystemTrayItem* owner)
-      : header_(NULL) {
+  IMEDetailedView(SystemTrayItem* owner, user::LoginStatus status)
+      : header_(NULL),
+        status_(status) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     IMEInfoList list;
-    Shell::GetInstance()->tray_delegate()->GetAvailableIMEList(&list);
-    Update(list);
+    delegate->GetAvailableIMEList(&list);
+    IMEPropertyInfoList property_list;
+    delegate->GetCurrentIMEProperties(&property_list);
+    Update(list, property_list);
   }
 
   virtual ~IMEDetailedView() {}
 
-  void Update(const IMEInfoList& list) {
+  void Update(const IMEInfoList& list,
+              const IMEPropertyInfoList& property_list) {
     RemoveAllChildViews(true);
 
     header_ = NULL;
 
     AppendHeaderEntry();
     AppendIMEList(list);
-    AppendSettings();
+    if (!property_list.empty())
+      AppendIMEProperties(property_list);
+    if (status_ != user::LOGGED_IN_NONE)
+      AppendSettings();
 
     Layout();
+    SchedulePaint();
   }
 
  private:
@@ -111,6 +120,23 @@ class IMEDetailedView : public views::View,
     AddChildView(imes);
   }
 
+  void AppendIMEProperties(const IMEPropertyInfoList& property_list) {
+    views::View* properties = new views::View;
+    properties->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, 1));
+    for (size_t i = 0; i < property_list.size(); i++) {
+      HoverHighlightView* container = new HoverHighlightView(this);
+      container->AddLabel(
+          property_list[i].name,
+          property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
+      properties->AddChildView(container);
+      property_map_[container] = property_list[i].key;
+    }
+    properties->set_border(views::Border::CreateSolidSidedBorder(
+        0, 0, 1, 0, kBorderLightColor));
+    AddChildView(properties);
+  }
+
   void AppendSettings() {
     HoverHighlightView* container = new HoverHighlightView(this);
     container->AddLabel(ui::ResourceBundle::GetSharedInstance().
@@ -128,18 +154,27 @@ class IMEDetailedView : public views::View,
     } else if (sender == settings_) {
       delegate->ShowIMESettings();
     } else {
-      std::map<views::View*, std::string>::iterator find;
-      find = ime_map_.find(sender);
-      if (find != ime_map_.end()) {
-        std::string ime_id = find->second;
+      std::map<views::View*, std::string>::const_iterator ime_find;
+      ime_find = ime_map_.find(sender);
+      if (ime_find != ime_map_.end()) {
+        std::string ime_id = ime_find->second;
         delegate->SwitchIME(ime_id);
+      } else {
+        std::map<views::View*, std::string>::const_iterator prop_find;
+        prop_find = property_map_.find(sender);
+        if (prop_find != property_map_.end()) {
+          std::string key = prop_find->second;
+          delegate->ActivateIMEProperty(key);
+        }
       }
     }
   }
 
   std::map<views::View*, std::string> ime_map_;
+  std::map<views::View*, std::string> property_map_;
   views::View* header_;
   views::View* settings_;
+  user::LoginStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
 };
@@ -169,7 +204,7 @@ views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
 }
 
 views::View* TrayIME::CreateDetailedView(user::LoginStatus status) {
-  detailed_.reset(new tray::IMEDetailedView(this));
+  detailed_.reset(new tray::IMEDetailedView(this, status));
   return detailed_.get();
 }
 
@@ -189,15 +224,17 @@ void TrayIME::OnIMERefresh() {
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   IMEInfoList list;
   IMEInfo current;
+  IMEPropertyInfoList property_list;
   delegate->GetCurrentIME(&current);
   delegate->GetAvailableIMEList(&list);
+  delegate->GetCurrentIMEProperties(&property_list);
 
   UpdateTrayLabel(current, list.size());
 
   if (default_.get())
     default_->UpdateLabel(current);
   if (detailed_.get())
-    detailed_->Update(list);
+    detailed_->Update(list, property_list);
 }
 
 }  // namespace internal
