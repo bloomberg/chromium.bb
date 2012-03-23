@@ -29,6 +29,7 @@ namespace skia {
 //     }
 //     return 0;
 //   }
+// Note: The created context is always inialized to (0, 0, 0, 0).
 template <class T>
 class CanvasPaintT : public T {
  public:
@@ -113,6 +114,7 @@ class CanvasPaintT : public T {
       // Cause a deliberate crash;
       *(char*) 0 = 0;
     }
+    canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // This will bring the canvas into the screen coordinate system for the
     // dirty rect

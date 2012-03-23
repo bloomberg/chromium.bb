@@ -17,6 +17,7 @@ namespace skia {
 // A class designed to translate skia painting into a region to the current
 // graphics context.  On construction, it will set up a context for painting
 // into, and on destruction, it will commit it to the current context.
+// Note: The created context is always inialized to (0, 0, 0, 0).
 template <class T>
 class CanvasPaintT : public T {
  public:
@@ -89,6 +90,7 @@ class CanvasPaintT : public T {
       // Cause a deliberate crash;
       *(volatile char*) 0 = 0;
     }
+    canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.

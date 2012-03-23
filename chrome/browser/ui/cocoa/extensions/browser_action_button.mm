@@ -318,7 +318,6 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 
 - (void)drawBadgeWithinFrame:(NSRect)frame {
   gfx::CanvasSkiaPaint canvas(frame, false);
-  canvas.sk_canvas()->clear(SkColorSetARGB(0, 0, 0, 0));
   canvas.set_composite_alpha(true);
   gfx::Rect boundingRect(NSRectToCGRect(frame));
   extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
