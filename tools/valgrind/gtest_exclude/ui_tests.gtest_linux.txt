@@ -30,5 +30,3 @@ BookmarksUITest.BookmarksLoaded
 BookmarksUITest.CommandAgainGoesBackToBookmarksTab
 # Flaky on Chromium OS UI (valgrind)(2). http://crbug.com/39401
 BookmarksUITest.ShouldRedirectToExtension
-# Times out on CrOS. http://crbug.com/119712
-GDataFilesystemTest.RemoveFiles
