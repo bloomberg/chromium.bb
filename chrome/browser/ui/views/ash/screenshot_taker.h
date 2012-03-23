@@ -8,6 +8,7 @@
 
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/compositor/layer.h"
 
@@ -27,11 +28,12 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
 
  private:
   // Flashes the screen to provide visual feedback that a screenshot has
-  // been taken.
-  void DisplayVisualFeedback(const gfx::Rect& rect);
+  // been taken.  |task| runs after the visual feedback finishes.
+  void DisplayVisualFeedback(const gfx::Rect& rect, const base::Closure& task);
 
-  // Closes the visual feedback layer.
-  void CloseVisualFeedbackLayer();
+  // Closes the visual feedback layer.  |task| runs after the visual
+  // feedback finishes.
+  void CloseVisualFeedbackLayer(const base::Closure& task);
 
   scoped_ptr<ui::Layer> visual_feedback_layer_;
 
