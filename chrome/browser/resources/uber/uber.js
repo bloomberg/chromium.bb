@@ -41,8 +41,11 @@ cr.define('uber', function() {
     // HACK(dbeam): This makes the assumption that any second part to a path
     // will result in needing background navigation. We shortcut it to avoid
     // flicker on load.
-    if (params.path && params.id == 'settings')
+    // HACK(csilv): Search URLs aren't overlays, special case them.
+    if (params.id == 'settings' && params.path &&
+        params.path.indexOf('search') != 0) {
       backgroundNavigation();
+    }
   }
 
   /**

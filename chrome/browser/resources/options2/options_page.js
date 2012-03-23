@@ -220,7 +220,7 @@ cr.define('options', function() {
     historyFunction.call(window.history,
                          {pageName: page.name},
                          page.title,
-                         '/' + page.name);
+                         '/' + page.name + window.location.hash);
 
     // Update tab title.
     this.setTitle_(page.title);
