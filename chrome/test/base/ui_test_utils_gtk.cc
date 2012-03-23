@@ -15,14 +15,8 @@
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/ui_controls/ui_controls.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/focus/focus_manager.h"
-#endif
-
 namespace ui_test_utils {
 
-#if !defined(TOOLKIT_VIEWS)
 namespace {
 // Check if the focused widget for |root| is |target| or a child of |target|.
 static bool IsWidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
@@ -41,40 +35,23 @@ static bool IsWidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
   return false;
 }
 }  // namespace
-#endif
 
 bool IsViewFocused(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
-#if defined(TOOLKIT_VIEWS)
-  gfx::NativeWindow window = browser_window->GetNativeHandle();
-  const views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  DCHECK(widget);
-  const views::FocusManager* focus_manager = widget->GetFocusManager();
-  DCHECK(focus_manager);
-  return focus_manager->GetFocusedView() &&
-      focus_manager->GetFocusedView()->id() == vid;
-#else
   gfx::NativeWindow window = browser_window->GetNativeHandle();
   DCHECK(window);
   GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
   DCHECK(widget);
   return IsWidgetInFocusChain(GTK_WIDGET(window), widget);
-#endif
 }
 
 void ClickOnView(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
-#if defined(TOOLKIT_VIEWS)
-  views::View* view =
-      reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(vid);
-#else
   gfx::NativeWindow window = browser_window->GetNativeHandle();
   DCHECK(window);
   GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
-#endif
-
   DCHECK(view);
   MoveMouseToCenterAndPress(
       view,
@@ -94,49 +71,6 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   return true;
 }
 
-#if defined(TOOLKIT_VIEWS)
-
-void OnConfigure(GtkWidget* gtk_widget, GdkEvent* event, gpointer data) {
-  views::Widget* widget = static_cast<views::Widget*>(data);
-  gfx::Rect actual = widget->GetWindowScreenBounds();
-  gfx::Rect desired = widget->GetRootView()->bounds();
-  if (actual.size() == desired.size())
-    MessageLoop::current()->Quit();
-}
-
-void SynchronizeWidgetSize(views::Widget* widget) {
-  // If the actual window size and desired window size
-  // are different, wait until the window is resized
-  // to desired size.
-  gfx::Rect actual = widget->GetWindowScreenBounds();
-  gfx::Rect desired = widget->GetRootView()->bounds();
-  if (actual.size() != desired.size()) {
-    // Listen to configure-event that is emitted when an window gets
-    // resized.
-    GtkWidget* gtk_widget = widget->GetNativeView();
-    g_signal_connect(gtk_widget, "configure-event",
-                     G_CALLBACK(&OnConfigure), widget);
-    MessageLoop::current()->Run();
-  }
-}
-
-void MoveMouseToCenterAndPress(views::View* view,
-                               ui_controls::MouseButton button,
-                               int state,
-                               const base::Closure& task) {
-  // X is asynchronous and we need to wait until the window gets
-  // resized to desired size.
-  SynchronizeWidgetSize(view->GetWidget());
-
-  gfx::Point view_center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &view_center);
-  ui_controls::SendMouseMoveNotifyWhenDone(
-      view_center.x(), view_center.y(),
-      base::Bind(&internal::ClickTask, button, state, task));
-}
-
-#else  // !defined(TOOLKIT_VIEWS)
-
 void MoveMouseToCenterAndPress(GtkWidget* widget,
                                ui_controls::MouseButton button,
                                int state,
@@ -147,7 +81,5 @@ void MoveMouseToCenterAndPress(GtkWidget* widget,
       bounds.y() + bounds.height() / 2,
       base::Bind(&internal::ClickTask, button, state, task));
 }
-
-#endif  // defined(TOOLKIT_VIEWS
 
 }  // namespace ui_test_utils

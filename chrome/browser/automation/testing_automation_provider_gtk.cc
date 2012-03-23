@@ -28,7 +28,6 @@ void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
   NOTIMPLEMENTED();
 }
 
-#if !defined(TOOLKIT_VIEWS)
 void TestingAutomationProvider::WindowGetViewBounds(int handle,
                                                     int view_id,
                                                     bool screen_coordinates,
@@ -59,7 +58,6 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
     bounds->set_origin(gfx::Point(x, y));
   }
 }
-#endif
 
 void TestingAutomationProvider::GetWindowBounds(int handle,
                                                 gfx::Rect* bounds,
