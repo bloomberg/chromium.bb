@@ -497,6 +497,9 @@
       '-extensions.ExtensionsTest.testTriggerPageActionWithPopup',
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
+      # crbug.com/119605
+      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalid',
+      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalidChangeDismissedOnEdit',
     ],
 
     'win': [
