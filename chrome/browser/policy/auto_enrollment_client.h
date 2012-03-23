@@ -124,9 +124,9 @@ class AutoEnrollmentClient {
   // a retry response from the server.
   int power_limit_;
 
-  // Modulus used in the last request sent to the server.
-  // Used to determine if the server is asking for the same modulus.
-  int last_power_used_;
+  // Number of requests sent to the server so far.
+  // Used to determine if the server keeps asking for different moduli.
+  int requests_sent_;
 
   // Used to communicate with the device management service.
   scoped_ptr<DeviceManagementService> device_management_service_;

@@ -174,14 +174,28 @@ TEST_F(AutoEnrollmentClientTest, AskForMoreThenEvenMore) {
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForLess) {
+  InSequence sequence;
   ServerWillReply(8, false, false);
+  ServerWillReply(-1, true, true);
   client_->Start();
-  EXPECT_FALSE(client_->should_auto_enroll());
+  EXPECT_TRUE(client_->should_auto_enroll());
   EXPECT_EQ(1, completion_callback_count_);
-  VerifyCachedResult(false, 8);
+  VerifyCachedResult(true, 8);
 }
 
 TEST_F(AutoEnrollmentClientTest, AskForSame) {
+  InSequence sequence;
+  ServerWillReply(16, false, false);
+  ServerWillReply(-1, true, true);
+  client_->Start();
+  EXPECT_TRUE(client_->should_auto_enroll());
+  EXPECT_EQ(1, completion_callback_count_);
+  VerifyCachedResult(true, 8);
+}
+
+TEST_F(AutoEnrollmentClientTest, AskForSameTwice) {
+  InSequence sequence;
+  ServerWillReply(16, false, false);
   ServerWillReply(16, false, false);
   client_->Start();
   EXPECT_FALSE(client_->should_auto_enroll());

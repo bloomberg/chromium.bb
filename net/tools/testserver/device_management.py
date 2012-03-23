@@ -277,6 +277,8 @@ class RequestHandler(object):
       2: replies with a new modulus, 4.
       4: replies with a new modulus, 2.
       8: fails with error 400.
+      16: replies with a new modulus, 16.
+      32: replies with a new modulus, 1.
       anything else: replies with no new modulus and an empty list of hashes
 
     These allow the client to pick the testing scenario its wants to simulate.
@@ -297,6 +299,10 @@ class RequestHandler(object):
       auto_enrollment_response.expected_modulus = 2
     elif msg.modulus == 8:
       return (400, 'Server error')
+    elif msg.modulus == 16:
+      auto_enrollment_response.expected_modulus = 16
+    elif msg.modulus == 32:
+      auto_enrollment_response.expected_modulus = 1
 
     response = dm.DeviceManagementResponse()
     response.auto_enrollment_response.CopyFrom(auto_enrollment_response)
