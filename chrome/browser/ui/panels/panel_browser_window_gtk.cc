@@ -491,6 +491,9 @@ void PanelBrowserWindowGtk::SetPanelAlwaysOnTop(bool on_top) {
   gtk_window_set_keep_above(window(), on_top);
 }
 
+void PanelBrowserWindowGtk::EnableResizeByMouse(bool enable) {
+}
+
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   gfx::Size frame = GetNonClientFrameSize();

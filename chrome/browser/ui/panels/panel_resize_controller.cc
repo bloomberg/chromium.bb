@@ -127,30 +127,22 @@ void PanelResizeController::OnPanelClosed(Panel* panel) {
     EndResizing(false);
 }
 
-
-// TODO (ABurago): move this into the native layer
-namespace {
-// The minimum distances for the mouse pointer to the sides of the frame to
-// start a resize operation.
-static const int kHorizontalResizeThreshold = 5;
-static const int kVerticalResizeThreshold = 5;
-}
-
 PanelResizeController::ResizingSides
     PanelResizeController::IsMouseNearFrameSide(
     gfx::Point mouse_location,
+    int resize_edge_thickness,
     Panel* panel) {
   gfx::Rect bounds = panel->GetBounds();
 
   bool left = false, right = false, top = false, bottom = false;
 
-  if (abs(mouse_location.x() - bounds.x()) <= kHorizontalResizeThreshold)
+  if (abs(mouse_location.x() - bounds.x()) <= resize_edge_thickness)
     left = true;
-  if (abs(mouse_location.y() - bounds.y()) <= kVerticalResizeThreshold)
+  if (abs(mouse_location.y() - bounds.y()) <= resize_edge_thickness)
     top = true;
-  if (abs(mouse_location.x() - bounds.right()) <= kHorizontalResizeThreshold)
+  if (abs(mouse_location.x() - bounds.right()) <= resize_edge_thickness)
     right = true;
-  if (abs(mouse_location.y() - bounds.bottom()) <= kVerticalResizeThreshold)
+  if (abs(mouse_location.y() - bounds.bottom()) <= resize_edge_thickness)
     bottom = true;
 
   if (top && left)

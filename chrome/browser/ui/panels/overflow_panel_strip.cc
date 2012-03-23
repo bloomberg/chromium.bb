@@ -455,4 +455,5 @@ void OverflowPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   // Set panel properties for this strip.
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(false);
+  panel->EnableResizeByMouse(false);
 }

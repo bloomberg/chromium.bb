@@ -47,8 +47,12 @@ class PanelResizeController {
 
   bool IsResizing() const { return resizing_panel_ != NULL; }
 
-  // TODO (ABurago) move this into the native layer
+  // Helper to compute the ResizingSide from the location of the mouse.
+  // Splits the edges into 8 areas (edges and corners) using uniform
+  // thickness.
+  // TODO (ABurago): move this into the native layer.
   static ResizingSides IsMouseNearFrameSide(gfx::Point mouse_location,
+                                            int resize_edge_thickness,
                                             Panel* panel);
 
 

@@ -895,4 +895,5 @@ void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(true);
   panel->SetAlwaysOnTop(true);
+  panel->EnableResizeByMouse(false);
 }

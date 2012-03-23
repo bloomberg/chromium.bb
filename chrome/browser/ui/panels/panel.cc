@@ -191,6 +191,11 @@ void Panel::SetAlwaysOnTop(bool on_top) {
   native_panel_->SetPanelAlwaysOnTop(on_top);
 }
 
+void Panel::EnableResizeByMouse(bool enable) {
+  DCHECK(native_panel_);
+  native_panel_->EnableResizeByMouse(enable);
+}
+
 void Panel::SetPreviewMode(bool in_preview) {
   DCHECK_NE(in_preview_mode_, in_preview);
   in_preview_mode_ = in_preview;

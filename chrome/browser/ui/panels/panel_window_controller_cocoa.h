@@ -140,6 +140,8 @@ class PanelBrowserWindowCocoa;
 
 - (void)updateWindowLevel;
 
+// Turns on user-resizable corners/sides indications and enables live resize.
+- (void)enableResizeByMouse:(BOOL)enable;
 @end  // @interface PanelWindowController
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_WINDOW_CONTROLLER_COCOA_H_

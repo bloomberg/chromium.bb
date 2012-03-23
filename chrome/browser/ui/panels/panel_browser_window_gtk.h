@@ -108,6 +108,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
+  virtual void EnableResizeByMouse(bool enable) OVERRIDE;
 
  private:
   friend class NativePanelTestingGtk;

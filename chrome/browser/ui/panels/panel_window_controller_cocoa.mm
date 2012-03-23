@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -31,6 +32,7 @@
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/panel_resize_controller.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
@@ -50,6 +52,12 @@ using content::WebContents;
 const int kMinimumWindowSize = 1;
 const double kBoundsAnimationSpeedPixelsPerSecond = 1000;
 const double kBoundsAnimationMaxDurationSeconds = 0.18;
+
+// Resize edge thickness, in screen pixels.
+const double kWidthOfMouseResizeArea = 4.0;
+// The distance the user has to move the mouse while keeping the left button
+// down before panel resizing operation actually starts.
+const double kDragThreshold = 3.0;
 
 // Replicate specific 10.6 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -119,6 +127,176 @@ enum {
 }
 @end
 
+// Transparent view covering the whole panel in order to intercept mouse
+// messages for custom user resizing. We need custom resizing because panels
+// use their own constrained layout.
+// TODO(dimich): Pull the start/stop drag logic into a separate base class and
+// reuse between here and PanelTitlebarController.
+@interface PanelResizeByMouseOverlay : NSView {
+ @private
+   Panel* panel_;
+   NSPoint startMouseLocationScreen_;
+   PanelDragState dragState_;
+}
+@end
+
+@implementation PanelResizeByMouseOverlay
+- (PanelResizeByMouseOverlay*)initWithFrame:(NSRect)frame panel:(Panel*)panel {
+  if ((self = [super initWithFrame:frame])) {
+    panel_ = panel;
+  }
+  return self;
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
+
+  // NSWindow uses this method to figure out if this view is under the mouse
+  // and hence the one to handle the incoming mouse event.
+  // Since this view covers the whole panel, it is asked first.
+  // See if this is the mouse event we are interested in (in the resize areas)
+  // and return 'nil' to let NSWindow find another candidate otherwise.
+  // |point| is in coordinate system of the parent view.
+- (NSView*)hitTest:(NSPoint)point {
+  // If panel is not resizable, let the mouse events fall through.
+  if (!panel_->panel_strip()->CanResizePanel(panel_))
+    return nil;
+
+  // Grab the view which coordinate system is used for hit-testing.
+  NSView* superview = [self superview];
+
+  NSRect frame = [self frame];
+  NSSize resizeAreaThickness = NSMakeSize(kWidthOfMouseResizeArea,
+                                          kWidthOfMouseResizeArea);
+  // Convert to the view coordinate system.
+  NSSize resizeAreaThicknessView = [superview convertSize:resizeAreaThickness
+                                                 fromView:nil];
+  frame = NSInsetRect(frame,
+                      resizeAreaThicknessView.width,
+                      resizeAreaThicknessView.height);
+  BOOL inResizeArea = ![superview mouse:point inRect:frame];
+  return inResizeArea ? self : nil;
+}
+
+- (void)mouseDown:(NSEvent*)event {
+  // If the panel is not resizable, hitTest should have failed and no mouse
+  // events should have came here.
+  DCHECK(panel_->panel_strip()->CanResizePanel(panel_));
+  dragState_ = PANEL_DRAG_CAN_START;
+  startMouseLocationScreen_ =
+    [[event window] convertBaseToScreen:[event locationInWindow]];
+}
+
+- (void)mouseUp:(NSEvent*)event {
+  // The mouseUp while in resize should be processed by nested message loop
+  // in mouseDragged: method.
+  DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
+}
+
+- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
+  float deltaX = fabs(startMouseLocationScreen_.x - mouseLocation.x);
+  float deltaY = fabs(startMouseLocationScreen_.y - mouseLocation.y);
+  return deltaX > kDragThreshold || deltaY > kDragThreshold;
+}
+
+- (void)mouseDragged:(NSEvent*)event {
+  if (dragState_ == PANEL_DRAG_SUPPRESSED)
+    return;
+
+  // In addition to events needed to control the drag operation, fetch the right
+  // mouse click events and key down events and ignore them, to prevent their
+  // accumulation in the queue and "playing out" when the mouse is released.
+  const NSUInteger mask =
+      NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask |
+      NSRightMouseDownMask | NSKeyDownMask ;
+  BOOL keepGoing = YES;
+
+  while (keepGoing) {
+    base::mac::ScopedNSAutoreleasePool autorelease_pool;
+
+    NSEvent* event = [NSApp nextEventMatchingMask:mask
+                                        untilDate:[NSDate distantFuture]
+                                           inMode:NSDefaultRunLoopMode
+                                          dequeue:YES];
+
+    switch ([event type]) {
+      case NSLeftMouseDragged: {
+        // Get current mouse location in Cocoa's screen coordinates.
+        NSPoint mouseLocation =
+            [[event window] convertBaseToScreen:[event locationInWindow]];
+        if (dragState_ == PANEL_DRAG_CAN_START) {
+          if (![self exceedsDragThreshold:mouseLocation])
+            return;  // Don't start real drag yet.
+          [self startResize:mouseLocation];
+        }
+        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+        [self resize:mouseLocation];
+        break;
+      }
+
+      case NSKeyUp:
+        if ([event keyCode] == kVK_Escape) {
+          [self endResize:YES];
+          keepGoing = NO;
+        }
+        break;
+
+      case NSLeftMouseUp:
+        // The drag might not be started yet because of threshold, so check.
+        if (dragState_ == PANEL_DRAG_IN_PROGRESS)
+          [self endResize:NO];
+        keepGoing = NO;
+        break;
+
+      case NSRightMouseDownMask:
+        break;
+
+      default:
+        // Dequeue and ignore other mouse and key events so the Chrome context
+        // menu does not come after right click on a page during Panel
+        // resize, or the keystrokes are not 'accumulated' and entered
+        // at once when the drag ends.
+        break;
+    }
+  }
+}
+
+// |initialMouseLocation| is in screen coordinates.
+- (void)startResize:(NSPoint)initialMouseLocation {
+  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
+  dragState_ = PANEL_DRAG_IN_PROGRESS;
+
+  // TODO(dimich): move IsMouseNearFrameSide helper here and make sure it uses
+  // correct methods to detect edges, to avoid 1-px errors on the boundaries.
+  // The errors may come up because of different assumptions on which edge of
+  // a rect 'belongs' to a rect.
+  PanelResizeController::ResizingSides side =
+      PanelResizeController::IsMouseNearFrameSide(
+          cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocation),
+          kWidthOfMouseResizeArea,
+          panel_);
+
+  panel_->manager()->StartResizingByMouse(
+      panel_,
+      cocoa_utils::ConvertPointFromCocoaCoordinates(initialMouseLocation),
+      side);
+}
+
+- (void)endResize:(BOOL)cancelled {
+  if (dragState_ == PANEL_DRAG_IN_PROGRESS)
+    panel_->manager()->EndResizingByMouse(cancelled);
+  dragState_ = PANEL_DRAG_SUPPRESSED;
+}
+
+// |initialMouseLocation| is in screen coordinates.
+- (void)resize:(NSPoint)mouseLocation {
+  if (dragState_ != PANEL_DRAG_IN_PROGRESS)
+    return;
+  panel_->manager()->ResizeByMouse(
+      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocation));
+}
+@end
 
 @implementation PanelWindowControllerCocoa
 
@@ -186,6 +364,17 @@ enum {
 
   [[window contentView] addSubview:[contentsController_ view]];
   [self enableTabContentsViewAutosizing];
+
+  // Add a transparent overlay on top of the whole window to process mouse
+  // events - for example, user-resizing.
+  NSView* superview = [[window contentView] superview];
+  NSRect bounds = [superview bounds];
+  scoped_nsobject<PanelResizeByMouseOverlay> overlay(
+      [[PanelResizeByMouseOverlay alloc] initWithFrame:bounds
+                                                 panel:windowShim_->panel()]);
+    // Set autoresizing behavior: glued to edges.
+  [overlay setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
+  [superview addSubview:overlay positioned:NSWindowAbove relativeTo:nil];
 }
 
 - (void)mouseEntered:(NSEvent*)event {
@@ -732,4 +921,9 @@ enum {
                !windowShim_->panel()->manager()->is_full_screen();
   [[self window] setLevel:(onTop ? NSStatusWindowLevel : NSNormalWindowLevel)];
 }
+
+- (void)enableResizeByMouse:(BOOL)enable {
+  // TODO(dimich): enable/disable the cursor rects here.
+}
+
 @end

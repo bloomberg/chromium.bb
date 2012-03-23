@@ -91,6 +91,9 @@ class NativePanel {
 
   // Sets whether the panel window is always on top.
   virtual void SetPanelAlwaysOnTop(bool on_top) = 0;
+
+  // Enables resizing by dragging edges/corners.
+  virtual void EnableResizeByMouse(bool enable) = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the

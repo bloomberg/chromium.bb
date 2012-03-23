@@ -286,6 +286,10 @@ void PanelBrowserWindowCocoa::SetPanelAlwaysOnTop(bool on_top) {
   [controller_ updateWindowLevel];
 }
 
+void PanelBrowserWindowCocoa::EnableResizeByMouse(bool enable) {
+  [controller_ enableResizeByMouse:enable];
+}
+
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
   DCHECK(!isClosed());
   panel_->OnNativePanelClosed();
