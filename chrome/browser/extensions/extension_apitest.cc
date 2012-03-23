@@ -8,9 +8,12 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_api.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -273,4 +276,61 @@ bool ExtensionApiTest::StartWebSocketServer(const FilePath& root_directory) {
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
+}
+
+PlatformAppApiTest::PlatformAppApiTest()
+    : previous_command_line_(CommandLine::NO_PROGRAM) {}
+
+PlatformAppApiTest::~PlatformAppApiTest() {}
+
+void PlatformAppApiTest::SetUpCommandLine(CommandLine* command_line) {
+  ExtensionApiTest::SetUpCommandLine(command_line);
+
+  // If someone is using this class, we're going to insist on management of the
+  // relevant flags. If these flags are already set, die.
+  DCHECK(!command_line->HasSwitch(switches::kEnablePlatformApps));
+  DCHECK(!command_line->HasSwitch(switches::kEnableExperimentalExtensionApis));
+
+  // Squirrel away for potential use in VerifyPermissions.
+  //
+  // TODO(miket): I _could_ just call VerifyPermissions here instead of
+  // requiring everyone who inherits from PlatformAppApiTest to explicitly call
+  // it within a test, but that feels overbearing.
+  previous_command_line_ = *command_line;
+
+  command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  command_line->AppendSwitch(switches::kEnablePlatformApps);
+}
+
+void PlatformAppApiTest::VerifyPermissions(const FilePath& extension_path) {
+#if defined(OS_WIN)
+  // See http://code.google.com/p/chromium/issues/detail?id=119758.
+  //
+  // TODO(miket): investigate why WaitForExtensionLoadError() doesn't receive
+  // the expected notification on XP/Vista, but succeeds on other platforms.
+#else
+  CommandLine old_command_line(*CommandLine::ForCurrentProcess());
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+
+  // Neither experimental nor platform-app flag.
+  *CommandLine::ForCurrentProcess() = previous_command_line_;
+  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
+  ASSERT_TRUE(WaitForExtensionLoadError());
+
+  // Only experimental flag.
+  *CommandLine::ForCurrentProcess() = previous_command_line_;
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
+  ASSERT_TRUE(WaitForExtensionLoadError());
+
+  // Only platform-app flag.
+  *CommandLine::ForCurrentProcess() = previous_command_line_;
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnablePlatformApps);
+  extensions::UnpackedInstaller::Create(service)->Load(extension_path);
+  ASSERT_TRUE(WaitForExtensionLoadError());
+
+  *CommandLine::ForCurrentProcess() = old_command_line;
+#endif
 }

@@ -455,6 +455,10 @@ const char kOneUISurfaceOnly[] =
     "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
+const char kPlatformAppFlagRequired[] =
+    "Loading platform_app extension type is turned off by default. "
+    "You can enable this type with the --enable-platform-apps "
+    "command-line flag.";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
 #if defined(OS_CHROMEOS)
