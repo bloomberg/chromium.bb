@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 
 #include <utility>
 
@@ -17,14 +17,9 @@
 #include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 
-using content::NavigationEntry;
-using content::RenderViewHost;
-using content::RenderViewHostImpl;
-using content::SiteInstance;
-using content::TestRenderViewHost;
-using content::WebContents;
+namespace content {
 
-TestTabContents::TestTabContents(content::BrowserContext* browser_context,
+TestWebContents::TestWebContents(BrowserContext* browser_context,
                                  SiteInstance* instance)
     : TabContents(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL),
       transition_cross_site(false),
@@ -35,34 +30,34 @@ TestTabContents::TestTabContents(content::BrowserContext* browser_context,
       expect_set_history_length_and_prune_min_page_id_(-1) {
 }
 
-TestTabContents::~TestTabContents() {
+TestWebContents::~TestWebContents() {
 }
 
-RenderViewHost* TestTabContents::GetPendingRenderViewHost() const {
+RenderViewHost* TestWebContents::GetPendingRenderViewHost() const {
   return render_manager_.pending_render_view_host_;
 }
 
-TestRenderViewHost* TestTabContents::pending_test_rvh() const {
+TestRenderViewHost* TestWebContents::pending_test_rvh() const {
   return static_cast<TestRenderViewHost*>(GetPendingRenderViewHost());
 }
 
-void TestTabContents::TestDidNavigate(RenderViewHost* render_view_host,
+void TestWebContents::TestDidNavigate(RenderViewHost* render_view_host,
                                       int page_id,
                                       const GURL& url,
-                                      content::PageTransition transition) {
+                                      PageTransition transition) {
   TestDidNavigateWithReferrer(render_view_host,
                               page_id,
                               url,
-                              content::Referrer(),
+                              Referrer(),
                               transition);
 }
 
-void TestTabContents::TestDidNavigateWithReferrer(
+void TestWebContents::TestDidNavigateWithReferrer(
     RenderViewHost* render_view_host,
     int page_id,
     const GURL& url,
-    const content::Referrer& referrer,
-    content::PageTransition transition) {
+    const Referrer& referrer,
+    PageTransition transition) {
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;
@@ -83,11 +78,11 @@ void TestTabContents::TestDidNavigateWithReferrer(
   DidNavigate(render_view_host, params);
 }
 
-WebPreferences TestTabContents::TestGetWebkitPrefs() {
+WebPreferences TestWebContents::TestGetWebkitPrefs() {
   return GetWebkitPrefs();
 }
 
-bool TestTabContents::CreateRenderViewForRenderManager(
+bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
@@ -95,17 +90,17 @@ bool TestTabContents::CreateRenderViewForRenderManager(
   return true;
 }
 
-WebContents* TestTabContents::Clone() {
-  TabContents* tc = new TestTabContents(
+WebContents* TestWebContents::Clone() {
+  TabContents* tc = new TestWebContents(
       GetBrowserContext(),
       SiteInstance::Create(GetBrowserContext()));
   tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
 }
 
-void TestTabContents::NavigateAndCommit(const GURL& url) {
+void TestWebContents::NavigateAndCommit(const GURL& url) {
   GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+      url, Referrer(), PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
   BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
@@ -116,7 +111,7 @@ void TestTabContents::NavigateAndCommit(const GURL& url) {
   CommitPendingNavigation();
 }
 
-void TestTabContents::CommitPendingNavigation() {
+void TestWebContents::CommitPendingNavigation() {
   // If we are doing a cross-site navigation, this simulates the current RVH
   // notifying that it has unloaded so the pending RVH is resumed and can
   // navigate.
@@ -142,12 +137,12 @@ void TestTabContents::CommitPendingNavigation() {
     static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK();
 }
 
-int TestTabContents::GetNumberOfFocusCalls() {
+int TestWebContents::GetNumberOfFocusCalls() {
   NOTREACHED();
   return 0;
 }
 
-void TestTabContents::ProceedWithCrossSiteNavigation() {
+void TestWebContents::ProceedWithCrossSiteNavigation() {
   if (!GetPendingRenderViewHost())
     return;
   TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(
@@ -155,13 +150,13 @@ void TestTabContents::ProceedWithCrossSiteNavigation() {
   rvh->SendShouldCloseACK(true);
 }
 
-content::RenderViewHostDelegate::View* TestTabContents::GetViewDelegate() {
+RenderViewHostDelegate::View* TestWebContents::GetViewDelegate() {
   if (delegate_view_override_)
     return delegate_view_override_;
   return TabContents::GetViewDelegate();
 }
 
-void TestTabContents::ExpectSetHistoryLengthAndPrune(
+void TestWebContents::ExpectSetHistoryLengthAndPrune(
     const SiteInstance* site_instance,
     int history_length,
     int32 min_page_id) {
@@ -172,7 +167,7 @@ void TestTabContents::ExpectSetHistoryLengthAndPrune(
   expect_set_history_length_and_prune_min_page_id_ = min_page_id;
 }
 
-void TestTabContents::SetHistoryLengthAndPrune(
+void TestWebContents::SetHistoryLengthAndPrune(
     const SiteInstance* site_instance, int history_length,
     int32 min_page_id) {
   EXPECT_TRUE(expect_set_history_length_and_prune_);
@@ -182,3 +177,5 @@ void TestTabContents::SetHistoryLengthAndPrune(
             history_length);
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
+
+}  // namespace content

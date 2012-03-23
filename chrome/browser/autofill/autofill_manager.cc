@@ -184,7 +184,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
       external_delegate_(NULL) {
-  // |personal_data_| is NULL when using TestTabContents.
+  // |personal_data_| is NULL when using test-enabled WebContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
 }

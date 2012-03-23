@@ -21,7 +21,6 @@
 //
 // To use, derive your test base class from RenderViewHostImplTestHarness.
 
-class TestTabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace gfx {
@@ -31,6 +30,7 @@ class Rect;
 namespace content {
 
 class SiteInstance;
+class TestWebContents;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
 // with given |page_id|, |url| and |transition_type|.
@@ -178,7 +178,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 
 // TestRenderViewHost ----------------------------------------------------------
 
-// TODO(brettw) this should use a TestTabContents which should be generalized
+// TODO(brettw) this should use a TestWebContents which should be generalized
 // from the TabContents test. We will probably also need that class' version of
 // CreateRenderViewForRenderManager when more complicate tests start using this.
 //
@@ -307,7 +307,7 @@ class RenderViewHostImplTestHarness
   TestRenderViewHost* test_rvh();
   TestRenderViewHost* pending_test_rvh();
   TestRenderViewHost* active_test_rvh();
-  TestTabContents* contents();
+  TestWebContents* contents();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);

@@ -26,6 +26,7 @@ class NavigationEntryImpl;
 class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
+class TestWebContents;
 }
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
@@ -200,7 +201,7 @@ class CONTENT_EXPORT RenderViewHostManager
   bool IsSwappedOut(content::RenderViewHost* rvh);
 
  private:
-  friend class TestTabContents;
+  friend class content::TestWebContents;
   friend class RenderViewHostManagerTest;
 
   // Returns whether this tab should transition to a new renderer for

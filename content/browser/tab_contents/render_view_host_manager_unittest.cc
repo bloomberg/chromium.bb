@@ -10,7 +10,7 @@
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
@@ -41,6 +41,7 @@ using content::RenderViewHostImpl;
 using content::RenderViewHostImplTestHarness;
 using content::SiteInstance;
 using content::TestRenderViewHost;
+using content::TestWebContents;
 using content::WebContents;
 using content::WebUI;
 using content::WebUIController;
@@ -201,7 +202,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.
-  TestTabContents contents2(browser_context(), NULL);
+  TestWebContents contents2(browser_context(), NULL);
 
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
@@ -362,7 +363,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   ASSERT_TRUE(controller().GetLastCommittedEntry());
   EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
   EXPECT_FALSE(controller().GetPendingEntry());
-  // Because we're using TestTabContents and TestRenderViewHost in this
+  // Because we're using TestWebContents and TestRenderViewHost in this
   // unittest, no one calls TabContents::RenderViewCreated(). So, we see no
   // EnableViewSourceMode message, here.
 
@@ -389,15 +390,15 @@ TEST_F(RenderViewHostManagerTest, Init) {
       static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
   EXPECT_FALSE(instance->HasSite());
 
-  TestTabContents tab_contents(browser_context(), instance);
-  RenderViewHostManager manager(&tab_contents, &tab_contents);
+  TestWebContents web_contents(browser_context(), instance);
+  RenderViewHostManager manager(&web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
   EXPECT_TRUE(instance == host->GetSiteInstance());
-  EXPECT_TRUE(&tab_contents == host->GetDelegate());
+  EXPECT_TRUE(&web_contents == host->GetDelegate());
   EXPECT_TRUE(manager.GetRenderWidgetHostView());
   EXPECT_FALSE(manager.pending_render_view_host());
 }
@@ -409,14 +410,14 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestTabContents tab_contents(browser_context(), instance);
+  TestWebContents web_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &tab_contents.GetController()));
+          &web_contents.GetController()));
 
   // Create.
-  RenderViewHostManager manager(&tab_contents, &tab_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -501,14 +502,14 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestTabContents tab_contents(browser_context(), instance);
+  TestWebContents web_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &tab_contents.GetController()));
+          &web_contents.GetController()));
 
   // Create.
-  RenderViewHostManager manager(&tab_contents, &tab_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -652,8 +653,8 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestTabContents tab_contents(browser_context(), instance);
-  RenderViewHostManager manager(&tab_contents, &tab_contents);
+  TestWebContents web_contents(browser_context(), instance);
+  RenderViewHostManager manager(&web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 

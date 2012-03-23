@@ -10,7 +10,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_details.h"
@@ -40,6 +40,7 @@ using content::SiteInstance;
 using content::RenderViewHost;
 using content::RenderViewHostImplTestHarness;
 using content::TestRenderViewHost;
+using content::TestWebContents;
 using content::WebContents;
 using content::WebUI;
 using content::WebUIController;
@@ -544,7 +545,7 @@ TEST_F(TabContentsTest, NavigateTwoTabsCrossSite) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a new tab with the same SiteInstance, navigated to the same site.
-  TestTabContents contents2(browser_context_.get(), instance1);
+  TestWebContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
   contents2.GetController().LoadURL(url, content::Referrer(),
                                     content::PAGE_TRANSITION_TYPED,
@@ -607,7 +608,7 @@ TEST_F(TabContentsTest, CrossSiteComparesAgainstCurrentPage) {
       orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a related tab to a second site.
-  TestTabContents contents2(browser_context_.get(), instance1);
+  TestWebContents contents2(browser_context_.get(), instance1);
   contents2.transition_cross_site = true;
   const GURL url2("http://www.yahoo.com");
   contents2.GetController().LoadURL(url2, content::Referrer(),
@@ -1861,8 +1862,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
 
   // Create another NavigationController.
   GURL url3("http://foo2");
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
@@ -1890,8 +1891,8 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   contents()->NavigateAndCommit(url1);
 
   // Create another NavigationController.
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
 

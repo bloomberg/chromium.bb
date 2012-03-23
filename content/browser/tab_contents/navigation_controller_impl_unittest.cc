@@ -21,7 +21,7 @@
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,6 +41,7 @@ using content::NavigationEntryImpl;
 using content::RenderViewHostImplTestHarness;
 using content::SiteInstance;
 using content::TestRenderViewHost;
+using content::TestWebContents;
 using content::WebContents;
 
 // NavigationControllerTest ----------------------------------------------------
@@ -2083,8 +2084,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(1, controller.GetEntryAtIndex(1)->GetPageID());
   EXPECT_EQ(1, contents()->GetMaxPageIDForSiteInstance(instance1));
 
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url3);
@@ -2129,8 +2130,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
   NavigateAndCommit(url2);
   controller.GoBack();
 
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
@@ -2164,8 +2165,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   NavigateAndCommit(url2);
   controller.GoBack();
 
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_controller.LoadURL(
@@ -2215,8 +2216,8 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
 
-  scoped_ptr<TestTabContents> other_contents(
-      static_cast<TestTabContents*>(CreateTestWebContents()));
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
   NavigationControllerImpl& other_controller =
       other_contents->GetControllerImpl();
   other_contents->NavigateAndCommit(url4);

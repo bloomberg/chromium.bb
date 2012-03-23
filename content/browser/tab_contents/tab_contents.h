@@ -41,6 +41,7 @@ class JavaScriptDialogCreator;
 class RenderViewHost;
 class RenderViewHostImpl;
 class SiteInstance;
+class TestWebContents;
 class WebContentsDelegate;
 class WebContentsObserver;
 class WebContentsView;
@@ -389,8 +390,8 @@ class CONTENT_EXPORT TabContents
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;
 
-  // TODO(brettw) TestTabContents shouldn't exist!
-  friend class TestTabContents;
+  // TODO(brettw) TestWebContents shouldn't exist!
+  friend class content::TestWebContents;
 
   // Callback function when showing JS dialogs.
   void OnDialogClosed(content::RenderViewHost* rvh,

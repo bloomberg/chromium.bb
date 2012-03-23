@@ -4,7 +4,7 @@
 
 #include "content/test/web_contents_tester.h"
 
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 
 namespace content {
 
@@ -13,11 +13,11 @@ namespace {
 // The two subclasses here are instantiated via the deprecated
 // CreateWebContentsFor... factories below.
 
-class TestTabContentsCountFocus : public TestTabContents {
+class TestWebContentsCountFocus : public TestWebContents {
  public:
-  TestTabContentsCountFocus(content::BrowserContext* browser_context,
+  TestWebContentsCountFocus(content::BrowserContext* browser_context,
                        content::SiteInstance* instance)
-      : TestTabContents(browser_context, instance), focus_called_(0) {
+      : TestWebContents(browser_context, instance), focus_called_(0) {
   }
 
   virtual int GetNumberOfFocusCalls() OVERRIDE {
@@ -32,12 +32,12 @@ class TestTabContentsCountFocus : public TestTabContents {
   int focus_called_;
 };
 
-class TestTabContentsCountSetFocusToLocationBar : public TestTabContents {
+class TestWebContentsCountSetFocusToLocationBar : public TestWebContents {
  public:
-  TestTabContentsCountSetFocusToLocationBar(
+  TestWebContentsCountSetFocusToLocationBar(
       content::BrowserContext* browser_context,
       SiteInstance* instance)
-      : TestTabContents(browser_context, instance), focus_called_(0) {
+      : TestWebContents(browser_context, instance), focus_called_(0) {
   }
 
   virtual void SetFocusToLocationBar(bool select_all) { ++focus_called_; }
@@ -53,21 +53,21 @@ class TestTabContentsCountSetFocusToLocationBar : public TestTabContents {
 
 // static
 WebContentsTester* WebContentsTester::For(WebContents* contents) {
-  return static_cast<TestTabContents*>(contents);
+  return static_cast<TestWebContents*>(contents);
 }
 
 // static
 WebContents* WebContentsTester::CreateTestWebContents(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestTabContents(browser_context, instance);
+  return new TestWebContents(browser_context, instance);
 }
 
 // static
 WebContents* WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestTabContentsCountSetFocusToLocationBar(
+  return new TestWebContentsCountSetFocusToLocationBar(
       browser_context, instance);
 }
 
@@ -75,7 +75,7 @@ WebContents* WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
 WebContents* WebContentsTester::CreateTestWebContentsCountFocus(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestTabContentsCountFocus(browser_context, instance);
+  return new TestWebContentsCountFocus(browser_context, instance);
 }
 
 }  // namespace content

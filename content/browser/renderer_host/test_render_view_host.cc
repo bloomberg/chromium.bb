@@ -6,7 +6,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/tab_contents/test_web_contents.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -315,8 +315,8 @@ TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
   return static_cast<TestRenderViewHost*>(active_rvh());
 }
 
-TestTabContents* RenderViewHostImplTestHarness::contents() {
-  return static_cast<TestTabContents*>(web_contents());
+TestWebContents* RenderViewHostImplTestHarness::contents() {
+  return static_cast<TestWebContents*>(web_contents());
 }
 
 }  // namespace content
