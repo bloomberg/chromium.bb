@@ -230,14 +230,13 @@ var MainView = (function() {
 function ConstantsObserver() {}
 
 /**
- * Attempts to load all constants from |constants|.  Returns false if one or
- * more entries are missing.  On failure, global dictionaries are not
- * modified.
+ * Loads all constants from |constants|.  On failure, global dictionaries are
+ * not modifed.
+ * @param {Object} receivedConstants The map of received constants.
  */
-ConstantsObserver.prototype.onReceivedConstants =
-    function(receivedConstants) {
+ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   if (!areValidConstants(receivedConstants))
-    return false;
+    return;
 
   Constants = receivedConstants;
 
@@ -255,6 +254,8 @@ ConstantsObserver.prototype.onReceivedConstants =
 
 /**
  * Returns true if it's given a valid-looking constants object.
+ * @param {Object} receivedConstants The received map of constants.
+ * @return {boolean} True if the |receivedConstants| object appears valid.
  */
 function areValidConstants(receivedConstants) {
   return typeof(receivedConstants) == 'object' &&
@@ -275,6 +276,8 @@ function areValidConstants(receivedConstants) {
  *
  * Example: netErrorToString(-105) would return
  * "ERR_NAME_NOT_RESOLVED".
+ * @param {number} netError The net error code.
+ * @return {string} The name of the given error.
  */
 function netErrorToString(netError) {
   var str = getKeyWithValue(NetError, netError);
@@ -285,6 +288,8 @@ function netErrorToString(netError) {
 
 /**
  * Returns a string representation of |family|.
+ * @param {number} family An AddressFamily
+ * @return {string} A representation of the given family.
  */
 function addressFamilyToString(family) {
   var str = getKeyWithValue(AddressFamily, family);

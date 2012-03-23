@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,8 +73,7 @@ var TabSwitcherView = (function() {
     },
 
     /**
-     * Returns the currently selected tab, or null if there is none.
-     * @returns {!TabEntry}
+     * @return {?TabEntry} The currently selected tab, or null if there is none.
      */
     findActiveTab: function() {
       for (var i = 0; i < this.tabs_.length; ++i) {
@@ -86,8 +85,7 @@ var TabSwitcherView = (function() {
     },
 
     /**
-     * Returns the tab with ID |id|.
-     * @returns {!TabEntry}
+     * @return {?TabEntry} The tab with ID |id|, or null if there is none.
      */
     findTabById: function(id) {
       for (var i = 0; i < this.tabs_.length; ++i) {

@@ -159,7 +159,7 @@ var DivView = (function() {
 /**
  * Implementation of View that sizes its child to fit the entire window.
  *
- * @param {!View} childView
+ * @param {!View} childView The child view.
  */
 var WindowView = (function() {
   'use strict';
@@ -224,8 +224,8 @@ var VerticalSplitView = (function() {
   var superClass = View;
 
   /**
-   * @param {!View} topView
-   * @param {!View} bottomView
+   * @param {!View} topView The top view.
+   * @param {!View} bottomView The bottom view.
    * @constructor
    */
   function VerticalSplitView(topView, bottomView) {
@@ -286,8 +286,8 @@ var HorizontalSplitView = (function() {
   var superClass = View;
 
   /**
-   * @param {!View} leftView
-   * @param {!View} rightView
+   * @param {!View} leftView The left view.
+   * @param {!View} rightView The right view.
    * @constructor
    */
   function HorizontalSplitView(leftView, rightView) {

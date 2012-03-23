@@ -1,9 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * Sets the width (in pixels) on a DOM node.
+ * @param {!HtmlNode} node The node whose width is being set.
+ * @param {number} widthPx The width in pixels.
  */
 function setNodeWidth(node, widthPx) {
   node.style.width = widthPx.toFixed(0) + 'px';
@@ -11,6 +13,8 @@ function setNodeWidth(node, widthPx) {
 
 /**
  * Sets the height (in pixels) on a DOM node.
+ * @param {!HtmlNode} node The node whose height is being set.
+ * @param {number} heightPx The height in pixels.
  */
 function setNodeHeight(node, heightPx) {
   node.style.height = heightPx.toFixed(0) + 'px';
@@ -18,6 +22,11 @@ function setNodeHeight(node, heightPx) {
 
 /**
  * Sets the position and size of a DOM node (in pixels).
+ * @param {!HtmlNode} node The node being positioned.
+ * @param {number} leftPx The left position in pixels.
+ * @param {number} topPx The top position in pixels.
+ * @param {number} widthPx The width in pixels.
+ * @param {number} heightPx The height in pixels.
  */
 function setNodePosition(node, leftPx, topPx, widthPx, heightPx) {
   node.style.left = leftPx.toFixed(0) + 'px';
@@ -28,6 +37,8 @@ function setNodePosition(node, leftPx, topPx, widthPx, heightPx) {
 
 /**
  * Sets the visibility for a DOM node.
+ * @param {!HtmlNode} node The node being positioned.
+ * @param {boolean} isVisible Whether to show the node or not.
  */
 function setNodeDisplay(node, isVisible) {
   node.style.display = isVisible ? '' : 'none';
@@ -35,6 +46,10 @@ function setNodeDisplay(node, isVisible) {
 
 /**
  * Adds a node to |parentNode|, of type |tagName|.
+ * @param {!HtmlNode} parentNode The node that will be the parent of the new
+ *     element.
+ * @param {string} tagName the tag name of the new element.
+ * @return {!HtmlElement} The newly created element.
  */
 function addNode(parentNode, tagName) {
   var elem = parentNode.ownerDocument.createElement(tagName);
@@ -44,6 +59,9 @@ function addNode(parentNode, tagName) {
 
 /**
  * Adds |text| to node |parentNode|.
+ * @param {!HtmlNode} parentNode The node to add text to.
+ * @param {string} text The text to be added.
+ * @return {!Object} The newly created text node.
  */
 function addTextNode(parentNode, text) {
   var textNode = parentNode.ownerDocument.createTextNode(text);
@@ -54,6 +72,11 @@ function addTextNode(parentNode, text) {
 /**
  * Adds a node to |parentNode|, of type |tagName|.  Then adds
  * |text| to the new node.
+ * @param {!HtmlNode} parentNode The node that will be the parent of the new
+ *     element.
+ * @param {string} tagName the tag name of the new element.
+ * @param {string} text The text to be added.
+ * @return {!HtmlElement} The newly created element.
  */
 function addNodeWithText(parentNode, tagName, text) {
   var elem = parentNode.ownerDocument.createElement(tagName);
@@ -64,7 +87,11 @@ function addNodeWithText(parentNode, tagName, text) {
 
 /**
  * Adds or removes a CSS class to |node|.
+ * @param {!HtmlNode} node The node to be modified.
+ * @param {string} classNameToAddOrRemove The class name.
+ * @param {boolean} isAdd True to add, false to remove.
  */
+// TODO(tbreisacher): make this shorter (and faster) using .classList
 function changeClassName(node, classNameToAddOrRemove, isAdd) {
   // Multiple classes can be separated by spaces.
   var currentNames = node.className.split(' ');
@@ -87,6 +114,13 @@ function changeClassName(node, classNameToAddOrRemove, isAdd) {
   node.className = currentNames.join(' ');
 }
 
+/**
+ * Returns the key such that map[key] == value, or the string '?' if
+ * there is no such key.
+ * @param {!Object} map The object being used as a lookup table.
+ * @param {Object} value The value to be found in |map|.
+ * @return {string} The key for |value|, or '?' if there is no such key.
+ */
 function getKeyWithValue(map, value) {
   for (var key in map) {
     if (map[key] == value)
@@ -96,10 +130,13 @@ function getKeyWithValue(map, value) {
 }
 
 /**
- * Looks up |key| in |map|, and returns the resulting entry, if  there is one.
+ * Looks up |key| in |map|, and returns the resulting entry, if there is one.
  * Otherwise, returns |key|.  Intended primarily for use with incomplete
  * tables, and for reasonable behavior with system enumerations that may be
  * extended in the future.
+ * @param {!Object} map The table in which |key| is looked up.
+ * @param {string} key The key to look up.
+ * @return {Object|string} map[key], if it exists, or |key| if it doesn't.
  */
 function tryGetValueWithKey(map, key) {
   if (key in map)
@@ -109,6 +146,9 @@ function tryGetValueWithKey(map, key) {
 
 /**
  * Builds a string by repeating |str| |count| times.
+ * @param {string} str The string to be repeated.
+ * @param {number} count The number of times to repeat |str|.
+ * @return {string} The constructed string
  */
 function makeRepeatedString(str, count) {
   var out = [];
@@ -120,6 +160,8 @@ function makeRepeatedString(str, count) {
 /**
  * Clones a basic POD object.  Only a new top level object will be cloned.  It
  * will continue to reference the same values as the original object.
+ * @param {Object} object The object to be cloned.
+ * @return {Object} A copy of |object|.
  */
 function shallowCloneObject(object) {
   if (!(object instanceof Object))
@@ -133,6 +175,7 @@ function shallowCloneObject(object) {
 
 /**
  * Helper to make sure singleton classes are not instantiated more than once.
+ * @param {Function} ctor The constructor function being checked.
  */
 function assertFirstConstructorCall(ctor) {
   // This is the variable which is set by cr.addSingletonGetter().
