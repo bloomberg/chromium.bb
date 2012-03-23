@@ -47,6 +47,7 @@ class DomStorageNamespace
   // Should only be called for session storage namespaces.
   DomStorageNamespace* Clone(int64 clone_namespace_id);
 
+  void DeleteOrigin(const GURL& origin);
   void PurgeMemory();
   void Shutdown();
 

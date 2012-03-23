@@ -45,8 +45,7 @@ FilePath OriginToFullFilePath(const FilePath& directory,
 
 GURL FilePathToOrigin(const FilePath& path) {
   DCHECK(path.MatchesExtension(DomStorageArea::kDatabaseFileExtension));
-  return OriginIdToGURL(
-      webkit_glue::FilePathToWebString(path.BaseName().RemoveExtension()));
+  return DomStorageArea::OriginFromDatabaseFileName(path);
 }
 
 void InvokeAllStorageFilesCallbackHelper(
@@ -60,7 +59,10 @@ void GetAllStorageFilesHelper(
       DomStorageContext* context,
       const DOMStorageContext::GetAllStorageFilesCallback& callback) {
   std::vector<DomStorageContext::UsageInfo> infos;
-  context->GetUsageInfo(&infos);
+  // TODO(michaeln): Actually include the file info too when the
+  // content layer api is fixed.
+  const bool kDontIncludeFileInfo = false;
+  context->GetUsageInfo(&infos, kDontIncludeFileInfo);
 
   std::vector<FilePath> paths;
   for (size_t i = 0; i < infos.size(); ++i) {
@@ -74,7 +76,7 @@ void GetAllStorageFilesHelper(
                  callback, paths));
 }
 
-}
+}  // namespace
 
 DOMStorageContextImpl::DOMStorageContextImpl(
     const FilePath& data_path,

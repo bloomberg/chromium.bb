@@ -94,7 +94,7 @@ class DomStorageContext
   DomStorageTaskRunner* task_runner() const { return task_runner_; }
   DomStorageNamespace* GetStorageNamespace(int64 namespace_id);
 
-  void GetUsageInfo(std::vector<UsageInfo>* info);
+  void GetUsageInfo(std::vector<UsageInfo>* infos, bool include_file_info);
   void DeleteOrigin(const GURL& origin);
   void DeleteDataModifiedSince(const base::Time& cutoff);
   void PurgeMemory();
@@ -151,6 +151,8 @@ class DomStorageContext
       StorageNamespaceMap;
 
   ~DomStorageContext();
+
+  void ClearLocalStateInCommitSequence();
 
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;

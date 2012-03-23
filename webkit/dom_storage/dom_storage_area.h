@@ -29,6 +29,7 @@ class DomStorageArea
  public:
   static const FilePath::CharType kDatabaseFileExtension[];
   static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
+  static GURL OriginFromDatabaseFileName(const FilePath& file_name);
 
   DomStorageArea(int64 namespace_id,
                  const GURL& origin,
@@ -48,6 +49,17 @@ class DomStorageArea
 
   DomStorageArea* ShallowCopy(int64 destination_namespace_id);
 
+  bool HasUncommittedChanges() const;
+
+  // Similar to Clear() but more optimized for just deleting
+  // without raising events.
+  void DeleteOrigin();
+
+  // Frees up memory when possible. Typically, this method returns
+  // the object to its just constructed state, however if uncommitted
+  // changes are pending, it does nothing.
+  void PurgeMemory();
+
   // Schedules the commit of any unsaved changes and enters a
   // shutdown state such that the value getters and setters will
   // no longer do anything.
@@ -60,6 +72,8 @@ class DomStorageArea
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, TestDatabaseFilePath);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitTasks);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitChangesAtShutdown);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DeleteOrigin);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, PurgeMemory);
   friend class base::RefCountedThreadSafe<DomStorageArea>;
 
   struct CommitBatch {

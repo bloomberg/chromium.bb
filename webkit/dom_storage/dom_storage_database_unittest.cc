@@ -118,6 +118,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   // trigger it's deletion from disk.
   {
     DomStorageDatabase db(file_name);
+    EXPECT_EQ(file_name, db.file_path());
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
   EXPECT_TRUE(file_util::PathExists(file_name));

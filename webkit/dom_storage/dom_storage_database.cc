@@ -13,6 +13,8 @@
 
 namespace {
 
+const FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
+
 class HistogramUniquifier {
  public:
   static const char* name() { return "Sqlite.DomStorageDatabase.Error"; }
@@ -26,14 +28,19 @@ sql::ErrorDelegate* GetErrorHandlerForDomStorageDatabase() {
 
 namespace dom_storage {
 
+// static
+FilePath DomStorageDatabase::GetJournalFilePath(
+    const FilePath& database_path) {
+  FilePath::StringType journal_file_name =
+      database_path.BaseName().value() + kJournal;
+  return database_path.DirName().Append(journal_file_name);
+}
+
 DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
     : file_path_(file_path) {
   // Note: in normal use we should never get an empty backing path here.
-  // However, the unit test for this class defines another constructor
-  // that will bypass this check to allow an empty path that signifies
-  // we should operate on an in-memory database for performance/reliability
-  // reasons.
-  DCHECK(!file_path_.empty());
+  // However, the unit test for this class can contruct an instance
+  // with an empty path.
   Init();
 }
 
@@ -49,9 +56,10 @@ void DomStorageDatabase::Init() {
 
 DomStorageDatabase::~DomStorageDatabase() {
   if (known_to_be_empty_ && !file_path_.empty()) {
-    // Delete the db from disk, it's empty.
+    // Delete the db and any lingering journal file from disk.
     Close();
     file_util::Delete(file_path_, false);
+    file_util::Delete(GetJournalFilePath(file_path_), false);
   }
 }
 
@@ -74,8 +82,12 @@ void DomStorageDatabase::ReadAllValues(ValuesMap* result) {
 
 bool DomStorageDatabase::CommitChanges(bool clear_all_first,
                                        const ValuesMap& changes) {
-  if (!LazyOpen(!changes.empty()))
-    return false;
+  if (!LazyOpen(!changes.empty())) {
+    // If we're being asked to commit changes that will result in an
+    // empty database, we return true if the database file doesn't exist.
+    return clear_all_first && changes.empty() &&
+           !file_util::PathExists(file_path_);
+  }
 
   bool old_known_to_be_empty = known_to_be_empty_;
   sql::Transaction transaction(db_.get());

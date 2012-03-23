@@ -22,6 +22,8 @@ namespace dom_storage {
 // class is designed to be used on a single thread.
 class DomStorageDatabase {
  public:
+  static FilePath GetJournalFilePath(const FilePath& database_path);
+
   explicit DomStorageDatabase(const FilePath& file_path);
   virtual ~DomStorageDatabase();  // virtual for unit testing
 
@@ -37,6 +39,9 @@ class DomStorageDatabase {
   // |changes| will be examined - keys mapped to a null NullableString16
   // will be removed and all others will be inserted/updated as appropriate.
   bool CommitChanges(bool clear_all_first, const ValuesMap& changes);
+
+  // Simple getter for the path we were constructed with.
+  const FilePath& file_path() const { return file_path_; }
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.
@@ -59,6 +64,7 @@ class DomStorageDatabase {
                            TestCanOpenFileThatIsNotADatabase);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, BackingDatabaseOpened);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitTasks);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, PurgeMemory);
 
   enum SchemaVersion {
     INVALID,
@@ -100,7 +106,7 @@ class DomStorageDatabase {
   void Init();
 
   // Path to the database on disk.
-  FilePath file_path_;
+  const FilePath file_path_;
   scoped_ptr<sql::Connection> db_;
   bool failed_to_open_;
   bool tried_to_recreate_;

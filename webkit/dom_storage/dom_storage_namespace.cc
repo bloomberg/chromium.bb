@@ -64,8 +64,42 @@ DomStorageNamespace* DomStorageNamespace::Clone(int64 clone_namespace_id) {
   return clone;
 }
 
+void DomStorageNamespace::DeleteOrigin(const GURL& origin) {
+  AreaHolder* holder = GetAreaHolder(origin);
+  if (holder) {
+    holder->area_->DeleteOrigin();
+    return;
+  }
+  if (!directory_.empty()) {
+    scoped_refptr<DomStorageArea> area =
+        new DomStorageArea(namespace_id_, origin, directory_, task_runner_);
+    area->DeleteOrigin();
+  }
+}
+
 void DomStorageNamespace::PurgeMemory() {
-  // TODO(michaeln): write me
+  if (directory_.empty())
+    return;  // We can't purge w/o backing on disk.
+  AreaMap::iterator it = areas_.begin();
+  while (it != areas_.end()) {
+    // Leave it alone if changes are pending
+    if (it->second.area_->HasUncommittedChanges()) {
+      ++it;
+      continue;
+    }
+
+    // If not in use, we can shut it down and remove
+    // it from our collection entirely.
+    if (it->second.open_count_ == 0) {
+      it->second.area_->Shutdown();
+      areas_.erase(it++);
+      continue;
+    }
+
+    // Otherwise, we can clear caches and such.
+    it->second.area_->PurgeMemory();
+    ++it;
+  }
 }
 
 void DomStorageNamespace::Shutdown() {

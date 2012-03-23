@@ -40,12 +40,14 @@ class DomStorageAreaTest : public testing::Test {
     // Verify that it put a commit in flight.
     EXPECT_TRUE(area->in_flight_commit_batch_.get());
     EXPECT_FALSE(area->commit_batch_.get());
+    EXPECT_TRUE(area->HasUncommittedChanges());
     // Make additional change and verify that a new commit batch
     // is created for that change.
     NullableString16 old_value;
     EXPECT_TRUE(area->SetItem(kKey2, kValue2, &old_value));
     EXPECT_TRUE(area->commit_batch_.get());
     EXPECT_TRUE(area->in_flight_commit_batch_.get());
+    EXPECT_TRUE(area->HasUncommittedChanges());
   }
 
   // Class used in the CommitChangesAtShutdown test case.
@@ -77,6 +79,7 @@ TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   EXPECT_EQ(0u, area->Length());
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_nullable_value));
   EXPECT_TRUE(area->SetItem(kKey2, kValue2, &old_nullable_value));
+  EXPECT_FALSE(area->HasUncommittedChanges());
 
   // Verify that a copy shares the same map.
   copy = area->ShallowCopy(2);
@@ -212,6 +215,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   // See that changes are batched up.
   EXPECT_FALSE(area->commit_batch_.get());
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_value));
+  EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_TRUE(area->commit_batch_.get());
   EXPECT_FALSE(area->commit_batch_->clear_all_first);
   EXPECT_EQ(1u, area->commit_batch_->changed_values.size());
@@ -220,6 +224,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   EXPECT_FALSE(area->commit_batch_->clear_all_first);
   EXPECT_EQ(2u, area->commit_batch_->changed_values.size());
   MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(area->HasUncommittedChanges());
   EXPECT_FALSE(area->commit_batch_.get());
   EXPECT_FALSE(area->in_flight_commit_batch_.get());
   // Verify the changes made it to the database.
@@ -245,7 +250,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   // See that if changes accrue while a commit is "in flight"
   // those will also get committed.
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_value));
-  EXPECT_TRUE(area->commit_batch_.get());
+  EXPECT_TRUE(area->HasUncommittedChanges());
   // At this point the OnCommitTimer task has been posted. We inject
   // another task in the queue that will execute after the timer task,
   // but before the CommitChanges task. From within our injected task,
@@ -256,8 +261,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
                  base::Unretained(this), area));
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(area->HasOneRef());
-  EXPECT_FALSE(area->commit_batch_.get());
-  EXPECT_FALSE(area->in_flight_commit_batch_.get());
+  EXPECT_FALSE(area->HasUncommittedChanges());
   // Verify the changes made it to the database.
   values.clear();
   area->backing_->ReadAllValues(&values);
@@ -281,7 +285,7 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
   ValuesMap values;
   NullableString16 old_value;
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_value));
-  EXPECT_TRUE(area->commit_batch_.get());
+  EXPECT_TRUE(area->HasUncommittedChanges());
   area->backing_->ReadAllValues(&values);
   EXPECT_TRUE(values.empty());  // not committed yet
   area->Shutdown();
@@ -292,18 +296,156 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
   // were committed.
 }
 
-TEST_F(DomStorageAreaTest, TestDatabaseFilePath) {
-  EXPECT_EQ(FilePath().AppendASCII("file_path_to_0.localstorage"),
-      DomStorageArea::DatabaseFileNameFromOrigin(
-          GURL("file://path_to/index.html")));
+TEST_F(DomStorageAreaTest, DeleteOrigin) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<DomStorageArea> area(
+      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+          temp_dir.path(),
+          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
-  EXPECT_EQ(FilePath().AppendASCII("https_www.google.com_0.localstorage"),
-      DomStorageArea::DatabaseFileNameFromOrigin(
-          GURL("https://www.google.com/")));
+  // This test puts files on disk.
+  FilePath db_file_path = area->backing_->file_path();
+  FilePath db_journal_file_path =
+      DomStorageDatabase::GetJournalFilePath(db_file_path);
 
-  EXPECT_EQ(FilePath().AppendASCII("https_www.google.com_8080.localstorage"),
-      DomStorageArea::DatabaseFileNameFromOrigin(
-          GURL("https://www.google.com:8080")));
+  // Nothing bad should happen when invoked w/o any files on disk.
+  area->DeleteOrigin();
+  EXPECT_FALSE(file_util::PathExists(db_file_path));
+
+  // Commit something in the database and then delete.
+  NullableString16 old_value;
+  area->SetItem(kKey, kValue, &old_value);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  area->DeleteOrigin();
+  EXPECT_EQ(0u, area->Length());
+  EXPECT_FALSE(file_util::PathExists(db_file_path));
+  EXPECT_FALSE(file_util::PathExists(db_journal_file_path));
+
+  // Put some uncommitted changes to a non-existing database in
+  // and then delete. No file ever gets created in this case.
+  area->SetItem(kKey, kValue, &old_value);
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  EXPECT_EQ(1u, area->Length());
+  area->DeleteOrigin();
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  EXPECT_EQ(0u, area->Length());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(area->HasUncommittedChanges());
+  EXPECT_FALSE(file_util::PathExists(db_file_path));
+
+  // Put some uncommitted changes to a an existing database in
+  // and then delete.
+  area->SetItem(kKey, kValue, &old_value);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  area->SetItem(kKey2, kValue2, &old_value);
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  EXPECT_EQ(2u, area->Length());
+  area->DeleteOrigin();
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  EXPECT_EQ(0u, area->Length());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(area->HasUncommittedChanges());
+  // Since the area had uncommitted changes at the time delete
+  // was called, the file will linger until the shutdown time.
+  EXPECT_TRUE(file_util::PathExists(db_file_path));
+  area->Shutdown();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(file_util::PathExists(db_file_path));
+}
+
+TEST_F(DomStorageAreaTest, PurgeMemory) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<DomStorageArea> area(
+      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+          temp_dir.path(),
+          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+
+  // Inject an in-memory db to speed up the test.
+  area->backing_.reset(new DomStorageDatabase());
+
+  // Unowned ptrs we use to verify that 'purge' has happened.
+  DomStorageDatabase* original_backing = area->backing_.get();
+  DomStorageMap* original_map = area->map_.get();
+
+  // Should do no harm when called on a newly constructed object.
+  EXPECT_FALSE(area->is_initial_import_done_);
+  area->PurgeMemory();
+  EXPECT_FALSE(area->is_initial_import_done_);
+  EXPECT_EQ(original_backing, area->backing_.get());
+  EXPECT_EQ(original_map, area->map_.get());
+
+  // Should not do anything when commits are pending.
+  NullableString16 old_value;
+  area->SetItem(kKey, kValue, &old_value);
+  EXPECT_TRUE(area->is_initial_import_done_);
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  area->PurgeMemory();
+  EXPECT_TRUE(area->is_initial_import_done_);
+  EXPECT_TRUE(area->HasUncommittedChanges());
+  EXPECT_EQ(original_backing, area->backing_.get());
+  EXPECT_EQ(original_map, area->map_.get());
+
+  // Commit the changes from above,
+  MessageLoop::current()->RunAllPending();
+  EXPECT_FALSE(area->HasUncommittedChanges());
+  EXPECT_EQ(original_backing, area->backing_.get());
+  EXPECT_EQ(original_map, area->map_.get());
+
+  // Should drop caches and reset database connections
+  // when invoked on an area that's loaded up primed.
+  area->PurgeMemory();
+  EXPECT_FALSE(area->is_initial_import_done_);
+  EXPECT_NE(original_backing, area->backing_.get());
+  EXPECT_NE(original_map, area->map_.get());
+}
+
+TEST_F(DomStorageAreaTest, DatabaseFileNames) {
+  struct {
+    const char* origin;
+    const char* file_name;
+    const char* journal_file_name;
+  } kCases[] = {
+    { "https://www.google.com/",
+      "https_www.google.com_0.localstorage",
+      "https_www.google.com_0.localstorage-journal" },
+    { "http://www.google.com:8080/",
+      "http_www.google.com_8080.localstorage",
+      "http_www.google.com_8080.localstorage-journal" },
+    { "file:///",
+      "file__0.localstorage",
+      "file__0.localstorage-journal" },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCases); ++i) {
+    GURL origin = GURL(kCases[i].origin).GetOrigin();
+    FilePath file_name = FilePath().AppendASCII(kCases[i].file_name);
+    FilePath journal_file_name =
+        FilePath().AppendASCII(kCases[i].journal_file_name);
+
+    EXPECT_EQ(file_name,
+              DomStorageArea::DatabaseFileNameFromOrigin(origin));
+    EXPECT_EQ(origin,
+              DomStorageArea::OriginFromDatabaseFileName(file_name));
+    EXPECT_EQ(journal_file_name,
+              DomStorageDatabase::GetJournalFilePath(file_name));
+  }
+
+  // Also test some DomStorageDatabase::GetJournalFilePath cases here.
+  FilePath parent = FilePath().AppendASCII("a").AppendASCII("b");
+  EXPECT_EQ(
+      parent.AppendASCII("file-journal"),
+      DomStorageDatabase::GetJournalFilePath(parent.AppendASCII("file")));
+  EXPECT_EQ(
+      FilePath().AppendASCII("-journal"),
+      DomStorageDatabase::GetJournalFilePath(FilePath()));
+  EXPECT_EQ(
+      FilePath().AppendASCII(".extensiononly-journal"),
+      DomStorageDatabase::GetJournalFilePath(
+          FilePath().AppendASCII(".extensiononly")));
 }
 
 }  // namespace dom_storage

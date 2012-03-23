@@ -5,14 +5,20 @@
 #include "webkit/dom_storage/dom_storage_area.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/time.h"
-#include "base/tracked_objects.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "webkit/database/database_util.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/glue/webkit_glue.h"
+
+using webkit_database::DatabaseUtil;
 
 namespace dom_storage {
 
@@ -36,6 +42,14 @@ FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
   // name.
   return FilePath().Append(kDatabaseFileExtension).
       InsertBeforeExtensionASCII(filename);
+}
+
+// static
+GURL DomStorageArea::OriginFromDatabaseFileName(const FilePath& name) {
+  DCHECK(name.MatchesExtension(kDatabaseFileExtension));
+  WebKit::WebString origin_id = webkit_glue::FilePathToWebString(
+      name.BaseName().RemoveExtension());
+  return DatabaseUtil::GetOriginFromIdentifier(origin_id);
 }
 
 DomStorageArea::DomStorageArea(
@@ -136,6 +150,48 @@ DomStorageArea* DomStorageArea::ShallowCopy(int64 destination_namespace_id) {
   copy->map_ = map_;
   copy->is_shutdown_ = is_shutdown_;
   return copy;
+}
+
+bool DomStorageArea::HasUncommittedChanges() const {
+  DCHECK(!is_shutdown_);
+  return commit_batch_.get() || in_flight_commit_batch_.get();
+}
+
+void DomStorageArea::DeleteOrigin() {
+  DCHECK(!is_shutdown_);
+  if (HasUncommittedChanges()) {
+    // TODO(michaeln): This logically deletes the data immediately,
+    // and in a matter of a second, deletes the rows from the backing
+    // database file, but the file itself will linger until shutdown
+    // or purge time. Ideally, this should delete the file more
+    // quickly.
+    Clear();
+    return;
+  }
+  map_ = new DomStorageMap(kPerAreaQuota);
+  if (backing_.get()) {
+    is_initial_import_done_ = false;
+    backing_.reset(new DomStorageDatabase(backing_->file_path()));
+    file_util::Delete(backing_->file_path(), false);
+    file_util::Delete(
+        DomStorageDatabase::GetJournalFilePath(backing_->file_path()), false);
+  }
+}
+
+void DomStorageArea::PurgeMemory() {
+  DCHECK(!is_shutdown_);
+  if (!is_initial_import_done_ ||  // We're not using any memory.
+      !backing_.get() ||  // We can't purge anything.
+      HasUncommittedChanges())  // We leave things alone with changes pending.
+    return;
+
+  // Drop the in memory cache, we'll reload when needed.
+  is_initial_import_done_ = false;
+  map_ = new DomStorageMap(kPerAreaQuota);
+
+  // Recreate the database object, this frees up the open sqlite connection
+  // and its page cache.
+  backing_.reset(new DomStorageDatabase(backing_->file_path()));
 }
 
 void DomStorageArea::Shutdown() {
