@@ -74,6 +74,9 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Sends an IPC message with the new state of surface visibility.
   bool SetSurfaceVisible(bool visible);
 
+  bool DiscardBackbuffer();
+  bool EnsureBackbuffer();
+
   // Register a callback to invoke whenever we recieve a new memory allocation.
   void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&

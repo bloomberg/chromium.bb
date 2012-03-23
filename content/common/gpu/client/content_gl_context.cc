@@ -279,6 +279,14 @@ bool ContentGLContext::SetSurfaceVisible(bool visible) {
   return GetCommandBufferProxy()->SetSurfaceVisible(visible);
 }
 
+bool ContentGLContext::DiscardBackbuffer() {
+  return GetCommandBufferProxy()->DiscardBackbuffer();
+}
+
+bool ContentGLContext::EnsureBackbuffer() {
+  return GetCommandBufferProxy()->EnsureBackbuffer();
+}
+
 void ContentGLContext::SetMemoryAllocationChangedCallback(
     const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
         callback) {

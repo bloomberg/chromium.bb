@@ -458,6 +458,17 @@ void WebGraphicsContext3DCommandBufferImpl::setVisibilityCHROMIUM(
     gl_->FreeEverything();
 }
 
+void WebGraphicsContext3DCommandBufferImpl::discardFramebufferEXT(
+    WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
+  gl_->Flush();
+  context_->DiscardBackbuffer();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::ensureFramebufferCHROMIUM() {
+  gl_->Flush();
+  context_->EnsureBackbuffer();
+}
+
 void WebGraphicsContext3DCommandBufferImpl::
     setMemoryAllocationChangedCallbackCHROMIUM(
         WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {

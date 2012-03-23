@@ -157,9 +157,7 @@ void TextureImageTransportSurface::SetBufferAllocation(
       break;
     case BUFFER_ALLOCATION_FRONT_ONLY:
     case BUFFER_ALLOCATION_NONE:
-      // TODO(piman): Re-enable this (or something else) when we fix the
-      // renderer so it doesn't try to draw/swap on deleted back buffers.
-      // ReleaseBackTexture();
+      ReleaseBackTexture();
       break;
   };
 }
@@ -194,6 +192,8 @@ bool TextureImageTransportSurface::SwapBuffers() {
   glFlush();
   front_ = back();
   previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+
+  DCHECK(textures_[front_].client_id != 0);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle = textures_[front_].client_id;

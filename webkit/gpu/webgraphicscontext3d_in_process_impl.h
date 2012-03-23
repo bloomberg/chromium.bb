@@ -108,7 +108,12 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual void setVisibilityCHROMIUM(bool visible);
 
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) { }
+      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
+
+  virtual void discardFramebufferEXT(WGC3Denum target,
+                                     WGC3Dsizei numAttachments,
+                                     const WGC3Denum* attachments);
+  virtual void ensureFramebufferCHROMIUM();
 
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);

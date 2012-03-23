@@ -57,6 +57,10 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                                          WebKit::WGC3Denum access);
   virtual void unmapTexSubImage2DCHROMIUM(const void* data) {}
   virtual void setVisibilityCHROMIUM(bool visible) {}
+  virtual void discardFramebufferEXT(WebKit::WGC3Denum target,
+                                     WebKit::WGC3Dsizei numAttachments,
+                                     const WebKit::WGC3Denum* attachments) {}
+  virtual void ensureFramebufferCHROMIUM() {}
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
       WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*) { }
   virtual WebKit::WebString getRequestableExtensionsCHROMIUM();

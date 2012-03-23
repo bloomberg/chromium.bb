@@ -164,6 +164,9 @@ class ContentGLContext : public base::SupportsWeakPtr<ContentGLContext>,
   // Sends an IPC message with the new state of surface visibility
   bool SetSurfaceVisible(bool visibility);
 
+  bool DiscardBackbuffer();
+  bool EnsureBackbuffer();
+
   // Register a callback to invoke whenever we recieve a new memory allocation.
   void SetMemoryAllocationChangedCallback(
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&

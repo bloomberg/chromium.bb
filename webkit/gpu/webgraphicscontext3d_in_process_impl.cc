@@ -729,6 +729,18 @@ void WebGraphicsContext3DInProcessImpl::unmapTexSubImage2DCHROMIUM(
 void WebGraphicsContext3DInProcessImpl::setVisibilityCHROMIUM(bool visible) {
 }
 
+void WebGraphicsContext3DInProcessImpl::
+    setMemoryAllocationChangedCallbackCHROMIUM(
+        WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
+}
+
+void WebGraphicsContext3DInProcessImpl::discardFramebufferEXT(
+    WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
+}
+
+void WebGraphicsContext3DInProcessImpl::ensureFramebufferCHROMIUM() {
+}
+
 void WebGraphicsContext3DInProcessImpl::copyTextureToParentTextureCHROMIUM(
     WebGLId id, WebGLId id2) {
   NOTIMPLEMENTED();

@@ -443,6 +443,11 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void setVisibilityCHROMIUM(bool visible);
 
+  virtual void discardFramebufferEXT(WGC3Denum target,
+                                     WGC3Dsizei numAttachments,
+                                     const WGC3Denum* attachments);
+  virtual void ensureFramebufferCHROMIUM();
+
   virtual void setMemoryAllocationChangedCallbackCHROMIUM(
       WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
 

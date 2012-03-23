@@ -810,6 +810,19 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::setVisibilityCHROMIUM(
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::
+    setMemoryAllocationChangedCallbackCHROMIUM(
+        WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::discardFramebufferEXT(
+    WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) {
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::
+    ensureFramebufferCHROMIUM() {
+}
+
+void WebGraphicsContext3DInProcessCommandBufferImpl::
     copyTextureToParentTextureCHROMIUM(WebGLId texture, WebGLId parentTexture) {
   NOTIMPLEMENTED();
 }

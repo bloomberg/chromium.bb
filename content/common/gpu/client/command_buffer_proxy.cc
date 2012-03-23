@@ -367,6 +367,20 @@ bool CommandBufferProxy::SetSurfaceVisible(bool visible) {
   return Send(new GpuCommandBufferMsg_SetSurfaceVisible(route_id_, visible));
 }
 
+bool CommandBufferProxy::DiscardBackbuffer() {
+  if (last_state_.error != gpu::error::kNoError)
+    return false;
+
+  return Send(new GpuCommandBufferMsg_DiscardBackbuffer(route_id_));
+}
+
+bool CommandBufferProxy::EnsureBackbuffer() {
+  if (last_state_.error != gpu::error::kNoError)
+    return false;
+
+  return Send(new GpuCommandBufferMsg_EnsureBackbuffer(route_id_));
+}
+
 bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
                                    uint32 parent_texture_id) {
   if (last_state_.error != gpu::error::kNoError)

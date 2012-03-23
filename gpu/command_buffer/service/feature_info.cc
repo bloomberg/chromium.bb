@@ -118,6 +118,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_rate_limit_offscreen_context");
   AddExtensionString("GL_CHROMIUM_set_visibility");
   AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
+  AddExtensionString("GL_CHROMIUM_discard_framebuffer");
   AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_ANGLE_translated_shader_source");
 

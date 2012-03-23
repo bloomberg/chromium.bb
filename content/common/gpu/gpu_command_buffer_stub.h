@@ -195,6 +195,9 @@ class GpuCommandBufferStub
 
   void OnSetSurfaceVisible(bool visible);
 
+  void OnDiscardBackbuffer();
+  void OnEnsureBackbuffer();
+
   void OnReschedule();
 
   void OnCommandProcessed();

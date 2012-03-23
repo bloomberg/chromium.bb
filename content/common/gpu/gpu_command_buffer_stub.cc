@@ -123,6 +123,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnDestroyVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
                         OnSetSurfaceVisible)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DiscardBackbuffer,
+                        OnDiscardBackbuffer)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EnsureBackbuffer,
+                        OnEnsureBackbuffer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -564,13 +568,29 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
-  if (visible)
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
   DCHECK(surface_state_.get());
   surface_state_->visible = visible;
   surface_state_->last_used_time = base::TimeTicks::Now();
   channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+}
+
+void GpuCommandBufferStub::OnDiscardBackbuffer() {
+  if (!surface_)
+    return;
+  if (allocation_.suggest_have_frontbuffer)
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_ONLY);
+  else
+    surface_->SetBufferAllocation(
+        gfx::GLSurface::BUFFER_ALLOCATION_NONE);
+}
+
+void GpuCommandBufferStub::OnEnsureBackbuffer() {
+  if (!surface_)
+    return;
+  // TODO(mmocny): Support backbuffer without frontbuffer.
+  surface_->SetBufferAllocation(
+      gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(
@@ -623,18 +643,6 @@ void GpuCommandBufferStub::SetMemoryAllocation(
   allocation_ = allocation;
 
   SendMemoryAllocationToProxy(allocation);
-
-  if (!surface_)
-    return;
-  if (allocation.suggest_have_frontbuffer && allocation.suggest_have_backbuffer)
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
-  else if (allocation.suggest_have_frontbuffer)
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_ONLY);
-  else
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_NONE);
 }
 
 #endif  // defined(ENABLE_GPU)
