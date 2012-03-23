@@ -402,6 +402,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
+  // Prevents sending flings that are too slow, which causes drift on finger up.
+  DoubleProperty fling_minimum_velocity_;
 };
 
 }  // namespace gestures

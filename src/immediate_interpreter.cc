@@ -247,7 +247,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
-                                    tanf(DegToRad(30.0))) {  // 30 deg.
+                                    tanf(DegToRad(30.0))), // 30 deg.
+      fling_minimum_velocity_(prop_reg, "Fling Miniumum Velocity",
+                              100.0) {  // 100mm/sec minimum fling.
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -1224,12 +1226,18 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
     case kGestureTypeFling: {
-      result_ = Gesture(kGestureFling,
-                        prev_state_.timestamp,
-                        hwstate.timestamp,
-                        prev_scroll_dx_ / prev_scroll_dt_,
-                        prev_scroll_dy_ / prev_scroll_dt_,
-                        GESTURES_FLING_START);\
+      float vx = prev_scroll_dx_ / prev_scroll_dt_;
+      float vy = prev_scroll_dy_ / prev_scroll_dt_;
+
+      if (vx * vx + vy * vy >=
+          fling_minimum_velocity_.val_ * fling_minimum_velocity_.val_) {
+        result_ = Gesture(kGestureFling,
+                          prev_state_.timestamp,
+                          hwstate.timestamp,
+                          vx,
+                          vy,
+                          GESTURES_FLING_START);
+      }
       break;
     }
     default:
