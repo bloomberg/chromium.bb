@@ -75,6 +75,8 @@
         'layout_manager.h',
         'monitor.cc',
         'monitor.h',
+        'monitor_change_observer_x11.cc',
+        'monitor_change_observer_x11.h',
         'monitor_manager.cc',
         'monitor_manager.h',
         'single_monitor_manager.h',
@@ -105,6 +107,13 @@
             ['exclude', 'client/dispatcher_client.cc'],
             ['exclude', 'client/dispatcher_client.h'],
           ],
+        }],
+        ['OS=="linux"', {
+          'link_settings': {
+            'libraries': [
+              '-lXrandr',
+            ],
+          },
         }],
       ],
     },

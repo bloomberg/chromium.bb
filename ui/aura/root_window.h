@@ -189,6 +189,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void HoldMouseMoves();
   void ReleaseMouseMoves();
 
+  // Sets if the window should be focused when shown.
+  void SetFocusWhenShown(bool focus_when_shown);
+
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual const RootWindow* GetRootWindow() const OVERRIDE;

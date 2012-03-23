@@ -104,6 +104,10 @@ const AcceleratorData kAcceleratorData[] = {
     CYCLE_FORWARD_MRU },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, true, false, true,
     CYCLE_BACKWARD_MRU },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F4, false, true, false,
+    ADD_REMOVE_MONITOR },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F4, true, true, false,
+    CYCLE_MONITOR },
 #endif
 };
 

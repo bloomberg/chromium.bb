@@ -23,12 +23,15 @@ void DispatcherLinux::RootWindowHostCreated(::Window window,
                                             ::Window root,
                                             RootWindowHostLinux* host) {
   hosts_.insert(std::make_pair(window, host));
-  hosts_.insert(std::make_pair(root, host));
+  // Only the 1st root window listens to the root window.
+  if (hosts_.find(root) == hosts_.end())
+    hosts_.insert(std::make_pair(root, host));
 }
 
 void DispatcherLinux::RootWindowHostDestroying(::Window window, ::Window root) {
+  if (hosts_[window] == hosts_[root])
+    hosts_.erase(root);
   hosts_.erase(window);
-  hosts_.erase(root);
 }
 
 base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
