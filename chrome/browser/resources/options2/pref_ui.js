@@ -72,6 +72,12 @@ cr.define('options', function() {
     __proto__: HTMLInputElement.prototype,
 
     /**
+     * The stored value of the preference that this checkbox controls.
+     * @type {boolean}
+     */
+    prefValue_: null,
+
+    /**
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
@@ -81,39 +87,55 @@ cr.define('options', function() {
       self.initializeValueType(self.getAttribute('value-type'));
 
       // Listen to pref changes.
-      Preferences.getInstance().addEventListener(
-          this.pref,
-          function(event) {
-            var value = event.value && event.value['value'] != undefined ?
-                event.value['value'] : event.value;
+      Preferences.getInstance().addEventListener(this.pref, function(event) {
+        var value = event.value && event.value['value'] != undefined ?
+            event.value['value'] : event.value;
 
-            // Invert pref value if inverted_pref == true.
-            if (self.inverted_pref)
-              self.checked = !Boolean(value);
-            else
-              self.checked = Boolean(value);
+        self.prefValue_ = Boolean(value);
+        self.resetPrefState();
 
-            updateElementState_(self, event);
-          });
+        updateElementState_(self, event);
+      });
 
       // Listen to user events.
-      this.addEventListener(
-          'change',
-          function(e) {
-            if (self.customChangeHandler(e))
-              return;
-            var value = self.inverted_pref ? !self.checked : self.checked;
-            switch (self.valueType) {
-              case 'number':
-                Preferences.setIntegerPref(self.pref,
-                    Number(value), self.metric);
-                break;
-              case 'boolean':
-                Preferences.setBooleanPref(self.pref,
-                    value, self.metric);
-                break;
-            }
-          });
+      this.addEventListener('change', function(e) {
+        if (self.customChangeHandler(e))
+          return;
+
+        if (!this.dialogPref)
+          updatePreferenceValue_();
+      });
+    },
+
+    /**
+     * Update the preference value based on the checkbox state.
+     * @private
+     */
+    updatePreferenceValue_: function() {
+      var value = this.inverted_pref ? !this.checked : this.checked;
+      switch (this.valueType) {
+        case 'number':
+          Preferences.setIntegerPref(this.pref, Number(value), this.metric);
+          break;
+        case 'boolean':
+          Preferences.setBooleanPref(this.pref, value, this.metric);
+          break;
+      }
+    },
+
+    /**
+     * Called by SettingsDialog to save the preference.
+     */
+    savePrefState: function() {
+      this.updatePreferenceValue_();
+    },
+
+    /**
+     * Called by SettingsDialog to reset the UI to match the current preference
+     * value.
+     */
+    resetPrefState: function() {
+      this.checked = this.inverted_pref ? !this.prefValue_ : this.prefValue_;
     },
 
     /**
@@ -148,6 +170,14 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * A special preference type specific to dialogs. These preferences are reset
+   * when the dialog is shown and are not saved until the user confirms the
+   * dialog.
+   * @type {boolean}
+   */
+  cr.defineProperty(PrefCheckbox, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the preference is controlled by something else than the user's
