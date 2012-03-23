@@ -22,6 +22,7 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_delegate.h"
+#include "ui/gfx/compositor/layer_type.h"
 
 class SkCanvas;
 
@@ -43,18 +44,6 @@ class COMPOSITOR_EXPORT Layer :
     public LayerAnimationDelegate,
     NON_EXPORTED_BASE(public WebKit::WebContentLayerClient) {
  public:
-  enum LayerType {
-    // A layer that has no onscreen representation (note that its children will
-    // still be drawn, though).
-    LAYER_NOT_DRAWN = 0,
-
-    // A layer that has a texture.
-    LAYER_TEXTURED = 1,
-
-    // A layer that's drawn as a single color.
-    LAYER_SOLID_COLOR = 2,
-  };
-
   Layer();
   explicit Layer(LayerType type);
   virtual ~Layer();

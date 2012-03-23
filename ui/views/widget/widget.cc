@@ -128,7 +128,7 @@ Widget::InitParams::InitParams()
       parent_widget(NULL),
       native_widget(NULL),
       top_level(false),
-      create_texture_for_layer(true) {
+      layer_type(ui::LAYER_TEXTURED) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -153,7 +153,7 @@ Widget::InitParams::InitParams(Type type)
       parent_widget(NULL),
       native_widget(NULL),
       top_level(false),
-      create_texture_for_layer(true) {
+      layer_type(ui::LAYER_TEXTURED) {
 }
 
 gfx::NativeView Widget::InitParams::GetParent() const {

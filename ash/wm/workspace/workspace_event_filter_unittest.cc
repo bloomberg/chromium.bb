@@ -28,7 +28,7 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
                                  const gfx::Rect& bounds) {
     aura::Window* window = new aura::Window(delegate);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    window->Init(ui::Layer::LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     window->SetParent(NULL);
     window->SetBounds(bounds);
     window->Show();

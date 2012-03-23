@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/rect.h"
 
 namespace browser {

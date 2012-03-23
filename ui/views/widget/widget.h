@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
@@ -131,6 +132,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       TYPE_TOOLTIP,
       TYPE_BUBBLE,
     };
+
     enum Ownership {
       // Default. Creator is not responsible for managing the lifetime of the
       // Widget, it is destroyed when the corresponding NativeWidget is
@@ -181,9 +183,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // The Widget will not construct a default one. Default is NULL.
     NativeWidget* native_widget;
     bool top_level;
-    // Only used by NativeWidgetAura. Specifies whether the Layer created by
-    // aura::Window has a texture. The default is true.
-    bool create_texture_for_layer;
+    // Only used by NativeWidgetAura. Specifies the type of layer for the
+    // aura::Window. Default is LAYER_TEXTURED.
+    ui::LayerType layer_type;
   };
 
   Widget();

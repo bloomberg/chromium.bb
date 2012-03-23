@@ -27,6 +27,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/compositor/debug_utils.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"

@@ -18,6 +18,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_aura.h"
 

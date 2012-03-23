@@ -17,7 +17,6 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -118,7 +117,8 @@ Launcher::Launcher(aura::Window* window_container)
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.create_texture_for_layer = true;
+  // The launcher only ever draws a solid color.
+  params.layer_type = ui::LAYER_SOLID_COLOR;
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetInstance()->GetContainer(
@@ -185,13 +185,8 @@ internal::LauncherView* Launcher::GetLauncherViewForTest() {
 }
 
 void Launcher::UpdateBackground(int alpha) {
-  if (alpha == 0) {
-    delegate_view_->set_background(NULL);
-  } else {
-    delegate_view_->set_background(
-        views::Background::CreateSolidBackground(0, 0, 0, alpha));
-  }
-  delegate_view_->SchedulePaint();
+  ui::Layer* layer = widget_->GetNativeView()->layer();
+  layer->SetColor(SkColorSetARGB(alpha, 0, 0, 0));
 }
 
 }  // namespace ash

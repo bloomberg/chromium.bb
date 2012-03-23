@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"

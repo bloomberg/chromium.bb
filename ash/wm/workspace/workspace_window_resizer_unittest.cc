@@ -56,17 +56,17 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     EXPECT_EQ(kRootHeight, root_bounds.height());
     Shell::GetInstance()->SetMonitorWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
-    window_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    window_->Init(ui::LAYER_NOT_DRAWN);
     window_->SetParent(root);
     window_->set_id(1);
 
     window2_.reset(new aura::Window(&delegate2_));
-    window2_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    window2_->Init(ui::LAYER_NOT_DRAWN);
     window2_->SetParent(root);
     window2_->set_id(2);
 
     window3_.reset(new aura::Window(&delegate3_));
-    window3_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    window3_->Init(ui::LAYER_NOT_DRAWN);
     window3_->SetParent(root);
     window3_->set_id(3);
   }

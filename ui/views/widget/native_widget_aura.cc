@@ -164,9 +164,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   window_->SetTransparent(params.transparent);
-  window_->Init(params.create_texture_for_layer ?
-                    ui::Layer::LAYER_TEXTURED :
-                    ui::Layer::LAYER_NOT_DRAWN);
+  window_->Init(params.layer_type);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 

@@ -8,6 +8,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 
 namespace ash {

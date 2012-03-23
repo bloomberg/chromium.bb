@@ -26,7 +26,7 @@ gfx::Rect ImageGrid::TestAPI::GetTransformedLayerBounds(
 }
 
 ImageGrid::ImageGrid()
-    : layer_(new ui::Layer(ui::Layer::LAYER_NOT_DRAWN)),
+    : layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       top_image_height_(0),
       bottom_image_height_(0),
       left_image_width_(0),
@@ -257,7 +257,7 @@ void ImageGrid::SetImage(const gfx::Image* image,
     return;
 
   // Set up the new layer and painter.
-  layer_ptr->reset(new ui::Layer(ui::Layer::LAYER_TEXTURED));
+  layer_ptr->reset(new ui::Layer(ui::LAYER_TEXTURED));
 
   const gfx::Size size = GetImageSize(image);
   layer_ptr->get()->SetBounds(gfx::Rect(0, 0, size.width(), size.height()));

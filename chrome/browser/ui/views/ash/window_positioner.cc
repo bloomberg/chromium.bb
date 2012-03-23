@@ -9,6 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
 WindowPositioner::WindowPositioner()

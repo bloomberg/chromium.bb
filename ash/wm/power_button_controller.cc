@@ -525,7 +525,7 @@ void PowerButtonController::ShowBackgroundLayer() {
     hide_background_layer_timer_.Stop();
 
   if (!background_layer_.get()) {
-    background_layer_.reset(new ui::Layer(ui::Layer::LAYER_SOLID_COLOR));
+    background_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     background_layer_->SetColor(SK_ColorBLACK);
 
     ui::Layer* root_layer = Shell::GetRootWindow()->layer();

@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/point.h"

@@ -122,7 +122,7 @@ void ScreenshotTaker::CloseVisualFeedbackLayer(const base::Closure& task) {
 
 void ScreenshotTaker::DisplayVisualFeedback(const gfx::Rect& rect,
                                             const base::Closure& task) {
-  visual_feedback_layer_.reset(new ui::Layer(ui::Layer::LAYER_SOLID_COLOR));
+  visual_feedback_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   visual_feedback_layer_->SetColor(SK_ColorWHITE);
   visual_feedback_layer_->SetOpacity(kVisualFeedbackLayerOpacity);
   visual_feedback_layer_->SetBounds(rect);

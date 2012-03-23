@@ -108,7 +108,7 @@ aura::Window* CreateContainer(int window_id,
   aura::Window* container = new aura::Window(NULL);
   container->set_id(window_id);
   container->SetName(name);
-  container->Init(ui::Layer::LAYER_NOT_DRAWN);
+  container->Init(ui::LAYER_NOT_DRAWN);
   parent->AddChild(container);
   if (window_id != internal::kShellWindowId_UnparentedControlContainer)
     container->Show();

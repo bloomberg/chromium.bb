@@ -117,7 +117,7 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
                   test->launcher_delegate_.get(),
                   launcher_type,
                   app_id) {
-      window.Init(ui::Layer::LAYER_NOT_DRAWN);
+      window.Init(ui::LAYER_NOT_DRAWN);
       launcher_test->root_window()->AddChild(&window);
       launcher_test->activation_client_->ActivateWindow(&window);
       updater.Init();
@@ -221,7 +221,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
     TabStripModel tab_strip(&tab_strip_delegate, profile());
     tab_strip.InsertTabContentsAt(0, &wrapper, TabStripModel::ADD_ACTIVE);
     aura::Window window(NULL);
-    window.Init(ui::Layer::LAYER_NOT_DRAWN);
+    window.Init(ui::LAYER_NOT_DRAWN);
     root_window()->AddChild(&window);
     LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
                             LauncherUpdater::TYPE_TABBED, std::string());
@@ -296,7 +296,7 @@ TEST_F(LauncherUpdaterTest, TabbedWithApp) {
 TEST_F(LauncherUpdaterTest, TabbedWithAppOnCreate) {
   size_t initial_size = launcher_model_->items().size();
   aura::Window window(NULL);
-  window.Init(ui::Layer::LAYER_NOT_DRAWN);
+  window.Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(&window);
   TestTabStripModelDelegate tab_strip_delegate;
   TabStripModel tab_strip(&tab_strip_delegate, profile());

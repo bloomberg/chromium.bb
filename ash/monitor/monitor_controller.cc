@@ -27,7 +27,7 @@ void SetupAsSecondaryMonitor(aura::RootWindow* root) {
   root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
   aura::Window* container = new aura::Window(NULL);
   container->SetName("SecondaryMonitorContainer");
-  container->Init(ui::Layer::LAYER_NOT_DRAWN);
+  container->Init(ui::LAYER_NOT_DRAWN);
   root->AddChild(container);
   container->SetLayoutManager(new internal::BaseLayoutManager(root));
   CreateSecondaryMonitorWidget(container);

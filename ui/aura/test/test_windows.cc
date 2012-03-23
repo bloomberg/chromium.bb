@@ -48,7 +48,7 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   Window* window = new Window(delegate);
   window->set_id(id);
   window->SetType(type);
-  window->Init(ui::Layer::LAYER_TEXTURED);
+  window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
   window->Show();
   window->SetParent(parent);
@@ -59,7 +59,7 @@ Window* CreateTransientChild(int id, Window* parent) {
   Window* window = new Window(NULL);
   window->set_id(id);
   window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::Layer::LAYER_TEXTURED);
+  window->Init(ui::LAYER_TEXTURED);
   window->SetParent(NULL);
   parent->AddTransientChild(window);
   return window;

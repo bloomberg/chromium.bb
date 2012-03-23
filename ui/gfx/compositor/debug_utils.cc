@@ -43,15 +43,15 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
   buf << UTF8ToWide(layer->name()) << L' ' << layer;
 
   switch (layer->type()) {
-    case Layer::LAYER_NOT_DRAWN:
+    case ui::LAYER_NOT_DRAWN:
       buf << L" not_drawn";
       break;
-    case Layer::LAYER_TEXTURED:
+    case ui::LAYER_TEXTURED:
       buf << L" textured";
       if (layer->fills_bounds_opaquely())
         buf << L" opaque";
       break;
-    case Layer::LAYER_SOLID_COLOR:
+    case ui::LAYER_SOLID_COLOR:
       buf << L" solid";
       break;
   }

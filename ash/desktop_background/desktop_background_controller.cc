@@ -56,7 +56,7 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode() {
   // viewport when there are regions not covered by a layer:
   // http://crbug.com/113445
   Shell* shell = Shell::GetInstance();
-  ui::Layer* background_layer = new ui::Layer(ui::Layer::LAYER_SOLID_COLOR);
+  ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
   background_layer->SetColor(SK_ColorBLACK);
   shell->GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
       layer()->Add(background_layer);

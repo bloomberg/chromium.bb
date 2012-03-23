@@ -182,7 +182,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.native_widget = this;
   // We don't draw anything so we don't need a texture.
-  params.create_texture_for_layer = false;
+  params.layer_type = ui::LAYER_NOT_DRAWN;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = NULL;
   params.can_activate = true;

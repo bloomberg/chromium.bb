@@ -8,6 +8,7 @@
 #include "ash/wm/window_animations.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/gfx/compositor/layer.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(bool)
 

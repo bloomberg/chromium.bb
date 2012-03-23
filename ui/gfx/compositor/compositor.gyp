@@ -45,6 +45,7 @@
         'layer_animation_sequence.h',
         'layer_animator.cc',
         'layer_animator.h',
+        'layer_type.h',
         'scoped_layer_animation_settings.cc',
         'scoped_layer_animation_settings.h',
         'screen_rotation.cc',

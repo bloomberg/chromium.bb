@@ -240,11 +240,11 @@ TEST_F(WindowTest, GetChildById) {
 // and not containing NULL or parents.
 TEST_F(WindowTest, Contains) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
+  parent.Init(ui::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child1.Init(ui::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child2.Init(ui::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&child1);
@@ -272,7 +272,7 @@ TEST_F(WindowTest, ConvertPointToWindow) {
 TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
-  w1.Init(ui::Layer::LAYER_TEXTURED);
+  w1.Init(ui::LAYER_TEXTURED);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
   w1.SetParent(NULL);
@@ -421,11 +421,11 @@ TEST_F(WindowTest, OrphanedBeforeOnDestroyed) {
 // Make sure StackChildAtTop moves both the window and layer to the front.
 TEST_F(WindowTest, StackChildAtTop) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
+  parent.Init(ui::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child1.Init(ui::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child2.Init(ui::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&parent);
@@ -448,15 +448,15 @@ TEST_F(WindowTest, StackChildAtTop) {
 // Make sure StackChildBelow works.
 TEST_F(WindowTest, StackChildBelow) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
+  parent.Init(ui::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child1.Init(ui::LAYER_NOT_DRAWN);
   child1.set_id(1);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child2.Init(ui::LAYER_NOT_DRAWN);
   child2.set_id(2);
   Window child3(NULL);
-  child3.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child3.Init(ui::LAYER_NOT_DRAWN);
   child3.set_id(3);
 
   child1.SetParent(&parent);
@@ -480,13 +480,13 @@ TEST_F(WindowTest, StackChildBelow) {
 // Various assertions for StackChildAbove.
 TEST_F(WindowTest, StackChildAbove) {
   Window parent(NULL);
-  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
+  parent.Init(ui::LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child1.Init(ui::LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child2.Init(ui::LAYER_NOT_DRAWN);
   Window child3(NULL);
-  child3.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child3.Init(ui::LAYER_NOT_DRAWN);
 
   child1.SetParent(&parent);
   child2.SetParent(&parent);
@@ -1774,7 +1774,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test a direct add/remove from the RootWindow.
   scoped_ptr<Window> w1(new Window(NULL));
-  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w1->Init(ui::LAYER_NOT_DRAWN);
   w1->AddObserver(&observer);
 
   w1->SetParent(NULL);
@@ -1789,9 +1789,9 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test an indirect add/remove from the RootWindow.
   w1.reset(new Window(NULL));
-  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w1->Init(ui::LAYER_NOT_DRAWN);
   Window* w11 = new Window(NULL);
-  w11->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w11->Init(ui::LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
   w11->SetParent(w1.get());
   EXPECT_EQ(0, observer.added_count());
@@ -1810,13 +1810,13 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test an indirect add/remove with nested observers.
   w1.reset(new Window(NULL));
-  w1->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w1->Init(ui::LAYER_NOT_DRAWN);
   w11 = new Window(NULL);
-  w11->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w11->Init(ui::LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
   w11->SetParent(w1.get());
   Window* w111 = new Window(NULL);
-  w111->Init(ui::Layer::LAYER_NOT_DRAWN);
+  w111->Init(ui::LAYER_NOT_DRAWN);
   w111->AddObserver(&observer);
   w111->SetParent(w11);
 

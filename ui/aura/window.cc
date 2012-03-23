@@ -21,6 +21,7 @@
 #include "ui/base/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
@@ -127,7 +128,7 @@ Window::~Window() {
   layer_ = NULL;
 }
 
-void Window::Init(ui::Layer::LayerType layer_type) {
+void Window::Init(ui::LayerType layer_type) {
   layer_ = new ui::Layer(layer_type);
   layer_owner_.reset(layer_);
   layer_->SetVisible(false);

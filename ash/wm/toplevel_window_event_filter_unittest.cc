@@ -70,7 +70,7 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     parent_ = new aura::Window(NULL);
-    parent_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    parent_->Init(ui::LAYER_NOT_DRAWN);
     parent_->Show();
     Shell::GetRootWindow()->AddChild(parent_);
     parent_->SetBounds(Shell::GetRootWindow()->bounds());
@@ -89,7 +89,7 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     TestWindowDelegate* d1 = new TestWindowDelegate(hittest_code);
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
-    w1->Init(ui::Layer::LAYER_TEXTURED);
+    w1->Init(ui::LAYER_TEXTURED);
     w1->SetParent(parent_);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();

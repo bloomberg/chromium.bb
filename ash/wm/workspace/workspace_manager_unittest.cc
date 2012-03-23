@@ -19,6 +19,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
 using aura::Window;
@@ -35,7 +36,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    window->Init(ui::Layer::LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     return window;
   }
 
@@ -43,7 +44,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    window->Init(ui::Layer::LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     window->SetParent(GetViewport());
     return window;
   }
