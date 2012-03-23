@@ -121,7 +121,7 @@ struct parse_context {
 	struct enumeration *enumeration;
 	struct description *description;
 	char character_data[8192];
-	int character_data_length;
+	unsigned int character_data_length;
 };
 
 static char *
