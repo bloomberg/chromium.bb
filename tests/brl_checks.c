@@ -38,6 +38,8 @@ check_translation(const char *tableList, const char *str,
 
   char *typeformbuf = NULL;
 
+  int expectedlen = strlen(expected);
+
   inlen = strlen(str) * 2;
   outlen = inlen;
   inbuf = malloc(sizeof(widechar) * inlen);
@@ -59,16 +61,29 @@ check_translation(const char *tableList, const char *str,
       return 1;
     }
 
-  for (i = 0; i < outlen && expected[i] == outbuf[i]; i++);
-  if (i < outlen)
+  for (i = 0; i < outlen && i < expectedlen && expected[i] == outbuf[i]; i++);
+  if (i < outlen || i < expectedlen)
     {
       rv = 1;
       outbuf[outlen] = 0;
       printf("Expected: %s\n", expected);
       printf("Received: ");
       print_widechars(outbuf, outlen);
-      printf("Diff: Expected '%c' but recieved '%c' in index %d\n",
-	     expected[i], outbuf[i], i);
+      if (i < outlen && i < expectedlen) 
+	{
+	  printf("Diff: Expected '%c' but recieved '%c' in index %d\n",
+		 expected[i], outbuf[i], i);
+	}
+      else if (i < expectedlen)
+	{
+	  printf("Diff: Expected '%c' but recieved nothing in index %d\n",
+		 expected[i], i);
+	}
+      else 
+	{
+	  printf("Diff: Expected nothing but recieved '%c' in index %d\n",
+		  outbuf[i], i);
+	}
     }
 
   free(inbuf);

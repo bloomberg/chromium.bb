@@ -1,3 +1,8 @@
+2012-03-23  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/brl_checks.c (check_translation): Make the printing of
+	test results more robust (against out of bound errors).
+
 2012-03-21  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am (TESTS_ENVIRONMENT): Set the env variables so
