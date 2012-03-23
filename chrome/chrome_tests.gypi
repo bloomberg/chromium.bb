@@ -19,14 +19,10 @@
       '../net/base/net_export.h',
       '../net/base/cert_status_flags.h',
     ],
-    'pyautolib_libraries': [
-    ],
     'conditions': [
       ['asan==1', {
-        'pyautolib_libraries': [
-          # Link in the libasan32.a because this binary will be loaded by
-          # Python that does not have libasan in.
-          '-lasan32',
+        'pyautolib_sources': [
+          'test/pyautolib/asan_stub.c',
         ]
       }],
     ],
@@ -4336,9 +4332,6 @@
           'cflags': [
              '-Wno-uninitialized',
              '-Wno-self-assign',  # to keep clang happy for generated code.
-          ],
-          'libraries': [
-            '<@(pyautolib_libraries)',
           ],
           'sources': [
             'test/automation/proxy_launcher.cc',
