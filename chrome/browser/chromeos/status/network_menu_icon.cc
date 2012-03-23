@@ -32,13 +32,13 @@ const int kThrobDurationMs = 750;
 
 // Images for strength bars for wired networks.
 const int kNumBarsImages = 5;
-SkBitmap* kBarsImagesAnimatingSmall[kNumBarsImages - 1];
-SkBitmap* kBarsImagesAnimatingLarge[kNumBarsImages - 1];
+SkBitmap* kBarsImagesAnimatingDark[kNumBarsImages - 1];
+SkBitmap* kBarsImagesAnimatingLight[kNumBarsImages - 1];
 
 // Imagaes for strength arcs for wireless networks.
 const int kNumArcsImages = 5;
-SkBitmap* kArcsImagesAnimatingSmall[kNumArcsImages - 1];
-SkBitmap* kArcsImagesAnimatingLarge[kNumArcsImages - 1];
+SkBitmap* kArcsImagesAnimatingDark[kNumArcsImages - 1];
+SkBitmap* kArcsImagesAnimatingLight[kNumArcsImages - 1];
 
 // Badge offsets.  If a badge is large enough that it won't fit within the icon
 // when using the right or bottom offset, it gets shifted inwards so it will.
@@ -181,9 +181,9 @@ const SkBitmap GetVpnResource(int resource_id) {
 class NetworkIcon {
  public:
   // Default constructor is used by the status bar icon (NetworkMenuIcon).
-  explicit NetworkIcon(NetworkMenuIcon::ResourceSize size)
+  explicit NetworkIcon(NetworkMenuIcon::ResourceColorTheme color)
       : state_(STATE_UNKNOWN),
-        resource_size_(size),
+        resource_color_theme_(color),
         strength_index_(-1),
         top_left_badge_(NULL),
         top_right_badge_(NULL),
@@ -196,10 +196,10 @@ class NetworkIcon {
 
   // Service path constructor for cached network service icons.
   NetworkIcon(const std::string& service_path,
-              NetworkMenuIcon::ResourceSize size)
+              NetworkMenuIcon::ResourceColorTheme color)
       : service_path_(service_path),
         state_(STATE_UNKNOWN),
-        resource_size_(size),
+        resource_color_theme_(color),
         strength_index_(-1),
         top_left_badge_(NULL),
         top_right_badge_(NULL),
@@ -297,9 +297,7 @@ class NetworkIcon {
 
     switch (network->type()) {
       case TYPE_ETHERNET: {
-        icon_ = *rb.GetBitmapNamed(
-            resource_size_ == NetworkMenuIcon::SIZE_SMALL ?
-                IDR_STATUSBAR_WIRED : IDR_STATUSBAR_WIRED_LARGE);
+        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
         break;
       }
       case TYPE_WIFI: {
@@ -308,7 +306,7 @@ class NetworkIcon {
         if (strength_index_ == -1)
           strength_index_ = WifiStrengthIndex(wifi);
         icon_ = NetworkMenuIcon::GetBitmap(
-            NetworkMenuIcon::ARCS, strength_index_, resource_size_);
+            NetworkMenuIcon::ARCS, strength_index_, resource_color_theme_);
         break;
       }
       case TYPE_CELLULAR: {
@@ -317,15 +315,17 @@ class NetworkIcon {
         if (strength_index_ == -1)
           strength_index_ = CellularStrengthIndex(cellular);
         icon_ = NetworkMenuIcon::GetBitmap(
-            NetworkMenuIcon::BARS, strength_index_, resource_size_);
+            NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
+        break;
+      }
+      case TYPE_VPN: {
+        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_VPN);
         break;
       }
       default: {
         LOG(WARNING) << "Request for icon for unsupported type: "
                      << network->type();
-        icon_ = *rb.GetBitmapNamed(
-            resource_size_ == NetworkMenuIcon::SIZE_SMALL ?
-                IDR_STATUSBAR_WIRED : IDR_STATUSBAR_WIRED_LARGE);
+        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
         break;
       }
     }
@@ -416,16 +416,13 @@ class NetworkIcon {
   void GenerateBitmap() {
     if (icon_.empty())
       return;
-    if (resource_size_ == NetworkMenuIcon::SIZE_SMALL) {
-      bitmap_ = NetworkMenuIcon::GenerateBitmapFromComponents(
-          icon_,
-          top_left_badge_,
-          top_right_badge_,
-          bottom_left_badge_,
-          bottom_right_badge_);
-    } else {
-      bitmap_ = icon_;
-    }
+
+    bitmap_ = NetworkMenuIcon::GenerateBitmapFromComponents(
+        icon_,
+        top_left_badge_,
+        top_right_badge_,
+        bottom_left_badge_,
+        bottom_right_badge_);
   }
 
   const SkBitmap GetBitmap() const { return bitmap_; }
@@ -517,7 +514,7 @@ class NetworkIcon {
 
   std::string service_path_;
   ConnectionState state_;
-  NetworkMenuIcon::ResourceSize resource_size_;
+  NetworkMenuIcon::ResourceColorTheme resource_color_theme_;
   int strength_index_;
   SkBitmap bitmap_;
   SkBitmap icon_;
@@ -538,7 +535,7 @@ class NetworkIcon {
 NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
     : mode_(mode),
       delegate_(delegate),
-      resource_size_(SIZE_SMALL),
+      resource_color_theme_(COLOR_DARK),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       last_network_type_(TYPE_WIFI),
       connecting_network_(NULL) {
@@ -547,7 +544,7 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
 
   // Initialize the icon.
-  icon_.reset(new NetworkIcon(resource_size_));
+  icon_.reset(new NetworkIcon(resource_color_theme_));
 }
 
 NetworkMenuIcon::~NetworkMenuIcon() {
@@ -555,12 +552,12 @@ NetworkMenuIcon::~NetworkMenuIcon() {
 
 // Public methods:
 
-void NetworkMenuIcon::SetResourceSize(ResourceSize size) {
-  if (size == resource_size_)
+void NetworkMenuIcon::SetResourceColorTheme(ResourceColorTheme color) {
+  if (color == resource_color_theme_)
     return;
 
-  resource_size_ = size;
-  icon_.reset(new NetworkIcon(resource_size_));
+  resource_color_theme_ = color;
+  icon_.reset(new NetworkIcon(resource_color_theme_));
 }
 
 const SkBitmap NetworkMenuIcon::GetIconAndText(string16* text) {
@@ -614,20 +611,20 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
   if (connecting_network_->type() == TYPE_WIFI) {
     image_count = kNumArcsImages - 1;
     bitmap_type = ARCS;
-    images = resource_size_ == SIZE_SMALL ? kArcsImagesAnimatingSmall :
-                                            kArcsImagesAnimatingLarge;
+    images = resource_color_theme_ == COLOR_DARK ? kArcsImagesAnimatingDark :
+                                                   kArcsImagesAnimatingLight;
   } else {
     image_count = kNumBarsImages - 1;
     bitmap_type = BARS;
-    images = resource_size_ == SIZE_SMALL ? kBarsImagesAnimatingSmall :
-                                            kBarsImagesAnimatingLarge;
+    images = resource_color_theme_ == COLOR_DARK ? kBarsImagesAnimatingDark :
+                                                   kBarsImagesAnimatingLight;
   }
   int index = GetAnimation() * nextafter(static_cast<float>(image_count), 0);
   index = std::max(std::min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (!images[index]) {
-    SkBitmap source = GetBitmap(bitmap_type, index + 1, resource_size_);
+    SkBitmap source = GetBitmap(bitmap_type, index + 1, resource_color_theme_);
     images[index] =
         new SkBitmap(NetworkMenuIcon::GenerateConnectingBitmap(source));
   }
@@ -725,18 +722,16 @@ void NetworkMenuIcon::SetDisconnectedIconAndText() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   switch (last_network_type_) {
     case TYPE_ETHERNET:
-      icon_->set_icon(*rb.GetBitmapNamed(
-            resource_size_ == SIZE_SMALL ? IDR_STATUSBAR_WIRED :
-                                           IDR_STATUSBAR_WIRED_LARGE));
+      icon_->set_icon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
       icon_->set_bottom_right_badge(
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
     case TYPE_WIFI:
-      icon_->set_icon(GetDisconnectedBitmap(ARCS, resource_size_));
+      icon_->set_icon(GetDisconnectedBitmap(ARCS, resource_color_theme_));
       break;
     case TYPE_CELLULAR:
     default:
-      icon_->set_icon(GetDisconnectedBitmap(BARS, resource_size_));
+      icon_->set_icon(GetDisconnectedBitmap(BARS, resource_color_theme_));
       icon_->set_bottom_right_badge(
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
@@ -799,25 +794,26 @@ const SkBitmap NetworkMenuIcon::GenerateConnectingBitmap(
 
 // Generates and caches an icon bitmap for a network's current state.
 const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network,
-                                          ResourceSize size) {
+                                          ResourceColorTheme color) {
   DCHECK(network);
   // Maintain a static (global) icon map. Note: Icons are never destroyed;
   // it is assumed that a finite and reasonable number of network icons will be
   // created during a session.
   typedef std::map<std::string, NetworkIcon*> NetworkIconMap;
-  static NetworkIconMap* icon_map_small = NULL;
-  static NetworkIconMap* icon_map_large = NULL;
-  if (icon_map_small == NULL)
-    icon_map_small = new NetworkIconMap;
-  if (icon_map_large == NULL)
-    icon_map_large = new NetworkIconMap;
-  NetworkIconMap* icon_map = size == SIZE_SMALL ? icon_map_small :
-                                                  icon_map_large;
+  static NetworkIconMap* icon_map_dark = NULL;
+  static NetworkIconMap* icon_map_light = NULL;
+  if (icon_map_dark == NULL)
+    icon_map_dark = new NetworkIconMap;
+  if (icon_map_light == NULL)
+    icon_map_light = new NetworkIconMap;
+
+  NetworkIconMap* icon_map = color == COLOR_DARK ? icon_map_dark :
+                                                   icon_map_light;
   // Find or add the icon.
   NetworkIcon* icon;
   NetworkIconMap::iterator iter = icon_map->find(network->service_path());
   if (iter == icon_map->end()) {
-    icon = new NetworkIcon(network->service_path(), size);
+    icon = new NetworkIcon(network->service_path(), color);
     icon_map->insert(std::make_pair(network->service_path(), icon));
   } else {
     icon = iter->second;
@@ -828,23 +824,16 @@ const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network,
 }
 
 // Returns an icon for a disconnected VPN.
-const SkBitmap NetworkMenuIcon::GetVpnBitmap(ResourceSize size) {
-  if (size == SIZE_SMALL) {
-    static SkBitmap* vpn_bitmap = NULL;
-    if (vpn_bitmap == NULL)
-      vpn_bitmap = new SkBitmap(GetVpnResource(IDR_STATUSBAR_WIRED));
-    return *vpn_bitmap;
-  } else {
-    static SkBitmap* vpn_bitmap = NULL;
-    if (vpn_bitmap == NULL)
-      vpn_bitmap = new SkBitmap(GetVpnResource(IDR_STATUSBAR_WIRED_LARGE));
-    return *vpn_bitmap;
-  }
+const SkBitmap NetworkMenuIcon::GetVpnBitmap() {
+  static SkBitmap* vpn_bitmap = NULL;
+  if (vpn_bitmap == NULL)
+    vpn_bitmap = new SkBitmap(GetVpnResource(IDR_STATUSBAR_VPN));
+  return *vpn_bitmap;
 }
 
 const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type,
                                           int index,
-                                          ResourceSize size) {
+                                          ResourceColorTheme color) {
   int width, height;
   SkBitmap* images;
   if (type == ARCS) {
@@ -852,8 +841,8 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type,
       return SkBitmap();
 
     images = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        size == SIZE_SMALL ? IDR_STATUSBAR_NETWORK_ARCS :
-                             IDR_STATUSBAR_NETWORK_ARCS_LARGE);
+        color == COLOR_DARK ? IDR_STATUSBAR_NETWORK_ARCS_DARK :
+                              IDR_STATUSBAR_NETWORK_ARCS_LIGHT);
     width = images->width();
     height = images->height() / kNumArcsImages;
   } else {
@@ -861,8 +850,8 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type,
       return SkBitmap();
 
     images = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        size == SIZE_SMALL ? IDR_STATUSBAR_NETWORK_BARS :
-                             IDR_STATUSBAR_NETWORK_BARS_LARGE);
+        color == COLOR_DARK ? IDR_STATUSBAR_NETWORK_BARS_DARK :
+                              IDR_STATUSBAR_NETWORK_BARS_LIGHT);
     width = images->width();
     height = images->height() / kNumBarsImages;
   }
@@ -873,14 +862,15 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type,
   return image;
 }
 
-const SkBitmap NetworkMenuIcon::GetDisconnectedBitmap(BitmapType type,
-                                                      ResourceSize size) {
-  return GetBitmap(type, 0, size);
+const SkBitmap NetworkMenuIcon::GetDisconnectedBitmap(
+    BitmapType type,
+    ResourceColorTheme color) {
+  return GetBitmap(type, 0, color);
 }
 
 const SkBitmap NetworkMenuIcon::GetConnectedBitmap(BitmapType type,
-                                                   ResourceSize size) {
-  return GetBitmap(type, NumBitmaps(type) - 1, size);
+                                                   ResourceColorTheme color) {
+  return GetBitmap(type, NumBitmaps(type) - 1, color);
 }
 
 int NetworkMenuIcon::NumBitmaps(BitmapType type) {

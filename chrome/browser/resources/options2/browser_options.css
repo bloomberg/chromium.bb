@@ -180,11 +180,11 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-wifi {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS');
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS_DARK');
 }
 
 .network-cellular {
-  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS');
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
 }
 
 .network-vpn {

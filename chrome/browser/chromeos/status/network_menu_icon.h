@@ -51,9 +51,9 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
     DROPDOWN_MODE,  // Prioritizes connected networks and sets display text.
   };
 
-  enum ResourceSize {
-    SIZE_SMALL,
-    SIZE_LARGE,
+  enum ResourceColorTheme {
+    COLOR_DARK,
+    COLOR_LIGHT,
   };
 
   // Used for calls to GetBitmap() and GetNumBitmaps() below.
@@ -84,8 +84,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
     last_network_type_ = last_network_type;
   }
 
-  // Sets the resource size.
-  void SetResourceSize(ResourceSize size);
+  // Sets the resource color theme (e.g. light or dark icons).
+  void SetResourceColorTheme(ResourceColorTheme color);
 
   // Generates and returns the icon bitmap. If |text| is not NULL, sets it to
   // the tooltip or display text to show, based on the value of mode_.
@@ -111,23 +111,25 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   static const SkBitmap GenerateConnectingBitmap(const SkBitmap& source);
 
   // Returns a bitmap associated with |network|, reflecting its current state.
-  static const SkBitmap GetBitmap(const Network* network, ResourceSize size);
+  static const SkBitmap GetBitmap(const Network* network,
+                                  ResourceColorTheme color);
 
   // Returns a bitmap representing an unconnected VPN.
-  static const SkBitmap GetVpnBitmap(ResourceSize size);
+  static const SkBitmap GetVpnBitmap();
 
-  // Access a specific bitmap of the specified size. If index is out of range an
-  // empty bitmap will be returned.
+  // Access a specific bitmap of the specified color theme. If index is out of
+  // range, an empty bitmap will be returned.
   static const SkBitmap GetBitmap(BitmapType type,
                                   int index,
-                                  ResourceSize size);
+                                  ResourceColorTheme color);
 
   // Gets the disconnected bitmap for given type.
   static const SkBitmap GetDisconnectedBitmap(BitmapType type,
-                                              ResourceSize size);
+                                              ResourceColorTheme color);
 
   // Gets the connected bitmap for given type.
-  static const SkBitmap GetConnectedBitmap(BitmapType type, ResourceSize size);
+  static const SkBitmap GetConnectedBitmap(BitmapType type,
+                                           ResourceColorTheme color);
 
   // Returns total number of bitmaps for given type.
   static int NumBitmaps(BitmapType type);
@@ -158,7 +160,7 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   Delegate* delegate_;
   // Generated bitmap for connecting to a VPN.
   SkBitmap vpn_connecting_badge_;
-  ResourceSize resource_size_;
+  ResourceColorTheme resource_color_theme_;
   // Animation throbber for animating the icon while conencting.
   ui::ThrobAnimation animation_connecting_;
   // Cached type of previous displayed network.

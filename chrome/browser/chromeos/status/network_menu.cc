@@ -550,7 +550,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       flag |= FLAG_ASSOCIATED;
     SkBitmap icon;
     icon = NetworkMenuIcon::GetBitmap(ethernet_network,
-                                      NetworkMenuIcon::SIZE_SMALL);
+                                      NetworkMenuIcon::COLOR_DARK);
     menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
                                    label, icon, std::string(), flag));
   }
@@ -592,7 +592,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       if (ShouldHighlightNetwork(wifi_networks[i]))
         flag |= FLAG_ASSOCIATED;
       const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_networks[i],
-          NetworkMenuIcon::SIZE_SMALL);
+          NetworkMenuIcon::COLOR_DARK);
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
                    label, icon, wifi_networks[i]->service_path(), flag));
@@ -603,7 +603,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
         NetworkMenuIcon::GetConnectedBitmap(NetworkMenuIcon::ARCS,
-                                            NetworkMenuIcon::SIZE_SMALL),
+                                            NetworkMenuIcon::COLOR_DARK),
         std::string(), FLAG_ADD_WIFI));
   }
 
@@ -663,7 +663,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       if (isActive)
         flag |= FLAG_ASSOCIATED;
       const SkBitmap icon = NetworkMenuIcon::GetBitmap(cell_networks[i],
-          NetworkMenuIcon::SIZE_SMALL);
+          NetworkMenuIcon::COLOR_DARK);
       menu_items_.push_back(
           MenuItem(ui::MenuModel::TYPE_COMMAND,
                    label, icon, cell_networks[i]->service_path(), flag));
@@ -719,7 +719,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
             l10n_util::GetStringUTF16(
                 IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
             NetworkMenuIcon::GetDisconnectedBitmap(NetworkMenuIcon::BARS,
-                                                   NetworkMenuIcon::SIZE_SMALL),
+                                                   NetworkMenuIcon::COLOR_DARK),
             std::string(), FLAG_ADD_CELLULAR));
       }
     }
@@ -738,8 +738,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   if (StatusAreaViewChromeos::IsBrowserMode()) {
     if (cros->connected_network() || cros->virtual_network_connected()) {
       menu_items_.push_back(MenuItem());  // Separator
-      const SkBitmap icon = NetworkMenuIcon::GetVpnBitmap(
-          NetworkMenuIcon::SIZE_SMALL);
+      const SkBitmap icon = NetworkMenuIcon::GetVpnBitmap();
       menu_items_.push_back(MenuItem(
           ui::MenuModel::TYPE_SUBMENU,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_PRIVATE_NETWORKS),
@@ -873,7 +872,7 @@ void VPNMenuModel::InitMenuItems(bool should_open_button_options) {
     if (ShouldHighlightNetwork(vpn))
       flag |= FLAG_ASSOCIATED;
     const SkBitmap icon = NetworkMenuIcon::GetBitmap(vpn,
-        NetworkMenuIcon::SIZE_SMALL);
+        NetworkMenuIcon::COLOR_DARK);
     menu_items_.push_back(
         MenuItem(ui::MenuModel::TYPE_COMMAND,
                  label, icon, vpn->service_path(), flag));

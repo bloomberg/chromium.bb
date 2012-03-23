@@ -64,7 +64,7 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
                                            NetworkMenu* network_menu) {
   ash::NetworkIconInfo info;
   info.name = UTF8ToUTF16(network->name());
-  info.image = network_icon->GetBitmap(network, NetworkMenuIcon::SIZE_SMALL);
+  info.image = network_icon->GetBitmap(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
   info.highlight = network_menu->ShouldHighlightNetwork(network);
   return info;
@@ -113,7 +113,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       : tray_(tray),
         network_icon_(ALLOW_THIS_IN_INITIALIZER_LIST(
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
-        network_icon_large_(ALLOW_THIS_IN_INITIALIZER_LIST(
+        network_icon_dark_(ALLOW_THIS_IN_INITIALIZER_LIST(
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
         clock_type_(base::k24HourClock) {
@@ -152,10 +152,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                    chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
 
-    network_icon_large_->SetResourceSize(NetworkMenuIcon::SIZE_LARGE);
-
     accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
                                 g_browser_process->local_state(), this);
+
+    network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
+    network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
     bluetooth_adapter_.reset(BluetoothAdapter::CreateDefaultAdapter());
     bluetooth_adapter_->AddObserver(this);
@@ -365,9 +366,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
-                                          bool large) OVERRIDE {
-    info->image = !large ? network_icon_->GetIconAndText(&info->description) :
-        network_icon_large_->GetIconAndText(&info->description);
+                                          bool dark) OVERRIDE {
+    info->image = !dark ? network_icon_->GetIconAndText(&info->description) :
+        network_icon_dark_->GetIconAndText(&info->description);
   }
 
   virtual void GetAvailableNetworks(
@@ -380,7 +381,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       if (ethernet_network) {
         ash::NetworkIconInfo info;
         info.image = network_icon_->GetBitmap(ethernet_network,
-                                              NetworkMenuIcon::SIZE_SMALL);
+                                              NetworkMenuIcon::COLOR_DARK);
         if (!ethernet_network->name().empty())
           info.name = UTF8ToUTF16(ethernet_network->name());
         else
@@ -817,7 +818,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   ash::SystemTray* tray_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
-  scoped_ptr<NetworkMenuIcon> network_icon_large_;
+  scoped_ptr<NetworkMenuIcon> network_icon_dark_;
   scoped_ptr<NetworkMenu> network_menu_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;

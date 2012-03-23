@@ -491,8 +491,12 @@
         <include name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="statusbar_network_1x_error.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="statusbar_network_1x_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS" file="statusbar_network_arcs.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="statusbar_network_arcs_light.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="statusbar_network_arcs_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS_LARGE" file="statusbar_network_arcs_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS" file="statusbar_network_bars.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="statusbar_network_bars_light.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="statusbar_network_bars_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS_LARGE" file="statusbar_network_bars_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="statusbar_network_edge.png" type="BINDATA" />
