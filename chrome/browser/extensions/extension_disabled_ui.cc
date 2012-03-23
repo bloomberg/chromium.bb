@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -155,6 +156,15 @@ class ExtensionDisabledGlobalError : public GlobalError,
   ExtensionService* service_;
   const Extension* extension_;
 
+  // How the user responded to the error; used for metrics.
+  enum UserResponse {
+    IGNORED,
+    REENABLE,
+    UNINSTALL,
+    EXTENSION_DISABLED_UI_BUCKET_BOUNDARY
+  };
+  UserResponse user_response_;
+
   scoped_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   // Menu command ID assigned for this extension's error.
@@ -169,6 +179,7 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
     const Extension* extension)
     : service_(service),
       extension_(extension),
+      user_response_(IGNORED),
       menu_command_id_(GetMenuCommandID()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(service->profile()));
@@ -177,6 +188,8 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
 }
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
+  HISTOGRAM_ENUMERATION("Extension.DisabledUIUserResponse",
+                        user_response_, EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
 }
 
 bool ExtensionDisabledGlobalError::HasBadge() {
@@ -267,6 +280,11 @@ void ExtensionDisabledGlobalError::Observe(
     GlobalErrorServiceFactory::GetForProfile(service_->profile())->
         RemoveGlobalError(this);
     ReleaseMenuCommandID(menu_command_id_);
+
+    if (type == chrome::NOTIFICATION_EXTENSION_LOADED)
+      user_response_ = REENABLE;
+    else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED)
+      user_response_ = UNINSTALL;
     delete this;
   }
 }
