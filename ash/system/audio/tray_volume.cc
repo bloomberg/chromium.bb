@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -116,6 +117,9 @@ class VolumeView : public views::View,
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(delegate->GetVolumeLevel());
     slider_->set_focusable(true);
+    slider_->SetAccessibleName(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_VOLUME));
     AddChildView(slider_);
   }
 

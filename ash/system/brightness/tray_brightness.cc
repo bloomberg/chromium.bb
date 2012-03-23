@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -46,6 +47,9 @@ class BrightnessView : public views::View,
     // http://crosbug.com/26935
     slider_->SetValue(0.8f);
     slider_->set_focusable(true);
+    slider_->SetAccessibleName(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BRIGHTNESS));
     AddChildView(slider_);
   }
 
