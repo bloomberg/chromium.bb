@@ -34,12 +34,18 @@ en_gb_g1_italics_SOURCES =	\
 	brl_checks.h            \
 	en_gb_g1_italics.c	
 
-check_PROGRAMS = 		\
-	present_progressive 	\
-	capitalized_word 	\
-	capitalized_with_sentance \
-	inpos_compbrl		\
-	lastworditalafter	\
+pass2_SOURCES =					\
+	brl_checks.c				\
+	brl_checks.h				\
+	pass2.c	
+
+check_PROGRAMS =				\
+	pass2					\
+	present_progressive			\
+	capitalized_word			\
+	capitalized_with_sentance		\
+	inpos_compbrl				\
+	lastworditalafter			\
 	en_gb_g1_italics
 
 dist_check_SCRIPTS = \
@@ -77,4 +83,4 @@ TESTS_ENVIRONMENT = \
 	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH \
 	HARNESS_DIR=$(HARNESS_DIR) \
 	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH \
-	PATH=$(top_srcdir)/tools/.libs:$$PATH
+	PATH=$(top_srcdir)/tools:$$PATH

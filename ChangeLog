@@ -1,5 +1,11 @@
 2012-03-23  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/tables/pass2.ctb:
+	* tests/tables/Makefile.am:
+	* tests/pass2.c:
+	* tests/Makefile.am: Add a test to show the regression with the
+	pass2 opcode.
+
 	* tests/brl_checks.c (check_translation): Make the printing of
 	test results more robust (against out of bound errors).
 
