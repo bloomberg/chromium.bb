@@ -1154,8 +1154,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedWebContents()->GetURL());
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_NavigateFromOtherTabToSingletonOptions DISABLED_NavigateFromOtherTabToSingletonOptions
+#else
+#define MAYBE_NavigateFromOtherTabToSingletonOptions NavigatorFrameOtherTabToSingletonOptions
+#endif
+
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NavigateFromOtherTabToSingletonOptions) {
+                       MAYBE_NavigateFromOtherTabToSingletonOptions) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
