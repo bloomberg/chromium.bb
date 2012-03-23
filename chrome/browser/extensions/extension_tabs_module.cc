@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"

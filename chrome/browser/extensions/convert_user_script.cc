@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/user_script.h"
 #include "crypto/sha2.h"

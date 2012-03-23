@@ -127,6 +127,8 @@
         'common/extensions/extension_l10n_util.h',
         'common/extensions/extension_localization_peer.cc',
         'common/extensions/extension_localization_peer.h',
+        'common/extensions/extension_manifest_constants.cc',
+        'common/extensions/extension_manifest_constants.h',
         'common/extensions/extension_message_bundle.cc',
         'common/extensions/extension_message_bundle.h',
         'common/extensions/extension_messages.cc',

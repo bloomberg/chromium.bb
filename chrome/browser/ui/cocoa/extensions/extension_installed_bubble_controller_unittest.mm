@@ -16,7 +16,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "webkit/glue/image_decoder.h"

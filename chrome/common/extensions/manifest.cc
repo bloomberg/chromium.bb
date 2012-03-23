@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_split.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/simple_feature_provider.h"
 

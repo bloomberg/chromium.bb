@@ -15,7 +15,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_details.h"

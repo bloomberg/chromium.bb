@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"

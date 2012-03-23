@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/test/web_contents_tester.h"

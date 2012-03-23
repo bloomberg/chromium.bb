@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
