@@ -167,12 +167,6 @@ class SystemTrayDelegate {
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;
 
-  // Shows UI to connect to an unlisted wifi network.
-  virtual void ShowOtherWifi() = 0;
-
-  // Shows UI to search for cellular networks.
-  virtual void ShowOtherCellular() = 0;
-
   // Returns whether wifi is available.
   virtual bool GetWifiAvailable() = 0;
 
@@ -190,17 +184,6 @@ class SystemTrayDelegate {
 
   // Returns whether bluetooth is enabled.
   virtual bool GetBluetoothEnabled() = 0;
-
-  // Returns whether cellular scanning is supported.
-  virtual bool GetCellularScanSupported() = 0;
-
-  // Retrieves information about the carrier. If the information cannot be
-  // retrieved, returns false.
-  virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* toup_url) = 0;
-
-  // Opens the top up url.
-  virtual void ShowCellularTopupURL(const std::string& topup_url) = 0;
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;

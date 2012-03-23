@@ -38,7 +38,6 @@
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -436,14 +435,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                    base::Bind(&BluetoothPowerFailure));
   }
 
-  virtual void ShowOtherWifi() OVERRIDE {
-    network_menu_->ShowOtherWifi();
-  }
-
-  virtual void ShowOtherCellular() OVERRIDE {
-    network_menu_->ShowOtherCellular();
-  }
-
   virtual bool GetWifiAvailable() OVERRIDE {
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
   }
@@ -466,35 +457,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual bool GetBluetoothEnabled() OVERRIDE {
     return bluetooth_adapter_->IsPowered();
-  }
-
-  virtual bool GetCellularScanSupported() OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    DCHECK(crosnet->cellular_enabled());
-    const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    return cellular ? cellular->support_network_scan() : false;
-  }
-
-  virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* topup_url) OVERRIDE {
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    if (cellular) {
-      MobileConfig* config = MobileConfig::GetInstance();
-      if (config->IsReady()) {
-        *carrier_id = crosnet->GetCellularHomeCarrierId();
-        const MobileConfig::Carrier* carrier = config->GetCarrier(*carrier_id);
-        if (carrier) {
-          *topup_url = carrier->top_up_url();
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  virtual void ShowCellularTopupURL(const std::string& topup_url) OVERRIDE {
-    GetAppropriateBrowser()->ShowSingletonTab(GURL(topup_url));
   }
 
   virtual void ChangeProxySettings() OVERRIDE {
