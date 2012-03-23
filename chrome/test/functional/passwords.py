@@ -112,10 +112,9 @@ class PasswordTest(pyauto.PyUITest):
     """
     self.assertTrue(
         self.WaitUntil(lambda: self._GetInfobarIndexByType(
-            self.INFOBAR_TYPE, windex, tab_index)),
+            self.INFOBAR_TYPE, windex, tab_index) is not None),
         msg='Save password infobar did not appear.')
     # Return the infobar index.
-    # TODO(dyu): Use the return value in future tests.
     return self._GetInfobarIndexByType(
         self.INFOBAR_TYPE, windex, tab_index)
 
@@ -163,10 +162,8 @@ class PasswordTest(pyauto.PyUITest):
     self.WaitUntil(
         lambda: self.GetDOMValue('document.readyState'),
         expect_retval='complete')
-    self._GetIndexForSavePasswordInfobar()
-    infobar = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
-    self.assertEqual(infobar[0]['type'], 'password_infobar')
-    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url_https)
     self._ClickOnLoginPage(0, 0)
@@ -179,8 +176,8 @@ class PasswordTest(pyauto.PyUITest):
     creds1 = self.GetPrivateInfo()['test_google_account']
     test_utils.GoogleAccountsLogin(
         self, creds1['username'], creds1['password'])
-    self._GetIndexForSavePasswordInfobar()
-    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.assertEquals(1, len(self.GetSavedPasswords()))
     self.AppendTab(pyauto.GURL(creds1['logout_url']))
     creds2 = self.GetPrivateInfo()['test_google_account_2']
@@ -204,9 +201,8 @@ class PasswordTest(pyauto.PyUITest):
     password = creds['password']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
-    self._GetIndexForSavePasswordInfobar()
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
-    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
     self._ClickOnLoginPage(0, 0)
@@ -228,8 +224,8 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
-    self._GetIndexForSavePasswordInfobar()
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.NavigateToURL('chrome://history')
     self.assertTrue(self.WaitForInfobarCount(0))
     # To make sure user is navigated to History page.
@@ -241,8 +237,8 @@ class PasswordTest(pyauto.PyUITest):
     creds = self.GetPrivateInfo()['test_google_account']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
-    self._GetIndexForSavePasswordInfobar()
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.GetBrowserWindow(0).GetTab(0).Reload()
     self.assertTrue(self.WaitForInfobarCount(0))
     self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
@@ -298,9 +294,8 @@ class PasswordTest(pyauto.PyUITest):
     password = creds['password']
     # Login to Google a/c
     test_utils.GoogleAccountsLogin(self, username, password)
-    self._GetIndexForSavePasswordInfobar()
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
-    self.PerformActionOnInfobar('accept', infobar_index=0)
+    self.PerformActionOnInfobar(
+        'accept', infobar_index=self._GetIndexForSavePasswordInfobar())
     self.NavigateToURL(url_logout)
     self.NavigateToURL(url)
     self._ClickOnLoginPage(0, 0)
