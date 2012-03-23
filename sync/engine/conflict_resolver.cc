@@ -231,13 +231,34 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       // Store the merged set of encrypted types (cryptographer->Update(..) will
       // have merged the local types already).
       cryptographer->UpdateNigoriFromEncryptedTypes(server_nigori);
-      // The local set of keys is already merged with the server's set within
-      // the cryptographer. If we don't have pending keys we can store the
-      // merged set back immediately. Else we preserve the server keys and will
-      // update the nigori when the user provides the pending passphrase via
-      // SetDecryptionPassphrase(..).
+      // The cryptographer has the both the local and remote encryption keys
+      // (added at cryptographer->Update(..) time).
+      // If the cryptographer is ready, then it already merged both sets of keys
+      // and we can store them back in. In that case, the remote key was already
+      // part of the local keybag, so we preserve the local key as the default
+      // (including whether it's an explicit key).
+      // If the cryptographer is not ready, then the user will have to provide
+      // the passphrase to decrypt the pending keys. When they do so, the
+      // SetDecryptionPassphrase code will act based on whether the server
+      // update has an explicit passphrase or not.
+      // - If the server had an explicit passphrase, that explicit passphrase
+      //   will be preserved as the default encryption key.
+      // - If the server did not have an explicit passphrase, we assume the
+      //   local passphrase is the most up to date and preserve the local
+      //   default encryption key marked as an implicit passphrase.
+      // This works fine except for the case where we had locally set an
+      // explicit passphrase. In that case the nigori node will have the default
+      // key based on the local explicit passphassphrase, but will not have it
+      // marked as explicit. To fix this we'd have to track whether we have a
+      // explicit passphrase or not separate from the nigori, which would
+      // introduce even more complexity, so we leave it up to the user to
+      // reset that passphrase as an explicit one via settings. The goal here
+      // is to ensure both sets of encryption keys are preserved.
       if (cryptographer->is_ready()) {
         cryptographer->GetKeys(server_nigori->mutable_encrypted());
+        server_nigori->set_using_explicit_passphrase(
+            entry.Get(syncable::SPECIFICS).nigori().
+                using_explicit_passphrase());
       }
       // TODO(zea): Find a better way of doing this. As it stands, we have to
       // update this code whenever we add a new non-cryptographer related field

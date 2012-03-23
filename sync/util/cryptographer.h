@@ -139,11 +139,6 @@ class Cryptographer {
   // with a cryptographer that has already been initialized.
   bool AddKeyFromBootstrapToken(const std::string restored_bootstrap_token);
 
-  // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
-  // Returns true unless decryption of |encrypted| fails. The caller is
-  // responsible for checking that CanDecrypt(encrypted) == true.
-  bool SetKeys(const sync_pb::EncryptedData& encrypted);
-
   // Makes a local copy of |encrypted| to later be decrypted by
   // DecryptPendingKeys. This should only be used if CanDecrypt(encrypted) ==
   // false.
@@ -157,7 +152,8 @@ class Cryptographer {
 
   // Attempts to decrypt the set of keys that was copied in the previous call to
   // SetPendingKeys using |params|. Returns true if the pending keys were
-  // successfully decrypted and installed.
+  // successfully decrypted and installed. If successful, the default key
+  // is updated.
   bool DecryptPendingKeys(const KeyParams& params);
 
   bool is_initialized() const { return !nigoris_.empty() && default_nigori_; }
@@ -178,6 +174,10 @@ class Cryptographer {
   // This updates both the encryption keys and the set of encrypted types.
   // Returns NEEDS_PASSPHRASE if was unable to decrypt the pending keys,
   // SUCCESS otherwise.
+  // Note: will not change the default key. If the nigori's keybag
+  // is decryptable, all keys are added to the local keybag and the current
+  // default is preserved. If the nigori's keybag is not decryptable, it is
+  // stored in the |pending_keys_|.
   UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
 
   // The set of types that are always encrypted.
@@ -214,12 +214,18 @@ class Cryptographer {
 
   void EmitEncryptedTypesChangedNotification();
 
-  // Helper method to instantiate Nigori instances for each set of key
-  // parameters in |bag| and setting the default encryption key to
-  // |default_key_name|.
-  void InstallKeys(const std::string& default_key_name,
-                   const sync_pb::NigoriKeyBag& bag);
+  // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
+  // Returns true unless decryption of |encrypted| fails. The caller is
+  // responsible for checking that CanDecrypt(encrypted) == true.
+  // Does not update the default nigori.
+  void InstallKeys(const sync_pb::EncryptedData& encrypted);
 
+  // Helper method to instantiate Nigori instances for each set of key
+  // parameters in |bag|.
+  // Does not update the default nigori.
+  void InstallKeyBag(const sync_pb::NigoriKeyBag& bag);
+
+  // Helper method to add a nigori as the new default nigori.
   bool AddKeyImpl(Nigori* nigori);
 
   // Functions to serialize + encrypt a Nigori object in an opaque format for

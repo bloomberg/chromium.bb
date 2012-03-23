@@ -232,6 +232,11 @@ class SyncManager::SyncInternal
       const std::string& chrome_version,
       const base::Closure& done_callback);
 
+  // Stores the current set of encryption keys (if the cryptographer is ready)
+  // and encrypted types into the nigori node.
+  void UpdateNigoriEncryptionState(Cryptographer* cryptographer,
+                                   WriteNode* nigori_node) const;
+
   // Updates the nigori node with any new encrypted types and then
   // encrypts the nodes for those new data types as well as other
   // nodes that should be encrypted but aren't.  Triggers
@@ -1000,6 +1005,27 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
           done_callback));
 }
 
+void SyncManager::SyncInternal::UpdateNigoriEncryptionState(
+    Cryptographer* cryptographer,
+    WriteNode* nigori_node) const {
+  DCHECK(nigori_node);
+  sync_pb::NigoriSpecifics nigori = nigori_node->GetNigoriSpecifics();
+
+  if (cryptographer->is_ready()) {
+    // Does not modify the encrypted blob if the unencrypted data already
+    // matches what is about to be written.
+    if (!cryptographer->GetKeys(nigori.mutable_encrypted()))
+      NOTREACHED();
+    // Note: we don't try to set using_explicit_passphrase here since if that
+    // is lost the user can always set it again. The main point is to preserve
+    // the encryption keys so all data remains decryptable.
+  }
+  cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
+
+  // If nothing has changed, this is a no-op.
+  nigori_node->SetNigoriSpecifics(nigori);
+}
+
 void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     const std::string& chrome_version,
     const base::Closure& done_callback,
@@ -1027,14 +1053,6 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
                                                pending_keys));
       }
 
-      // Due to http://crbug.com/102526, we must check if the encryption keys
-      // are present in the nigori node. If they're not, we write the current
-      // set of keys.
-      if (!nigori.has_encrypted() && cryptographer->is_ready()) {
-        if (!cryptographer->GetKeys(nigori.mutable_encrypted())) {
-          NOTREACHED();
-        }
-      }
 
       // Add or update device information.
       bool contains_this_device = false;
@@ -1069,12 +1087,10 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
         device_information->set_name(session_name);
         device_information->set_chrome_version(chrome_version);
       }
-
-      // Ensure the nigori node reflects the most recent set of sensitive
-      // types and properly sets encrypt_everything. This is a no-op if
-      // nothing changes.
-      cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
       node.SetNigoriSpecifics(nigori);
+
+      // Make sure the nigori node has the up to date encryption info.
+      UpdateNigoriEncryptionState(cryptographer, &node);
 
       allstatus_.SetCryptographerReady(cryptographer->is_ready());
       allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
@@ -1462,6 +1478,10 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
     bool is_explicit,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
+  Cryptographer* cryptographer = trans->GetCryptographer();
+  allstatus_.SetCryptographerReady(cryptographer->is_ready());
+  allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+
   // It's possible we need to change the bootstrap token even if we failed to
   // set the passphrase (for example if we need to preserve the new GAIA
   // passphrase).
@@ -1472,7 +1492,6 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
   }
 
   if (!success) {
-    Cryptographer* cryptographer = trans->GetCryptographer();
     if (cryptographer->is_ready()) {
       LOG(ERROR) << "Attempt to change passphrase failed while cryptographer "
                  << "was ready.";
@@ -1490,7 +1509,6 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
 
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnPassphraseAccepted());
-  Cryptographer* cryptographer = trans->GetCryptographer();
   DCHECK(cryptographer->is_ready());
 
   // TODO(tim): Bug 58231. It would be nice if setting a passphrase didn't
@@ -1551,13 +1569,8 @@ void SyncManager::SyncInternal::RefreshEncryption() {
     return;
   }
 
-  // Update the Nigori node's set of encrypted datatypes.
-  // Note, we merge the current encrypted types with those requested. Once a
-  // datatypes is marked as needing encryption, it is never unmarked.
-  sync_pb::NigoriSpecifics nigori;
-  nigori.CopyFrom(node.GetNigoriSpecifics());
-  cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
-  node.SetNigoriSpecifics(nigori);
+  UpdateNigoriEncryptionState(cryptographer, &node);
+
   allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
 
   // We reencrypt everything regardless of whether the set of encrypted
@@ -1994,7 +2007,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     {
       // Check to see if we need to notify the frontend that we have newly
       // encrypted types or that we require a passphrase.
-      sync_api::ReadTransaction trans(FROM_HERE, GetUserShare());
+      ReadTransaction trans(FROM_HERE, GetUserShare());
       Cryptographer* cryptographer = trans.GetCryptographer();
       // If we've completed a sync cycle and the cryptographer isn't ready
       // yet, prompt the user for a passphrase.
@@ -2025,6 +2038,15 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     }
 
     if (!event.snapshot->has_more_to_sync) {
+      // To account for a nigori node arriving with stale/bad data, we ensure
+      // that the nigori node is up to date at the end of each cycle.
+      WriteTransaction trans(FROM_HERE, GetUserShare());
+      WriteNode nigori_node(&trans);
+      if (nigori_node.InitByTagLookup(kNigoriTag)) {
+        Cryptographer* cryptographer = trans.GetCryptographer();
+        UpdateNigoriEncryptionState(cryptographer, &nigori_node);
+      }
+
       DVLOG(1) << "Sending OnSyncCycleCompleted";
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                         OnSyncCycleCompleted(event.snapshot));

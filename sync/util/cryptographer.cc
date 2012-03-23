@@ -168,15 +168,13 @@ bool Cryptographer::AddKeyImpl(Nigori* initialized_nigori) {
   return true;
 }
 
-bool Cryptographer::SetKeys(const sync_pb::EncryptedData& encrypted) {
+void Cryptographer::InstallKeys(const sync_pb::EncryptedData& encrypted) {
   DCHECK(CanDecrypt(encrypted));
 
   sync_pb::NigoriKeyBag bag;
-  if (!Decrypt(encrypted, &bag)) {
-    return false;
-  }
-  InstallKeys(encrypted.key_name(), bag);
-  return true;
+  if (!Decrypt(encrypted, &bag))
+    return;
+  InstallKeyBag(bag);
 }
 
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
@@ -207,7 +205,10 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
     NOTREACHED();
     return false;
   }
-  InstallKeys(pending_keys_->key_name(), bag);
+  InstallKeyBag(bag);
+  const std::string& new_default_key_name = pending_keys_->key_name();
+  DCHECK(nigoris_.end() != nigoris_.find(new_default_key_name));
+  default_nigori_ = &*nigoris_.find(new_default_key_name);
   pending_keys_.reset();
   return true;
 }
@@ -289,7 +290,15 @@ Cryptographer::UpdateResult Cryptographer::Update(
   UpdateEncryptedTypesFromNigori(nigori);
   if (!nigori.encrypted().blob().empty()) {
     if (CanDecrypt(nigori.encrypted())) {
-      SetKeys(nigori.encrypted());
+      InstallKeys(nigori.encrypted());
+      // We only update the default passphrase if this was a new explicit
+      // passphrase. Else, since it was decryptable, it must not have been a new
+      // key.
+      if (nigori.using_explicit_passphrase()) {
+        std::string new_default_key_name = nigori.encrypted().key_name();
+        DCHECK(nigoris_.end() != nigoris_.find(new_default_key_name));
+        default_nigori_ = &*nigoris_.find(new_default_key_name);
+      }
       return Cryptographer::SUCCESS;
     } else {
       SetPendingKeys(nigori.encrypted());
@@ -423,8 +432,7 @@ void Cryptographer::EmitEncryptedTypesChangedNotification() {
       OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
 }
 
-void Cryptographer::InstallKeys(const std::string& default_key_name,
-                                const sync_pb::NigoriKeyBag& bag) {
+void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
   int key_size = bag.key_size();
   for (int i = 0; i < key_size; ++i) {
     const sync_pb::NigoriKey key = bag.key(i);
@@ -440,8 +448,6 @@ void Cryptographer::InstallKeys(const std::string& default_key_name,
       nigoris_[key.name()] = make_linked_ptr(new_nigori.release());
     }
   }
-  DCHECK(nigoris_.end() != nigoris_.find(default_key_name));
-  default_nigori_ = &*nigoris_.find(default_key_name);
 }
 
 }  // namespace browser_sync
