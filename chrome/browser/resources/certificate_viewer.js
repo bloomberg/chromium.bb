@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,12 @@ cr.define('cert_viewer', function() {
     i18nTemplate.process(document, templateData);
     stripGtkAccessorKeys();
     chrome.send('requestCertificateInfo');
+    // TODO(kochi): ESC key should be handled in the views window side.
+    document.addEventListener('keydown', function(e) {
+      if (e.keyCode == 27) {  // ESC
+        chrome.send('DialogClose');
+      }
+    });
   }
 
   /**
