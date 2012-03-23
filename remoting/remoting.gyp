@@ -21,6 +21,12 @@
     },
     'version_py_path': '<(version_py_path)',
     'version_path': '<(version_path)',
+    'version_full':
+        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
+
+    # Windows Installer XML (WiX) path can be set in ~/.gyp/include.gypi to
+    # indicate that WiX is available.
+    'wix_path%': '',
 
     'conditions': [
       ['OS=="mac"', {
@@ -317,6 +323,85 @@
         },  # end of target 'remoting_version_resources'
       ],  # end of 'targets'
     }],  # 'OS=="win"'
+
+    # The host installation is generated only if WiX location is known and only
+    # as part of a non-component build. WiX does not provide a easy way to
+    # include all DLLs imported by the installed binaries depend on, so
+    # supporting the component build becomes a burden.
+    ['"<(wix_path)" != "" and component != "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'remoting_host_installation',
+          'type': 'none',
+          'dependencies': [
+            'remoting_service',
+            'remoting_me2me_host',
+          ],
+          'sources': [
+            'host/installer/chromoting.wxs',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/chromoting.msi',
+          ],
+          'variables': {
+            'sas_dll_path': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86/sas.dll'
+          },
+          'rules': [
+            {
+              'rule_name': 'candle',
+              'extension': 'wxs',
+              'inputs': [ ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
+              ],
+              'process_outputs_as_sources': 1,
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                '"<(wix_path)\\bin\\candle"',
+                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
+                '-dVersion=<(version_full) '
+                '"-dFileSource=<(PRODUCT_DIR)." '
+                '"-dSasDllPath=<(sas_dll_path)" '
+                '-out <@(_outputs)',
+                '"<(RULE_INPUT_PATH)"',
+              ],
+              'message': 'Generating <@(_outputs)',
+            },
+            {
+              'rule_name': 'light',
+              'extension': 'wixobj',
+              'inputs': [
+                '<(PRODUCT_DIR)/remoting_me2me_host.exe',
+                '<(PRODUCT_DIR)/remoting_service.exe',
+                '<(sas_dll_path)'
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
+                '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).wixpdb',
+              ],
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                '"<(wix_path)\\bin\\light"',
+                '-ext "<(wix_path)\\bin\\WixFirewallExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUIExtension.dll"',
+                '-ext "<(wix_path)\\bin\\WixUtilExtension.dll"',
+                '-cultures:en-us',
+                '-dVersion=<(version_full) '
+                '"-dFileSource=<(PRODUCT_DIR)." '
+                '"-dSasDllPath=<(sas_dll_path)" '
+                '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
+                '"<(RULE_INPUT_PATH)"',
+              ],
+              'message': 'Generating <(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
+            },
+          ],
+        },  # end of target 'remoting_host_installation'
+      ],  # end of 'targets'
+    }],  # '<(wix_path) != ""'
 
   ],  # end of 'conditions'
 

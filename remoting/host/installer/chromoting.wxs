@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
+  <?define EventSourceName = "remoting_me2me_host" ?>
+  <?define FirewallName = "remoting_me2me_host" ?>
+  <?define Manufacturer = "Google Inc." ?>
+  <?define ServiceName = "chromoting" ?>
+
+  <?define OmahaAppid = "{b210701e-ffc4-49e3-932b-370728c72662}" ?>
+  <?define UpgradeCode = "2b21f767-e157-4fa6-963c-55834c1433a6" ?>
+
+  <?ifndef FileSource ?>
+    <?error FileSource must be defined ?>
+  <?endif?>
+
+  <?ifndef SasDllPath ?>
+    <?error SasDllPath must be defined ?>
+  <?endif?>
+
+  <?ifndef Version ?>
+    <?error Version must be defined ?>
+  <?endif?>
+
+  <Product Id="*"
+           Language="1033"
+           Manufacturer="$(var.Manufacturer)"
+           Name="$(var.ChromotingHost)"
+           UpgradeCode="$(var.UpgradeCode)"
+           Version="$(var.Version)">
+
+    <Package Comments="$(var.ChromotingHost) Package"
+             Compressed="yes"
+             Description="$(var.ChromotingHost) Package"
+             InstallerVersion="200"
+             Manufacturer="$(var.Manufacturer)"/>
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."
+      Schedule="afterInstallInitialize" />
+
+    <Media Id="1" Cabinet="chromoting.cab" EmbedCab="yes"/>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="chromoting" Name="Chrome Remote Desktop Host"/>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="chromoting" FileSource="$(var.FileSource)">
+      <Component Id="sas.dll"
+                 Guid="3c33dd97-3750-467f-8ec6-730611d346d4">
+        <File Id="sas.dll"
+              DiskId="1"
+              Name="sas.dll"
+              Source="$(var.SasDllPath)"
+              Vital="yes"/>
+      </Component>
+
+      <Component Id="remoting_service.exe"
+                 Guid="23103839-bb02-4007-b149-998ddd8d7cba">
+        <File Id="remoting_service.exe"
+              DiskId="1"
+              KeyPath="yes"
+              Name="remoting_service.exe"
+              Vital="yes"/>
+
+        <ServiceInstall Id="install_service"
+                        Type="ownProcess"
+                        Vital="yes"
+                        Name="$(var.ServiceName)"
+                        DisplayName="@[chromoting]remoting_service.exe,-101"
+                        Description="@[chromoting]remoting_service.exe,-102"
+                        Arguments="--host-binary=&quot;[chromoting]remoting_me2me_host.exe&quot;"
+                        Start="auto"
+                        Account="LocalSystem"
+                        ErrorControl="ignore"
+                        Interactive="no" />
+
+        <ServiceControl Id="start_service"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Name="$(var.ServiceName)"
+                        Wait="yes" />
+      </Component>
+
+      <Component Id="remoting_me2me_host.exe"
+                 Guid="0e1889af-f3f8-45a2-b2d0-c719d53c4474">
+        <File Id="remoting_me2me_host.exe"
+              DiskId="1"
+              Name="remoting_me2me_host.exe"
+              Vital="yes"/>
+        <util:EventSource xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+                          Name="$(var.EventSourceName)"
+                          Log="Application"
+                          CategoryCount="1"
+                          CategoryMessageFile="[chromoting]remoting_me2me_host.exe"
+                          EventMessageFile="[chromoting]remoting_me2me_host.exe"
+                          SupportsErrors="yes"
+                          SupportsInformationals="yes"/>
+
+        <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
+                                Id="me2me_firewall_exception"
+                                IgnoreFailure="no"
+                                Name="$(var.FirewallName)"
+                                Profile="all"
+                                Program="[#remoting_me2me_host.exe]"
+                                Scope="any" />
+      </Component>
+
+      <Component Id="omaha_registration"
+                 Guid="9a14673d-9518-4cf3-b737-52f09f02a10b">
+        <RegistryKey Id="omaha_client_key"
+                     Root="HKLM"
+                     Key="SOFTWARE\Google\Update\Clients\$(var.OmahaAppid)"
+                     Action="createAndRemoveOnUninstall">
+          <RegistryValue Type="string"
+                         Name="pv"
+                         Value="$(var.Version)"/>
+
+          <RegistryValue Type="string"
+                         Name="name"
+                         Value="$(var.ChromotingHost)"/>
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
+      <ComponentRef Id="remoting_service.exe"/>
+      <ComponentRef Id="remoting_me2me_host.exe"/>
+      <ComponentRef Id="sas.dll"/>
+      <ComponentRef Id="omaha_registration"/>
+    </Feature>
+
+  </Product>
+</Wix>
