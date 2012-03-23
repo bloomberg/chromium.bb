@@ -688,9 +688,9 @@
       'type': 'int',
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': False},
-      'example_value': 100,
+      'example_value': 104857600,
       'id': 110,
-      'caption': '''Set disk cache size in megabytes''',
+      'caption': '''Set disk cache size in bytes''',
       'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not.
@@ -705,9 +705,9 @@
       'type': 'int',
       'supported_on': ['chrome.*:17-'],
       'features': {'dynamic_refresh': False},
-      'example_value': 250,
+      'example_value': 104857600,
       'id': 111,
-      'caption': '''Set media disk cache size''',
+      'caption': '''Set media disk cache size in bytes''',
       'desc': '''Configures the chache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not.
