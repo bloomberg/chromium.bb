@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 
 const char kBodyTextKey[] = "bodyText";
@@ -25,6 +26,11 @@ const char kMissingLinkTextError[] =
     "You must specify linkText if you use linkUrl";
 
 bool AppNotifyFunction::RunImpl() {
+  if (!include_incognito() && profile_->IsOffTheRecord()) {
+    error_ = extension_misc::kAppNotificationsIncognitoError;
+    return false;
+  }
+
   DictionaryValue* details;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   EXTENSION_FUNCTION_VALIDATE(details != NULL);
@@ -77,6 +83,11 @@ bool AppNotifyFunction::RunImpl() {
 }
 
 bool AppClearAllNotificationsFunction::RunImpl() {
+  if (!include_incognito() && profile_->IsOffTheRecord()) {
+    error_ = extension_misc::kAppNotificationsIncognitoError;
+    return false;
+  }
+
   std::string id = extension_id();
   DictionaryValue* details = NULL;
   if (args_->GetDictionary(0, &details) && details->HasKey(kExtensionIdKey)) {

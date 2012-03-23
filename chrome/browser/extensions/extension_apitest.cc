@@ -132,39 +132,16 @@ bool ExtensionApiTest::RunExtensionTestIncognitoNoFileAccess(
 
 bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
                                            const std::string& page_url) {
-  DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url, kFlagEnableFileAccess);
+  return RunExtensionSubtest(extension_name, page_url, kFlagEnableFileAccess);
 }
 
-bool ExtensionApiTest::RunComponentExtensionSubtest(
-    const char* extension_name,
-    const std::string& page_url) {
+bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
+                                           const std::string& page_url,
+                                           int flags) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(
-      extension_name, page_url, kFlagEnableFileAccess | kFlagLoadAsComponent);
+  return RunExtensionTestImpl(extension_name, page_url, flags);
 }
 
-bool ExtensionApiTest::RunExtensionSubtestNoFileAccess(
-    const char* extension_name,
-    const std::string& page_url) {
-  DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url, kFlagNone);
-}
-
-bool ExtensionApiTest::RunExtensionSubtestIncognito(
-    const char* extension_name,
-    const std::string& page_url) {
-  DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url,
-                              kFlagEnableIncognito | kFlagEnableFileAccess);
-}
-
-bool ExtensionApiTest::RunExtensionSubtestIncognitoNoFileAccess(
-    const char* extension_name,
-    const std::string& page_url) {
-  DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  return RunExtensionTestImpl(extension_name, page_url, kFlagEnableIncognito);
-}
 
 bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
   return RunExtensionSubtest("", page_url);
@@ -183,6 +160,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
   bool enable_fileaccess = (flags & kFlagEnableFileAccess) != 0;
   bool load_as_component = (flags & kFlagLoadAsComponent) != 0;
   bool launch_shell = (flags & kFlagLaunchAppShell) != 0;
+  bool use_incognito = (flags & kFlagUseIncognito) != 0;
 
   ResultCatcher catcher;
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
@@ -217,7 +195,10 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       url = extension->GetResourceURL(page_url);
     }
 
-    ui_test_utils::NavigateToURL(browser(), url);
+    if (use_incognito)
+      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
+    else
+      ui_test_utils::NavigateToURL(browser(), url);
 
   } else if (launch_shell) {
     Browser::OpenApplication(

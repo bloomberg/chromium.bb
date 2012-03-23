@@ -77,7 +77,7 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
     int callback_id,
     AppNotifyChannelUI* ui,
     base::WeakPtr<AppNotifyChannelSetup::Delegate> delegate)
-    : profile_(profile),
+    : profile_(profile->GetOriginalProfile()),
       extension_id_(extension_id),
       client_id_(client_id),
       requestor_url_(requestor_url),

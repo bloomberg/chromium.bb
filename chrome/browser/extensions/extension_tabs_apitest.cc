@@ -145,8 +145,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleNoFile) {
-  ASSERT_TRUE(RunExtensionSubtestNoFileAccess("tabs/capture_visible_tab",
-                                              "test_nofile.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "tabs/capture_visible_tab", "test_nofile.html",
+      ExtensionApiTest::kFlagNone)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {

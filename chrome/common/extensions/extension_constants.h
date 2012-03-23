@@ -220,6 +220,10 @@ namespace extension_misc {
     UNLOAD_REASON_UNINSTALL,  // Extension is being uninstalled.
     UNLOAD_REASON_TERMINATE,  // Extension has terminated.
   };
+
+  // Error indicating that the app notifications API is not accessible by split
+  // mode extensions in incognito windows.
+  extern const char kAppNotificationsIncognitoError[];
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

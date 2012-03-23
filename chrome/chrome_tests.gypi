@@ -2633,6 +2633,7 @@
         'browser/errorpage_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
+        'browser/extensions/api/app/app_apitest.cc',
         'browser/extensions/api/browsing_data/browsing_data_test.cc',
         'browser/extensions/api/declarative/declarative_apitest.cc',
         'browser/extensions/api/dns/dns_apitest.cc',

@@ -30,6 +30,10 @@ namespace {
 // The ID of the file browser extension.
 const char kFileBrowserExtensionId[] = "ddammdhioacbehjngdmkjcjbnfginlla";
 
+// Flags used to run the tests with a COMPONENT extension.
+const int kComponentFlags = ExtensionApiTest::kFlagEnableFileAccess |
+                            ExtensionApiTest::kFlagLoadAsComponent;
+
 // Returns the expected URL for the given path.
 GURL GetExpectedURL(const std::string& path) {
   return GURL(
@@ -183,15 +187,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTest) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
-  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
-                                           "read.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "read.html", kComponentFlags)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler_write")) << message_;
-  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
-                                            "write.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "write.html", kComponentFlags)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
@@ -199,8 +203,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
   AddTmpMountPoint();
   ASSERT_TRUE(RunComponentExtensionTest("filesystem_handler_write"))
       << message_;
-  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
-                                           "write.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "write.html", kComponentFlags)) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
@@ -231,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
           // Returns the path to the temporary file on the local drive.
           test_file_path_,
           scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
-  ASSERT_TRUE(RunComponentExtensionSubtest(
-      "filebrowser_component",
-      "remote.html#" + GetPathOnMountPoint(""))) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "remote.html#" + GetPathOnMountPoint(""),
+      kComponentFlags)) << message_;
 }

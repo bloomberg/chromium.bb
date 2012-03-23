@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -26,6 +27,12 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
+
+namespace {
+
+const char kPermissionError[] = "permission_error";
+
+}  // namespace
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     : content::WebContentsObserver(wrapper->web_contents()),
@@ -179,14 +186,23 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
       tab_contents_wrapper()->web_contents()->GetRenderProcessHost();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
-  bool allowed =
-      extension &&
-      extension->HasAPIPermission(
-          ExtensionAPIPermission::kAppNotifications) &&
-      process_map->Contains(extension->id(), process->GetID());
-  if (!allowed) {
+
+  std::string error;
+  if (!extension ||
+      !extension->HasAPIPermission(
+          ExtensionAPIPermission::kAppNotifications) ||
+      !process_map->Contains(extension->id(), process->GetID()))
+    error = kPermissionError;
+
+  // Make sure the extension can cross to the main profile, if called from an
+  // an incognito window.
+  if (profile->IsOffTheRecord() &&
+      !extension_service->CanCrossIncognito(extension))
+    error = extension_misc::kAppNotificationsIncognitoError;
+
+  if (!error.empty()) {
     Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-        return_route_id, "", "permission_error", callback_id));
+        return_route_id, "", error, callback_id));
     return;
   }
 

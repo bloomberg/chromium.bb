@@ -288,8 +288,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
       switches::kAllowLegacyExtensionManifests);
 
   // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionSubtestIncognito(
-      "webnavigation", "test_targetBlank.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "webnavigation", "test_targetBlank.html",
+      ExtensionApiTest::kFlagEnableIncognito)) << message_;
 
   ResultCatcher catcher;
 
