@@ -227,6 +227,16 @@ instruction=prefetch*
 <not in a module>
 chrome.dll!v8::internal::CopyChars*
 
+WARNING
+name=prefetches in NVD3DUM.dll
+instruction=prefetch*
+NVD3DUM.dll!*
+
+WARNING
+name=prefetches in igdumd32.dll
+instruction=prefetch*
+igdumd32.dll!*
+
 UNADDRESSABLE ACCESS
 name=http://code.google.com/p/drmemory/issues/detail?id=582 bizarre cl-generated read-beyond-TOS
 instruction=mov    0xfffffffc(%esp) -> %eax
