@@ -211,10 +211,16 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   if len(additional_args) > 0:
     cmd.append('--')
     cmd.extend(additional_args)
-  try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+
+  ret = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True)
+  # If we were in interactive mode, ignore the exit code; it'll be whatever
+  # they last ran w/in the chroot and won't matter to us one way or another.
+  # Note this does allow chroot entrance to fail and be ignored during
+  # interactive; this is however a rare case and the user will immediately
+  # see it (nor will they be checking the exit code manually).
+  if ret.returncode != 0 and additional_args:
+    raise SystemExit('Running %r failed with exit code %i'
+                     % (cmd, ret.returncode))
 
 
 def main(argv):
