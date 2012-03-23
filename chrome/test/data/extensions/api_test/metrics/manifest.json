@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.metricsPrivate API",
   "background": {
-    "page": "test.html"
+    "scripts": ["test.js"]
   },
   "permissions": ["metricsPrivate"]
 }
