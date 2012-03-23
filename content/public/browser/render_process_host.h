@@ -40,42 +40,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {
-    explicit RendererClosedDetails(base::ProcessHandle handle) {
+    RendererClosedDetails(base::ProcessHandle handle,
+                          base::TerminationStatus status,
+                          int exit_code,
+                          bool was_alive) {
       this->handle = handle;
-      // default values should be updated by caller.
-      status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      exit_code = 0;
-      was_alive = false;
-
-#if defined(OS_WIN)
-      have_process_times = false;
-      FILETIME win_creation_time;
-      FILETIME win_exit_time;
-      FILETIME win_kernel_time;
-      FILETIME win_user_time;
-      if (!GetProcessTimes(handle, &win_creation_time, &win_exit_time,
-                           &win_kernel_time, &win_user_time)) {
-        DWORD error = GetLastError();
-        DLOG(ERROR) << "Error getting process data" << error;
-        return;
-      }
-      user_duration = base::Time::FromFileTime(win_user_time) -
-          base::Time::Time();
-      kernel_duration = base::Time::FromFileTime(win_kernel_time) -
-          base::Time::Time();
-      run_duration = base::Time::FromFileTime(win_exit_time) -
-          base::Time::FromFileTime(win_creation_time);
-      have_process_times = true;
-#endif   // OS_WIN
+      this->status = status;
+      this->exit_code = exit_code;
+      this->was_alive = was_alive;
     }
-
-#if defined(OS_WIN)
-    base::TimeDelta kernel_duration;
-    base::TimeDelta user_duration;
-    base::TimeDelta run_duration;
-    bool have_process_times;
-#endif   // OS_WIN
-
     base::ProcessHandle handle;
     base::TerminationStatus status;
     int exit_code;

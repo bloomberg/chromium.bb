@@ -560,7 +560,8 @@ void MetricsService::Observe(int type,
                     details).ptr();
         content::RenderProcessHost* host =
             content::Source<content::RenderProcessHost>(source).ptr();
-        LogRendererCrash(host, *process_details);
+        LogRendererCrash(
+            host, process_details->status, process_details->was_alive);
       }
       break;
 
@@ -1368,71 +1369,34 @@ void MetricsService::LogLoadStarted() {
   // might be lost due to a crash :-(.
 }
 
-void MetricsService::LogRendererCrash(
-    content::RenderProcessHost* host,
-    const content::RenderProcessHost::RendererClosedDetails& details) {
+void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
+                                      base::TerminationStatus status,
+                                      bool was_alive) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   bool was_extension_process =
       service && service->process_map()->Contains(host->GetID());
-  if (details.status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-      details.status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    if (was_extension_process) {
+  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+    if (was_extension_process)
       IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
-    } else {
+    else
       IncrementPrefValue(prefs::kStabilityRendererCrashCount);
 
-#if defined(OS_WIN)
-      if (details.have_process_times) {
-        if (details.status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.CrashedDuration",
-                              details.run_duration);
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.CrashedKernelTime",
-                              details.kernel_duration);
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.CrashedUserTime",
-                              details.user_duration);
-        } else {
-          DCHECK(details.status ==
-                 base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.AbnormalTermDuration",
-                              details.run_duration);
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.AbnormalTermKernelTime",
-                              details.kernel_duration);
-          UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.AbnormalTermUserTime",
-                              details.user_duration);
-        }
-      }
-#endif  // OS_WIN
-    }
-
-    // TODO(jar): These histograms should be small enumerated histograms.
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              was_extension_process ? 2 : 1);
-    if (details.was_alive) {
+    if (was_alive) {
       UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashesWasAlive",
                                was_extension_process ? 2 : 1);
     }
-  } else if (details.status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
+  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
                              was_extension_process ? 2 : 1);
-    if (details.was_alive) {
+    if (was_alive) {
       UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKillsWasAlive",
                                was_extension_process ? 2 : 1);
     }
   }
-
-#if defined(OS_WIN)
-  if (details.have_process_times && !was_extension_process &&
-      details.status != base::TERMINATION_STATUS_PROCESS_CRASHED &&
-      details.status != base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.NormalTermDuration",
-                        details.run_duration);
-    UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.NormalTermKernelTime",
-                        details.kernel_duration);
-    UMA_HISTOGRAM_TIMES("BrowserRenderProcessHost.NormalTermUserTime",
-                        details.user_duration);
-  }
-#endif  // OS_WIN
 }
 
 void MetricsService::LogRendererHang() {

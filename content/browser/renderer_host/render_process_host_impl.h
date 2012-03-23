@@ -175,8 +175,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);
 
-  // Handle termination of our process.
-  void ProcessDied(RendererClosedDetails* details);
+  // Handle termination of our process. |was_alive| indicates that when we
+  // tried to retrieve the exit code the process had not finished yet.
+  void ProcessDied(base::ProcessHandle handle,
+                   base::TerminationStatus status,
+                   int exit_code,
+                   bool was_alive);
 
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be
