@@ -177,7 +177,6 @@
       ],
     },
     {
-      # TODO(joi): Move debugger-related build rules to content/
       'target_name': 'debugger',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
