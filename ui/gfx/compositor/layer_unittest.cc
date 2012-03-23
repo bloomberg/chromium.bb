@@ -276,18 +276,26 @@ class NullLayerDelegate : public LayerDelegate {
 // Remembers if it has been notified.
 class TestCompositorObserver : public CompositorObserver {
  public:
-  TestCompositorObserver() : notified_(false) {}
+  TestCompositorObserver() : started_(false), ended_(false) {}
 
-  bool notified() const { return notified_; }
+  bool notified() const { return started_ && ended_; }
 
-  void Reset() { notified_ = false; }
-
- private:
-  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
-    notified_ = true;
+  void Reset() {
+    started_ = false;
+    ended_ = false;
   }
 
-  bool notified_;
+ private:
+  virtual void OnCompositingStarted(Compositor* compositor) OVERRIDE {
+    started_ = true;
+  }
+
+  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE {
+    ended_ = true;
+  }
+
+  bool started_;
+  bool ended_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
 };

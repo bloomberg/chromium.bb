@@ -79,8 +79,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      should_hold_mouse_moves_(false),
-      release_mouse_moves_after_draw_(false) {
+      should_hold_mouse_moves_(false) {
   SetName("RootWindow");
   last_mouse_location_ = host_->QueryMouseLocation();
 
@@ -167,11 +166,6 @@ void RootWindow::Draw() {
 
   compositor_->Draw(false);
   defer_draw_scheduling_ = false;
-
-  if (release_mouse_moves_after_draw_) {
-    release_mouse_moves_after_draw_ = false;
-    ReleaseMouseMoves();
-  }
 }
 
 void RootWindow::ScheduleFullDraw() {
@@ -424,10 +418,6 @@ void RootWindow::SetTransform(const ui::Transform& transform) {
 void RootWindow::ScheduleDraw() {
   if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
-    if (!release_mouse_moves_after_draw_) {
-      HoldMouseMoves();
-      release_mouse_moves_after_draw_ = true;
-    }
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
@@ -436,6 +426,9 @@ void RootWindow::ScheduleDraw() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, ui::CompositorObserver implementation:
+
+void RootWindow::OnCompositingStarted(ui::Compositor*) {
+}
 
 void RootWindow::OnCompositingEnded(ui::Compositor*) {
   waiting_on_compositing_end_ = false;

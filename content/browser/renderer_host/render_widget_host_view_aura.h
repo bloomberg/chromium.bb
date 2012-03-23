@@ -179,6 +179,7 @@ class RenderWidgetHostViewAura
   friend class WindowObserver;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingStarted(ui::Compositor* compositor) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
 
   // Overridden from ImageTransportFactoryObserver:
@@ -291,7 +292,11 @@ class RenderWidgetHostViewAura
 
   // Used to prevent further resizes while a resize is pending.
   class ResizeLock;
+  // These locks are the ones waiting for a texture of the right size to come
+  // back from the renderer/GPU process.
   std::vector<linked_ptr<ResizeLock> > resize_locks_;
+  // These locks are the ones waiting for a frame to be drawn.
+  std::vector<linked_ptr<ResizeLock> > locks_pending_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

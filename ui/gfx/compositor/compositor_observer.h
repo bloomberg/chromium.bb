@@ -15,7 +15,11 @@ class Compositor;
 // A compositor observer is notified when compositing completes.
 class COMPOSITOR_EXPORT CompositorObserver {
  public:
-  // Called when compositing completes.
+  // Called when compositing started: it has taken all the layer changes into
+  // account and has issued the graphics commands.
+  virtual void OnCompositingStarted(Compositor* compositor) = 0;
+
+  // Called when compositing completes: the present to screen has completed.
   virtual void OnCompositingEnded(Compositor* compositor) = 0;
 
  protected:

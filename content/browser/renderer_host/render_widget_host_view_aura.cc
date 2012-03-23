@@ -416,17 +416,29 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
       container->Update();
     window_->SetExternalTexture(container);
 
-    if (!container)
+    if (!container) {
       resize_locks_.clear();
-    else {
+    } else {
       std::vector<linked_ptr<ResizeLock> >::iterator it = resize_locks_.begin();
       while (it != resize_locks_.end()) {
         if ((*it)->expected_size() == container->size())
           break;
         ++it;
       }
-      if (it != resize_locks_.end())
-        resize_locks_.erase(resize_locks_.begin(), ++it);
+      if (it != resize_locks_.end()) {
+        ++it;
+        ui::Compositor* compositor = GetCompositor();
+        if (compositor) {
+          // Delay the release of the lock until we've kicked a frame with the
+          // new texture, to avoid resizing the UI before we have a chance to
+          // draw a "good" frame.
+          locks_pending_draw_.insert(
+              locks_pending_draw_.begin(), resize_locks_.begin(), it);
+          if (!compositor->HasObserver(this))
+            compositor->AddObserver(this);
+        }
+        resize_locks_.erase(resize_locks_.begin(), it);
+      }
     }
   } else {
     window_->SetExternalTexture(NULL);
@@ -1035,6 +1047,11 @@ void RenderWidgetHostViewAura::OnLostActive() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::CompositorDelegate implementation:
 
+void RenderWidgetHostViewAura::OnCompositingStarted(
+    ui::Compositor* compositor) {
+  locks_pending_draw_.clear();
+}
+
 void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
   RunCompositingCallbacks();
   compositor->RemoveObserver(this);
@@ -1047,6 +1064,7 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
   image_transport_clients_.clear();
   current_surface_ = 0;
   UpdateExternalTexture();
+  locks_pending_draw_.clear();
 
   DCHECK(!shared_surface_handle_.is_null());
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -1171,6 +1189,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   // frame though, because we will reissue a new frame right away without that
   // composited data.
   RunCompositingCallbacks();
+  locks_pending_draw_.clear();
   ui::Compositor* compositor = GetCompositor();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);

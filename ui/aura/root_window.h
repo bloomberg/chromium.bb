@@ -198,6 +198,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from ui::CompositorObserver:
+  virtual void OnCompositingStarted(ui::Compositor*) OVERRIDE;
   virtual void OnCompositingEnded(ui::Compositor*) OVERRIDE;
 
  private:
@@ -318,7 +319,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // while the count is > 0.
   int mouse_move_hold_count_;
   bool should_hold_mouse_moves_;
-  bool release_mouse_moves_after_draw_;
   scoped_ptr<MouseEvent> held_mouse_move_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);

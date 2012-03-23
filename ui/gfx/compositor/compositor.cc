@@ -284,6 +284,9 @@ void Compositor::didRebindGraphicsContext(bool success) {
 }
 
 void Compositor::didCommitAndDrawFrame() {
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingStarted(this));
 }
 
 void Compositor::didCompleteSwapBuffers() {
