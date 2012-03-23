@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/debug/alias.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -20,13 +19,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
@@ -305,53 +302,6 @@ bool InitTable(sql::Connection* db) {
     return false;
 
   return true;
-}
-
-// TODO(shess): Send up a crash report containing information to help
-// debug http://crbug.com/111376 .
-void DumpSchemaInfoWithoutCrashing(sql::Connection* db,
-                                   sql::MetaTable* meta_table,
-                                   const FilePath& path) {
-  // Buffer for accumulating debugging info about the database.  Place
-  // more relevant information earlier, in case a large datum
-  // overflows the fixed-size buffer.
-  std::string debug_info;
-
-  // The error message from the failed statement.
-  base::StringAppendF(&debug_info, "db error: %d/%s\n",
-                      db->GetErrorCode(), db->GetErrorMessage());
-
-  // Version info.
-  base::StringAppendF(&debug_info, "versions: %d, %d\n",
-                      meta_table->GetVersionNumber(),
-                      meta_table->GetCompatibleVersionNumber());
-
-  // Database basename to differentiate "Extension Cookies" from
-  // "Cookies" from "Safe Browsing Cookies".
-  base::StringAppendF(&debug_info, "basename: %s\n",
-                      path.BaseName().MaybeAsASCII().c_str());
-
-  // Collect the database schema.
-  {
-    sql::Statement q(db->GetUniqueStatement("SELECT * FROM sqlite_master"));
-    while (q.Step()) {
-      for (int i = 0; i < q.ColumnCount(); ++i) {
-        debug_info.append(q.ColumnString(i));
-        debug_info.push_back(i < q.ColumnCount() ? '|' : '\n');
-      }
-    }
-    if (!q.Succeeded()) {
-      base::StringAppendF(&debug_info, "Error fetching schema: %d/%s",
-                          db->GetErrorCode(), db->GetErrorMessage());
-    }
-  }
-
-  // My profile's Cookies file leaves this at 769 bytes.
-  char debug_buf[1000];
-  base::strlcpy(debug_buf, debug_info.c_str(), arraysize(debug_buf));
-  base::debug::Alias(&debug_buf);
-
-  logging::DumpWithoutCrashing();
 }
 
 }  // namespace
@@ -638,7 +588,6 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       "FROM cookies WHERE host_key = ? AND persistent = 1"));
   }
   if (!smt.is_valid()) {
-    DumpSchemaInfoWithoutCrashing(db_.get(), &meta_table_, path_);
     smt.Clear();  // Disconnect smt_ref from db_.
     db_.reset();
     return false;
