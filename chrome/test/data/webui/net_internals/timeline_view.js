@@ -131,14 +131,14 @@ function sanityCheckNotUpdating() {
 
 /**
  * Simulates mouse wheel movement over the canvas element.
- * @param {number} mouseWheelMovement Amount of movement to simulate.
+ * @param {number} ticks Number of mouse wheel ticks to simulate.
  */
-function mouseZoom(mouseWheelMovement) {
+function mouseZoom(ticks) {
   var scrollbarStartedAtEnd =
       (scrollbar().getRange() == scrollbar().getPosition());
 
   var event = document.createEvent('WheelEvent');
-  event.initWebKitWheelEvent(0, mouseWheelMovement, window, 0, 0, 0, 0,
+  event.initWebKitWheelEvent(0, ticks, window, 0, 0, 0, 0,
                              false, false, false, false);
   canvas().dispatchEvent(event);
 
@@ -152,12 +152,14 @@ function mouseZoom(mouseWheelMovement) {
 
 /**
  * Simulates moving the mouse wheel up.
+ * @param {number} ticks Number of mouse wheel ticks to simulate.
  */
-function mouseZoomIn() {
+function mouseZoomIn(ticks) {
+  assertGT(ticks, 0);
   var oldScale = graphView().scale_;
   var oldRange = scrollbar().getRange();
 
-  mouseZoom(1);
+  mouseZoom(ticks);
 
   if (oldScale == graphView().scale_) {
     expectEquals(oldScale, TimelineGraphView.MIN_SCALE);
@@ -169,26 +171,28 @@ function mouseZoomIn() {
 
 /**
  * Simulates moving the mouse wheel down.
+ * @param {number} ticks Number of mouse wheel ticks to simulate.
  */
-function mouseZoomOut() {
+function mouseZoomOut(ticks) {
+  assertGT(ticks, 0);
   var oldScale = graphView().scale_;
   var oldRange = scrollbar().getRange();
 
-  mouseZoom(-1);
+  mouseZoom(-ticks);
 
   expectGT(graphView().scale_, oldScale);
   expectLE(scrollbar().getRange(), oldRange);
 }
 
 /**
- * Simulates zooming all the way by multiple mouse wheel events.
+ * Simulates zooming all the way with multiple mouse wheel events.
  */
 function mouseZoomAllTheWayIn() {
   expectLT(TimelineGraphView.MIN_SCALE, graphView().scale_);
   while (graphView().scale_ != TimelineGraphView.MIN_SCALE)
-    mouseZoomIn();
+    mouseZoomIn(8);
   // Verify that zooming in when already at max zoom works.
-  mouseZoomIn();
+  mouseZoomIn(1);
 }
 
 /**
@@ -345,9 +349,9 @@ TEST_F('NetInternalsTest', 'netInternalsTimelineViewZoomOut', function() {
   // After loading the log file, the rest of the test runs synchronously.
   function testBody() {
     NetInternalsTest.switchToView('timeline');
-    mouseZoomOut();
-    mouseZoomOut();
-    mouseZoomIn();
+    mouseZoomOut(1);
+    mouseZoomOut(1);
+    mouseZoomIn(1);
     sanityCheckWithTimeRange(false);
   }
 
@@ -366,7 +370,7 @@ TEST_F('NetInternalsTest', 'netInternalsTimelineViewZoomIn', function() {
   function testBody() {
     NetInternalsTest.switchToView('timeline');
     mouseZoomAllTheWayIn();
-    mouseZoomOut();
+    mouseZoomOut(1);
     sanityCheckWithTimeRange(false);
   }
 
@@ -384,9 +388,9 @@ TEST_F('NetInternalsTest', 'netInternalsTimelineViewDegenerate', function() {
   // After loading the log file, the rest of the test runs synchronously.
   function testBody() {
     NetInternalsTest.switchToView('timeline');
-    mouseZoomOut();
+    mouseZoomOut(1);
     mouseZoomAllTheWayIn();
-    mouseZoomOut();
+    mouseZoomOut(1);
     sanityCheckWithTimeRange(false);
   }
 
@@ -412,13 +416,13 @@ TEST_F('NetInternalsTest', 'netInternalsTimelineViewNoEvents', function() {
 
   sanityCheckWithTimeRange(true);
 
-  mouseZoomOut();
+  mouseZoomOut(1);
   sanityCheckWithTimeRange(true);
 
   mouseZoomAllTheWayIn();
   sanityCheckWithTimeRange(true);
 
-  mouseZoomOut();
+  mouseZoomOut(1);
   sanityCheckWithTimeRange(true);
 
   testDone();
