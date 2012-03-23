@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -128,7 +129,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
       suppress_next_char_events_(false),
       pending_mouse_lock_request_(false),
       has_touch_handler_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      tap_suppression_controller_(new TapSuppressionController(this)) {
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
     surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
@@ -691,7 +693,12 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
     }
     mouse_move_pending_ = true;
   } else if (mouse_event.type == WebInputEvent::MouseDown) {
+    if (tap_suppression_controller_->ShouldDeferMouseDown(mouse_event))
+      return;
     OnUserGesture();
+  } else if (mouse_event.type == WebInputEvent::MouseUp) {
+    if (tap_suppression_controller_->ShouldSuppressMouseUp())
+      return;
   }
 
   ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
@@ -743,6 +750,9 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
+  if (gesture_event.type == WebInputEvent::GestureFlingCancel)
+    tap_suppression_controller_->GestureFlingCancel(
+        gesture_event.timeStampSeconds);
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
 }
 
@@ -1298,6 +1308,8 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
     ProcessWheelAck(processed);
   } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(event_type, processed);
+  } else if (type == WebInputEvent::GestureFlingCancel) {
+    tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
 
   // This is used only for testing, and the other end does not use the

@@ -48,6 +48,7 @@ struct WebScreenInfo;
 namespace content {
 
 class RenderWidgetHostViewPort;
+class TapSuppressionController;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -697,6 +698,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   bool has_touch_handler_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
+
+  scoped_ptr<TapSuppressionController> tap_suppression_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

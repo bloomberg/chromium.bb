@@ -204,6 +204,8 @@ CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 extern const char kEnablePerTilePainting[];
 
 #if defined(USE_AURA)
+CONTENT_EXPORT extern const char kFlingTapSuppressMaxDown[];
+CONTENT_EXPORT extern const char kFlingTapSuppressMaxGap[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 

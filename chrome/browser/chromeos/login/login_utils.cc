@@ -1056,6 +1056,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kPpapiFlashInProcess,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
+      switches::kFlingTapSuppressMaxDown,
+      switches::kFlingTapSuppressMaxGap,
       switches::kTouchDevices,
       ash::switches::kDisableAshUberTray,
       ash::switches::kAuraLegacyPowerButton,
