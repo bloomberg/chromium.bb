@@ -15,12 +15,12 @@ class GesturesTest : public ::testing::Test {};
 TEST(GesturesTest, SameFingersAsTest) {
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    {0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {0, 0, 0, 0, 1, 0, 0, 0, 2},
-    {0, 0, 0, 0, 1, 0, 0, 0, 3},
-    {0, 0, 0, 0, 1, 0, 0, 0, 4},
-    {0, 0, 0, 0, 1, 0, 0, 0, 5}
+    {0, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 2, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 3, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 4, 0},
+    {0, 0, 0, 0, 1, 0, 0, 0, 5, 0}
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, finger states pointer
@@ -222,9 +222,9 @@ TEST(GesturesTest, StimeFromTimespecTest) {
 
 TEST(GesturesTest, HardwareStateGetFingerStateTest) {
   FingerState fs[] = {
-    { 0, 0, 0, 0, 1, 0, 150, 4000, 4 },
-    { 0, 0, 0, 0, 1, 0, 550, 2000, 2 },
-    { 0, 0, 0, 0, 1, 0, 250, 3000, 7 }
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 4, 0 },
+    { 0, 0, 0, 0, 1, 0, 550, 2000, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 250, 3000, 7, 0 }
   };
   HardwareState hs = { 10000, 0, 3, 3, &fs[0] };
   EXPECT_EQ(&fs[0], hs.GetFingerState(4));

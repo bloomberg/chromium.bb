@@ -95,8 +95,8 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
   };
 
   FingerState fs[] = {
-    { 0, 0, 0, 0, 1, 0, 150, 4000, 1 },
-    { 0, 0, 0, 0, 2, 0, 550, 2000, 2 }
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 },
+    { 0, 0, 0, 0, 2, 0, 550, 2000, 2, 0 }
   };
   HardwareStateAndExpectations hse[] = {
     // normal case -- no change expected

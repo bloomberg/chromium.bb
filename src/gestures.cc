@@ -215,6 +215,9 @@ stime_t InternalTimerCallback(stime_t now, void* callback_data) {
 
 void GestureInterpreter::PushHardwareState(HardwareState* hwstate) {
   stime_t timeout = -1.0;
+  // TODO(adlr): move this into xf86-input-cmt:
+  for (size_t i = 0; i < hwstate->finger_cnt; i++)
+    hwstate->fingers[i].flags = 0;
   Gesture* gs = interpreter_->SyncInterpret(hwstate, &timeout);
   if (timer_provider_ && interpret_timer_) {
     timer_provider_->cancel_fn(timer_provider_data_, interpret_timer_);

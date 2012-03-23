@@ -116,7 +116,7 @@ TEST(LoggingFilterInterpreterTest, SimpleTest) {
 
   FingerState finger_state = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    0, 0, 0, 0, 10, 0, 50, 50, 1
+    0, 0, 0, 0, 10, 0, 50, 50, 1, 0
   };
   HardwareState hardware_state = {
     // time, buttons, finger count, touch count, finger states pointer

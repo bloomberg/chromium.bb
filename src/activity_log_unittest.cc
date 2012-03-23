@@ -63,7 +63,7 @@ TEST(ActivityLogTest, SimpleTest) {
   EXPECT_EQ(0, log.size());
   EXPECT_GT(log.MaxSize(), 10);
 
-  FingerState fs = { 0.0, 0.0, 0.0, 0.0, 9.0, 0.0, 3.0, 4.0, 22 };
+  FingerState fs = { 0.0, 0.0, 0.0, 0.0, 9.0, 0.0, 3.0, 4.0, 22, 0 };
   HardwareState hs = { 1.0, 0, 1, 1, &fs };
   log.LogHardwareState(hs);
   EXPECT_EQ(1, log.size());

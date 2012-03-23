@@ -43,10 +43,10 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    { 0, 0, 0, 0, 30, 0, 1, 1, 1 },
-    { 0, 0, 0, 0, 30, 0, 2, 2, 1 },
-    { 0, 0, 0, 0, 30, 0, 3, 3, 1 },
-    { 0, 0, 0, 0, 30, 0, 5, 5, 1 }
+    { 0, 0, 0, 0, 30, 0, 1, 1, 1, GESTURES_FINGER_WARP_X },
+    { 0, 0, 0, 0, 30, 0, 2, 2, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 3, 3, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 5, 5, 1, 0 }
   };
   HardwareState hs[] = {
     { 0.000, 0, 1, 1, &fs[0] },
@@ -55,8 +55,11 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
     { 0.030, 0, 1, 1, &fs[3] }
   };
 
-  for (size_t i = 0; i < arraysize(hs); i++)
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    unsigned expected_flags = hs[i].fingers[0].flags;
     interpreter.SyncInterpret(&hs[i], NULL);
+    EXPECT_EQ(base_interpreter->prev_.flags, expected_flags);
+  }
   EXPECT_EQ(arraysize(hs), base_interpreter->sync_interpret_cnt_);
 }
 
@@ -67,12 +70,12 @@ TEST(IirFilterInterpreterTest, DisableIIRTest) {
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    { 0, 0, 0, 0, 30, 0, 10, 10, 1 },
-    { 0, 0, 0, 0, 30, 0, 11, 15, 1 },
-    { 0, 0, 0, 0, 30, 0, 12, 30, 1 },
-    { 0, 0, 0, 0, 30, 0, 13, 31, 1 },
-    { 0, 0, 0, 0, 30, 0, 14, 32, 1 },
-    { 0, 0, 0, 0, 30, 0, 14, 32, 1 },
+    { 0, 0, 0, 0, 30, 0, 10, 10, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 11, 15, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 12, 30, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 13, 31, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 14, 32, 1, 0 },
+    { 0, 0, 0, 0, 30, 0, 14, 32, 1, 0 },
   };
   HardwareState hs[] = {
     { 0.000, 0, 1, 1, &fs[0] },
@@ -111,8 +114,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
   int kTestPressure = 100;
   FingerState fs_normal[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    { 0, 0, 0, 0, 30, 0, 5, 5, 1 },
-    { 0, 0, 0, 0, kTestPressure, 0, 6, 6, 1 },
+    { 0, 0, 0, 0, 30, 0, 5, 5, 1, 0 },
+    { 0, 0, 0, 0, kTestPressure, 0, 6, 6, 1, 0 },
   };
 
   HardwareState hs_normal[] = {
@@ -132,8 +135,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
   // same after IIR filter.
   FingerState fs_semi_mt[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    { 0, 0, 0, 0, 30, 0, 5, 5, 1 },
-    { 0, 0, 0, 0, kTestPressure, 0, 6, 6, 1 },
+    { 0, 0, 0, 0, 30, 0, 5, 5, 1, 0 },
+    { 0, 0, 0, 0, kTestPressure, 0, 6, 6, 1, 0 },
   };
   HardwareState hs_semi_mt[] = {
     { 0.000, 0, 1, 1, &fs_semi_mt[0] },

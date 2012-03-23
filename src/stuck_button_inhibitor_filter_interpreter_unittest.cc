@@ -129,7 +129,7 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
                          0,  // down
                          GESTURES_BUTTON_LEFT | GESTURES_BUTTON_RIGHT);  // up
 
-  FingerState fs = { 0, 0, 0, 0, 1, 0, 150, 4000, 1 };
+  FingerState fs = { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 };
   Record recs[] = {
     // Simple move. Nothing button related
     { -1.0, { 1.0, 0, 1, 1, &fs  }, true,  -1.0, null, -1.0, null },

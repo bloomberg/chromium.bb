@@ -94,6 +94,7 @@ void LookaheadFilterInterpreter::Interpolate(const HardwareState& first,
     mid->position_x = (older.position_x + newer.position_x) / 2.0;
     mid->position_y = (older.position_y + newer.position_y) / 2.0;
     mid->tracking_id = older.tracking_id;
+    mid->flags = newer.flags;
   }
 }
 

@@ -44,6 +44,14 @@ struct HardwareProperties {
 // tracking_id: If a finger is the same physical finger across two
 // consecutive frames, it must have the same tracking id; if it's a different
 // finger, it may (should) have a different tracking id.
+
+// Warp: If a finger has the 'warp' flag set for an axis, it means that while
+// the finger may have moved, it should not cause any motion in that direction.
+// This may occur is some situations where we thought a finger was in one place,
+// but then we realized later it was actually in another place.
+#define GESTURES_FINGER_WARP_X (1 << 0)
+#define GESTURES_FINGER_WARP_Y (1 << 1)
+
 struct FingerState {
   float touch_major, touch_minor;
   float width_major, width_minor;
@@ -52,6 +60,7 @@ struct FingerState {
   float position_x;
   float position_y;
   short tracking_id;
+  unsigned flags;
 #ifdef __cplusplus
   bool operator==(const FingerState& that) const {
     return touch_major == that.touch_major &&
@@ -62,7 +71,8 @@ struct FingerState {
         orientation == that.orientation &&
         position_x == that.position_x &&
         position_y == that.position_y &&
-        tracking_id == that.tracking_id;
+        tracking_id == that.tracking_id &&
+        flags == that.flags;
   }
   bool operator!=(const FingerState& that) const { return !(*this == that); }
 #endif

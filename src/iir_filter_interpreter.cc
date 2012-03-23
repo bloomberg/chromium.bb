@@ -103,6 +103,14 @@ Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
         hist->NextOut()->*field = 0.5 * (fs->*field + hist->PrevOut(0)->*field);
       }
     }
+    float FingerState::*pass_fields[] = { &FingerState::touch_major,
+                                          &FingerState::touch_minor,
+                                          &FingerState::width_major,
+                                          &FingerState::width_minor,
+                                          &FingerState::orientation };
+    for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++)
+      hist->NextOut()->*pass_fields[f_idx] = fs->*pass_fields[f_idx];
+    hist->NextOut()->flags = fs->flags;
     *hist->NextIn() = *fs;
     *fs = *hist->NextOut();
     hist->Increment();

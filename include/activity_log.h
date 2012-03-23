@@ -101,6 +101,7 @@ class ActivityLog {
   static const char kKeyFingerStatePositionX[];
   static const char kKeyFingerStatePositionY[];
   static const char kKeyFingerStateTrackingId[];
+  static const char kKeyFingerStateFlags[];
   // TimerCallback keys:
   static const char kKeyTimerCallbackNow[];
   // CallbackRequest keys:

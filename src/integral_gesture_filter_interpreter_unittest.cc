@@ -76,7 +76,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   base_interpreter->return_values_.push_back(
       Gesture(kGestureScroll, 0, 0, -0.2, 0));
 
-  FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1 };
+  FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1, 0 };
   HardwareState hs = { 10000, 0, 1, 1, &fs };
 
   GestureType expected_types[] = {
@@ -133,7 +133,7 @@ TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   base_interpreter->return_values_.push_back(
       Gesture(kGestureMove, 0, 0, .2, 0.0));
 
-  FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1 };
+  FingerState fs = { 0, 0, 0, 0, 1, 0, 0, 0, 1, 0 };
   HardwareState hs[] = {
     { 10000.00, 0, 1, 1, &fs },
     { 10000.01, 0, 0, 0, NULL },

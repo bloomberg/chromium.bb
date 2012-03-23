@@ -118,10 +118,10 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   interpreter.pressure_translate_.val_ = kPressureTranslate;
 
   FingerState fs[] = {
-    { 0, 0, 0, 0, 1, 0, 150, 4000, 1 },
-    { 0, 0, 0, 0, 2, 0, 550, 2000, 1 },
-    { 0, 0, 0, 0, 3, 0, 250, 3000, 1 },
-    { 0, 0, 0, 0, 3, 0, 250, 3000, 1 }
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 },
+    { 0, 0, 0, 0, 2, 0, 550, 2000, 1, 0 },
+    { 0, 0, 0, 0, 3, 0, 250, 3000, 1, 0 },
+    { 0, 0, 0, 0, 3, 0, 250, 3000, 1, 0 }
   };
   HardwareState hs[] = {
     { 10000, 0, 1, 1, &fs[0] },
@@ -199,9 +199,9 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
 
   // Test if we will drop the low pressure event.
   FingerState fs2[] = {
-    { 0, 0, 0, 0, 1, 0, 150, 4000, 2 },
-    { 0, 0, 0, 0, 4, 0, 550, 2000, 2 },
-    { 0, 0, 0, 0, 1, 0, 560, 2000, 2 },
+    { 0, 0, 0, 0, 1, 0, 150, 4000, 2, 0 },
+    { 0, 0, 0, 0, 4, 0, 550, 2000, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 560, 2000, 2, 0 },
   };
   HardwareState hs2[] = {
     { 110000, 0, 1, 2, &fs2[0] },

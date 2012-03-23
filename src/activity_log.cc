@@ -166,6 +166,8 @@ const char kSubSubEntryPadding[] = "      ";
                 new FundamentalValue(fs.position_y));
     finger->Set(kKeyFingerStateTrackingId,
                 new FundamentalValue(fs.tracking_id));
+    finger->Set(kKeyFingerStateFlags,
+                new FundamentalValue(static_cast<int>(fs.flags)));
     fingers->Append(finger);
   }
   ret->Set(kKeyHardwareStateFingers, fingers);
@@ -354,6 +356,7 @@ const char ActivityLog::kKeyFingerStateOrientation[] = "orientation";
 const char ActivityLog::kKeyFingerStatePositionX[] = "positionX";
 const char ActivityLog::kKeyFingerStatePositionY[] = "positionY";
 const char ActivityLog::kKeyFingerStateTrackingId[] = "trackingId";
+const char ActivityLog::kKeyFingerStateFlags[] = "flags";
 const char ActivityLog::kKeyTimerCallbackNow[] = "now";
 const char ActivityLog::kKeyCallbackRequestWhen[] = "when";
 const char ActivityLog::kKeyGestureType[] = "gestureType";

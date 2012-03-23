@@ -264,6 +264,10 @@ bool ActivityReplay::ParseFingerState(DictionaryValue* entry,
     return false;
   }
   out_fs->tracking_id = tr_id;
+  int flags = 0;
+  if (!entry->GetInteger(ActivityLog::kKeyFingerStateFlags, &flags))
+    Err("can't parse finger's flags; continuing.");
+  out_fs->flags = static_cast<unsigned>(flags);
   return true;
 }
 

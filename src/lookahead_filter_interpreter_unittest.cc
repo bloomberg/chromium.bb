@@ -73,15 +73,15 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    { 0, 0, 0, 0, 1, 0, 10, 1, 1 },
-    { 0, 0, 0, 0, 1, 0, 10, 2, 1 },
-    { 0, 0, 0, 0, 1, 0, 10, 3, 1 },
+    { 0, 0, 0, 0, 1, 0, 10, 1, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 2, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 3, 1, 0 },
 
-    { 0, 0, 0, 0, 1, 0, 10, 1, 2 },
-    { 0, 0, 0, 0, 1, 0, 10, 2, 2 },
+    { 0, 0, 0, 0, 1, 0, 10, 1, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 2, 2, 0 },
 
-    { 0, 0, 0, 0, 1, 0, 10, 1, 3 },
-    { 0, 0, 0, 0, 1, 0, 10, 2, 3 },
+    { 0, 0, 0, 0, 1, 0, 10, 1, 3, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 2, 3, 0 },
   };
   HardwareState hs[] = {
     // Expect movement to take
@@ -234,7 +234,7 @@ TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
 
   FingerState fs = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    0, 0, 0, 0, 1, 0, 20, 20, 1
+    0, 0, 0, 0, 1, 0, 20, 20, 1, 0
   };
   HardwareState hs[] = {
     // Initial state
@@ -374,21 +374,21 @@ TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest) {
   // the output into the fourth slot. The third slot is the expected output.
   FingerState fs[] = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    { 0.1, 0.4, 1.6, 1.2, 10, 3, 102, 102, 1 },
-    { 0.2, 0.5, 1.7, 1.3, 11, 4, 4, 4, 2 },
-    { 0.3, 0.6, 1.8, 1.4, 12, 5, 4444, 9999, 3 },
+    { 0.1, 0.4, 1.6, 1.2, 10, 3, 102, 102, 1, 0 },
+    { 0.2, 0.5, 1.7, 1.3, 11, 4, 4, 4, 2, 0 },
+    { 0.3, 0.6, 1.8, 1.4, 12, 5, 4444, 9999, 3, 0 },
 
-    { 0.5, 0.2, 2.0, 1.2, 13, 8, 200, 100, 1 },
-    { 0.7, 0.4, 2.3, 1.3, 17, 7, 20, 22, 2 },
-    { 1.0, 0.5, 2.4, 1.6, 10, 9, 5000, 5000, 3 },
+    { 0.5, 0.2, 2.0, 1.2, 13, 8, 200, 100, 1, 0 },
+    { 0.7, 0.4, 2.3, 1.3, 17, 7, 20, 22, 2, 0 },
+    { 1.0, 0.5, 2.4, 1.6, 10, 9, 5000, 5000, 3, 0 },
 
-    { 0.3, 0.3, 1.8, 1.2, 11.5, 5.5, 151, 101, 1 },
-    { 0.45, 0.45, 2.0, 1.3, 14, 5.5, 12, 13, 2 },
-    { 0.65, 0.55, 2.1, 1.5, 11, 7, 4722, 7499.5, 3 },
+    { 0.3, 0.3, 1.8, 1.2, 11.5, 5.5, 151, 101, 1, 0 },
+    { 0.45, 0.45, 2.0, 1.3, 14, 5.5, 12, 13, 2, 0 },
+    { 0.65, 0.55, 2.1, 1.5, 11, 7, 4722, 7499.5, 3, 0 },
 
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
   };
   HardwareState hs[] = {
     // Expect movement to take
@@ -421,7 +421,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
 
   FingerState fs = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    0, 0, 0, 0, 1, 0, 10, 1, 1
+    0, 0, 0, 0, 1, 0, 10, 1, 1, 0
   };
   HardwareState hs[] = {
     // Expect movement to take
@@ -495,7 +495,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
 
   FingerState fs = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    0, 0, 0, 0, 1, 0, 10, 1, 1
+    0, 0, 0, 0, 1, 0, 10, 1, 1, 0
   };
   // These timestamps cause an interpolated event to be 1.492 at time 1.495,
   // and so this tests that an overdue interpolated event is handled correctly.
@@ -557,10 +557,10 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
-    { 0, 0, 0, 0, 1, 0, 40, 80, 1 },
-    { 0, 0, 0, 0, 1, 0, 40, 40, 2 },
-    { 0, 0, 0, 0, 1, 0, 41, 80, 2 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 40, 80, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 2, 0 },
   };
   // These timestamps cause an interpolated event to be 1.492 at time 1.495,
   // and so this tests that an overdue interpolated event is handled correctly.
@@ -611,13 +611,13 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
-    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
-    { 0, 0, 0, 0, 1, 0, 41, 80, 1 },
-    { 0, 0, 0, 0, 1, 0, 40, 40, 1 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 1, 0 },
 
-    { 0, 0, 0, 0, 1, 0, 40, 40, 2 },
-    { 0, 0, 0, 0, 1, 0, 41, 80, 2 },
-    { 0, 0, 0, 0, 1, 0, 40, 120, 2 },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 2, 0 },
+    { 0, 0, 0, 0, 1, 0, 40, 120, 2, 0 },
   };
 
   HardwareState hs[] = {
