@@ -260,7 +260,7 @@ li.root-item > .spacer {
 .root-label {
   -webkit-padding-start: 38px;
   background-repeat: no-repeat;
-  background-position: 0 2px;
+  background-position: left center;
 }
 
 .breadcrumbs .root-label {
@@ -270,7 +270,6 @@ li.root-item > .spacer {
 
 .root-label[icon=downloads] {
   background-image: url('../images/downloads_28x28.png');
-  background-position: 0 -2px;
 }
 
 .breadcrumbs .root-label[icon=downloads] {
@@ -279,17 +278,14 @@ li.root-item > .spacer {
 
 .root-label[icon=gdata] {
   background-image: url('../images/gdata_28x28.png');
-  background-position: 0 -2px;
 }
 
 .breadcrumbs .root-label[icon=gdata] {
   background-image: url('../images/gdata_24x24.png');
-  background-position: 0 -2px;
 }
 
 .root-label[icon=archive] {
   background-image: url('../images/archive_28x28.png');
-  background-position: 0 -2px;
 }
 
 .breadcrumbs .root-label[icon=archive] {
@@ -298,12 +294,10 @@ li.root-item > .spacer {
 
 .root-label[icon=removable] {
   background-image: url('../images/usb_source_28x28.png');
-  background-position: 0 -3px;
 }
 
 .breadcrumbs .root-label[icon=removable] {
   background-image: url('../images/usb_source_24x24.png');
-  background-position: 0 0;
 }
 
 .root-label[icon=unreadable] {
