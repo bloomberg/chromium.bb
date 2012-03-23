@@ -302,6 +302,32 @@
         <include name="IDR_AURA_WALLPAPERS_VITALIPROKOPENKO_2_THUMB" file="aura/google_wallpapers/vitaliprokopenko_2_thumb.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_WALTERSOESTBERGEN_0" file="aura/google_wallpapers/waltersoestbergen_0.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_WALTERSOESTBERGEN_0_THUMB" file="aura/google_wallpapers/waltersoestbergen_0_thumb.jpg" type="BINDATA" />
+
+        <!-- TODO(saintlou): The following images are not sorted, we are still experimenting and these are not final. -->
+        <include name="IDR_AURA_WALLPAPERS_BEACH_DAY" file="aura/google_wallpapers/Beach_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_BEACH_DAY_THUMB" file="aura/google_wallpapers/Beach_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_BEACH_NIGHT" file="aura/google_wallpapers/Beach_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_BEACH_NIGHT_THUMB" file="aura/google_wallpapers/Beach_Night_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_FOREST_DAY" file="aura/google_wallpapers/Forest_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_FOREST_DAY_THUMB" file="aura/google_wallpapers/Forest_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_FOREST_NIGHT" file="aura/google_wallpapers/Forest_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_FOREST_NIGHT_THUMB" file="aura/google_wallpapers/Forest_Night_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MOUNTAIN_DAY" file="aura/google_wallpapers/Mountain_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MOUNTAIN_DAY_THUMB" file="aura/google_wallpapers/Mountain_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MOUNTAIN_NIGHT" file="aura/google_wallpapers/Mountain_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_MOUNTAIN_NIGHT_THUMB" file="aura/google_wallpapers/Mountain_Night_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NYC_DAY" file="aura/google_wallpapers/NYC_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NYC_DAY_THUMB" file="aura/google_wallpapers/NYC_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NYC_NIGHT" file="aura/google_wallpapers/NYC_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_NYC_NIGHT_THUMB" file="aura/google_wallpapers/NYC_Night_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PLAINS_DAY" file="aura/google_wallpapers/Plains_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PLAINS_DAY_THUMB" file="aura/google_wallpapers/Plains_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PLAINS_NIGHT" file="aura/google_wallpapers/PLains_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_PLAINS_NIGHT_THUMB" file="aura/google_wallpapers/PLains_Night_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_SF_DAY" file="aura/google_wallpapers/SF_Day.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_SF_DAY_THUMB" file="aura/google_wallpapers/SF_Day_thumb.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_SF_NIGHT" file="aura/google_wallpapers/SF_Night.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_SF_NIGHT_THUMB" file="aura/google_wallpapers/SF_Night_thumb.jpg" type="BINDATA" />
       </if>
 
       <!-- Remaining images only used by Aura. -->
