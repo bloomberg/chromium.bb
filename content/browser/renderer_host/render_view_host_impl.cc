@@ -494,7 +494,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.
   WebDropData filtered_data(drop_data);
-  FilterURL(policy, renderer_id, false, &filtered_data.url);
+  FilterURL(policy, renderer_id, true, &filtered_data.url);
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
