@@ -505,15 +505,55 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   // Restore a single tab from a foreign session.
-  // Note: we currently restore the tab to the last active browser.
-  void RestoreForeignTab(const SessionTab& tab) {
+  // Opens in the tab in the last active browser, unless disposition is
+  // NEW_WINDOW, in which case the tab will be opened in a new browser.
+  void RestoreForeignTab(const SessionTab& tab,
+                         WindowOpenDisposition disposition) {
+    DCHECK(!tab.navigations.empty());
+    int selected_index = tab.current_navigation_index;
+    selected_index = std::max(
+        0,
+        std::min(selected_index,
+                 static_cast<int>(tab.navigations.size() - 1)));
+
+    bool use_new_window = disposition == NEW_WINDOW;
+
     StartTabCreation();
-    Browser* current_browser =
-        browser_ ? browser_ : BrowserList::GetLastActiveWithProfile(profile_);
-    RestoreTab(tab, current_browser->tab_count(), current_browser, true);
-    NotifySessionServiceOfRestoredTabs(current_browser,
-                                       current_browser->tab_count());
-    FinishedTabCreation(true, true);
+
+    // The browser should not be specified; the browser to use is
+    // dictated by the WindowOpenDisposition.
+    DCHECK(browser_ == NULL);
+    Browser* browser = use_new_window ?
+        Browser::Create(profile_) :
+        BrowserList::GetLastActiveWithProfile(profile_);
+
+    RecordAppLaunchForTab(browser, tab, selected_index);
+
+    if (disposition == CURRENT_TAB) {
+      DCHECK(!use_new_window);
+      browser->ReplaceRestoredTab(tab.navigations,
+                                  selected_index,
+                                  true,
+                                  tab.extension_app_id,
+                                  NULL);
+    } else {
+      int tab_index = use_new_window ? 0 : browser->active_index() + 1;
+      browser->AddRestoredTab(tab.navigations,
+                              tab_index,
+                              selected_index,
+                              tab.extension_app_id,
+                              true,
+                              tab.pinned,
+                              true,
+                              NULL);
+    }
+
+    if (use_new_window) {
+      browser->ActivateTabAt(0, true);
+      browser->window()->Show();
+    }
+    NotifySessionServiceOfRestoredTabs(browser, browser->tab_count());
+    FinishedTabCreation(true, use_new_window);
   }
 
   ~SessionRestoreImpl() {
@@ -575,7 +615,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     if (succeeded) {
       DCHECK(tab_loader_.get());
-      // TabLoader delets itself when done loading.
+      // TabLoader deletes itself when done loading.
       tab_loader_.release()->StartLoading();
     }
 
@@ -719,6 +759,22 @@ class SessionRestoreImpl : public content::NotificationObserver {
     return last_browser;
   }
 
+  // Record an app launch event (if appropriate) for a tab which is about to
+  // be restored. Callers should ensure that selected_index is within the
+  // bounds of tab.navigations before calling.
+  void RecordAppLaunchForTab(Browser* browser,
+                             const SessionTab& tab,
+                             int selected_index) {
+    DCHECK(selected_index >= 0 &&
+           selected_index < static_cast<int>(tab.navigations.size()));
+    GURL url = tab.navigations[selected_index].virtual_url();
+    if (browser->profile()->GetExtensionService() &&
+        browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
+      AppLauncherHandler::RecordAppLaunchType(
+          extension_misc::APP_LAUNCH_SESSION_RESTORE);
+    }
+  }
+
   void RestoreTabsToBrowser(const SessionWindow& window,
                             Browser* browser,
                             int selected_tab_index) {
@@ -747,16 +803,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         std::min(selected_index,
                  static_cast<int>(tab.navigations.size() - 1)));
 
-    // Record an app launch, if applicable.
-    GURL url = tab.navigations.at(selected_index).virtual_url();
-    if (
-#if defined(OS_CHROMEOS)
-        browser->profile()->GetExtensionService() &&
-#endif
-        browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
-      AppLauncherHandler::RecordAppLaunchType(
-          extension_misc::APP_LAUNCH_SESSION_RESTORE);
-    }
+    RecordAppLaunchForTab(browser, tab, selected_index);
 
     WebContents* web_contents =
         browser->AddRestoredTab(tab.navigations,
@@ -942,7 +989,6 @@ void SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
     std::vector<const SessionWindow*>::const_iterator begin,
     std::vector<const SessionWindow*>::const_iterator end) {
-  // Create a SessionRestore object to eventually restore the tabs.
   std::vector<GURL> gurls;
   SessionRestoreImpl restorer(profile,
       static_cast<Browser*>(NULL), true, false, true, gurls);
@@ -950,13 +996,14 @@ void SessionRestore::RestoreForeignSessionWindows(
 }
 
 // static
-void SessionRestore::RestoreForeignSessionTab(Profile* profile,
-    const SessionTab& tab) {
-  // Create a SessionRestore object to eventually restore the tabs.
+void SessionRestore::RestoreForeignSessionTab(
+    Profile* profile,
+    const SessionTab& tab,
+    WindowOpenDisposition disposition) {
   std::vector<GURL> gurls;
   SessionRestoreImpl restorer(profile,
-      static_cast<Browser*>(NULL), true, false, true, gurls);
-  restorer.RestoreForeignTab(tab);
+      static_cast<Browser*>(NULL), true, false, false, gurls);
+  restorer.RestoreForeignTab(tab, disposition);
 }
 
 // static
