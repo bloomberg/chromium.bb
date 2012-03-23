@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,7 @@ class TestTCPSocketPrivate : public TestCase {
  private:
   std::string TestBasic();
   std::string TestReadWrite();
+  std::string TestReadWriteSSL();
   std::string TestConnectAddress();
 
   int32_t ReadFirstLineFromSocket(pp::TCPSocketPrivate* socket, std::string* s);
@@ -33,6 +34,7 @@ class TestTCPSocketPrivate : public TestCase {
 
   std::string host_;
   uint16_t port_;
+  uint16_t ssl_port_;
 };
 
 #endif  // PAPPI_TESTS_TEST_TCP_SOCKET_PRIVATE_H_

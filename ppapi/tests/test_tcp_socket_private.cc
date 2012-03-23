@@ -40,12 +40,16 @@ bool TestTCPSocketPrivate::Init() {
   if (!GetLocalHostPort(instance_->pp_instance(), &host_, &port_))
     return false;
 
+  // Get the port for the SSL server.
+  ssl_port_ = instance_->ssl_server_port();
+
   return true;
 }
 
 void TestTCPSocketPrivate::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Basic, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ReadWrite, filter);
+  RUN_TEST_FORCEASYNC_AND_NOT(ReadWriteSSL, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectAddress, filter);
 }
 
@@ -74,6 +78,34 @@ std::string TestTCPSocketPrivate::TestReadWrite() {
   TestCompletionCallback cb(instance_->pp_instance(), force_async_);
 
   int32_t rv = socket.Connect(host_.c_str(), port_, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_OK, rv);
+
+  ASSERT_EQ(PP_OK, WriteStringToSocket(&socket, "GET / HTTP/1.0\r\n\r\n"));
+
+  // Read up to the first \n and check that it looks like valid HTTP response.
+  std::string s;
+  ASSERT_EQ(PP_OK, ReadFirstLineFromSocket(&socket, &s));
+  ASSERT_TRUE(ValidateHttpResponse(s));
+
+  socket.Disconnect();
+
+  PASS();
+}
+
+std::string TestTCPSocketPrivate::TestReadWriteSSL() {
+  pp::TCPSocketPrivate socket(instance_);
+  TestCompletionCallback cb(instance_->pp_instance(), force_async_);
+
+  int32_t rv = socket.Connect(host_.c_str(), ssl_port_, cb);
+  ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = cb.WaitForResult();
+  ASSERT_EQ(PP_OK, rv);
+
+  rv = socket.SSLHandshake(host_.c_str(), ssl_port_, cb);
   ASSERT_TRUE(!force_async_ || rv == PP_OK_COMPLETIONPENDING);
   if (rv == PP_OK_COMPLETIONPENDING)
     rv = cb.WaitForResult();
@@ -127,8 +159,6 @@ std::string TestTCPSocketPrivate::TestConnectAddress() {
 
   PASS();
 }
-
-// TODO(viettrungluu): Try testing SSL somehow.
 
 int32_t TestTCPSocketPrivate::ReadFirstLineFromSocket(
     pp::TCPSocketPrivate* socket,

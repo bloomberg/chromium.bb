@@ -34,11 +34,14 @@ function AppendFrame(testcase, i) {
   var frame = document.createElement("IFRAME");
   var mode = ExtractSearchParameter("mode");
   var websocket_port = ExtractSearchParameter("websocket_port");
+  var ssl_server_port = ExtractSearchParameter("ssl_server_port");
   var src = "?testcase=" + testcase;
   if (mode == "nacl")
     src += "&mode=nacl";
   if (websocket_port != "")
     src += "&websocket_port=" + websocket_port;
+  if (ssl_server_port != "")
+    src += "&ssl_server_port=" + ssl_server_port;
   frame.setAttribute("src", src);
 
   frame.setAttribute("onload", "LoadNext(" + (i + 1) + ")");
@@ -222,6 +225,10 @@ onload = function() {
     var websocket_port = ExtractSearchParameter("websocket_port");
     if (websocket_port != "")
       obj.setAttribute("websocket_port", websocket_port);
+    var ssl_server_port = ExtractSearchParameter("ssl_server_port");
+    if (ssl_server_port != "")
+      obj.setAttribute("ssl_server_port", ssl_server_port);
+
     var container = document.getElementById("container");
     container.addEventListener("message", handleTestingMessage, true);
     // Register a bad dispatchEvent to make sure it isn't used. See 'EVIL' note

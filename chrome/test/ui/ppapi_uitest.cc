@@ -160,61 +160,33 @@ void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
 }
 
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
-  // For HTTP tests, we use the output DIR to grab the generated files such
-  // as the NEXEs.
-  FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
-  FilePath src_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  FilePath document_root;
+  ASSERT_TRUE(GetHTTPDocumentRoot(&document_root));
+  RunHTTPTestServer(document_root, test_case, "");
+}
 
-  // TestServer expects a path relative to source. So we must first
-  // generate absolute paths to SRC and EXE and from there generate
-  // a relative path.
-  if (!exe_dir.IsAbsolute()) file_util::AbsolutePath(&exe_dir);
-  if (!src_dir.IsAbsolute()) file_util::AbsolutePath(&src_dir);
-  ASSERT_TRUE(exe_dir.IsAbsolute());
-  ASSERT_TRUE(src_dir.IsAbsolute());
-
-  size_t match, exe_size, src_size;
-  std::vector<FilePath::StringType> src_parts, exe_parts;
-
-  // Determine point at which src and exe diverge, and create a relative path.
-  exe_dir.GetComponents(&exe_parts);
-  src_dir.GetComponents(&src_parts);
-  exe_size = exe_parts.size();
-  src_size = src_parts.size();
-  for (match = 0; match < exe_size && match < src_size; ++match) {
-    if (exe_parts[match] != src_parts[match])
-      break;
-  }
-  FilePath web_dir;
-  for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr) {
-    web_dir = web_dir.Append(FILE_PATH_LITERAL(".."));
-  }
-  for (; match < exe_size; ++match) {
-    web_dir = web_dir.Append(exe_parts[match]);
-  }
-
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              web_dir);
+void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
+  FilePath document_root;
+  ASSERT_TRUE(GetHTTPDocumentRoot(&document_root));
+  net::TestServer test_server(net::BaseTestServer::HTTPSOptions(),
+                              document_root);
   ASSERT_TRUE(test_server.Start());
-  std::string query = BuildQuery("files/test_case.html?", test_case);
-
-  GURL url = test_server.GetURL(query);
-  RunTestURL(url);
+  uint16_t port = test_server.host_port_pair().port();
+  RunHTTPTestServer(document_root, test_case,
+                    StringPrintf("ssl_server_port=%d", port));
 }
 
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   FilePath websocket_root_dir;
   ASSERT_TRUE(
       PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_root_dir));
-
   ui_test_utils::TestWebSocketServer server;
   int port = server.UseRandomPort();
   ASSERT_TRUE(server.Start(websocket_root_dir));
-  std::string url = StringPrintf("%s&websocket_port=%d",
-                                 test_case.c_str(), port);
-  RunTestViaHTTP(url);
+  FilePath http_document_root;
+  ASSERT_TRUE(GetHTTPDocumentRoot(&http_document_root));
+  RunHTTPTestServer(http_document_root, test_case,
+                    StringPrintf("websocket_port=%d", port));
 }
 
 std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
@@ -240,6 +212,61 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
 
   EXPECT_STREQ("PASS", observer.result().c_str());
+}
+
+void PPAPITestBase::RunHTTPTestServer(
+    const FilePath& document_root,
+    const std::string& test_case,
+    const std::string& extra_params) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              document_root);
+  ASSERT_TRUE(test_server.Start());
+  std::string query = BuildQuery("files/test_case.html?", test_case);
+  if (!extra_params.empty())
+    query = StringPrintf("%s&%s", query.c_str(), extra_params.c_str());
+
+  GURL url = test_server.GetURL(query);
+  RunTestURL(url);
+}
+
+bool PPAPITestBase::GetHTTPDocumentRoot(FilePath* document_root) {
+  // For HTTP tests, we use the output DIR to grab the generated files such
+  // as the NEXEs.
+  FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
+  FilePath src_dir;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+    return false;
+
+  // TestServer expects a path relative to source. So we must first
+  // generate absolute paths to SRC and EXE and from there generate
+  // a relative path.
+  if (!exe_dir.IsAbsolute()) file_util::AbsolutePath(&exe_dir);
+  if (!src_dir.IsAbsolute()) file_util::AbsolutePath(&src_dir);
+  if (!exe_dir.IsAbsolute())
+    return false;
+  if (!src_dir.IsAbsolute())
+    return false;
+
+  size_t match, exe_size, src_size;
+  std::vector<FilePath::StringType> src_parts, exe_parts;
+
+  // Determine point at which src and exe diverge, and create a relative path.
+  exe_dir.GetComponents(&exe_parts);
+  src_dir.GetComponents(&src_parts);
+  exe_size = exe_parts.size();
+  src_size = src_parts.size();
+  for (match = 0; match < exe_size && match < src_size; ++match) {
+    if (exe_parts[match] != src_parts[match])
+      break;
+  }
+  for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr) {
+    *document_root = document_root->Append(FILE_PATH_LITERAL(".."));
+  }
+  for (; match < exe_size; ++match) {
+    *document_root = document_root->Append(exe_parts[match]);
+  }
+  return true;
 }
 
 PPAPITest::PPAPITest() {
@@ -347,6 +374,16 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
+// Similar macros that test with an SSL server.
+#define TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
+      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
+    }
+#define TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(test_name) \
+    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
+      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
+    }
+
 // Similar macros that test with WebSocket server
 #define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
@@ -361,6 +398,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 #if defined(DISABLE_NACL)
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
+#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
 #else
 
@@ -374,6 +412,12 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+    }
+
+// NaCl based PPAPI tests with SSL server
+#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
+      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
 // NaCl based PPAPI tests with WebSocket server
@@ -460,9 +504,9 @@ TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPSocketPrivate)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPSocketPrivate)
-TEST_PPAPI_NACL_VIA_HTTP(TCPSocketPrivate)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
+TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
+TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(UDPSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate)
