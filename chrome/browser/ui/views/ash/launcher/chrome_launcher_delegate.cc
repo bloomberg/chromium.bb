@@ -410,7 +410,7 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
 }
 
 void ChromeLauncherDelegate::CreateNewWindow() {
-  Browser::OpenEmptyWindow(GetProfileForNewWindows());
+  Browser::NewEmptyWindow(GetProfileForNewWindows());
 }
 
 void ChromeLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {
