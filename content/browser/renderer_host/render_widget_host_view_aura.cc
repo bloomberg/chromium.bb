@@ -127,8 +127,7 @@ class RenderWidgetHostViewAura::ResizeLock :
  public:
   ResizeLock(aura::RootWindow* root_window, const gfx::Size new_size)
       : root_window_(root_window),
-        new_size_(new_size),
-        compositor_lock_(root_window_->GetCompositorLock()) {
+        new_size_(new_size) {
     root_window_->HoldMouseMoves();
 
     BrowserThread::PostDelayedTask(
@@ -142,15 +141,9 @@ class RenderWidgetHostViewAura::ResizeLock :
     CancelLock();
   }
 
-  void UnlockCompositor() {
-    compositor_lock_ = NULL;
-  }
-
   void CancelLock() {
-    if (!root_window_)
-      return;
-    UnlockCompositor();
-    root_window_->ReleaseMouseMoves();
+    if (root_window_)
+      root_window_->ReleaseMouseMoves();
     root_window_ = NULL;
   }
 
@@ -161,7 +154,6 @@ class RenderWidgetHostViewAura::ResizeLock :
  private:
   aura::RootWindow* root_window_;
   gfx::Size new_size_;
-  scoped_refptr<aura::CompositorLock> compositor_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeLock);
 };
@@ -427,8 +419,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     if (!container) {
       resize_locks_.clear();
     } else {
-      typedef std::vector<linked_ptr<ResizeLock> > ResizeLockList;
-      ResizeLockList::iterator it = resize_locks_.begin();
+      std::vector<linked_ptr<ResizeLock> >::iterator it = resize_locks_.begin();
       while (it != resize_locks_.end()) {
         if ((*it)->expected_size() == container->size())
           break;
@@ -443,12 +434,6 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
           // draw a "good" frame.
           locks_pending_draw_.insert(
               locks_pending_draw_.begin(), resize_locks_.begin(), it);
-          // However since we got the size we were looking for, unlock the
-          // compositor.
-          for (ResizeLockList::iterator it2 = resize_locks_.begin();
-              it2 !=it; ++it2) {
-            it2->get()->UnlockCompositor();
-          }
           if (!compositor->HasObserver(this))
             compositor->AddObserver(this);
         }
@@ -477,21 +462,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
         image_transport_clients_[params.surface_handle]->size();
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
-    if (!resize_locks_.empty() && !compositor->DrawPending()) {
-      // If we are waiting for the resize, fast-track the ACK.
-      // However only do so if we're not between the Draw() and the
-      // OnCompositingEnded(), because out-of-order execution in the GPU process
-      // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-          params.route_id, gpu_host_id);
-    } else {
-      // Add sending an ACK to the list of things to do OnCompositingEnded
-      on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgeSwapBuffers,
-                     params.route_id, gpu_host_id));
-      if (!compositor->HasObserver(this))
-        compositor->AddObserver(this);
-    }
+    // Add sending an ACK to the list of things to do OnCompositingEnded
+    on_compositing_ended_callbacks_.push_back(
+        base::Bind(&RenderWidgetHostImpl::AcknowledgeSwapBuffers,
+                   params.route_id, gpu_host_id));
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
   }
 }
 
@@ -519,21 +495,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
         params.width,
         params.height));
 
-    if (!resize_locks_.empty() && !compositor->DrawPending()) {
-      // If we are waiting for the resize, fast-track the ACK.
-      // However only do so if we're not between the Draw() and the
-      // OnCompositingEnded(), because out-of-order execution in the GPU process
-      // might corrupt the "front buffer" for the currently issued frame.
-      RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-          params.route_id, gpu_host_id);
-    } else {
-      // Add sending an ACK to the list of things to do OnCompositingEnded
-      on_compositing_ended_callbacks_.push_back(
-          base::Bind(&RenderWidgetHostImpl::AcknowledgePostSubBuffer,
-                     params.route_id, gpu_host_id));
-      if (!compositor->HasObserver(this))
-        compositor->AddObserver(this);
-    }
+    // Add sending an ACK to the list of things to do OnCompositingEnded
+    on_compositing_ended_callbacks_.push_back(
+        base::Bind(&RenderWidgetHostImpl::AcknowledgePostSubBuffer,
+                   params.route_id, gpu_host_id));
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
   }
 }
 

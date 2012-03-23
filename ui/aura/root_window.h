@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -34,7 +33,6 @@ class Transform;
 
 namespace aura {
 
-class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
 class KeyEvent;
@@ -43,31 +41,6 @@ class StackingClient;
 class ScrollEvent;
 class TouchEvent;
 class GestureEvent;
-
-// This class represents a lock on the compositor, that can be used to prevent a
-// compositing pass from happening while we're waiting for an asynchronous
-// event. The typical use case is when waiting for a renderer to produce a frame
-// at the right size. The caller keeps a reference on this object, and drops the
-// reference once it desires to release the lock.
-// Note however that the lock is canceled after a short timeout to ensure
-// responsiveness of the UI, so the compositor tree should be kept in a
-// "reasonable" state while the lock is held.
-// Don't instantiate this class directly, use RootWindow::GetCompositorLock.
-class CompositorLock :
-    public base::RefCounted<CompositorLock>,
-    public base::SupportsWeakPtr<CompositorLock> {
- public:
-  ~CompositorLock();
-
- private:
-  friend class RootWindow;
-
-  CompositorLock(RootWindow* root_window);
-  void CancelLock();
-
-  RootWindow* root_window_;
-  DISALLOW_COPY_AND_ASSIGN(CompositorLock);
-};
 
 // RootWindow is responsible for hosting a set of windows.
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
@@ -219,9 +192,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Sets if the window should be focused when shown.
   void SetFocusWhenShown(bool focus_when_shown);
 
-  // Creates a compositor lock.
-  scoped_refptr<CompositorLock> GetCompositorLock();
-
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual const RootWindow* GetRootWindow() const OVERRIDE;
@@ -236,7 +206,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
  private:
   friend class Window;
-  friend class CompositorLock;
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
@@ -302,9 +271,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // current mouse location.
   void SynthesizeMouseMoveEvent();
 
-  // Called by CompositorLock.
-  void UnlockCompositor();
-
   scoped_ptr<ui::Compositor> compositor_;
 
   scoped_ptr<RootWindowHost> host_;
@@ -356,9 +322,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   int mouse_move_hold_count_;
   bool should_hold_mouse_moves_;
   scoped_ptr<MouseEvent> held_mouse_move_;
-
-  CompositorLock* compositor_lock_;
-  bool draw_on_compositor_unlock_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };
