@@ -127,10 +127,7 @@ ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
   DCHECK(manager);
   if (!manager)
     return NULL;
-  if (browser)
-    return manager->CreateDialogHost(url, browser);
-  else
-    return manager->CreatePopupHost(url, NULL);
+  return manager->CreateDialogHost(url, browser);
 }
 
 #if defined(USE_AURA)

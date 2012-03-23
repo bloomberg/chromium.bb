@@ -167,15 +167,32 @@ ExtensionHost* ExtensionProcessManager::CreateShellHost(
   return host;
 }
 
+void ExtensionProcessManager::EnsureBrowserWhenRequired(
+    Browser* browser,
+    content::ViewType view_type) {
+  if (!browser) {
+#if defined (OS_CHROMEOS)
+  // On ChromeOS we'll only use ExtensionView, which
+  // does not use the browser parameter.
+  // TODO(rkc): Remove all this once we create a new host for
+  // screensaver extensions (crosbug.com/28211).
+  DCHECK(view_type == chrome::VIEW_TYPE_EXTENSION_POPUP ||
+         view_type == chrome::VIEW_TYPE_EXTENSION_DIALOG);
+#else
+  // A NULL browser may only be given for pop-up views.
+  DCHECK(view_type == chrome::VIEW_TYPE_EXTENSION_POPUP);
+#endif
+  }
+}
+
+
 ExtensionHost* ExtensionProcessManager::CreateViewHost(
     const Extension* extension,
     const GURL& url,
     Browser* browser,
     content::ViewType view_type) {
   DCHECK(extension);
-  // A NULL browser may only be given for pop-up views.
-  DCHECK(browser ||
-         (!browser && view_type == chrome::VIEW_TYPE_EXTENSION_POPUP));
+  EnsureBrowserWhenRequired(browser, view_type);
   ExtensionHost* host =
 #if defined(OS_MACOSX)
       new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
@@ -190,9 +207,7 @@ ExtensionHost* ExtensionProcessManager::CreateViewHost(
 
 ExtensionHost* ExtensionProcessManager::CreateViewHost(
     const GURL& url, Browser* browser, content::ViewType view_type) {
-  // A NULL browser may only be given for pop-up views.
-  DCHECK(browser ||
-         (!browser && view_type == chrome::VIEW_TYPE_EXTENSION_POPUP));
+  EnsureBrowserWhenRequired(browser, view_type);
   ExtensionService* service = GetProfile()->GetExtensionService();
   if (service) {
     const Extension* extension =

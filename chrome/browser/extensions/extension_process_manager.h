@@ -153,6 +153,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(ExtensionHost* host);
 
+  // Ensure browser object is not null except for certain situations.
+  void EnsureBrowserWhenRequired(Browser* browser,
+                                 content::ViewType view_type);
+
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.
   void OnLazyBackgroundPageIdle(const std::string& extension_id);
