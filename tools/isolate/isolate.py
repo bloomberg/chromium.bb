@@ -12,6 +12,8 @@
             executable.
   run       Recreates a tree with all the inputs files and run the executable
             in it.
+  trace     Runs the executable without remapping it but traces all the files
+            it and its child processes access.
 
 See more information at
 http://dev.chromium.org/developers/testing/isolated-testing
@@ -26,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 
+import trace_inputs
 import tree_creator
 
 
@@ -74,7 +77,17 @@ def separate_inputs_command(args, root, files):
 def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   """Main function to isolate a target with its dependencies.
 
-  It's behavior depends on |mode|.
+  Arguments:
+  - outdir: Output directory where the result is stored. Depends on |mode|.
+  - resultfile: File to save the json data.
+  - indir: Root directory to be used as the base directory for infiles.
+  - infiles: List of files, with relative path, to process.
+  - mode: Action to do. See file level docstring.
+  - read_only: Makes the temporary directory read only.
+  - cmd: Command to execute.
+
+  Some arguments are optional, dependending on |mode|. See the corresponding
+  MODE<mode> function for the exact behavior.
   """
   mode_fn = getattr(sys.modules[__name__], 'MODE' + mode)
   assert mode_fn
@@ -105,8 +118,7 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
       indir, infiles, mode == 'hashtable', read_only)
 
   result = mode_fn(
-      outdir, indir, dictfiles, read_only, cmd, relative_cwd,
-      os.path.dirname(resultfile))
+      outdir, indir, dictfiles, read_only, cmd, relative_cwd, resultfile)
 
   if result == 0:
     # Saves the resulting file.
@@ -121,15 +133,14 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
 
 
 def MODEcheck(
-    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
+    _outdir, _indir, _dictfiles, _read_only, _cmd, _relative_cwd, _resultfile):
   """No-op."""
   return 0
 
 
 def MODEhashtable(
-    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
-  """Ignores read_only, cmd and relative_cwd."""
-  outdir = outdir or result_path
+    outdir, indir, dictfiles, _read_only, _cmd, _relative_cwd, resultfile):
+  outdir = outdir or os.path.dirname(resultfile)
   for relfile, properties in dictfiles.iteritems():
     infile = os.path.join(indir, relfile)
     outfile = os.path.join(outdir, properties['sha-1'])
@@ -143,8 +154,7 @@ def MODEhashtable(
 
 
 def MODEremap(
-    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
-  """Ignores outdir, cmd and relative_cwd."""
+    outdir, indir, dictfiles, read_only, _cmd, _relative_cwd, _resultfile):
   if not outdir:
     outdir = tempfile.mkdtemp(prefix='isolate')
   print 'Remapping into %s' % outdir
@@ -159,7 +169,7 @@ def MODEremap(
 
 
 def MODErun(
-    outdir, indir, dictfiles, read_only, cmd, relative_cwd, result_path):
+    _outdir, indir, dictfiles, read_only, cmd, relative_cwd, _resultfile):
   """Always uses a temporary directory."""
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
@@ -177,6 +187,25 @@ def MODErun(
     if read_only:
       tree_creator.make_writable(outdir, False)
     tree_creator.rmtree(outdir)
+
+
+def MODEtrace(
+    _outdir, indir, _dictfiles, _read_only, cmd, relative_cwd, resultfile):
+  """Shortcut to use trace_inputs.py properly.
+
+  It constructs the equivalent of dictfiles. It is hardcoded to base the
+  checkout at src/.
+  """
+  gyppath = os.path.relpath(relative_cwd, indir)
+  cwd = os.path.join(indir, relative_cwd)
+  logging.info('Running %s, cwd=%s' % (cmd, cwd))
+  return trace_inputs.trace_inputs(
+      '%s.log' % resultfile,
+      cmd,
+      cwd,
+      gyppath,
+      indir,
+      True)
 
 
 def get_valid_modes():

@@ -18,6 +18,13 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 VERBOSE = False
 
 
+class CalledProcessError(subprocess.CalledProcessError):
+  """Makes 2.6 version act like 2.7"""
+  def __init__(self, returncode, cmd, output):
+    super(CalledProcessError, self).__init__(returncode, cmd)
+    self.output = output
+
+
 class Isolate(unittest.TestCase):
   def setUp(self):
     # The reason is that isolate_test.py --ok is run in a temporary directory
@@ -60,21 +67,25 @@ class Isolate(unittest.TestCase):
     self.assertEquals(expected, actual)
     return expected
 
-  def _execute(self, args):
+  def _execute(self, args, need_output=False):
     cmd = [
-        sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
-        '--root', ROOT_DIR,
-        '--result', self.result,
+      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      '--root', ROOT_DIR,
+      '--result', self.result,
     ]
-    if VERBOSE:
+    if need_output or not VERBOSE:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
+    else:
       cmd.extend(['-v'] * 3)
       stdout = None
       stderr = None
-    else:
-      stdout = subprocess.PIPE
-      stderr = subprocess.STDOUT
-    subprocess.check_call(
+    p = subprocess.Popen(
         cmd + args, stdout=stdout, stderr=stderr, cwd=ROOT_DIR)
+    out = p.communicate()[0]
+    if p.returncode:
+      raise CalledProcessError(p.returncode, cmd, out)
+    return out
 
   def test_help_modes(self):
     # Check coherency in the help and implemented modes.
@@ -90,7 +101,7 @@ class Isolate(unittest.TestCase):
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
     # Keep the list hard coded.
-    expected = ('check', 'hashtable', 'remap', 'run')
+    expected = ('check', 'hashtable', 'remap', 'run', 'trace')
     self.assertEquals(expected, modes)
     self.assertEquals(expected, modes)
     for mode in modes:
@@ -99,8 +110,8 @@ class Isolate(unittest.TestCase):
 
   def test_check(self):
     cmd = [
-        '--mode', 'check',
-        'isolate_test.py',
+      '--mode', 'check',
+      'isolate_test.py',
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
@@ -109,8 +120,8 @@ class Isolate(unittest.TestCase):
 
   def test_check_non_existant(self):
     cmd = [
-        '--mode', 'check',
-        'NonExistentFile',
+      '--mode', 'check',
+      'NonExistentFile',
     ]
     try:
       self._execute(cmd)
@@ -123,7 +134,7 @@ class Isolate(unittest.TestCase):
     cmd = [
         '--mode', 'check',
         # Trailing slash missing.
-        'data',
+        os.path.join('data', 'isolate'),
     ]
     try:
       self._execute(cmd)
@@ -134,10 +145,10 @@ class Isolate(unittest.TestCase):
 
   def test_check_abs_path(self):
     cmd = [
-        '--mode', 'check',
-        'isolate_test.py',
-        '--',
-        os.path.join(ROOT_DIR, 'isolate_test.py'),
+      '--mode', 'check',
+      'isolate_test.py',
+      '--',
+      os.path.join(ROOT_DIR, 'isolate_test.py'),
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
@@ -146,22 +157,26 @@ class Isolate(unittest.TestCase):
 
   def test_hashtable(self):
     cmd = [
-        '--mode', 'hashtable',
-        '--outdir', self.tempdir,
-        'isolate_test.py',
-        'data/',
+      '--mode', 'hashtable',
+      '--outdir', self.tempdir,
+      'isolate_test.py',
+      os.path.join('data', 'isolate') + '/',
     ]
     self._execute(cmd)
-    files = ['isolate_test.py', 'data/test_file1.txt', 'data/test_file2.txt']
+    files = [
+      'isolate_test.py',
+      os.path.join('data', 'isolate', 'test_file1.txt'),
+      os.path.join('data', 'isolate', 'test_file2.txt'),
+    ]
     data = self._expected_result(True, files, ['./isolate_test.py'], False)
     self._expected_tree(
         [f['sha-1'] for f in data['files'].itervalues()] + ['result'])
 
   def test_remap(self):
     cmd = [
-        '--mode', 'remap',
-        '--outdir', self.tempdir,
-        'isolate_test.py',
+      '--mode', 'remap',
+      '--outdir', self.tempdir,
+      'isolate_test.py',
     ]
     self._execute(cmd)
     self._expected_tree(['isolate_test.py', 'result'])
@@ -170,10 +185,10 @@ class Isolate(unittest.TestCase):
 
   def test_run(self):
     cmd = [
-        '--mode', 'run',
-        'isolate_test.py',
-        '--',
-        sys.executable, 'isolate_test.py', '--ok',
+      '--mode', 'run',
+      'isolate_test.py',
+      '--',
+      sys.executable, 'isolate_test.py', '--ok',
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
@@ -183,10 +198,10 @@ class Isolate(unittest.TestCase):
 
   def test_run_fail(self):
     cmd = [
-        '--mode', 'run',
-        'isolate_test.py',
-        '--',
-        sys.executable, 'isolate_test.py', '--fail',
+      '--mode', 'run',
+      'isolate_test.py',
+      '--',
+      sys.executable, 'isolate_test.py', '--fail',
     ]
     try:
       self._execute(cmd)
@@ -194,6 +209,38 @@ class Isolate(unittest.TestCase):
     except subprocess.CalledProcessError:
       pass
     self._expected_tree([])
+
+  def test_trace(self):
+    cmd = [
+      '--mode', 'trace',
+      'isolate_test.py',
+      '--',
+      sys.executable, os.path.join(ROOT_DIR, 'isolate_test.py'), '--ok',
+    ]
+    out = self._execute(cmd, True)
+    self._expected_tree(['result', 'result.log'])
+    # The 'result.log' log is OS-specific so we can't read it but we can read
+    # the gyp result.
+    # cmd[0] is not generated from infiles[0] so it's not using a relative path.
+    self._expected_result(
+        False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
+    if sys.platform == 'linux2':
+      expected = (
+          "{\n  'variables': {\n"
+          "    'isolate_files': [\n"
+          "      '<(DEPTH)/isolate_test.py',\n"
+          "    ],\n"
+          "    'isolate_dirs': [\n"
+          "    ],\n  },\n},\n")
+    else:
+      # TODO(maruel): BUG with relative paths on darwin.
+      expected = (
+          "{\n  'variables': {\n"
+          "    'isolate_files': [\n"
+          "    ],\n"
+          "    'isolate_dirs': [\n"
+          "    ],\n  },\n},\n")
+    self.assertEquals(expected, out)
 
 
 def main():
