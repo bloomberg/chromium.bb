@@ -158,6 +158,8 @@ ExtensionAPI::ExtensionAPI() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_EXTENSION);
   unloaded_schemas_["experimental.fontSettings"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS);
+  unloaded_schemas_["experimental.identity"] = ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_IDENTITY);
   unloaded_schemas_["experimental.infobars"] = ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS);
   unloaded_schemas_["experimental.input.ui"] = ReadFromResource(

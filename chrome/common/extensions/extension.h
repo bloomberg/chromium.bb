@@ -183,6 +183,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::set<std::string> event_types;
   };
 
+  // OAuth2 info included in the extension.
+  struct OAuth2Info {
+    OAuth2Info();
+    ~OAuth2Info();
+
+    std::string client_id;
+    std::vector<std::string> scopes;
+  };
+
   enum InitFromValueFlags {
     NO_FLAGS = 0,
 
@@ -591,6 +600,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
+  const OAuth2Info& oauth2_info() const { return oauth2_info_; }
   const std::vector<webkit_glue::WebIntentServiceData>&
       intents_services() const {
     return intents_services_;
@@ -802,6 +812,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionAction* LoadExtensionActionHelper(
       const base::DictionaryValue* extension_action, string16* error);
 
+  // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
+  bool LoadOAuth2Info(string16* error);
+
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
   bool HasMultipleUISurfaces() const;
@@ -1001,6 +1014,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // List of text-to-speech voices that this extension provides, if any.
   std::vector<TtsVoice> tts_voices_;
+
+  // The OAuth2 client id and scopes, if specified by the extension.
+  OAuth2Info oauth2_info_;
 
   // List of intent services that this extension provides, if any.
   std::vector<webkit_glue::WebIntentServiceData> intents_services_;

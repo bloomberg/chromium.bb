@@ -238,6 +238,9 @@ Extension::InputComponentInfo::~InputComponentInfo() {}
 Extension::TtsVoice::TtsVoice() {}
 Extension::TtsVoice::~TtsVoice() {}
 
+Extension::OAuth2Info::OAuth2Info() {}
+Extension::OAuth2Info::~OAuth2Info() {}
+
 Extension::ExtensionKeybinding::ExtensionKeybinding() {}
 Extension::ExtensionKeybinding::~ExtensionKeybinding() {}
 
@@ -1029,8 +1032,37 @@ bool Extension::LoadAppFeatures(string16* error) {
   if (!LoadExtent(keys::kWebURLs, &extent_,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
       !LoadLaunchURL(error) ||
-      !LoadLaunchContainer(error))
+      !LoadLaunchContainer(error) ||
+      !LoadOAuth2Info(error))
     return false;
+
+  return true;
+}
+
+bool Extension::LoadOAuth2Info(string16* error) {
+  if (!manifest_->HasKey(keys::kOAuth2))
+    return true;
+
+  if (!manifest_->GetString(keys::kOAuth2ClientId, &oauth2_info_.client_id) ||
+      oauth2_info_.client_id.empty()) {
+    *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
+    return false;
+  }
+
+  ListValue* list = NULL;
+  if (!manifest_->GetList(keys::kOAuth2Scopes, &list)) {
+    *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
+    return false;
+  }
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    std::string scope;
+    if (!list->GetString(i, &scope)) {
+      *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
+      return false;
+    }
+    oauth2_info_.scopes.push_back(scope);
+  }
 
   return true;
 }

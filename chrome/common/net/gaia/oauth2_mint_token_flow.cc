@@ -8,9 +8,28 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/message_loop.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 using net::URLRequestContextGetter;
+
+namespace {
+
+OAuth2MintTokenFlow::InterceptorForTests* g_interceptor_for_tests = NULL;
+
+}  // namespace
+
+// static
+void OAuth2MintTokenFlow::SetInterceptorForTests(
+    OAuth2MintTokenFlow::InterceptorForTests* interceptor) {
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
+  CHECK(NULL == g_interceptor_for_tests);  // Only one at a time.
+  g_interceptor_for_tests = interceptor;
+}
 
 OAuth2MintTokenFlow::OAuth2MintTokenFlow(
     URLRequestContextGetter* context,
@@ -32,6 +51,27 @@ void OAuth2MintTokenFlow::Start(
   client_id_ = client_id;
   scopes_ = scopes;
 
+  if (g_interceptor_for_tests) {
+    std::string auth_token;
+    GoogleServiceAuthError error = GoogleServiceAuthError::None();
+
+    // We use PostTask, instead of calling the delegate directly, because the
+    // message loop will run a few times before we notify the delegate in the
+    // real implementation.
+    if (g_interceptor_for_tests->DoIntercept(this, &auth_token, &error)) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&OAuth2MintTokenFlow::Delegate::OnMintTokenSuccess,
+                     base::Unretained(delegate_), auth_token));
+    } else {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&OAuth2MintTokenFlow::Delegate::OnMintTokenFailure,
+                     base::Unretained(delegate_), error));
+    }
+    return;
+  }
+
   BeginGetLoginAccessToken();
 }
 
@@ -40,6 +80,7 @@ void OAuth2MintTokenFlow::OnGetTokenSuccess(
   login_access_token_ = access_token;
   EndGetLoginAccessToken(NULL);
 }
+
 void OAuth2MintTokenFlow::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   EndGetLoginAccessToken(&error);

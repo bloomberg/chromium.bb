@@ -107,6 +107,9 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "oauth2": {
+    "extension_types": ["platform_app"]
+  },
   "page_action": {
     "extension_types": ["extension"]
   },
