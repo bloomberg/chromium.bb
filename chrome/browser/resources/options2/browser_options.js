@@ -504,13 +504,6 @@ cr.define('options', function() {
         section.classList.add('sliding');
         section.style.height =
             container.offsetHeight + 'px';
-        // Items added to the Bluetooth list while hidden are often not
-        // properly rendered once the list becomes visible.  Force the list to
-        // refresh.
-        // TODO(kevers): Fix underlying bug in cr.ui.list so the refresh can be
-        // removed.
-        if (cr.isChromeOS)
-          $('bluetooth-paired-devices-list').refresh();
       }, 0);
     },
 

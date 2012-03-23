@@ -86,9 +86,28 @@ cr.define('options.system.bluetooth', function() {
   BluetoothDeviceList.prototype = {
     __proto__: DeletableItemList.prototype,
 
+    /**
+     * Height of a list entry in px.
+     * @type {number}
+     * @private
+     */
+    itemHeight_: 32,
+
+    /**
+     * Width of a list entry in px.
+     * @type {number}
+     * @private.
+     */
+    itemWidth_: 400,
+
     /** @inheritDoc */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
+      // Force layout of all items even if not in the viewport to address
+      // calculation errors when the list is hidden.  The impact on performance
+      // should be minimal given that the list is not expected to grow very
+      // large.
+      this.autoExpand = true;
       this.addEventListener('blur', this.onBlur_);
       this.clear();
     },
@@ -170,6 +189,43 @@ cr.define('options.system.bluetooth', function() {
     /** @inheritDoc */
     createItem: function(entry) {
       return new BluetoothListItem(entry);
+    },
+
+    /**
+     * Overrides the default implementation, which is used to compute the
+     * size of an element in the list.  The default implementation relies
+     * on adding a placeholder item to the list and fetching its size and
+     * position. This strategy does not work if an item is added to the list
+     * while it is hidden, as the computed metrics will all be zero in that
+     * case.
+     * @return {{height: number, marginTop: number, marginBottom: number,
+     *     width: number, marginLeft: number, marginRight: number}}
+     *     The height and width of the item, taking margins into account,
+     *     and the margins themselves.
+     */
+    measureItem: function() {
+      return {
+        height: this.itemHeight_,
+        marginTop: 0,
+        marginBotton: 0,
+        width: this.itemWidth_,
+        marginLeft: 0,
+        marginRight: 0
+      };
+    },
+
+    /**
+     * Override the default implementation to return a predetermined size,
+     * which in turns allows proper layout of items even if the list is hidden.
+     * @return {height: number, width: number} Dimensions of a single item in
+     *     the list of bluetooth device.
+     * @private.
+     */
+    getDefaultItemSize_: function() {
+      return {
+        height: this.itemHeight_,
+        width: this.itemWidth_
+      };
     },
 
     /**
