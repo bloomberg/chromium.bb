@@ -81,7 +81,6 @@ WebPreferences::WebPreferences()
       unified_textchecker_enabled(false),
       threaded_animation_enabled(false),
       accelerated_compositing_enabled(false),
-      threaded_compositing_enabled(false),
       force_compositing_mode(false),
       composite_to_texture_enabled(false),
       fixed_position_compositing_enabled(false),

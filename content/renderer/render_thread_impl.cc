@@ -463,8 +463,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedCompositing)) {
+  bool has_enable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableThreadedCompositing);
+  bool has_disable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableThreadedCompositing);
+  bool enable = has_enable && (!has_disable);
+  if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
     WebKit::WebCompositor::initialize(compositor_thread_->GetWebThread());

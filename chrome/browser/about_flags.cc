@@ -91,6 +91,14 @@ const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
     switches::kOmniboxInlineHistoryQuickProviderProhibited }
 };
 
+const Experiment::Choice kThreadedCompositingModeChoices[] = {
+  { IDS_FLAGS_THREADED_COMPOSITING_MODE_DEFAULT, "", "" },
+  { IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED,
+    switches::kDisableThreadedCompositing, ""},
+  { IDS_FLAGS_THREADED_COMPOSITING_MODE_ENABLED,
+    switches::kEnableThreadedCompositing, ""}
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -180,11 +188,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kForceCompositingMode)
   },
   {
-    "enable-threaded-compositing",
-    IDS_FLAGS_ENABLE_THREADED_COMPOSITING_NAME,
-    IDS_FLAGS_ENABLE_THREADED_COMPOSITING_DESCRIPTION,
+    "threaded-compositing-mode",
+    IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME,
+    IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableThreadedCompositing)
+    MULTI_VALUE_TYPE(kThreadedCompositingModeChoices)
   },
   {
     "enable-threaded-animation",

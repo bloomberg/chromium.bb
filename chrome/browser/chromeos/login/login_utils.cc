@@ -1045,6 +1045,8 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kEnablePartialSwap,
       switches::kEnableSensors,
       switches::kEnableSmoothScrolling,
+      switches::kEnableThreadedCompositing,
+      switches::kDisableThreadedCompositing,
       switches::kEnableThreadedAnimation,
       switches::kForceCompositingMode,
       switches::kLoginProfile,

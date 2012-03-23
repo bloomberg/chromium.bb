@@ -399,8 +399,6 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.accelerated_compositing_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
-  prefs.threaded_compositing_enabled =
-      command_line.HasSwitch(switches::kEnableThreadedCompositing);
   prefs.force_compositing_mode =
       command_line.HasSwitch(switches::kForceCompositingMode);
   prefs.fixed_position_compositing_enabled =

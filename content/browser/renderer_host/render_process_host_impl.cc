@@ -706,6 +706,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSeccompSandbox,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
+    switches::kDisableThreadedCompositing,
     switches::kEnableTouchEvents,
     switches::kEnableVideoTrack,
     switches::kFullMemoryCrashReport,

@@ -333,6 +333,9 @@ const char kEnableThreadedAnimation[]       = "enable-threaded-animation";
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
+// Disable multithreaded GPU compositing of web content.
+const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
+
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";

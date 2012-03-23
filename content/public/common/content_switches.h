@@ -109,6 +109,7 @@ CONTENT_EXPORT extern const char kEnableStatsTable[];
 extern const char kEnableStrictSiteIsolation[];
 CONTENT_EXPORT extern const char kEnableThreadedAnimation[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
+CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableTouchEvents[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
