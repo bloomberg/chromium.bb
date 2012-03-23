@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/dbus/mock_image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/mock_introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
-#include "chrome/browser/chromeos/dbus/mock_sensors_client.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_speech_synthesizer_client.h"
 #include "chrome/browser/chromeos/dbus/mock_update_engine_client.h"
@@ -38,7 +37,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_image_burner_client_(new MockImageBurnerClient),
       mock_introspectable_client_(new MockIntrospectableClient),
       mock_power_manager_client_(new MockPowerManagerClient),
-      mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
       mock_update_engine_client_(new MockUpdateEngineClient) {
@@ -64,8 +62,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_introspectable_client()));
   EXPECT_CALL(*this, GetPowerManagerClient())
       .WillRepeatedly(Return(mock_power_manager_client_.get()));
-  EXPECT_CALL(*this, GetSensorsClient())
-      .WillRepeatedly(Return(mock_sensors_client_.get()));
   EXPECT_CALL(*this, GetSessionManagerClient())
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSpeechSynthesizerClient())

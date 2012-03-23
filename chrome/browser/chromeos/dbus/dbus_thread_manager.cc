@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 
-#include "base/command_line.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
@@ -18,11 +17,9 @@
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
 #include "chrome/browser/chromeos/dbus/introspectable_client.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#include "chrome/browser/chromeos/dbus/sensors_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
-#include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
 
 namespace chromeos {
@@ -50,11 +47,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create and start the cros D-Bus service.
     cros_dbus_service_.reset(CrosDBusService::Create(system_bus_.get()));
     cros_dbus_service_->Start();
-
-    // Start monitoring sensors if needed.
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kEnableSensors))
-      sensors_client_.reset(SensorsClient::Create(system_bus_.get()));
 
     // Create the bluetooth clients.
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
@@ -163,11 +155,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual SensorsClient* GetSensorsClient() OVERRIDE {
-    return sensors_client_.get();
-  }
-
-  // DBusThreadManager override.
   virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
     return session_manager_client_.get();
   }
@@ -196,7 +183,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
-  scoped_ptr<SensorsClient> sensors_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;

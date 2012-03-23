@@ -495,8 +495,6 @@
         'browser/chromeos/dbus/power_manager_client.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
-        'browser/chromeos/dbus/sensors_client.cc',
-        'browser/chromeos/dbus/sensors_client.h',
         'browser/chromeos/dbus/session_manager_client.cc',
         'browser/chromeos/dbus/session_manager_client.h',
         'browser/chromeos/dbus/speech_synthesizer_client.cc',

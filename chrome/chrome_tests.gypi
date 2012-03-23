@@ -122,8 +122,6 @@
         'browser/chromeos/dbus/mock_introspectable_client.h',
         'browser/chromeos/dbus/mock_power_manager_client.cc',
         'browser/chromeos/dbus/mock_power_manager_client.h',
-        'browser/chromeos/dbus/mock_sensors_client.cc',
-        'browser/chromeos/dbus/mock_sensors_client.h',
         'browser/chromeos/dbus/mock_session_manager_client.cc',
         'browser/chromeos/dbus/mock_session_manager_client.h',
         'browser/chromeos/dbus/mock_speech_synthesizer_client.cc',

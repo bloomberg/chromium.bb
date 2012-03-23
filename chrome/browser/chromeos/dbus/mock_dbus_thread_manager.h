@@ -29,7 +29,6 @@ class  MockCryptohomeClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
 class  MockPowerManagerClient;
-class  MockSensorsClient;
 class  MockSessionManagerClient;
 class  MockSpeechSynthesizerClient;
 class  MockUpdateEngineClient;
@@ -54,7 +53,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
-  MOCK_METHOD0(GetSensorsClient, SensorsClient*(void));
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
   MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
@@ -92,9 +90,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockPowerManagerClient* mock_power_manager_client() {
     return mock_power_manager_client_.get();
   }
-  MockSensorsClient* mock_sensors_client() {
-    return mock_sensors_client_.get();
-  }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
   }
@@ -117,7 +112,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
   scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
-  scoped_ptr<MockSensorsClient> mock_sensors_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
