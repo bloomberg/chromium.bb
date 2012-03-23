@@ -293,7 +293,7 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "disconnectNetwork", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "preferredNetworks", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL },
     { "preferredNetworksPage", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE },
-    { "useSharedProxiesTitle", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
+    { "useSharedProxies", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
     { "addConnectionTitle",
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION },
     { "addConnectionWifi", IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI },

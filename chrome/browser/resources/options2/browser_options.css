@@ -198,8 +198,6 @@ list:not([disabled]) > .network-group[selected] {
   background-repeat: no-repeat;
 }
 
-/* TODO(kevers): Update following URLs once resources are available */
-
 .network-add-connection {
   background-image: url('chrome://theme/IDR_SIDETABS_NEW_TAB');
 }
@@ -349,6 +347,10 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-menu > hr {
   opacity: 0.4;
+}
+
+#shared-proxies {
+  margin-top: 12px;
 }
 
 #web-content-section select,

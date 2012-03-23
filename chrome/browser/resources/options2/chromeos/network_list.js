@@ -41,7 +41,6 @@ cr.define('options.network', function() {
                              'cellular',
                              'vpn',
                              'airplaneMode',
-                             'useSharedProxies',
                              'addConnection'];
 
   /**
@@ -74,13 +73,6 @@ cr.define('options.network', function() {
    * @private
    */
   var cellularEnabled_ = false;
-
-  /**
-   * Indicates if shared proxies are enabled.
-   * @type {boolean}
-   * @private
-   */
-  var useSharedProxies_ = false;
 
   /**
    * Indicates if mobile data roaming is enabled.
@@ -674,14 +666,6 @@ cr.define('options.network', function() {
                        chrome.send('toggleAirplaneMode');
                      }});
       }
-      // TODO(kevers): Move to details dialog once settable on a per network
-      // basis.
-      this.update({key: 'useSharedProxies',
-                   command: function() {
-                     options.Preferences.setBooleanPref(
-                         'settings.use_shared_proxies',
-                         !useSharedProxies_);
-                   }});
 
       // Add connection control.
       var addConnection = function(type) {
@@ -700,12 +684,6 @@ cr.define('options.network', function() {
                   });
 
       var prefs = options.Preferences.getInstance();
-      prefs.addEventListener('settings.use_shared_proxies', function(event) {
-        useSharedProxies_ = event.value && event.value['value'] !=
-            undefined ? event.value['value'] : event.value;
-        $('network-list').updateToggleControl('useSharedProxies',
-                                              useSharedProxies_);
-      });
       prefs.addEventListener('cros.signed.data_roaming_enabled',
           function(event) {
             enableDataRoaming_ = event.value && event.value['value'] !=
@@ -827,9 +805,11 @@ cr.define('options.network', function() {
     if (data.accessLocked) {
       $('network-locked-message').hidden = false;
       networkList.disabled = true;
+      $('use-shared-proxies').disabled = true;
     } else {
       $('network-locked-message').hidden = true;
       networkList.disabled = false;
+      $('use-shared-proxies').disabled = false;
     }
 
     // Only show Ethernet control if connected.
