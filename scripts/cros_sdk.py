@@ -52,18 +52,16 @@ def CheckPrerequisites(needed_tools):
   Returns:
     True if all needed tools were found.
   """
+  missing = []
   for tool in needed_tools:
     cmd = ['which', tool]
     try:
       cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
                                 combine_stdout_stderr=True)
     except cros_build_lib.RunCommandError:
-      print 'The tool \'' + tool + '\' not found.'
-      print 'Please install the appropriate package in your host.'
-      print 'Example(ubuntu):'
-      print '  sudo apt-get install <packagename>'
-      return False
-  return True
+      missing.append(tool)
+  return missing
+
 
 def GetLatestVersion():
   """Extracts latest version from chromiumos-overlay."""
@@ -80,7 +78,7 @@ def GetArchStageTarball(tarballArch, version):
   try:
     return DEFAULT_URL + D[tarballArch] + version + '.tbz2'
   except KeyError:
-    sys.exit('Unsupported arch: %s' % (tarballArch,))
+    raise SystemExit('Unsupported arch: %s' % (tarballArch,))
 
 
 def FetchRemoteTarball(url):
@@ -148,8 +146,7 @@ def BootstrapChroot(chroot_path, stage_url, replace):
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
-    print 'Running %r failed!' % cmd
-    sys.exit(1)
+    raise SystemExit('Running %r failed!' % cmd)
 
 
 def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
@@ -183,8 +180,7 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
-    print 'Running %r failed!' % cmd
-    sys.exit(1)
+    raise SystemExit('Running %r failed!' % cmd)
 
 
 def DeleteChroot(chroot_path):
@@ -194,8 +190,7 @@ def DeleteChroot(chroot_path):
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
-    print 'Running %r failed!' % cmd
-    sys.exit(1)
+    raise SystemExit('Running %r failed!' % cmd)
 
 
 def _CreateLockFile(path):
@@ -219,8 +214,7 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
-    print 'Running %r failed!' % cmd
-    sys.exit(1)
+    raise SystemExit('Running %r failed!' % cmd)
 
 
 def main(argv):
@@ -279,11 +273,16 @@ Action taken is the following:
 
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
-    print "This needs to be ran outside the chroot"
-    sys.exit(1)
+    parser.error("This needs to be ran outside the chroot")
 
-  if not CheckPrerequisites(NEEDED_TOOLS):
-    sys.exit(1)
+  missing = CheckPrerequisites(NEEDED_TOOLS)
+  if missing:
+    parser.error((
+        'The tool(s) %s were not found.'
+        'Please install the appropriate package in your host.'
+        'Example(ubuntu):'
+        '  sudo apt-get install <packagename>'
+        % (', '.join(missing))))
 
   # Default action is --enter, if no other is selected.
   if not (options.bootstrap or options.download or options.delete):
@@ -292,32 +291,27 @@ Action taken is the following:
   # Only --enter can process additional args as passthrough commands.
   # Warn and exit for least surprise.
   if len(remaining_arguments) > 0 and not options.enter:
-    print "Additional arguments not permitted, unless running with --enter"
-    parser.print_help()
-    sys.exit(1)
+    parser.error("Additional arguments are not permitted, unless running "
+                 "with --enter")
 
   # Some actions can be combined, as they merely modify how is the chroot
   # going to be made. The only option that hates all others is --delete.
   if options.delete and \
     (options.enter or options.download or options.bootstrap):
-    print "--delete cannot be combined with --enter, --download or --bootstrap"
-    parser.print_help()
-    sys.exit(1)
+    parser.error("--delete cannot be combined with --enter, "
+                 "--download or --bootstrap")
   # NOTE: --delete is a true hater, it doesn't like other options either, but
   # those will hardly lead to confusion. Nobody can expect to pass --version to
   # delete and actually change something.
 
   if options.bootstrap and options.download:
-    print "Either --bootstrap or --download, not both"
-    sys.exit(1)
+    parser.error("Either --bootstrap or --download, not both")
 
   # Bootstrap will start off from a non-selectable stage3 tarball. Attempts to
   # select sdk by version are confusing. Warn and exit. We can still specify a
   # tarball by path or URL though.
   if options.bootstrap and options.sdk_version:
-    print "Cannot use --version when bootstrapping"
-    parser.print_help()
-    sys.exit(1)
+    parser.error("Cannot use --version when bootstrapping")
 
   chroot_path = os.path.join(SRC_ROOT, options.chroot)
   chroot_path = os.path.abspath(chroot_path)
@@ -330,7 +324,7 @@ Action taken is the following:
 
   if options.delete and not os.path.exists(chroot_path):
     print "Not doing anything. The chroot you want to remove doesn't exist."
-    sys.exit(0)
+    return 0
 
   lock_path = os.path.dirname(chroot_path)
   lock_path = os.path.join(lock_path,
@@ -342,7 +336,7 @@ Action taken is the following:
         if options.delete:
           lock.write_lock()
           DeleteChroot(chroot_path)
-          sys.exit(0)
+          return 0
 
         # Print a suggestion for replacement, but not if running just --enter.
         if os.path.exists(chroot_path) and not options.replace and \
