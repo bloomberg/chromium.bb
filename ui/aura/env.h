@@ -15,6 +15,7 @@
 namespace aura {
 
 class EnvObserver;
+class MonitorChangeObserverX11;
 class MonitorManager;
 class Window;
 
@@ -51,6 +52,12 @@ class AURA_EXPORT Env {
     stacking_client_ = stacking_client;
   }
 
+#if defined(USE_X11)
+  MonitorChangeObserverX11* monitor_change_observer() {
+    return monitor_change_observer_.get();
+  }
+#endif
+
   // Gets/sets MonitorManager. The MonitorManager's ownership is
   // transfered.
   MonitorManager* monitor_manager() { return monitor_manager_.get(); }
@@ -79,6 +86,10 @@ class AURA_EXPORT Env {
   int mouse_button_flags_;
   client::StackingClient* stacking_client_;
   scoped_ptr<MonitorManager> monitor_manager_;
+
+#if defined(USE_X11)
+  scoped_ptr<MonitorChangeObserverX11> monitor_change_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

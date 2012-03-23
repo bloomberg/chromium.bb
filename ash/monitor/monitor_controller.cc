@@ -9,7 +9,9 @@
 #include "ash/shell.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/root_window.h"
@@ -21,14 +23,16 @@ namespace internal {
 namespace {
 
 void SetupAsSecondaryMonitor(aura::RootWindow* root) {
+  root->SetFocusWhenShown(false);
   root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
   aura::Window* container = new aura::Window(NULL);
   container->SetName("SecondaryMonitorContainer");
   container->Init(ui::LAYER_NOT_DRAWN);
   root->AddChild(container);
-  container->Show();
   container->SetLayoutManager(new internal::BaseLayoutManager(root));
   CreateSecondaryMonitorWidget(container);
+  container->Show();
+  root->layout_manager()->OnWindowResized();
   root->ShowRootWindow();
 }
 
@@ -43,14 +47,27 @@ MonitorController::~MonitorController() {
   aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
   // Remove the root first.
   aura::Monitor* monitor = Shell::GetRootWindow()->GetProperty(kMonitorKey);
+  DCHECK(monitor);
   root_windows_.erase(monitor);
   STLDeleteContainerPairSecondPointers(
       root_windows_.begin(), root_windows_.end());
 }
 
 void MonitorController::OnMonitorBoundsChanged(const aura::Monitor* monitor) {
-  if (aura::MonitorManager::use_fullscreen_host_window())
-    root_windows_[monitor]->SetHostBounds(monitor->bounds());
+  root_windows_[monitor]->SetHostBounds(monitor->bounds());
+}
+
+void MonitorController::OnMonitorAdded(aura::Monitor* monitor) {
+  aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
+      CreateRootWindowForMonitor(monitor);
+  root_windows_[monitor] = root;
+  SetupAsSecondaryMonitor(root);
+}
+
+void MonitorController::OnMonitorRemoved(const aura::Monitor* monitor) {
+  aura::RootWindow* root = root_windows_[monitor];
+  root_windows_.erase(monitor);
+  delete root;
 }
 
 void MonitorController::Init() {
@@ -62,6 +79,7 @@ void MonitorController::Init() {
     if (i == 0) {
       // Primary monitor
       root_windows_[key] = Shell::GetRootWindow();
+      Shell::GetRootWindow()->SetHostBounds(monitor->bounds());
     } else {
       aura::RootWindow* root =
           monitor_manager->CreateRootWindowForMonitor(monitor);

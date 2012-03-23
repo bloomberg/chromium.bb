@@ -28,6 +28,8 @@ class MonitorController : public aura::MonitorObserver {
 
   // aura::MonitorObserver overrides:
   virtual void OnMonitorBoundsChanged(const aura::Monitor* monitor) OVERRIDE;
+  virtual void OnMonitorAdded(aura::Monitor* monitor) OVERRIDE;
+  virtual void OnMonitorRemoved(const aura::Monitor* monitor) OVERRIDE;
 
  private:
   void Init();

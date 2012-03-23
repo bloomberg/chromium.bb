@@ -42,6 +42,7 @@ class RootWindowHostLinux : public RootWindowHost {
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
+  virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some
@@ -73,6 +74,9 @@ class RootWindowHostLinux : public RootWindowHost {
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
+
+  // True if the window should be focused when the window is shown.
+  bool focus_when_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };
