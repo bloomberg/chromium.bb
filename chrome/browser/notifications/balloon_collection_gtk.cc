@@ -61,9 +61,8 @@ bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
   GdkDisplay* display = gdk_screen_get_display(screen);
   gint x, y;
   gdk_display_get_pointer(display, NULL, &x, &y, NULL);
-  gfx::Point cursor(x, y);
 
-  return GetBalloonsBoundingBox().Contains(cursor);
+  return GetBalloonsBoundingBox().Contains(gfx::Point(x, y));
 }
 
 void BalloonCollectionImpl::SetPositionPreference(

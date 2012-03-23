@@ -76,12 +76,11 @@ void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
 
 bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
 #if defined(OS_WIN)
-  DWORD pos = GetMessagePos();
-  gfx::Point cursor(pos);
+  gfx::Point cursor(GetMessagePos());
 #else
   // TODO(saintlou): Not sure if this is correct because on Windows at least
   // the following call is GetCursorPos() not GetMessagePos().
-  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
+  gfx::Point cursor(gfx::Screen::GetCursorScreenPoint());
 #endif
   return GetBalloonsBoundingBox().Contains(cursor);
 }
