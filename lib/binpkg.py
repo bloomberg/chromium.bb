@@ -6,11 +6,14 @@
 # Copyright 2003-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+import cStringIO
 import operator
 import os
 import tempfile
 import time
 import urllib2
+
+from chromite.lib import cros_build_lib
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
 
@@ -283,19 +286,26 @@ def GrabRemotePackageIndex(binhost_url):
     A PackageIndex object, if the Packages file can be retrieved. If the
     server returns status code 404, None is returned.
   """
-  # TODO(davidjames): Implement fetching for gs:// protocol.
-  if not binhost_url.startswith('http'):
-    return None
-
   url = '%s/Packages' % binhost_url.rstrip('/')
-  try:
-    f = _RetryUrlOpen(url)
-  except urllib2.HTTPError as e:
-    if e.code == 404:
-      return None
-    raise
-
   pkgindex = PackageIndex()
+  if binhost_url.startswith('http'):
+    try:
+      f = _RetryUrlOpen(url)
+    except urllib2.HTTPError as e:
+      if e.code == 404:
+        return None
+      raise
+  elif binhost_url.startswith('gs://'):
+    cmd = ['gsutil', 'cat', url]
+    try:
+      output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                                         print_cmd=False).output
+    except cros_build_lib.RunCommandError as e:
+      print 'Cannot GET %s: %s' % (url, str(e))
+      return None
+    f = cStringIO.StringIO(output)
+  else:
+    return None
   pkgindex.Read(f)
   pkgindex.header.setdefault('URI', binhost_url)
   f.close()
