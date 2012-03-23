@@ -20,7 +20,13 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
+      $('sessionRestoreOverlayCancel').onclick = function() {
+        BrowserOptions.getInstance().sessionRestoreDialogCancel();
+        OptionsPage.closeOverlay();
+      };
+
       $('sessionRestoreOverlayOk').onclick = function() {
+        BrowserOptions.getInstance().sessionRestoreDialogOk();
         OptionsPage.closeOverlay();
       };
     },

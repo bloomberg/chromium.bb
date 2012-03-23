@@ -111,11 +111,11 @@ cr.define('options', function() {
       if (this.sessionRestoreEnabled_) {
         $('old-startup-last-text').hidden = true;
         $('new-startup-last-text').hidden = false;
-        $('startup-restore-session').customChangeHandler = function(event) {
-          if (this.checked)
-            BrowserOptions.getInstance().maybeShowSessionRestoreDialog_();
-          // Continue the normal event handling (set the preference).
-          return false;
+        $('startup-restore-session').onchange = function(event) {
+          if (!BrowserOptions.getInstance().maybeShowSessionRestoreDialog_()) {
+            // The dialog is not shown; handle the event normally.
+            event.currentTarget.savePrefState();
+          }
         };
       }
 
@@ -763,20 +763,44 @@ cr.define('options', function() {
      * (session only cookies or clearning data on exit) are selected, and the
      * dialog has never been shown.
      * @private
+     * @return {boolean} True if the dialog is shown, false otherwise.
      */
     maybeShowSessionRestoreDialog_: function() {
       // Don't show this dialog in Guest mode.
       if (cr.isChromeOS && AccountsOptions.loggedInAsGuest())
-        return;
+        return false;
       // If some of the needed preferences haven't been read yet, the
       // corresponding member variable will be undefined and we won't display
       // the dialog yet.
       if (this.userHasSelectedSessionContentSettings_() &&
           this.sessionRestoreDialogShown_ === false) {
-        this.sessionRestoreDialogShown_ = true;
-        Preferences.setBooleanPref('restore_session_state.dialog_shown', true);
         OptionsPage.navigateToPage('sessionRestoreOverlay');
+        return true;
       }
+      return false;
+    },
+
+    /**
+     * Called when the user clicks the "ok" button in the session restore
+     * dialog.
+     */
+    sessionRestoreDialogOk: function() {
+      // Set the preference.
+      $('startup-restore-session').savePrefState();
+      this.sessionRestoreDialogShown_ = true;
+      Preferences.setBooleanPref('restore_session_state.dialog_shown', true);
+    },
+
+    /**
+     * Called when the user clicks the "cancel" button in the session restore
+     * dialog.
+     */
+    sessionRestoreDialogCancel: function() {
+      // The preference was never set to "continue where I left off". Update the
+      // UI to reflect the preference.
+      $('startup-newtab').resetPrefState();
+      $('startup-restore-session').resetPrefState();
+      $('startup-show-pages').resetPrefState();
     },
 
     /**
