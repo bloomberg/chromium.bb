@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <linux/input.h>
 
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
@@ -30,6 +31,8 @@ struct screenshooter {
 	struct wl_object base;
 	struct weston_compositor *ec;
 	struct wl_global *global;
+	struct wl_client *client;
+	struct weston_process screenshooter_process;
 };
 
 static void
@@ -81,8 +84,40 @@ static void
 bind_shooter(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
-	wl_client_add_object(client, &screenshooter_interface,
+	struct screenshooter *shooter = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &screenshooter_interface,
 			     &screenshooter_implementation, id, data);
+
+	if (client != shooter->client) {
+		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "screenshooter failed: permission denied");
+		wl_resource_destroy(resource, 0);
+	}
+}
+
+static void
+screenshooter_sigchld(struct weston_process *process, int status)
+{
+	struct screenshooter *shooter =
+		container_of(process, struct screenshooter, screenshooter_process);
+
+	shooter->client = NULL;
+}
+
+static void
+screenshooter_binding(struct wl_input_device *device, uint32_t time,
+		 uint32_t key, uint32_t button, uint32_t axis,
+		 int32_t state, void *data)
+{
+	struct screenshooter *shooter = data;
+	const char *screenshooter_exe = LIBEXECDIR "/weston-screenshooter";
+
+	if (!shooter->client)
+		shooter->client = weston_client_launch(shooter->ec,
+					&shooter->screenshooter_process,
+					screenshooter_exe, screenshooter_sigchld);
 }
 
 struct screenshooter *
@@ -98,10 +133,13 @@ screenshooter_create(struct weston_compositor *ec)
 	shooter->base.implementation =
 		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
+	shooter->client = NULL;
 
 	shooter->global = wl_display_add_global(ec->wl_display,
 						&screenshooter_interface,
 						shooter, bind_shooter);
+	weston_compositor_add_binding(ec, KEY_S, 0, 0, MODIFIER_SUPER,
+					screenshooter_binding, shooter);
 
 	return shooter;
 }

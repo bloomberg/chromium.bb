@@ -8,7 +8,8 @@ noinst_PROGRAMS =				\
 
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\
-	$(tablet_shell)
+	$(tablet_shell)				\
+	$(screenshooter)
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
@@ -31,7 +32,6 @@ terminal = weston-terminal
 
 clients_programs =				\
 	flower					\
-	screenshot				\
 	image					\
 	dnd					\
 	smoke					\
@@ -42,6 +42,7 @@ clients_programs =				\
 
 desktop_shell = weston-desktop-shell
 tablet_shell = weston-tablet-shell
+screenshooter = weston-screenshooter
 
 noinst_LIBRARIES = libtoytoolkit.a
 
@@ -65,8 +66,8 @@ toolkit_libs =						\
 flower_SOURCES = flower.c
 flower_LDADD = $(toolkit_libs)
 
-screenshot_SOURCES = screenshot.c screenshooter-protocol.c
-screenshot_LDADD = $(toolkit_libs)
+weston_screenshooter_SOURCES = screenshot.c screenshooter-protocol.c
+weston_screenshooter_LDADD = $(toolkit_libs)
 
 weston_terminal_SOURCES = terminal.c
 weston_terminal_LDADD = $(toolkit_libs) -lutil
