@@ -721,7 +721,7 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
       WebInputEventFactory::mouseEvent(event, cocoa_view_);
   if (showing)
     web_event.type = WebInputEvent::MouseLeave;
-  render_widget_host_->ForwardMouseEvent(web_event);
+  ForwardMouseEvent(web_event);
 }
 
 bool RenderWidgetHostViewMac::IsPopup() const {
@@ -736,6 +736,16 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
 // Sets whether or not to accept first responder status.
 void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
   [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
+}
+
+void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
+  if (render_widget_host_)
+    render_widget_host_->ForwardMouseEvent(event);
+
+  if (event.type == WebInputEvent::MouseLeave) {
+    [cocoa_view_ setToolTipAtMousePoint:nil];
+    tooltip_text_.clear();
+  }
 }
 
 void RenderWidgetHostViewMac::KillSelf() {
@@ -1310,7 +1320,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
           WebInputEventFactory::mouseEvent(theEvent, self);
       exitEvent.type = WebInputEvent::MouseLeave;
       exitEvent.button = WebMouseEvent::ButtonNone;
-      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(exitEvent);
+      renderWidgetHostView_->ForwardMouseEvent(exitEvent);
     }
     mouseEventWasIgnored_ = YES;
     return;
@@ -1324,7 +1334,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
           WebInputEventFactory::mouseEvent(theEvent, self);
       enterEvent.type = WebInputEvent::MouseMove;
       enterEvent.button = WebMouseEvent::ButtonNone;
-      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(enterEvent);
+      renderWidgetHostView_->ForwardMouseEvent(enterEvent);
     }
   }
   mouseEventWasIgnored_ = NO;
@@ -1362,11 +1372,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     [self confirmComposition];
   }
 
-  const WebMouseEvent& event =
+  const WebMouseEvent event =
       WebInputEventFactory::mouseEvent(theEvent, self);
-
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
+  renderWidgetHostView_->ForwardMouseEvent(event);
 }
 
 - (void)shortCircuitEndGestureWithEvent:(NSEvent*)event {
@@ -2585,8 +2593,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     WebMouseEvent event;
     event.type = WebInputEvent::MouseUp;
     event.button = WebMouseEvent::ButtonLeft;
-    if (renderWidgetHostView_->render_widget_host_)
-      renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
+    renderWidgetHostView_->ForwardMouseEvent(event);
 
     hasOpenMouseDown_ = NO;
   }

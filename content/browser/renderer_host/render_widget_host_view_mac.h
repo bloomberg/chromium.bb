@@ -295,6 +295,9 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;
 
+  // Forwards the mouse event to the renderer.
+  void ForwardMouseEvent(const WebKit::WebMouseEvent& event);
+
   void KillSelf();
 
   void SetTextInputActive(bool active);
