@@ -29,7 +29,8 @@ class Profile;
 class FileBrowserEventRouter
     : public RefcountedProfileKeyedService,
       public chromeos::disks::DiskMountManager::Observer,
-      public gdata::GDataOperationRegistry::Observer {
+      public gdata::GDataOperationRegistry::Observer,
+      public gdata::GDataFileSystem::Observer {
  public:
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;
@@ -62,6 +63,9 @@ class FileBrowserEventRouter
       const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list)
           OVERRIDE;
 
+  // gdata::GDataFileSystem::Observer overrides.
+  virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
+
  private:
   friend class FileBrowserEventRouterFactory;
 
@@ -85,7 +89,8 @@ class FileBrowserEventRouter
   class FileWatcherExtensions {
    public:
     FileWatcherExtensions(const FilePath& path,
-        const std::string& extension_id);
+        const std::string& extension_id,
+        bool is_remote_file_system);
 
     ~FileWatcherExtensions() {}
 
@@ -102,11 +107,12 @@ class FileBrowserEventRouter
     bool Watch(const FilePath& path, FileWatcherDelegate* delegate);
 
    private:
-    linked_ptr<base::files::FilePathWatcher> file_watcher;
-    FilePath local_path;
-    FilePath virtual_path;
-    ExtensionUsageRegistry extensions;
-    unsigned int ref_count;
+    linked_ptr<base::files::FilePathWatcher> file_watcher_;
+    FilePath local_path_;
+    FilePath virtual_path_;
+    ExtensionUsageRegistry extensions_;
+    unsigned int ref_count_;
+    bool is_remote_file_system_;
   };
 
   typedef std::map<FilePath, FileWatcherExtensions*> WatcherMap;

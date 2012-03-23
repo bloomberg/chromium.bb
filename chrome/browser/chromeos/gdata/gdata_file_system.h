@@ -133,23 +133,34 @@ class GDataFileSystemInterface {
   virtual ~GDataFileSystemInterface() {}
 
   // Used to notify events on the file system.
-  // There is no guarantee on what thread the observers are notified.
   // Hence, the observers should relay these events to a certain thread
   // themselves if needed.
   class Observer {
    public:
     // Triggered when the cache has been initialized.
+    // For this method, there is no guarantee on what thread the observers will
+    // get notified .
     virtual void OnCacheInitialized() {}
 
     // Triggered when a file has been pinned, after the cache state is
     // updated.
+    // For this method, there is no guarantee on what thread the observers will
+    // get notified .
     virtual void OnFilePinned(const std::string& resource_id,
                               const std::string& md5) {}
 
     // Triggered when a file has been unpinned, after the cache state is
     // updated.
+    // For this method, there is no guarantee on what thread the observers will
+    // get notified .
     virtual void OnFileUnpinned(const std::string& resource_id,
                                 const std::string& md5) {}
+
+    // Triggered when a content of a directory has been changed.
+    // |directory_path| is a virtual directory path (/gdata/...) representing
+    // changed directory.
+    // For this method, observers will be notified on UI thread.
+    virtual void OnDirectoryChanged(const FilePath& directory_path) {}
 
    protected:
     virtual ~Observer() {}
@@ -988,6 +999,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   bool in_shutdown_;  // True if GDatafileSystem is shutting down.
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
+  base::WeakPtr<GDataFileSystem> weak_ptr_bound_to_ui_thread_;
 
   ObserverList<Observer> observers_;
 };

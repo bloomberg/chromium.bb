@@ -384,7 +384,8 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
           true /* manual reset */, false /* initially not signaled */)),
       cache_initialization_started_(false),
       in_shutdown_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -1506,6 +1507,8 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     file_path = file->GetFilePath();
   }
 
+  NotifyDirectoryChanged(file_path.DirName());
+
   if (!callback.is_null())
     callback.Run(error, file_path);
 }
@@ -1646,6 +1649,8 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   *updated_file_path = file->GetFilePath();
+
+  NotifyDirectoryChanged(updated_file_path->DirName());
   return base::PLATFORM_FILE_OK;
 }
 
@@ -1658,16 +1663,18 @@ base::PlatformFileError GDataFileSystem::AddFileToDirectoryOnFilesystem(
 
   DCHECK_EQ(root_.get(), file->parent());
 
-  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
-  if (!dir)
+  GDataFileBase* dir_file = GetGDataFileInfoFromPath(dir_path);
+  if (!dir_file)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  if (!dir->AsGDataDirectory())
+  GDataDirectory* dir = dir_file->AsGDataDirectory();
+  if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
-  if (!dir->AsGDataDirectory()->TakeFile(file))
+  if (!dir->TakeFile(file))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  NotifyDirectoryChanged(dir_path);
   return base::PLATFORM_FILE_OK;
 }
 
@@ -1694,6 +1701,8 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromDirectoryOnFilesystem(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   *updated_file_path = file->GetFilePath();
+
+  NotifyDirectoryChanged(updated_file_path->DirName());
   return base::PLATFORM_FILE_OK;
 }
 
@@ -1732,6 +1741,10 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   // We need to lock here as well (despite FindFileByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
+  // Don't send directory content change notification while performing
+  // the initial content retreival.
+  bool should_nofify = root_->origin() != UNINITIALIZED;
+
   root_->set_origin(origin);
   root_->set_refresh_time(base::Time::Now());
   root_->RemoveChildren();
@@ -1824,12 +1837,26 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     dir->AddFile(file.release());
   }
 
-  NotifyDirectoryChanged(root_->GetFilePath());
+  if (should_nofify)
+    NotifyDirectoryChanged(root_->GetFilePath());
+
   return base::PLATFORM_FILE_OK;
 }
 
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
   DVLOG(1) << "Content changed of " << directory_path.value();
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyDirectoryChanged,
+                   weak_ptr_bound_to_ui_thread_,
+                   directory_path));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that content of |directory_path| has been changed.
+  FOR_EACH_OBSERVER(Observer, observers_, OnDirectoryChanged(directory_path));
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
@@ -1866,6 +1893,7 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
 
   parent_dir->AddFile(new_file);
 
+  NotifyDirectoryChanged(directory_path);
   return base::PLATFORM_FILE_OK;
 }
 
@@ -1933,9 +1961,11 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
   if (file->AsGDataFile())
     *resource_id = file->AsGDataFile()->resource_id();
 
-  if (!file->parent()->RemoveFile(file))
+  GDataDirectory* parent_dir = file->parent();
+  if (!parent_dir->RemoveFile(file))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
+  NotifyDirectoryChanged(parent_dir->GetFilePath());
   return base::PLATFORM_FILE_OK;
 }
 
@@ -2253,11 +2283,13 @@ void GDataFileSystem::StoreToCacheOnIOThreadPool(
   }
 
   // Invoke |final_callback|.
-  params.relay_proxy->PostTask(FROM_HERE,
-                               base::Bind(params.final_callback,
-                                          error,
-                                          params.resource_id,
-                                          params.md5));
+  if (!params.final_callback.is_null()) {
+    params.relay_proxy->PostTask(FROM_HERE,
+                                 base::Bind(params.final_callback,
+                                            error,
+                                            params.resource_id,
+                                            params.md5));
+  }
 }
 
 void GDataFileSystem::PinOnIOThreadPool(const ModifyCacheStateParams& params) {
@@ -2484,12 +2516,14 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
   // Now that all file operations have completed, remove from cache map.
   root_->RemoveFromCacheMap(resource_id);
 
-  // Invoke callback on calling thread.
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(callback,
-                                   base::PLATFORM_FILE_OK,
-                                   resource_id,
-                                   std::string()));
+  if (!callback.is_null()) {
+    // Invoke callback on calling thread.
+    relay_proxy->PostTask(FROM_HERE,
+                          base::Bind(callback,
+                                     base::PLATFORM_FILE_OK,
+                                     resource_id,
+                                     std::string()));
+  }
 }
 
 //=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====

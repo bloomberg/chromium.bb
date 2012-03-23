@@ -19,6 +19,9 @@ const FilePath& GetGDataMountPointPath();
 // Returns the GData mount path as string.
 const std::string& GetGDataMountPointPathAsString();
 
+// Returns the 'local' root of remote file system as "/special".
+const FilePath& GetSpecialRemoteRootPath();
+
 // Returns true if the given path is under the GData mount point.
 bool IsUnderGDataMountPoint(const FilePath& path);
 

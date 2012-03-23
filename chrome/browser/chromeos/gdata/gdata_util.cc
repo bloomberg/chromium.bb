@@ -17,6 +17,8 @@ namespace util {
 
 namespace {
 
+const char kGDataSpecialRootPath[] = "/special";
+
 const char kGDataMountPointPath[] = "/special/gdata";
 
 const FilePath::CharType* kGDataMountPointPathComponents[] = {
@@ -35,6 +37,12 @@ const std::string& GetGDataMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, gdata_mount_path_string,
       (kGDataMountPointPath));
   return gdata_mount_path_string;
+}
+
+const FilePath& GetSpecialRemoteRootPath() {
+  CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
+      (FilePath::FromUTF8Unsafe(kGDataSpecialRootPath)));
+  return gdata_mount_path;
 }
 
 bool IsUnderGDataMountPoint(const FilePath& path) {
