@@ -140,11 +140,39 @@ TEST(connection_queue)
 }
 
 struct marshal_data {
-	struct wl_connection *connection;
+	struct wl_connection *read_connection;
+	struct wl_connection *write_connection;
 	int s[2];
-	uint32_t mask;
+	uint32_t read_mask;
+	uint32_t write_mask;
 	uint32_t buffer[10];
 };
+
+static void
+setup_marshal_data(struct marshal_data *data)
+{
+	assert(socketpair(AF_UNIX,
+			  SOCK_STREAM | SOCK_CLOEXEC, 0, data->s) == 0);
+
+	data->read_connection =
+		wl_connection_create(data->s[0],
+				     update_func, &data->read_mask);
+	assert(data->read_connection);
+	assert(data->read_mask == WL_CONNECTION_READABLE);
+
+	data->write_connection =
+		wl_connection_create(data->s[1],
+				     update_func, &data->write_mask);
+	assert(data->write_connection);
+	assert(data->write_mask == WL_CONNECTION_READABLE);
+}
+
+static void
+release_marshal_data(struct marshal_data *data)
+{
+	wl_connection_destroy(data->read_connection);
+	wl_connection_destroy(data->write_connection);
+}
 
 static void
 marshal(struct marshal_data *data, const char *format, int size, ...)
@@ -156,19 +184,19 @@ marshal(struct marshal_data *data, const char *format, int size, ...)
 	va_list ap;
 
 	va_start(ap, size);
-	closure = wl_connection_vmarshal(data->connection,
+	closure = wl_connection_vmarshal(data->write_connection,
 					 &sender, opcode, ap, &message);
 	va_end(ap);
 
 	assert(closure);
-	assert(wl_closure_send(closure, data->connection) == 0);
+	assert(wl_closure_send(closure, data->write_connection) == 0);
 	wl_closure_destroy(closure);
-	assert(data->mask ==
+	assert(data->write_mask ==
 	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
-	assert(wl_connection_data(data->connection,
+	assert(wl_connection_data(data->write_connection,
 				  WL_CONNECTION_WRITABLE) == 0);
-	assert(data->mask == WL_CONNECTION_READABLE);
-	assert(read(data->s[1], data->buffer, sizeof data->buffer) == size);
+	assert(data->write_mask == WL_CONNECTION_READABLE);
+	assert(read(data->s[0], data->buffer, sizeof data->buffer) == size);
 
 	assert(data->buffer[0] == sender.id);
 	assert(data->buffer[1] == (opcode | (size << 16)));
@@ -181,7 +209,7 @@ TEST(connection_marshal)
 	struct wl_array array;
 	static const char text[] = "curry";
 
-	data.connection = setup(data.s, &data.mask);
+	setup_marshal_data(&data);
 
 	marshal(&data, "i", 12, 42);
 	assert(data.buffer[2] == 42);
@@ -212,8 +240,7 @@ TEST(connection_marshal)
 	assert(data.buffer[2] == array.size);
 	assert(memcmp(&data.buffer[3], text, array.size) == 0);
 
-	wl_connection_destroy(data.connection);
-	close(data.s[1]);
+	release_marshal_data(&data);
 }
 
 static void
@@ -254,12 +281,12 @@ demarshal(struct marshal_data *data, const char *format,
 	int size = msg[1];
 
 	assert(write(data->s[1], msg, size) == size);
-	assert(wl_connection_data(data->connection,
+	assert(wl_connection_data(data->read_connection,
 				  WL_CONNECTION_READABLE) == size);
 
 	wl_map_init(&objects);
 	object.id = msg[0];
-	closure = wl_connection_demarshal(data->connection,
+	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
 	wl_closure_invoke(closure, &object, func, msg);
 }
@@ -270,7 +297,7 @@ TEST(connection_demarshal)
 	uint32_t msg[10];
 	static const char text[] = "superdude";
 
-	data.connection = setup(data.s, &data.mask);
+	setup_marshal_data(&data);
 
 	msg[0] = 400200;	/* object id */
 	msg[1] = 12;		/* size = 12, opcode = 0 */
@@ -288,6 +315,5 @@ TEST(connection_demarshal)
 	memcpy(&msg[3], text, msg[2]);
 	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
 
-	wl_connection_destroy(data.connection);
-	close(data.s[1]);
+	release_marshal_data(&data);
 }
