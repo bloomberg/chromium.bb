@@ -299,7 +299,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     // Either show auth error information with a link to re-login, auth in prog,
     // or provide a link to continue with setup.
     result_type = PRE_SYNCED;
-    if (service->SetupInProgress()) {
+    if (service->FirstSetupInProgress()) {
       ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
       const AuthError& auth_error = service->GetAuthError();
       if (status_label) {

@@ -372,9 +372,6 @@ const char kDisableSyncAutofillProfile[]    = "disable-sync-autofill-profile";
 // Disables syncing of bookmarks.
 const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 
-// Disables sync encryption options.
-const char kDisableSyncEncryption[]         = "disable-sync-encryption";
-
 // Disables syncing extension settings.
 const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
 

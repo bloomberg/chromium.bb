@@ -47,6 +47,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                     const std::string& access_code));
   MOCK_METHOD0(OnUserCancelledDialog, void());
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, string16());
+  MOCK_METHOD2(OnUserChoseDatatypes,
+               void(bool sync_everything,
+                    syncable::ModelTypeSet chosen_types));
+
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
                const std::string& message));
@@ -62,6 +66,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(GetJsController, base::WeakPtr<browser_sync::JsController>());
   MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
 
+  MOCK_CONST_METHOD0(EncryptEverythingEnabled, bool());
+  MOCK_METHOD0(EnableEncryptEverything, void());
+
   MOCK_METHOD1(ChangePreferredDataTypes,
                void(syncable::ModelTypeSet preferred_types));
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncable::ModelTypeSet());
@@ -73,7 +80,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(QueryDetailedSyncStatus,
                browser_sync::SyncBackendHost::Status());
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
-  MOCK_CONST_METHOD0(SetupInProgress, bool());
+  MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
   MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
   MOCK_CONST_METHOD0(sync_initialized, bool());
@@ -85,6 +92,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
+  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
+
+  MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
+  MOCK_METHOD2(SetEncryptionPassphrase, void(const std::string& passphrase,
+                                             PassphraseType type));
 
   MOCK_METHOD0(ShowErrorUI, void());
 };

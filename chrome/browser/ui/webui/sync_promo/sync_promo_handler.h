@@ -24,8 +24,10 @@ class SyncPromoHandler : public SyncSetupHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // SyncSetupFlowHandler implementation.
-  virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
+  // Overridden to skip sync settings dialog if user wants to use default
+  // settings. |show_advanced| is ignored because we never want to display the
+  // "Sync Everything" dialog for the sync promo.
+  virtual void DisplayConfigureSync(bool show_advanced) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

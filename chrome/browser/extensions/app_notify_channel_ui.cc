@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -129,7 +128,10 @@ void AppNotifyChannelUIImpl::OnStateChanged() {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           browser_->profile()->GetOriginalProfile());
-  bool wizard_visible = sync_service->WizardIsVisible();
+  LoginUIService* login_service = LoginUIServiceFactory::GetForProfile(
+      browser_->profile()->GetOriginalProfile());
+
+  bool wizard_visible = (login_service->current_login_ui() != NULL);
   // ProfileSyncService raises OnStateChanged many times. Even multiple
   // times before the wizard actually becomes visible for the first time.
   // So we have to wait for the wizard to become visible once and then we

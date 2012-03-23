@@ -166,6 +166,10 @@ bool ProfileSyncServiceHarness::SetupSync(
   if (!service_->HasObserver(this))
     service_->AddObserver(this);
 
+  // Tell the sync service that setup is in progress so we don't start syncing
+  // until we've finished configuration.
+  service_->set_setup_in_progress(true);
+
   // Authenticate sync client using GAIA credentials.
   service_->signin()->StartSignIn(username_, password_, "", "");
 
@@ -224,6 +228,9 @@ bool ProfileSyncServiceHarness::SetupSync(
                   " until SetDecryptionPassphrase is called.";
     return false;
   }
+
+  // Notify ProfileSyncService that we are done with configuration.
+  service_->set_setup_in_progress(false);
 
   // Indicate to the browser that sync setup is complete.
   service()->SetSyncSetupCompleted();

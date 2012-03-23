@@ -28,7 +28,6 @@
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
-#include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -255,40 +254,30 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnUserChoseDatatypes(bool sync_everything,
       syncable::ModelTypeSet chosen_types);
 
-  // Called when a user cancels any setup dialog (login, etc).
-  virtual void OnUserCancelledDialog();
-
   // Get various information for displaying in the user interface.
   std::string QuerySyncStatusSummary();
   virtual browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
 
   virtual const GoogleServiceAuthError& GetAuthError() const;
 
-  // Displays a dialog for the user to enter GAIA credentials and attempt
-  // re-authentication, and returns true if it actually opened the dialog.
-  // Returns false if a dialog is already showing, an auth attempt is in
-  // progress, the sync system is already authenticated, or some error
-  // occurred preventing the action. We make it the duty of ProfileSyncService
-  // to open the dialog to easily ensure only one is ever showing.
-  virtual bool SetupInProgress() const;
-  bool WizardIsVisible() const {
-    return wizard_.IsVisible();
-  }
+  // Returns true if initial sync setup is in progress (does not return true
+  // if the user is customizing sync after already completing setup once).
+  // ProfileSyncService uses this to determine if it's OK to start syncing, or
+  // if the user is still setting up the initial sync configuration.
+  virtual bool FirstSetupInProgress() const;
 
-  SyncSetupWizard& get_wizard() { return wizard_; }
+  // Called by the UI to notify the ProfileSyncService that UI is visible so it
+  // will not start syncing. This tells sync whether it's safe to start
+  // downloading data types yet (we don't start syncing until after sync setup
+  // is complete). The UI calls this as soon as any part of the signin wizard is
+  // displayed (even just the login UI).
+  void set_setup_in_progress(bool setup_in_progress) {
+      setup_in_progress_ = setup_in_progress;
+  }
 
   // This method handles clicks on "sync error" UI, showing the appropriate
   // dialog for the error condition (relogin / enter passphrase).
   virtual void ShowErrorUI();
-
-  // Shows the configure screen of the Sync setup wizard. If |sync_everything|
-  // is true, shows the corresponding page in the customize screen; otherwise,
-  // displays the page that gives the user the ability to select which data
-  // types to sync.
-  void ShowConfigure(bool sync_everything);
-
-  virtual void ShowSyncSetup(const std::string& sub_page);
-  void ShowSyncSetupWithWizard(SyncSetupWizard::State state);
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.
@@ -550,8 +539,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Helper method for managing encryption UI.
   bool IsEncryptedDatatypeEnabled() const;
 
-  // The wizard will try to read the auth state out of the profile sync
-  // service using this member. Captcha and error state are reflected.
+  // This is a cache of the last authentication response we received from the
+  // sync server. The UI queries this to display appropriate messaging to the
+  // user.
   GoogleServiceAuthError last_auth_error_;
 
   // Our asynchronous backend to communicate with sync components living on
@@ -565,7 +555,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
  private:
   friend class ProfileSyncServicePasswordTest;
-  friend class ProfileSyncServiceForWizardTest;
   friend class SyncTest;
   friend class TestProfileSyncService;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
@@ -616,6 +605,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // want to startup once more.
   virtual void ReconfigureDatatypeManager();
 
+  // Called when the user changes the sync configuration, to update the UMA
+  // stats.
+  void UpdateSelectedTypesHistogram(
+      bool sync_everything,
+      const syncable::ModelTypeSet chosen_types) const;
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -643,8 +638,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Set to true if a signin has completed but we're still waiting for the
   // backend to refresh its credentials.
   bool is_auth_in_progress_;
-
-  SyncSetupWizard wizard_;
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
@@ -736,6 +729,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       backend_unrecoverable_error_handler_;
 
   browser_sync::DataTypeManager::ConfigureStatus configure_status_;
+
+  // If |true|, there is setup UI visible so we should not start downloading
+  // data types.
+  bool setup_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

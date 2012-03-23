@@ -55,7 +55,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
     profile_sync_service->UnsuppressAndStart();
   } else {
     // Give the user a chance to configure things.
-    profile_sync_service->ShowConfigure(false);
+    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(false);
   }
 
   delete this;

@@ -156,7 +156,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_SETUP_IN_PROGRESS: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, SetupInProgress())
+      EXPECT_CALL(service, FirstSetupInProgress())
                   .WillOnce(Return(true));
       browser_sync::SyncBackendHost::Status status;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
@@ -171,7 +171,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
    case STATUS_CASE_SETUP_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, SetupInProgress())
+      EXPECT_CALL(service, FirstSetupInProgress())
                   .WillOnce(Return(false));
       EXPECT_CALL(service, unrecoverable_error_detected())
                   .WillOnce(Return(true));

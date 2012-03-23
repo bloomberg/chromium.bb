@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -131,22 +130,19 @@ void SyncPromoHandler::RecordSignin() {
   sync_promo_trial::RecordUserSignedIn(web_ui());
 }
 
-void SyncPromoHandler::ShowConfigure(const base::DictionaryValue& args) {
-  bool usePassphrase = false;
-  args.GetBoolean("usePassphrase", &usePassphrase);
-
-  if (usePassphrase) {
+void SyncPromoHandler::DisplayConfigureSync(bool show_advanced) {
+  ProfileSyncService* service = GetSyncService();
+  DCHECK(service);
+  if (service->IsPassphraseRequired()) {
     // If a passphrase is required then we must show the configure pane.
-    SyncSetupHandler::ShowConfigure(args);
+    SyncSetupHandler::DisplayConfigureSync(true);
   } else {
     // If no passphrase is required then skip the configure pane and sync
     // everything by default. This makes the first run experience simpler.
     // Note, there's an advanced link in the sync promo that takes users
     // to Settings where the configure pane is not skipped.
-    SyncConfiguration configuration;
-    configuration.sync_everything = true;
-    DCHECK(flow());
-    flow()->OnUserConfigured(configuration);
+    service->OnUserChoseDatatypes(true, syncable::ModelTypeSet());
+    ConfigureSyncDone();
   }
 }
 

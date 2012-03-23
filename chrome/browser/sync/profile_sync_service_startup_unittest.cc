@@ -150,12 +150,13 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
+  service_->set_setup_in_progress(true);
   service_->signin()->StartSignIn("test_user", "", "", "");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-
+  service_->set_setup_in_progress(false);
   service_->OnUserChoseDatatypes(
       false, syncable::ModelTypeSet(syncable::BOOKMARKS));
   EXPECT_TRUE(service_->ShouldPushChanges());

@@ -220,15 +220,15 @@ cr.define('options', function() {
       // SyncSetupFlow::GetDataTypeChoiceData().
       var result = JSON.stringify({
         'syncAllDataTypes': syncAll,
-        'syncBookmarks': syncAll || $('bookmarks-checkbox').checked,
-        'syncPreferences': syncAll || $('preferences-checkbox').checked,
-        'syncThemes': syncAll || $('themes-checkbox').checked,
-        'syncPasswords': syncAll || $('passwords-checkbox').checked,
-        'syncAutofill': syncAll || $('autofill-checkbox').checked,
-        'syncExtensions': syncAll || $('extensions-checkbox').checked,
-        'syncTypedUrls': syncAll || $('typed-urls-checkbox').checked,
-        'syncApps': syncAll || $('apps-checkbox').checked,
-        'syncSessions': syncAll || $('sessions-checkbox').checked,
+        'sync_bookmarks': syncAll || $('bookmarks-checkbox').checked,
+        'sync_preferences': syncAll || $('preferences-checkbox').checked,
+        'sync_themes': syncAll || $('themes-checkbox').checked,
+        'sync_passwords': syncAll || $('passwords-checkbox').checked,
+        'sync_autofill': syncAll || $('autofill-checkbox').checked,
+        'sync_extensions': syncAll || $('extensions-checkbox').checked,
+        'sync_typed_urls': syncAll || $('typed-urls-checkbox').checked,
+        'sync_apps': syncAll || $('apps-checkbox').checked,
+        'sync_sessions': syncAll || $('sessions-checkbox').checked,
         'encryptAllData': encryptAllData,
         'usePassphrase': usePassphrase,
         'isGooglePassphrase': googlePassphrase,
@@ -288,42 +288,42 @@ cr.define('options', function() {
       var datatypeSelect = document.getElementById('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
 
-      $('bookmarks-checkbox').checked = args.syncBookmarks;
-      $('preferences-checkbox').checked = args.syncPreferences;
-      $('themes-checkbox').checked = args.syncThemes;
+      $('bookmarks-checkbox').checked = args.sync_bookmarks;
+      $('preferences-checkbox').checked = args.sync_preferences;
+      $('themes-checkbox').checked = args.sync_themes;
 
-      if (args.passwordsRegistered) {
-        $('passwords-checkbox').checked = args.syncPasswords;
+      if (args.passwords_registered) {
+        $('passwords-checkbox').checked = args.sync_passwords;
         $('passwords-item').hidden = false;
       } else {
         $('passwords-item').hidden = true;
       }
-      if (args.autofillRegistered) {
-        $('autofill-checkbox').checked = args.syncAutofill;
+      if (args.autofill_registered) {
+        $('autofill-checkbox').checked = args.sync_autofill;
         $('autofill-item').hidden = false;
       } else {
         $('autofill-item').hidden = true;
       }
-      if (args.extensionsRegistered) {
-        $('extensions-checkbox').checked = args.syncExtensions;
+      if (args.extensions_registered) {
+        $('extensions-checkbox').checked = args.sync_extensions;
         $('extensions-item').hidden = false;
       } else {
         $('extensions-item').hidden = true;
       }
-      if (args.typedUrlsRegistered) {
-        $('typed-urls-checkbox').checked = args.syncTypedUrls;
+      if (args.typed_urls_registered) {
+        $('typed-urls-checkbox').checked = args.sync_typed_urls;
         $('omnibox-item').hidden = false;
       } else {
         $('omnibox-item').hidden = true;
       }
-      if (args.appsRegistered) {
-        $('apps-checkbox').checked = args.syncApps;
+      if (args.apps_registered) {
+        $('apps-checkbox').checked = args.sync_apps;
         $('apps-item').hidden = false;
       } else {
         $('apps-item').hidden = true;
       }
-      if (args.sessionsRegistered) {
-        $('sessions-checkbox').checked = args.syncSessions;
+      if (args.sessions_registered) {
+        $('sessions-checkbox').checked = args.sync_sessions;
         $('sessions-item').hidden = false;
       } else {
         $('sessions-item').hidden = true;
@@ -379,8 +379,6 @@ cr.define('options', function() {
       };
 
       if (args) {
-        if (!args['encryptionEnabled'])
-          $('customize-sync-encryption').hidden = true;
         this.setCheckboxesAndErrors_(args);
 
         this.useEncryptEverything_ = args['encryptAllData'];
@@ -438,20 +436,22 @@ cr.define('options', function() {
       $('sync-custom-passphrase-container').hidden = true;
       $('sync-existing-passphrase-container').hidden = false;
 
-      $('passphrase-rejected-body').hidden = true;
       $('normal-body').hidden = true;
       $('google-passphrase-needed-body').hidden = true;
       // Display the correct prompt to the user depending on what type of
       // passphrase is needed.
-      if (args['need_google_passphrase'])
-        $('google-passphrase-needed-body').hidden = false;
-      else if (args['passphrase_creation_rejected'])
-        $('passphrase-rejected-body').hidden = false;
-      else
+      if (args['usePassphrase'])
         $('normal-body').hidden = false;
+      else
+        $('google-passphrase-needed-body').hidden = false;
 
       $('passphrase-learn-more').hidden = false;
-      $('incorrect-passphrase').hidden = !args['passphrase_setting_rejected'];
+      // Warn the user about their incorrect passphrase if we need a passphrase
+      // and the passphrase field is non-empty (meaning they tried to set it
+      // previously but failed).
+      $('incorrect-passphrase').hidden = !(args['usePassphrase'] &&
+          $('choose-data-types-form').passphrase.value);
+
       $('sync-passphrase-warning').hidden = false;
       $('passphrase').focus();
     },
@@ -492,12 +492,7 @@ cr.define('options', function() {
     },
 
     showSyncSetupPage_: function(page, args) {
-      if (page == 'settingUp') {
-        this.setThrobbersVisible_(true);
-        return;
-      } else {
-        this.setThrobbersVisible_(false);
-      }
+      this.setThrobbersVisible_(false);
 
       // Hide an existing visible overlay.
       var overlay = $('sync-setup-overlay');
@@ -774,6 +769,7 @@ cr.define('options', function() {
 
     showSuccessAndSettingUp_: function() {
       $('sign-in').value = localStrings.getString('settingUp');
+      this.setThrobbersVisible_(true);
       $('top-blurb-error').hidden = true;
     },
 

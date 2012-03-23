@@ -110,7 +110,6 @@ extern const char kDisableSyncAppNotifications[];
 extern const char kDisableSyncAutofill[];
 extern const char kDisableSyncAutofillProfile[];
 extern const char kDisableSyncBookmarks[];
-extern const char kDisableSyncEncryption[];
 extern const char kDisableSyncExtensionSettings[];
 extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncPasswords[];

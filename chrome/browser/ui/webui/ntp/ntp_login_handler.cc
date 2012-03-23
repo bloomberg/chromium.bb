@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -181,8 +180,10 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
 }
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
-  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      Profile::FromWebUI(web_ui()))->ShowConfigure(false);
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (browser)
+    browser->ShowSyncSetup();
 }
 
 void NTPLoginHandler::UpdateLogin() {

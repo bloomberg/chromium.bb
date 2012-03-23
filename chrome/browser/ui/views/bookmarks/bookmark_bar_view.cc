@@ -1259,7 +1259,7 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
   const BookmarkNode* node = parent->GetChild(index);
   ProfileSyncService* sync_service(ProfileSyncServiceFactory::
       GetInstance()->GetForProfile(browser_->profile()));
-  if (!throbbing_view_ && sync_service && sync_service->SetupInProgress())
+  if (!throbbing_view_ && sync_service && sync_service->FirstSetupInProgress())
     StartThrobbing(node, true);
   AddChildViewAt(CreateBookmarkButton(node), index);
   UpdateColors();

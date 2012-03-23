@@ -42,7 +42,6 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -1000,7 +999,7 @@ DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
 
   sync_status->SetBoolean("setupCompleted",
                           service->HasSyncSetupCompleted());
-  sync_status->SetBoolean("setupInProgress", service->SetupInProgress());
+  sync_status->SetBoolean("setupInProgress", service->FirstSetupInProgress());
 
   string16 status_label;
   string16 link_label;

@@ -1768,7 +1768,6 @@
         'browser/sync/profile_sync_test_util.h',
         'browser/sync/sync_global_error_unittest.cc',
         'browser/sync/sync_prefs_unittest.cc',
-        'browser/sync/sync_setup_wizard_unittest.cc',
         'browser/sync/sync_ui_util_mac_unittest.mm',
         'browser/sync/sync_ui_util_unittest.cc',
         'browser/sync/test_profile_sync_service.cc',
@@ -2437,7 +2436,6 @@
             'common/multi_process_lock_unittest.cc',
 
             # Sync setup uses native ui.
-            'browser/sync/sync_setup_wizard_unittest.cc',
             'browser/ui/webui/sync_setup_handler_unittest.cc',
 
             'browser/ui/window_sizer_unittest.cc',

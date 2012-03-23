@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +25,8 @@ using ::testing::A;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
+
+MATCHER_P(ModelTypeSetMatches, value, "") { return arg.Equals(value); }
 
 static const char kTestUser[] = "chrome.p13n.test@gmail.com";
 static const char kTestPassword[] = "passwd";
@@ -52,6 +55,13 @@ class TestWebUI : public content::MockWebUI {
       OVERRIDE {
     call_data_.push_back(CallData());
     call_data_.back().function_name = function_name;
+  }
+
+  virtual void CallJavascriptFunction(const std::string& function_name,
+                                      const base::Value& arg1) OVERRIDE {
+    call_data_.push_back(CallData());
+    call_data_.back().function_name = function_name;
+    call_data_.back().arg1 = arg1.DeepCopy();
   }
 
   virtual void CallJavascriptFunction(const std::string& function_name,
@@ -129,6 +139,7 @@ class SyncSetupHandlerTest : public testing::Test {
   SyncSetupHandlerTest() {}
   virtual void SetUp() OVERRIDE {
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
+    SyncPromoUI::RegisterUserPrefs(profile_->GetPrefs());
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
@@ -137,6 +148,57 @@ class SyncSetupHandlerTest : public testing::Test {
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildSigninManagerMock));
     handler_.reset(new TestingSyncSetupHandler(&web_ui_, profile_.get()));
+  }
+
+  // Returns a ModelTypeSet with all user selectable types set.
+  syncable::ModelTypeSet GetAllTypes() {
+    syncable::ModelTypeSet types;
+    types.Put(syncable::APPS);
+    types.Put(syncable::AUTOFILL);
+    types.Put(syncable::BOOKMARKS);
+    types.Put(syncable::EXTENSIONS);
+    types.Put(syncable::PASSWORDS);
+    types.Put(syncable::PREFERENCES);
+    types.Put(syncable::SESSIONS);
+    types.Put(syncable::THEMES);
+    types.Put(syncable::TYPED_URLS);
+    return types;
+  }
+
+  // Setup the expectations for calls made when displaying the config page.
+  void SetDefaultExpectationsForConfigPage() {
+    EXPECT_CALL(*mock_pss_, GetRegisteredDataTypes()).
+        WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
+        WillRepeatedly(Return(GetAllTypes()));
+    EXPECT_CALL(*mock_pss_, EncryptEverythingEnabled()).
+        WillRepeatedly(Return(false));
+  }
+
+  void SetupInitializedProfileSyncService() {
+    // An initialized ProfileSyncService will have already completed sync setup
+    // and will have an initialized sync backend.
+    EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
+  }
+
+  void ExpectConfig() {
+    ASSERT_EQ(1U, web_ui_.call_data().size());
+    const TestWebUI::CallData& data = web_ui_.call_data()[0];
+    EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
+    std::string page;
+    ASSERT_TRUE(data.arg1->GetAsString(&page));
+    EXPECT_EQ(page, "configure");
+  }
+
+  void ExpectDone() {
+    ASSERT_EQ(1U, web_ui_.call_data().size());
+    const TestWebUI::CallData& data = web_ui_.call_data()[0];
+    EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
+    std::string page;
+    ASSERT_TRUE(data.arg1->GetAsString(&page));
+    EXPECT_EQ(page, "done");
   }
 
   scoped_ptr<Profile> profile_;
@@ -170,6 +232,12 @@ static void CheckBool(const DictionaryValue* dictionary,
     EXPECT_EQ(actual_value, expected_value) <<
         "Mismatch found for " << key;
   }
+}
+
+static void CheckBool(const DictionaryValue* dictionary,
+                      const std::string& key,
+                      bool expected_value) {
+  return CheckBool(dictionary, key, expected_value, false);
 }
 
 static void CheckString(const DictionaryValue* dictionary,
@@ -212,7 +280,7 @@ static void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
   CheckString(dictionary, "captchaUrl", captcha_url, false);
   CheckInt(dictionary, "error", error);
   CheckBool(dictionary, "fatalError", fatal_error, true);
-  CheckBool(dictionary, "editable_user", user_is_editable, false);
+  CheckBool(dictionary, "editable_user", user_is_editable);
 }
 
 TEST_F(SyncSetupHandlerTest, Basic) {
@@ -221,7 +289,37 @@ TEST_F(SyncSetupHandlerTest, Basic) {
 TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(false));
   handler_->OpenSyncSetup(false);
+  EXPECT_EQ(&web_ui_,
+            LoginUIServiceFactory::GetForProfile(
+                profile_.get())->current_login_ui());
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
+  std::string page;
+  ASSERT_TRUE(data.arg1->GetAsString(&page));
+  EXPECT_EQ(page, "login");
+  // Now make sure that the appropriate params are being passed.
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckShowSyncSetupArgs(
+      dictionary, "", false, GoogleServiceAuthError::NONE, "", true, "");
+  handler_->CloseSyncSetup();
+  EXPECT_EQ(NULL,
+            LoginUIServiceFactory::GetForProfile(
+                profile_.get())->current_login_ui());
+}
+
+TEST_F(SyncSetupHandlerTest, DisplayForceLogin) {
+  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(true));
+  // This should display the login UI even though sync setup has already
+  // completed.
+  handler_->OpenSyncSetup(true);
   EXPECT_EQ(&web_ui_,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
@@ -301,6 +399,8 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
 TEST_F(SyncSetupHandlerTest, HandleFatalError) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(false));
   handler_->ShowFatalError();
   ASSERT_EQ(1U, web_ui_.call_data().size());
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -317,6 +417,8 @@ TEST_F(SyncSetupHandlerTest, HandleFatalError) {
 
 TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(false);
@@ -353,6 +455,8 @@ TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
 TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
       .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
+      .WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(false);
   ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -384,4 +488,410 @@ TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
   CheckShowSyncSetupArgs(
       dictionary, "", false, GoogleServiceAuthError::SERVICE_UNAVAILABLE,
       kTestUser, true, "");
+}
+
+TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":false,"
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
+  handler_->HandleConfigure(&list_args);
+
+  // Ensure that we navigated to the "done" state since we don't need a
+  // passphrase.
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":false,"
+      "\"encryptAllData\":true}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, EnableEncryptEverything());
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
+  handler_->HandleConfigure(&list_args);
+
+  // Ensure that we navigated to the "done" state since we don't need a
+  // passphrase.
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":false,"
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
+  SetDefaultExpectationsForConfigPage();
+
+  // We should navigate back to the configure page since we need a passphrase.
+  handler_->HandleConfigure(&list_args);
+
+  ExpectConfig();
+}
+
+TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":true,"
+      "\"isGooglePassphrase\":true,"
+      "\"passphrase\":\"whoopie\","
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  // Act as if an encryption passphrase is required the first time, then never
+  // again after that.
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillOnce(Return(true))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("whoopie")).
+      WillOnce(Return(true));
+
+  handler_->HandleConfigure(&list_args);
+  // We should navigate to "done" page since we finished configuring.
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":true,"
+      "\"isGooglePassphrase\":false,"
+      "\"passphrase\":\"whoopie\","
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
+  EXPECT_CALL(*mock_pss_,
+              SetEncryptionPassphrase("whoopie",
+                                      ProfileSyncService::EXPLICIT));
+
+  handler_->HandleConfigure(&list_args);
+  // We should navigate to "done" page since we finished configuring.
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
+  std::string args =
+      "{\"syncAllDataTypes\":true,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":true,"
+      "\"isGooglePassphrase\":true,"
+      "\"passphrase\":\"whoopie\","
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("whoopie")).
+      WillOnce(Return(false));
+
+  SetDefaultExpectationsForConfigPage();
+  // We should navigate back to the configure page since we need a passphrase.
+  handler_->HandleConfigure(&list_args);
+
+  ExpectConfig();
+}
+
+TEST_F(SyncSetupHandlerTest, TestSyncOnlyBookmarks) {
+  std::string args =
+      "{\"syncAllDataTypes\":false,"
+      "\"sync_apps\":false,"
+      "\"sync_autofill\":false,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":false,"
+      "\"sync_passwords\":false,"
+      "\"sync_preferences\":false,"
+      "\"sync_sessions\":false,"
+      "\"sync_themes\":false,"
+      "\"sync_typed_urls\":false,"
+      "\"usePassphrase\":false,"
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  syncable::ModelTypeSet types;
+  types.Put(syncable::BOOKMARKS);
+  EXPECT_CALL(*mock_pss_,
+              OnUserChoseDatatypes(false, ModelTypeSetMatches(types)));
+  handler_->HandleConfigure(&list_args);
+
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
+  std::string args =
+      "{\"syncAllDataTypes\":false,"
+      "\"sync_apps\":true,"
+      "\"sync_autofill\":true,"
+      "\"sync_bookmarks\":true,"
+      "\"sync_extensions\":true,"
+      "\"sync_passwords\":true,"
+      "\"sync_preferences\":true,"
+      "\"sync_sessions\":true,"
+      "\"sync_themes\":true,"
+      "\"sync_typed_urls\":true,"
+      "\"usePassphrase\":false,"
+      "\"encryptAllData\":false}";
+  ListValue list_args;
+  list_args.Append(new StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  EXPECT_CALL(*mock_pss_,
+              OnUserChoseDatatypes(false, ModelTypeSetMatches(GetAllTypes())));
+  handler_->HandleConfigure(&list_args);
+
+  ExpectDone();
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSyncSetup) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  // This should display the sync setup dialog (not login).
+  SetDefaultExpectationsForConfigPage();
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  SetDefaultExpectationsForConfigPage();
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "showSyncEverythingPage", false);
+  CheckBool(dictionary, "syncAllDataTypes", true);
+  CheckBool(dictionary, "apps_registered", true);
+  CheckBool(dictionary, "autofill_registered", true);
+  CheckBool(dictionary, "bookmarks_registered", true);
+  CheckBool(dictionary, "extensions_registered", true);
+  CheckBool(dictionary, "passwords_registered", true);
+  CheckBool(dictionary, "preferences_registered", true);
+  CheckBool(dictionary, "sessions_registered", true);
+  CheckBool(dictionary, "themes_registered", true);
+  CheckBool(dictionary, "typed_urls_registered", true);
+  CheckBool(dictionary, "show_passphrase", false);
+  CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "encryptAllData", false);
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_prefs.SetKeepEverythingSynced(false);
+  SetDefaultExpectationsForConfigPage();
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "syncAllDataTypes", false);
+  CheckBool(dictionary, "sync_apps", true);
+  CheckBool(dictionary, "sync_autofill", true);
+  CheckBool(dictionary, "sync_bookmarks", true);
+  CheckBool(dictionary, "sync_extensions", true);
+  CheckBool(dictionary, "sync_passwords", true);
+  CheckBool(dictionary, "sync_preferences", true);
+  CheckBool(dictionary, "sync_sessions", true);
+  CheckBool(dictionary, "sync_themes", true);
+  CheckBool(dictionary, "sync_typed_urls", true);
+}
+
+
+// TODO(atwilson): Change this test to try individually syncing every data type
+// not just bookmarks (http://crbug.com/119653).
+TEST_F(SyncSetupHandlerTest, ShowSetupSyncOnlyBookmarks) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  browser_sync::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_prefs.SetKeepEverythingSynced(false);
+  SetDefaultExpectationsForConfigPage();
+  syncable::ModelTypeSet types;
+  types.Put(syncable::BOOKMARKS);
+  EXPECT_CALL(*mock_pss_, GetPreferredDataTypes()).
+      WillRepeatedly(Return(types));
+
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "syncAllDataTypes", false);
+  CheckBool(dictionary, "sync_apps", false);
+  CheckBool(dictionary, "sync_autofill", false);
+  CheckBool(dictionary, "sync_bookmarks", true);
+  CheckBool(dictionary, "sync_extensions", false);
+  CheckBool(dictionary, "sync_passwords", false);
+  CheckBool(dictionary, "sync_preferences", false);
+  CheckBool(dictionary, "sync_sessions", false);
+  CheckBool(dictionary, "sync_themes", false);
+  CheckBool(dictionary, "sync_typed_urls", false);
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  SetDefaultExpectationsForConfigPage();
+
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "show_passphrase", true);
+  CheckBool(dictionary, "usePassphrase", false);
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(true));
+  SetupInitializedProfileSyncService();
+  SetDefaultExpectationsForConfigPage();
+
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "show_passphrase", true);
+  CheckBool(dictionary, "usePassphrase", true);
+}
+
+TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+  SetDefaultExpectationsForConfigPage();
+  EXPECT_CALL(*mock_pss_, EncryptEverythingEnabled()).
+      WillRepeatedly(Return(true));
+
+  // This should display the sync setup dialog (not login).
+  handler_->OpenSyncSetup(false);
+
+  ExpectConfig();
+  const TestWebUI::CallData& data = web_ui_.call_data()[0];
+  DictionaryValue* dictionary;
+  ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
+  CheckBool(dictionary, "encryptAllData", true);
 }

@@ -8,17 +8,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_tracker.h"
-#include "chrome/browser/sync/sync_setup_flow_handler.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 
 class LoginUIService;
 class ProfileManager;
 class ProfileSyncService;
 class SigninManager;
-class SyncSetupFlow;
 
 class SyncSetupHandler : public options2::OptionsPageUIHandler,
-                         public SyncSetupFlowHandler,
                          public SigninTracker::Observer {
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
@@ -29,15 +26,6 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings)
       OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
-
-  // SyncSetupFlowHandler implementation.
-  virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
-  virtual void ShowFatalError() OVERRIDE;
-  virtual void ShowPassphraseEntry(const base::DictionaryValue& args) OVERRIDE;
-  virtual void ShowSettingUp() OVERRIDE;
-  virtual void ShowSetupDone(const string16& user) OVERRIDE;
-  virtual void SetFlow(SyncSetupFlow* flow) OVERRIDE;
-  virtual void Focus() OVERRIDE;
 
   // SigninTracker::Observer implementation
   virtual void GaiaCredentialsValid() OVERRIDE;
@@ -57,36 +45,25 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
+  // Displays an error message to the user due to an unrecoverable error during
+  // sync setup.
+  void ShowFatalError();
+
  protected:
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, AbortedByPendingClear);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunGaiaLogin);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunChooseDataTypes);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
-                           DiscreteRunChooseDataTypesAbortedByPendingClear);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, GaiaErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleCaptcha);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleGaiaAuthFailure);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SuccessfullySetPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncEverything);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncAllManually);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestPassphraseStillRequired);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncOnlyBookmarks);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TurnOnEncryptAll);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            UnrecoverableErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, UnsuccessfullySetPassphrase);
 
-  // Callbacks from the page. Protected in order to be called by the
-  // SyncSetupWizardTest.
-  void OnDidClosePage(const base::ListValue* args);
-  void HandleSubmitAuth(const base::ListValue* args);
-  void HandleConfigure(const base::ListValue* args);
-  void HandlePassphraseEntry(const base::ListValue* args);
-  void HandlePassphraseCancel(const base::ListValue* args);
-  void HandleAttachHandler(const base::ListValue* args);
-  void HandleShowErrorUI(const base::ListValue* args);
-  void HandleShowSetupUI(const base::ListValue* args);
-
-  SyncSetupFlow* flow() { return flow_; }
 
   // Subclasses must implement this to show the setup UI that's appropriate
   // for the page this is contained in.
@@ -96,13 +73,34 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // user's signin activity.
   virtual void RecordSignin();
 
+  // Display the configure sync UI. If |show_advanced| is true, we skip directly
+  // to the "advanced settings" dialog, otherwise we give the user the simpler
+  // "Sync Everything" dialog. Overridden by subclasses to allow them to skip
+  // the sync setup dialog if desired.
+  virtual void DisplayConfigureSync(bool show_advanced);
+
+  // Called when we are done configuring sync (so we want to close the dialog
+  // and start syncing).
+  void ConfigureSyncDone();
+
+  // Helper routine that gets the ProfileSyncService associated with the parent
+  // profile.
+  ProfileSyncService* GetSyncService() const;
+
  private:
+  // Callbacks from the page.
+  void OnDidClosePage(const base::ListValue* args);
+  void HandleSubmitAuth(const base::ListValue* args);
+  void HandleConfigure(const base::ListValue* args);
+  void HandlePassphraseEntry(const base::ListValue* args);
+  void HandlePassphraseCancel(const base::ListValue* args);
+  void HandleAttachHandler(const base::ListValue* args);
+  void HandleShowErrorUI(const base::ListValue* args);
+  void HandleShowSetupUI(const base::ListValue* args);
+
   // Helper routine that gets the Profile associated with this object (virtual
   // so tests can override).
   virtual Profile* GetProfile() const;
-
-  // Start up the sync setup configuration wizard.
-  void StartConfigureSync();
 
   // Shows the GAIA login success page then exits.
   void DisplayGaiaSuccessAndClose();
@@ -142,10 +140,6 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   bool IsLoginAuthDataValid(const std::string& username,
                             string16* error_message);
 
-  // Helper routine that gets the ProfileSyncService associated with the parent
-  // profile.
-  ProfileSyncService* GetSyncService() const;
-
   // Returns the SigninManager for the parent profile.
   SigninManager* GetSignin() const;
 
@@ -158,8 +152,11 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // is visible.
   scoped_ptr<SigninTracker> signin_tracker_;
 
-  // Weak reference.
-  SyncSetupFlow* flow_;
+  // Set to true whenever the sync configure UI is visible. This is used so we
+  // can tell what stage of the setup wizard the user was in so we can update
+  // the UMA histograms in the case that the user cancels out.
+  bool configuring_sync_;
+
   // Weak reference to the profile manager.
   ProfileManager* const profile_manager_;
 
