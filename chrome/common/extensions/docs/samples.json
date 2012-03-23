@@ -1064,7 +1064,7 @@
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "1471f89d096904006237c6bd4dc9b4212161647d",
+      "source_hash": "8d5bfbc7f8578f6a0f70602cc5e360f1c6138588",
       "zip_path": "examples\/api\/fontSettings.zip"
     },
     {
@@ -1774,7 +1774,7 @@
         "newTab.html",
         "newTab.js"
       ],
-      "source_hash": "e31b2a10f0fa1455d7bd14f5da5f157efff99ec7",
+      "source_hash": "43b22b2ab3cb1e3ec7f6862377a76cb2746bd82b",
       "zip_path": "examples\/api\/topsites\/magic8ball.zip"
     },
     {
