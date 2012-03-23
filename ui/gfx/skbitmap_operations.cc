@@ -10,8 +10,12 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 // static
 SkBitmap SkBitmapOperations::CreateInvertedBitmap(const SkBitmap& image) {
@@ -736,5 +740,95 @@ SkBitmap SkBitmapOperations::CreateTransposedBtmap(const SkBitmap& image) {
   }
 
   return transposed;
+}
+
+// static
+SkBitmap SkBitmapOperations::CreateResizedBitmap(const SkBitmap& bitmap,
+                                                 const gfx::Size& size) {
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
+
+  SkBitmap src = bitmap;
+  src.buildMipMap(false);
+
+  SkBitmap resized;
+  resized.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
+  resized.allocPixels();
+  resized.eraseARGB(0, 0, 0, 0);
+
+  SkCanvas canvas(resized);
+
+  SkIRect src_rect = SkIRect::MakeWH(src.width(), src.height());
+  SkRect dst_rect = SkRect::MakeWH(size.width(), size.height());
+
+  SkPaint paint;
+  paint.setFilterBitmap(true);
+  canvas.drawBitmapRect(src, &src_rect, dst_rect, &paint);
+  return resized;
+}
+
+// static
+SkBitmap SkBitmapOperations::CreateColorMask(const SkBitmap& bitmap,
+                                             SkColor c) {
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
+
+  SkBitmap color_mask;
+  color_mask.setConfig(SkBitmap::kARGB_8888_Config,
+                       bitmap.width(), bitmap.height());
+  color_mask.allocPixels();
+  color_mask.eraseARGB(0, 0, 0, 0);
+
+  SkCanvas canvas(color_mask);
+
+  SkColorFilter* color_filter = SkColorFilter::CreateModeFilter(
+      c, SkXfermode::kSrcIn_Mode);
+  SkPaint paint;
+  paint.setColorFilter(color_filter)->unref();
+  canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
+  return color_mask;
+}
+
+// static
+SkBitmap SkBitmapOperations::CreateDropShadow(const SkBitmap& bitmap,
+                                              int shadow_count,
+                                              const SkColor* shadow_color,
+                                              const gfx::Point* shadow_offset,
+                                              const SkScalar* shadow_radius) {
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
+
+  int padding = 0;
+  for (int i = 0; i < shadow_count; ++i) {
+    int shadow_space = std::max(abs(shadow_offset[i].x()),
+                                abs(shadow_offset[i].y())) + shadow_radius[i];
+    if (shadow_space > padding)
+      padding = shadow_space;
+  }
+
+  SkBitmap image_with_shadow;
+  image_with_shadow.setConfig(SkBitmap::kARGB_8888_Config,
+                              bitmap.width() + 2 * padding,
+                              bitmap.height() + 2 * padding);
+  image_with_shadow.allocPixels();
+  image_with_shadow.eraseARGB(0, 0, 0, 0);
+
+  SkCanvas canvas(image_with_shadow);
+  canvas.translate(SkIntToScalar(padding), SkIntToScalar(padding));
+
+  SkPaint paint;
+  for (int i = 0; i < shadow_count; ++i) {
+    SkBitmap shadow = SkBitmapOperations::CreateColorMask(bitmap,
+                                                          shadow_color[i]);
+
+    paint.setImageFilter(
+        new SkBlurImageFilter(shadow_radius[i], shadow_radius[i]))->unref();
+
+    canvas.saveLayer(0, &paint);
+    canvas.drawBitmap(shadow,
+                      SkIntToScalar(shadow_offset[i].x()),
+                      SkIntToScalar(shadow_offset[i].y()));
+    canvas.restore();
+  }
+
+  canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0));
+  return image_with_shadow;
 }
 

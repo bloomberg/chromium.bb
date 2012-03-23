@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,11 @@
 #include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/color_utils.h"
+
+namespace gfx {
+class Point;
+class Size;
+}
 
 class SkBitmap;
 
@@ -93,6 +98,26 @@ class UI_EXPORT SkBitmapOperations {
   // Transpose the pixels in |bitmap| by swapping x and y.
   static SkBitmap CreateTransposedBtmap(const SkBitmap& bitmap);
 
+  // Create a copy of |bitmap| with specified |size|. The image must use the
+  // kARGB_8888_Config config.
+  static SkBitmap CreateResizedBitmap(const SkBitmap& bitmap,
+                                      const gfx::Size& size);
+
+  // Create a bitmap by combining alpha channel of |bitmap| and color |c|.
+  // The image must use the kARGB_8888_Config config.
+  static SkBitmap CreateColorMask(const SkBitmap& bitmap, SkColor c);
+
+  // Create a bitmap with drop shadow added to |bitmap|. |shadow_count| is the
+  // number of shadows to add. |shadow_offset| and |shadow_radius| are arrays
+  // with |shadow_count| elements to provide definition for each shadow. The
+  // created bitmap would be padded to have enough space for shadows and have
+  // original bitmap in the center. The image must use the kARGB_8888_Config
+  // config.
+  static SkBitmap CreateDropShadow(const SkBitmap& bitmap,
+                                   int shadow_count,
+                                   const SkColor* shadow_color,
+                                   const gfx::Point* shadow_offset,
+                                   const SkScalar* shadow_radius);
  private:
   SkBitmapOperations();  // Class for scoping only.
 

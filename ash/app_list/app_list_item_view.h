@@ -8,7 +8,9 @@
 
 #include "ash/app_list/app_list_item_model_observer.h"
 #include "ash/ash_export.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -16,7 +18,6 @@ class SkBitmap;
 
 namespace views {
 class ImageView;
-class Label;
 class MenuRunner;
 }
 
@@ -56,6 +57,15 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   static const char kViewClassName[];
 
  private:
+  class IconOperation;
+
+  // Get icon from model and schedule background processing.
+  void UpdateIcon();
+
+  // Reply callback from background shadow generation. |op| is the finished
+  // operation and holds the result image.
+  void ApplyShadow(scoped_refptr<IconOperation> op);
+
   // AppListItemModelObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
@@ -84,6 +94,9 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
 
   gfx::Size icon_size_;
   bool selected_;
+
+  scoped_refptr<IconOperation> icon_op_;
+  base::WeakPtrFactory<AppListItemView> apply_shadow_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };
