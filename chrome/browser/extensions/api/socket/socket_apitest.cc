@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/test_server.h"
@@ -22,14 +21,8 @@ namespace {
 const std::string kHostname = "127.0.0.1";
 const int kPort = 8888;
 
-class SocketApiTest : public ExtensionApiTest {
+class SocketApiTest : public PlatformAppApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-    command_line->AppendSwitch(switches::kEnablePlatformApps);
-  }
-
   static std::string GenerateCreateFunctionArgs(const std::string& protocol,
                                                 const std::string& address,
                                                 int port) {
@@ -38,6 +31,10 @@ class SocketApiTest : public ExtensionApiTest {
   }
 };
 
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(SocketApiTest, VerifyPermissions) {
+  VerifyPermissions(test_data_dir_.AppendASCII("socket/api"));
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {

@@ -36,6 +36,7 @@ ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
       installed_(false),
       extension_installs_observed_(0),
+      extension_load_errors_observed_(0),
       target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -425,6 +426,15 @@ void ExtensionBrowserTest::WaitForExtensionLoad() {
   WaitForExtensionHostsToLoad();
 }
 
+bool ExtensionBrowserTest::WaitForExtensionLoadError() {
+  int before = extension_load_errors_observed_;
+  ui_test_utils::RegisterAndWait(this,
+                                 chrome::NOTIFICATION_EXTENSION_LOAD_ERROR,
+                                 content::NotificationService::AllSources());
+  WaitForExtensionHostsToLoad();
+  return extension_load_errors_observed_ != before;
+}
+
 bool ExtensionBrowserTest::WaitForExtensionCrash(
     const std::string& extension_id) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
@@ -482,6 +492,12 @@ void ExtensionBrowserTest::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
       VLOG(1) << "Got EXTENSION_PROCESS_TERMINATED notification.";
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
+      VLOG(1) << "Got EXTENSION_LOAD_ERROR notification.";
+      ++extension_load_errors_observed_;
       MessageLoopForUI::current()->Quit();
       break;
 
