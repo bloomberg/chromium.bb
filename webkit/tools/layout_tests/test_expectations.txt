@@ -28,26 +28,3 @@
 // Right?)
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-BUGYANGGUO LINUX X86_64 : fast/repaint/moving-shadow-on-container.html = TEXT
-BUGYANGGUO LINUX X86_64 : fast/repaint/moving-shadow-on-path.html = TEXT
-BUGYANGGUO LINUX X86_64 : svg/css/stars-with-shadow.html = TEXT
-BUGYANGGUO MAC : fast/repaint/moving-shadow-on-container.html = TEXT
-BUGYANGGUO MAC : fast/repaint/moving-shadow-on-path.html = TEXT
-BUGYANGGUO MAC : svg/css/stars-with-shadow.html = TEXT
-BUGYANGGUO WIN : fast/repaint/moving-shadow-on-container.html = TEXT
-BUGYANGGUO WIN : fast/repaint/moving-shadow-on-path.html = TEXT
-BUGYANGGUO WIN : svg/css/stars-with-shadow.html = TEXT
-
-BUGCR117799 : fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
-
-// rebaseline when skia 3398 lands
-BUGEPOGER : platform/chromium/virtual/gpu/fast/canvas/quadraticCurveTo.xml = IMAGE
-
-BUGCR118411 : fast/repaint/focus-ring.html = IMAGE
-BUGCR118411 : fast/repaint/list-marker.html = IMAGE
-BUGCR118411 : svg/as-background-image/background-image-preserveaspectRatio-support.html = IMAGE
-BUGCR118411 : svg/as-image/img-preserveAspectRatio-support-1.html = IMAGE
-BUGCR118411 : svg/hixie/perf/001.xml = IMAGE
-BUGCR118411 : svg/hixie/perf/002.xml = IMAGE
-BUGCR118411 : svg/hixie/perf/007.xml = IMAGE
-
