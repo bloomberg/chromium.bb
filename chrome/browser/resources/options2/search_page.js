@@ -213,8 +213,10 @@ cr.define('options', function() {
 
       if (active) {
         var hash = location.hash;
-        if (hash)
-          this.searchField.value = unescape(hash.slice(1));
+        if (hash) {
+          this.searchField.value =
+              decodeURIComponent(hash.slice(1).replace(/\+/g, ' '));
+        }
 
         // Move 'advanced' sections into the main settings page to allow
         // searching.
