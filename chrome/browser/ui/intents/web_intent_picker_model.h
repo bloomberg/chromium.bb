@@ -74,6 +74,14 @@ class WebIntentPickerModel {
     observer_ = observer;
   }
 
+  void set_action(const string16& action) { action_ = action; }
+
+  const string16& action() { return action_; }
+
+  void set_mimetype(const string16& mimetype) { mimetype_ = mimetype; }
+
+  const string16& mimetype() { return mimetype_; }
+
   // Add a new installed service with |title|, |url| and |disposition| to the
   // picker.
   void AddInstalledService(const string16& title,
@@ -145,6 +153,12 @@ class WebIntentPickerModel {
   // The url of the intent service that is being displayed inline, or
   // GURL::EmptyGURL() if none.
   GURL inline_disposition_url_;
+
+  // A cached copy of the action that instantiated the picker.
+  string16 action_;
+
+  // A cached copy of the mimetype that instantiated the picker.
+  string16 mimetype_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };
