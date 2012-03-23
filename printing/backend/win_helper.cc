@@ -359,9 +359,11 @@ std::string GetDriverInfo(HANDLE printer) {
     scoped_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(
             FilePath(driver->pDriverPath)));
-    info[1] = WideToUTF8(version_info->file_version());
-    info[2] = WideToUTF8(version_info->product_name());
-    info[3] = WideToUTF8(version_info->product_version());
+    if (version_info.get()) {
+      info[1] = WideToUTF8(version_info->file_version());
+      info[2] = WideToUTF8(version_info->product_name());
+      info[3] = WideToUTF8(version_info->product_version());
+    }
   }
 
   for (size_t i = 0; i < arraysize(info); ++i) {
