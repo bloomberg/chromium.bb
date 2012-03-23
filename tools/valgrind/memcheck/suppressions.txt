@@ -5786,14 +5786,6 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
 }
-{
-   bug_119727
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP16InfoBarTabHelper
-   ...
-   fun:_ZN51GeolocationPermissionContextTests_TabDestroyed_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
