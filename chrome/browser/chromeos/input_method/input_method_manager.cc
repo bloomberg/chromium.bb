@@ -78,7 +78,7 @@ class InputMethodManagerImpl : public InputMethodManager,
         should_hide_properties_(true),
         should_launch_ime_(false),
         ime_connected_(false),
-        enable_auto_ime_shutdown_(true),
+        enable_auto_ime_shutdown_(false),  // workaround for crosbug.com/27051.
         shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle),
         util_(whitelist_.GetSupportedInputMethods()),
@@ -355,6 +355,11 @@ class InputMethodManagerImpl : public InputMethodManager,
                   id);
     if (ix != active_input_method_ids_.end()) {
       active_input_method_ids_.erase(ix);
+      // TODO(yusukes): this is a workaround for crosbug.com/27051. Uncomment
+      // this when the bug is fixed.
+      if (!active_input_method_ids_.empty()) {
+        ChangeInputMethod(active_input_method_ids_[0]);
+      }
     }
     extra_input_method_ids_.erase(id);
 
@@ -1179,7 +1184,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   void SetEnableAutoImeShutdown(bool enable) {
-    enable_auto_ime_shutdown_ = enable;
+    // TODO(yusukes): this is a workaround for crosbug.com/27051. Uncommen this
+    // when the bug is fixed.
+
+    // enable_auto_ime_shutdown_ = enable;
   }
 
   // content::NotificationObserver implementation:
