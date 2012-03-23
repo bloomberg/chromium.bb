@@ -712,6 +712,7 @@
         'ext/platform_canvas.h',
         'ext/platform_canvas_linux.cc',
         'ext/platform_canvas_mac.cc',
+        'ext/platform_canvas_skia.cc',
         'ext/platform_canvas_win.cc',
         'ext/platform_device.cc',
         'ext/platform_device.h',
@@ -854,6 +855,15 @@
             ['include', 'ext/platform_device_linux\\.cc$'],
             ['include', 'ext/platform_canvas_linux\\.cc$'],
           ],
+        }],
+        [ 'use_aura == 1 and use_canvas_skia == 1', {
+          'sources/': [
+            ['exclude', 'ext/platform_canvas_mac\\.cc$'],
+            ['exclude', 'ext/platform_canvas_linux\\.cc$'],
+            ['exclude', 'ext/platform_canvas_win\\.cc$'],
+          ],
+        }, { # use_aura == 0 and use_canvas_skia == 1
+          'sources/': [ ['exclude', 'ext/platform_canvas_skia\\.cc$'] ],
         }],
         [ 'toolkit_uses_gtk == 1', {
           'dependencies': [
