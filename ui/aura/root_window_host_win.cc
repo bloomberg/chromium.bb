@@ -186,8 +186,8 @@ void RootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   RECT window_rect;
   window_rect.left = bounds.x();
   window_rect.top = bounds.y();
-  window_rect.right = bounds.right() ;
-  window_rect.bottom = bounds.bottom();
+  window_rect.right = bounds.width();
+  window_rect.bottom = bounds.height();
   AdjustWindowRectEx(&window_rect,
                      GetWindowLong(hwnd(), GWL_STYLE),
                      FALSE,
@@ -260,10 +260,6 @@ void RootWindowHostWin::MoveCursorTo(const gfx::Point& location) {
   POINT pt;
   ClientToScreen(hwnd(), &pt);
   SetCursorPos(pt.x, pt.y);
-}
-
-void RootWindowHostWin::SetFocusWhenShown(bool focus_when_shown) {
-  NOTIMPLEMENTED();
 }
 
 void RootWindowHostWin::PostNativeEvent(const base::NativeEvent& native_event) {

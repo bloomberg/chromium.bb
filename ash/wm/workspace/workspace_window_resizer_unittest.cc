@@ -50,8 +50,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
-    root->SetHostSize(gfx::Size(800, kRootHeight));
-
+    root->SetBounds(gfx::Rect(0, 0, 800, kRootHeight));
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(kRootHeight, root_bounds.height());
     Shell::GetInstance()->SetMonitorWorkAreaInsets(root, gfx::Insets());
@@ -120,12 +119,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
 };
-
-// TODO(oshima): Disabling these tests because these tests
-// depends on the window to be specific size, but bots doesn't
-// have enough space and the actual window gets smaller, which
-// causing mismatch.
-#if !defined(OS_WIN)
 
 // Assertions around attached window resize dragging from the right with 2
 // windows.
@@ -335,13 +328,9 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
-// TODO(oshima): Host window doesn't get a resize event after
-// SetHostSize on Windows trybot, which gives wrong work/monitor area.
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
-  root->SetHostSize(gfx::Size(600, 800));
-  LOG(ERROR) << "=== Calling OnHostResized, 600x800";
-
+  root->SetBounds(gfx::Rect(0, 0, 600, 800));
   Shell::GetInstance()->SetMonitorWorkAreaInsets(root, gfx::Insets());
 
   window_->SetBounds(gfx::Rect( 300, 100, 300, 200));
@@ -567,7 +556,6 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   EXPECT_EQ("96,0 320x160", window_->bounds().ToString());
   // No need to test dragging < 0 as we force that to 0.
 }
-#endif
 
 }  // namespace
 }  // namespace test

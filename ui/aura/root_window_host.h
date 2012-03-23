@@ -79,9 +79,6 @@ class RootWindowHost {
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) = 0;
 
-  // Sets if the window should be focused when shown.
-  virtual void SetFocusWhenShown(bool focus_when_shown) = 0;
-
   // Posts |native_event| to the platform's event queue.
 #if !defined(OS_MACOSX)
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;

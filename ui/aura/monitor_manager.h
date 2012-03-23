@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
@@ -28,8 +27,6 @@ class Window;
 class MonitorObserver {
  public:
   virtual void OnMonitorBoundsChanged(const Monitor* monitor) = 0;
-  virtual void OnMonitorAdded(Monitor* new_monitor) = 0;
-  virtual void OnMonitorRemoved(const Monitor* old_monitor) = 0;
 };
 
 // MonitorManager creates, deletes and updates Monitor objects when
@@ -62,11 +59,9 @@ class AURA_EXPORT MonitorManager {
   void AddObserver(MonitorObserver* observer);
   void RemoveObserver(MonitorObserver* observer);
 
-  // Called when monitor configuration has changed. The new monitor
-  // configurations is passed as a vector of Monitor object, which
-  // contains each monitor's new infomration.
-  virtual void OnNativeMonitorsChanged(
-      const std::vector<const Monitor*>& monitors) = 0;
+  // Called when native window's monitor size has changed.
+  // TODO(oshima): multiple monitor support.
+  virtual void OnNativeMonitorResized(const gfx::Size& size) = 0;
 
   // Create a root window for given |monitor|.
   virtual RootWindow* CreateRootWindowForMonitor(Monitor* monitor) = 0;
@@ -80,7 +75,7 @@ class AURA_EXPORT MonitorManager {
   virtual  const Monitor* GetMonitorNearestPoint(
       const gfx::Point& point) const = 0;
 
-  // Returns the monitor at |index|. The monitor at 0 is considered
+  // Returns the monitor at |index|. The monitor at 0 is consiered
   // "primary".
   virtual Monitor* GetMonitorAt(size_t index) = 0;
 
@@ -89,8 +84,6 @@ class AURA_EXPORT MonitorManager {
  protected:
   // Calls observers' OnMonitorBoundsChanged methods.
   void NotifyBoundsChanged(const Monitor* monitor);
-  void NotifyMonitorAdded(Monitor* monitor);
-  void NotifyMonitorRemoved(const Monitor* monitor);
 
  private:
   // If set before the RootWindow is created, the host window will cover the

@@ -400,10 +400,6 @@ void RootWindow::ReleaseMouseMoves() {
   }
 }
 
-void RootWindow::SetFocusWhenShown(bool focused) {
-  host_->SetFocusWhenShown(focused);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, Window overrides:
 

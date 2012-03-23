@@ -27,20 +27,19 @@ static const int kDefaultHostWindowHeight = 1024;
 }
 
 SingleMonitorManager::SingleMonitorManager()
-    : root_window_(NULL) {
+    : root_window_(NULL),
+      monitor_(new Monitor()) {
   Init();
 }
 
 SingleMonitorManager::~SingleMonitorManager() {
-  // All monitors must have been deleted when monitor manager is deleted.
-  CHECK(!root_window_);
+  if (root_window_)
+    root_window_->RemoveObserver(this);
 }
 
-void SingleMonitorManager::OnNativeMonitorsChanged(
-    const std::vector<const Monitor*>& monitors) {
-  DCHECK(monitors.size() > 0);
+void SingleMonitorManager::OnNativeMonitorResized(const gfx::Size& size) {
   if (use_fullscreen_host_window()) {
-    monitor_->set_size(monitors[0]->bounds().size());
+    monitor_->set_size(size);
     NotifyBoundsChanged(monitor_.get());
   }
 }

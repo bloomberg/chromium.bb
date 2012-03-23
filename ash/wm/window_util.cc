@@ -39,9 +39,9 @@ bool IsActiveWindow(aura::Window* window) {
   DCHECK(window);
   if (!window->GetRootWindow())
     return false;
-  aura::client::ActivationClient* client =
-      aura::client::GetActivationClient(window->GetRootWindow());
-  return client && client->GetActiveWindow() == window;
+
+  return aura::client::GetActivationClient(window->GetRootWindow())->
+      GetActiveWindow() == window;
 }
 
 aura::Window* GetActiveWindow() {
