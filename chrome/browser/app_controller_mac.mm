@@ -1214,29 +1214,12 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
-    if (!aboutController_) {
-      aboutController_ =
-          [[AboutWindowController alloc] initWithProfile:[self lastProfile]];
-
-      // Watch for a notification of when it goes away so that we can destroy
-      // the controller.
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(aboutWindowClosed:)
-                 name:NSWindowWillCloseNotification
-               object:[aboutController_ window]];
-    }
-
-    [aboutController_ showWindow:self];
+  if (Browser* browser = ActivateBrowser([self lastProfile])) {
+    // Show about tab in the active browser window.
+    browser->OpenAboutChromeDialog();
   } else {
-    if (Browser* browser = ActivateBrowser([self lastProfile])) {
-      // Show about tab in the active browser window.
-      browser->OpenAboutChromeDialog();
-    } else {
-      // No browser window, so create one for the about tab.
-      Browser::OpenAboutWindow([self lastProfile]);
-    }
+    // No browser window, so create one for the about tab.
+    Browser::OpenAboutWindow([self lastProfile]);
   }
 }
 

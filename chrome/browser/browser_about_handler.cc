@@ -103,9 +103,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  bool enableUberPage = !cl->HasSwitch(switches::kDisableUberPage);
-
   std::string host(url->host());
   std::string path;
   // Replace about with chrome-urls.
@@ -122,29 +119,20 @@ bool WillHandleBrowserAboutURL(GURL* url,
     host = chrome::kChromeUISyncInternalsHost;
   // Redirect chrome://extensions.
   } else if (host == chrome::kChromeUIExtensionsHost) {
-    if (enableUberPage) {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUIExtensionsHost + url->path();
-    } else {
-      host = chrome::kChromeUISettingsHost;
-      path = chrome::kExtensionsSubPage;
-    }
+    host = chrome::kChromeUIUberHost;
+    path = chrome::kChromeUIExtensionsHost + url->path();
   } else if (host == chrome::kChromeUIHistoryHost) {
-    if (enableUberPage) {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUIHistoryHost + url->path();
-    } else {
-      host = chrome::kChromeUIHistoryFrameHost;
-    }
+    host = chrome::kChromeUIUberHost;
+    path = chrome::kChromeUIHistoryHost + url->path();
   // Redirect chrome://settings/extensions.
   // TODO(csilv): Fix all code paths for this page once Uber page is enabled
   // permanently.
-  } else if (enableUberPage && host == chrome::kChromeUISettingsHost &&
+  } else if (host == chrome::kChromeUISettingsHost &&
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
   // Redirect chrome://settings
-  } else if (enableUberPage && host == chrome::kChromeUISettingsHost) {
+  } else if (host == chrome::kChromeUISettingsHost) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUISettingsHost + url->path();
   }

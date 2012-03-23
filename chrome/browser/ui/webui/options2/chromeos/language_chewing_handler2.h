@@ -18,7 +18,7 @@ namespace chromeos {
 namespace options2 {
 
 // Chewing options page UI handler.
-class LanguageChewingHandler : public OptionsPageUIHandler {
+class LanguageChewingHandler : public ::options2::OptionsPageUIHandler {
  public:
   LanguageChewingHandler();
   virtual ~LanguageChewingHandler();

@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/options2/chromeos/user_image_source2.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -170,7 +170,8 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 
   // Set up the chrome://userimage/ source.
-  UserImageSource* user_image_source = new UserImageSource();
+  options2::UserImageSource* user_image_source =
+      new options2::UserImageSource();
   profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
 }
 

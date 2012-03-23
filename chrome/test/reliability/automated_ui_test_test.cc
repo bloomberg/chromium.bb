@@ -428,6 +428,8 @@ TEST_F(AutomatedUITestBase, MAYBE_ShowHistory) {
   ASSERT_TRUE(ShowHistory());
   GURL url;
   ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
-  // TODO(csilv): Update this for uber page. http://crbug.com/111579.
-  ASSERT_EQ(GURL(chrome::kChromeUIHistoryFrameURL), url);
+  ASSERT_EQ(
+      GURL(std::string(chrome::kChromeUIUberURL) +
+          chrome::kChromeUIHistoryHost),
+      url);
 }

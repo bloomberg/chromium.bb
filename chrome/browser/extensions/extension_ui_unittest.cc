@@ -5,7 +5,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/browser/ui/webui/options/extension_settings_handler.h"
+#include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +42,6 @@ namespace {
     return ExtensionSettingsHandler::CreateExtensionDetailValue(
         NULL, extension.get(), pages, NULL, true, false);
   }
-
 
   static void CompareExpectedAndActualOutput(
       const FilePath& extension_path,

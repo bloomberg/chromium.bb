@@ -16,7 +16,7 @@ namespace options2 {
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
 // (chrome/browser/webui/advanced_options_handler.cc).
-class StatsOptionsHandler : public OptionsPageUIHandler {
+class StatsOptionsHandler : public ::options2::OptionsPageUIHandler {
  public:
   StatsOptionsHandler();
 

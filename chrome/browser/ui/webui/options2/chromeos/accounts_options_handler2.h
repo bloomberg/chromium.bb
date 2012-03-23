@@ -13,7 +13,7 @@ namespace chromeos {
 namespace options2 {
 
 // ChromeOS accounts options page handler.
-class AccountsOptionsHandler : public OptionsPageUIHandler {
+class AccountsOptionsHandler : public ::options2::OptionsPageUIHandler {
  public:
   AccountsOptionsHandler();
   virtual ~AccountsOptionsHandler();

@@ -17,7 +17,7 @@ namespace chromeos {
 namespace options2 {
 
 // Mozc options page UI handler.
-class LanguageMozcHandler : public OptionsPageUIHandler {
+class LanguageMozcHandler : public ::options2::OptionsPageUIHandler {
  public:
   LanguageMozcHandler();
   virtual ~LanguageMozcHandler();

@@ -228,14 +228,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
   // These pages are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
+  // Android doesn't use the Options pages.
   if (url.host() == chrome::kChromeUIFeedbackHost)
     return &NewWebUI<FeedbackUI>;
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options2::OptionsUI>;
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewWebUI<OptionsUI>;
+  // Android doesn't support print/print-preview.
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
           prefs::kPrintPreviewDisabled)) {
@@ -480,14 +480,11 @@ RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return FlashUI::GetFaviconResourceBytes();
 
 #if !defined(OS_ANDROID)
-  // Android uses the native download manager
+  // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();
 
-  // Android doesn't use the Options/Options2 pages
-  if (page_url.host() == chrome::kChromeUISettingsHost)
-    return OptionsUI::GetFaviconResourceBytes();
-
+  // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
     return options2::OptionsUI::GetFaviconResourceBytes();
 #endif

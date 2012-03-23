@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
+#include "chrome/browser/ui/webui/options2/options_sync_setup_handler.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -30,7 +30,7 @@ static const char kTestUser[] = "chrome.p13n.test@gmail.com";
 
 typedef GoogleServiceAuthError AuthError;
 
-class MockSyncSetupHandler : public OptionsSyncSetupHandler {
+class MockSyncSetupHandler : public options2::OptionsSyncSetupHandler {
  public:
   explicit MockSyncSetupHandler(Profile* profile)
       : OptionsSyncSetupHandler(NULL),

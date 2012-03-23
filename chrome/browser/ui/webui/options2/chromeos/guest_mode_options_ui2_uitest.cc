@@ -12,7 +12,7 @@
 namespace {
 
 // Same as OptionsUITest but launches with Guest mode command line switches.
-class GuestModeOptionsUITest : public OptionsUITest {
+class GuestModeOptionsUITest : public options2::OptionsUITest {
  public:
   GuestModeOptionsUITest() : OptionsUITest() {
     launch_arguments_.AppendSwitch(switches::kGuestSession);
@@ -30,7 +30,6 @@ TEST_F(GuestModeOptionsUITest, LoadOptionsByURL) {
   NavigateToSettings(tab);
   VerifyTitle(tab);
   VerifyNavbar(tab);
-  VerifySections(tab);
 }
 
 }  // namespace

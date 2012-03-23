@@ -17,7 +17,7 @@ namespace chromeos {
 namespace options2 {
 
 // Pinyin options page UI handler.
-class LanguagePinyinHandler : public OptionsPageUIHandler {
+class LanguagePinyinHandler : public ::options2::OptionsPageUIHandler {
  public:
   LanguagePinyinHandler();
   virtual ~LanguagePinyinHandler();

@@ -526,7 +526,7 @@ TEST_F(AutomationProxyTest, MAYBE_AcceleratorExtensions) {
 
   ASSERT_TRUE(window->RunCommand(IDC_MANAGE_EXTENSIONS));
 
-  EXPECT_EQ("chrome://settings/extensions", GetActiveTabURL().spec());
+  EXPECT_EQ("chrome://chrome/extensions", GetActiveTabURL().spec());
 }
 
 TEST_F(AutomationProxyTest, AcceleratorHistory) {
@@ -535,8 +535,7 @@ TEST_F(AutomationProxyTest, AcceleratorHistory) {
 
   ASSERT_TRUE(window->RunCommand(IDC_SHOW_HISTORY));
 
-  // We expect the RunCommand above to wait until the title is updated.
-  EXPECT_EQ(L"History", GetActiveTabTitle());
+  EXPECT_EQ("chrome://chrome/history", GetActiveTabURL().spec());
 }
 
 class AutomationProxyTest4 : public UITest {

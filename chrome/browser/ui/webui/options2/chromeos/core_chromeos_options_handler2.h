@@ -21,7 +21,6 @@ class CoreChromeOSOptionsHandler : public ::options2::CoreOptionsHandler {
   CoreChromeOSOptionsHandler();
   virtual ~CoreChromeOSOptionsHandler();
 
- protected:
   // ::CoreOptionsHandler overrides
   virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;

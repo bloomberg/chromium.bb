@@ -253,7 +253,6 @@ extern const char kSyncSetupForceLoginSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
-extern const char kSystemOptionsSubPage[];
 extern const char kBluetoothAddDeviceSubPage[];
 #endif
 

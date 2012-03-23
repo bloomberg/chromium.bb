@@ -21,7 +21,7 @@ namespace chromeos {
 namespace options2 {
 
 // ChromeOS user image options page UI handler.
-class ChangePictureOptionsHandler : public OptionsPageUIHandler,
+class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
                                     public SelectFileDialog::Listener,
                                     public TakePhotoDialog::Delegate {
  public:

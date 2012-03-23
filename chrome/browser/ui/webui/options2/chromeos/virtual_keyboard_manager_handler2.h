@@ -27,7 +27,7 @@ class VirtualKeyboard;
 namespace options2 {
 
 // A class which provides information to virtual_keyboard.js.
-class VirtualKeyboardManagerHandler : public OptionsPageUIHandler {
+class VirtualKeyboardManagerHandler : public ::options2::OptionsPageUIHandler {
  public:
   VirtualKeyboardManagerHandler();
   virtual ~VirtualKeyboardManagerHandler();

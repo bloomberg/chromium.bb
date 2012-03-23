@@ -54,7 +54,8 @@ typedef testing::Test LanguageOptionsHandlerTest;
 TEST_F(LanguageOptionsHandlerTest, GetInputMethodList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
-      chromeos::CrosLanguageOptionsHandler::GetInputMethodList(descriptors));
+      chromeos::options2::CrosLanguageOptionsHandler::GetInputMethodList(
+          descriptors));
   ASSERT_EQ(4U, list->GetSize());
 
   DictionaryValue* entry = NULL;
@@ -108,7 +109,8 @@ TEST_F(LanguageOptionsHandlerTest, GetInputMethodList) {
 TEST_F(LanguageOptionsHandlerTest, GetLanguageList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
-      chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));
+      chromeos::options2::CrosLanguageOptionsHandler::GetLanguageList(
+          descriptors));
   ASSERT_EQ(8U, list->GetSize());
 
   DictionaryValue* entry = NULL;
@@ -193,7 +195,7 @@ TEST_F(LanguageOptionsHandlerTest, GetLanguageList) {
 #if !defined(OS_MACOSX)
 TEST_F(LanguageOptionsHandlerTest, GetUILanguageCodeSet) {
   scoped_ptr<DictionaryValue> dictionary(
-      LanguageOptionsHandler::GetUILanguageCodeSet());
+      options2::LanguageOptionsHandler::GetUILanguageCodeSet());
   EXPECT_TRUE(dictionary->HasKey("en-US"));
   // Note that we don't test a false case, as such an expectation will
   // fail when we add support for the language.
@@ -203,6 +205,6 @@ TEST_F(LanguageOptionsHandlerTest, GetUILanguageCodeSet) {
 
 TEST_F(LanguageOptionsHandlerTest, GetSpellCheckLanguageCodeSet) {
   scoped_ptr<DictionaryValue> dictionary(
-      LanguageOptionsHandler::GetSpellCheckLanguageCodeSet());
+      options2::LanguageOptionsHandler::GetSpellCheckLanguageCodeSet());
   EXPECT_TRUE(dictionary->HasKey("en-US"));
 }

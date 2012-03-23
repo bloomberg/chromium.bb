@@ -18,7 +18,7 @@ namespace chromeos {
 namespace options2 {
 
 // ChromeOS user image options page UI handler.
-class SetWallpaperOptionsHandler : public OptionsPageUIHandler{
+class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler{
  public:
   SetWallpaperOptionsHandler();
   virtual ~SetWallpaperOptionsHandler();

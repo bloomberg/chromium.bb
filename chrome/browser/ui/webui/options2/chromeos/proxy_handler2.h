@@ -12,7 +12,7 @@ namespace chromeos {
 namespace options2 {
 
 // ChromeOS proxy options page UI handler.
-class ProxyHandler : public OptionsPageUIHandler {
+class ProxyHandler : public ::options2::OptionsPageUIHandler {
  public:
   explicit ProxyHandler();
   virtual ~ProxyHandler();

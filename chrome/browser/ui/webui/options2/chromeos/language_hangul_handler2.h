@@ -18,7 +18,7 @@ namespace chromeos {
 namespace options2 {
 
 // Hangul options page UI handler.
-class LanguageHangulHandler : public OptionsPageUIHandler {
+class LanguageHangulHandler : public ::options2::OptionsPageUIHandler {
  public:
   LanguageHangulHandler();
   virtual ~LanguageHangulHandler();

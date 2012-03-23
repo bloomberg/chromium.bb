@@ -35,26 +35,19 @@ GURL GetGoogleURL() {
 }
 
 GURL GetSettingsURL() {
-  return GURL(chrome::kChromeUISettingsURL);
+  return GURL(chrome::kChromeUIUberURL).Resolve(
+      chrome::kChromeUISettingsHost + std::string("/"));
 }
 
-GURL GetSettingsAdvancedURL() {
-  return GURL(chrome::kChromeUISettingsURL).Resolve(
-              chrome::kAdvancedOptionsSubPage);
+GURL GetContentSettingsURL() {
+  return GetSettingsURL().Resolve(chrome::kContentSettingsExceptionsSubPage);
 }
 
-GURL GetSettingsBrowserURL() {
-  return GURL(chrome::kChromeUISettingsURL).Resolve(
-              chrome::kBrowserOptionsSubPage);
-}
-
-GURL GetSettingsPersonalURL() {
-  return GURL(chrome::kChromeUISettingsURL).Resolve(
-              chrome::kPersonalOptionsSubPage);
+GURL GetClearBrowsingDataURL() {
+  return GetSettingsURL().Resolve(chrome::kClearBrowserDataSubPage);
 }
 
 } // namespace
-
 
 browser::NavigateParams BrowserNavigatorTest::MakeNavigateParams() const {
   return MakeNavigateParams(browser());
@@ -768,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate to a new singleton tab with a sub-page.
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
-  p.url = GetSettingsAdvancedURL();
+  p.url = GetContentSettingsURL();
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
@@ -778,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(2, browser()->active_index());
-  EXPECT_EQ(GetSettingsAdvancedURL(),
+  EXPECT_EQ(GetContentSettingsURL(),
             browser()->GetSelectedWebContents()->GetURL());
 }
 
@@ -801,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
-  p.url = GetSettingsAdvancedURL();
+  p.url = GetContentSettingsURL();
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
@@ -811,7 +804,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
-  EXPECT_EQ(GetSettingsAdvancedURL(),
+  EXPECT_EQ(GetContentSettingsURL(),
             browser()->GetSelectedWebContents()->GetURL());
 }
 
@@ -820,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
-  GURL singleton_url1(GetSettingsAdvancedURL());
+  GURL singleton_url1(GetContentSettingsURL());
   browser()->AddSelectedTabWithURL(
       singleton_url1, content::PAGE_TRANSITION_LINK);
   browser()->AddSelectedTabWithURL(
@@ -834,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
-  p.url = GetSettingsPersonalURL();
+  p.url = GetClearBrowsingDataURL();
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
   browser::Navigate(&p);
@@ -844,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), p.browser);
   EXPECT_EQ(3, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
-  EXPECT_EQ(GetSettingsPersonalURL(),
+  EXPECT_EQ(GetClearBrowsingDataURL(),
             browser()->GetSelectedWebContents()->GetURL());
 }
 
@@ -853,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path).
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath2) {
-  GURL singleton_url1(GetSettingsAdvancedURL());
+  GURL singleton_url1(GetContentSettingsURL());
   browser()->AddSelectedTabWithURL(
       singleton_url1, content::PAGE_TRANSITION_LINK);
   browser()->AddSelectedTabWithURL(
@@ -867,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Navigate to singleton_url1.
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
-  p.url = GetSettingsPersonalURL();
+  p.url = GetClearBrowsingDataURL();
   p.window_action = browser::NavigateParams::SHOW_WINDOW;
   p.path_behavior = browser::NavigateParams::IGNORE_AND_STAY_PUT;
   browser::Navigate(&p);
@@ -885,7 +878,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // selected tab is a match but has a different path.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
-  GURL singleton_url_current(GetSettingsAdvancedURL());
+  GURL singleton_url_current(GetContentSettingsURL());
   browser()->AddSelectedTabWithURL(
       singleton_url_current, content::PAGE_TRANSITION_LINK);
 
@@ -895,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Navigate to a different settings path.
-  GURL singleton_url_target(GetSettingsPersonalURL());
+  GURL singleton_url_target(GetClearBrowsingDataURL());
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = SINGLETON_TAB;
   p.url = singleton_url_target;
@@ -943,16 +936,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that the settings page isn't opened in the incognito
 // window.
+// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_Settings_UseNonIncognitoWindow) {
+                       DISABLED_Disposition_Settings_UseNonIncognitoWindow) {
   RunUseNonIncognitoWindowTest(GetSettingsURL());
 }
 
 // This test verifies that the settings page isn't opened in the incognito
 // window from a non-incognito window (bookmark open-in-incognito trigger).
+// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_Settings_UseNonIncognitoWindowForBookmark) {
-  browser::NavigateParams params(browser(), GURL("chrome://settings"),
+    DISABLED_Disposition_Settings_UseNonIncognitoWindowForBookmark) {
+  browser::NavigateParams params(browser(), GetSettingsURL(),
                                  content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = OFF_THE_RECORD;
   {
@@ -964,16 +959,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
 
   EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_EQ(GURL("chrome://settings"),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 // Settings page is expected to always open in normal mode regardless
 // of whether the user is trying to open it in incognito mode or not.
 // This test verifies that if incognito mode is forced (by policy), settings
 // page doesn't open at all.
+// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_Settings_DoNothingIfIncognitoIsForced) {
+    DISABLED_Disposition_Settings_DoNothingIfIncognitoIsForced) {
   RunDoNothingIfIncognitoIsForcedTest(GetSettingsURL());
 }
 
@@ -1012,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // This test makes sure a crashed singleton tab reloads from a new navigation.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateToCrashedSingletonTab) {
-  GURL singleton_url(GetSettingsAdvancedURL());
+  GURL singleton_url(GetContentSettingsURL());
   TabContentsWrapper* wrapper = browser()->AddSelectedTabWithURL(
       singleton_url, content::PAGE_TRANSITION_LINK);
   WebContents* web_contents = wrapper->web_contents();
@@ -1047,8 +1042,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1065,8 +1059,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1086,8 +1079,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1106,8 +1098,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1132,8 +1123,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+  EXPECT_EQ(GetSettingsURL(), browser()->GetSelectedWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1142,11 +1132,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+    browser()->OpenClearBrowsingDataDialog();
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(GetSettingsPersonalURL(),
+  EXPECT_EQ(GetClearBrowsingDataURL(),
             browser()->GetSelectedWebContents()->GetURL());
 
   browser()->NewTab();
@@ -1156,11 +1146,11 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    browser()->ShowOptionsTab(chrome::kPersonalOptionsSubPage);
+    browser()->OpenClearBrowsingDataDialog();
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(GetSettingsPersonalURL(),
+  EXPECT_EQ(GetClearBrowsingDataURL(),
             browser()->GetSelectedWebContents()->GetURL());
 }
 
@@ -1191,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GetSettingsURL(),
-            browser()->GetSelectedWebContents()->GetURL().GetOrigin());
+            browser()->GetSelectedWebContents()->GetURL());
 }
 
 // Tests that when a new tab is opened from the omnibox, the focus is moved from
@@ -1232,8 +1222,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                             VIEW_ID_LOCATION_BAR));
 }
 
+// TODO(csilv): Update this for uber page. http://crbug.com/111579.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NavigateFromDefaultToHistoryInSameTab) {
+                       DISABLED_NavigateFromDefaultToHistoryInSameTab) {
   {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -1242,7 +1233,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  // TODO(csilv): Update this for uber page. http://crbug.com/111579.
   EXPECT_EQ(GURL(chrome::kChromeUIHistoryFrameURL),
             browser()->GetSelectedWebContents()->GetURL());
 }

@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
+#include "chrome/browser/ui/webui/options2/chromeos/core_chromeos_options_handler2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/proxy_handler2.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -71,8 +71,8 @@ namespace chromeos {
 
 ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      proxy_handler_(new ProxyHandler()),
-      core_handler_(new CoreChromeOSOptionsHandler()) {
+      proxy_handler_(new options2::ProxyHandler()),
+      core_handler_(new options2::CoreChromeOSOptionsHandler()) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 

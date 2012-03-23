@@ -171,8 +171,6 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
 
   // TODO(pkotwicz): Investigate if we can remove this switch.
   command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
-
-  command_line->AppendSwitch(switches::kDisableUberPage);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {

@@ -23,7 +23,7 @@ namespace chromeos {
 namespace options2 {
 
 // Handler for Bluetooth options on the system options page.
-class BluetoothOptionsHandler : public OptionsPageUIHandler,
+class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
                                 public chromeos::BluetoothAdapter::Observer,
                                 public BluetoothDevice::PairingDelegate {
  public:

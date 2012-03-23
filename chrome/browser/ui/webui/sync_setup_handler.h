@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/sync/sync_setup_flow_handler.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/options2/options_ui2.h"
 
 class LoginUIService;
 class ProfileManager;
@@ -17,7 +17,7 @@ class ProfileSyncService;
 class SigninManager;
 class SyncSetupFlow;
 
-class SyncSetupHandler : public OptionsPageUIHandler,
+class SyncSetupHandler : public options2::OptionsPageUIHandler,
                          public SyncSetupFlowHandler,
                          public SigninTracker::Observer {
  public:

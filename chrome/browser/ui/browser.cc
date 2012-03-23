@@ -134,7 +134,7 @@
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
-#include "chrome/browser/ui/webui/options/content_settings_handler.h"
+#include "chrome/browser/ui/webui/options2/content_settings_handler2.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -2346,16 +2346,11 @@ void Browser::ShowAvatarMenu() {
 
 void Browser::ShowHistoryTab() {
   content::RecordAction(UserMetricsAction("ShowHistory"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
-    ShowSingletonTabOverwritingNTP(
-        GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryFrameURL)));
-  } else {
-    browser::NavigateParams params(GetSingletonTabNavigateParams(
-        GURL(std::string(chrome::kChromeUIUberURL) +
-             chrome::kChromeUIHistoryHost)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(params);
-  }
+  browser::NavigateParams params(GetSingletonTabNavigateParams(
+      GURL(std::string(chrome::kChromeUIUberURL) +
+           chrome::kChromeUIHistoryHost)));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(params);
 }
 
 void Browser::ShowDownloadsTab() {
@@ -2374,15 +2369,11 @@ void Browser::ShowDownloadsTab() {
 
 void Browser::ShowExtensionsTab() {
   content::RecordAction(UserMetricsAction("ShowExtensions"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
-    ShowOptionsTab(chrome::kExtensionsSubPage);
-  } else {
-    browser::NavigateParams params(GetSingletonTabNavigateParams(
-        GURL(std::string(chrome::kChromeUIUberURL) +
-             chrome::kChromeUIExtensionsHost)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(params);
-  }
+  browser::NavigateParams params(GetSingletonTabNavigateParams(
+      GURL(std::string(chrome::kChromeUIUberURL) +
+           chrome::kChromeUIExtensionsHost)));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(params);
 }
 
 void Browser::ShowAboutConflictsTab() {
@@ -2406,33 +2397,26 @@ void Browser::ShowBrokenPageTab(WebContents* contents) {
 }
 
 void Browser::ShowOptionsTab(const std::string& sub_page) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
-    browser::NavigateParams params(GetSingletonTabNavigateParams(
-        GURL(chrome::kChromeUISettingsURL + sub_page)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(params);
-  } else {
-    std::string url;
-    if (sub_page == chrome::kExtensionsSubPage) {
-      url = std::string(chrome::kChromeUIUberURL) +
-          chrome::kChromeUIExtensionsHost;
+  std::string url;
+  if (sub_page == chrome::kExtensionsSubPage) {
+    url = std::string(chrome::kChromeUIUberURL) +
+        chrome::kChromeUIExtensionsHost;
 #if defined(OS_CHROMEOS)
-    } else if (sub_page.find(chrome::kInternetOptionsSubPage, 0) !=
-               std::string::npos) {
-      std::string::size_type loc = sub_page.find("?", 0);
-      std::string network_page = loc != std::string::npos ?
-          sub_page.substr(loc) : std::string();
-      url = std::string(chrome::kChromeUIUberURL) +
-          chrome::kChromeUISettingsHost + network_page;
+  } else if (sub_page.find(chrome::kInternetOptionsSubPage, 0) !=
+             std::string::npos) {
+    std::string::size_type loc = sub_page.find("?", 0);
+    std::string network_page = loc != std::string::npos ?
+        sub_page.substr(loc) : std::string();
+    url = std::string(chrome::kChromeUIUberURL) +
+        chrome::kChromeUISettingsHost + network_page;
 #endif
-    } else {
-      url = std::string(chrome::kChromeUIUberURL) +
-          chrome::kChromeUISettingsHost + '/' + sub_page;
-    }
-    browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
-    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
-    ShowSingletonTabOverwritingNTP(params);
+  } else {
+    url = std::string(chrome::kChromeUIUberURL) +
+        chrome::kChromeUISettingsHost + '/' + sub_page;
   }
+  browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
+  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(params);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
@@ -2461,22 +2445,12 @@ void Browser::OpenInstantConfirmDialog() {
 
 void Browser::OpenAboutChromeDialog() {
   content::RecordAction(UserMetricsAction("AboutChrome"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
-#if defined(OS_CHROMEOS)
-    std::string chrome_settings(chrome::kChromeUISettingsURL);
-    ShowSingletonTab(
-        GURL(chrome_settings.append(chrome::kAboutOptionsSubPage)));
-#else
-    window_->ShowAboutChromeDialog();
-#endif
-  } else {
 #if !defined(OS_WIN)
-    ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
+  ShowSingletonTab(GURL(chrome::kChromeUIUberURL));
 #else
-    // crbug.com/115123.
-    window_->ShowAboutChromeDialog();
+  // crbug.com/115123.
+  window_->ShowAboutChromeDialog();
 #endif
-  }
 }
 
 void Browser::OpenUpdateChromeDialog() {
@@ -2534,10 +2508,7 @@ void Browser::OpenAdvancedOptionsDialog() {
   // TODO(csilv): The main purpose of this method is to expose the date & time
   // settings from the clock. Simply showing the options tab not quite enough.
   content::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage))
-    ShowOptionsTab(chrome::kSystemOptionsSubPage);
-  else
-    ShowOptionsTab("");
+  ShowOptionsTab("");
 }
 
 void Browser::OpenInternetOptionsDialog() {
@@ -4083,7 +4054,8 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
 void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
   ShowOptionsTab(
       chrome::kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-      ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
+      options2::ContentSettingsHandler::ContentSettingsTypeToGroupName(
+          content_type));
 }
 
 void Browser::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
