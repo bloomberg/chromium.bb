@@ -40,8 +40,7 @@ const char kLocallyModifiedFileExtension[] = "local";
 
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
-const FilePath::CharType kGDataCachePinnedDir[] =
-    FILE_PATH_LITERAL("pinned");
+const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
 const FilePath::CharType kGDataCacheOutgoingDir[] =
     FILE_PATH_LITERAL("outgoing");
 const FilePath::CharType kGDataCachePersistentDir[] =
@@ -53,75 +52,7 @@ const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
-
-// Internal callback for GetFromCache on IO thread pool.
-typedef base::Callback<void(const std::string& resource_id,
-                            const std::string& md5,
-                            const FilePath& gdata_file_path,
-                            const gdata::GetFromCacheCallback& callback)>
-    GetFromCacheSafelyCallback;
-
-// Internal callback for any task that modifies cache status on IO thread pool,
-// e.g. StoreToCacheOnIOThreadPool and ModifyCacheStatusOnIOThreadPool, which
-// are posted by StoreToCache and Pin/Unpin respectively.
-typedef base::Callback<void(base::PlatformFileError error,
-                            const std::string& resource_id,
-                            const std::string& md5,
-                            mode_t mode_bits,
-                            const gdata::CacheOperationCallback& callback)>
-    CacheStatusModificationCallback;
-
-// Internal callback for GetCacheState on IO thread pool.
-typedef base::Callback<void(const std::string& resource_id,
-                            const std::string& md5,
-                            const gdata::GetCacheStateCallback& callback)>
-    GetCacheStateSafelyCallback;
-
-// Parameters to pass from StoreToCache on calling thread to
-// StoreToCacheOnIOThreadPool task on IO thread pool.
-struct StoreToCacheParams {
-  StoreToCacheParams(
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& source_path,
-      const gdata::CacheOperationCallback& operation_callback,
-      const FilePath& dest_path,
-      const CacheStatusModificationCallback& modification_callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
-  virtual ~StoreToCacheParams();
-
-  const std::string resource_id;
-  const std::string md5;
-  const FilePath source_path;
-  const gdata::CacheOperationCallback operation_callback;
-  const FilePath dest_path;
-  const CacheStatusModificationCallback modification_callback;
-  const scoped_refptr<base::MessageLoopProxy> relay_proxy;
-};
-
-// Parameters to pass from any method to modify cache status on calling thread
-// to ModifyCacheStatusOnIOThreadPool task on IO thread pool.
-struct ModifyCacheStatusParams {
-  ModifyCacheStatusParams(
-      const std::string& resource_id,
-      const std::string& md5,
-      const gdata::CacheOperationCallback& operation_callback,
-      gdata::GDataRootDirectory::CacheStatusFlags flags,
-      bool enable,
-      const FilePath& file_path,
-      const CacheStatusModificationCallback& modification_callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
-  virtual ~ModifyCacheStatusParams();
-
-  const std::string resource_id;
-  const std::string md5;
-  const gdata::CacheOperationCallback operation_callback;
-  const gdata::GDataRootDirectory::CacheStatusFlags flags;
-  const bool enable;
-  const FilePath file_path;
-  const CacheStatusModificationCallback modification_callback;
-  const scoped_refptr<base::MessageLoopProxy> relay_proxy;
-};
+const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
 // Converts gdata error code into file platform error code.
 base::PlatformFileError GDataToPlatformError(gdata::GDataErrorCode status) {
@@ -175,52 +106,6 @@ base::PlatformFileError SystemToPlatformError(int error) {
   }
 }
 
-//==================== StoreToCacheParams implementations ======================
-
-StoreToCacheParams::StoreToCacheParams(
-    const std::string& in_resource_id,
-    const std::string& in_md5,
-    const FilePath& in_source_path,
-    const gdata::CacheOperationCallback& in_operation_callback,
-    const FilePath& in_dest_path,
-    const CacheStatusModificationCallback& in_modification_callback,
-    scoped_refptr<base::MessageLoopProxy> in_relay_proxy)
-    : resource_id(in_resource_id),
-      md5(in_md5),
-      source_path(in_source_path),
-      operation_callback(in_operation_callback),
-      dest_path(in_dest_path),
-      modification_callback(in_modification_callback),
-      relay_proxy(in_relay_proxy) {
-}
-
-StoreToCacheParams::~StoreToCacheParams() {
-}
-
-//=================== ModifyCacheStatusParams implementations ==================
-
-ModifyCacheStatusParams::ModifyCacheStatusParams(
-    const std::string& in_resource_id,
-    const std::string& in_md5,
-    const gdata::CacheOperationCallback& in_operation_callback,
-    gdata::GDataRootDirectory::CacheStatusFlags in_flags,
-    bool in_enable,
-    const FilePath& in_file_path,
-    const CacheStatusModificationCallback& in_modification_callback,
-    scoped_refptr<base::MessageLoopProxy> in_relay_proxy)
-    : resource_id(in_resource_id),
-      md5(in_md5),
-      operation_callback(in_operation_callback),
-      flags(in_flags),
-      enable(in_enable),
-      file_path(in_file_path),
-      modification_callback(in_modification_callback),
-      relay_proxy(in_relay_proxy) {
-}
-
-ModifyCacheStatusParams::~ModifyCacheStatusParams() {
-}
-
 //================================ Helper functions ============================
 
 // Creates cache directory and its sub-directories if they don't exist.
@@ -249,219 +134,119 @@ base::PlatformFileError CreateCacheDirectories(
   return error;
 }
 
-// Modifies RWX attributes of others cateogry of cache file corresponding to
-// |resource_id| and |md5| on IO thread pool.
-// |new_mode_bits| receives the new mode bits of file if modification was
-// successful; pass NULL if not interested.
-base::PlatformFileError ModifyCacheFileMode(
-    const FilePath& path,
-    gdata::GDataRootDirectory::CacheStatusFlags flags,
-    bool enable,
-    mode_t* new_mode_bits) {
-  // Get stat of |path|.
-  struct stat64 stat_buf;
-  int rv = HANDLE_EINTR(stat64(path.value().c_str(), &stat_buf));
-
-  // Map system error to net error.
-  if (rv != 0) {
-    base::PlatformFileError error = SystemToPlatformError(errno);
-    DVLOG(1) << "Error getting file info for " << path.value()
-             << ": \"" << strerror(errno)
-             << "\", " << error;
-    return error;
+// Modifies cache state of file on IO thread pool, which involves:
+// - moving file from |source_path| to |dest_path| if they're different
+// - deleting symlink if |symlink_path| is not empty
+// - creating symlink if |symlink_path| is not empty and |create_symlink| is
+//   true.
+base::PlatformFileError ModifyCacheState(
+    const FilePath& source_path,
+    const FilePath& dest_path,
+    const FilePath& symlink_path,
+    bool create_symlink) {
+  // Move |source_path| to |dest_path| if they are different.
+  if (source_path != dest_path) {
+    if (!file_util::Move(source_path, dest_path)) {
+      base::PlatformFileError error = SystemToPlatformError(errno);
+      LOG(ERROR) << "Error moving " << source_path.value()
+                 << " to " << dest_path.value()
+                 << ": " << strerror(errno);
+      return error;
+    } else {
+      DVLOG(1) << "Moved " << source_path.value()
+               << " to " << dest_path.value();
+    }
+  } else {
+    DVLOG(1) << "No need to move file: source = destination";
   }
 
-  mode_t updated_mode_bits = stat_buf.st_mode;
+  if (symlink_path.empty())
+    return base::PLATFORM_FILE_OK;
 
-  // Modify bits accordingly.
-  if (enable)
-    updated_mode_bits |= flags;
-  else
-    updated_mode_bits &= ~flags;
+  // Remove symlink regardless of |create_symlink| because creating a link will
+  // not overwrite an existing one.
 
-  // Change mode of file attributes.
-  rv = HANDLE_EINTR(chmod(path.value().c_str(), updated_mode_bits));
+  // Cannot use file_util::Delete which uses stat64 to check if path exists
+  // before deleting it.  If path is a symlink, stat64 dereferences it to the
+  // target file, so it's in essence checking if the target file exists.
+  // Here in this function, if |symlink_path| references |source_path| and
+  // |source_path| has just been moved to |dest_path| (e.g. during unpinning),
+  // symlink will dereference to a non-existent file.  This results in stat64
+  // failing and file_util::Delete bailing out without deleting the symlink.
+  // We clearly want the symlink deleted even if it dereferences to nothing.
+  // Unfortunately, deleting the symlink before moving the files won't work for
+  // the case where move operation fails, but the symlink has already been
+  // deleted, which shouldn't happen.  An example scenario is where an existing
+  // file is stored to cache and pinned for a specific resource id and md5, then
+  // a non-existent file is stored to cache for the same resource id and md5.
+  // The 2nd store-to-cache operation fails when moving files, but the symlink
+  // created by previous pin operation has already been deleted.
+  // We definitely want to keep the pinned state of the symlink if subsequent
+  // operations fail.
+  // This problem is filed at http://crbug.com/119430.
 
-  // Map system error to net error.
-  if (rv != 0) {
-    base::PlatformFileError error = SystemToPlatformError(errno);
-    DVLOG(1) << "Error changing file mode for " << path.value()
-             << ": \"" << strerror(errno)
-             << "\", " << error;
-    return error;
+  // We try to save one file operation by not checking if link exists before
+  // deleting it, so unlink may return error if link doesn't exist, but it
+  // doesn't really matter to us.
+  bool deleted = HANDLE_EINTR(unlink(symlink_path.value().c_str())) == 0;
+  if (deleted) {
+    DVLOG(1) << "Deleted symlink " << symlink_path.value();
+  } else {
+    // Since we didn't check if symlink exists before deleting it, don't log
+    // if symlink doesn't exist.
+    if (errno != ENOENT) {
+      LOG(WARNING) << "Error deleting symlink " << symlink_path.value()
+                   << ": " << strerror(errno);
+    }
   }
 
-  if (new_mode_bits)
-    *new_mode_bits = updated_mode_bits;
+  if (!create_symlink)
+    return base::PLATFORM_FILE_OK;
+
+  // Create new symlink to |dest_path|.
+  if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
+    base::PlatformFileError error = SystemToPlatformError(errno);
+    LOG(ERROR) << "Error creating symlink " << symlink_path.value()
+               << " for " << dest_path.value()
+               << ": " << strerror(errno);
+    return error;
+  } else {
+    DVLOG(1) << "Created symlink " << symlink_path.value()
+             << " to " << dest_path.value();
+  }
 
   return base::PLATFORM_FILE_OK;
 }
 
-// Deletes stale cache versions of |resource_id|, except for |fresh_path| on io
-// thread pool.
-void DeleteStaleCacheVersions(const FilePath& fresh_path_to_keep) {
-  // Delete all stale cached versions of same resource_id in
-  // |fresh_path_to_keep|, i.e. with filenames "resource_id.*".
-
-  FilePath base_name = fresh_path_to_keep.BaseName();
-  std::string stale_filenames;
-  // FilePath::Extension returns ".", so strip it.
-  if (base_name.Extension().substr(1) != kWildCard) {
-    stale_filenames = base_name.RemoveExtension().value() +
-                      FilePath::kExtensionSeparator +
-                      kWildCard;
-  } else {
-    stale_filenames = base_name.value();
-  }
-
-  // Enumerate all files with resource_id.*.
+// Deletes all files that match |path_to_delete_pattern| except for
+// |path_to_keep| on IO thread pool.
+// If |path_to_keep| is empty, all files in |path_to_delete_pattern| are
+// deleted.
+void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
+                            const FilePath& path_to_keep) {
+  // Enumerate all files in directory of |path_to_delete_pattern| that match
+  // base name of |path_to_delete_pattern|.
+  // If a file is not |path_to_keep|, delete it.
   bool success = true;
-  file_util::FileEnumerator traversal(fresh_path_to_keep.DirName(), false,
-                                      file_util::FileEnumerator::FILES,
-                                      stale_filenames);
-  for (FilePath current = traversal.Next(); !current.empty();
-       current = traversal.Next()) {
-    // If current is |fresh_path_to_keep|, don't delete it.
-    if (current == fresh_path_to_keep)
+  file_util::FileEnumerator enumerator(
+      path_to_delete_pattern.DirName(),
+      false,  // not recursive
+      static_cast<file_util::FileEnumerator::FileType>(
+          file_util::FileEnumerator::FILES |
+          file_util::FileEnumerator::SHOW_SYM_LINKS),
+      path_to_delete_pattern.BaseName().value());
+  for (FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    // If |path_to_keep| is not empty and same as current, don't delete it.
+    if (!path_to_keep.empty() && current == path_to_keep)
       continue;
 
-    success = unlink(current.value().c_str()) == 0;
+    success = HANDLE_EINTR(unlink(current.value().c_str())) == 0;
     if (!success)
-      DVLOG(1) << "Error deleting stale " << current.value();
+      DVLOG(1) << "Error deleting " << current.value();
     else
-      DVLOG(1) << "Deleted stale " << current.value();
+      DVLOG(1) << "Deleted " << current.value();
   }
-}
-
-//========== Tasks posted from calling thread to run on IO thread pool =========
-
-// Task posted from StoreToCache to do the following on IO thread pool:
-// - moves |source_path| to |dest_path| in the cache directory.
-// - sets the appropriate file attributes
-// - deletes stale cached versions of |resource_id|.
-// Upon completion, OnStoredToCache (i.e. |modification_callback|) is invoked on
-// the thread where StoreToCache was called.
-void StoreToCacheOnIOThreadPool(const StoreToCacheParams& params) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  mode_t mode_bits = 0;
-
-  // If |source_path| and |dest_path| are different, move |source_path| to
-  // |dest_path| in cache dir.
-  if (params.source_path != params.dest_path) {
-    if (!file_util::Move(params.source_path, params.dest_path)) {
-      error = SystemToPlatformError(errno);
-      LOG(ERROR) << "Error moving " << params.source_path.value()
-                 << " to " << params.dest_path.value()
-                 << ": \"" << strerror(errno)
-                 << "\", " << error;
-    } else {
-      DVLOG(1) << "Moved " << params.source_path.value()
-               << " to " << params.dest_path.value();
-    }
-  }
-
-  if (error == base::PLATFORM_FILE_OK) {
-    // Set cache_ok bit.
-    error = ModifyCacheFileMode(params.dest_path,
-                                gdata::GDataRootDirectory::CACHE_OK,
-                                true,
-                                &mode_bits);
-
-    // Delete stale versions of resource_id.*.
-    DeleteStaleCacheVersions(params.dest_path);
-  }
-
-  // Invoke |modification_callback|.
-  params.relay_proxy->PostTask(FROM_HERE,
-                               base::Bind(params.modification_callback,
-                                          error,
-                                          params.resource_id,
-                                          params.md5,
-                                          mode_bits,
-                                          params.operation_callback));
-}
-
-// Task posted from GetFromCacheInternal to run on IO thread pool.
-// This is just a pass through to invoke the actual |safe_callback|, posted
-// solely to force synchronization of all tasks on io thread pool, specifically
-// to make sure that this task executes after InitializeCacheOnIOThreadPool.
-// It simply invokes OnGetFromCache i.e. |safe_callback|) on the thread where
-// GetFromCache was called.
-void GetFromCacheOnIOThreadPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    const FilePath& gdata_file_path,
-    const gdata::GetFromCacheCallback& operation_callback,
-    const GetFromCacheSafelyCallback& safe_callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  // Invoke |_callback|.
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(safe_callback,
-                                   resource_id,
-                                   md5,
-                                   gdata_file_path,
-                                   operation_callback));
-}
-
-// Task posted from RemoveFromCache to delete stale cache versions corresponding
-// to |resource_id| on the IO thread pool.
-// Upon completion, |callback| is invoked on the thread where RemoveFromCache
-// was called.
-void DeleteStaleCacheVersionsWithCallback(
-    const std::string& resource_id,
-    const gdata::CacheOperationCallback& callback,
-    const FilePath& files_to_delete,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  // We're already on IO thread pool, simply call the actual method.
-  DeleteStaleCacheVersions(files_to_delete);
-
-  // Invoke callback on calling thread.
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(callback,
-                                   base::PLATFORM_FILE_OK,
-                                   resource_id,
-                                   std::string()));
-}
-
-// Task posted from Pin and Unpin to modify cache status on the IO thread pool.
-// Upon completion, OnFilePinned/OnFileUnpinned (i.e. |modification_callback| is
-// invoked on the same thread where Pin/Unpin was called.
-void ModifyCacheStatusOnIOThreadPool(const ModifyCacheStatusParams& params) {
-  // Set or clear bits specified in |flags|.
-  mode_t mode_bits = 0;
-  base::PlatformFileError error = ModifyCacheFileMode(params.file_path,
-                                                      params.flags,
-                                                      params.enable,
-                                                      &mode_bits);
-
-  // Invoke |modification_callback|.
-  params.relay_proxy->PostTask(FROM_HERE,
-                               base::Bind(params.modification_callback,
-                                          error,
-                                          params.resource_id,
-                                          params.md5,
-                                          mode_bits,
-                                          params.operation_callback));
-}
-
-// Task posted from GetCacheState to run on IO thread pool.
-// This is just a pass through to invoke the actual |safe_callback|, posted
-// solely to force synchronization of all tasks on io thread pool, specifically
-// to make sure that this task executes after InitializeCacheOnIOThreadPool.
-// It simply invokes OnGetCacheState i.e. |safe_callback|) on the thread
-// where GetCacheState was called.
-void GetCacheStateOnIOThreadPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    const gdata::GetCacheStateCallback& operation_callback,
-    const GetCacheStateSafelyCallback& safe_callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  // Invoke |_callback|.
-  relay_proxy->PostTask(FROM_HERE,
-                        base::Bind(safe_callback,
-                                   resource_id,
-                                   md5,
-                                   operation_callback));
 }
 
 }  // namespace
@@ -543,7 +328,28 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
       callback(callback) {
 }
 
+
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
+}
+
+// GDataFileSystem::ModifyCacheStateParams struct implementation.
+
+GDataFileSystem::ModifyCacheStateParams::ModifyCacheStateParams(
+    const std::string& in_resource_id,
+    const std::string& in_md5,
+    const FilePath& in_source_path,
+    const CacheOperationCallback& in_final_callback,
+    const CacheOperationIntermediateCallback& in_intermediate_callback,
+    scoped_refptr<base::MessageLoopProxy> in_relay_proxy)
+    : resource_id(in_resource_id),
+      md5(in_md5),
+      source_path(in_source_path),
+      final_callback(in_final_callback),
+      intermediate_callback(in_intermediate_callback),
+      relay_proxy(in_relay_proxy) {
+}
+
+GDataFileSystem::ModifyCacheStateParams::~ModifyCacheStateParams() {
 }
 
 //=================== GetFileFromCacheParams implementation ===================
@@ -574,9 +380,10 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
                                  DocumentsServiceInterface* documents_service)
     : profile_(profile),
       documents_service_(documents_service),
-      on_cache_initialized_(new base::WaitableEvent(
-          true /* manual reset*/, false /* initially not signaled*/)),
+      on_io_completed_(new base::WaitableEvent(
+          true /* manual reset */, false /* initially not signaled */)),
       cache_initialization_started_(false),
+      in_shutdown_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -588,7 +395,7 @@ void GDataFileSystem::Initialize() {
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
   gdata_cache_path_ = gdata_cache_path_.Append(kGDataCacheVersionDir);
-  // Insert into |cache_paths_| in the order defined in enum CacheSubdir.
+  // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheMetaDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePinnedDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheOutgoingDir));
@@ -606,21 +413,30 @@ GDataFileSystem::~GDataFileSystem() {
   // Should be deleted as part of Profile on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // In the rare event that InitializeCacheOnIOThreadPool may not have
-  // completed, wait for its completion before destructing because it accesses
-  // data members.
-
+  // In case an IO task is in progress, wait for its completion before
+  // destructing because it accesses data members.
   bool need_to_wait = false;
-  {  // Lock to access cache_initialization_started_, but need to release
-     // before waiting for on_cache_initialized_ signal so that
-     // InitializeCacheOnIOThreadPool won't deadlock waiting to lock to update
-     // data members and signal on_cache_initialized_.
-     base::AutoLock lock(lock_);
-     need_to_wait = cache_initialization_started_;
+  {  // Lock to update in_shutdown_ and access cache_initialization_started_,
+     // but need to release before waiting for |on_io_completed_| signal so that
+     // IO tasks won't deadlock waiting to lock to update data members and
+     // signal on_io_completed_.
+    base::AutoLock lock(lock_);
+
+    // |in_shutdown_| flag is used to cancel in-flight operations on the
+    // sequenced IO thread pool.  We'll need to wait for the first operation to
+    // complete (there is no way to cancel this one if it's already running),
+    // but subsequent operations are canceled if this flag is set to true.
+    in_shutdown_ = true;
+
+    // Cache initialization is the very first IO task that's posted to the
+    // sequenced IO thread pool, so as long as |cache_initialization_started_|
+    // is set, there could be one IO task running and we need to wait for its
+    // completion.
+    need_to_wait = cache_initialization_started_;
   }
 
   if (need_to_wait)
-    on_cache_initialized_->Wait();
+    on_io_completed_->Wait();
 
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
@@ -1083,7 +899,7 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
   // Returns absolute path of the file if it were cached or to be cached.
   FilePath local_tmp_path = GetCacheFilePath(file_properties.resource_id,
                                              file_properties.file_md5,
-                                             CACHE_TYPE_TMP,
+                                             GDataRootDirectory::CACHE_TYPE_TMP,
                                              CACHED_FILE_FROM_SERVER);
   GetFromCache(file_properties.resource_id, file_properties.file_md5,
                base::Bind(
@@ -1270,15 +1086,15 @@ bool GDataFileSystem::GetFileInfoFromPath(
 }
 
 FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
-  return cache_paths_[CACHE_TYPE_TMP];
+  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP];
 }
 
 FilePath GDataFileSystem::GetGDataTempDownloadFolderPath() const {
-  return cache_paths_[CACHE_TYPE_TMP_DOWNLOADS];
+  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS];
 }
 
 FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
-  return cache_paths_[CACHE_TYPE_PINNED];
+  return cache_paths_[GDataRootDirectory::CACHE_TYPE_PINNED];
 }
 
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
@@ -1331,10 +1147,11 @@ void GDataFileSystem::GetCacheState(const std::string& resource_id,
   // so we shouldn't lock here.
   UnsafeInitializeCacheIfNecessary();
 
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(GetCacheStateOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetCacheStateOnIOThreadPool,
+                 base::Unretained(this),
                  resource_id,
                  md5,
                  callback,
@@ -1527,7 +1344,8 @@ void GDataFileSystem::LoadRootFeedFromCache(
     const FindFileCallback& callback) {
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(&GDataFileSystem::LoadRootFeedOnIOThreadPool,
-                 cache_paths_[CACHE_TYPE_META].Append(kLastFeedFile),
+                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+                     kLastFeedFile),
                  proxy,
                  base::Bind(&GDataFileSystem::OnLoadRootFeed,
                             weak_ptr_factory_.GetWeakPtr(),
@@ -1726,7 +1544,7 @@ void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
                                const FilePath& name) {
   BrowserThread::PostBlockingPoolSequencedTask(kGDataFileSystemToken, FROM_HERE,
       base::Bind(&GDataFileSystem::SaveFeedOnIOThreadPool,
-                 cache_paths_[CACHE_TYPE_META],
+                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META],
                  base::Passed(&feed),
                  name));
 }
@@ -1888,11 +1706,8 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
     return error;
 
   // If resource_id is not empty, remove its corresponding file from cache.
-  if (!resource_id.empty()) {
-    RemoveFromCache(resource_id,
-                    base::Bind(&GDataFileSystem::OnRemovedFromCache,
-                               weak_ptr_factory_.GetWeakPtr()));
-  }
+  if (!resource_id.empty())
+    RemoveFromCache(resource_id, CacheOperationCallback());
 
   return base::PLATFORM_FILE_OK;
 }
@@ -2164,54 +1979,25 @@ void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
 
 //===================== GDataFileSystem: Cache entry points ====================
 
-FilePath GDataFileSystem::GetCacheFilePath(const std::string& resource_id,
-                                           const std::string& md5,
-                                           CacheSubdir subdir_id,
-                                           CachedFileOrigin file_origin) {
-  DCHECK(subdir_id != CACHE_TYPE_META);
+FilePath GDataFileSystem::GetCacheFilePath(
+    const std::string& resource_id,
+    const std::string& md5,
+    GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+    CachedFileOrigin file_origin) {
+  DCHECK(sub_dir_type != GDataRootDirectory::CACHE_TYPE_META);
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
   std::string base_name = GDataFileBase::EscapeUtf8FileName(resource_id);
   if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
-    DCHECK(subdir_id == CACHE_TYPE_PERSISTENT);
+    DCHECK(sub_dir_type == GDataRootDirectory::CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
     base_name += kLocallyModifiedFileExtension;
   } else if (!md5.empty()) {
     base_name += FilePath::kExtensionSeparator;
     base_name += GDataFileBase::EscapeUtf8FileName(md5);
   }
-  return cache_paths_[subdir_id].Append(base_name);
-}
-
-void GDataFileSystem::InitializeCacheIfNecessary() {
-  // Lock to access cache_initialized_started_;
-  base::AutoLock lock(lock_);
-  UnsafeInitializeCacheIfNecessary();
-}
-
-void GDataFileSystem::StoreToCache(const std::string& resource_id,
-                                   const std::string& md5,
-                                   const FilePath& source_path,
-                                   const CacheOperationCallback& callback) {
-  InitializeCacheIfNecessary();
-
-  BrowserThread::PostBlockingPoolSequencedTask(
-      kGDataFileSystemToken,
-      FROM_HERE,
-      base::Bind(StoreToCacheOnIOThreadPool,
-                 StoreToCacheParams(
-                     resource_id,
-                     md5,
-                     source_path,
-                     callback,
-                     GetCacheFilePath(resource_id,
-                                      md5,
-                                      CACHE_TYPE_TMP,
-                                      CACHED_FILE_FROM_SERVER),
-                     base::Bind(&GDataFileSystem::OnStoredToCache,
-                                weak_ptr_factory_.GetWeakPtr()),
-                     base::MessageLoopProxy::current())));
+  return cache_paths_[sub_dir_type].Append(base_name);
 }
 
 void GDataFileSystem::GetFromCache(const std::string& resource_id,
@@ -2220,29 +2006,24 @@ void GDataFileSystem::GetFromCache(const std::string& resource_id,
   GetFromCacheInternal(resource_id, md5, FilePath(), callback);
 }
 
-void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
-                                      const CacheOperationCallback& callback) {
+void GDataFileSystem::StoreToCache(const std::string& resource_id,
+                                   const std::string& md5,
+                                   const FilePath& source_path,
+                                   const CacheOperationCallback& callback) {
   InitializeCacheIfNecessary();
 
-  // Lock to access cache map.
-  base::AutoLock lock(lock_);
-  root_->RemoveFromCacheMap(resource_id);
-
-  // Post task to delete all cache versions of resource_id.
-  // If $resource_id.* is passed to DeleteStaleCacheVersions, then all
-  // $resource_id.* will be deleted since no file will match "$resource_id.*".
-  FilePath files_to_delete = GetCacheFilePath(resource_id,
-                                              kWildCard,
-                                              CACHE_TYPE_TMP,
-                                              CACHED_FILE_FROM_SERVER);
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(DeleteStaleCacheVersionsWithCallback,
-                 resource_id,
-                 callback,
-                 files_to_delete,
-                 base::MessageLoopProxy::current()));
+      base::Bind(&GDataFileSystem::StoreToCacheOnIOThreadPool,
+                 base::Unretained(this),
+                 ModifyCacheStateParams(
+                     resource_id,
+                     md5,
+                     source_path,
+                     callback,
+                     CacheOperationIntermediateCallback(),
+                     base::MessageLoopProxy::current())));
 }
 
 void GDataFileSystem::Pin(const std::string& resource_id,
@@ -2250,20 +2031,16 @@ void GDataFileSystem::Pin(const std::string& resource_id,
                           const CacheOperationCallback& callback) {
   InitializeCacheIfNecessary();
 
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(ModifyCacheStatusOnIOThreadPool,
-                 ModifyCacheStatusParams(
+      base::Bind(&GDataFileSystem::PinOnIOThreadPool,
+                 base::Unretained(this),
+                 ModifyCacheStateParams(
                      resource_id,
                      md5,
+                     FilePath(),  // |source_path| is not used.
                      callback,
-                     GDataRootDirectory::CACHE_PINNED,
-                     true,
-                     GetCacheFilePath(resource_id,
-                                      md5,
-                                      CACHE_TYPE_TMP,
-                                      CACHED_FILE_FROM_SERVER),
                      base::Bind(&GDataFileSystem::OnFilePinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
@@ -2274,23 +2051,39 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                             const CacheOperationCallback& callback) {
   InitializeCacheIfNecessary();
 
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(ModifyCacheStatusOnIOThreadPool,
-                 ModifyCacheStatusParams(
+      base::Bind(&GDataFileSystem::UnpinOnIOThreadPool,
+                 base::Unretained(this),
+                 ModifyCacheStateParams(
                      resource_id,
                      md5,
+                     FilePath(),  // |source_path| is not used.
                      callback,
-                     GDataRootDirectory::CACHE_PINNED,
-                     false,
-                     GetCacheFilePath(resource_id,
-                                      md5,
-                                      CACHE_TYPE_TMP,
-                                      CACHED_FILE_FROM_SERVER),
                      base::Bind(&GDataFileSystem::OnFileUnpinned,
                                 weak_ptr_factory_.GetWeakPtr()),
                      base::MessageLoopProxy::current())));
+}
+
+void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
+                                      const CacheOperationCallback& callback) {
+  InitializeCacheIfNecessary();
+
+  PostBlockingPoolSequencedTask(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::RemoveFromCacheOnIOThreadPool,
+                 base::Unretained(this),
+                 resource_id,
+                 callback,
+                 base::MessageLoopProxy::current()));
+}
+
+void GDataFileSystem::InitializeCacheIfNecessary() {
+  // Lock to access cache_initialized_started_;
+  base::AutoLock lock(lock_);
+  UnsafeInitializeCacheIfNecessary();
 }
 
 //========= GDataFileSystem: Cache tasks that ran on io thread pool ============
@@ -2298,158 +2091,76 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
 void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   base::PlatformFileError error = CreateCacheDirectories(cache_paths_);
 
-  if (error != base::PLATFORM_FILE_OK) {
-    // Signal that cache initialization has completed.
-    on_cache_initialized_->Signal();
+  if (error != base::PLATFORM_FILE_OK)
     return;
-  }
 
-
-  // Scan cache directory to enumerate all files in it, retrieve their file
-  // attributes and creates corresponding entries for cache map.
+  // Scan cache persistent and tmp directories to enumerate all files and create
+  // corresponding entries for cache map.
   GDataRootDirectory::CacheMap cache_map;
-  TraverseCacheDirectory(CACHE_TYPE_PERSISTENT, &cache_map);
-  TraverseCacheDirectory(CACHE_TYPE_TMP, &cache_map);
+  ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_PERSISTENT, &cache_map);
+  ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_TMP, &cache_map);
 
-  {  // Lock to update cache map.
-    base::AutoLock lock(lock_);
-    root_->SetCacheMap(cache_map);
-  }
+  // Then scan pinned directory to update existing entries in cache map, or
+  // create new ones for symlinks to /dev/null which target nothing.
+  // Pinned directory should be scanned after the persistent directory as we'll
+  // add PINNED state to the existing files in the persistent directory per the
+  // contents of the pinned directory.
+  ScanCacheDirectory(GDataRootDirectory::CACHE_TYPE_PINNED, &cache_map);
+
+  // Lock to update cache map.
+  base::AutoLock lock(lock_);
+  root_->SetCacheMap(cache_map);
 
   // Notify the observers that cache initialization has completed.
   FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
-
-  // Signal that cache initialization has completed.
-  // This should be the last thing in this function.
-  on_cache_initialized_->Signal();
 }
 
-void GDataFileSystem::TraverseCacheDirectory(CacheSubdir subdir,
-    GDataRootDirectory::CacheMap* cache_map) {
-  file_util::FileEnumerator traversal(cache_paths_[subdir],
-                                      false,
-                                      file_util::FileEnumerator::FILES,
-                                      kWildCard);
-  for (FilePath current = traversal.Next(); !current.empty();
-       current = traversal.Next()) {
-    // Extract resource_id and md5 from filename.
-    FilePath base_name = current.BaseName();
-    // FilePath::Extension returns ".", so strip it.
-    std::string md5 = gdata::GDataFileBase::UnescapeUtf8FileName(
-        base_name.Extension().substr(1));
-    std::string resource_id = gdata::GDataFileBase::UnescapeUtf8FileName(
-        base_name.RemoveExtension().value());
-
-    // Retrieve mode bits of file.
-    file_util::FileEnumerator::FindInfo info;
-    traversal.GetFindInfo(&info);
-    mode_t mode_bits = info.stat.st_mode;
-
-    // Insert a CacheEntry for current cached file into ResourceMap.
-    gdata::GDataRootDirectory::CacheEntry* entry =
-        new gdata::GDataRootDirectory::CacheEntry(md5, mode_bits);
-    cache_map->insert(std::make_pair(resource_id, entry));
-  }
-}
-
-//=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====
-
-void GDataFileSystem::OnStoredToCache(base::PlatformFileError error,
-                                      const std::string& resource_id,
-                                      const std::string& md5,
-                                      mode_t mode_bits,
-                                      const CacheOperationCallback& callback) {
-  DVLOG(1) << "OnStoredToCache: " << error;
-
-  if (error == base::PLATFORM_FILE_OK) {
-    // Lock to update cache map.
-    base::AutoLock lock(lock_);
-    root_->UpdateCacheMap(resource_id, md5, mode_bits);
-  }
-
-  // Invoke callback.
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
-}
-
-void GDataFileSystem::OnGetFromCache(const std::string& resource_id,
-                                     const std::string& md5,
-                                     const FilePath& gdata_file_path,
-                                     const GetFromCacheCallback& callback) {
-  DVLOG(1) << "OnGetFromCache: ";
-
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath path;
-
+void GDataFileSystem::GetFromCacheOnIOThreadPool(
+    const std::string& resource_id,
+    const std::string& md5,
+    const FilePath& gdata_file_path,
+    const GetFromCacheCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   // Lock to access cache map.
   base::AutoLock lock(lock_);
-  if (root_->CacheFileExists(resource_id, md5)) {
-    path = GetCacheFilePath(resource_id,
-                            md5,
-                            CACHE_TYPE_TMP,
-                            CACHED_FILE_FROM_SERVER);
+
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FilePath cache_file_path;
+
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
+                                                               md5);
+
+  if (entry && entry->cache_state & GDataFile::CACHE_STATE_PRESENT) {
+    cache_file_path = GetCacheFilePath(resource_id,
+                                       md5,
+                                       entry->sub_dir_type,
+                                       CACHED_FILE_FROM_SERVER);
   } else {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   }
 
-  // Invoke callback.
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5, gdata_file_path, path);
+  // Invoke |callback|.
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback,
+                                   error,
+                                   resource_id,
+                                   md5,
+                                   gdata_file_path,
+                                   cache_file_path));
 }
 
-void GDataFileSystem::OnRemovedFromCache(base::PlatformFileError error,
-                                         const std::string& resource_id,
-                                         const std::string& md5) {
-  DVLOG(1) << "OnRemovedFromCache: " << error;
-}
-
-void GDataFileSystem::OnFilePinned(base::PlatformFileError error,
-                                   const std::string& resource_id,
-                                   const std::string& md5,
-                                   mode_t mode_bits,
-                                   const CacheOperationCallback& callback) {
-  OnCacheStatusModified(error, resource_id, md5, mode_bits, callback);
-  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
-}
-
-void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
-                                     const std::string& resource_id,
-                                     const std::string& md5,
-                                     mode_t mode_bits,
-                                     const CacheOperationCallback& callback) {
-  OnCacheStatusModified(error, resource_id, md5, mode_bits, callback);
-  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
-}
-
-void GDataFileSystem::OnCacheStatusModified(
-    base::PlatformFileError error,
+void GDataFileSystem::GetCacheStateOnIOThreadPool(
     const std::string& resource_id,
     const std::string& md5,
-    mode_t mode_bits,
-    const CacheOperationCallback& callback) {
-  DVLOG(1) << "OnCacheStatusModified: " << error;
-
-  if (error == base::PLATFORM_FILE_OK) {
-    // Lock to update cache map.
-    base::AutoLock lock(lock_);
-    root_->UpdateCacheMap(resource_id, md5, mode_bits);
-  }
-
-  // Invoke callback.
-  if (!callback.is_null())
-    callback.Run(error, resource_id, md5);
-}
-
-void GDataFileSystem::OnGetCacheState(const std::string& resource_id,
-                                      const std::string& md5,
-                                      const GetCacheStateCallback& callback) {
-  DVLOG(1) << "OnGetCacheState: ";
+    const GetCacheStateCallback& final_callback,
+    const GetCacheStateIntermediateCallback& intermediate_callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   int cache_state = GDataFile::CACHE_STATE_NONE;
 
-  // Lock to access resource and cache maps.
-  base::AutoLock lock(lock_);
   // Get file object for |resource_id|.
   GDataFileBase* file_base = root_->GetFileByResource(resource_id);
   GDataFile* file = NULL;
@@ -2458,12 +2169,363 @@ void GDataFileSystem::OnGetCacheState(const std::string& resource_id,
   } else {
     file = file_base->AsGDataFile();
     // Get cache state of file corresponding to |resource_id| and |md5|.
-    cache_state = root_->GetCacheState(resource_id, md5);
+    GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
+                                                                 md5);
+    if (entry)
+      cache_state = entry->cache_state;
   }
+
+  // Invoke |callback|.
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(intermediate_callback,
+                                   error,
+                                   file,
+                                   cache_state,
+                                   final_callback));
+}
+
+void GDataFileSystem::StoreToCacheOnIOThreadPool(
+    const ModifyCacheStateParams& params) {
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  FilePath dest_path;
+  FilePath symlink_path;
+  int cache_state = GDataFile::CACHE_STATE_PRESENT;
+  GDataRootDirectory::CacheSubDirectoryType sub_dir_type =
+      GDataRootDirectory::CACHE_TYPE_TMP;
+
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
+      params.resource_id, params.md5);
+
+  // If file was previously pinned, store it in persistent dir and create
+  // symlink in pinned dir.
+  if (entry) {  // File exists in cache, determines destination path.
+    cache_state |= entry->cache_state;
+    if (entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+      sub_dir_type = GDataRootDirectory::CACHE_TYPE_PERSISTENT;
+      dest_path = GetCacheFilePath(params.resource_id, params.md5, sub_dir_type,
+                                   CACHED_FILE_FROM_SERVER);
+      symlink_path = GetCacheFilePath(params.resource_id, std::string(),
+                                      GDataRootDirectory::CACHE_TYPE_PINNED,
+                                      CACHED_FILE_FROM_SERVER);
+    }
+  }
+
+  // File wasn't pinned or doesn't exist in cache, store in tmp dir.
+  if (dest_path.empty()) {
+    DCHECK_EQ(GDataRootDirectory::CACHE_TYPE_TMP, sub_dir_type);
+    dest_path = GetCacheFilePath(params.resource_id, params.md5, sub_dir_type,
+                                 CACHED_FILE_FROM_SERVER);
+  }
+
+  base::PlatformFileError error = ModifyCacheState(
+      params.source_path,
+      dest_path,
+      symlink_path,
+      !symlink_path.empty());  // create symlink
+
+  // Determine search pattern for stale filenames corrresponding to resource_id,
+  // either "<resource_id>*" or "<resource_id>.*".
+  FilePath stale_filenames_pattern;
+  if (params.md5.empty()) {
+    // No md5 means no extension, append '*' after base name, i.e.
+    // "<resource_id>*".
+    // Cannot call |dest_path|.ReplaceExtension when there's no md5 extension:
+    // if base name of |dest_path| (i.e. escaped resource_id) contains the
+    // extension separator '.', ReplaceExtension will remove it and everything
+    // after it.  The result will be nothing like the escaped resource_id.
+    stale_filenames_pattern = FilePath(dest_path.value() + kWildCard);
+  } else {
+    // Replace md5 extension with '*' i.e. "<resource_id>.*".
+    // Note that ReplaceExtension automatically prefixes the extension with the
+    // extension separator '.'.
+    stale_filenames_pattern = dest_path.ReplaceExtension(kWildCard);
+  }
+
+  // Delete files that match |stale_filenames_pattern| except for |dest_path|.
+  DeleteFilesSelectively(stale_filenames_pattern, dest_path);
+
+  if (error == base::PLATFORM_FILE_OK) {
+    // Now that file operations have completed, update cache map.
+    root_->UpdateCacheMap(params.resource_id, params.md5, sub_dir_type,
+                          cache_state);
+  }
+
+  // Invoke |final_callback|.
+  params.relay_proxy->PostTask(FROM_HERE,
+                               base::Bind(params.final_callback,
+                                          error,
+                                          params.resource_id,
+                                          params.md5));
+}
+
+void GDataFileSystem::PinOnIOThreadPool(const ModifyCacheStateParams& params) {
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  FilePath source_path;
+  FilePath dest_path;
+  FilePath symlink_path;
+  bool create_symlink = true;
+  int cache_state = GDataFile::CACHE_STATE_PINNED;
+  GDataRootDirectory::CacheSubDirectoryType sub_dir_type =
+      GDataRootDirectory::CACHE_TYPE_PERSISTENT;
+
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
+      params.resource_id, params.md5);
+
+  if (!entry) {  // Entry does not exist in cache.
+    // Set both |dest_path| and |source_path| to /dev/null, so that:
+    // 1) ModifyCacheState won't move files when |source_path| and |dest_path|
+    //    are the same.
+    // 2) symlinks to /dev/null will be picked up by GDataSyncClient to download
+    //    pinned files that don't exist in cache.
+    dest_path = FilePath(kSymLinkToDevNull);
+    source_path = dest_path;
+
+    // Set sub_dir_type to PINNED to indicate that the file doesn't exist.
+    // When the file is finally downloaded and StoreToCache called, it will be
+    // moved to persistent directory.
+    sub_dir_type = GDataRootDirectory::CACHE_TYPE_PINNED;
+  } else {  // File exists in cache, determines destination path.
+    cache_state |= entry->cache_state;
+
+    // Gets the current path of the file in cache.
+    source_path = GetCacheFilePath(params.resource_id,
+                                   params.md5,
+                                   entry->sub_dir_type,
+                                   CACHED_FILE_FROM_SERVER);
+    switch (entry->sub_dir_type) {
+      case GDataRootDirectory::CACHE_TYPE_PERSISTENT:
+        // File is already in persistent dir, set |dest_path| to |source_path|,
+        // because ModifyCacheState only moves files if source and destination
+        // are different, and we don't need to move the file in this case.
+        dest_path = source_path;
+        break;
+      case GDataRootDirectory::CACHE_TYPE_TMP:
+        // File is in tmp dir, move it to persistent dir.
+        dest_path = GetCacheFilePath(params.resource_id, params.md5,
+                                     GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+                                     CACHED_FILE_FROM_SERVER);
+        break;
+      case GDataRootDirectory::CACHE_TYPE_PINNED:
+        // File was pinned before and remain so, actual file blob still doesn't
+        // exist in cache, nothing else to do.  Simply set |dest_path| to
+        // |source_path| so no move operation will occur, and don't create
+        // symlink.
+        dest_path = source_path;
+        create_symlink = false;
+        break;
+      default:
+        NOTREACHED() <<  "Unexpected sub dir type: " << entry->sub_dir_type;
+        // Force no operation by setting |dest_path| to |source_path| and don't
+        // create symlink.
+        dest_path = source_path;
+        create_symlink = false;
+        break;
+    }
+  }
+
+  // Create symlink in pinned dir.
+  if (create_symlink) {
+    symlink_path = GetCacheFilePath(params.resource_id,
+                                    std::string(),
+                                    GDataRootDirectory::CACHE_TYPE_PINNED,
+                                    CACHED_FILE_FROM_SERVER);
+  }
+
+  base::PlatformFileError error = ModifyCacheState(source_path,
+                                                   dest_path,
+                                                   symlink_path,
+                                                   create_symlink);
+
+  if (error == base::PLATFORM_FILE_OK) {
+    // Now that file operations have completed, update cache map.
+    root_->UpdateCacheMap(params.resource_id, params.md5, sub_dir_type,
+                          cache_state);
+  }
+
+  // Invoke |intermediate_callback|.
+  params.relay_proxy->PostTask(FROM_HERE,
+                               base::Bind(params.intermediate_callback,
+                                          error,
+                                          params.resource_id,
+                                          params.md5,
+                                          params.final_callback));
+}
+
+void GDataFileSystem::UnpinOnIOThreadPool(
+    const ModifyCacheStateParams& params) {
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
+      params.resource_id, params.md5);
+
+  // Unpinning a file means its entry must exist in cache.
+  if (!entry) {
+    LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
+                 << params.resource_id
+                 << ", md5=" << params.md5;
+    // Invoke |intermediate_callback|.
+    params.relay_proxy->PostTask(FROM_HERE,
+                                 base::Bind(params.intermediate_callback,
+                                            base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                                            params.resource_id,
+                                            params.md5,
+                                            params.final_callback));
+    return;
+  }
+
+  // Entry exists in cache, determines destination path.
+
+  FilePath dest_path;
+  FilePath symlink_path;
+
+  // Gets the current path of the file in cache.
+  FilePath source_path = GetCacheFilePath(params.resource_id,
+                                          params.md5,
+                                          entry->sub_dir_type,
+                                          CACHED_FILE_FROM_SERVER);
+
+  switch (entry->sub_dir_type) {
+    case GDataRootDirectory::CACHE_TYPE_PERSISTENT:
+      // File is in persistent dir, move it to tmp dir.
+      dest_path = GetCacheFilePath(params.resource_id, params.md5,
+                                   GDataRootDirectory::CACHE_TYPE_TMP,
+                                   CACHED_FILE_FROM_SERVER);
+      break;
+    case GDataRootDirectory::CACHE_TYPE_TMP:
+      // File is already in tmp dir, set |dest_path| to |source_path|,
+      // because ModifyCacheState only moves files if source and destination
+      // are different.
+      dest_path = source_path;
+      break;
+    case GDataRootDirectory::CACHE_TYPE_PINNED:
+      // File was pinned before but actual file blob doesn't exist in cache.
+      // Set |dest_path| to |source_path| so no move operation will occur.
+      dest_path = source_path;
+      break;
+    default:
+      NOTREACHED() <<  "Unexpected sub dir type: " << entry->sub_dir_type;
+      // Force no operation by setting |dest_path| to |source_path|.
+      dest_path = source_path;
+      break;
+  }
+
+  // Get absolute path of symlink in pinned dir so as to remove it.
+  if (entry->cache_state & GDataFile::CACHE_STATE_PINNED) {
+    symlink_path = GetCacheFilePath(params.resource_id,
+                                    std::string(),
+                                    GDataRootDirectory::CACHE_TYPE_PINNED,
+                                    CACHED_FILE_FROM_SERVER);
+  }
+
+  base::PlatformFileError error = ModifyCacheState(
+      source_path,
+      dest_path,
+      symlink_path,  // This will be deleted if it exists.
+      false /* don't create symlink*/);
+
+  if (error == base::PLATFORM_FILE_OK) {
+    // Now that file operations have completed, update cache map.
+    root_->UpdateCacheMap(params.resource_id, params.md5,
+                          GDataRootDirectory::CACHE_TYPE_TMP,
+                          entry->cache_state & ~GDataFile::CACHE_STATE_PINNED);
+  }
+
+  // Invoke |intermediate_callback|.
+  params.relay_proxy->PostTask(FROM_HERE,
+                               base::Bind(params.intermediate_callback,
+                                          error,
+                                          params.resource_id,
+                                          params.md5,
+                                          params.final_callback));
+}
+
+void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
+    const std::string& resource_id,
+    const gdata::CacheOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
+  // Determine paths to delete all cache versions of |resource_id| in
+  // persistent, tmp and pinned directories.
+  std::vector<FilePath> paths_to_delete;
+
+  // For files in persistent and tmp dirs, delete files that match
+  // "<resource_id>.*".
+  paths_to_delete.push_back(GetCacheFilePath(
+      resource_id,
+      kWildCard,
+      GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+      CACHED_FILE_FROM_SERVER));
+  paths_to_delete.push_back(GetCacheFilePath(
+      resource_id,
+      kWildCard,
+      GDataRootDirectory::CACHE_TYPE_TMP,
+      CACHED_FILE_FROM_SERVER));
+
+  // For pinned files, filename is "<resource_id>" with no extension, so delete
+  // "<resource_id>".
+  paths_to_delete.push_back(GetCacheFilePath(
+      resource_id,
+      std::string(),
+      GDataRootDirectory::CACHE_TYPE_PINNED,
+      CACHED_FILE_FROM_SERVER));
+
+  for (size_t i = 0; i < paths_to_delete.size(); ++i) {
+    DeleteFilesSelectively(paths_to_delete[i],
+                           FilePath() /* don't keep any files */);
+  }
+
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  // Now that all file operations have completed, remove from cache map.
+  root_->RemoveFromCacheMap(resource_id);
+
+  // Invoke callback on calling thread.
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback,
+                                   base::PLATFORM_FILE_OK,
+                                   resource_id,
+                                   std::string()));
+}
+
+//=== GDataFileSystem: Cache callbacks for tasks that ran on io thread pool ====
+
+void GDataFileSystem::OnGetCacheState(base::PlatformFileError error,
+                                      GDataFile* file,
+                                      int cache_state,
+                                      const GetCacheStateCallback& callback) {
+  DVLOG(1) << "OnGetCacheState: " << error;
+
+  // Lock to let callback access |file| safely.
+  base::AutoLock lock(lock_);
 
   // Invoke callback.
   if (!callback.is_null())
     callback.Run(error, file, cache_state);
+}
+
+void GDataFileSystem::OnFilePinned(base::PlatformFileError error,
+                                   const std::string& resource_id,
+                                   const std::string& md5,
+                                   const CacheOperationCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(error, resource_id, md5);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
+}
+
+void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
+                                     const std::string& resource_id,
+                                     const std::string& md5,
+                                     const CacheOperationCallback& callback) {
+  if (!callback.is_null())
+    callback.Run(error, resource_id, md5);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
 }
 
 //============= GDataFileSystem: internal helper functions =====================
@@ -2480,11 +2542,68 @@ void GDataFileSystem::UnsafeInitializeCacheIfNecessary() {
 
   cache_initialization_started_ = true;
 
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::InitializeCacheOnIOThreadPool,
                  base::Unretained(this)));
+}
+
+void GDataFileSystem::ScanCacheDirectory(
+    GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+    GDataRootDirectory::CacheMap* cache_map) {
+  file_util::FileEnumerator enumerator(
+      cache_paths_[sub_dir_type],
+      false,  // not recursive
+      static_cast<file_util::FileEnumerator::FileType>(
+          file_util::FileEnumerator::FILES |
+          file_util::FileEnumerator::SHOW_SYM_LINKS),
+      kWildCard);
+  for (FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    // Extract resource_id and md5 from filename.
+    FilePath base_name = current.BaseName();
+    std::string resource_id;
+    std::string md5;
+
+    // Pinned symlinks have no extension.
+    if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED) {
+      resource_id = GDataFileBase::UnescapeUtf8FileName(base_name.value());
+    } else {
+      FilePath::StringType extension = base_name.Extension();
+      if (!extension.empty()) {
+        // FilePath::Extension returns ".", so strip it.
+        md5 = GDataFileBase::UnescapeUtf8FileName(extension.substr(1));
+      }
+      resource_id = GDataFileBase::UnescapeUtf8FileName(
+          base_name.RemoveExtension().value());
+    }
+
+    // Determine cache state.
+    int cache_state = GDataFile::CACHE_STATE_NONE;
+    // If we're scanning pinned directory and if entry already exists, just
+    // update its pinned state.
+    if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED) {
+      cache_state |= GDataFile::CACHE_STATE_PINNED;
+      GDataRootDirectory::CacheMap::iterator iter =
+          cache_map->find(resource_id);
+      if (iter != cache_map->end()) {  // Entry exists, update pinned state.
+        iter->second->cache_state |= GDataFile::CACHE_STATE_PINNED;
+        continue;
+      }
+      // Entry doesn't exist, this is a special symlink that refers to
+      // /dev/null; follow through to create an entry with the PINNED but not
+      // PRESENT state.
+    } else {
+      // Scanning other directories means that cache file is actually present.
+      cache_state |= GDataFile::CACHE_STATE_PRESENT;
+    }
+
+    // Create and insert new entry into cache map.
+    GDataRootDirectory::CacheEntry* entry = new GDataRootDirectory::CacheEntry(
+        md5, sub_dir_type, cache_state);
+    cache_map->insert(std::make_pair(resource_id, entry));
+  }
 }
 
 void GDataFileSystem::GetFromCacheInternal(
@@ -2494,17 +2613,48 @@ void GDataFileSystem::GetFromCacheInternal(
     const GetFromCacheCallback& callback) {
   InitializeCacheIfNecessary();
 
-  BrowserThread::PostBlockingPoolSequencedTask(
+  PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(GetFromCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetFromCacheOnIOThreadPool,
+                 base::Unretained(this),
                  resource_id,
                  md5,
                  gdata_file_path,
                  callback,
-                 base::Bind(&GDataFileSystem::OnGetFromCache,
-                            weak_ptr_factory_.GetWeakPtr()),
                  base::MessageLoopProxy::current()));
+}
+
+void GDataFileSystem::RunTaskOnIOThreadPool(const base::Closure& task) {
+  {
+    // Lock to access |in_shutdown_| but release it before running task as
+    // task will decide its own locking necessity and timing.
+    base::AutoLock lock(lock_);
+
+    // If we're shutting down, just exit.
+    if (in_shutdown_)
+      return;
+  }
+
+  // Reset event to indicate start of IO task.
+  on_io_completed_->Reset();
+
+  task.Run();
+
+  // Signal event to indicate completion of IO task.
+  on_io_completed_->Signal();
+}
+
+bool GDataFileSystem::PostBlockingPoolSequencedTask(
+    const std::string& sequence_token_name,
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  return BrowserThread::PostBlockingPoolSequencedTask(
+      sequence_token_name,
+      from_here,
+      base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
+                 base::Unretained(this),
+                 task));
 }
 
 }  // namespace gdata

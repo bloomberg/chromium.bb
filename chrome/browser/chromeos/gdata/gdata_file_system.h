@@ -163,16 +163,6 @@ class GDataFileSystemInterface {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Enum defining GCache subdirectory location.
-  enum CacheSubdir {  // This indexes into |cache_paths_| vector.
-    CACHE_TYPE_META = 0,
-    CACHE_TYPE_PINNED,
-    CACHE_TYPE_OUTGOING,
-    CACHE_TYPE_PERSISTENT,
-    CACHE_TYPE_TMP,
-    CACHE_TYPE_TMP_DOWNLOADS,
-  };
-
   // Enum defining origin of a cached file.
   enum CachedFileOrigin {
     CACHED_FILE_FROM_SERVER = 0,
@@ -433,6 +423,44 @@ class GDataFileSystem : public GDataFileSystemInterface {
     FileOperationCallback callback;
   };
 
+  // Internal intermediate callback OnGetCacheState for GetCacheStateOnIOThread,
+  // runs on calling thread, allows OnGetCacheState to lock GDataFile for safe
+  // access by |callback|.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              GDataFile* file,
+                              int cache_state,
+                              const GetCacheStateCallback& callback)>
+      GetCacheStateIntermediateCallback;
+
+  // Internal intermediate callback OnFilePinned and OnFileUnpinned for
+  // PinOnIOThreadPool and UnpinOnIOThreadPool respectively, runs on calling
+  // thread, allows OnFilePinned and OnFileUnpinned to notify observers.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              const std::string& resource_id,
+                              const std::string& md5,
+                              const CacheOperationCallback& callback)>
+      CacheOperationIntermediateCallback;
+
+  // Parameters to pass from calling thread to all cache file operations tasks
+  // on IO thread pool.
+  struct ModifyCacheStateParams {
+    ModifyCacheStateParams(
+        const std::string& resource_id,
+        const std::string& md5,
+        const FilePath& source_path,
+        const CacheOperationCallback& final_callback,
+        const CacheOperationIntermediateCallback& intermediate_callback,
+        scoped_refptr<base::MessageLoopProxy> relay_proxy);
+    virtual ~ModifyCacheStateParams();
+
+    const std::string resource_id;
+    const std::string md5;
+    const FilePath source_path;
+    const CacheOperationCallback final_callback;
+    const CacheOperationIntermediateCallback intermediate_callback;
+    const scoped_refptr<base::MessageLoopProxy> relay_proxy;
+  };
+
   // Defines set of parameters passed to intermediate callbacks during
   // execution of GetFile() method.
   struct GetFileFromCacheParams {
@@ -454,8 +482,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
     const GetFileCallback callback;
   };
 
-  // Callback similar to FileOperationCallback but with a given
-  // |file_path|.
+  // Callback similar to FileOperationCallback but with a given |file_path|.
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
@@ -723,13 +750,27 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // - etc.
 
   // Returns absolute path of the file if it were cached or to be cached.
-  FilePath GetCacheFilePath(const std::string& resource_id,
-                            const std::string& md5,
-                            CacheSubdir subdir_id,
-                            CachedFileOrigin file_orign);
+  FilePath GetCacheFilePath(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      CachedFileOrigin file_orign);
+
+  // Checks if file corresponding to |resource_id| and |md5| exists in cache.
+  // Initializes cache if it has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called, with the cache file path if it exists or empty otherwise.
+  // otherwise.
+  void GetFromCache(const std::string& resource_id,
+                    const std::string& md5,
+                    const GetFromCacheCallback& callback);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
   // Initializes cache if it has not been initialized.
+  // If file was previously pinned, it is stored in persistent directory, with
+  // the symlink in pinned dir updated to point to this new file (refer to
+  // comments for Pin for explanation of symlinks for pinned files).
+  // Otherwise, the file is stored in tmp dir.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
   void StoreToCache(const std::string& resource_id,
@@ -737,54 +778,52 @@ class GDataFileSystem : public GDataFileSystemInterface {
                     const FilePath& source_path,
                     const CacheOperationCallback& callback);
 
-  // Checks if file corresponding to |resource_id| and |md5| exist on disk and
-  // can be accessed i.e. not corrupted by previous file operations that didn't
-  // complete for whatever reasons.
+  // Pin file corresponding to |resource_id| and |md5|.
   // Initializes cache if it has not been initialized.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called with the cache file path if it exists and is accessible or empty
-  // otherwise.
-  void GetFromCache(const std::string& resource_id,
-                    const std::string& md5,
-                    const GetFromCacheCallback& callback);
-
-  // Removes all files corresponding to |resource_id| from cache.
-  // Initializes cache if it has not been initialized.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void RemoveFromCache(const std::string& resource_id,
-                       const CacheOperationCallback& callback);
-
-  // Pin file corresponding to |resource_id| and |md5| by setting the
-  // appropriate file attributes.
+  // Pinned files have symlinks in pinned dir, that reference actual blob files
+  // in persistent dir.
+  // If the file to be pinned does not exists in cache, a special symlink (with
+  // target /dev/null) is created in pinned dir, and base::PLATFORM_FILE_OK is
+  // be returned in |callback|.
+  // So unless there's an error with file operations involving pinning, no error
+  // , i.e. base::PLATFORM_FILE_OK, will be returned in |callback|.
+  // GDataSyncClient will pick up these special symlinks during low time and
+  // download pinned non-existent files.
   // We'll try not to evict pinned cache files unless there's not enough space
   // on disk and pinned files are the only ones left.
-  // If the file to be pinned is not stored in the cache,
-  // net::ERR_FILE_NOT_FOUND will be passed to the |callback|.
-  // Initializes cache if it has not been initialized.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
   void Pin(const std::string& resource_id,
            const std::string& md5,
            const CacheOperationCallback& callback);
 
-  // Unpin file corresponding to |resource_id| and |md5| by setting the
-  // appropriate file attributes.
-  // Unpinned files would be evicted when space on disk runs out.
+  // Unpin file corresponding to |resource_id| and |md5|, opposite of Pin.
   // Initializes cache if it has not been initialized.
+  // If the file was pinned, delete the symlink and if file blob exists, move it
+  // to tmp directory.
+  // If the file is not known to cache i.e. wasn't pinned or cached,
+  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned to |callback|.
+  // Unpinned files would be evicted when space on disk runs out.
   // Upon completion, |callback| is invoked on the thread where this method was
   // called.
   void Unpin(const std::string& resource_id,
              const std::string& md5,
              const CacheOperationCallback& callback);
 
+  // Removes all files corresponding to |resource_id| from cache persistent,
+  // tmp and pinned directories and in-memory cache map.
+  // Initializes cache if it has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  void RemoveFromCache(const std::string& resource_id,
+                       const CacheOperationCallback& callback);
+
   // Initializes cache if it hasn't been initialized by posting
   // InitializeCacheOnIOThreadPool task to IO thread pool.
   void InitializeCacheIfNecessary();
-  // Traverses cache sundirectory |subdir| and build |cache_map| with found
-  // file blobs.
-  void TraverseCacheDirectory(CacheSubdir subdir,
-      GDataRootDirectory::CacheMap* cache_map);
+
+  // Cache tasks that run on IO thread pool, posted from above cache entry
+  // points.
 
   // Task posted from InitializeCacheIfNecessary to run on IO thread pool.
   // Creates cache directory and its sub-directories if they don't exist,
@@ -792,50 +831,93 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // info into cache map.
   void InitializeCacheOnIOThreadPool();
 
-  // Cache callbacks from cache tasks that were run on IO thread pool.
+  // Task posted from GetFromCacheInternal to run on IO thread pool.
+  // Checks if file corresponding to |resource_id| and |md5| exists in cache
+  // map.
+  // Even though this task doesn't involve IO operations, it still runs on the
+  // IO thread pool, to force synchronization of all tasks on IO thread pool,
+  // e.g. this absolute must execute after InitailizeCacheOnIOTheadPool.
+  // Upon completion, invokes |callback| on the thread where GetFromCache was
+  // called.
+  void GetFromCacheOnIOThreadPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& gdata_file_path,
+      const GetFromCacheCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
-  // Callback for StoreToCache that updates the data members with results from
-  // StoreToCacheOnIOThreadPool.
-  void OnStoredToCache(base::PlatformFileError error,
-                       const std::string& resource_id,
-                       const std::string& md5,
-                       mode_t mode_bits,
-                       const CacheOperationCallback& callback);
+  // Task posted from GetCacheState to run on IO thread pool.
+  // Checks if file corresponding to |resource_id| and |md5| exists in cache
+  // map.  If yes, returns its cache state; otherwise, returns CACHE_STATE_NONE.
+  // Even though this task doesn't involve IO operations, it still runs on the
+  // IO thread pool, to force synchronization of all tasks on IO thread pool,
+  // e.g. this absolutely must execute after InitailizeCacheOnIOTheadPool.
+  // Upon completion, invokes OnGetCacheState i.e. |intermediate_callback| on
+  // the thread where GetCacheState was called.
+  void GetCacheStateOnIOThreadPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      const GetCacheStateCallback& callback,
+      const GetCacheStateIntermediateCallback& intermediate_callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
-  // Callback for GetFromCache that checks if file corresponding to
-  // |resource_id| and |md5| exist in cache map.
-  void OnGetFromCache(const std::string& resource_id,
-                      const std::string& md5,
-                      const FilePath& gdata_file_path,
-                      const GetFromCacheCallback& callback);
+  // Task posted from StoreToCache to run on IO thread pool:
+  // - moves |params.source_path| to |params.dest_path| in the cache dir
+  // - if necessary, creates symlink
+  // - deletes stale cached versions of |params.resource_id| in
+  //   |params.dest_path|'s directory.
+  // Upon completion, callback is is invoked on the thread where StoreToCache
+  // was called.
+  void StoreToCacheOnIOThreadPool(const ModifyCacheStateParams& params);
 
-  // Default dummy callback for RemoveFromCache.
-  void OnRemovedFromCache(base::PlatformFileError error,
-                          const std::string& resource_id,
-                          const std::string& md5);
+  // Task posted from Pin to modify cache state on the IO thread pool, which
+  // involves the following:
+  // - moves |params.source_path| to |params.dest_path| in persistent dir
+  // - creates symlink in pinned dir
+  // Upon completion, OnFilePinned (i.e. |params.intermediate_callback| is
+  // invoked on the same thread where Pin was called.
+  void PinOnIOThreadPool(const ModifyCacheStateParams& params);
 
-  // Callback for Pin. Calls OnCacheStatusModified() and notifies the
-  // observers.
+  // Task posted from Unpin to modify cache state on the IO thread pool, which
+  // involves the following:
+  // - moves |params.source_path| to |params.dest_path| in tmp dir
+  // - deletes symlink from pinned dir
+  // Upon completion, OnFileUnpinned (i.e. |params.intermediate_callback| is
+  // invoked on the same thread where Unpin was called.
+  void UnpinOnIOThreadPool(const ModifyCacheStateParams& params);
+
+  // Task posted from RemoveFromCache to do the following on the IO thread pool:
+  // - remove all delete stale cache versions corresponding to |resource_id| in
+  //   persistent, tmp and pinned directories
+  // - remove entry corresponding to |resource_id| from cache map.
+  // Upon completion, |callback| is invoked on the thread where RemoveFromCache
+  // was called.
+  void RemoveFromCacheOnIOThreadPool(
+      const std::string& resource_id,
+      const CacheOperationCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+  // Cache intermediate callbacks, that run on calling thread, for above cache
+  // tasks that were run on IO thread pool.
+
+  // Callback for GetCacheState.  Simply locks to allow safe access of GDataFile
+  // by |callback|, then invokes callback.
+  void OnGetCacheState(base::PlatformFileError error,
+                       GDataFile* file,
+                       int cache_state,
+                       const GetCacheStateCallback& callback);
+
+  // Callback for Pin. Runs |callback| and notifies the observers.
   void OnFilePinned(base::PlatformFileError error,
                     const std::string& resource_id,
                     const std::string& md5,
-                    mode_t mode_bits,
                     const CacheOperationCallback& callback);
 
-  // Callback for Unpin. Calls OnCacheStatusModified() and notifies the
-  // observers.
+  // Callback for Unpin. Runs |callback| and notifies the observers.
   void OnFileUnpinned(base::PlatformFileError error,
-                      const std::string& resource_id,
-                      const std::string& md5,
-                      mode_t mode_bits,
-                      const CacheOperationCallback& callback);
-
-  // Helper function for OnFilePinned() and OnFileUnpinned().
-  void OnCacheStatusModified(base::PlatformFileError error,
-                             const std::string& resource_id,
-                             const std::string& md5,
-                             mode_t mode_bits,
-                             const CacheOperationCallback& callback);
+                    const std::string& resource_id,
+                    const std::string& md5,
+                    const CacheOperationCallback& callback);
 
   // Helper function for internally handling responses from GetFromCache()
   // calls during processing of GetFile() request.
@@ -846,21 +928,34 @@ class GDataFileSystem : public GDataFileSystemInterface {
                           const FilePath& gdata_file_path,
                           const FilePath& cache_file_path);
 
-  // Callback for GetCacheState that gets cache state of file corresponding to
-  // |resource_id| and |md5|.
-  void OnGetCacheState(const std::string& resource_id,
-                       const std::string& md5,
-                       const GetCacheStateCallback& callback);
-
   // Cache internal helper functions.
 
+  // Unsafe (unlocked) version of InitializeCacheIfnecessary method.
+  void UnsafeInitializeCacheIfNecessary();
+
+  // Scans cache subdirectory |sub_dir_type| and build or update |cache_map|
+  // with found file blobs or symlinks.
+  void ScanCacheDirectory(
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
+      GDataRootDirectory::CacheMap* cache_map);
+
+  // Called from GetFromCache and GetFromCacheForPath.
   void GetFromCacheInternal(const std::string& resource_id,
                             const std::string& md5,
                             const FilePath& gdata_file_path,
                             const GetFromCacheCallback& callback);
 
-  // Unsafe (unlocked) version of InitializeCacheIfnecessary method.
-  void UnsafeInitializeCacheIfNecessary();
+  // Wrapper task around any sequenced task that runs on IO thread pool that
+  // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
+  // the right order.
+  void RunTaskOnIOThreadPool(const base::Closure& task);
+
+  // Wrapper around BrowserThread::PostBlockingPoolTask to post
+  // RunTaskOnIOThreadPool task on IO thread pool.
+  bool PostBlockingPoolSequencedTask(
+      const std::string& sequence_token_name,
+      const tracked_objects::Location& from_here,
+      const base::Closure& task);
 
   // Helper function used to perform file search on the calling thread of
   // FindFileByPath() request.
@@ -880,15 +975,17 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
   FilePath gdata_cache_path_;
 
-  // Paths for all subdirectories of GCache, one for each CacheSubdir
-  // enum.
+  // Paths for all subdirectories of GCache, one for each
+  // GDataRootDirectory::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;
 
-  scoped_ptr<base::WaitableEvent> on_cache_initialized_;
+  scoped_ptr<base::WaitableEvent> on_io_completed_;
 
   // True if cache initialization has started, is in progress or has completed,
   // we only want to initialize cache once.
   bool cache_initialization_started_;
+
+  bool in_shutdown_;  // True if GDatafileSystem is shutting down.
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 
-#include <sys/stat.h>
-
 #include <map>
 #include <string>
 
@@ -262,33 +260,37 @@ class GDataDirectory : public GDataFileBase {
 
 class GDataRootDirectory : public GDataDirectory {
  public:
-  // Status flags of cache file, represented by the RWX (read, write,
-  // executable) permissions of others category (since they're not being used).
-  enum CacheStatusFlags {
-    // Set read permission for others if file is not corrupted i.e. it was
-    // closed properly after previous operations.
-    CACHE_OK = S_IROTH,
-
-    // Set write permission for others if file is dirty and needs to be uploaded
-    // to gdata.
-    CACHE_DIRTY = S_IWOTH,
-
-    // Set executable permission for others if file is pinned.
-    CACHE_PINNED = S_IXOTH,
-
-    // Indicates that file is ok and dirty and needs to be uploaded.
-    CACHE_UPDATED = CACHE_OK | CACHE_DIRTY,
+  // Enum defining GCache subdirectory location.
+  // This indexes into |GDataFileSystem::cache_paths_| vector.
+  enum CacheSubDirectoryType {
+    CACHE_TYPE_META = 0,       // Downloaded feeds.
+    CACHE_TYPE_PINNED,         // Symlinks to files in persistent dir that are
+                               // pinned, or to /dev/null for non-existent
+                               // files.
+    CACHE_TYPE_OUTGOING,       // Symlinks to files in persistent or tmp dir to
+                               // be uploaded.
+    CACHE_TYPE_PERSISTENT,     // Files that are pinned or modified locally,
+                               // not evictable, hopefully.
+    CACHE_TYPE_TMP,            // Files that don't meet criteria to be in
+                               // persistent dir, and hence evictable.
+    CACHE_TYPE_TMP_DOWNLOADS,  // Downloaded files.
   };
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
-    CacheEntry(const std::string& in_md5, mode_t in_mode_bits)
+    CacheEntry(const std::string& in_md5,
+               CacheSubDirectoryType in_sub_dir_type,
+               int in_cache_state)
         : md5(in_md5),
-          mode_bits(in_mode_bits) {
+          sub_dir_type(in_sub_dir_type),
+          cache_state(in_cache_state) {
     }
+    // For debugging purposes.
+    std::string ToString() const;
 
     std::string md5;
-    mode_t mode_bits;
+    CacheSubDirectoryType sub_dir_type;
+    int cache_state;
   };
 
   // A map table of cache file's resource id to its CacheEntry* entry.
@@ -319,29 +321,29 @@ class GDataRootDirectory : public GDataDirectory {
   // Set |cache_map_| data member to formal parameter |new_cache_map|.
   void SetCacheMap(const CacheMap& new_cache_map);
 
-  // Updates cache map with entry corresponding to |res_id|.
-  // Returns false if cache has not been initialized.
-  void UpdateCacheMap(const std::string& res_id,
+  // Updates cache map with entry corresponding to |resource_id|.
+  // Creates new entry if it doesn't exist, otherwise update the entry.
+  void UpdateCacheMap(const std::string& resource_id,
                       const std::string& md5,
-                      mode_t mode_bits);
+                      CacheSubDirectoryType subdir,
+                      int cache_state);
 
-  // Removes entry corresponding to |res_id| from cache map.
-  void RemoveFromCacheMap(const std::string& res_id);
+  // Removes entry corresponding to |resource_id| from cache map.
+  void RemoveFromCacheMap(const std::string& resource_id);
 
-  // Checks if file corresponding to |res_id| and |md5| exists in cache map.
-  bool CacheFileExists(const std::string& res_id,
-                       const std::string& md5);
+  // Returns the cache entry for file corresponding to |resource_id| and |md5|
+  // if entry exists in cache map.  Otherwise, returns NULL.
+  // |md5| can be empty if only matching |resource_id| is desired, which may
+  // happen when looking for pinned entries where symlinks' filenames have no
+  // extension and hence no md5.
+  CacheEntry* GetCacheEntry(const std::string& resource_id,
+                            const std::string& md5);
 
-  // Gets the state of the cache file corresponding to |res_id| and |md5|
-  // synchronously.
-  int GetCacheState(const std::string& res_id,
-                    const std::string& md5);
-
-  // Gets the state of the cache file corresponding to |res_id| and |md5|
+  // Gets the state of the cache file corresponding to |resource_id| and |md5|
   // asynchronously where |callback| will be invoked with the cache state.
-  void GetCacheStateAsync(const std::string& resource_id,
-                          const std::string& md5,
-                          const GetCacheStateCallback& callback);
+  void GetCacheState(const std::string& resource_id,
+                     const std::string& md5,
+                     const GetCacheStateCallback& callback);
 
  private:
   ResourceMap resource_map_;

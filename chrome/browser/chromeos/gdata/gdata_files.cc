@@ -21,6 +21,21 @@ const int kRefreshTimeInSec = 5*60;
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
 
+std::string CacheSubDirectoryTypeToString(
+    gdata::GDataRootDirectory::CacheSubDirectoryType subdir) {
+  switch (subdir) {
+    case gdata::GDataRootDirectory::CACHE_TYPE_META: return "meta";
+    case gdata::GDataRootDirectory::CACHE_TYPE_PINNED: return "pinned";
+    case gdata::GDataRootDirectory::CACHE_TYPE_OUTGOING: return "outgoing";
+    case gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT: return "persistent";
+    case gdata::GDataRootDirectory::CACHE_TYPE_TMP: return "tmp";
+    case gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS:
+      return "tmp_downloads";
+  }
+  NOTREACHED();
+  return "unknown subdir";
+}
+
 }  // namespace
 
 namespace gdata {
@@ -176,7 +191,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
 }
 
 void GDataFile::GetCacheState(const GetCacheStateCallback& callback) {
-  root_->GetCacheStateAsync(resource_id(), file_md5(), callback);
+  root_->GetCacheState(resource_id(), file_md5(), callback);
 }
 
 // GDataDirectory class implementation.
@@ -314,6 +329,23 @@ bool GDataDirectory::RemoveFileFromChildrenList(GDataFileBase* file) {
   return true;
 }
 
+// GDataRootDirectory::CacheEntry struct  implementation.
+
+std::string GDataRootDirectory::CacheEntry::ToString() const {
+  std::vector<std::string> cache_states;
+  if (cache_state & GDataFile::CACHE_STATE_PRESENT)
+    cache_states.push_back("present");
+  if (cache_state & GDataFile::CACHE_STATE_PINNED)
+    cache_states.push_back("pinned");
+  if (cache_state & GDataFile::CACHE_STATE_DIRTY)
+    cache_states.push_back("dirty");
+
+  return base::StringPrintf("md5=%s, subdir=%s, cache_state=%s",
+                            md5.c_str(),
+                            CacheSubDirectoryTypeToString(sub_dir_type).c_str(),
+                            JoinString(cache_states, ',').c_str());
+}
+
 // GDataRootDirectory class implementation.
 
 GDataRootDirectory::GDataRootDirectory(GDataFileSystem* file_system)
@@ -382,34 +414,44 @@ void GDataRootDirectory::SetCacheMap(const CacheMap& new_cache_map)  {
   cache_map_ = new_cache_map;
 }
 
-void GDataRootDirectory::UpdateCacheMap(const std::string& res_id,
+void GDataRootDirectory::UpdateCacheMap(const std::string& resource_id,
                                         const std::string& md5,
-                                        mode_t mode_bits) {
+                                        CacheSubDirectoryType subdir,
+                                        int cache_state) {
   // GDataFileSystem has already locked.
 
-  CacheEntry* entry = NULL;
-
-  CacheMap::iterator iter = cache_map_.find(res_id);
+  CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {  // New resource, create new entry.
-    entry = new CacheEntry(md5, mode_bits);
-    cache_map_.insert(std::make_pair(res_id, entry));
-    DVLOG(1) << "Added res=" << res_id
-             << ", md5=" << md5
-             << ", mode=" << mode_bits;
-  } else {  // Resource already exists, update its entry info.
-    entry = iter->second;
-    entry->md5 = md5;
-    entry->mode_bits = mode_bits;
-    DVLOG(1) << "Updated res=" << res_id
-             << ", md5=" << md5
-             << ", mode=" << mode_bits;
+    // Makes no sense to create new entry if cache state is NONE.
+    DCHECK(cache_state != GDataFile::CACHE_STATE_NONE);
+    if (cache_state != GDataFile::CACHE_STATE_NONE) {
+      CacheEntry* entry = new CacheEntry(md5, subdir, cache_state);
+      cache_map_.insert(std::make_pair(resource_id, entry));
+      DVLOG(1) << "Added res_id=" << resource_id
+               << ", " << entry->ToString();
+    }
+  } else {  // Resource exists.
+    CacheEntry* entry = iter->second;
+    // If cache state is NONE, delete entry from cache map.
+    if (cache_state == GDataFile::CACHE_STATE_NONE) {
+      DVLOG(1) << "Deleting res_id=" << resource_id
+               << ", " << entry->ToString();
+      delete entry;
+      cache_map_.erase(iter);
+    } else {  // Otherwise, update entry in cache map.
+      entry->md5 = md5;
+      entry->sub_dir_type = subdir;
+      entry->cache_state = cache_state;
+      DVLOG(1) << "Updated res_id=" << resource_id
+               << ", " << entry->ToString();
+    }
   }
 }
 
-void GDataRootDirectory::RemoveFromCacheMap(const std::string& res_id) {
+void GDataRootDirectory::RemoveFromCacheMap(const std::string& resource_id) {
   // GDataFileSystem has already locked.
 
-  CacheMap::iterator iter = cache_map_.find(res_id);
+  CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter != cache_map_.end()) {
     // Delete the CacheEntry and remove it from the map.
     delete iter->second;
@@ -417,53 +459,35 @@ void GDataRootDirectory::RemoveFromCacheMap(const std::string& res_id) {
   }
 }
 
-bool GDataRootDirectory::CacheFileExists(const std::string& res_id,
-                                         const std::string& md5) {
+GDataRootDirectory::CacheEntry* GDataRootDirectory::GetCacheEntry(
+    const std::string& resource_id,
+    const std::string& md5) {
   // GDataFileSystem has already locked.
-  CacheMap::const_iterator iter = cache_map_.find(res_id);
-  // It's only a valid file if entry exists in cache map and its md5 matches and
-  // its CACHE_OK bit is set i.e. not corrupted.
-  return iter != cache_map_.end() &&
-      iter->second->md5 == md5 &&
-      iter->second->mode_bits & CACHE_OK;
-}
 
-int GDataRootDirectory::GetCacheState(const std::string& res_id,
-                                      const std::string& md5) {
-  // GDataFileSystem has already locked in FindFileDelegate::OnFileFound.
-
-  int cache_state = GDataFile::CACHE_STATE_NONE;
-
-  CacheMap::const_iterator iter = cache_map_.find(res_id);
+  CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {
-    DVLOG(1) << "Can't find " << res_id << " in cache map";
-    return cache_state;
+    DVLOG(1) << "Can't find " << resource_id << " in cache map";
+    return NULL;
   }
 
-  // Entry is only valid if md5 matches.
-  if (iter->second->md5 != md5) {
-    DVLOG(1) << "Non-matching md5 for res_id " << res_id
-             << " in cache resource";
-    return cache_state;
-  }
-
-  // Convert file's mode bits to GDataFile::CacheState.
   CacheEntry* entry = iter->second;
-  if (entry->mode_bits & CACHE_OK)
-    cache_state |= GDataFile::CACHE_STATE_PRESENT;
-  if (entry->mode_bits & CACHE_DIRTY)
-    cache_state |= GDataFile::CACHE_STATE_DIRTY;
-  if (entry->mode_bits & CACHE_PINNED)
-    cache_state |= GDataFile::CACHE_STATE_PINNED;
 
-  DVLOG(1) << "Cache state for res_id " << res_id
-           << ", md5 " << entry->md5
-            << ": " << cache_state;
+  // Entry is only valid if |md5| is not empty and it matches with entry's.
+  if (!md5.empty() && entry->md5 != md5) {
+    DVLOG(1) << "Non-matching md5: want=" << md5
+             << ", found=[res_id=" << resource_id
+             << ", " << entry->ToString()
+             << "]";
+    return NULL;
+  }
 
-  return cache_state;
+  DVLOG(1) << "Found entry for res_id=" << resource_id
+           << ", " << entry->ToString();
+
+  return entry;
 }
 
-void GDataRootDirectory::GetCacheStateAsync(
+void GDataRootDirectory::GetCacheState(
     const std::string& resource_id,
     const std::string& md5,
     const GetCacheStateCallback& callback) {
