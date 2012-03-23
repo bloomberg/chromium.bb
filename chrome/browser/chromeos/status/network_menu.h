@@ -106,6 +106,12 @@ class NetworkMenu {
   void ToggleWifi();
   void ToggleCellular();
 
+  // Shows UI to user to connect to an unlisted wifi network.
+  void ShowOtherWifi();
+
+  // Shows UI to user to search for cellular networks.
+  void ShowOtherCellular();
+
   // Decides whether a network should be highlighted in the UI.
   bool ShouldHighlightNetwork(const Network* network);
 

@@ -217,8 +217,6 @@ class NetworkMenuModel : public ui::MenuModel {
   std::string carrier_id_;
 
  private:
-  // Show a NetworkConfigView modal dialog instance.
-  void ShowNetworkConfigView(NetworkConfigView* view) const;
   // Open a dialog to set up and connect to a network.
   void ShowOther(ConnectionType type) const;
 
@@ -503,20 +501,11 @@ void NetworkMenuModel::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuModel, private methods:
 
-void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
-  views::Widget* window = browser::CreateViewsWindow(
-      owner_->delegate()->GetNativeWindow(), view, STYLE_GENERIC);
-  window->SetAlwaysOnTop(true);
-  window->Show();
-}
-
 void NetworkMenuModel::ShowOther(ConnectionType type) const {
-  if (type == TYPE_CELLULAR) {
-    ChooseMobileNetworkDialog::ShowDialog(
-        owner_->delegate()->GetNativeWindow());
-  } else {
-    ShowNetworkConfigView(new NetworkConfigView(type));
-  }
+  if (type == TYPE_CELLULAR)
+    owner_->ShowOtherCellular();
+  else
+    owner_->ShowOtherWifi();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1125,6 +1114,18 @@ void NetworkMenu::ToggleCellular() {
     SimDialogDelegate::ShowDialog(delegate()->GetNativeWindow(),
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
+}
+
+void NetworkMenu::ShowOtherWifi() {
+  NetworkConfigView* view = new NetworkConfigView(TYPE_WIFI);
+  views::Widget* window = browser::CreateViewsWindow(
+      delegate_->GetNativeWindow(), view, STYLE_GENERIC);
+  window->SetAlwaysOnTop(true);
+  window->Show();
+}
+
+void NetworkMenu::ShowOtherCellular() {
+  ChooseMobileNetworkDialog::ShowDialog(delegate_->GetNativeWindow());
 }
 
 bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
