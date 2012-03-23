@@ -287,6 +287,7 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		}
 
 		close_fds(&connection->fds_out);
+		connection->n_fds_out = 0;
 
 		connection->out.tail += len;
 		if (connection->out.tail == connection->out.head &&
@@ -399,7 +400,6 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 	if (connection->n_fds_out + 1 > MAX_FDS_OUT) {
 		if (wl_connection_data(connection, WL_CONNECTION_WRITABLE))
 			return -1;
-		connection->n_fds_out = 0;
 	}
 
 	wl_buffer_put(&connection->fds_out, &fd, sizeof fd);
