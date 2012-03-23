@@ -1,3 +1,6 @@
+#ifndef _TEST_RUNNER_H_
+#define _TEST_RUNNER_H_
+
 struct test {
 	const char *name;
 	void (*run)(void);
@@ -12,3 +15,5 @@ struct test {
 	};							\
 								\
 	static void name(void)
+
+#endif

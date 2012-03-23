@@ -12,5 +12,5 @@ event_loop_test_SOURCES = event-loop-test.c test-runner.c
 AM_CFLAGS = $(GCC_CFLAGS)
 LDADD = $(top_builddir)/src/libwayland-util.la \
 	$(top_builddir)/src/libwayland-server.la \
-	-lrt $(FFI_LIBS)
+	-lrt -ldl $(FFI_LIBS)
 

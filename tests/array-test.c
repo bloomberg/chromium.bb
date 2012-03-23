@@ -133,4 +133,6 @@ TEST(array_for_each)
 	wl_array_for_each(p, &array)
 		assert(*p == elements[i++]);
 	assert(i == 5);
+
+	wl_array_release(&array);
 }

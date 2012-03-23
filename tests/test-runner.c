@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,9 +29,27 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <assert.h>
+#include <dlfcn.h>
 #include "test-runner.h"
 
+static int num_alloc;
+static void* (*sys_malloc)(size_t);
+static void (*sys_free)(void*);
+
 extern const struct test __start_test_section, __stop_test_section;
+
+void* malloc(size_t size)
+{
+	num_alloc++;
+	return sys_malloc(size);
+}
+
+void free(void* mem)
+{
+	if (mem != NULL)
+		num_alloc--;
+	sys_free(mem);
+}
 
 static const struct test *
 find_test(const char *name)
@@ -46,7 +66,10 @@ find_test(const char *name)
 static void
 run_test(const struct test *t)
 {
+	int cur_alloc = num_alloc;
+
 	t->run();
+	assert(("memory leak detected in test.", cur_alloc == num_alloc));
 	exit(EXIT_SUCCESS);
 }
 
@@ -56,6 +79,10 @@ int main(int argc, char *argv[])
 	pid_t pid;
 	int total, pass;
 	siginfo_t info;
+
+	/* Load system malloc and free */
+	sys_malloc = dlsym(RTLD_NEXT, "malloc");
+	sys_free = dlsym(RTLD_NEXT, "free");
 
 	if (argc == 2) {
 		t = find_test(argv[1]);

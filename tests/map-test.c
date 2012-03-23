@@ -90,4 +90,6 @@ TEST(map_remove)
 	l = wl_map_insert_new(&map, WL_MAP_SERVER_SIDE, &d);
 	assert(l == WL_SERVER_ID_START + 1);
 	assert(wl_map_lookup(&map, l) == &d);
+
+	wl_map_release(&map);
 }
