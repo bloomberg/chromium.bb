@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -338,42 +338,6 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
   base::win::ScopedHandle token(token_handle);
 
   return SetTokenIntegrityLevel(token.Get(), integrity_level);
-}
-
-DWORD SetObjectDenyRestrictedAndNull(HANDLE handle, SE_OBJECT_TYPE type) {
-  PSECURITY_DESCRIPTOR sec_desc = NULL;
-  PACL old_dacl = NULL;
-
-  DWORD error = ::GetSecurityInfo(handle, type, DACL_SECURITY_INFORMATION,
-                                  NULL, NULL, &old_dacl, NULL, &sec_desc);
-  if (!error) {
-    Sid deny_sids[] = { Sid(WinNullSid), Sid(WinRestrictedCodeSid) };
-    const int kDenySidsCount = sizeof(deny_sids) / sizeof(deny_sids[0]);
-    EXPLICIT_ACCESS deny_aces[kDenySidsCount];
-    ::ZeroMemory(deny_aces, sizeof(deny_aces));
-
-    for (int i = 0; i < kDenySidsCount; ++i) {
-      deny_aces[i].grfAccessMode = DENY_ACCESS;
-      deny_aces[i].grfAccessPermissions = GENERIC_ALL;
-      deny_aces[i].grfInheritance = NO_INHERITANCE;
-      deny_aces[i].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-      deny_aces[i].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
-      deny_aces[i].Trustee.ptstrName =
-          reinterpret_cast<LPWSTR>(const_cast<SID*>(deny_sids[i].GetPSID()));
-    }
-
-    PACL new_dacl = NULL;
-    error = ::SetEntriesInAcl(kDenySidsCount, deny_aces, old_dacl, &new_dacl);
-    if (!error) {
-      error = ::SetSecurityInfo(handle, type, DACL_SECURITY_INFORMATION,
-                                NULL, NULL, new_dacl, NULL);
-      ::LocalFree(new_dacl);
-    }
-
-    ::LocalFree(sec_desc);
-  }
-
-  return error;
 }
 
 }  // namespace sandbox

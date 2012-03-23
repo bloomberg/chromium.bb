@@ -315,7 +315,10 @@ bool GpuChannel::ShouldPreferDiscreteGpu() const {
 void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
   // Initialize should only happen once.
   DCHECK(!renderer_process_);
-  renderer_process_ = renderer_process;
+
+  // Verify that the renderer has passed its own process handle.
+  if (base::GetProcId(renderer_process) == renderer_pid_)
+    renderer_process_ = renderer_process;
 }
 
 void GpuChannel::OnCreateOffscreenCommandBuffer(
