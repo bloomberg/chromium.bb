@@ -16,7 +16,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/dbus/power_supply_properties.pb.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -478,11 +477,11 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void RequestActiveNotification() OVERRIDE {}
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
-    ScreenLocker::Show();
+    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
   virtual void NotifyScreenUnlockRequested() OVERRIDE {
-    ScreenLocker::Hide();
+    FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
 
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}

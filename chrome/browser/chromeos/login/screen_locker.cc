@@ -72,6 +72,8 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
     switch (type) {
       case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
         // Register Screen Lock only after a user has logged in.
+        // TODO(flackr): Observe PowerManagerClient on desktop build.
+        // crbug.com/119798
         chromeos::PowerManagerClient* power_manager =
             chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
         if (!power_manager->HasObserver(this))
