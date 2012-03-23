@@ -31,7 +31,7 @@ function FileManager(dialogDom) {
   this.butterTimer_ = null;
   this.currentButter_ = null;
 
-  this.subscribedOnDirectoryChanges_ = false;
+  this.watchedDirectoryUrl_ = null;
 
   this.commands_ = {};
 
@@ -511,6 +511,7 @@ FileManager.prototype = {
     var offlineHandler = this.onOnlineOffline_.bind(this);
     window.addEventListener('online', offlineHandler);
     window.addEventListener('offline', offlineHandler);
+    offlineHandler();  // Sync with the current state.
 
     this.directoryModel_.addEventListener('directory-changed',
                                           this.onDirectoryChanged_.bind(this));
@@ -538,10 +539,6 @@ FileManager.prototype = {
 
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
-
-    // We should initialize Gdata after we subscribed to onMountCompleted.
-    if (str('ENABLE_GDATA') == '1')
-      this.initGData_();
 
     // The list of callbacks to be invoked during the directory rescan after
     // all paste tasks are complete.
@@ -730,8 +727,10 @@ FileManager.prototype = {
         this.dialogType_ == FileManager.DialogType.SELECT_FOLDER ||
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE;
 
-    this.directoryModel_ = new DirectoryModel(this.filesystem_.root,
-                                              sigleSelection);
+    this.directoryModel_ = new DirectoryModel(
+        this.filesystem_.root,
+        sigleSelection,
+        str('ENABLE_GDATA') == '1');
 
     var dataModel = this.directoryModel_.fileList;
     var collator = this.collator_;
@@ -797,8 +796,17 @@ FileManager.prototype = {
 
   FileManager.prototype.initGData_ = function() {
     metrics.startInterval('Load.GData');
-    // TODO(zelidrag): We should do this first time user selects this provider.
     chrome.fileBrowserPrivate.addMount('', 'gdata', {});
+    if (this.gdataMountTimer_) {
+      clearTimeout(this.gdataMountTimer_);
+    }
+    this.gdataMountTimer_ = setTimeout(function() {
+      this.gdataMountTimer_ = null;
+      if (this.isOnGData()) {
+        // TODO(kaznacheev): show the message in the file list space.
+        this.alert.show('Could not connect to GData');
+      }
+    }.bind(this), 10 * 1000);
   };
 
   /**
@@ -2501,26 +2509,34 @@ FileManager.prototype = {
   FileManager.prototype.onMountCompleted_ = function(event) {
     var self = this;
 
+    var changeDirectoryTo = null;
+
     if (event && event.mountType == 'gdata') {
       metrics.recordInterval('Load.GData');
+      if (this.gdataMountTimer_) {
+        clearTimeout(this.gdataMountTimer_);
+        this.gdataMountTimer_ = null;
+      }
       if (event.status == 'success') {
-        self.gdataMounted_ = true;
-        self.gdataMountInfo_ = {
+        this.gdataMounted_ = true;
+        this.gdataMountInfo_ = {
           "mountPath": event.mountPath,
           "sourceUrl": event.sourceUrl,
           "mountType": event.mountType,
           "mountCondition": event.status
         };
+        if (this.isOnGData()) {
+          // We are currently on an unmounted GData directory, force a rescan.
+          changeDirectoryTo = this.directoryModel_.rootPath;
+        }
       } else {
-        self.gdataMounted_ = false;
-        self.gdataMountInfo_ = null;
+        this.gdataMounted_ = false;
+        this.gdataMountInfo_ = null;
       }
     }
 
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.setMountPoints_(mountPoints);
-      var changeDirectoryTo = null;
-
       if (event.eventType == 'mount') {
         // Mount request finished - remove it.
         var index = self.mountRequests_.indexOf(event.sourceUrl);
@@ -3423,31 +3439,46 @@ FileManager.prototype = {
 
     var self = this;
 
-    if (this.subscribedOnDirectoryChanges_) {
-      chrome.fileBrowserPrivate.removeFileWatch(event.previousDirEntry.toURL(),
+    if (this.watchedDirectoryUrl_) {
+      if (this.watchedDirectoryUrl_ != event.previousDirEntry.toURL()) {
+        console.warn('event.previousDirEntry does not match File Manager state',
+            event, this.watchedDirectoryUrl_);
+      }
+      chrome.fileBrowserPrivate.removeFileWatch(this.watchedDirectoryUrl_,
           function(result) {
             if (!result) {
               console.log('Failed to remove file watch');
             }
           });
+      this.watchedDirectoryUrl_ = null;
     }
 
-    if (event.newDirEntry.fullPath != '/') {
-      this.subscribedOnDirectoryChanges_ = true;
-      chrome.fileBrowserPrivate.addFileWatch(event.newDirEntry.toURL(),
+    if (event.newDirEntry.fullPath != '/' &&
+        DirectoryModel.getRootType(event.newDirEntry.fullPath) !=
+            DirectoryModel.GDATA_DIRECTORY) {
+      // Currently file watchers do not work on GData. When they start working
+      // we should be careful not to watch GData before it is mounted.
+      this.watchedDirectoryUrl_ = event.newDirEntry.toURL();
+      chrome.fileBrowserPrivate.addFileWatch(this.watchedDirectoryUrl_,
         function(result) {
           if (!result) {
             console.log('Failed to add file watch');
+            this.watchedDirectoryUrl_ = null;
           }
-      });
+        }.bind(this));
     }
 
     this.updateVolumeMetadata_();
 
-    if (this.isOnGData())
+    if (this.isOnGData()) {
       this.dialogContainer_.setAttribute('gdata', true);
-    else
+      if (!this.requestedGDataMount_) {  // Request GData mount only once.
+        this.requestedGDataMount_ = true;
+        this.initGData_();
+      }
+    } else {
       this.dialogContainer_.removeAttribute('gdata');
+    }
   };
 
   FileManager.prototype.updateVolumeMetadata_ = function() {
@@ -3506,15 +3537,15 @@ FileManager.prototype = {
    * return.
    */
   FileManager.prototype.onUnload_ = function() {
-    if (this.subscribedOnDirectoryChanges_) {
-      this.subscribedOnDirectoryChanges_ = false;
+    if (this.watchedDirectoryUrl_) {
       chrome.fileBrowserPrivate.removeFileWatch(
-          this.getCurrentDirectoryURL(),
+          this.watchedDirectoryUrl_,
           function(result) {
             if (!result) {
               console.log('Failed to remove file watch');
             }
           });
+      this.watchedDirectoryUrl_ = null;
     }
   };
 

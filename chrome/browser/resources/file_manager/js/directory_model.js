@@ -10,14 +10,18 @@ const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
  * Data model of the file manager.
  *
  * @param {DirectoryEntry} root File system root.
- * @param {boolean} singleSelection True if only one file could be seletet
+ * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
+ * @param {boolean} showGData Defines whether GData root should be should
+ *   (regardless of its mounts status).
  */
-function DirectoryModel(root, singleSelection) {
+function DirectoryModel(root, singleSelection, showGData) {
   this.root_ = root;
   this.fileList_ = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
+
+  this.showGData_ = showGData;
 
   this.runningScan_ = null;
   this.pendingScan_ = null;
@@ -352,8 +356,10 @@ DirectoryModel.prototype = {
       clearTimeout(this.rescanTimeout_);
       this.rescanTimeout_ = 0;
     }
-    if (this.runningScan_)
+    if (this.runningScan_) {
       this.runningScan_.cancel();
+      this.runningScan_ = null;
+    }
     this.pendingScan_ = null;
 
     var onDone = function() {
@@ -364,6 +370,10 @@ DirectoryModel.prototype = {
     // Clear the table first.
     this.fileList_.splice(0, this.fileList_.length);
     cr.dispatchSimpleEvent(this, 'scan-started');
+    if (this.currentDirEntry_ == this.unmountedGDataEntry_) {
+      onDone();
+      return;
+    }
     this.runningScan_ = this.createScanner_(this.fileList_, onDone);
     this.runningScan_.run();
   },
@@ -481,7 +491,7 @@ DirectoryModel.prototype = {
   },
 
   /**
-   * Canges directory. Causes 'directory-change' event.
+   * Changes directory. Causes 'directory-change' event.
    *
    * @param {string} path New current directory path.
    */
@@ -490,6 +500,19 @@ DirectoryModel.prototype = {
       var autoSelect = this.selectIndex.bind(this, this.autoSelectIndex_);
       this.changeDirectoryEntry_(dirEntry, autoSelect, false);
     }.bind(this);
+
+    if (this.unmountedGDataEntry_ &&
+        DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
+      this.readonly_ = true;
+      // TODO(kaznacheeev): Currently if path points to some GData subdirectory
+      // and GData is not mounted we will change to the fake GData root and
+      // ignore the rest of the path. Consider remembering the path and
+      // changing to it once GDdata is mounted. This is only relevant for cases
+      // when we open the File Manager with an URL pointing to GData (e.g. via
+      // a bookmark).
+      onDirectoryResolved(this.unmountedGDataEntry_);
+      return;
+    }
 
     this.readonly_ = false;
     if (path == '/')
@@ -519,7 +542,7 @@ DirectoryModel.prototype = {
    *                          false if caused by an user action.
    */
   changeDirectoryEntry_: function(dirEntry, action, initial) {
-    var current = this.currentEntry;
+    var previous = this.currentEntry;
     this.currentDirEntry_ = dirEntry;
     function onRescanComplete() {
       action();
@@ -531,7 +554,7 @@ DirectoryModel.prototype = {
     this.scan_(onRescanComplete);
 
     var e = new cr.Event('directory-changed');
-    e.previousDirEntry = this.currentEntry;
+    e.previousDirEntry = previous;
     e.newDirEntry = dirEntry;
     e.initial = initial;
     this.dispatchEvent(e);
@@ -770,9 +793,12 @@ DirectoryModel.prototype = {
       done();
     }
 
+    var self = this;
+
     function onGData(entry) {
       console.log('onGData');
       console.log(entry);
+      self.unmountedGDataEntry_ = null;
       groups.gdata = [entry];
       done();
     }
@@ -780,7 +806,10 @@ DirectoryModel.prototype = {
     function onGDataError(error) {
       console.log('onGDataError');
       console.log(error);
-      groups.gdata = [];
+      self.unmountedGDataEntry_ = {
+        fullPath: '/' + DirectoryModel.GDATA_DIRECTORY
+      };
+      groups.gdata = [self.unmountedGDataEntry_];
       done();
     }
 
@@ -791,8 +820,12 @@ DirectoryModel.prototype = {
                        append.bind(this, 'archives'));
     util.readDirectory(root, DirectoryModel.REMOVABLE_DIRECTORY,
                        append.bind(this, 'removables'));
-    root.getDirectory(DirectoryModel.GDATA_DIRECTORY, { create: false },
-                      onGData, onGDataError);
+    if (this.showGData_) {
+      root.getDirectory(DirectoryModel.GDATA_DIRECTORY, { create: false },
+                        onGData, onGDataError);
+    } else {
+      groups.gdata = [];
+    }
   },
 
   updateRoots: function(opt_callback) {
