@@ -277,9 +277,8 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest, CloseIncognitoBrowser) {
   EXPECT_TRUE(CanCloseTab(incognito_browser));
 
   // Close incognito browser.
-  ui_test_utils::BrowserAddedObserver observer;
   incognito_browser->CloseWindow();
-  Browser* new_browser = observer.WaitForSingleNewBrowser();
+  Browser* new_browser = ui_test_utils::WaitForNewBrowser();
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_FALSE(new_browser->profile()->IsOffTheRecord());
   EXPECT_EQ(1, new_browser->tab_count());

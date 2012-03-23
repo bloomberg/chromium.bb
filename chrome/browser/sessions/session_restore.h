@@ -11,7 +11,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "base/basictypes.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class Profile;
@@ -54,8 +53,7 @@ class SessionRestore {
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session tab to a browser.
   static void RestoreForeignSessionTab(Profile* profile,
-                                       const SessionTab& tab,
-                                       WindowOpenDisposition disposition);
+                                       const SessionTab& tab);
 
   // Returns true if we're in the process of restoring |profile|.
   static bool IsRestoring(const Profile* profile);
