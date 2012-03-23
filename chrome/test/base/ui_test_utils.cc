@@ -363,24 +363,6 @@ void WaitForLoadStop(WebContents* tab) {
   load_stop_observer.Wait();
 }
 
-Browser* WaitForNewBrowser() {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                   content::NotificationService::AllSources());
-  return content::Source<Browser>(observer.source()).ptr();
-}
-
-Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
-  TestNotificationObserver observer;
-  Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
-  if (new_browser == NULL) {
-    new_browser = WaitForNewBrowser();
-    // The new browser should never be in |excluded_browsers|.
-    DCHECK(!ContainsKey(excluded_browsers, new_browser));
-  }
-  return new_browser;
-}
-
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = BrowserList::FindTabbedBrowser(
@@ -424,21 +406,15 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       NULL,
       number_of_navigations);
 
-  std::set<Browser*> initial_browsers;
-  for (std::vector<Browser*>::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end();
-       ++iter) {
-    initial_browsers.insert(*iter);
-  }
-
   WindowedNotificationObserver tab_added_observer(
       content::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
+  BrowserAddedObserver browser_added_observer;
 
   browser->OpenURL(OpenURLParams(
       url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false));
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
-    browser = WaitForBrowserNotInSet(initial_browsers);
+    browser = browser_added_observer.WaitForSingleNewBrowser();
   if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
     tab_added_observer.Wait();
   if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
@@ -920,6 +896,14 @@ WindowedNotificationObserver::WindowedNotificationObserver(
   registrar_.Add(this, notification_type, waiting_for_);
 }
 
+WindowedNotificationObserver::WindowedNotificationObserver(
+    int notification_type)
+    : seen_(false),
+      running_(false),
+      waiting_for_(content::NotificationService::AllSources()) {
+  registrar_.Add(this, notification_type, waiting_for_);
+}
+
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
@@ -974,6 +958,23 @@ void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
 }
 
 TitleWatcher::~TitleWatcher() {
+}
+
+BrowserAddedObserver::BrowserAddedObserver()
+    : notification_observer_(
+          chrome::NOTIFICATION_BROWSER_OPENED,
+          content::NotificationService::AllSources()) {
+  original_browsers_.insert(BrowserList::begin(), BrowserList::end());
+}
+
+BrowserAddedObserver::~BrowserAddedObserver() {
+}
+
+Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
+  notification_observer_.Wait();
+  // Ensure that only a single new browser has appeared.
+  EXPECT_EQ(original_browsers_.size() + 1, BrowserList::size());
+  return GetBrowserNotInSet(original_browsers_);
 }
 
 const string16& TitleWatcher::WaitAndGetTitle() {
