@@ -239,12 +239,7 @@ bool test_mmap_end_of_file() {
     printf("open() failed\n");
     return false;
   }
-  /*
-   * TODO(mseaborn): Extend this to 0x20000 or larger and check that
-   * the later 64k pages are inaccessible.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=824
-   */
-  size_t map_size = 0x10000;
+  size_t map_size = 0x20000;
   /*
    * First, map an address range as readable+writable, in order to
    * check that these mappings are properly overwritten by the second
@@ -280,14 +275,12 @@ bool test_mmap_end_of_file() {
    * one case where we expose a 4k page size rather than a 64k page
    * size.  Windows forces us to expose a mixture of 4k and 64k page
    * sizes for end-of-file mappings.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=824
    */
   assert_addr_is_unreadable(alloc + 0x1000);
   assert_addr_is_unreadable(alloc + 0x2000);
-  /*
-   * TODO(mseaborn): Also check the following:
-   *   assert_addr_is_unreadable(alloc + 0x10000);
-   * See http://code.google.com/p/nativeclient/issues/detail?id=824
-   */
+  assert_addr_is_unreadable(alloc + 0x10000);
+  assert_addr_is_unreadable(alloc + 0x11000);
   rc = munmap(alloc, map_size);
   if (rc != 0) {
     printf("munmap() failed\n");
@@ -297,6 +290,8 @@ bool test_mmap_end_of_file() {
   assert_addr_is_unreadable(alloc);
   assert_addr_is_unreadable(alloc + 0x1000);
   assert_addr_is_unreadable(alloc + 0x2000);
+  assert_addr_is_unreadable(alloc + 0x10000);
+  assert_addr_is_unreadable(alloc + 0x11000);
   return true;
 }
 

@@ -57,6 +57,9 @@
 
 struct NaClDescQuotaInterface;
 
+static int32_t MunmapInternal(struct NaClApp *nap,
+                              uintptr_t sysaddr, size_t length);
+
 /*
  * OSX defines SIZE_T_MAX in i386/limits.h; Linux has SIZE_MAX;
  * Windows has none.
@@ -1541,42 +1544,13 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
                                 (struct NaClDesc *) NULL, 0, (off_t) 0, 0);
   }
 #endif
-  /*
-   * TODO(mseaborn): The block below is broken because it does not use
-   * NACL_ABI_MAP_FIXED.  Fix it to correctly map this region as
-   * inaccessible.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=824
-   */
   /* inaccessible: [start_of_inaccessible, alloc_rounded_length) */
   if (start_of_inaccessible < alloc_rounded_length) {
     size_t  map_len = alloc_rounded_length - start_of_inaccessible;
-
-    NaClLog(2,
-            ("inaccessible pages for memory range"
-             " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"),"
-             " length 0x%"NACL_PRIxS"\n"),
-            sysaddr + start_of_inaccessible,
-            sysaddr + alloc_rounded_length,
-            map_len);
-    map_result = NaClHostDescMap((struct NaClHostDesc *) NULL,
-                             (void *) (sysaddr + start_of_inaccessible),
-                             map_len,
-                             NACL_ABI_PROT_NONE,
-                             NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
-                             (off_t) 0);
-    if (NaClPtrIsNegErrno(&map_result)) {
-      NaClLog(LOG_ERROR,
-            ("Could not create inaccessible pages for memory range"
-             " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
-             "), length 0x%"NACL_PRIxS"\n"),
-            sysaddr + start_of_inaccessible,
-            sysaddr + alloc_rounded_length,
-            map_len);
+    map_result = MunmapInternal(nap, sysaddr + start_of_inaccessible, map_len);
+    if (map_result != 0) {
+      goto cleanup;
     }
-    NaClCommonUtilUpdateAddrMap(nap, sysaddr + start_of_inaccessible,
-                                map_len, PROT_NONE,
-                                (struct NaClDesc *) NULL, 0,
-                                (off_t) 0, 0);
   }
   NaClLog(3, "NaClSysMmap: got address 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) map_result);
