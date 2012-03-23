@@ -57,7 +57,7 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
 
   platform_qual_test = env.ComponentProgram(
       'platform_qual_test', 'arch/x86/platform_qual_test.c',
-      # 'sel' is required for nacl_signal_common.c, sel_memory.c and friends
+      # 'sel' is required for sel_memory.c and friends
       EXTRA_LIBS=['platform_qual_lib', 'sel'])
   node = env.CommandTest('platform_qual_test.out', [platform_qual_test])
   env.AddNodeToTestSuite(

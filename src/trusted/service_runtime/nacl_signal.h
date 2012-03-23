@@ -90,6 +90,8 @@ void NaClSignalStackRegister(void *stack);
  */
 void NaClSignalStackUnregister(void);
 
+void NaClSignalTestCrashOnStartup(void);
+
 /*
  * Register process-wide signal handlers.
  */

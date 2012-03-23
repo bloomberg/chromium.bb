@@ -142,22 +142,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   /*
    * Ensure this operating system platform is supported.
    */
-
-  /*
-   * We enable the signal handler to verify properties of the platform such
-   * as the ability to trap a page on execute.
-   *
-   * NB: do NOT move NaClSignalHandlerInit inside the
-   * skip_qualification test as it might seem logical to do.  The
-   * reason for this is that buried in NaClSignalHandlerInit is the
-   * check for the NACL_CRASH_TEST environment variable for a crash
-   * injection test (used in
-   * tests/inbrowser_crash_test/trusted_crash_in_startup.html), and if
-   * we ever disabled qualification tests *and* set the
-   * NACL_CRASH_TEST environment variable, then the crash injection
-   * will not happen.
-   */
-  NaClSignalHandlerInit();
   skip_qualification = getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL;
   if (skip_qualification) {
     fprintf(stderr, "PLATFORM QUALIFICATION DISABLED - "
@@ -171,8 +155,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
               NaClErrorString(errcode));
     }
   }
-  /* Remove the handler that was used for platform qualification tests. */
-  NaClSignalHandlerFini();
 
   /*
    * Patch the Windows exception dispatcher to be safe in the case
@@ -185,6 +167,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
     NaClPatchWindowsExceptionDispatcher();
 #endif
   }
+  NaClSignalTestCrashOnStartup();
 
   /*
    * Check that Chrome did not register any signal handlers, because

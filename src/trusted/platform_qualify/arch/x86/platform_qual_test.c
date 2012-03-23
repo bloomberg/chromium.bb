@@ -25,7 +25,6 @@
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/vcpuid.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 void TestDEPCheckFailurePath() {
@@ -47,11 +46,6 @@ void TestDEPCheckFailurePath() {
 
 int main() {
   NaClLogModuleInit();
-
-#if NACL_WINDOWS
-  /* required by nacl_dep_qualify.c: */
-  NaClSignalHandlerInit();
-#endif
 
   if (NaClOsIsSupported() != 1) return -1;
   printf("OS is supported\n");

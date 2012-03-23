@@ -528,8 +528,6 @@ int main(int  argc,
     skip_qualification = 1;
   }
 
-  /* We use the signal handler to verify a signal took place. */
-  NaClSignalHandlerInit();
   if (!skip_qualification) {
     NaClErrorCode pq_error = NACL_FI_VAL("pq", NaClErrorCode,
                                          NaClRunSelQualificationTests());
@@ -543,12 +541,12 @@ int main(int  argc,
     }
   }
 
-  /* Remove the signal handler if we are not using it. */
-  if (!handle_signals) {
-    NaClSignalHandlerFini();
-    /* Sanity check. */
-    NaClSignalAssertNoHandlers();
+  /* Sanity check. */
+  NaClSignalAssertNoHandlers();
 
+  if (handle_signals) {
+    NaClSignalHandlerInit();
+  } else {
     /*
      * Patch the Windows exception dispatcher to be safe in the case
      * of faults inside x86-64 sandboxed code.  The sandbox is not
@@ -559,6 +557,7 @@ int main(int  argc,
     NaClPatchWindowsExceptionDispatcher();
 #endif
   }
+  NaClSignalTestCrashOnStartup();
 
   /*
    * Open both files first because (on Mac OS X at least)
