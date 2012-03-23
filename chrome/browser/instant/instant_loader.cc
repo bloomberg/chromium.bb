@@ -84,8 +84,10 @@ void AddPreviewUsageForHistogram(TemplateURLID template_url_id,
   DCHECK(0 <= usage && usage < PREVIEW_NUM_TYPES);
   // Only track the histogram for the instant loaders, for now.
   if (template_url_id) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.Previews" + group, usage,
-                              PREVIEW_NUM_TYPES);
+    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+        "Instant.Previews" + group, 1, PREVIEW_NUM_TYPES, PREVIEW_NUM_TYPES + 1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    histogram->Add(usage);
   }
 }
 

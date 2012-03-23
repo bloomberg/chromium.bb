@@ -135,8 +135,10 @@ void InstantController::Disable(Profile* profile) {
                                 delta.InMinutes(), 1, 60 * 24 * 10, 50);
   }
 
-  UMA_HISTOGRAM_COUNTS(
-      "Instant.OptOut" + InstantFieldTrial::GetGroupName(profile), 1);
+  base::Histogram* histogram = base::Histogram::FactoryGet(
+      "Instant.OptOut" + InstantFieldTrial::GetGroupName(profile), 1, 1000000,
+      50, base::Histogram::kUmaTargetedHistogramFlag);
+  histogram->Add(1);
 
   service->SetBoolean(prefs::kInstantEnabledOnce, true);
   service->SetBoolean(prefs::kInstantEnabled, false);
