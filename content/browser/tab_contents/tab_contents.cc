@@ -409,7 +409,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.deferred_2d_canvas_enabled =
       command_line.HasSwitch(switches::kEnableDeferred2dCanvas);
   prefs.threaded_animation_enabled =
-      command_line.HasSwitch(switches::kEnableThreadedAnimation);
+      !command_line.HasSwitch(switches::kDisableThreadedAnimation);
   prefs.accelerated_painting_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedPainting);

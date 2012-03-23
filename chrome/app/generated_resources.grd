@@ -4928,17 +4928,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DEFAULT" desc="Option name for leaving threaded compositing in its default state.">
         Default
       </message>
-      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_ENABLED" desc="Option name for turning on threaded compositign">
+      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_ENABLED" desc="Option name for turning on threaded compositing">
         Enabled
       </message>
-      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED" desc="Option name for turning off threaded compositign">
+      <message name="IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED" desc="Option name for turning off threaded compositing">
         Disabled
       </message>
-      <message name="IDS_FLAGS_ENABLE_THREADED_ANIMATION_NAME" desc="Name of the 'Enabled threaded animation' lab.">
-        Enable threaded animation
+      <message name="IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME" desc="Name of the 'Disable accelerated CSS animations' lab.">
+        Disable accelerated CSS animations
       </message>
-      <message name="IDS_FLAGS_ENABLE_THREADED_ANIMATION_DESCRIPTION" desc="Description of the 'Enable threaded animation' lab.">
-        Uses a secondary thread to execute CSS animations. This allows smoother animations, even when the main thread is unresponsive.
+      <message name="IDS_FLAGS_DISABLE_THREADED_ANIMATION_DESCRIPTION" desc="Description of the 'Disable accelerated CSS animations' lab.">
+        When threaded compositing is enabled, accelerated CSS animations run on the compositing thread. However, there may be performance gains running with accelerated CSS animations, even without the compositor thread.
       </message>
       <message name="IDS_FLAGS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
         WebGL

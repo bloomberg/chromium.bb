@@ -1038,8 +1038,9 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   static const char* kForwardSwitches[] = {
       switches::kCompressSystemFeedback,
       switches::kDisableAcceleratedPlugins,
-      switches::kDisableSeccompSandbox,
       switches::kDisableLoginAnimations,
+      switches::kDisableSeccompSandbox,
+      switches::kDisableThreadedAnimation,
       switches::kEnableGView,
       switches::kEnableLogging,
       switches::kEnablePartialSwap,
@@ -1047,7 +1048,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kEnableSmoothScrolling,
       switches::kEnableThreadedCompositing,
       switches::kDisableThreadedCompositing,
-      switches::kEnableThreadedAnimation,
       switches::kForceCompositingMode,
       switches::kLoginProfile,
       switches::kScrollPixels,
