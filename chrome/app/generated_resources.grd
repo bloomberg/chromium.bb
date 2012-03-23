@@ -15465,7 +15465,7 @@ Battery full
         Unpin
       </message>
       <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE" desc="Message to display in the dialog box asking user's permission to share their screen">
-        Please confirm that you want to start presenting your screen in this meeting.
+        Do you want to start presenting your entire screen in this meeting?
       </message>
       <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE" desc="Title of the dialog box asking user's permission to share their screen">
         Google Talk Screen Sharing Request
