@@ -68,10 +68,6 @@ extern const bool kAlwaysOpenIncognitoWindow;
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
-// Should the title bar be shown by HTML in the Task Manager dialog?
-// It may be used when HTML dialog doesn't have its native title bar.
-extern const bool kShowHtmlTitleBarInTaskManager;
-
 // Preferred height of the bookmarks bar when shown on every page and
 // when shown only on the new tab page.
 extern const int kBookmarkBarHeight;

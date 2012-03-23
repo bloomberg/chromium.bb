@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -69,8 +73,6 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
     url_string += "?";
     if (browser_defaults::kShowCancelButtonInTaskManager)
       url_string += "showclose=1&";
-    if (browser_defaults::kShowHtmlTitleBarInTaskManager)
-      url_string += "showtitle=1&";
     if (is_background_page_mode_)
       url_string += "background=1";
     return GURL(url_string);
@@ -120,16 +122,16 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
   }
 #if !defined(TOOLKIT_VIEWS)
   virtual void StoreDialogSize(const gfx::Size& dialog_size) OVERRIDE {
-   // Store the dialog's bounds so that it can be restored with the same bounds
-   // the next time it's opened.
-   if (g_browser_process->local_state()) {
-     DictionaryPrefUpdate update(g_browser_process->local_state(),
-                                 prefs::kTaskManagerWindowPlacement);
-     DictionaryValue* placement_pref = update.Get();
-     placement_pref->SetInteger("width", dialog_size.width());
-     placement_pref->SetInteger("height", dialog_size.height());
-   }
- }
+    // Store the dialog's bounds so that it can be restored with the same bounds
+    // the next time it's opened.
+    if (g_browser_process->local_state()) {
+      DictionaryPrefUpdate update(g_browser_process->local_state(),
+                                  prefs::kTaskManagerWindowPlacement);
+      DictionaryValue* placement_pref = update.Get();
+      placement_pref->SetInteger("width", dialog_size.width());
+      placement_pref->SetInteger("height", dialog_size.height());
+    }
+  }
 #endif
 
  private:

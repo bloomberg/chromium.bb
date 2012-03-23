@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -24,17 +24,6 @@ body {
   min-height: 150px;
   position: absolute;
   width: 100%;
-}
-
-/* The top title of the dialog. */
-.dialog-title {
-  background-image: -webkit-linear-gradient(top, #fff,#f6f6f6);
-  border-bottom: 1px #d6d9e3 solid;
-  color: #42506c;
-  cursor: default;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 0 12px 4px 12px;
 }
 
 /* Container for the detail list views. */

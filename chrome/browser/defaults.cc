@@ -6,22 +6,16 @@
 
 namespace browser_defaults {
 
-#if defined(USE_AURA) || defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 const bool kOSSupportsOtherBrowsers = false;
 #else
 const bool kOSSupportsOtherBrowsers = true;
 #endif
 
-#if defined(OS_CHROMEOS) && !defined(USE_AURA) || defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
 const bool kShowCancelButtonInTaskManager = true;
 #else
 const bool kShowCancelButtonInTaskManager = false;
-#endif
-
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-const bool kShowHtmlTitleBarInTaskManager = true;
-#else
-const bool kShowHtmlTitleBarInTaskManager = false;
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -56,9 +50,9 @@ const int kAutocompleteEditFontPixelSizeInPopup =
 const bool kCanToggleSystemTitleBar = false;
 #else
 const bool kCanToggleSystemTitleBar = true;
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
 

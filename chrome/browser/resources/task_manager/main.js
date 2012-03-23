@@ -158,11 +158,9 @@ TaskManager.prototype = {
    */
   initElements_: function() {
     // <if expr="pp_ifdef('chromeos')">
-    // The elements 'dialog-title' and 'close-window' exist only on ChromeOS.
+    // The 'close-window' element exists only on ChromeOS.
     // This <if ... /if> section is removed while flattening HTML if chrome is
     // built as Desktop Chrome.
-    if (!this.opt_['isShowTitle'])
-      $('dialog-title').style.display = 'none';
     if (!this.opt_['isShowCloseButton'])
       $('close-window').style.display = 'none';
     $('close-window').addEventListener('click', this.close.bind(this));
@@ -677,7 +675,6 @@ taskmanager = TaskManager.getInstance();
 function init() {
   var params = parseQueryParams(window.location);
   var opt = {};
-  opt['isShowTitle'] = params.showtitle;
   opt['isBackgroundMode'] = params.background;
   opt['isShowCloseButton'] = params.showclose;
   taskmanager.initialize(document.body, opt);

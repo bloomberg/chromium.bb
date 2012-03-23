@@ -29,7 +29,6 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
       new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
-  source->AddLocalizedString("title",IDS_TASK_MANAGER_TITLE);
   source->AddLocalizedString("aboutMemoryLink",
                              IDS_TASK_MANAGER_ABOUT_MEMORY_LINK);
   source->AddLocalizedString("killChromeOS", IDS_TASK_MANAGER_KILL_CHROMEOS);
@@ -54,7 +53,7 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
                              IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
   source->AddLocalizedString("webcoreCSSCacheColumn",
                              IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
-  source->AddLocalizedString("fpsColumn",IDS_TASK_MANAGER_FPS_COLUMN);
+  source->AddLocalizedString("fpsColumn", IDS_TASK_MANAGER_FPS_COLUMN);
   source->AddLocalizedString("sqliteMemoryUsedColumn",
                              IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
   source->AddLocalizedString(
