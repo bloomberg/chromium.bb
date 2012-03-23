@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,8 +77,6 @@ cr.define('tracing', function() {
 
     onKeypress_: function(event) {
       if (event.keyCode == 114 && !tracingController.isTracingEnabled) {
-        if (!this.selected)
-          this.selected = true;
         this.onRecord_();
       }
     },
