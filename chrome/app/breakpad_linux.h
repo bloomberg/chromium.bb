@@ -27,6 +27,7 @@ struct BreakpadInfo {
   unsigned distro_length;          // Length of |distro|.
   bool upload;                     // Whether to upload or save crash dump.
   uint64_t process_start_time;     // Uptime of the crashing process.
+  size_t oom_size;                 // Amount of memory requested if OOM.
 };
 
 extern void HandleCrashDump(const BreakpadInfo& info);

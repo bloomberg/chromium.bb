@@ -28,6 +28,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
@@ -89,6 +90,9 @@ static uint64_t kernel_timeval_to_ms(struct kernel_timeval *tv) {
   ret += tv->tv_usec / 1000;
   return ret;
 }
+
+// String buffer size to use to convert a uint64_t to string.
+static size_t kUint64StringSize = 21;
 
 // uint64_t version of my_int_len() from
 // breakpad/src/common/linux/linux_libc_support.h. Return the length of the
@@ -460,6 +464,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
   //   --foo \r\n
   //   BOUNDARY \r\n
   //
+  //   zero or one:
+  //   Content-Disposition: form-data; name="oom-size" \r\n \r\n
+  //   1234567890 \r\n
+  //   BOUNDARY \r\n
+  //
   //   Content-Disposition: form-data; name="dump"; filename="dump" \r\n
   //   Content-Type: application/octet-stream \r\n \r\n
   //   <dump contents>
@@ -490,7 +499,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
       uint64_t time = kernel_timeval_to_ms(&tv);
       if (time > info.process_start_time) {
         time -= info.process_start_time;
-        char time_str[21];
+        char time_str[kUint64StringSize];
         const unsigned time_len = my_uint64_len(time);
         my_uint64tos(time_str, time, time_len);
 
@@ -610,6 +619,17 @@ void HandleCrashDump(const BreakpadInfo& info) {
         std::min(switches_len, kMaxSwitchLen),
         child_process_logging::kSwitchLen,
         true /* Strip whitespace since switches are padded to kSwitchLen. */);
+  }
+
+  if (info.oom_size) {
+    char oom_size_str[kUint64StringSize];
+    const unsigned oom_size_len = my_uint64_len(info.oom_size);
+    my_uint64tos(oom_size_str, info.oom_size, oom_size_len);
+    static const char oom_size_msg[] = "oom-size";
+    writer.AddPairData(oom_size_msg, sizeof(oom_size_msg) - 1,
+                       oom_size_str, oom_size_len);
+    writer.AddBoundary();
+    writer.Flush();
   }
 
   writer.AddFileDump(dump_data, st.st_size);
@@ -736,7 +756,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
           struct kernel_timeval tv;
           if (g_crash_log_path && !sys_gettimeofday(&tv, NULL)) {
             uint64_t time = kernel_timeval_to_ms(&tv) / 1000;
-            char time_str[21];
+            char time_str[kUint64StringSize];
             const unsigned time_len = my_uint64_len(time);
             my_uint64tos(time_str, time, time_len);
 
@@ -804,6 +824,7 @@ static bool CrashDone(const char* dump_path,
   info.distro_length = my_strlen(base::g_linux_distro);
   info.upload = upload;
   info.process_start_time = g_process_start_time;
+  info.oom_size = base::g_oom_size;
   HandleCrashDump(info);
   return true;
 }
@@ -906,7 +927,7 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   static const unsigned kControlMsgSpaceSize = CMSG_SPACE(kControlMsgSize);
   static const unsigned kControlMsgLenSize = CMSG_LEN(kControlMsgSize);
 
-  const size_t kIovSize = 7;
+  const size_t kIovSize = 8;
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
   struct kernel_iovec iov[kIovSize];
@@ -924,6 +945,8 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   iov[5].iov_len = sizeof(fds[0]);
   iov[6].iov_base = &g_process_start_time;
   iov[6].iov_len = sizeof(g_process_start_time);
+  iov[7].iov_base = &base::g_oom_size;
+  iov[7].iov_len = sizeof(base::g_oom_size);
 
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;

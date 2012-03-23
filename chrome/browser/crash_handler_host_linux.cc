@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,7 @@ void CrashHandlerHostLinux::InitCrashUploaderThread() {
 }
 
 void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
-  DCHECK(false);
+  NOTREACHED();
 }
 
 void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
@@ -119,8 +119,10 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // to the death signal socket. The datagram contains the crash context needed
   // for writing the minidump as well as a file descriptor and a credentials
   // block so that they can't lie about their pid.
+  //
+  // The message sender is in chrome/app/breakpad_linux.cc.
 
-  const size_t kIovSize = 7;
+  const size_t kIovSize = 8;
   struct msghdr msg = {0};
   struct iovec iov[kIovSize];
 
@@ -134,6 +136,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   char* tid_buf_addr = NULL;
   int tid_fd = -1;
   uint64_t uptime;
+  size_t oom_size;
   char control[kControlMsgSize];
   const ssize_t expected_msg_size =
       kCrashContextSize +
@@ -141,7 +144,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       kMaxActiveURLSize + 1 +
       kDistroSize + 1 +
       sizeof(tid_buf_addr) + sizeof(tid_fd) +
-      sizeof(uptime);
+      sizeof(uptime) +
+      sizeof(oom_size);
 
   iov[0].iov_base = crash_context;
   iov[0].iov_len = kCrashContextSize;
@@ -157,6 +161,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[5].iov_len = sizeof(tid_fd);
   iov[6].iov_base = &uptime;
   iov[6].iov_len = sizeof(uptime);
+  iov[7].iov_base = &oom_size;
+  iov[7].iov_len = sizeof(oom_size);
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;
   msg.msg_control = control;
@@ -315,6 +321,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   info->upload = (getenv(env_vars::kHeadless) == NULL);
   info->process_start_time = uptime;
+  info->oom_size = oom_size;
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
