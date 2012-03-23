@@ -2,13 +2,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#wallpaper-title {
-  margin: 40px 34px;
-}
-
-#wallpaper-title h1 {
-  margin: 0;
-  padding: 0 0 10px 0;
+#wallpaper-title span {
+  -webkit-padding-start: 17px;
+  padding-top: 6px;
 }
 
 #set-wallpaper-page .content-area {
