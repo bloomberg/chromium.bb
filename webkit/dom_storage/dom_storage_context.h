@@ -158,7 +158,7 @@ class DomStorageContext
   StorageNamespaceMap namespaces_;
 
   // Where localstorage data is stored, maybe empty for the incognito use case.
-  const FilePath directory_;
+  FilePath directory_;
 
   // Used to schedule sequenced background tasks.
   scoped_refptr<DomStorageTaskRunner> task_runner_;

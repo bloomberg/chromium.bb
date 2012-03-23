@@ -48,6 +48,13 @@ DomStorageNamespace* DomStorageContext::GetStorageNamespace(
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
   if (found == namespaces_.end()) {
     if (namespace_id == kLocalStorageNamespaceId) {
+      if (!directory_.empty()) {
+        if (!file_util::CreateDirectory(directory_)) {
+          LOG(ERROR) << "Failed to create 'Local Storage' directory,"
+                        " falling back to in-memory only.";
+          directory_ = FilePath();
+        }
+      }
       DomStorageNamespace* local =
           new DomStorageNamespace(directory_, task_runner_);
       namespaces_[kLocalStorageNamespaceId] = local;
