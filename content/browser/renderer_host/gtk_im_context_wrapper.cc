@@ -320,16 +320,12 @@ void GtkIMContextWrapper::OnFocusOut() {
   }
 }
 
-#if !defined(TOOLKIT_VIEWS)
-// Not defined for views because the views context menu doesn't
-// implement input methods yet.
 GtkWidget* GtkIMContextWrapper::BuildInputMethodsGtkMenu() {
   GtkWidget* submenu = gtk_menu_new();
   gtk_im_multicontext_append_menuitems(GTK_IM_MULTICONTEXT(context_),
                                        GTK_MENU_SHELL(submenu));
   return submenu;
 }
-#endif
 
 void GtkIMContextWrapper::CancelComposition() {
   if (!is_enabled_)
