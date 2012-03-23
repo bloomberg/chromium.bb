@@ -59,6 +59,10 @@ class ASH_EXPORT SystemTray : public views::View,
                         int close_delay_in_seconds,
                         bool activate);
 
+  // Continue showing the existing detailed view, if any, for |close_delay|
+  // seconds.
+  void SetDetailedViewCloseDelay(int close_delay);
+
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 

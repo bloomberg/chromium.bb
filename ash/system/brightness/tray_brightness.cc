@@ -121,13 +121,15 @@ void TrayBrightness::DestroyDetailedView() {
 }
 
 void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
-  if (brightness_view_.get()) {
+  if (brightness_view_.get())
     brightness_view_->SetBrightnessLevel(percent);
-    return;
-  }
   if (!user_initiated)
     return;
-  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+
+  if (brightness_view_.get())
+    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
+  else
+    PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 }  // namespace internal

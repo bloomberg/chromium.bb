@@ -47,6 +47,11 @@ class ASH_EXPORT SystemTrayItem {
   // time.
   void PopupDetailedView(int for_seconds, bool activate);
 
+  // Continue showing the currently-shown detailed view, if any, for
+  // |for_seconds| seconds.  The caller is responsible for checking that the
+  // currently-shown view is for this item.
+  void SetDetailedViewCloseDelay(int for_seconds);
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayItem);

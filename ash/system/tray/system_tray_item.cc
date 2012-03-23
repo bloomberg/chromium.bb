@@ -20,4 +20,8 @@ void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
   Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate);
 }
 
+void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
+  Shell::GetInstance()->tray()->SetDetailedViewCloseDelay(for_seconds);
+}
+
 }  // namespace ash

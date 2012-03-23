@@ -197,9 +197,9 @@ void TrayVolume::DestroyDetailedView() {
 void TrayVolume::OnVolumeChanged(float percent) {
   if (volume_view_.get()) {
     volume_view_->SetVolumeLevel(percent);
+    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
     return;
   }
-
   PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 

@@ -301,6 +301,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     }
   }
 
+  bool detailed() const { return detailed_; }
   void set_can_activate(bool activate) { can_activate_ = activate; }
 
   void StartAutoCloseTimer(int seconds) {
@@ -471,7 +472,7 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 void SystemTray::ShowDefaultView() {
   if (popup_) {
     popup_->RemoveObserver(this);
-    popup_->Close();
+    popup_->CloseNow();
   }
   popup_ = NULL;
   bubble_ = NULL;
@@ -484,7 +485,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   bool activate) {
   if (popup_) {
     popup_->RemoveObserver(this);
-    popup_->Close();
+    popup_->CloseNow();
   }
   popup_ = NULL;
   bubble_ = NULL;
@@ -493,6 +494,11 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   items.push_back(item);
   ShowItems(items, true, activate);
   bubble_->StartAutoCloseTimer(close_delay);
+}
+
+void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
+  if (bubble_ && bubble_->detailed())
+    bubble_->StartAutoCloseTimer(close_delay);
 }
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
@@ -553,20 +559,22 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
 bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    if (popup_)
+    if (popup_ && bubble_ && !bubble_->detailed())
       popup_->Hide();
     else
-      ShowItems(items_.get(), false, true);
+      ShowDefaultView();
     return true;
   }
   return false;
 }
 
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
-  if (popup_)
+  // If we're already showing the default view, hide it; otherwise, show it
+  // (and hide any popup that's currently shown).
+  if (popup_ && bubble_ && !bubble_->detailed())
     popup_->Hide();
   else
-    ShowItems(items_.get(), false, true);
+    ShowDefaultView();
   return true;
 }
 
