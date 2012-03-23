@@ -100,6 +100,8 @@ class PrintWebViewHelper
   friend class PrintWebViewHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
                            BlockScriptInitiatedPrinting);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+                           BlockScriptInitiatedPrintingFromPopup);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -182,6 +184,10 @@ class PrintWebViewHelper
   void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
 
   void OnPrintingDone(bool success);
+
+  // Enable/Disable window.print calls.  If |blocked| is true window.print
+  // calls will silently fail.  Call with |blocked| set to false to reenable.
+  void SetScriptedPrintBlocked(bool blocked);
 
   // Main printing code -------------------------------------------------------
 
@@ -312,6 +318,9 @@ class PrintWebViewHelper
 
   // Script Initiated Printing ------------------------------------------------
 
+  // Return true if script initiated printing is currently allowed.
+  bool IsScriptInitiatedPrintAllowed(WebKit::WebFrame* frame);
+
   // Returns true if script initiated printing occurs too often.
   bool IsScriptInitiatedPrintTooFrequent(WebKit::WebFrame* frame);
 
@@ -354,6 +363,7 @@ class PrintWebViewHelper
   // Used for scripted initiated printing blocking.
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
+  bool is_scripted_printing_blocked_;
 
   // Let the browser process know of a printing failure. Only set to false when
   // the failure came from the browser in the first place.
@@ -465,7 +475,6 @@ class PrintWebViewHelper
   };
 
   PrintPreviewContext print_preview_context_;
-
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);
 };
 

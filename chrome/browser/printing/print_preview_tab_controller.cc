@@ -215,7 +215,8 @@ void PrintPreviewTabController::PrintPreview(TabContentsWrapper* tab) {
   PrintPreviewTabController* tab_controller = GetInstance();
   if (!tab_controller)
     return;
-  tab_controller->GetOrCreatePreviewTab(tab);
+  if (!tab_controller->GetOrCreatePreviewTab(tab))
+    tab->print_view_manager()->PrintPreviewDone();
 }
 
 TabContentsWrapper* PrintPreviewTabController::GetOrCreatePreviewTab(

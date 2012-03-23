@@ -657,10 +657,18 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       ignore_css_margins_(false),
       fit_to_page_(true),
       user_cancelled_scripted_print_count_(0),
+      is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true) {
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
+
+bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
+    WebKit::WebFrame* frame) {
+  if (is_scripted_printing_blocked_)
+    return false;
+  return !IsScriptInitiatedPrintTooFrequent(frame);
+}
 
 // Prints |frame| which called window.print().
 void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
@@ -672,7 +680,7 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
     return;
   }
 
-  if (IsScriptInitiatedPrintTooFrequent(frame))
+  if (!IsScriptInitiatedPrintAllowed(frame))
     return;
   IncrementScriptedPrintCount();
 
@@ -699,6 +707,8 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
                         ResetScriptedPrintCount)
     IPC_MESSAGE_HANDLER(PrintMsg_PreviewPrintingRequestCancelled,
                         DisplayPrintJobError)
+    IPC_MESSAGE_HANDLER(PrintMsg_SetScriptedPrintingBlocked,
+                        SetScriptedPrintBlocked)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   return handled;
@@ -974,6 +984,10 @@ void PrintWebViewHelper::OnPrintingDone(bool success) {
   if (!success)
     LOG(ERROR) << "Failure in OnPrintingDone";
   DidFinishPrinting(success ? OK : FAIL_PRINT);
+}
+
+void PrintWebViewHelper::SetScriptedPrintBlocked(bool blocked) {
+  is_scripted_printing_blocked_ = blocked;
 }
 
 void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {

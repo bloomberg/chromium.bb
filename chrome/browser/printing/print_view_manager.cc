@@ -62,6 +62,8 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
+  registrar_.Add(this, chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
+                 content::Source<TabContentsWrapper>(tab));
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -133,9 +135,11 @@ void PrintViewManager::PrintPreviewDone() {
 }
 
 void PrintViewManager::PreviewPrintingRequestCancelled() {
-  if (!web_contents())
-    return;
   Send(new PrintMsg_PreviewPrintingRequestCancelled(routing_id()));
+}
+
+void PrintViewManager::SetScriptedPrintingBlocked(bool blocked) {
+  Send(new PrintMsg_SetScriptedPrintingBlocked(routing_id(), blocked));
 }
 
 void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
@@ -329,6 +333,10 @@ void PrintViewManager::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_PRINT_JOB_EVENT: {
       OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
+      break;
+    }
+    case chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED: {
+      SetScriptedPrintingBlocked(*content::Details<const bool>(details).ptr());
       break;
     }
     default: {

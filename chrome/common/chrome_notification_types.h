@@ -1044,6 +1044,14 @@ enum NotificationType {
   // (std::pair<net::SSLCertRequestInfo*, net::X509Certificate*>).
   NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
 
+  // Blocked content.
+  // Sent when content changes to or from the blocked state in
+  // BlockedContentTabHelper.
+  // The source is the TabContentsWrapper of the blocked content and details
+  // is a boolean: true if the content is entering the blocked state, false
+  // if it is leaving.
+  NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

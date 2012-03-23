@@ -196,6 +196,18 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(true);
 }
 
+TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrintingFromPopup) {
+  PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
+  print_web_view_helper->SetScriptedPrintBlocked(true);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPagesPrinted(false);
+
+  print_web_view_helper->SetScriptedPrintBlocked(false);
+  LoadHTML(kPrintWithJSHTML);
+  VerifyPageCount(1);
+  VerifyPagesPrinted(true);
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
 // to rip out and replace most of the IPC code if we ever plan to improve

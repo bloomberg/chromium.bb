@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,10 @@ class BlockedContentTabHelper : public content::WebContentsObserver {
  private:
   // Called when the blocked popup notification is shown or hidden.
   void PopupNotificationVisibilityChanged(bool visible);
+
+  // Called to notify any observers that |contents| is entering or leaving
+  // the blocked state.
+  void SendNotification(TabContentsWrapper* contents, bool blocked_state);
 
   // Object that holds any blocked TabContents spawned from this TabContents.
   scoped_ptr<BlockedContentContainer> blocked_contents_;

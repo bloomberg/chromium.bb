@@ -67,6 +67,9 @@ class PrintViewManager : public content::NotificationObserver,
   // Handles cancelled preview printing request.
   void PreviewPrintingRequestCancelled();
 
+  // Whether to block scripted printing or not.
+  void SetScriptedPrintingBlocked(bool blocked);
+
   // Sets |observer| as the current PrintViewManagerObserver. Pass in NULL to
   // remove the current observer. |observer| may always be NULL, but |observer_|
   // must be NULL if |observer| is non-NULL.

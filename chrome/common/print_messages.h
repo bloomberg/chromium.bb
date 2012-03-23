@@ -279,6 +279,10 @@ IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
 // Tells the render view that preview printing request has been cancelled.
 IPC_MESSAGE_ROUTED0(PrintMsg_PreviewPrintingRequestCancelled)
 
+// Tells the render view whether scripted printing is blocked or not.
+IPC_MESSAGE_ROUTED1(PrintMsg_SetScriptedPrintingBlocked,
+                    bool /* blocked */)
+
 // Tells the render view to switch the CSS to print media type, renders every
 // requested pages for print preview using the given |settings|. This gets
 // called multiple times as the user updates settings.

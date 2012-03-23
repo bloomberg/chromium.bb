@@ -10,9 +10,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -51,6 +55,14 @@ void BlockedContentTabHelper::PopupNotificationVisibilityChanged(
   tab_contents_wrapper_->content_settings()->SetPopupsBlocked(visible);
 }
 
+void BlockedContentTabHelper::SendNotification(TabContentsWrapper* contents,
+                                               bool blocked_state) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
+      content::Source<TabContentsWrapper>(contents),
+      content::Details<const bool>(&blocked_state));
+}
+
 void BlockedContentTabHelper::SetAllContentsBlocked(bool value) {
   if (all_contents_blocked_ == value)
     return;
@@ -59,8 +71,10 @@ void BlockedContentTabHelper::SetAllContentsBlocked(bool value) {
   if (!all_contents_blocked_ && blocked_contents_->GetBlockedContentsCount()) {
     std::vector<TabContentsWrapper*> blocked;
     blocked_contents_->GetBlockedContents(&blocked);
-    for (size_t i = 0; i < blocked.size(); ++i)
+    for (size_t i = 0; i < blocked.size(); ++i) {
+      SendNotification(blocked[i], false);
       blocked_contents_->LaunchForContents(blocked[i]);
+    }
   }
 }
 
@@ -70,6 +84,7 @@ void BlockedContentTabHelper::AddTabContents(TabContentsWrapper* new_contents,
                                              bool user_gesture) {
   if (!blocked_contents_->GetBlockedContentsCount())
     PopupNotificationVisibilityChanged(true);
+  SendNotification(new_contents, true);
   blocked_contents_->AddTabContents(
       new_contents, disposition, initial_pos, user_gesture);
 }
@@ -103,6 +118,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
   } else {
     // Call blocked_contents_->AddTabContents with user_gesture == true
     // so that the contents will not get blocked again.
+    SendNotification(new_contents, true);
     blocked_contents_->AddTabContents(new_contents,
                                       NEW_POPUP,
                                       initial_pos,
@@ -114,6 +130,7 @@ void BlockedContentTabHelper::AddPopup(TabContentsWrapper* new_contents,
 
 void BlockedContentTabHelper::LaunchForContents(
     TabContentsWrapper* tab_contents) {
+  SendNotification(tab_contents, false);
   blocked_contents_->LaunchForContents(tab_contents);
   if (!blocked_contents_->GetBlockedContentsCount())
     PopupNotificationVisibilityChanged(false);
