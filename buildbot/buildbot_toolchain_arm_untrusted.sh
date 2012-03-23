@@ -62,7 +62,7 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     # Don't test arm + 64-bit on 32-bit builder.
     # We can't build 64-bit trusted components on a 32-bit system.
     # Arm disabled on 32-bit because it runs out of memory.
-    TOOLCHAIN_LABEL=pnacl_linux_i686
+    TOOLCHAIN_LABEL=pnacl_linux_x86_32
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   linux-64)
@@ -78,15 +78,15 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     export PNACL_VERBOSE=true  # To avoid timing out, since this bot is slow.
     # We can't test ARM because we do not have QEMU for Mac.
     # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-    TOOLCHAIN_LABEL=pnacl_darwin_i386
+    TOOLCHAIN_LABEL=pnacl_mac_x86_32
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-32)
-    TOOLCHAIN_LABEL=pnacl_windows_i686
+    TOOLCHAIN_LABEL=pnacl_win_x86_32
     RUN_TESTS="x86-32 x86-32-browser"
     ;;
   win-64)
-    TOOLCHAIN_LABEL=pnacl_windows_i686
+    TOOLCHAIN_LABEL=pnacl_win_x86_64
     BUILD_32BIT_PLUGIN=true
     RUN_TESTS="x86-64 x86-64-browser"
     ;;
