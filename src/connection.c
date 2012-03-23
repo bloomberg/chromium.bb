@@ -62,7 +62,6 @@ struct wl_closure {
 struct wl_connection {
 	struct wl_buffer in, out;
 	struct wl_buffer fds_in, fds_out;
-	int n_fds_out;
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
@@ -156,6 +155,12 @@ wl_buffer_copy(struct wl_buffer *b, void *data, size_t count)
 		memcpy(data, b->data + tail, size);
 		memcpy((char *) data + size, b->data, count - size);
 	}
+}
+
+static int
+wl_buffer_size(struct wl_buffer *b)
+{
+	return b->head - b->tail;
 }
 
 struct wl_connection *
@@ -287,7 +292,6 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		}
 
 		close_fds(&connection->fds_out);
-		connection->n_fds_out = 0;
 
 		connection->out.tail += len;
 		if (connection->out.tail == connection->out.head &&
@@ -397,13 +401,11 @@ wl_message_size_extra(const struct wl_message *message)
 static int
 wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 {
-	if (connection->n_fds_out + 1 > MAX_FDS_OUT) {
+	if (wl_buffer_size(&connection->fds_out) == MAX_FDS_OUT * sizeof fd)
 		if (wl_connection_data(connection, WL_CONNECTION_WRITABLE))
 			return -1;
-	}
 
 	wl_buffer_put(&connection->fds_out, &fd, sizeof fd);
-	connection->n_fds_out++;
 
 	return 0;
 }
