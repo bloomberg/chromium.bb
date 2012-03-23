@@ -409,6 +409,40 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
   }
 }
 
+bool ChromeLauncherDelegate::IsAppPinned(const std::string& app_id) {
+  Item* item = GetItemByAppID(app_id);
+  return item && item->pinned;
+}
+
+void ChromeLauncherDelegate::PinAppWithID(const std::string& app_id,
+                                          AppType app_type) {
+  // Find if there is live instance of this app and pin it.
+  Item* item = GetItemByAppID(app_id);
+  if (item) {
+    if (!item->pinned) {
+      item->pinned = true;
+      PersistPinnedState();
+    }
+    return;
+  }
+
+  // Otherwise, create an item for it.
+  // TODO(xiyuan): Revisit this after launcher logic is updated. We might
+  // want to respect extension app's launch type pref.
+  CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
+  PersistPinnedState();
+}
+
+void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
+  for (IDToItemMap::iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ) {
+    IDToItemMap::iterator current(i);
+    ++i;
+    if (current->second.app_id == app_id && current->second.pinned)
+      Unpin(current->first);
+  }
+}
+
 void ChromeLauncherDelegate::CreateNewWindow() {
   Browser::NewEmptyWindow(GetProfileForNewWindows());
 }
@@ -528,16 +562,6 @@ void ChromeLauncherDelegate::PersistPinnedState() {
   }
 }
 
-void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
-  for (IDToItemMap::iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ) {
-    IDToItemMap::iterator current(i);
-    ++i;
-    if (current->second.app_id == app_id && current->second.pinned)
-      Unpin(current->first);
-  }
-}
-
 void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
   app_icon_loader_.reset(loader);
 }
@@ -545,3 +569,16 @@ void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
 Profile* ChromeLauncherDelegate::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
+
+ChromeLauncherDelegate::Item* ChromeLauncherDelegate::GetItemByAppID(
+    const std::string& app_id) {
+  for (IDToItemMap::iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end();
+       ++i) {
+    if (i->second.app_id == app_id)
+      return &(i->second);
+  }
+
+  return NULL;
+}
+

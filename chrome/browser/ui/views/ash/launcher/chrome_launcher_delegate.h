@@ -150,6 +150,17 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // AppIconLoader.
   void SetAppImage(const std::string& app_id, const SkBitmap* image);
 
+  // Returns true if a pinned launcher item with given |app_id| could be found.
+  bool IsAppPinned(const std::string& app_id);
+
+  // Pins an app with |app_id| to launcher. If there is a running instance in
+  // launcher, the running instance is pinned. If there is no running instance,
+  // a new launcher item is created with |app_type| and pinned.
+  void PinAppWithID(const std::string& app_id, AppType app_type);
+
+  // Unpins any app items whose id is |app_id|.
+  void UnpinAppsWithID(const std::string& app_id);
+
   ash::LauncherModel* model() { return model_; }
 
   // ash::LauncherDelegate overrides:
@@ -210,15 +221,15 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // and indicates how the app is opened.
   void PersistPinnedState();
 
-  // Unpins any app items whose id is |app_id|.
-  void UnpinAppsWithID(const std::string& app_id);
-
   // Sets the AppIconLoader, taking ownership of |loader|. This is intended for
   // testing.
   void SetAppIconLoaderForTest(AppIconLoader* loader);
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
+
+  // Returns a pointer to an Item that has |app_id|. Otherwise, returns NULL.
+  Item* GetItemByAppID(const std::string& app_id);
 
   static ChromeLauncherDelegate* instance_;
 

@@ -48,6 +48,8 @@ class ExtensionAppItem : public ChromeAppListItem,
                              int tracker_index) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
