@@ -76,6 +76,8 @@ class LauncherButton : public views::CustomButton {
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
 
+  // Sets the icon image with a shadow.
+  void SetShadowedImage(const SkBitmap& bitmap);
   // Override for custom initialization.
   virtual void Init();
   // Override to subclass IconView.

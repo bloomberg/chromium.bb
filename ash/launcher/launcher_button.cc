@@ -13,6 +13,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 
@@ -79,6 +80,32 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
 LauncherButton::~LauncherButton() {
 }
 
+void LauncherButton::SetShadowedImage(const SkBitmap& bitmap) {
+  const SkColor kShadowColor[] = {
+    SkColorSetARGB(0x1A, 0, 0, 0),
+    SkColorSetARGB(0x1A, 0, 0, 0),
+    SkColorSetARGB(0x54, 0, 0, 0),
+  };
+  const gfx::Point kShadowOffset[] = {
+    gfx::Point(0, 2),
+    gfx::Point(0, 3),
+    gfx::Point(0, 0),
+  };
+  const SkScalar kShadowRadius[] = {
+    SkIntToScalar(0),
+    SkIntToScalar(1),
+    SkIntToScalar(1),
+  };
+
+  SkBitmap shadowed_bitmap = SkBitmapOperations::CreateDropShadow(
+      bitmap,
+      arraysize(kShadowColor) - 1,
+      kShadowColor,
+      kShadowOffset,
+      kShadowRadius);
+  icon_view_->SetImage(shadowed_bitmap);
+}
+
 void LauncherButton::SetImage(const SkBitmap& image) {
   if (image.empty()) {
     // TODO: need an empty image.
@@ -87,7 +114,7 @@ void LauncherButton::SetImage(const SkBitmap& image) {
   }
 
   if (icon_view_->icon_size() == 0) {
-    icon_view_->SetImage(&image);
+    SetShadowedImage(image);
     return;
   }
 
@@ -101,15 +128,15 @@ void LauncherButton::SetImage(const SkBitmap& image) {
     width = pref;
     height = static_cast<int>(width / aspect_ratio);
   }
+
   if (width == image.width() && height == image.height()) {
-    icon_view_->SetImage(&image);
+    SetShadowedImage(image);
     return;
   }
-  gfx::Canvas canvas(gfx::Size(width, height), false);
-  canvas.DrawBitmapInt(image, 0, 0, image.width(), image.height(),
-                       0, 0, width, height, false);
-  SkBitmap resized_image(canvas.ExtractBitmap());
-  icon_view_->SetImage(&resized_image);
+
+  SkBitmap resized_image = SkBitmapOperations::CreateResizedBitmap(
+      image, gfx::Size(width, height));
+  SetShadowedImage(resized_image);
 }
 
 void LauncherButton::AddState(State state) {
