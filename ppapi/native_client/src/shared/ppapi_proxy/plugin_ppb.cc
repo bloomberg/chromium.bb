@@ -94,8 +94,6 @@ InterfaceMapElement interface_map[] = {
     PluginNetAddressPrivate::GetInterface0_1(), true },
   { PPB_NETADDRESS_PRIVATE_INTERFACE_1_0,
     PluginNetAddressPrivate::GetInterface1_0(), true },
-  { PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
-    PluginNetAddressPrivate::GetInterface1_1(), true },
   { PPB_OPENGLES2_INTERFACE_1_0, PluginGraphics3D::GetOpenGLESInterface(),
     true },
   { PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0,

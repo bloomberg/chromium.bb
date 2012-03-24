@@ -1782,51 +1782,6 @@ static void PPB_NetAddress_Private_GetAddressDispatcher(
   );
 }
 
-static void PPB_NetAddress_Private_GetScopeIDDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_GetScopeID(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      &(outputs[0]->u.ival)
-  );
-}
-
-static void PPB_NetAddress_Private_CreateFromIPv4AddressDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv4Address(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
-static void PPB_NetAddress_Private_CreateFromIPv6AddressDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbNetAddressPrivateRpcServer::PPB_NetAddress_Private_CreateFromIPv6Address(
-      rpc,
-      done,
-      inputs[0]->u.count, inputs[0]->arrays.carr,
-      inputs[1]->u.ival,
-      inputs[2]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr
-  );
-}
-
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -3282,9 +3237,6 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_NetAddress_Private_GetFamily:C:i", PPB_NetAddress_Private_GetFamilyDispatcher },
   { "PPB_NetAddress_Private_GetPort:C:i", PPB_NetAddress_Private_GetPortDispatcher },
   { "PPB_NetAddress_Private_GetAddress:C:Ci", PPB_NetAddress_Private_GetAddressDispatcher },
-  { "PPB_NetAddress_Private_GetScopeID:C:i", PPB_NetAddress_Private_GetScopeIDDispatcher },
-  { "PPB_NetAddress_Private_CreateFromIPv4Address:Ci:C", PPB_NetAddress_Private_CreateFromIPv4AddressDispatcher },
-  { "PPB_NetAddress_Private_CreateFromIPv6Address:Cii:C", PPB_NetAddress_Private_CreateFromIPv6AddressDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

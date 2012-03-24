@@ -914,24 +914,6 @@ class PpbNetAddressPrivateRpcServer {
       nacl_abi_size_t addr_bytes, char* addr,
       nacl_abi_size_t* address_bytes, char* address,
       int32_t* success);
-  static void PPB_NetAddress_Private_GetScopeID(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t addr_bytes, char* addr,
-      int32_t* scope_id);
-  static void PPB_NetAddress_Private_CreateFromIPv4Address(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t ip_bytes, char* ip,
-      int32_t port,
-      nacl_abi_size_t* addr_bytes, char* addr);
-  static void PPB_NetAddress_Private_CreateFromIPv6Address(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      nacl_abi_size_t ip_bytes, char* ip,
-      int32_t scope_id,
-      int32_t port,
-      nacl_abi_size_t* addr_bytes, char* addr);
 
  private:
   PpbNetAddressPrivateRpcServer();
