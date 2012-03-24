@@ -6,6 +6,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -81,6 +82,10 @@ void HoverHighlightView::AddLabel(const string16& text,
   AddChildView(label);
 
   accessible_name_ = text;
+}
+
+void HoverHighlightView::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
 }
 
 bool HoverHighlightView::OnKeyPressed(const views::KeyEvent& event) {
@@ -168,6 +173,8 @@ views::View* CreateDetailedHeaderEntry(int string_id,
   header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   header->SetFont(header->font().DeriveFont(4));
   container->AddChildView(header);
+  container->SetAccessibleName(
+      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
   return container;
 }
 

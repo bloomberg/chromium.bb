@@ -59,6 +59,9 @@ class HoverHighlightView : public views::View {
   // blank icon.
   void AddLabel(const string16& text, gfx::Font::FontStyle style);
 
+  // Set the accessible name.  Should be used if this doesn't match the label.
+  void SetAccessibleName(const string16& name);
+
  private:
   // Overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
