@@ -515,14 +515,19 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
     case LeaveNotify:
       return ET_MOUSE_EXITED;
     case GenericEvent: {
+      TouchFactory* factory = TouchFactory::GetInstance();
+      if (!factory->ShouldProcessXI2Event(native_event))
+        return ET_UNKNOWN;
+
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 
       // Map Alt+Button1 to Button3
       DetectAltClick(xievent);
 
-      if (TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid))
+      if (factory->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
+
       switch (xievent->evtype) {
         case XI_ButtonPress: {
           int button = EventButtonFromNative(native_event);

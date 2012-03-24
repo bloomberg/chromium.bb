@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
+#include "base/message_pump_observer.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -39,7 +40,8 @@ class SystemTrayBubble;
 
 class ASH_EXPORT SystemTray : public views::View,
                               public views::Widget::Observer,
-                              public internal::BackgroundAnimatorDelegate {
+                              public internal::BackgroundAnimatorDelegate,
+                              public base::MessagePumpObserver {
  public:
   SystemTray();
   virtual ~SystemTray();
@@ -128,9 +130,16 @@ class ASH_EXPORT SystemTray : public views::View,
 
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE;
 
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;
+
+  // Overidden from base::MessagePumpObserver
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   ScopedVector<SystemTrayItem> items_;
 

@@ -14,6 +14,7 @@
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
+#include "base/message_loop.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -22,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/base/events.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -475,6 +477,7 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 
 void SystemTray::ShowDefaultView() {
   if (popup_) {
+    MessageLoopForUI::current()->RemoveObserver(this);
     popup_->RemoveObserver(this);
     popup_->Close();
   }
@@ -488,6 +491,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   int close_delay,
                                   bool activate) {
   if (popup_) {
+    MessageLoopForUI::current()->RemoveObserver(this);
     popup_->RemoveObserver(this);
     popup_->Close();
   }
@@ -545,6 +549,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
   popup_->non_client_view()->frame_view()->set_background(NULL);
   popup_->non_client_view()->frame_view()->set_border(
       new SystemTrayBubbleBorder(bubble_));
+  MessageLoopForUI::current()->AddObserver(this);
   popup_->AddObserver(this);
 
   // Setup animation.
@@ -605,9 +610,16 @@ void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 void SystemTray::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(popup_, widget);
+  MessageLoopForUI::current()->RemoveObserver(this);
   popup_ = NULL;
   bubble_ = NULL;
   Shell::GetInstance()->shelf()->UpdateAutoHideState();
+}
+
+void SystemTray::OnWidgetVisibilityChanged(views::Widget* widget,
+                                           bool visible) {
+  if (!visible)
+    MessageLoopForUI::current()->RemoveObserver(this);
 }
 
 void SystemTray::UpdateBackground(int alpha) {
@@ -615,6 +627,22 @@ void SystemTray::UpdateBackground(int alpha) {
     alpha += kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha;
   background_->set_alpha(alpha);
   SchedulePaint();
+}
+
+base::EventStatus SystemTray::WillProcessEvent(const base::NativeEvent& event) {
+  // Check if the user clicked outside of the system tray bubble and hide it
+  // if they did.
+  if (bubble_ && ui::EventTypeFromNative(event) == ui::ET_MOUSE_PRESSED) {
+    gfx::Point cursor_in_view = ui::EventLocationFromNative(event);
+    View::ConvertPointFromScreen(bubble_, &cursor_in_view);
+    if (!bubble_->HitTest(cursor_in_view)) {
+      popup_->Hide();
+    }
+  }
+  return base::EVENT_CONTINUE;
+}
+
+void SystemTray::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 }  // namespace ash
