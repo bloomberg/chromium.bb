@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_node_client.h"
 #include "chrome/browser/chromeos/dbus/cashew_client.h"
-#include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_client.h"
 #include "chrome/browser/chromeos/dbus/image_burner_client.h"
@@ -43,10 +42,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     system_bus_options.dbus_thread_message_loop_proxy =
         dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
-
-    // Create and start the cros D-Bus service.
-    cros_dbus_service_.reset(CrosDBusService::Create(system_bus_.get()));
-    cros_dbus_service_->Start();
 
     // Create the bluetooth clients.
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
@@ -171,7 +166,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
-  scoped_ptr<CrosDBusService> cros_dbus_service_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;

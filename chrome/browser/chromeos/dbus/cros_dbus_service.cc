@@ -8,6 +8,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -15,6 +16,12 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+CrosDBusService* g_cros_dbus_service = NULL;
+
+}  // namespace
 
 // The CrosDBusService implementation used in production, and unit tests.
 class CrosDBusServiceImpl : public CrosDBusService {
@@ -29,8 +36,8 @@ class CrosDBusServiceImpl : public CrosDBusService {
     STLDeleteElements(&service_providers_);
   }
 
-  // CrosDBusService override.
-  virtual void Start() {
+  // Starts the D-Bus service.
+  void Start() {
     // Make sure we're running on the origin thread (i.e. the UI thread in
     // production).
     DCHECK(OnOriginThread());
@@ -90,30 +97,46 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 
   virtual ~CrosDBusServiceStubImpl() {
   }
-
-  // CrosDBusService override.
-  virtual void Start() {
-  }
 };
 
 // static
-CrosDBusService* CrosDBusService::Create(dbus::Bus* bus) {
+void CrosDBusService::Initialize() {
+  if (g_cros_dbus_service) {
+    LOG(WARNING) << "CrosDBusService was already initialized";
+    return;
+  }
   if (base::chromeos::IsRunningOnChromeOS()) {
+    dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
-    return service;
+    g_cros_dbus_service = service;
+    service->Start();
   } else {
-    return new CrosDBusServiceStubImpl;
+    g_cros_dbus_service = new CrosDBusServiceStubImpl;
   }
+  VLOG(1) << "CrosDBusService initialized";
 }
 
 // static
-CrosDBusService* CrosDBusService::CreateForTesting(
+void CrosDBusService::InitializeForTesting(
     dbus::Bus* bus,
     ServiceProviderInterface* proxy_resolution_service) {
+  if (g_cros_dbus_service) {
+    LOG(WARNING) << "CrosDBusService was already initialized";
+    return;
+  }
   CrosDBusServiceImpl* service =  new CrosDBusServiceImpl(bus);
   service->RegisterServiceProvider(proxy_resolution_service);
-  return service;
+  service->Start();
+  g_cros_dbus_service = service;
+  VLOG(1) << "CrosDBusService initialized";
+}
+
+// static
+void CrosDBusService::Shutdown() {
+  delete g_cros_dbus_service;
+  g_cros_dbus_service = NULL;
+  VLOG(1) << "CrosDBusService Shutdown completed";
 }
 
 CrosDBusService::~CrosDBusService() {

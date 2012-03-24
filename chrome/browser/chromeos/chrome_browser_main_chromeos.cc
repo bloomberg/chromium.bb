@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
+#include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -207,6 +208,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
+  chromeos::CrosDBusService::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -252,6 +254,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize DBusThreadManager for the browser. This must be done after
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
+  chromeos::CrosDBusService::Initialize();
 
   // Initialize the session manager observer so that we'll take actions
   // per signals sent from the session manager.
