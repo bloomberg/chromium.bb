@@ -1421,6 +1421,8 @@ void HistoryBackend::QueryFilteredURLs(
   if (request->canceled())
     return;
 
+  base::Time request_start = base::Time::Now();
+
   if (!db_.get()) {
     // No History Database - return an empty list.
     request->ForwardResult(request->handle(), MostVisitedURLList());
@@ -1521,6 +1523,14 @@ void HistoryBackend::QueryFilteredURLs(
     MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
     result.push_back(url);
   }
+
+  int delta_time = std::max(1, std::min(999,
+      static_cast<int>((base::Time::Now() - request_start).InMilliseconds())));
+  STATIC_HISTOGRAM_POINTER_BLOCK(
+      "NewTabPage.SuggestedSitesLoadTime",
+      Add(delta_time),
+      base::LinearHistogram::FactoryGet("NewTabPage.SuggestedSitesLoadTime",
+          1, 1000, 100, base::Histogram::kUmaTargetedHistogramFlag));
 
   request->ForwardResult(request->handle(), result);
 }
