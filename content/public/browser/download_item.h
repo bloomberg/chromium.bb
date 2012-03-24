@@ -295,6 +295,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual bool IsOtr() const = 0;
   virtual const FilePath& GetSuggestedPath() const = 0;
   virtual bool IsTemporary() const = 0;
+  virtual void SetIsTemporary(bool temporary) = 0;
   virtual void SetOpened(bool opened) = 0;
   virtual bool GetOpened() const = 0;
 

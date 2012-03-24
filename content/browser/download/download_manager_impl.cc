@@ -904,7 +904,9 @@ void DownloadManagerImpl::FileSelected(const FilePath& path,
   VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
             << " download = " << download->DebugString(true);
 
-  if (download->PromptUserForSaveLocation())
+  // Retain the last directory that was picked by the user. Exclude temporary
+  // downloads since the path likely points at the location of a temporary file.
+  if (download->PromptUserForSaveLocation() && !download->IsTemporary())
     last_download_path_ = path.DirName();
 
   // Make sure the initial file name is set only once.

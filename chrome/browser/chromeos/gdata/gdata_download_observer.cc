@@ -163,10 +163,15 @@ void GDataDownloadObserver::ModelChanged(DownloadManager* download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadManager::DownloadVector downloads;
-  download_manager->GetAllDownloads(temp_download_path_,
-                                    &downloads);
+  // GData downloads are considered temporary downloads.
+  download_manager->GetTemporaryDownloads(temp_download_path_,
+                                          &downloads);
   for (size_t i = 0; i < downloads.size(); ++i) {
-    OnDownloadUpdated(downloads[i]);
+    // Only accept downloads that have the GData meta data associated with
+    // them. Otherwise we might trip over non-GData downloads being saved to
+    // temp_download_path_.
+    if (IsGDataDownload(downloads[i]))
+      OnDownloadUpdated(downloads[i]);
   }
 }
 

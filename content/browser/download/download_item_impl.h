@@ -190,6 +190,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool IsOtr() const OVERRIDE;
   virtual const FilePath& GetSuggestedPath() const OVERRIDE;
   virtual bool IsTemporary() const OVERRIDE;
+  virtual void SetIsTemporary(bool temporary) OVERRIDE;
   virtual void SetOpened(bool opened) OVERRIDE;
   virtual bool GetOpened() const OVERRIDE;
   virtual const std::string& GetLastModifiedTime() const OVERRIDE;

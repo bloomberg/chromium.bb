@@ -44,10 +44,18 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case SHOW_IN_FOLDER:
     case OPEN_WHEN_COMPLETE:
-      return download_item_->CanShowInFolder();
+      // Don't enable "Open when complete" if the download is no longer
+      // available or if it is temporary. We explicitly ignore "Open when
+      // complete" for temporary downloads.
+      return download_item_->CanShowInFolder() &&
+          !download_item_->IsTemporary();
     case ALWAYS_OPEN_TYPE:
+      // For temporary downloads, the target filename might be a temporary
+      // filename. Don't base an "Always open" decision based on it. Also
+      // exclude extensions.
       return download_item_->CanOpenDownload() &&
-          !Extension::IsExtension(download_item_->GetTargetName());
+          !Extension::IsExtension(download_item_->GetTargetName()) &&
+          !download_item_->IsTemporary();
     case CANCEL:
       return download_item_->IsPartialDownload();
     case TOGGLE_PAUSE:

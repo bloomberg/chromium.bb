@@ -80,6 +80,7 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
       if (download) {
         gdata::GDataDownloadObserver::SetGDataPath(download, path);
         download->SetDisplayName(path.BaseName());
+        download->SetIsTemporary(true);
 
         const FilePath download_cache_path =
             system_service->file_system()->GetGDataTempDownloadFolderPath();

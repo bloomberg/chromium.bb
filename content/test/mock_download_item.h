@@ -99,6 +99,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(IsOtr, bool());
   MOCK_CONST_METHOD0(GetSuggestedPath, const FilePath&());
   MOCK_CONST_METHOD0(IsTemporary, bool());
+  MOCK_METHOD1(SetIsTemporary, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_CONST_METHOD0(GetOpened, bool());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());

@@ -347,7 +347,10 @@ void DownloadItemImpl::OpenDownload() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (IsPartialDownload()) {
-    open_when_complete_ = !open_when_complete_;
+    // We don't honor the open_when_complete_ flag for temporary
+    // downloads. Don't set it because it shows up in the UI.
+    if (!IsTemporary())
+      open_when_complete_ = !open_when_complete_;
     return;
   }
 
@@ -1111,6 +1114,9 @@ const FilePath& DownloadItemImpl::GetSuggestedPath() const {
   return state_info_.suggested_path;
 }
 bool DownloadItemImpl::IsTemporary() const { return is_temporary_; }
+void DownloadItemImpl::SetIsTemporary(bool temporary) {
+  is_temporary_ = temporary;
+}
 void DownloadItemImpl::SetOpened(bool opened) { opened_ = opened; }
 bool DownloadItemImpl::GetOpened() const { return opened_; }
 const std::string& DownloadItemImpl::GetLastModifiedTime() const {
