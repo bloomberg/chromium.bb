@@ -116,6 +116,10 @@ class NativeThemeBase : public NativeTheme {
       const ProgressBarExtraParams& progress_bar) const;
 
  protected:
+  void set_scrollbar_button_length(unsigned int length) {
+    scrollbar_button_length_ = length;
+  }
+
   bool IntersectsClipRectInt(SkCanvas* canvas,
                              int x, int y, int w, int h) const;
 
@@ -152,8 +156,8 @@ class NativeThemeBase : public NativeTheme {
                  SkScalar max) const;
   SkColor OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const;
 
-  static unsigned int scrollbar_width_;
-  static unsigned int button_length_;
+  unsigned int scrollbar_width_;
+  unsigned int scrollbar_button_length_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);
 };

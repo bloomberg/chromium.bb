@@ -59,6 +59,8 @@ const NativeThemeAura* NativeThemeAura::instance() {
 }
 
 NativeThemeAura::NativeThemeAura() {
+  // We don't draw scrollbar buttons.
+  set_scrollbar_button_length(0);
 }
 
 NativeThemeAura::~NativeThemeAura() {
@@ -131,127 +133,145 @@ void NativeThemeAura::PaintScrollbarTrack(
     const gfx::Rect& rect) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (part == kScrollbarVerticalTrack) {
-    SkBitmap* background = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND);
-    SkBitmap* border_up = rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
-    SkBitmap* border_down =
-        rb.GetBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
-    // Draw track background.
-    DrawBitmapInt(
-        canvas, *background,
-        0, 0, background->width(), 1,
-        rect.x(), rect.y(), rect.width(), rect.height());
-    // Draw up button lower border.
-    canvas->drawBitmap(*border_up, extra_params.track_x, extra_params.track_y);
-    // Draw down button upper border.
-    canvas->drawBitmap(
-        *border_down,
-        extra_params.track_x,
-        extra_params.track_y + extra_params.track_height - border_down->height()
-        );
+    int center_offset = 0;
+    int center_height = rect.height();
+
+    if (rect.y() == extra_params.track_y) {
+      // TODO(derat): Honor |state| instead of only using the highlighted images
+      // after updating WebKit so we can draw the entire track in one go instead
+      // of as two separate pieces: otherwise, only the portion of the scrollbar
+      // that the mouse is over gets the highlighted state.
+      SkBitmap* top = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_TOP_H);
+      DrawTiledImage(canvas, *top,
+                     0, 0, 1.0, 1.0,
+                     rect.x(), rect.y(), top->width(), top->height());
+      center_offset += top->height();
+      center_height -= top->height();
+    }
+
+    if (rect.y() + rect.height() ==
+        extra_params.track_y + extra_params.track_height) {
+      SkBitmap* bottom = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_BOTTOM_H);
+      DrawTiledImage(canvas, *bottom,
+                     0, 0, 1.0, 1.0,
+                     rect.x(), rect.y() + rect.height() - bottom->height(),
+                     bottom->width(), bottom->height());
+      center_height -= bottom->height();
+    }
+
+    if (center_height > 0) {
+      SkBitmap* center = rb.GetBitmapNamed(IDR_SCROLL_BASE_VERTICAL_CENTER_H);
+      DrawTiledImage(canvas, *center,
+                     0, 0, 1.0, 1.0,
+                     rect.x(), rect.y() + center_offset,
+                     center->width(), center_height);
+    }
   } else {
-    SkBitmap* background =
-        GetHorizontalBitmapNamed(IDR_SCROLL_BACKGROUND);
-    SkBitmap* border_left =
-        GetHorizontalBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_UP);
-    SkBitmap* border_right =
-        GetHorizontalBitmapNamed(IDR_SCROLL_BACKGROUND_BORDER_DOWN);
-    // Draw track background.
-    DrawBitmapInt(
-        canvas, *background,
-        0, 0, 1, background->height(),
-        rect.x(), rect.y(), rect.width(), rect.height());
-    // Draw left button right border.
-    canvas->drawBitmap(*border_left,extra_params.track_x, extra_params.track_y);
-    // Draw right button left border.
-    canvas->drawBitmap(
-        *border_right,
-        extra_params.track_x + extra_params.track_width - border_right->width(),
-        extra_params.track_y);
+    int center_offset = 0;
+    int center_width = rect.width();
+
+    if (rect.x() == extra_params.track_x) {
+      SkBitmap* left = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_LEFT_H);
+      DrawTiledImage(canvas, *left,
+                     0, 0, 1.0, 1.0,
+                     rect.x(), rect.y(), left->width(), left->height());
+      center_offset += left->width();
+      center_width -= left->width();
+    }
+
+    if (rect.x() + rect.width() ==
+        extra_params.track_x + extra_params.track_width) {
+      SkBitmap* right = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H);
+      DrawTiledImage(canvas, *right,
+                     0, 0, 1.0, 1.0,
+                     rect.x() + rect.width() - right->width(), rect.y(),
+                     right->width(), right->height());
+      center_width -= right->width();
+    }
+
+    if (center_width > 0) {
+      SkBitmap* center = rb.GetBitmapNamed(IDR_SCROLL_BASE_HORIZONTAL_CENTER_H);
+      DrawTiledImage(canvas, *center,
+                     0, 0, 1.0, 1.0,
+                     rect.x() + center_offset, rect.y(),
+                     center_width, center->height());
+    }
   }
 }
 
 void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
     const gfx::Rect& rect, Part part, State state) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  int resource_id =
-      (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
-          IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
-  if (state == kHovered)
-    resource_id++;
-  else if (state == kPressed)
-    resource_id += 2;
-  SkBitmap* bitmap;
-  if (part == kScrollbarUpArrow || part == kScrollbarDownArrow)
-    bitmap = rb.GetBitmapNamed(resource_id);
-  else
-    bitmap = GetHorizontalBitmapNamed(resource_id);
-  DrawBitmapInt(canvas, *bitmap,
-      0, 0, bitmap->width(), bitmap->height(),
-      rect.x(), rect.y(), rect.width(), rect.height());
+  DCHECK(rect.IsEmpty());
 }
 
 void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  int resource_id = IDR_SCROLL_THUMB;
-  if (state == kHovered)
-    resource_id++;
-  else if (state == kPressed)
-    resource_id += 2;
   if (part == kScrollbarVerticalThumb) {
-    SkBitmap* bitmap = rb.GetBitmapNamed(resource_id);
-    // Top
-    DrawBitmapInt(
-        canvas, *bitmap,
-        0, 1, bitmap->width(), 5,
-        rect.x(), rect.y(), rect.width(), 5);
-    // Middle
-    DrawBitmapInt(
-        canvas, *bitmap,
-        0, 7, bitmap->width(), 1,
-        rect.x(), rect.y() + 5, rect.width(), rect.height() - 10);
-    // Bottom
-    DrawBitmapInt(
-        canvas, *bitmap,
-        0, 8, bitmap->width(), 5,
-        rect.x(), rect.y() + rect.height() - 5, rect.width(), 5);
+    int top_resource_id =
+        state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_TOP_H :
+        state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_TOP_P :
+        IDR_SCROLL_THUMB_VERTICAL_TOP;
+    SkBitmap* top = rb.GetBitmapNamed(top_resource_id);
+    DrawTiledImage(canvas, *top,
+                   0, 0, 1.0, 1.0,
+                   rect.x(), rect.y(), top->width(), top->height());
+
+    int bottom_resource_id =
+        state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H :
+        state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P :
+        IDR_SCROLL_THUMB_VERTICAL_BOTTOM;
+    SkBitmap* bottom = rb.GetBitmapNamed(bottom_resource_id);
+    DrawTiledImage(canvas, *bottom,
+                   0, 0, 1.0, 1.0,
+                   rect.x(), rect.y() + rect.height() - bottom->height(),
+                   bottom->width(), bottom->height());
+
+    if (rect.height() > top->height() + bottom->height()) {
+      int center_resource_id =
+          state == kHovered ? IDR_SCROLL_THUMB_VERTICAL_CENTER_H :
+          state == kPressed ? IDR_SCROLL_THUMB_VERTICAL_CENTER_P :
+          IDR_SCROLL_THUMB_VERTICAL_CENTER;
+      SkBitmap* center = rb.GetBitmapNamed(center_resource_id);
+      DrawTiledImage(canvas, *center,
+                     0, 0, 1.0, 1.0,
+                     rect.x(), rect.y() + top->height(),
+                     center->width(),
+                     rect.height() - top->height() - bottom->height());
+    }
   } else {
-    SkBitmap* bitmap = GetHorizontalBitmapNamed(resource_id);
-    // Left
-    DrawBitmapInt(
-        canvas, *bitmap,
-        1, 0, 5, bitmap->height(),
-        rect.x(), rect.y(), 5, rect.height());
-    // Middle
-    DrawBitmapInt(
-        canvas, *bitmap,
-        7, 0, 1, bitmap->height(),
-        rect.x() + 5, rect.y(), rect.width() - 10, rect.height());
-    // Right
-    DrawBitmapInt(
-        canvas, *bitmap,
-        8, 0, 5, bitmap->height(),
-        rect.x() + rect.width() - 5, rect.y(), 5, rect.height());
+    int left_resource_id =
+        state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H :
+        state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P :
+        IDR_SCROLL_THUMB_HORIZONTAL_LEFT;
+    SkBitmap* left = rb.GetBitmapNamed(left_resource_id);
+    DrawTiledImage(canvas, *left,
+                   0, 0, 1.0, 1.0,
+                   rect.x(), rect.y(), left->width(), left->height());
+
+    int right_resource_id =
+        state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H :
+        state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P :
+        IDR_SCROLL_THUMB_HORIZONTAL_RIGHT;
+    SkBitmap* right = rb.GetBitmapNamed(right_resource_id);
+    DrawTiledImage(canvas, *right,
+                   0, 0, 1.0, 1.0,
+                   rect.x() + rect.width() - right->width(), rect.y(),
+                   right->width(), right->height());
+
+    if (rect.width() > left->width() + right->width()) {
+      int center_resource_id =
+          state == kHovered ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H :
+          state == kPressed ? IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P :
+          IDR_SCROLL_THUMB_HORIZONTAL_CENTER;
+      SkBitmap* center = rb.GetBitmapNamed(center_resource_id);
+      DrawTiledImage(canvas, *center,
+                     0, 0, 1.0, 1.0,
+                     rect.x() + left->width(), rect.y(),
+                     rect.width() - left->width() - right->width(),
+                     center->height());
+    }
   }
-}
-
-SkBitmap* NativeThemeAura::GetHorizontalBitmapNamed(int resource_id) const {
-  SkImageMap::const_iterator found = horizontal_bitmaps_.find(resource_id);
-  if (found != horizontal_bitmaps_.end())
-    return found->second;
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* vertical_bitmap = rb.GetBitmapNamed(resource_id);
-
-  if (vertical_bitmap) {
-    SkBitmap transposed_bitmap =
-        SkBitmapOperations::CreateTransposedBtmap(*vertical_bitmap);
-    SkBitmap* horizontal_bitmap = new SkBitmap(transposed_bitmap);
-
-    horizontal_bitmaps_[resource_id] = horizontal_bitmap;
-    return horizontal_bitmap;
-  }
-  return NULL;
 }
 
 }  // namespace gfx

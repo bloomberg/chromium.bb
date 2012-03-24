@@ -33,6 +33,9 @@ const SkColor kSliderThumbBorderDarkGrey =
 
 const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
 
+const unsigned int kDefaultScrollbarWidth = 15;
+const unsigned int kDefaultScrollbarButtonLength = 14;
+
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
     double lightness_amount) {
@@ -49,9 +52,6 @@ SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
 }  // namespace
 
 namespace gfx {
-
-unsigned int NativeThemeBase::button_length_ = 14;
-unsigned int NativeThemeBase::scrollbar_width_ = 15;
 
 gfx::Size NativeThemeBase::GetPartSize(Part part,
                                        State state,
@@ -83,10 +83,10 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
       return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
-      return gfx::Size(scrollbar_width_, button_length_);
+      return gfx::Size(scrollbar_width_, scrollbar_button_length_);
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
-      return gfx::Size(button_length_, scrollbar_width_);
+      return gfx::Size(scrollbar_button_length_, scrollbar_width_);
     case kScrollbarHorizontalThumb:
       // This matches Firefox on Linux.
       return gfx::Size(2 * scrollbar_width_, scrollbar_width_);
@@ -204,7 +204,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
   }
 }
 
-NativeThemeBase::NativeThemeBase() {
+NativeThemeBase::NativeThemeBase()
+    : scrollbar_width_(kDefaultScrollbarWidth),
+      scrollbar_button_length_(kDefaultScrollbarButtonLength) {
 }
 
 NativeThemeBase::~NativeThemeBase() {

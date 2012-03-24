@@ -50,23 +50,39 @@
         <include name="IDR_PROGRESS_BORDER_LEFT" file="resources\linux-progress-border-left.png" type="BINDATA" />
         <include name="IDR_PROGRESS_BORDER_RIGHT" file="resources\linux-progress-border-right.png" type="BINDATA" />
         <include name="IDR_PROGRESS_VALUE" file="resources\linux-progress-value.png" type="BINDATA" />
-      </if>
-      
-      <!-- Images used by ChromeOS. -->
-      <!-- TODO(jamescook): Replace Linux images with Aura-specific ones. -->
-      <if expr="pp_ifdef('chromeos') or pp_ifdef('use_aura')">
-        <include name="IDR_SCROLL_ARROW_DOWN" file="resources\chromeos_scroll_arrow_down.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_DOWN_H" file="resources\chromeos_scroll_arrow_down_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_DOWN_P" file="resources\chromeos_scroll_arrow_down_p.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP" file="resources\chromeos_scroll_arrow_up.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP_H" file="resources\chromeos_scroll_arrow_up_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_ARROW_UP_P" file="resources\chromeos_scroll_arrow_up_p.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND" file="resources\chromeos_scroll_background.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="resources\chromeos_scroll_background_border_up.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BACKGROUND_BORDER_DOWN" file="resources\chromeos_scroll_background_border_down.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB" file="resources\chromeos_scroll_thumb.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_H" file="resources\chromeos_scroll_thumb_h.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_P" file="resources\chromeos_scroll_thumb_p.png" type="BINDATA" />
+
+        <include name="IDR_SCROLL_BASE_CORNER" file="resources\aura_scrollbar_base_normal_edge.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_CORNER_H" file="resources\aura_scrollbar_base_hot_edge.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="resources\aura_scrollbar_base_horizontal_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="resources\aura_scrollbar_base_horizontal_hot_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="resources\aura_scrollbar_base_horizontal_normal_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="resources\aura_scrollbar_base_horizontal_hot_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="resources\aura_scrollbar_base_horizontal_normal_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="resources\aura_scrollbar_base_horizontal_hot_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="resources\aura_scrollbar_base_vertical_normal_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="resources\aura_scrollbar_base_vertical_hot_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="resources\aura_scrollbar_base_vertical_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="resources\aura_scrollbar_base_vertical_hot_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_TOP" file="resources\aura_scrollbar_base_vertical_normal_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="resources\aura_scrollbar_base_vertical_hot_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="resources\aura_scrollbar_thumb_horizontal_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="resources\aura_scrollbar_thumb_horizontal_hot_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="resources\aura_scrollbar_thumb_horizontal_pressed_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="resources\aura_scrollbar_thumb_horizontal_normal_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="resources\aura_scrollbar_thumb_horizontal_hot_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="resources\aura_scrollbar_thumb_horizontal_pressed_left.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="resources\aura_scrollbar_thumb_horizontal_normal_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="resources\aura_scrollbar_thumb_horizontal_hot_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="resources\aura_scrollbar_thumb_horizontal_pressed_right.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="resources\aura_scrollbar_thumb_vertical_normal_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="resources\aura_scrollbar_thumb_vertical_hot_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="resources\aura_scrollbar_thumb_vertical_pressed_bottom.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="resources\aura_scrollbar_thumb_vertical_normal_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="resources\aura_scrollbar_thumb_vertical_hot_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="resources\aura_scrollbar_thumb_vertical_pressed_center.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="resources\aura_scrollbar_thumb_vertical_normal_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="resources\aura_scrollbar_thumb_vertical_hot_top.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="resources\aura_scrollbar_thumb_vertical_pressed_top.png" type="BINDATA" />
       </if>
     </includes>
   </release>
