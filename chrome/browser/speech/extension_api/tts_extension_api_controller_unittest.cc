@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_tts_api_controller.h"
-#include "chrome/browser/extensions/extension_tts_api_platform.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
 
 class ExtensionTtsApiControllerTest : public testing::Test {
 };

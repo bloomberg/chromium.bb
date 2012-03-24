@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_PLATFORM_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_PLATFORM_H_
+#ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_
+#define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_tts_api_controller.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 
 // Abstract class that defines the native platform TTS interface,
 // subclassed by specific implementations on Win, Mac, etc.
@@ -56,4 +56,4 @@ class ExtensionTtsPlatformImpl {
   DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImpl);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_PLATFORM_H_
+#endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_PLATFORM_H_

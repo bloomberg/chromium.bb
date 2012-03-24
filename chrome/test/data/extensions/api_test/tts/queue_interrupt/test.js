@@ -9,7 +9,7 @@ chrome.test.runTests([
   function testQueueInterrupt() {
     // In this test, two utterances are queued, and then a third
     // interrupts. The first gets interrupted, the second never gets spoken
-    // at all. The test expectations in extension_tts_apitest.cc ensure that
+    // at all. The test expectations in tts_extension_apitest.cc ensure that
     // the first call to tts.speak keeps going until it's interrupted.
     var callbacks = 0;
     chrome.tts.speak(

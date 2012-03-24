@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tts_api_constants.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 
-namespace extension_tts_api_constants {
+namespace tts_extension_api_constants {
 
 const char kVoiceNameKey[] = "voiceName";
 const char kLangKey[] = "lang";
@@ -46,4 +46,4 @@ const char kErrorInvalidRate[] = "Invalid rate.";
 const char kErrorInvalidPitch[] = "Invalid pitch.";
 const char kErrorInvalidVolume[] = "Invalid volume.";
 
-}  // namespace extension_tts_api_constants.
+}  // namespace tts_extension_api_constants.

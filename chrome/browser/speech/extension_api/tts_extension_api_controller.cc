@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tts_api_controller.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 
 #include <string>
 #include <vector>
@@ -11,14 +11,14 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_tts_api.h"
-#include "chrome/browser/extensions/extension_tts_api_constants.h"
-#include "chrome/browser/extensions/extension_tts_api_platform.h"
-#include "chrome/browser/extensions/extension_tts_engine_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/common/extensions/extension.h"
 
-namespace constants = extension_tts_api_constants;
+namespace constants = tts_extension_api_constants;
 
 namespace {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tts_api_chromeos.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_chromeos.h"
 
 #include <list>
 
@@ -14,8 +14,8 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
-#include "chrome/browser/extensions/extension_tts_api_controller.h"
-#include "chrome/browser/extensions/extension_tts_api_platform.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
 
 using base::DoubleToString;
 

@@ -38,8 +38,6 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
-#include "chrome/browser/extensions/extension_tts_api.h"
-#include "chrome/browser/extensions/extension_tts_engine_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
@@ -50,6 +48,8 @@
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
 #include "chrome/browser/speech/speech_input_extension_api.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/common/extensions/api/generated_api.h"
 
 #if defined(TOOLKIT_VIEWS)

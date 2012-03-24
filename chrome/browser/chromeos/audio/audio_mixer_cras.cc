@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/extensions/extension_tts_api_chromeos.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

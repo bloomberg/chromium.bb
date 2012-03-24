@@ -1,18 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tts_api.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api.h"
 
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_tts_api_constants.h"
-#include "chrome/browser/extensions/extension_tts_api_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace constants = extension_tts_api_constants;
+namespace constants = tts_extension_api_constants;
 
 bool ExtensionTtsSpeakFunction::RunImpl() {
   std::string text;
