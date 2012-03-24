@@ -12269,6 +12269,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS" desc="Displayed when importing an encrypted ONC file and the iteration count is too large.">
         Passphrase iteration count is too large.
       </message>
+      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TITLE" desc="Title of the window for generating a new network certificate.">
+        Obtain Network Certificate
+      </message>
+      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_EMBEDDED_ENROLL" desc="Title of the window for generating a new network certificate.">
+        The network you are attempting to connect to requires a security certificate that is not yet installed or is no longer valid.  Obtain a new certificate below to continue connecting.
+      </message>
+      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TAB_ENROLL" desc="Text in the window used for generating a new network certificate.">
+        The network you are attempting to connect to requires a security certificate that is not yet installed or is no longer valid.  Click the OK button to visit a website used to obtain a new certificate.  When you have obtained the new certificate, try connecting again.
+      </message>
       <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
         Buy plan...
       </message>
