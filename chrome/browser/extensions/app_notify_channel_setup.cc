@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
@@ -91,14 +92,23 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
 void AppNotifyChannelSetup::Start() {
+  AddRef();  // Balanced in ReportResult.
+
   if (g_interceptor_for_tests) {
     std::string channel_id;
-    std::string error;
+    SetupError error;
     g_interceptor_for_tests->DoIntercept(this, &channel_id, &error);
-    delegate_->AppNotifyChannelSetupComplete(channel_id, error, this);
+    state_ = error == NONE ? CHANNEL_ID_SETUP_DONE : ERROR_STATE;
+
+    // Use PostTask so the message loop runs before notifying the delegate, like
+    // in the real implementation.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppNotifyChannelSetup::ReportResult,
+                   base::Unretained(this), channel_id, error));
     return;
   }
-  AddRef();  // Balanced in ReportResult.
+
   BeginLogin();
 }
 

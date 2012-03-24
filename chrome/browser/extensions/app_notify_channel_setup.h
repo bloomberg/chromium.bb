@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,18 @@ class AppNotifyChannelSetup
       public OAuth2AccessTokenConsumer,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
  public:
+  // These are the various error conditions, made public for use by the test
+  // interceptor.
+  enum SetupError {
+    NONE,
+    AUTH_ERROR,
+    INTERNAL_ERROR,
+    USER_CANCELLED,
+
+    // This is used for histograms, and should always be the last value.
+    SETUP_ERROR_BOUNDARY
+  };
+
   class Delegate {
    public:
     // If successful, |channel_id| will be non-empty. On failure, |channel_id|
@@ -50,9 +62,10 @@ class AppNotifyChannelSetup
   // forcing the return of a certain result to the delegate.
   class InterceptorForTests {
    public:
-    virtual void DoIntercept(const AppNotifyChannelSetup* setup,
-                             std::string* result_channel_id,
-                             std::string* result_error) = 0;
+    virtual void DoIntercept(
+        const AppNotifyChannelSetup* setup,
+        std::string* result_channel_id,
+        AppNotifyChannelSetup::SetupError* result_error) = 0;
   };
   static void SetInterceptorForTests(InterceptorForTests* interceptor);
 
@@ -102,16 +115,6 @@ class AppNotifyChannelSetup
     CHANNEL_ID_SETUP_STARTED,
     CHANNEL_ID_SETUP_DONE,
     ERROR_STATE
-  };
-
-  enum SetupError {
-    NONE,
-    AUTH_ERROR,
-    INTERNAL_ERROR,
-    USER_CANCELLED,
-
-    // This is used for histograms, and should always be the last value.
-    SETUP_ERROR_BOUNDARY
   };
 
   friend class base::RefCountedThreadSafe<AppNotifyChannelSetup>;
