@@ -4,7 +4,6 @@
 
 #include "content/shell/paths_mac.h"
 
-#include "base/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
@@ -49,4 +48,12 @@ void OverrideChildProcessPath() {
                                             .Append("Content Shell Helper");
 
   PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
+}
+
+FilePath GetResourcesPakFilePath() {
+  NSString* pak_path =
+      [base::mac::FrameworkBundle() pathForResource:@"content_shell"
+                                             ofType:@"pak"];
+
+  return FilePath([pak_path fileSystemRepresentation]);
 }

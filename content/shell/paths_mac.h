@@ -6,10 +6,15 @@
 #define CONTENT_SHELL_PATHS_MAC_H_
 #pragma once
 
+#include "base/file_path.h"
+
 // Sets up base::mac::FrameworkBundle.
 void OverrideFrameworkBundlePath();
 
 // Sets up the CHILD_PROCESS_EXE path to properly point to the helper app.
 void OverrideChildProcessPath();
+
+// Gets the path to the content shell's pak file.
+FilePath GetResourcesPakFilePath();
 
 #endif  // CONTENT_SHELL_PATHS_MAC_H_

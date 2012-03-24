@@ -109,9 +109,13 @@ void ShellMainDelegate::InitializeShellContentClient(
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
+  FilePath pak_file;
+#if defined(OS_MACOSX)
+  pak_file = GetResourcesPakFilePath();
+#else
   FilePath pak_dir;
   PathService::Get(base::DIR_MODULE, &pak_dir);
-
-  FilePath pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
+  pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
+#endif
   ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_file);
 }

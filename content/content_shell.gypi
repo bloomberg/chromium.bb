@@ -143,7 +143,8 @@
           ],
         },
       ],
-    }, {
+    },
+    {
       'target_name': 'generate_content_shell_resources',
       'type': 'none',
       'variables': {
@@ -353,7 +354,7 @@
           'mac_bundle': 1,
           'mac_bundle_resources': [
             'shell/mac/English.lproj/MainMenu.xib',
-            '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
+            '<(PRODUCT_DIR)/content_shell.pak'
           ],
           'dependencies': [
             'content_shell_lib',
