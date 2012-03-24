@@ -60,20 +60,31 @@
         <include name="IDR_FILE_MANAGER_SORT_DESC_ICON" file="file_manager/images/sort_desc.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_REMOVABLE_24_ICON" file="file_manager/images/usb_source_24x24.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_REMOVABLE_28_ICON" file="file_manager/images/usb_source_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_GDATA_24_ICON" file="file_manager/images/gdata_24x24.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_GDATA_28_ICON" file="file_manager/images/gdata_28x28.png" type="BINDATA" />
 
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE" file="file_manager/images/filetype_archive.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO" file="file_manager/images/filetype_audio.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_CHART" file="file_manager/images/filetype_chart.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_DEVICE" file="file_manager/images/filetype_device.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_DOC" file="file_manager/images/filetype_doc.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_DRAWING" file="file_manager/images/filetype_drawing.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL" file="file_manager/images/filetype_excel.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER" file="file_manager/images/filetype_folder.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FORM" file="file_manager/images/filetype_form.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC" file="file_manager/images/filetype_generic.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_HTML" file="file_manager/images/filetype_html.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE" file="file_manager/images/filetype_image.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PDF" file="file_manager/images/filetype_pdf.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PPT" file="file_manager/images/filetype_ppt.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PRESENTATION" file="file_manager/images/filetype_presentation.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_SCRIPT" file="file_manager/images/filetype_script.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_SITES" file="file_manager/images/filetype_sites.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_SPREADSHEET" file="file_manager/images/filetype_spreadsheet.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_UNREADABLE_DEVICE" file="file_manager/images/filetype_unreadable_device.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_TEXT" file="file_manager/images/filetype_text.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_UNREADABLE_DEVICE" file="file_manager/images/filetype_unreadable_device.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO" file="file_manager/images/filetype_video.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_WORD" file="file_manager/images/filetype_word.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO" file="file_manager/images/filetype_large_audio.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER" file="file_manager/images/filetype_large_folder.png" type="BINDATA" />
@@ -117,6 +128,7 @@
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_NWSE" file="file_manager/images/gallery/cursor_nwse.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_CURSOR_SWNE" file="file_manager/images/gallery/cursor_swne.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_GALLERY_SLIDER_THUMB" file="file_manager/images/gallery/slider_thumb.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_GALLERY_BUTTERBAR_CLOSE_X" file="file_manager/images/gallery/butterbar_close_x.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_ON" file="file_manager/images/icon_list_view_on.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_LIST_VIEW_OFF" file="file_manager/images/icon_list_view_off.png" type="BINDATA" />
