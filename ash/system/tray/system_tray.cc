@@ -131,6 +131,9 @@ class TrayPopupItemContainer : public views::View {
   }
 
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    if (child_count() == 0)
+      return;
+
     views::View* view = child_at(0);
     if (!view->background()) {
       canvas->FillRect(gfx::Rect(size()),
@@ -472,7 +475,7 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 void SystemTray::ShowDefaultView() {
   if (popup_) {
     popup_->RemoveObserver(this);
-    popup_->CloseNow();
+    popup_->Close();
   }
   popup_ = NULL;
   bubble_ = NULL;
@@ -485,7 +488,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   bool activate) {
   if (popup_) {
     popup_->RemoveObserver(this);
-    popup_->CloseNow();
+    popup_->Close();
   }
   popup_ = NULL;
   bubble_ = NULL;

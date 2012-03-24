@@ -37,6 +37,11 @@ class TrayVolume : public SystemTrayItem,
 
   scoped_ptr<tray::VolumeView> volume_view_;
 
+  // Was |volume_view_| created for CreateDefaultView() rather than
+  // CreateDetailedView()?  Used to avoid resetting |volume_view_|
+  // inappropriately in DestroyDefaultView() or DestroyDetailedView().
+  bool is_default_view_;
+
   DISALLOW_COPY_AND_ASSIGN(TrayVolume);
 };
 

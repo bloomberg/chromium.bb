@@ -167,7 +167,7 @@ class VolumeView : public views::View,
 
 }  // namespace tray
 
-TrayVolume::TrayVolume() {
+TrayVolume::TrayVolume() : is_default_view_(false) {
 }
 
 TrayVolume::~TrayVolume() {
@@ -179,11 +179,13 @@ views::View* TrayVolume::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
   volume_view_.reset(new tray::VolumeView);
+  is_default_view_ = true;
   return volume_view_.get();
 }
 
 views::View* TrayVolume::CreateDetailedView(user::LoginStatus status) {
   volume_view_.reset(new tray::VolumeView);
+  is_default_view_ = false;
   return volume_view_.get();
 }
 
@@ -191,11 +193,13 @@ void TrayVolume::DestroyTrayView() {
 }
 
 void TrayVolume::DestroyDefaultView() {
-  volume_view_.reset();
+  if (is_default_view_)
+    volume_view_.reset();
 }
 
 void TrayVolume::DestroyDetailedView() {
-  volume_view_.reset();
+  if (!is_default_view_)
+    volume_view_.reset();
 }
 
 void TrayVolume::OnVolumeChanged(float percent) {
