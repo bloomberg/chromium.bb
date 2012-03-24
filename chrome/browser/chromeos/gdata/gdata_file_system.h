@@ -447,6 +447,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
                            GetGDataFileInfoFromPath);
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            GetFromCacheForPath);
+  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
+                           GetAvailableSpace);
 
   // Defines possible search results of FindFirstMissingParentDirectory().
   enum FindMissingDirectoryResult {

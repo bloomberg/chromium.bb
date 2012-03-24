@@ -1707,6 +1707,8 @@ void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
 
 void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
                                const FilePath& name) {
+  InitializeCacheIfNecessary();
+
   PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
@@ -1721,14 +1723,6 @@ void GDataFileSystem::SaveFeedOnIOThreadPool(
     const FilePath& meta_cache_path,
     scoped_ptr<base::Value> feed,
     const FilePath& name) {
-  if (!file_util::DirectoryExists(meta_cache_path)) {
-    if (!file_util::CreateDirectory(meta_cache_path)) {
-      LOG(WARNING) << "GData metadata cache directory can't be created at "
-                   << meta_cache_path.value();
-      return;
-    }
-  }
-
   FilePath file_name = meta_cache_path.Append(name);
   std::string json;
 #ifndef NDEBUG

@@ -2210,6 +2210,13 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   message_loop_.RunAllPending();  // Wait to get our result.
   EXPECT_EQ(1234, callback_helper_->quota_bytes_used_);
   EXPECT_EQ(12345, callback_helper_->quota_bytes_total_);
+
+  // Verify account meta feed is saved to cache.
+  RunAllPendingForCache();  // Flush all cache operations.
+  FilePath path = file_system_->cache_paths_[
+      GDataRootDirectory::CACHE_TYPE_META].Append(
+          FILE_PATH_LITERAL("account_metadata.json"));
+  EXPECT_TRUE(file_util::PathExists(path));
 }
 
 }   // namespace gdata
