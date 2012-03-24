@@ -148,8 +148,10 @@ cr.define('print_preview', function() {
       if (printToPDF)
         summaryLabel = localStrings.getString('printPreviewPageLabelSingular');
 
-      if (!printToPDF && copiesSettings.twoSidedCheckbox.checked)
+      if (!printToPDF &&
+          copiesSettings.duplexMode == print_preview.CopiesSettings.LONG_EDGE) {
         numOfSheets = Math.ceil(numOfSheets / 2);
+      }
       numOfSheets *= copies;
 
       if (numOfSheets > 1) {

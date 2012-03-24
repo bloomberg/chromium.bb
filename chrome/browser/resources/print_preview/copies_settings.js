@@ -202,21 +202,23 @@ cr.define('print_preview', function() {
     },
 
     /*
-     * Takes care of showing/hiding the two sided option and also updates the
-     * default state of the checkbox.
+     * Takes care of showing/hiding the two sided option.
      * @param {number} defaultDuplexValue Specifies the default duplex value.
      * @private
      */
      updateTwoSidedOption_: function(defaultDuplexValue) {
-      // On Windows, some printers don't specify their duplex values in the
-      // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
-      // hide the two sided option in preview tab UI.
-      // Ref bug: http://crbug.com/89204
-      this.twoSidedOption_.hidden =
-          (defaultDuplexValue == CopiesSettings.UNKNOWN_DUPLEX_MODE);
+       // On Windows, some printers don't specify their duplex values in the
+       // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
+       // hide the two sided option in preview tab UI.
+       // Ref bug: http://crbug.com/89204
+       this.twoSidedOption_.hidden =
+           (defaultDuplexValue == CopiesSettings.UNKNOWN_DUPLEX_MODE);
 
-      if (!this.twoSidedOption_.hidden)
-        this.twoSidedCheckbox_.checked = !!defaultDuplexValue;
+       if (!this.twoSidedOption_.hidden) {
+         this.twoSidedCheckbox_.checked = !!defaultDuplexValue;
+         if (pageSettings.totalPageCount)
+           cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
+       }
      },
 
     /**
