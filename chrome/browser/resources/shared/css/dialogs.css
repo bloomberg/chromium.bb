@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,20 +23,43 @@
 }
 
 .cr-dialog-frame {
-  position: absolute;
-  display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
-
   -webkit-transition-duration: 250ms;
   -webkit-transition-property: none;
 
-  min-width: 25%;
-  max-width: 75%;
-  border: 1px #aaa solid;
-  border-radius: 2px;
   background-color: white;
-  padding: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  position: absolute;
+  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: default;
+  display: -webkit-box;
+
+  padding: 14px 17px;
+  width: 460px;
+}
+
+@-webkit-keyframes pulse {
+ 0% {
+   -webkit-transform: scale(1);
+ }
+ 40% {
+   -webkit-transform: scale(1.02);
+  }
+ 60% {
+   -webkit-transform: scale(1.02);
+  }
+ 100% {
+   -webkit-transform: scale(1);
+ }
+}
+
+.cr-dialog-frame.pulse {
+  -webkit-animation-duration: 180ms;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-name: pulse;
+  -webkit-animation-timing-function: ease-in-out;
 }
 
 [hidden] {
@@ -44,13 +67,21 @@
 }
 
 .cr-dialog-title {
+  -webkit-margin-after: 10px;
+  -webkit-margin-end: 20px;
+  display: block;
   font-weight: bold;
   font-size: 120%;
+  white-space: nowrap;
+  word-wrap: normal;
+}
+
+.cr-dialog-text {
+  margin: 13px 0;
 }
 
 .cr-dialog-text,
 .cr-dialog-title {
-  padding-bottom: 10px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -66,3 +97,20 @@
   padding-top: 10px;
   -webkit-box-pack: end;
 }
+
+.cr-dialog-close {
+  background: url('../images/x.png') center no-repeat;
+  display: inline-block;
+  height: 44px;
+  opacity: 0.7;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+}
+
+.cr-dialog-close:hover,
+.cr-dialog-close:active {
+  background-image: url('../images/x-hover.png');
+}
+

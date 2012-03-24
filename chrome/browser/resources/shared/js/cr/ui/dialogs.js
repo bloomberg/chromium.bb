@@ -39,6 +39,8 @@ cr.define('cr.ui.dialogs', function() {
     this.container_.className = 'cr-dialog-container';
     this.container_.addEventListener('keydown',
                                      this.onContainerKeyDown_.bind(this));
+    this.container_.addEventListener('mousedown',
+                                     this.onContainerMouseDown_.bind(this));
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
@@ -47,6 +49,12 @@ cr.define('cr.ui.dialogs', function() {
     this.title_ = doc.createElement('div');
     this.title_.className = 'cr-dialog-title';
     this.frame_.appendChild(this.title_);
+
+    this.closeButton_ = doc.createElement('div');
+    this.closeButton_.className = 'cr-dialog-close';
+    this.closeButton_.addEventListener('click',
+                                        this.onCancelClick_.bind(this));
+    this.frame_.appendChild(this.closeButton_);
 
     this.text_ = doc.createElement('div');
     this.text_.className = 'cr-dialog-text';
@@ -80,6 +88,15 @@ cr.define('cr.ui.dialogs', function() {
     if (event.keyCode == 27 && !this.cancelButton_.disabled) {
       this.onCancelClick_(event);
       event.preventDefault();
+    }
+  };
+
+  BaseDialog.prototype.onContainerMouseDown_ = function(event) {
+    if (event.target == this.container_) {
+      var classList = this.frame_.classList;
+      // Start 'pulse' animation.
+      classList.remove('pulse');
+      setTimeout(classList.add.bind(classList, 'pulse'), 0);
     }
   };
 
@@ -211,6 +228,7 @@ cr.define('cr.ui.dialogs', function() {
     } else {
       this.document_.body.focus();
     }
+    this.frame_.classList.remove('pulse');
 
     var self = this;
     setTimeout(function() {
