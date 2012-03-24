@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,9 @@ class PrerenderHistograms {
 
   // Called when we swap in a prerender.
   void RecordUsedPrerender(Origin origin) const;
+
+  // Record the time since a page was recently visited.
+  void RecordTimeSinceLastRecentVisit(base::TimeDelta time) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;

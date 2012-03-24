@@ -188,8 +188,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   bool IsOldRenderViewHost(
       const content::RenderViewHost* render_view_host) const;
 
-  // Checks whether navigation to the provided URL has occurred in a visible
-  // tab recently.
+  // Checks whether |url| has been recently navigated to in a visible tab.
   bool HasRecentlyBeenNavigatedTo(const GURL& url);
 
   // Returns true if the method given is invalid for prerendering.

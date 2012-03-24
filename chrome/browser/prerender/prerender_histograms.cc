@@ -169,6 +169,13 @@ void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   }
 }
 
+void PrerenderHistograms::RecordTimeSinceLastRecentVisit(
+    base::TimeDelta delta) const {
+  PREFIXED_HISTOGRAM(
+      "TimeSinceLastRecentVisit",
+      UMA_HISTOGRAM_TIMES(name, delta));
+}
+
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
   return base::TimeTicks::Now();
 }

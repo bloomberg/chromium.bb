@@ -730,11 +730,16 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(const GURL& url) {
   DCHECK(CalledOnValidThread());
 
   CleanUpOldNavigations();
-  for (std::list<NavigationRecord>::const_iterator it = navigations_.begin();
-       it != navigations_.end();
+  std::list<NavigationRecord>::const_reverse_iterator end = navigations_.rend();
+  for (std::list<NavigationRecord>::const_reverse_iterator it =
+           navigations_.rbegin();
+       it != end;
        ++it) {
-    if (it->url_ == url)
+    if (it->url_ == url) {
+      base::TimeDelta delta = GetCurrentTimeTicks() - it->time_;
+      histograms_->RecordTimeSinceLastRecentVisit(delta);
       return true;
+    }
   }
 
   return false;
