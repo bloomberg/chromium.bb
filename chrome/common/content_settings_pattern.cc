@@ -313,28 +313,33 @@ ContentSettingsPattern ContentSettingsPattern::FromURL(
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
 
-  if (url.SchemeIsFile()) {
-    builder->WithScheme(url.scheme())->WithPath(url.path());
+  const GURL* local_url = &url;
+  if (url.SchemeIsFileSystem() && url.inner_url()) {
+    local_url = url.inner_url();
+  }
+  if (local_url->SchemeIsFile()) {
+    builder->WithScheme(local_url->scheme())->WithPath(local_url->path());
   } else {
     // Please keep the order of the ifs below as URLs with an IP as host can
     // also have a "http" scheme.
-    if (url.HostIsIPAddress()) {
-      builder->WithScheme(url.scheme())->WithHost(url.host());
-    } else if (url.SchemeIs(chrome::kHttpScheme)) {
-      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(url.host());
-    } else if (url.SchemeIs(chrome::kHttpsScheme)) {
-      builder->WithScheme(url.scheme())->WithDomainWildcard()->WithHost(
-          url.host());
+    if (local_url->HostIsIPAddress()) {
+      builder->WithScheme(local_url->scheme())->WithHost(local_url->host());
+    } else if (local_url->SchemeIs(chrome::kHttpScheme)) {
+      builder->WithSchemeWildcard()->WithDomainWildcard()->WithHost(
+          local_url->host());
+    } else if (local_url->SchemeIs(chrome::kHttpsScheme)) {
+      builder->WithScheme(local_url->scheme())->WithDomainWildcard()->WithHost(
+          local_url->host());
     } else {
       // Unsupported scheme
     }
-    if (url.port().empty()) {
-      if (url.SchemeIs(chrome::kHttpsScheme))
+    if (local_url->port().empty()) {
+      if (local_url->SchemeIs(chrome::kHttpsScheme))
         builder->WithPort(GetDefaultPort(chrome::kHttpsScheme));
       else
         builder->WithPortWildcard();
     } else {
-      builder->WithPort(url.port());
+      builder->WithPort(local_url->port());
     }
   }
   return builder->Build();
@@ -346,14 +351,18 @@ ContentSettingsPattern ContentSettingsPattern::FromURLNoWildcard(
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
 
-  if (url.SchemeIsFile()) {
-    builder->WithScheme(url.scheme())->WithPath(url.path());
+  const GURL* local_url = &url;
+  if (url.SchemeIsFileSystem() && url.inner_url()) {
+    local_url = url.inner_url();
+  }
+  if (local_url->SchemeIsFile()) {
+    builder->WithScheme(local_url->scheme())->WithPath(local_url->path());
   } else {
-    builder->WithScheme(url.scheme())->WithHost(url.host());
-    if (url.port().empty()) {
-      builder->WithPort(GetDefaultPort(url.scheme()));
+    builder->WithScheme(local_url->scheme())->WithHost(local_url->host());
+    if (local_url->port().empty()) {
+      builder->WithPort(GetDefaultPort(local_url->scheme()));
     } else {
-      builder->WithPort(url.port());
+      builder->WithPort(local_url->port());
     }
   }
   return builder->Build();
@@ -414,8 +423,13 @@ bool ContentSettingsPattern::Matches(
   if (!is_valid_)
     return false;
 
+  const GURL* local_url = &url;
+  if (url.SchemeIsFileSystem() && url.inner_url()) {
+    local_url = url.inner_url();
+  }
+
   // Match the scheme part.
-  const std::string scheme(url.scheme());
+  const std::string scheme(local_url->scheme());
   if (!parts_.is_scheme_wildcard &&
       parts_.scheme != scheme) {
     return false;
@@ -423,11 +437,17 @@ bool ContentSettingsPattern::Matches(
 
   // File URLs have no host. Matches if the pattern has the path wildcard set,
   // or if the path in the URL is identical to the one in the pattern.
+  // For filesystem:file URLs, the path used is the filesystem type, so all
+  // filesystem:file:///temporary/... are equivalent.
+  // TODO(markusheintz): Content settings should be defined for all files on
+  // a machine. Unless there is a good use case for supporting paths for file
+  // patterns, stop supporting path for file patterns.
   if (!parts_.is_scheme_wildcard && scheme == chrome::kFileScheme)
-    return parts_.is_path_wildcard || parts_.path == std::string(url.path());
+    return parts_.is_path_wildcard ||
+        parts_.path == std::string(local_url->path());
 
   // Match the host part.
-  const std::string host(net::TrimEndingDot(url.host()));
+  const std::string host(net::TrimEndingDot(local_url->host()));
   if (!parts_.has_domain_wildcard) {
     if (parts_.host != host)
       return false;
@@ -441,7 +461,7 @@ bool ContentSettingsPattern::Matches(
     return true;
 
   // Match the port part.
-  std::string port(url.port());
+  std::string port(local_url->port());
 
   // Use the default port if the port string is empty. GURL returns an empty
   // string if no port at all was specified or if the default port was

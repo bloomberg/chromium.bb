@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,11 +63,11 @@ bool IsSchemeSupported(const GURL& url) {
   bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
 #ifndef NDEBUG
   // TODO(michaeln): It would be really nice if this could optionally work for
-  // file urls too to help web developers experiment and test their apps,
-  // perhaps enabled via a cmd line flag or some other developer tool setting.
-  // Unfortunately file scheme net::URLRequest don't produce the same signalling
-  // (200 response codes, headers) as http URLRequests, so this doesn't work
-  // just yet.
+  // file and filesystem urls too to help web developers experiment and test
+  // their apps, perhaps enabled via a cmd line flag or some other developer
+  // tool setting.  Unfortunately file scheme net::URLRequests don't produce the
+  // same signalling (200 response codes, headers) as http URLRequests, so this
+  // doesn't work just yet.
   // supported |= url.SchemeIsFile();
 #endif
   return supported;

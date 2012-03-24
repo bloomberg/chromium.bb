@@ -225,8 +225,8 @@ string16 ElideUrl(const GURL& url,
   if (available_pixel_width <= 0)
     return url_string;
 
-  // If non-standard or not file type, return plain eliding.
-  if (!(url.SchemeIsFile() || url.IsStandard()))
+  // If non-standard, return plain eliding.
+  if (!url.IsStandard())
     return ElideText(url_string, font, available_pixel_width, ELIDE_AT_END);
 
   // Now start eliding url_string to fit within available pixel width.
