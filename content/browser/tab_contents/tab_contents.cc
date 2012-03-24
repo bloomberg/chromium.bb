@@ -1061,8 +1061,12 @@ bool TabContents::NavigateToEntry(
 #if defined(OS_CHROMEOS)
   is_allowed_in_web_ui_renderer |= entry.GetURL().SchemeIs(chrome::kDataScheme);
 #endif
-  CHECK(!(enabled_bindings & content::BINDINGS_POLICY_WEB_UI) ||
-        is_allowed_in_web_ui_renderer);
+  if ((enabled_bindings & content::BINDINGS_POLICY_WEB_UI) &&
+      !is_allowed_in_web_ui_renderer) {
+    // Log the URL to help us diagnose http://crbug.com/72235.
+    content::GetContentClient()->SetActiveURL(entry.GetURL());
+    CHECK(0);
+  }
 
   // Tell DevTools agent that it is attached prior to the navigation.
   DevToolsManagerImpl::GetInstance()->OnNavigatingToPendingEntry(
