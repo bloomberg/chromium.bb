@@ -62,6 +62,27 @@ bool PopDictionaryEntries(MessageReader* reader,
   return true;
 }
 
+// Gets the D-Bus type signature for the value.
+std::string GetTypeSignature(const base::Value& value) {
+  switch (value.GetType()) {
+    case base::Value::TYPE_BOOLEAN:
+      return "b";
+    case base::Value::TYPE_INTEGER:
+      return "i";
+    case base::Value::TYPE_DOUBLE:
+      return "d";
+    case base::Value::TYPE_STRING:
+      return "s";
+    case base::Value::TYPE_BINARY:
+      return "ay";
+    case base::Value::TYPE_DICTIONARY:
+      return "a{sv}";
+    default:
+      DLOG(ERROR) << "Unexpected type " << value.GetType();
+      return "";
+  }
+}
+
 }  // namespace
 
 Value* PopDataAsValue(MessageReader* reader) {
@@ -180,6 +201,46 @@ Value* PopDataAsValue(MessageReader* reader) {
     }
   }
   return result;
+}
+
+void AppendBasicTypeValueData(MessageWriter* writer, const base::Value& value) {
+  switch (value.GetType()) {
+    case base::Value::TYPE_BOOLEAN: {
+      bool bool_value = false;
+      value.GetAsBoolean(&bool_value);
+      writer->AppendBool(bool_value);
+      break;
+    }
+    case base::Value::TYPE_INTEGER: {
+      int int_value = 0;
+      value.GetAsInteger(&int_value);
+      writer->AppendInt32(int_value);
+      break;
+    }
+    case base::Value::TYPE_DOUBLE: {
+      double double_value = 0;
+      value.GetAsDouble(&double_value);
+      writer->AppendDouble(double_value);
+      break;
+    }
+    case base::Value::TYPE_STRING: {
+      std::string string_value;
+      value.GetAsString(&string_value);
+      writer->AppendString(string_value);
+      break;
+    }
+    default:
+      DLOG(ERROR) << "Unexpected type " << value.GetType();
+      break;
+  }
+}
+
+void AppendBasicTypeValueDataAsVariant(MessageWriter* writer,
+                                       const base::Value& value) {
+  MessageWriter sub_writer(NULL);
+  writer->OpenVariant(GetTypeSignature(value), &sub_writer);
+  AppendBasicTypeValueData(&sub_writer, value);
+  writer->CloseContainer(&sub_writer);
 }
 
 }  // namespace dbus
