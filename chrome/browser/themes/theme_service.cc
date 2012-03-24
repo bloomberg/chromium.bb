@@ -83,7 +83,7 @@ const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
 const SkColor kDefaultColorToolbar = SkColorSetRGB(223, 223, 223);
 #endif
 #if defined(USE_AURA)
-const SkColor kDefaultColorToolbarSeparator = SkColorSetRGB(136, 136, 136);
+const SkColor kDefaultColorToolbarSeparator = SkColorSetRGB(128, 128, 128);
 #else
 const SkColor kDefaultColorToolbarSeparator = SkColorSetRGB(182, 186, 192);
 #endif
