@@ -123,6 +123,7 @@ struct window {
 	int x, y;
 	int resize_edges;
 	int redraw_scheduled;
+	int redraw_needed;
 	struct task redraw_task;
 	int resize_scheduled;
 	struct task resize_task;
@@ -2133,20 +2134,40 @@ widget_redraw(struct widget *widget)
 }
 
 static void
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
+{
+	struct window *window = data;
+
+	wl_callback_destroy(callback);
+	window->redraw_scheduled = 0;
+	if (window->redraw_needed)
+		window_schedule_redraw(window);
+}
+
+static const struct wl_callback_listener listener = {
+	frame_callback
+};
+
+static void
 idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window =
 		container_of(task, struct window, redraw_task);
+	struct wl_callback *callback;
 
 	window_create_surface(window);
 	widget_redraw(window->widget);
 	window_flush(window);
-	window->redraw_scheduled = 0;
+	window->redraw_needed = 0;
+
+	callback = wl_surface_frame(window->surface);
+	wl_callback_add_listener(callback, &listener, window);
 }
 
 void
 window_schedule_redraw(struct window *window)
 {
+	window->redraw_needed = 1;
 	if (!window->redraw_scheduled) {
 		window->redraw_task.run = idle_redraw;
 		display_defer(window->display, &window->redraw_task);
