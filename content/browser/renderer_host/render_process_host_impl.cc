@@ -667,7 +667,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kDisableGeolocation,
     switches::kDisableGLMultisampling,
-    switches::kDisableGLSLTranslator,
     switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuVsync,
     switches::kDisableJavaScriptI18NAPI,

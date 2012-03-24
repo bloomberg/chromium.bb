@@ -293,11 +293,6 @@ void ContentGLContext::SetMemoryAllocationChangedCallback(
   GetCommandBufferProxy()->SetMemoryAllocationChangedCallback(callback);
 }
 
-// TODO(gman): Remove This
-void ContentGLContext::DisableShaderTranslation() {
-  NOTREACHED();
-}
-
 gpu::gles2::GLES2Implementation* ContentGLContext::GetImplementation() {
   return gles2_implementation_;
 }

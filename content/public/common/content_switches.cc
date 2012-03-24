@@ -106,9 +106,6 @@ const char kDisableGeolocation[]            = "disable-geolocation";
 // Disable GL multisampling.
 const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 
-// Disable the GLSL translator.
-const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
-
 // Disable workarounds for various GPU driver bugs.
 const char kDisableGpuDriverBugWorkarounds[] =
     "disable-gpu-driver-bug-workarounds";

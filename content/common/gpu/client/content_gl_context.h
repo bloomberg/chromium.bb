@@ -172,9 +172,6 @@ class ContentGLContext : public base::SupportsWeakPtr<ContentGLContext>,
       const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
           callback);
 
-  // TODO(gman): Remove this
-  void DisableShaderTranslation();
-
   // Allows direct access to the GLES2 implementation so a ContentGLContext
   // can be used without making it current.
   gpu::gles2::GLES2Implementation* GetImplementation();
