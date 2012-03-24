@@ -33,7 +33,9 @@ static const BYTE kDeviceSubTypeDrumKit = 8;
 static const BYTE kDeviceSubTypeGuitarBass = 11;
 static const BYTE kDeviceSubTypeArcadePad = 19;
 
-const float kMaxWinAxisValue = 32767.0;
+float NormalizeAxis(SHORT value) {
+  return ((value + 32768.f) / 32767.5f) - 1.f;
+}
 
 const WebUChar* const GamepadSubTypeName(BYTE sub_type) {
   switch (sub_type) {
@@ -162,10 +164,10 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
 #undef ADD
       pad.axesLength = 0;
       // XInput are +up/+right, -down/-left, we want -up/-left.
-      pad.axes[pad.axesLength++] = state.Gamepad.sThumbLX / kMaxWinAxisValue;
-      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbLY / kMaxWinAxisValue;
-      pad.axes[pad.axesLength++] = state.Gamepad.sThumbRX / kMaxWinAxisValue;
-      pad.axes[pad.axesLength++] = -state.Gamepad.sThumbRY / kMaxWinAxisValue;
+      pad.axes[pad.axesLength++] = NormalizeAxis(state.Gamepad.sThumbLX);
+      pad.axes[pad.axesLength++] = -NormalizeAxis(state.Gamepad.sThumbLY);
+      pad.axes[pad.axesLength++] = NormalizeAxis(state.Gamepad.sThumbRX);
+      pad.axes[pad.axesLength++] = -NormalizeAxis(state.Gamepad.sThumbRY);
     } else {
       pad.connected = false;
     }
