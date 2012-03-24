@@ -7,9 +7,13 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+class Extension;
 
 namespace chromeos {
 
@@ -18,9 +22,6 @@ class KioskModeScreensaver : public PowerManagerClient::Observer,
  public:
   KioskModeScreensaver();
   virtual ~KioskModeScreensaver();
-
-  // Really initialize screensaver when KioskModeHelper is initialized.
-  void Setup();
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
@@ -32,7 +33,24 @@ class KioskModeScreensaver : public PowerManagerClient::Observer,
 
  private:
   friend class KioskModeScreensaverTest;
+
+  // Initialization functions, in order
+  // Get the screensaver path once KioskModeHelper is initialized.
+  void GetScreensaverCrxPath();
+
+  // Callback to receive the path to the screensaver extension's crx and call
+  // the unpacker to unpack and load the crx.
+  void ScreensaverPathCallback(const FilePath& screensaver_crx);
+
+  // Called back on the UI thread to Setup the screensaver with the now unpacked
+  // and loaded extension.
+  void SetupScreensaver(scoped_refptr<Extension> extension,
+                        const FilePath& extension_base_path);
+
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<KioskModeScreensaver> weak_ptr_factory_;
+
+  FilePath extension_base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskModeScreensaver);
 };

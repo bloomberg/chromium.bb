@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -68,6 +69,7 @@ class KioskModeScreensaverTest : public testing::Test {
         .Times(AnyNumber());
 
     screensaver_ = new KioskModeScreensaver();
+    screensaver_->SetupScreensaver(NULL, FilePath());
   }
 
   virtual void TearDown() OVERRIDE {

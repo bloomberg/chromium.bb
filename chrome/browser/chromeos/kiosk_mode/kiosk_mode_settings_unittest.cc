@@ -93,52 +93,62 @@ TEST_F(KioskModeSettingsTest, CheckLogoutTimeoutBounds) {
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
 
   // Check if we go over max.
-  cros_settings->SetInteger(kIdleLogoutTimeout,
-                            kMaxIdleLogoutTimeout + kFudgeInt);
-  ReInitialize();
-  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
-            base::TimeDelta::FromMilliseconds(kMaxIdleLogoutTimeout));
-
-  // Check if we go under min.
-  cros_settings->SetInteger(kIdleLogoutTimeout,
-                            kMinIdleLogoutTimeout - kFudgeInt);
-  ReInitialize();
-  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
-            base::TimeDelta::FromMilliseconds(kMinIdleLogoutTimeout));
-
-  // Check if we are between max and min.
-  cros_settings->SetInteger(kIdleLogoutTimeout,
-                            kMaxIdleLogoutTimeout - kFudgeInt);
+  cros_settings->SetInteger(
+      kIdleLogoutTimeout,
+      KioskModeSettings::kMaxIdleLogoutTimeout + kFudgeInt);
   ReInitialize();
   EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
             base::TimeDelta::FromMilliseconds(
-                kMaxIdleLogoutTimeout - kFudgeInt));
+                KioskModeSettings::kMaxIdleLogoutTimeout));
+
+  // Check if we go under min.
+  cros_settings->SetInteger(
+      kIdleLogoutTimeout,
+      KioskModeSettings::kMinIdleLogoutTimeout - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta::FromMilliseconds(
+                KioskModeSettings::kMinIdleLogoutTimeout));
+
+  // Check if we are between max and min.
+  cros_settings->SetInteger(
+      kIdleLogoutTimeout,
+      KioskModeSettings::kMaxIdleLogoutTimeout - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutTimeout(),
+            base::TimeDelta::FromMilliseconds(
+                KioskModeSettings::kMaxIdleLogoutTimeout - kFudgeInt));
 }
 
 TEST_F(KioskModeSettingsTest, CheckLogoutWarningDurationBounds) {
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
 
   // Check if we go over max.
-  cros_settings->SetInteger(kIdleLogoutWarningDuration,
-                            kMaxIdleLogoutWarningDuration + kFudgeInt);
-  ReInitialize();
-  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
-            base::TimeDelta::FromMilliseconds(kMaxIdleLogoutWarningDuration));
-
-  // Check if we go under min.
-  cros_settings->SetInteger(kIdleLogoutWarningDuration,
-                            kMinIdleLogoutWarningDuration - kFudgeInt);
-  ReInitialize();
-  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
-            base::TimeDelta::FromMilliseconds(kMinIdleLogoutWarningDuration));
-
-  // Check if we are between max and min.
-  cros_settings->SetInteger(kIdleLogoutWarningDuration,
-                            kMaxIdleLogoutWarningDuration - kFudgeInt);
+  cros_settings->SetInteger(
+      kIdleLogoutWarningDuration,
+      KioskModeSettings::kMaxIdleLogoutWarningDuration + kFudgeInt);
   ReInitialize();
   EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
             base::TimeDelta::FromMilliseconds(
-                kMaxIdleLogoutWarningDuration - kFudgeInt));
+                KioskModeSettings::kMaxIdleLogoutWarningDuration));
+
+  // Check if we go under min.
+  cros_settings->SetInteger(
+      kIdleLogoutWarningDuration,
+      KioskModeSettings::kMinIdleLogoutWarningDuration - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta::FromMilliseconds(
+                KioskModeSettings::kMinIdleLogoutWarningDuration));
+
+  // Check if we are between max and min.
+  cros_settings->SetInteger(
+      kIdleLogoutWarningDuration,
+      KioskModeSettings::kMaxIdleLogoutWarningDuration - kFudgeInt);
+  ReInitialize();
+  EXPECT_EQ(KioskModeSettings::Get()->GetIdleLogoutWarningDuration(),
+            base::TimeDelta::FromMilliseconds(
+                KioskModeSettings::kMaxIdleLogoutWarningDuration - kFudgeInt));
 }
 
 TEST_F(KioskModeSettingsTest, UnitializedValues) {

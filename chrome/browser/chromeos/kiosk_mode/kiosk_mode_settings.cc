@@ -19,6 +19,12 @@
 
 namespace chromeos {
 
+const int KioskModeSettings::kMaxIdleLogoutTimeout = 600000;  // ms
+const int KioskModeSettings::kMinIdleLogoutTimeout = 5000;  // ms
+
+const int KioskModeSettings::kMaxIdleLogoutWarningDuration = 60000;  // ms
+const int KioskModeSettings::kMinIdleLogoutWarningDuration = 1000;  // ms
+
 static base::LazyInstance<KioskModeSettings> g_kiosk_mode_settings =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -64,13 +70,17 @@ void KioskModeSettings::Initialize(const base::Closure& notify_initialized) {
 
   // Restrict idle timeouts to safe values to prevent them from being turned off
   // or otherwise misused.
-  idle_logout_timeout = std::min(idle_logout_timeout, kMaxIdleLogoutTimeout);
-  idle_logout_timeout = std::max(idle_logout_timeout, kMinIdleLogoutTimeout);
+  idle_logout_timeout = std::min(idle_logout_timeout,
+                                 KioskModeSettings::kMaxIdleLogoutTimeout);
+  idle_logout_timeout = std::max(idle_logout_timeout,
+                                 KioskModeSettings::kMinIdleLogoutTimeout);
 
   idle_logout_warning_duration =
-      std::min(idle_logout_warning_duration, kMaxIdleLogoutWarningDuration);
+      std::min(idle_logout_warning_duration,
+               KioskModeSettings::kMaxIdleLogoutWarningDuration);
   idle_logout_warning_duration =
-      std::max(idle_logout_warning_duration, kMinIdleLogoutWarningDuration);
+      std::max(idle_logout_warning_duration,
+               KioskModeSettings::kMinIdleLogoutWarningDuration);
 
   screensaver_timeout_ = base::TimeDelta::FromMilliseconds(
       screensaver_timeout);
@@ -87,12 +97,31 @@ bool KioskModeSettings::is_initialized() const {
   return is_initialized_;
 }
 
-std::string KioskModeSettings::GetScreensaverPath() const {
-  if (!is_initialized_)
-    return std::string();
+void KioskModeSettings::GetScreensaverPath(
+    policy::AppPackUpdater::ScreenSaverUpdateCallback callback) const {
+  if (!is_initialized_) {
+    callback.Run(FilePath());
+    return;
+  }
 
-  return CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kKioskModeScreensaverPath);
+  // Command line flag overrides policy since it can be used
+  // for testing and dev workflows.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKioskModeScreensaverPath)) {
+    callback.Run(FilePath(
+        CommandLine::ForCurrentProcess()->
+            GetSwitchValueASCII(switches::kKioskModeScreensaverPath)));
+    return;
+  }
+
+  if (g_browser_process) {
+    policy::BrowserPolicyConnector* bpc =
+        g_browser_process->browser_policy_connector();
+    if (bpc && bpc->GetAppPackUpdater()) {
+      bpc->GetAppPackUpdater()->SetScreenSaverUpdateCallback(callback);
+      return;
+    }
+  }
 }
 
 base::TimeDelta KioskModeSettings::GetScreensaverTimeout() const {

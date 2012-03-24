@@ -11,20 +11,11 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/time.h"
+#include "chrome/browser/policy/app_pack_updater.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
 }
-
-namespace {
-
-const int kMaxIdleLogoutTimeout = 600000; // ms = 600s = 10m.
-const int kMinIdleLogoutTimeout = 5000; // ms = 5s.
-
-const int kMaxIdleLogoutWarningDuration = 60000; // ms = 60s.
-const int kMinIdleLogoutWarningDuration = 1000; // ms = 1s.
-
-}  // namespace
 
 namespace chromeos {
 
@@ -32,7 +23,7 @@ namespace chromeos {
 // KioskMode interferes with normal operations all over Chrome, having all
 // data about it pulled from a central location would make future
 // refactorings easier. This class also handles getting trust for the policies
-// via it's init method.
+// via its init method.
 //
 // Note: If Initialize is not called before the various Getters, we'll return
 // invalid values.
@@ -48,8 +39,11 @@ class KioskModeSettings {
   virtual void Initialize(const base::Closure& notify_initialized);
   virtual bool is_initialized() const;
 
-  // The path to the screensaver extension.
-  virtual std::string GetScreensaverPath() const;
+  // The path to the screensaver extension. This callback may get called
+  // very late, or even never (depending on the state of the app pack).
+  virtual void GetScreensaverPath(
+      policy::AppPackUpdater::ScreenSaverUpdateCallback callback) const;
+
   // The timeout before which we'll start showing the screensaver.
   virtual base::TimeDelta GetScreensaverTimeout() const;
 
@@ -59,8 +53,15 @@ class KioskModeSettings {
   // user is logged out.
   // The time to logout the user in on idle.
   virtual base::TimeDelta GetIdleLogoutTimeout() const;
+
   // The time to show the countdown timer for.
   virtual base::TimeDelta GetIdleLogoutWarningDuration() const;
+
+  static const int kMaxIdleLogoutTimeout;
+  static const int kMinIdleLogoutTimeout;
+
+  static const int kMaxIdleLogoutWarningDuration;
+  static const int kMinIdleLogoutWarningDuration;
 
  protected:
   // Needed here so MockKioskModeSettings can inherit from us.

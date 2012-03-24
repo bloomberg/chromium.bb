@@ -15,17 +15,16 @@ class ExtensionDialog;
 
 namespace browser {
 
-void ShowScreensaverDialog();
+void ShowScreensaverDialog(scoped_refptr<Extension> extension);
 void CloseScreensaverDialog();
 
 }  // namespace browser
 
 // Shows or hides the screensaver extension in fullscreen mode on
 // top of all other windows.
-class ScreensaverExtensionDialog
-    : public ExtensionDialogObserver {
+class ScreensaverExtensionDialog : public ExtensionDialogObserver {
  public:
-  static void ShowScreensaverDialog();
+  static void ShowScreensaverDialog(scoped_refptr<Extension> extension);
   static void CloseScreensaverDialog();
 
   // ExtensionDialog::Observer implementation.
@@ -33,7 +32,6 @@ class ScreensaverExtensionDialog
   virtual void ExtensionTerminated(ExtensionDialog* dialog) OVERRIDE;
 
  protected:
-  // ScreensaverDialog implementation.
   virtual void Show();
   virtual void Close();
 
@@ -41,14 +39,9 @@ class ScreensaverExtensionDialog
   friend class ScreensaverExtensionDialogBrowserTest;
   friend class ScreensaverExtensionDialogTest;
 
-  ScreensaverExtensionDialog();
+  explicit ScreensaverExtensionDialog(scoped_refptr<Extension> extension);
   virtual ~ScreensaverExtensionDialog();
 
-  // Load the screensaver extension.
-  void LoadExtension();
-  // Callback to set the extension and show the dialog.
-  // Called from LoadExtension.
-  void SetExtensionAndShow(scoped_refptr<Extension> extension);
   // Reload the screensaver extension and show another screensaver dialog.
   void ReloadAndShow();
 
