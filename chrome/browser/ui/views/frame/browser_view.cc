@@ -1465,8 +1465,9 @@ views::View* BrowserView::GetInitiallyFocusedView() {
 
 bool BrowserView::ShouldShowWindowTitle() const {
 #if defined(USE_ASH)
-  // For Ash only, app windows do not show a title. crbug.com/119411
-  if (browser_->is_app())
+  // For Ash only, app host windows do not show an icon, crbug.com/119411.
+  // Child windows (e.g. extension panels, popups) do show an icon.
+  if (browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
     return false;
 #endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -1490,8 +1491,9 @@ SkBitmap BrowserView::GetWindowIcon() {
 
 bool BrowserView::ShouldShowWindowIcon() const {
 #if defined(USE_ASH)
-  // For Ash only, app windows do not show an icon. crbug.com/119411
-  if (browser_->is_app())
+  // For Ash only, app host windows do not show an icon, crbug.com/119411.
+  // Child windows (e.g. extension panels, popups) do show an icon.
+  if (browser_->is_app() && browser_->app_type() == Browser::APP_TYPE_HOST)
     return false;
 #endif
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
