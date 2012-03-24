@@ -330,7 +330,6 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
                                                const GURL& url) {
   DCHECK(CalledOnValidThread());
   DCHECK(!IsWebContentsPrerendering(web_contents));
-  RecordNavigation(url);
 
   scoped_ptr<PrerenderContents> prerender_contents(
       GetEntryButNotSpecifiedWC(url, web_contents));
@@ -478,6 +477,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // TODO(cbentzel): Should prerender_contents move to the pending delete
   //                 list, instead of deleting directly here?
   AddToHistory(prerender_contents.get());
+  RecordNavigation(url);
   return true;
 }
 
@@ -822,6 +822,13 @@ bool PrerenderManager::IsPendingEntry(const GURL& url) const {
 bool PrerenderManager::IsPrerendering(const GURL& url) const {
   DCHECK(CalledOnValidThread());
   return (FindEntry(url) != NULL);
+}
+
+void PrerenderManager::RecordNavigation(const GURL& url) {
+  DCHECK(CalledOnValidThread());
+
+  navigations_.push_back(NavigationRecord(url, GetCurrentTimeTicks()));
+  CleanUpOldNavigations();
 }
 
 // protected
@@ -1183,13 +1190,6 @@ void PrerenderManager::AddToHistory(PrerenderContents* contents) {
                                 contents->origin(),
                                 base::Time::Now());
   prerender_history_->AddEntry(entry);
-}
-
-void PrerenderManager::RecordNavigation(const GURL& url) {
-  DCHECK(CalledOnValidThread());
-
-  navigations_.push_back(NavigationRecord(url, GetCurrentTimeTicks()));
-  CleanUpOldNavigations();
 }
 
 Value* PrerenderManager::GetActivePrerendersAsValue() const {

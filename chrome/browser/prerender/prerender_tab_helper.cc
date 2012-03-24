@@ -189,6 +189,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   if (prerender_manager->IsWebContentsPrerendering(web_contents()))
     return;
   prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
+  prerender_manager->RecordNavigation(url);
 }
 
 void PrerenderTabHelper::UpdateTargetURL(int32 page_id, const GURL& url) {
