@@ -164,7 +164,6 @@
 #include <Security/Security.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
 
@@ -1548,18 +1547,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Create the TranslateManager singleton.
   translate_manager_ = TranslateManager::GetInstance();
   DCHECK(translate_manager_ != NULL);
-
-#if defined(OS_MACOSX)
-  if (!parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
-    // Disk image installation is sort of a first-run task, so it shares the
-    // kNoFirstRun switch.
-    if (MaybeInstallFromDiskImage()) {
-      // The application was installed and the installed copy has been
-      // launched.  This process is now obsolete.  Exit.
-      return content::RESULT_CODE_NORMAL_EXIT;
-    }
-  }
-#endif
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to apprpriate Parts.
   // (requires supporting early exit).

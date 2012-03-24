@@ -16,6 +16,7 @@
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
+#include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -94,6 +95,30 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
     ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
   }
 
+  // This is a no-op if the KeystoneRegistration framework is not present.
+  // The framework is only distributed with branded Google Chrome builds.
+  [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
+
+  // Disk image installation is sort of a first-run task, so it shares the
+  // kNoFirstRun switch.
+  //
+  // This needs to be done after the resource bundle is initialized (for
+  // access to localizations in the UI) and after Keystone is initialized
+  // (because the installation may need to promote Keystone) but before the
+  // app controller is set up (and thus before MainMenu.nib is loaded, because
+  // the app controller assumes that a browser has been set up and will crash
+  // upon receipt of certain notifications if no browser exists), before
+  // anyone tries doing anything silly like firing off an import job, and
+  // before anything creating preferences like Local State in order for the
+  // relaunched installed application to still consider itself as first-run.
+  if (!parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
+    if (MaybeInstallFromDiskImage()) {
+      // The application was installed and the installed copy has been
+      // launched.  This process is now obsolete.  Exit.
+      exit(0);
+    }
+  }
+
   // Now load the nib (from the right bundle).
   scoped_nsobject<NSNib>
       nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
@@ -103,10 +128,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
   // Make sure the app controller has been created.
   DCHECK([NSApp delegate]);
-
-  // This is a no-op if the KeystoneRegistration framework is not present.
-  // The framework is only distributed with branded Google Chrome builds.
-  [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
 
   // Prevent Cocoa from turning command-line arguments into
   // |-application:openFiles:|, since we already handle them directly.
