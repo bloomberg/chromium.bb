@@ -178,6 +178,13 @@ class GDataFileSystemInterface {
     CACHED_FILE_LOCALLY_MODIFIED,
   };
 
+  // Enum defining type of file operation e.g. copy or move, etc.
+  // For now, it's used for StoreToCache.
+  enum FileOperationType {
+    FILE_OPERATION_MOVE = 0,
+    FILE_OPERATION_COPY,
+  };
+
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
@@ -490,16 +497,20 @@ class GDataFileSystem : public GDataFileSystemInterface {
         const std::string& resource_id,
         const std::string& md5,
         const FilePath& source_path,
+        FileOperationType file_operation_type,
         const CacheOperationCallback& final_callback,
         const CacheOperationIntermediateCallback& intermediate_callback,
+        const GetFromCacheCallback& get_from_cache_callback,
         scoped_refptr<base::MessageLoopProxy> relay_proxy);
     virtual ~ModifyCacheStateParams();
 
     const std::string resource_id;
     const std::string md5;
     const FilePath source_path;
+    const FileOperationType file_operation_type;
     const CacheOperationCallback final_callback;
     const CacheOperationIntermediateCallback intermediate_callback;
+    const GetFromCacheCallback get_from_cache_callback;
     const scoped_refptr<base::MessageLoopProxy> relay_proxy;
   };
 
@@ -810,6 +821,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
                     const GetFromCacheCallback& callback);
 
   // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
+  // |file_operation_type| specifies if |source_path| is to be moved or copied.
   // Initializes cache if it has not been initialized.
   // If file was previously pinned, it is stored in persistent directory, with
   // the symlink in pinned dir updated to point to this new file (refer to
@@ -820,17 +832,18 @@ class GDataFileSystem : public GDataFileSystemInterface {
   void StoreToCache(const std::string& resource_id,
                     const std::string& md5,
                     const FilePath& source_path,
+                    FileOperationType file_operation_type,
                     const CacheOperationCallback& callback);
 
   // Pin file corresponding to |resource_id| and |md5|.
   // Initializes cache if it has not been initialized.
   // Pinned files have symlinks in pinned dir, that reference actual blob files
-  // in persistent dir.
-  // If the file to be pinned does not exists in cache, a special symlink (with
+  // downloaded from server or locally modified in persistent dir.
+  // If the file to be pinned does not exist in cache, a special symlink (with
   // target /dev/null) is created in pinned dir, and base::PLATFORM_FILE_OK is
   // be returned in |callback|.
-  // So unless there's an error with file operations involving pinning, no error
-  // , i.e. base::PLATFORM_FILE_OK, will be returned in |callback|.
+  // So unless there's an error with file operations involving pinning, no
+  // error, i.e. base::PLATFORM_FILE_OK, will be returned in |callback|.
   // GDataSyncClient will pick up these special symlinks during low time and
   // download pinned non-existent files.
   // We'll try not to evict pinned cache files unless there's not enough space
@@ -843,8 +856,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   // Unpin file corresponding to |resource_id| and |md5|, opposite of Pin.
   // Initializes cache if it has not been initialized.
-  // If the file was pinned, delete the symlink and if file blob exists, move it
-  // to tmp directory.
+  // If the file was pinned, delete the symlink in pinned dir, and if file blob
+  // exists, move it to tmp directory.
   // If the file is not known to cache i.e. wasn't pinned or cached,
   // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned to |callback|.
   // Unpinned files would be evicted when space on disk runs out.
@@ -853,6 +866,60 @@ class GDataFileSystem : public GDataFileSystemInterface {
   void Unpin(const std::string& resource_id,
              const std::string& md5,
              const CacheOperationCallback& callback);
+
+  // Mark file corresponding to |resource_id| and |md5| as dirty, so that it
+  // can modified locally.
+  // Initializes cache if it has not been initialized.
+  // Dirty files are actual blob files in persistent dir with .local extension.
+  // If the file to be marked dirty does not exist in cache,
+  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
+  // If a file is already dirty (i.e. MarkDirtyInCache was called before), and
+  // if outgoing symlink was already created (i.e CommitDirtyInCache was also
+  // called before, refer to comments for CommitDirtyInCache), outgoing symlink
+  // is deleted. Otherwise, it's a no-operation.
+  // We'll not evict dirty files.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called, with the absolute path of the dirty file.
+  void MarkDirtyInCache(const std::string& resource_id,
+                        const std::string& md5,
+                        const GetFromCacheCallback& callback);
+
+  // Commit dirty the file corresponding to |resource_id| and |md5|.
+  // Must be called after MarkDirtyInCache to indicate that file modification
+  // has completed and file is ready for uploading.
+  // Initializes cache if it has not been initialized.
+  // Committed dirty files have symlinks in outgoing dir, that reference actual
+  // modified blob files in persistent dir.
+  // If the file to be committed dirty does not exist in cache,
+  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
+  // If the file is not marked dirty (via MarkDirtyInCache),
+  // base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned in |callback|.
+  // An uploader will pick up symlinks in outgoing dir and upload the dirty
+  // files they reference.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  void CommitDirtyInCache(const std::string& resource_id,
+                          const std::string& md5,
+                          const CacheOperationCallback& callback);
+
+  // Clear a dirty file corresponding to |resource_id| and |md5|.
+  // |md5| is also the new extension for the file in cache.
+  // Must be called after MarkDirtyInCache and CommitDirtyInCache to clear
+  // dirty state of file, i.e. after dirty file has been uploaded and new md5
+  // received from server.
+  // Initializes cache if it has not been initialized.
+  // If the file was dirty, delete the symlink in outgoing dir, move file to
+  // tmp if it's unpinned, and rename filename extension to .<md5>.
+  // If the file to be cleared does not exist in cache,
+  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
+  // If the file is not marked dirty (via MarkDirtyInCache),
+  // base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned in |callback|.
+  // Files that are not dirty would be evicted when space on disk runs out.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  void ClearDirtyInCache(const std::string& resource_id,
+                         const std::string& md5,
+                         const CacheOperationCallback& callback);
 
   // Removes all files corresponding to |resource_id| from cache persistent,
   // tmp and pinned directories and in-memory cache map.
@@ -910,25 +977,56 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // - if necessary, creates symlink
   // - deletes stale cached versions of |params.resource_id| in
   //   |params.dest_path|'s directory.
-  // Upon completion, callback is is invoked on the thread where StoreToCache
-  // was called.
+  // Upon completion, |params.callback| is invoked on the thread where
+  // StoreToCache was called.
   void StoreToCacheOnIOThreadPool(const ModifyCacheStateParams& params);
 
   // Task posted from Pin to modify cache state on the IO thread pool, which
   // involves the following:
-  // - moves |params.source_path| to |params.dest_path| in persistent dir
-  // - creates symlink in pinned dir
+  // - moves |params.source_path| to |params.dest_path| in persistent dir if
+  //   file is not dirty
+  // - creates symlink in pinned dir that references downloaded or locally
+  //   modified file
   // Upon completion, OnFilePinned (i.e. |params.intermediate_callback| is
   // invoked on the same thread where Pin was called.
   void PinOnIOThreadPool(const ModifyCacheStateParams& params);
 
   // Task posted from Unpin to modify cache state on the IO thread pool, which
   // involves the following:
-  // - moves |params.source_path| to |params.dest_path| in tmp dir
+  // - moves |params.source_path| to |params.dest_path| in tmp dir if file is
+  //   not dirty
   // - deletes symlink from pinned dir
   // Upon completion, OnFileUnpinned (i.e. |params.intermediate_callback| is
   // invoked on the same thread where Unpin was called.
   void UnpinOnIOThreadPool(const ModifyCacheStateParams& params);
+
+  // Task posted from MarkDirtyInCache to modify cache state on the IO thread
+  // pool, which involves the following:
+  // - moves |params.source_path| to |params.dest_path| in persistent dir, where
+  //   |source_path| has .<md5> extension and |dest_path| has .local extension
+  // - if file is pinned, updates symlink in pinned dir to reference dirty file
+  // Upon completion, |params.callback| is invoked on the same thread where
+  // MarkDirtyInCache was called.
+  void MarkDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+
+  // Task posted from CommitDirtyInCache to modify cache state on the IO thread
+  // pool, i.e. creates symlink in outgoing dir to reference dirty file in
+  // persistent dir.
+  // Upon completion, |params.callback| is invoked on the same thread where
+  // CommitDirtyInCache was called.
+  void CommitDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
+
+  // Task posted from ClearDirtyInCache to modify cache state on the IO thread
+  // pool, which involves the following:
+  // - moves |params.source_path| to |params.dest_path| in persistent dir if
+  //   file is pinned or tmp dir otherwise, where |source_path| has .local
+  //   extension and |dest_path| has .<md5> extension
+  // - deletes symlink in outgoing dir
+  // - if file is pinned, updates symlink in pinned dir to reference
+  //   |params.dest_path|
+  // Upon completion, |params.callback| is invoked on the same thread where
+  // ClearDirtyInCache was called.
+  void ClearDirtyInCacheOnIOThreadPool(const ModifyCacheStateParams& params);
 
   // Task posted from RemoveFromCache to do the following on the IO thread pool:
   // - remove all delete stale cache versions corresponding to |resource_id| in
