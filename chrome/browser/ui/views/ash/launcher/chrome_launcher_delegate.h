@@ -144,7 +144,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   ash::LauncherModel* model() { return model_; }
 
   // ash::LauncherDelegate overrides:
-  virtual void CreateNewWindow() OVERRIDE;
+  virtual void CreateNewTab() OVERRIDE;
   virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;

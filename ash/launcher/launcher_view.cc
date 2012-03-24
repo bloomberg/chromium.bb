@@ -720,7 +720,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
       break;
 
     case TYPE_BROWSER_SHORTCUT:
-      delegate_->CreateNewWindow();
+      delegate_->CreateNewTab();
       break;
   }
 }

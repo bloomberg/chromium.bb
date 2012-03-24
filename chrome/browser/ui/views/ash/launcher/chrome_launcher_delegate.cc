@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_app_icon_loader.h"
@@ -321,8 +322,18 @@ void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
   }
 }
 
-void ChromeLauncherDelegate::CreateNewWindow() {
-  Browser::NewEmptyWindow(GetProfileForNewWindows());
+void ChromeLauncherDelegate::CreateNewTab() {
+  Browser *last_browser = BrowserList::FindTabbedBrowser(
+      GetProfileForNewWindows(), true);
+
+  if (last_browser) {
+    last_browser->NewTab();
+    aura::Window* window = last_browser->window()->GetNativeHandle();
+    window->Show();
+    ash::wm::ActivateWindow(window);
+  } else {
+    Browser::NewEmptyWindow(GetProfileForNewWindows());
+  }
 }
 
 void ChromeLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {

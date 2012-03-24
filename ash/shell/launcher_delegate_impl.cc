@@ -20,7 +20,7 @@ LauncherDelegateImpl::LauncherDelegateImpl(WindowWatcher* watcher)
 LauncherDelegateImpl::~LauncherDelegateImpl() {
 }
 
-void LauncherDelegateImpl::CreateNewWindow() {
+void LauncherDelegateImpl::CreateNewTab() {
   ash::shell::ToplevelWindow::CreateParams create_params;
   create_params.can_resize = true;
   create_params.can_maximize = true;

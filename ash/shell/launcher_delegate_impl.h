@@ -26,7 +26,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   void set_watcher(WindowWatcher* watcher) { watcher_ = watcher; }
 
   // LauncherDelegate overrides:
-  virtual void CreateNewWindow() OVERRIDE;
+  virtual void CreateNewTab() OVERRIDE;
   virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;

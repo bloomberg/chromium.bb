@@ -22,8 +22,8 @@ class ASH_EXPORT LauncherDelegate {
   virtual ~LauncherDelegate() {}
 
   // Invoked when the user clicks on button in the launcher to create a new
-  // window.
-  virtual void CreateNewWindow() = 0;
+  // tab.
+  virtual void CreateNewTab() = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void ItemClicked(const LauncherItem& item) = 0;
