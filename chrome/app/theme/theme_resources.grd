@@ -533,7 +533,6 @@
 
       <!-- Images only used by Ash. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_APP_LIST_SETTINGS" file="app_list_settings.png" type="BINDATA" />
         <include name="IDR_TOOLBAR_SHADE_BOTTOM" file="ash/toolbar_shade_bottom.png" type="BINDATA" />
         <include name="IDR_TOOLBAR_SHADE_LEFT" file="ash/toolbar_shade_left.png" type="BINDATA" />
         <include name="IDR_TOOLBAR_SHADE_RIGHT" file="ash/toolbar_shade_right.png" type="BINDATA" />

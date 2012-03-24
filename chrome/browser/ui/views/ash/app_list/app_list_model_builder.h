@@ -35,7 +35,6 @@ class AppListModelBuilder : public content::NotificationObserver {
   void InsertItemByTitle(ash::AppListItemModel* item);
 
   void GetExtensionApps(const string16& query, Items* items);
-  void GetBrowserCommands(const string16& query, Items* items);
 
   // Returns the index of the application item with |app_id| in |model_|. If
   // no match is found, returns -1.

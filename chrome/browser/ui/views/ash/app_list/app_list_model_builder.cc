@@ -8,12 +8,9 @@
 #include "base/i18n/string_search.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/ash/app_list/browser_command_item.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -23,13 +20,6 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
-
-// Data struct used to define BrowserCommand.
-struct BrowserCommandData {
-  int command_id;
-  int title_id;
-  int icon_id;
-};
 
 // ModelItemSortData provides a string key to sort with
 // l10n_util::StringComparator.
@@ -82,7 +72,6 @@ void AppListModelBuilder::Build(const std::string& query) {
 
   Items items;
   GetExtensionApps(query_, &items);
-  GetBrowserCommands(query_, &items);
 
   SortAndPopulateModel(items);
   HighlightApp();
@@ -144,41 +133,11 @@ void AppListModelBuilder::GetExtensionApps(const string16& query,
   }
 }
 
-void AppListModelBuilder::GetBrowserCommands(const string16& query,
-                                             Items* items) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser)
-    return;
-
-  const BrowserCommandData kBrowserCommands[] = {
-    {
-      IDC_OPTIONS,
-      IDS_APP_LIST_SETTINGS,
-      IDR_APP_LIST_SETTINGS,
-
-    },
-  };
-
-  for (size_t i = 0; i < arraysize(kBrowserCommands); ++i) {
-    string16 title = l10n_util::GetStringUTF16(kBrowserCommands[i].title_id);
-    if (MatchesQuery(query, title)) {
-      items->push_back(new BrowserCommandItem(browser,
-                                              kBrowserCommands[i].command_id,
-                                              kBrowserCommands[i].title_id,
-                                              kBrowserCommands[i].icon_id));
-    }
-  }
-}
-
 int AppListModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
   for (int i = 0; i < model_->item_count(); ++i) {
-    ChromeAppListItem* item =
-        static_cast<ChromeAppListItem*>(model_->GetItem(i));
-    if (item->type() != ChromeAppListItem::TYPE_APP)
-      continue;
-
-    ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(item);
+    ExtensionAppItem* extension_item =
+        static_cast<ExtensionAppItem*>(model_->GetItem(i));
     if (extension_item->extension_id() == app_id)
       return i;
   }
