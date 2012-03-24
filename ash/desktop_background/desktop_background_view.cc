@@ -83,13 +83,10 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
         true);
   } else if (image_layout_ == ash::TILE) {
     canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
-  } else if (image_layout_ == ash::STRETCH){
+  } else if (image_layout_ == ash::STRETCH) {
     // This is generally not recommended as it may show artifacts.
-    gfx::Rect centered_rect = wallpaper_rect.Center(
-        gfx::Size(width(), height()));
-    canvas->DrawBitmapInt(wallpaper_, centered_rect.x(), centered_rect.y(),
-        centered_rect.width(), centered_rect.height(), 0, 0, width(), height(),
-        true);
+    canvas->DrawBitmapInt(wallpaper_, 0, 0, wallpaper_.width(),
+        wallpaper_.height(), 0, 0, width(), height(), true);
   } else {
     // All other are simply centered, and not scaled (but may be clipped).
      canvas->DrawBitmapInt(wallpaper_, (width() - wallpaper_.width()) / 2,
