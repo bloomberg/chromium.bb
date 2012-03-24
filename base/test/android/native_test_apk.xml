@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ChromeNativeTests" default="debug" basedir=".">
+
+  <description>
+    Building native test runner ChromeNativeTests.apk
+  </description>
+
+  <property environment="env"/>
+  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <property name="source.dir" location="java"/>
+  <property name="target" value="android-14"/>
+
+  <!-- We expect PRODUCT_DIR to be set like the gyp var
+       (e.g. $ROOT/out/Debug) -->
+  <!-- TODO(jrg): ideally we need this to run before -build-setup, where
+       directories are made based on this variable. -->
+  <target name="-pre-build">
+    <if>
+      <condition>
+        <isset property="PRODUCT_DIR" />
+      </condition>
+      <else>
+        <fail message="PRODUCT_DIR env var not set?" />
+      </else>
+    </if>
+  </target>
+
+  <property name="out.dir" location="${PRODUCT_DIR}"/>
+
+  <!-- TODO(jrg): should I make these directories specific to the apk? -->
+  <property name="resource.absolute.dir" value="${out.dir}/res"/>
+  <property name="gen.absolute.dir" value="${out.dir}/gen"/>
+  <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
+
+  <import file="${sdk.dir}/tools/ant/build.xml" />
+
+</project>
