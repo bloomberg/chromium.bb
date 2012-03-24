@@ -4,10 +4,15 @@
 
 #include "content/shell/shell.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #import "base/mac/cocoa_protocols.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
 #include "googleurl/src/gurl.h"
 
@@ -69,15 +74,20 @@ namespace {
 
 NSString* kWindowTitle = @"Content Shell";
 
-const int kButtonWidth = 72;
-const int kURLBarHeight = 24;
+// Layout constants (in view coordinates)
+const CGFloat kButtonWidth = 72;
+const CGFloat kURLBarHeight = 24;
+
+// The minimum size of the window's content (in view coordinates)
+const CGFloat kMinimumWindowWidth = 400;
+const CGFloat kMinimumWindowHeight = 300;
 
 void MakeShellButton(NSRect* rect,
                      NSString* title,
                      NSView* parent,
                      int control,
                      NSView* target) {
-  NSButton* button = [[[NSButton alloc] initWithFrame:*rect] autorelease];
+  scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:*rect]);
   [button setTitle:title];
   [button setBezelStyle:NSSmallSquareBezelStyle];
   [button setAutoresizingMask:(NSViewMaxXMargin | NSViewMinYMargin)];
@@ -139,6 +149,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
                                           backing:NSBackingStoreBuffered
                                             defer:NO];
   [window_ setTitle:kWindowTitle];
+  NSView* content = [window_ contentView];
+
+  // If the window is allowed to get too small, it will wreck the view bindings.
+  NSSize min_size = NSMakeSize(kMinimumWindowWidth, kMinimumWindowHeight);
+  min_size = [content convertSize:min_size toView:nil];
+  // Note that this takes window coordinates.
+  [window_ setContentMinSize:min_size];
 
   // Rely on the window delegate to clean us up rather than immediately
   // releasing when the window gets closed. We use the delegate to do
@@ -156,8 +173,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
       NSMakeRect(0, NSMaxY(initial_window_bounds) - kURLBarHeight,
                  kButtonWidth, kURLBarHeight);
 
-  NSView* content = [window_ contentView];
-
   MakeShellButton(&button_frame, @"Back", content, IDC_NAV_BACK,
                   (NSView*)delegate);
   MakeShellButton(&button_frame, @"Forward", content, IDC_NAV_FORWARD,
@@ -169,27 +184,38 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   button_frame.size.width =
       NSWidth(initial_window_bounds) - NSMinX(button_frame);
-  url_edit_view_ =
-      [[[NSTextField alloc] initWithFrame:button_frame] autorelease];
-  [content addSubview:url_edit_view_];
-  [url_edit_view_ setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
-  [url_edit_view_ setTarget:delegate];
-  [url_edit_view_ setAction:@selector(takeURLStringValueFrom:)];
-  [[url_edit_view_ cell] setWraps:NO];
-  [[url_edit_view_ cell] setScrollable:YES];
+  scoped_nsobject<NSTextField> url_edit_view(
+      [[NSTextField alloc] initWithFrame:button_frame]);
+  [content addSubview:url_edit_view];
+  [url_edit_view setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+  [url_edit_view setTarget:delegate];
+  [url_edit_view setAction:@selector(takeURLStringValueFrom:)];
+  [[url_edit_view cell] setWraps:NO];
+  [[url_edit_view cell] setScrollable:YES];
+  url_edit_view_ = url_edit_view.get();
 
   // show the window
   [window_ makeKeyAndOrderFront:nil];
 }
 
 void Shell::PlatformSetContents() {
-  // TODO(avi): I don't know what goes here.
+  NSView* web_view = tab_contents_->GetView()->GetNativeView();
+  NSView* content = [window_ contentView];
+  [content addSubview:web_view];
+
+  NSRect frame = [content bounds];
+  frame.size.height -= kURLBarHeight;
+  [web_view setFrame:frame];
+  [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
+  [web_view setNeedsDisplay:YES];
 }
 
 void Shell::PlatformSizeTo(int width, int height) {
-  NSRect frame = [window_ frame];
-  frame.size = NSMakeSize(width, height);
-  [window_ setFrame:frame display:YES];
+  // Resizing the window to the preferred size of the page is an incredibly bad
+  // idea. Not only is it creepy UI as windows resize themselves, it leads to
+  // cycles where the user resizing the window leads to a new preferred size for
+  // the window, and the window fighting back. That's unacceptable in a user
+  // interface.
 }
 
 void Shell::PlatformResizeSubViews() {

@@ -70,7 +70,8 @@ bool ShellMainDelegate::ProcessRegistersWithSystemProcess(
 }
 
 bool ShellMainDelegate::ShouldSendMachPort(const std::string& process_type) {
-  return false;
+  // There are no auxiliary-type processes.
+  return true;
 }
 
 bool ShellMainDelegate::DelaySandboxInitialization(
