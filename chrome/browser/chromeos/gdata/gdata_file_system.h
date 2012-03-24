@@ -133,8 +133,7 @@ class GDataFileSystemInterface {
   virtual ~GDataFileSystemInterface() {}
 
   // Used to notify events on the file system.
-  // Hence, the observers should relay these events to a certain thread
-  // themselves if needed.
+  // All events are notified on UI thread.
   class Observer {
    public:
     // Triggered when the cache has been initialized.
@@ -159,7 +158,6 @@ class GDataFileSystemInterface {
     // Triggered when a content of a directory has been changed.
     // |directory_path| is a virtual directory path (/gdata/...) representing
     // changed directory.
-    // For this method, observers will be notified on UI thread.
     virtual void OnDirectoryChanged(const FilePath& directory_path) {}
 
    protected:
@@ -778,6 +776,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // if directory can't be found.
   GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
 
+  // Notifies events to observers on UI thread.
+  void NotifyCacheInitialized();
+  void NotifyFilePinned(const std::string& resource_id,
+                        const std::string& md5);
+  void NotifyFileUnpinned(const std::string& resource_id,
+                          const std::string& md5);
   void NotifyDirectoryChanged(const FilePath& directory_path);
 
   // Cache entry points from within GDataFileSystem.

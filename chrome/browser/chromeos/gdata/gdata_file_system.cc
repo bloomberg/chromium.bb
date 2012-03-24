@@ -1858,6 +1858,57 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   return base::PLATFORM_FILE_OK;
 }
 
+void GDataFileSystem::NotifyCacheInitialized() {
+  DVLOG(1) << "Cache initialized";
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyCacheInitialized,
+                   weak_ptr_bound_to_ui_thread_));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that the cache is initialized.
+  FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
+}
+
+void GDataFileSystem::NotifyFilePinned(const std::string& resource_id,
+                                       const std::string& md5) {
+  DVLOG(1) << "File pinned " << resource_id << ": " << md5;
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyFilePinned,
+                   weak_ptr_bound_to_ui_thread_,
+                   resource_id,
+                   md5));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that a file is pinned with |resource_id| and |md5|.
+  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
+}
+
+void GDataFileSystem::NotifyFileUnpinned(const std::string& resource_id,
+                                         const std::string& md5) {
+  DVLOG(1) << "File unpinned " << resource_id << ": " << md5;
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyFileUnpinned,
+                   weak_ptr_bound_to_ui_thread_,
+                   resource_id,
+                   md5));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that a file is unpinned with |resource_id| and |md5|.
+  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
+}
+
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
   DVLOG(1) << "Content changed of " << directory_path.value();
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -2157,8 +2208,7 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   base::AutoLock lock(lock_);
   root_->SetCacheMap(cache_map);
 
-  // Notify the observers that cache initialization has completed.
-  FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
+  NotifyCacheInitialized();
 }
 
 void GDataFileSystem::GetFromCacheOnIOThreadPool(
@@ -2565,7 +2615,7 @@ void GDataFileSystem::OnFilePinned(base::PlatformFileError error,
   if (!callback.is_null())
     callback.Run(error, resource_id, md5);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
+  NotifyFilePinned(resource_id, md5);
 }
 
 void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
@@ -2575,7 +2625,7 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
   if (!callback.is_null())
     callback.Run(error, resource_id, md5);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
+  NotifyFileUnpinned(resource_id, md5);
 }
 
 //============= GDataFileSystem: internal helper functions =====================
