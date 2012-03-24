@@ -53,8 +53,7 @@ const char kAppTypeWindow[] = "window";
 ChromeLauncherDelegate::Item::Item()
     : item_type(TYPE_TABBED_BROWSER),
       app_type(APP_TYPE_WINDOW),
-      updater(NULL),
-      pinned(false) {
+      updater(NULL) {
 }
 
 ChromeLauncherDelegate::Item::~Item() {
@@ -126,22 +125,12 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
 ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
     LauncherUpdater* updater,
     IncognitoState is_incognito) {
-  // Tabbed items always get a new item. Put the tabbed item before the app
-  // tabs. If there are no app tabs put it at the end.
-  int index = static_cast<int>(model_->items().size());
-  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ++i) {
-    if (i->second.updater == updater) {
-      DCHECK_EQ(TYPE_APP, i->second.item_type);
-      index = std::min(index, model_->ItemIndexByID(i->first));
-    }
-  }
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   item.is_incognito = (is_incognito == STATE_INCOGNITO);
   item.status = ash::STATUS_RUNNING;
-  model_->Add(index, item);
+  model_->Add(item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
   id_to_item_map_[id].updater = updater;
@@ -153,53 +142,18 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
     const std::string& app_id,
     AppType app_type,
     ash::LauncherItemStatus status) {
-  // See if we have a closed item that matches the app.
-  if (updater) {
-    for (IDToItemMap::iterator i = id_to_item_map_.begin();
-         i != id_to_item_map_.end(); ++i) {
-      if (i->second.updater == NULL && i->second.app_id == app_id &&
-          i->second.app_type == app_type) {
-        i->second.updater = updater;
-        SetItemStatus(i->first, status);
-        return i->first;
-      }
-    }
-  }
-
-  // Newly created apps go after all existing apps. If there are no apps put it
-  // at after the tabbed item, and if there is no tabbed item put it at the end.
-  int item_count = static_cast<int>(model_->items().size());
-  int min_app_index = item_count;
-  int min_tab_index = min_app_index;
-  if (updater) {
-    for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-         i != id_to_item_map_.end(); ++i) {
-      if (i->second.updater == updater) {
-        if (i->second.item_type == TYPE_APP) {
-          min_app_index =
-              std::min(min_app_index, model_->ItemIndexByID(i->first));
-        } else {
-          min_tab_index =
-              std::min(min_app_index, model_->ItemIndexByID(i->first));
-        }
-      }
-    }
-  }
-  int insert_index = min_app_index != item_count ?
-      min_app_index : std::min(item_count, min_tab_index + 1);
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
-  item.type = ash::TYPE_APP;
+  item.type = !updater ? ash::TYPE_APP_SHORTCUT : ash::TYPE_APP;
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
   item.status = status;
-  model_->Add(insert_index, item);
+  model_->Add(item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_APP;
   id_to_item_map_[id].app_type = app_type;
   id_to_item_map_[id].app_id = app_id;
   id_to_item_map_[id].updater = updater;
-  id_to_item_map_[id].pinned = updater == NULL;
 
   if (app_type != APP_TYPE_EXTENSION_PANEL)
     app_icon_loader_->FetchImage(app_id);
@@ -215,100 +169,36 @@ void ChromeLauncherDelegate::SetItemStatus(ash::LauncherID id,
   model_->Set(index, item);
 }
 
-void ChromeLauncherDelegate::ConvertAppToTabbed(ash::LauncherID id) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
-  DCHECK(!id_to_item_map_[id].pinned);
-  id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
-  id_to_item_map_[id].app_id.clear();
-}
-
-void ChromeLauncherDelegate::ConvertTabbedToApp(ash::LauncherID id,
-                                                const std::string& app_id,
-                                                AppType app_type) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  DCHECK_EQ(TYPE_TABBED_BROWSER, id_to_item_map_[id].item_type);
-  DCHECK(!id_to_item_map_[id].pinned);
-  id_to_item_map_[id].item_type = TYPE_APP;
-  id_to_item_map_[id].app_type = app_type;
-  id_to_item_map_[id].app_id = app_id;
-
-  ash::LauncherItem item;
-  item.type = ash::TYPE_APP;
-  item.is_incognito = false;
-  item.id = id;
-  model_->Set(model_->ItemIndexByID(id), item);
-
-  app_icon_loader_->FetchImage(app_id);
-}
-
 void ChromeLauncherDelegate::LauncherItemClosed(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  if (id_to_item_map_[id].pinned) {
-    // The item is pinned, leave it in the launcher.
-    id_to_item_map_[id].updater = NULL;
-    SetItemStatus(id, ash::STATUS_CLOSED);
-  } else {
-    id_to_item_map_.erase(id);
-    model_->RemoveItemAt(model_->ItemIndexByID(id));
-  }
-}
-
-void ChromeLauncherDelegate::AppIDChanged(ash::LauncherID id,
-                                          const std::string& app_id) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  id_to_item_map_[id].app_id = app_id;
-  PersistPinnedState();
-
-  app_icon_loader_->FetchImage(app_id);
-}
-
-bool ChromeLauncherDelegate::HasClosedAppItem(const std::string& app_id,
-                                              AppType app_type) {
-  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ++i) {
-    if (!i->second.updater && i->second.item_type == TYPE_APP &&
-        i->second.app_type == app_type && i->second.app_id == app_id)
-      return true;
-  }
-  return false;
-}
-
-void ChromeLauncherDelegate::Pin(ash::LauncherID id) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  id_to_item_map_[id].pinned = true;
-  PersistPinnedState();
+  id_to_item_map_.erase(id);
+  model_->RemoveItemAt(model_->ItemIndexByID(id));
 }
 
 void ChromeLauncherDelegate::Unpin(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  id_to_item_map_[id].pinned = false;
-  if (!id_to_item_map_[id].updater)
-    LauncherItemClosed(id);
+  DCHECK(!id_to_item_map_[id].updater);
+  LauncherItemClosed(id);
   PersistPinnedState();
 }
 
 bool ChromeLauncherDelegate::IsPinned(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  return id_to_item_map_[id].pinned;
+  return id_to_item_map_[id].is_pinned();
 }
 
 void ChromeLauncherDelegate::TogglePinned(ash::LauncherID id) {
   if (id_to_item_map_.find(id) == id_to_item_map_.end())
     return;  // May happen if item closed with menu open.
 
+  // Only currently support unpinning.
   if (IsPinned(id))
     Unpin(id);
-  else
-    Pin(id);
 }
 
-bool ChromeLauncherDelegate::IsPinnable(ash::LauncherID id) {
-  // Only app windows and app panel windows can properly restore themselves;
-  // exptension panels can not so should not be pinnable.
-  return id_to_item_map_.find(id) != id_to_item_map_.end() &&
-      id_to_item_map_[id].item_type == TYPE_APP &&
-      id_to_item_map_[id].app_type != APP_TYPE_EXTENSION_PANEL;
+bool ChromeLauncherDelegate::IsPinnable(ash::LauncherID id) const {
+  int index = model_->ItemIndexByID(id);
+  return index != -1 && model_->items()[index].type == ash::TYPE_APP_SHORTCUT;
 }
 
 void ChromeLauncherDelegate::Open(ash::LauncherID id) {
@@ -319,11 +209,6 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
   if (updater) {
     updater->window()->Show();
     ash::wm::ActivateWindow(updater->window());
-    TabContentsWrapper* tab = updater->GetTab(id);
-    if (tab) {
-      updater->tab_model()->ActivateTabAt(
-          updater->tab_model()->GetIndexOfTabContents(tab), true);
-    }
   } else {
     DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
     AppType app_type = id_to_item_map_[id].app_type;
@@ -347,8 +232,6 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
                              launch_container,
                              GURL(),
                              NEW_FOREGROUND_TAB);
-    if (id_to_item_map_[id].updater)
-      id_to_item_map_[id].updater->window()->Show();
   }
 }
 
@@ -359,20 +242,10 @@ void ChromeLauncherDelegate::Close(ash::LauncherID id) {
   if (!id_to_item_map_[id].updater)
     return;  // TODO: maybe should treat as unpin?
 
-  TabContentsWrapper* tab = id_to_item_map_[id].updater->GetTab(id);
-  if (tab) {
-    content::WebContentsDelegate* delegate =
-        tab->web_contents()->GetDelegate();
-    if (delegate)
-      delegate->CloseContents(tab->web_contents());
-    else
-      delete tab;
-  } else {
-    views::Widget* widget = views::Widget::GetWidgetForNativeView(
-        id_to_item_map_[id].updater->window());
-    if (widget)
-      widget->Close();
-  }
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(
+      id_to_item_map_[id].updater->window());
+  if (widget)
+    widget->Close();
 }
 
 bool ChromeLauncherDelegate::IsOpen(ash::LauncherID id) {
@@ -392,6 +265,8 @@ std::string ChromeLauncherDelegate::GetAppID(TabContentsWrapper* tab) {
 
 void ChromeLauncherDelegate::SetAppImage(const std::string& id,
                                          const SkBitmap* image) {
+  // TODO: need to get this working for shortcuts.
+
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
     if (i->second.app_id != id)
@@ -410,25 +285,28 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
 }
 
 bool ChromeLauncherDelegate::IsAppPinned(const std::string& app_id) {
-  Item* item = GetItemByAppID(app_id);
-  return item && item->pinned;
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (IsPinned(i->first) && i->second.app_id == app_id)
+      return true;
+  }
+  return false;
 }
 
 void ChromeLauncherDelegate::PinAppWithID(const std::string& app_id,
                                           AppType app_type) {
-  // Find if there is live instance of this app and pin it.
-  Item* item = GetItemByAppID(app_id);
-  if (item) {
-    if (!item->pinned) {
-      item->pinned = true;
-      PersistPinnedState();
+  // If there is an item, update the app_type and return.
+  for (IDToItemMap::iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.app_id == app_id && IsPinned(i->first)) {
+      DCHECK_EQ(ash::TYPE_APP_SHORTCUT,
+                model_->ItemByID(i->first)->type);
+      i->second.app_type = app_type;
+      return;
     }
-    return;
   }
 
   // Otherwise, create an item for it.
-  // TODO(xiyuan): Revisit this after launcher logic is updated. We might
-  // want to respect extension app's launch type pref.
   CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
   PersistPinnedState();
 }
@@ -438,7 +316,7 @@ void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
        i != id_to_item_map_.end(); ) {
     IDToItemMap::iterator current(i);
     ++i;
-    if (current->second.app_id == app_id && current->second.pinned)
+    if (current->second.app_id == app_id && IsPinned(current->first))
       Unpin(current->first);
   }
 }
@@ -498,10 +376,8 @@ void ChromeLauncherDelegate::LauncherItemMoved(
     int start_index,
     int target_index) {
   ash::LauncherID id = model_->items()[target_index].id;
-  if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
-      id_to_item_map_[id].pinned) {
+  if (id_to_item_map_.find(id) != id_to_item_map_.end() && IsPinned(id))
     PersistPinnedState();
-  }
 }
 
 void ChromeLauncherDelegate::LauncherItemChanged(
@@ -537,10 +413,10 @@ void ChromeLauncherDelegate::PersistPinnedState() {
   ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
   updater.Get()->Clear();
   for (size_t i = 0; i < model_->items().size(); ++i) {
-    if (model_->items()[i].type == ash::TYPE_APP) {
+    if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
       ash::LauncherID id = model_->items()[i].id;
       if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
-          id_to_item_map_[id].pinned) {
+          IsPinned(id)) {
         base::DictionaryValue* app_value = new base::DictionaryValue;
         app_value->SetString(kAppIDPath, id_to_item_map_[id].app_id);
         AppType app_type(id_to_item_map_[id].app_type);
@@ -569,16 +445,3 @@ void ChromeLauncherDelegate::SetAppIconLoaderForTest(AppIconLoader* loader) {
 Profile* ChromeLauncherDelegate::GetProfileForNewWindows() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord();
 }
-
-ChromeLauncherDelegate::Item* ChromeLauncherDelegate::GetItemByAppID(
-    const std::string& app_id) {
-  for (IDToItemMap::iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end();
-       ++i) {
-    if (i->second.app_id == app_id)
-      return &(i->second);
-  }
-
-  return NULL;
-}
-

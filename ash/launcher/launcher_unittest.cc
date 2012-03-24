@@ -41,30 +41,29 @@ TEST_F(LauncherTest, LaunchApp) {
 
   // Initially we have the app list and chrome icon.
   int button_count = test.GetButtonCount();
-  int item_count = model->item_count();
 
   // Add closed app.
   LauncherItem item;
   item.type = TYPE_APP;
-  model->Add(item_count, item);
+  int index = model->Add(item);
   ASSERT_EQ(++button_count, test.GetButtonCount());
-  LauncherButton* button = test.GetButton(button_count - 1);
+  LauncherButton* button = test.GetButton(index);
   EXPECT_EQ(LauncherButton::STATE_NORMAL, button->state());
 
   // Open it.
-  item = model->items()[item_count];
+  item = model->items()[index];
   item.status = STATUS_RUNNING;
-  model->Set(item_count, item);
+  model->Set(index, item);
   EXPECT_EQ(LauncherButton::STATE_RUNNING, button->state());
 
   // Close it.
-  item = model->items()[item_count];
+  item = model->items()[index];
   item.status = STATUS_CLOSED;
-  model->Set(item_count, item);
+  model->Set(index, item);
   EXPECT_EQ(LauncherButton::STATE_NORMAL, button->state());
 
   // Remove it.
-  model->RemoveItemAt(item_count);
+  model->RemoveItemAt(index);
   ASSERT_EQ(--button_count, test.GetButtonCount());
 }
 
@@ -79,60 +78,19 @@ TEST_F(LauncherTest, OpenBrowser) {
 
   // Initially we have the app list and chrome icon.
   int button_count = test.GetButtonCount();
-  int item_count = model->item_count();
 
   // Add running tab.
   LauncherItem item;
   item.type = TYPE_TABBED;
   item.status = STATUS_RUNNING;
-  model->Add(item_count, item);
+  int index = model->Add(item);
   ASSERT_EQ(++button_count, test.GetButtonCount());
-  LauncherButton* button = test.GetButton(button_count - 1);
+  LauncherButton* button = test.GetButton(index);
   EXPECT_EQ(LauncherButton::STATE_RUNNING, button->state());
 
   // Remove it.
-  model->RemoveItemAt(item_count);
+  model->RemoveItemAt(index);
   ASSERT_EQ(--button_count, test.GetButtonCount());
-}
-
-// Confirm that opening two different browsers and changing their activation
-// causes the appropriate state changes in the launcher buttons.
-TEST_F(LauncherTest, OpenTwoBrowsers) {
-  Launcher* launcher = Shell::GetInstance()->launcher();
-  ASSERT_TRUE(launcher);
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
-  LauncherView::TestAPI test(launcher_view);
-  LauncherModel* model = launcher->model();
-
-  // Initially we have the app list and chrome icon.
-  int button_count = test.GetButtonCount();
-  int item_count = model->item_count();
-  int button1 = button_count, button2 = button_count + 1;
-  int item1 = item_count;
-
-  // Add active tab.
-  {
-    LauncherItem item;
-    item.type = TYPE_TABBED;
-    item.status = STATUS_ACTIVE;
-    model->Add(item_count, item);
-  }
-  ASSERT_EQ(++button_count, test.GetButtonCount());
-  EXPECT_EQ(LauncherButton::STATE_ACTIVE, test.GetButton(button1)->state());
-
-  // Add new active tab and deactivate other.
-  {
-    LauncherItem item;
-    item.type = TYPE_TABBED;
-    model->Add(item_count, item);
-    LauncherItem last_item = model->items()[item1];
-    last_item.status = STATUS_RUNNING;
-    model->Set(item1, last_item);
-  }
-
-  ASSERT_EQ(++button_count, test.GetButtonCount());
-  EXPECT_EQ(LauncherButton::STATE_RUNNING, test.GetButton(button1)->state());
-  EXPECT_EQ(LauncherButton::STATE_ACTIVE, test.GetButton(button2)->state());
 }
 
 }  // namespace ash

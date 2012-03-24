@@ -18,19 +18,15 @@ LauncherModel::LauncherModel() : next_id_(1) {
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   browser_shortcut.is_incognito = false;
 
-  Add(0, app_list);
-  Add(1, browser_shortcut);
+  AddAt(0, browser_shortcut);
+  AddAt(1, app_list);
 }
 
 LauncherModel::~LauncherModel() {
 }
 
-void LauncherModel::Add(int index, const LauncherItem& item) {
-  DCHECK(index >= 0 && index <= item_count());
-  items_.insert(items_.begin() + index, item);
-  items_[index].id = next_id_++;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemAdded(index));
+int LauncherModel::Add(const LauncherItem& item) {
+  return AddAt(GetIndexToAddItemAt(item.type), item);
 }
 
 void LauncherModel::RemoveItemAt(int index) {
@@ -47,6 +43,7 @@ void LauncherModel::RemoveItemAt(int index) {
 void LauncherModel::Move(int index, int target_index) {
   if (index == target_index)
     return;
+  // TODO: this needs to enforce valid ranges.
   LauncherItem item(items_[index]);
   items_.erase(items_.begin() + index);
   items_.insert(items_.begin() + target_index, item);
@@ -59,6 +56,7 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
   LauncherItem old_item(items_[index]);
   items_[index] = item;
   items_[index].id = old_item.id;
+  items_[index].type = old_item.type;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
                     LauncherItemChanged(index, old_item));
 }
@@ -88,6 +86,29 @@ void LauncherModel::AddObserver(LauncherModelObserver* observer) {
 
 void LauncherModel::RemoveObserver(LauncherModelObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+int LauncherModel::AddAt(int index, const LauncherItem& item) {
+  DCHECK(index >= 0 && index <= item_count());
+  items_.insert(items_.begin() + index, item);
+  items_[index].id = next_id_++;
+  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
+                    LauncherItemAdded(index));
+  return index;
+}
+
+int LauncherModel::GetIndexToAddItemAt(LauncherItemType type) const {
+  DCHECK_GE(item_count(), 2);  // APP_LIST and BROWSER_SHORTCUT.
+  if (type == TYPE_APP_SHORTCUT) {
+    // APP_SHORTCUTS go after TYPE_BROWSER_SHORTCUT, but before everything else.
+    for (int i = 1; i < item_count() - 1; ++i) {
+      if (items_[i].type != TYPE_APP_SHORTCUT)
+        return i;
+    }
+  }
+
+  // The rest go before TYPE_APP_LIST.
+  return item_count() - 1;
 }
 
 }  // namespace ash

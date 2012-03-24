@@ -7,7 +7,6 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_window_cycler.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/launcher/view_model.h"
 #include "ash/launcher/view_model_utils.h"
@@ -356,6 +355,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       break;
     }
 
+    case TYPE_APP_SHORTCUT:
     case TYPE_APP: {
       LauncherButton* button = LauncherButton::Create(this, this);
       button->SetImage(item.image);
@@ -390,7 +390,6 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
       button->SetImage(*rb.GetImageNamed(image_id).ToSkBitmap());
       view = button;
-      cycler_.reset(new LauncherWindowCycler(delegate_));
       break;
     }
 
@@ -522,14 +521,6 @@ void LauncherView::CancelDrag(views::View* deleted_view) {
   AnimateToIdealBounds();
 }
 
-void LauncherView::MaybeResetWindowCycler(views::View* view) {
-  int view_index = view_model_->GetIndexOfView(view);
-  if (view_index != -1 &&
-      model_->items()[view_index].type == TYPE_BROWSER_SHORTCUT) {
-    cycler_->Reset();
-  }
-}
-
 gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
@@ -610,6 +601,7 @@ void LauncherView::LauncherItemChanged(int model_index,
       break;
     }
 
+    case TYPE_APP_SHORTCUT:
     case TYPE_APP: {
       LauncherButton* button = static_cast<LauncherButton*>(view);
       ReflectItemStatus(item, button);
@@ -637,26 +629,32 @@ void LauncherView::LauncherItemWillChange(int index) {
 
 void LauncherView::MousePressedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
+  // TODO: reenable.
+  /*
   if (view_model_->GetIndexOfView(view) == -1 || view_model_->view_size() <= 1)
     return;  // View is being deleted, ignore request.
 
   drag_view_ = view;
   drag_offset_ = event.x();
+  */
 }
 
 void LauncherView::MouseDraggedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
+  // TODO: reenable.
+  /*
   if (!dragging_ && drag_view_ &&
       abs(event.x() - drag_offset_) >= kMinimumDragDistance)
     PrepareForDrag(event);
   if (dragging_)
     ContinueDrag(event);
-  if (!view->GetLocalBounds().Contains(event.location()))
-    MaybeResetWindowCycler(view);
+  */
 }
 
 void LauncherView::MouseReleasedOnButton(views::View* view,
                                          bool canceled) {
+  // TODO: reenable.
+  /*
   if (canceled) {
     CancelDrag(NULL);
   } else {
@@ -664,10 +662,10 @@ void LauncherView::MouseReleasedOnButton(views::View* view,
     drag_view_ = NULL;
     AnimateToIdealBounds();
   }
+  */
 }
 
 void LauncherView::MouseExitedButton(views::View* view) {
-  MaybeResetWindowCycler(view);
 }
 
 string16 LauncherView::GetAccessibleName(const views::View* view) {
@@ -681,6 +679,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
     case TYPE_APP:
+    case TYPE_APP_SHORTCUT:
       return delegate_->GetTitle(model_->items()[view_index]);
 
     case TYPE_APP_LIST:
@@ -688,6 +687,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
 
     case TYPE_BROWSER_SHORTCUT:
       return l10n_util::GetStringUTF16(IDS_AURA_CYCLER_TITLE);
+
   }
   return string16();
 }
@@ -711,6 +711,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
     case TYPE_APP:
+    case TYPE_APP_SHORTCUT:
       delegate_->ItemClicked(model_->items()[view_index]);
       break;
 
@@ -719,11 +720,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
       break;
 
     case TYPE_BROWSER_SHORTCUT:
-      cycler_->Cycle();
+      delegate_->CreateNewWindow();
       break;
-
-    default:
-      NOTREACHED();
   }
 }
 

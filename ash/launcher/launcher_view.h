@@ -25,7 +25,6 @@ namespace ash {
 class LauncherDelegate;
 struct LauncherItem;
 class LauncherModel;
-class LauncherWindowCycler;
 class ViewModel;
 
 namespace internal {
@@ -111,10 +110,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // Shows the overflow menu.
   void ShowOverflowMenu();
 
-  // If |view| represents TYPE_BROWSER_SHORTCUT Reset() is invoked on the
-  // LauncherWindowCycler.
-  void MaybeResetWindowCycler(views::View* view);
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -181,9 +176,6 @@ class ASH_EXPORT LauncherView : public views::View,
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 #endif
-
-  // Used to handle cycling among windows.
-  scoped_ptr<LauncherWindowCycler> cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

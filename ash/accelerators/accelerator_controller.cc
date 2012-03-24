@@ -50,6 +50,14 @@ void ActivateLauncherItem(int index) {
   ash::Shell::GetInstance()->launcher()->delegate()->ItemClicked(items[index]);
 }
 
+// Returns true if accelerator processing should skip the launcher item with
+// the specified type.
+bool ShouldSkip(ash::LauncherItemType type) {
+  return type == ash::TYPE_APP_LIST ||
+         type == ash::TYPE_BROWSER_SHORTCUT ||
+         type == ash::TYPE_APP_SHORTCUT;
+}
+
 void HandleCycleWindowLinear(ash::WindowCycleController::Direction direction) {
   // TODO(mukai): move this function to somewhere else (probably a new
   // file launcher_navigator.cc) and write test cases.
@@ -61,9 +69,7 @@ void HandleCycleWindowLinear(ash::WindowCycleController::Direction direction) {
 
   for (int i = 0; i < item_count; ++i) {
     const ash::LauncherItem& item = items[i];
-    // We only care about windows.
-    if (item.type == ash::TYPE_APP_LIST ||
-        item.type == ash::TYPE_BROWSER_SHORTCUT)
+    if (ShouldSkip(item.type))
       continue;
 
     if (item.status == ash::STATUS_RUNNING && first_running < 0)
@@ -88,9 +94,9 @@ void HandleCycleWindowLinear(ash::WindowCycleController::Direction direction) {
   for (int i = (current_index + step + item_count) % item_count;
        i != current_index; i = (i + step + item_count) % item_count) {
     const ash::LauncherItem& item = items[i];
-    if (item.type == ash::TYPE_APP_LIST ||
-        item.type == ash::TYPE_BROWSER_SHORTCUT)
+    if (ShouldSkip(item.type))
       continue;
+
     // Skip already active item.
     if (item.status == ash::STATUS_ACTIVE)
       continue;

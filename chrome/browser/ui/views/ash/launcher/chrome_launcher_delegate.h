@@ -95,28 +95,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // Updates the running status of an item.
   void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
 
-  // Converts an app item to a tabbed item.
-  void ConvertAppToTabbed(ash::LauncherID id);
-
-  // Converts a tabbed item to an app item.
-  void ConvertTabbedToApp(ash::LauncherID id,
-                          const std::string& app_id,
-                          AppType app_type);
-
-  // Invoked when the underlying browser/app is closed. If the item isn't pinned
-  // it's removed, otherwise the item says around so that the next time the user
-  // launches the app it uses the existing item.
+  // Invoked when the underlying browser/app is closed.
   void LauncherItemClosed(ash::LauncherID id);
-
-  // Invoked when the id of an app changes.
-  void AppIDChanged(ash::LauncherID id, const std::string& app_id);
-
-  // Returns true if there is a closed item identified by the specified
-  // arguments..
-  bool HasClosedAppItem(const std::string& app_id, AppType app_type);
-
-  // Pins the specified id.
-  void Pin(ash::LauncherID id);
 
   // Unpins the specified id, closing if not running.
   void Unpin(ash::LauncherID id);
@@ -129,7 +109,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Returns true if the specified item can be pinned or unpinned. Only apps can
   // be pinned.
-  bool IsPinnable(ash::LauncherID id);
+  bool IsPinnable(ash::LauncherID id) const;
 
   // Opens the specified item.
   void Open(ash::LauncherID id);
@@ -197,6 +177,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     Item();
     ~Item();
 
+    bool is_pinned() const { return updater == NULL; }
+
     // Type of item.
     ItemType item_type;
 
@@ -206,11 +188,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     // ID of the app.
     std::string app_id;
 
-    // The LauncherUpdater this item came from. NULL if pinned and not open.
+    // The LauncherUpdater this item came from. NULL if a shortcut.
     LauncherUpdater* updater;
-
-    // Whether the item is pinned.
-    bool pinned;
   };
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
@@ -227,9 +206,6 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Returns the profile used for new windows.
   Profile* GetProfileForNewWindows();
-
-  // Returns a pointer to an Item that has |app_id|. Otherwise, returns NULL.
-  Item* GetItemByAppID(const std::string& app_id);
 
   static ChromeLauncherDelegate* instance_;
 

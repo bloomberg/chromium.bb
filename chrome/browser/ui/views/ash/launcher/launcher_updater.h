@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_UPDATER_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -42,12 +41,6 @@ class LauncherUpdater : public TabStripModelObserver,
         : launcher_updater_(launcher_updater) {}
     virtual ~TestApi() {}
 
-    // Returns the launcher id for |tab| if it's an app otherwise returns the
-    // id for the browser itself.
-    ash::LauncherID GetLauncherID(TabContentsWrapper* tab) {
-      return launcher_updater_->GetLauncherID(tab);
-    }
-
     // Returns the launcher id for the browser window.
     ash::LauncherID item_id() const { return launcher_updater_->item_id_; }
 
@@ -82,14 +75,10 @@ class LauncherUpdater : public TabStripModelObserver,
 
   Type type() const { return type_; }
 
-  TabContentsWrapper* GetTab(ash::LauncherID id);
-
   LauncherFaviconLoader* favicon_loader() const {
     return favicon_loader_.get();
   }
 
-  // TabStripModelObserver overrides:
-  void ActivationChanged(TabContentsWrapper* tab, bool active);
   // Call to indicate that the window the tabcontents are in has changed its
   // activation state.
   void BrowserActivationStateChanged();
@@ -103,33 +92,12 @@ class LauncherUpdater : public TabStripModelObserver,
       TabContentsWrapper* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
-                             int index,
-                             bool foreground) OVERRIDE;
-  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
-                             int index) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
 
   // LauncherFaviconLoader::Delegate overrides:
   virtual void FaviconUpdated() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LauncherUpdaterTest, PanelItem);
-
-  // AppTabDetails is used to identify a launcher item that corresponds to an
-  // app tab.
-  struct AppTabDetails {
-    AppTabDetails();
-    ~AppTabDetails();
-
-    // ID of the launcher item.
-    ash::LauncherID id;
-
-    // ID of the app (corresponds to Extension::id()).
-    std::string app_id;
-  };
 
   // Used to identify what an update corresponds to.
   enum UpdateType {
@@ -138,33 +106,8 @@ class LauncherUpdater : public TabStripModelObserver,
     UPDATE_TAB_INSERTED,
   };
 
-  typedef std::map<TabContentsWrapper*, AppTabDetails> AppTabMap;
-
   // Updates the launcher from |tab|.
   void UpdateLauncher(TabContentsWrapper* tab);
-
-  // Invoked when a tab changes in some way. Updates the Launcher appropriately.
-  void UpdateAppTabState(TabContentsWrapper* tab, UpdateType update_type);
-
-  // Creates a launcher item for |tab|.
-  void AddAppItem(TabContentsWrapper* tab);
-
-  void RegisterAppItem(ash::LauncherID id, TabContentsWrapper* tab);
-
-  // Creates a tabbed launcher item.
-  void CreateTabbedItem();
-
-  // Returns true if this LauncherUpdater created the launcher item with the
-  // specified id. Returns true if it did. If the id corresponds to an app tab,
-  // |tab| is set to the TabContentsWrapper for the app tab.
-  bool ContainsID(ash::LauncherID id, TabContentsWrapper** tab);
-
-  // Returns the launcher id for |tab| if it's an app otherwise returns the
-  // id for the browser itself.
-  ash::LauncherID GetLauncherID(TabContentsWrapper* tab);
-
-  // Retrieves the running status of |tab|.
-  ash::LauncherItemStatus GetStatusForTab(TabContentsWrapper* tab);
 
   ash::LauncherModel* launcher_model();
 
@@ -183,14 +126,8 @@ class LauncherUpdater : public TabStripModelObserver,
   // Whether this is associated with an incognito profile.
   const bool is_incognito_;
 
-  // This is one of three possible values:
-  // . If type_ == TYPE_APP, this is the ID of the app item.
-  // . If type_ == TYPE_TABBED and all the tabs are app tabs this is -1.
-  // . Otherwise this is the id of the TYPE_TABBED item.
+  // ID of the item.
   ash::LauncherID item_id_;
-
-  // Used for any app tabs.
-  AppTabMap app_map_;
 
   // Loads launcher sized favicons for panels.
   scoped_ptr<LauncherFaviconLoader> favicon_loader_;

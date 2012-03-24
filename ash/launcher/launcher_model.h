@@ -26,8 +26,8 @@ class ASH_EXPORT LauncherModel {
   LauncherModel();
   ~LauncherModel();
 
-  // Adds a new item to the model.
-  void Add(int index, const LauncherItem& item);
+  // Adds a new item to the model. Returns the resulting index.
+  int Add(const LauncherItem& item);
 
   // Removes the item at |index|.
   void RemoveItemAt(int index);
@@ -37,7 +37,7 @@ class ASH_EXPORT LauncherModel {
   void Move(int index, int target_index);
 
   // Resets the item at the specified index. The item maintains its existing
-  // id.
+  // id and type.
   void Set(int index, const LauncherItem& item);
 
   // Sends LauncherItemWillChange() to the observers. Used when the images are
@@ -61,6 +61,12 @@ class ASH_EXPORT LauncherModel {
   void RemoveObserver(LauncherModelObserver* observer);
 
  private:
+  // Adds the item at the specified index. Returns |index|.
+  int AddAt(int index, const LauncherItem& item);
+
+  // Returns the index to add the specified item at.
+  int GetIndexToAddItemAt(LauncherItemType type) const;
+
   // ID assigned to the next item.
   LauncherID next_id_;
   LauncherItems items_;

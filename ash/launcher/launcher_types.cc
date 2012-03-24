@@ -10,7 +10,6 @@ const int kLauncherPreferredHeight = 48;
 
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),
-      num_tabs(1),
       is_incognito(false),
       id(0),
       status(STATUS_CLOSED) {

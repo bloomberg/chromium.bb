@@ -45,7 +45,6 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   id_to_window_[model->next_id()] = new_window;
-  item.num_tabs = image_count + 1;
   item.image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   item.image.allocPixels();
   item.image.eraseARGB(255,
@@ -53,7 +52,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
                        image_count == 1 ? 255 : 0,
                        image_count == 2 ? 255 : 0);
   image_count = (image_count + 1) % 3;
-  model->Add(model->item_count(), item);
+  model->Add(item);
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {

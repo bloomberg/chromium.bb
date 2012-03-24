@@ -40,12 +40,6 @@ ChromeLauncherDelegate::AppType GetDelegateType(LauncherUpdater::Type type) {
 
 }  // namespace
 
-LauncherUpdater::AppTabDetails::AppTabDetails() : id(0) {
-}
-
-LauncherUpdater::AppTabDetails::~AppTabDetails() {
-}
-
 LauncherUpdater::LauncherUpdater(aura::Window* window,
                                  TabStripModel* tab_model,
                                  ChromeLauncherDelegate* delegate,
@@ -65,14 +59,11 @@ LauncherUpdater::~LauncherUpdater() {
   tab_model_->RemoveObserver(this);
   if (item_id_ != -1)
     launcher_delegate_->LauncherItemClosed(item_id_);
-  for (AppTabMap::iterator i = app_map_.begin(); i != app_map_.end(); ++i)
-    launcher_delegate_->LauncherItemClosed(i->second.id);
 }
 
 void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
   if (type_ != TYPE_TABBED) {
-    // App type never changes, create the launcher item immediately.
     ChromeLauncherDelegate::AppType app_type = GetDelegateType(type_);
     ash::LauncherItemStatus app_status =
         ash::wm::IsActiveWindow(window_) ?
@@ -80,20 +71,10 @@ void LauncherUpdater::Init() {
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
         this, app_id_, app_type, app_status);
   } else {
-    // Determine if we have any tabs that should get launcher items.
-    std::vector<TabContentsWrapper*> app_tabs;
-    for (int i = 0; i < tab_model_->count(); ++i) {
-      TabContentsWrapper* tab = tab_model_->GetTabContentsAt(i);
-      if (!launcher_delegate_->GetAppID(tab).empty())
-        app_tabs.push_back(tab);
-    }
-
-    if (static_cast<int>(app_tabs.size()) != tab_model_->count())
-      CreateTabbedItem();
-
-    // Create items for the app tabs.
-    for (size_t i = 0; i < app_tabs.size(); ++i)
-      AddAppItem(app_tabs[i]);
+    item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
+        this,
+        is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
+                       ChromeLauncherDelegate::STATE_NOT_INCOGNITO);
   }
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->GetActiveTabContents())
@@ -126,22 +107,9 @@ LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   return icon_updater;
 }
 
-TabContentsWrapper* LauncherUpdater::GetTab(ash::LauncherID id) {
-  for (AppTabMap::const_iterator i = app_map_.begin(); i != app_map_.end();
-       ++i) {
-    if (i->second.id == id)
-      return i->first;
-  }
-  return NULL;
-}
-
 void LauncherUpdater::BrowserActivationStateChanged() {
-  // This can happen in tests.
-  if (type_ == TYPE_TABBED && tab_model_->GetActiveTabContents() == NULL)
-    return;
-
   launcher_delegate_->SetItemStatus(
-      GetLauncherID(tab_model_->GetActiveTabContents()),
+      item_id_,
       ash::wm::IsActiveWindow(window_) ?
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
 }
@@ -150,14 +118,6 @@ void LauncherUpdater::ActiveTabChanged(TabContentsWrapper* old_contents,
                                        TabContentsWrapper* new_contents,
                                        int index,
                                        bool user_gesture) {
-  if (ash::wm::IsActiveWindow(window_)) {
-    ash::LauncherID old_id = GetLauncherID(old_contents);
-    ash::LauncherID new_id = GetLauncherID(new_contents);
-
-    // The new_contents state will be handled in UpdateLauncher().
-    if (old_id != new_id && old_id >= 0)
-      launcher_delegate_->SetItemStatus(old_id, ash::STATUS_RUNNING);
-  }
   // Update immediately on a tab change.
   UpdateLauncher(new_contents);
 }
@@ -166,12 +126,6 @@ void LauncherUpdater::TabChangedAt(
     TabContentsWrapper* tab,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
-  if (type_ == TYPE_TABBED &&
-      (change_type == TabStripModelObserver::LOADING_ONLY ||
-       change_type == TabStripModelObserver::ALL)) {
-    UpdateAppTabState(tab, UPDATE_TAB_CHANGED);
-  }
-
   if (index != tab_model_->active_index() ||
       !(change_type != TabStripModelObserver::LOADING_ONLY &&
         change_type != TabStripModelObserver::TITLE_NOT_LOADING)) {
@@ -192,49 +146,6 @@ void LauncherUpdater::TabChangedAt(
   }
 }
 
-void LauncherUpdater::TabInsertedAt(TabContentsWrapper* contents,
-                                    int index,
-                                    bool foreground) {
-  if (type_ != TYPE_TABBED)
-    return;
-
-  UpdateAppTabState(contents, UPDATE_TAB_INSERTED);
-}
-
-void LauncherUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
-                                    TabContentsWrapper* old_contents,
-                                    TabContentsWrapper* new_contents,
-                                    int index) {
-  AppTabMap::iterator i = app_map_.find(old_contents);
-  if (i != app_map_.end()) {
-    AppTabDetails details = i->second;
-    app_map_.erase(i);
-    i = app_map_.end();
-    app_map_[new_contents] = details;
-    UpdateAppTabState(new_contents, UPDATE_TAB_CHANGED);
-  }
-}
-
-void LauncherUpdater::TabDetachedAt(TabContentsWrapper* contents, int index) {
-  if (type_ != TYPE_TABBED)
-    return;
-
-  UpdateAppTabState(contents, UPDATE_TAB_REMOVED);
-  if (tab_model_->count() <= 3) {
-    // We can't rely on the active tab at this point as the model hasn't fully
-    // adjusted itself. We can rely on the count though.
-    int item_index = launcher_model()->ItemIndexByID(item_id_);
-    if (item_index == -1)
-      return;
-
-    if (launcher_model()->items()[item_index].type == ash::TYPE_TABBED) {
-      ash::LauncherItem new_item(launcher_model()->items()[item_index]);
-      new_item.num_tabs = tab_model_->count();
-      launcher_model()->Set(item_index, new_item);
-    }
-  }
-}
-
 void LauncherUpdater::FaviconUpdated() {
   UpdateLauncher(tab_model_->GetActiveTabContents());
 }
@@ -242,8 +153,6 @@ void LauncherUpdater::FaviconUpdated() {
 void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
-
-  launcher_delegate_->SetItemStatus(GetLauncherID(tab), GetStatusForTab(tab));
 
   if (type_ == TYPE_APP)
     return;  // TYPE_APP is entirely maintained by ChromeLauncherDelegate.
@@ -281,7 +190,6 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     else if (item.image.empty())
       item.image = Extension::GetDefaultIcon(true);
   } else {
-    item.num_tabs = tab_model_->count();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
       item.image = tab->favicon_tab_helper()->GetFavicon();
       if (item.image.empty()) {
@@ -294,144 +202,6 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
     }
   }
   launcher_model()->Set(item_index, item);
-}
-
-void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
-                                        UpdateType update_type) {
-  bool showing_app_item = app_map_.find(tab) != app_map_.end();
-  std::string app_id = update_type == UPDATE_TAB_REMOVED ?
-      std::string() : launcher_delegate_->GetAppID(tab);
-  bool show_app = !app_id.empty();
-  if (showing_app_item == show_app) {
-    if (!show_app) {
-      if (item_id_ == -1 && update_type == UPDATE_TAB_INSERTED) {
-        // A new non-app tab was added and we have no app tabs. Add one now.
-        CreateTabbedItem();
-      } else if (item_id_ != -1 && update_type == UPDATE_TAB_REMOVED &&
-                 tab_model_->count() == (static_cast<int>(app_map_.size()))) {
-        launcher_delegate_->LauncherItemClosed(item_id_);
-        item_id_ = -1;
-      }
-      return;
-    }
-
-    if (app_id != app_map_[tab].app_id) {
-      // The extension changed.
-      app_map_[tab].app_id = app_id;
-      launcher_delegate_->AppIDChanged(app_map_[tab].id, app_id);
-    }
-    return;
-  }
-
-  if (showing_app_item) {
-    // Going from showing to not showing.
-    ash::LauncherID launcher_id(app_map_[tab].id);
-    app_map_.erase(tab);
-    int model_index = launcher_model()->ItemIndexByID(launcher_id);
-    DCHECK_NE(-1, model_index);
-    if (item_id_ == -1 &&
-        (update_type != UPDATE_TAB_REMOVED ||
-         (tab_model_->count() != 1 &&
-          tab_model_->count() == (static_cast<int>(app_map_.size()) + 1)))) {
-      if (!launcher_delegate_->IsPinned(launcher_id)) {
-        // Swap the item for a tabbed item.
-        item_id_ = launcher_id;
-        launcher_delegate_->ConvertAppToTabbed(item_id_);
-      } else {
-        // If the app is pinned we have to leave it and create a new tabbed
-        // item.
-        launcher_delegate_->LauncherItemClosed(launcher_id);
-        CreateTabbedItem();
-      }
-      ash::LauncherItem item;
-      item.type = ash::TYPE_TABBED;
-      item.is_incognito = is_incognito_;
-      item.num_tabs = tab_model_->count();
-      launcher_model()->Set(launcher_model()->ItemIndexByID(item_id_), item);
-    } else {
-      // We have a tabbed item, so we can remove the the app item.
-      launcher_delegate_->LauncherItemClosed(launcher_id);
-    }
-  } else {
-    // Going from not showing to showing.
-    if (item_id_ != -1 &&
-        static_cast<int>(app_map_.size()) + 1 == tab_model_->count()) {
-      if (launcher_delegate_->HasClosedAppItem(
-              launcher_delegate_->GetAppID(tab),
-              ChromeLauncherDelegate::APP_TYPE_TAB)) {
-        // There's a closed item we can use. Close the tabbed item and add an
-        // app item, which will end up using the closed item.
-        launcher_delegate_->LauncherItemClosed(item_id_);
-        AddAppItem(tab);
-      } else {
-        // All the tabs are app tabs, replace the tabbed item with the app.
-        launcher_delegate_->ConvertTabbedToApp(
-            item_id_,
-            launcher_delegate_->GetAppID(tab),
-            ChromeLauncherDelegate::APP_TYPE_TAB);
-        RegisterAppItem(item_id_, tab);
-        launcher_delegate_->SetItemStatus(item_id_, GetStatusForTab(tab));
-      }
-      item_id_ = -1;
-    } else {
-      AddAppItem(tab);
-    }
-  }
-}
-
-void LauncherUpdater::AddAppItem(TabContentsWrapper* tab) {
-  ash::LauncherItemStatus status = GetStatusForTab(tab);
-  ash::LauncherID id = launcher_delegate_->CreateAppLauncherItem(
-      this,
-      launcher_delegate_->GetAppID(tab),
-      ChromeLauncherDelegate::APP_TYPE_TAB,
-      status);
-  RegisterAppItem(id, tab);
-}
-
-void LauncherUpdater::RegisterAppItem(ash::LauncherID id,
-                                      TabContentsWrapper* tab) {
-  AppTabDetails details;
-  details.id = id;
-  details.app_id = launcher_delegate_->GetAppID(tab);
-  app_map_[tab] = details;
-}
-
-void LauncherUpdater::CreateTabbedItem() {
-  DCHECK_EQ(-1, item_id_);
-  item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
-      this,
-      is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
-                      ChromeLauncherDelegate::STATE_NOT_INCOGNITO);
-}
-
-bool LauncherUpdater::ContainsID(ash::LauncherID id, TabContentsWrapper** tab) {
-  if (item_id_ == id)
-    return true;
-  for (AppTabMap::const_iterator i = app_map_.begin(); i != app_map_.end();
-       ++i) {
-    if (i->second.id == id) {
-      *tab = i->first;
-      return true;
-    }
-  }
-  return false;
-}
-
-ash::LauncherID LauncherUpdater::GetLauncherID(TabContentsWrapper* tab) {
-  if (type_ != TYPE_TABBED)
-    return item_id_;
-  AppTabMap::iterator i = app_map_.find(tab);
-  if (i == app_map_.end())
-    return item_id_;
-  return i->second.id;
-}
-
-ash::LauncherItemStatus LauncherUpdater::GetStatusForTab(
-    TabContentsWrapper* tab) {
-  return ash::wm::IsActiveWindow(window_) &&
-      tab == tab_model_->GetActiveTabContents() ?
-        ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
 }
 
 ash::LauncherModel* LauncherUpdater::launcher_model() {

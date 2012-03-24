@@ -97,8 +97,6 @@
         'launcher/launcher_types.h',
         'launcher/launcher_view.cc',
         'launcher/launcher_view.h',
-        'launcher/launcher_window_cycler.cc',
-        'launcher/launcher_window_cycler.h',
         'launcher/tabbed_launcher_button.cc',
         'launcher/tabbed_launcher_button.h',
         'launcher/view_model.cc',
