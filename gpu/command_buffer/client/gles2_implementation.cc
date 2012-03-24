@@ -1154,8 +1154,10 @@ void GLES2Implementation::GenSharedIdsCHROMIUM(
       << namespace_id << ", " << id_offset << ", " << n << ", " <<
       static_cast<void*>(ids) << ")");
   TRACE_EVENT0("gpu", "GLES2::GenSharedIdsCHROMIUM");
-  while (n) {
-    ScopedTransferBufferArray<GLint> id_buffer(n, helper_, transfer_buffer_);
+  GLsizei num = n;
+  GLuint* dst = ids;
+  while (num) {
+    ScopedTransferBufferArray<GLint> id_buffer(num, helper_, transfer_buffer_);
     if (!id_buffer.valid()) {
       return;
     }
@@ -1163,13 +1165,13 @@ void GLES2Implementation::GenSharedIdsCHROMIUM(
         namespace_id, id_offset, id_buffer.num_elements(),
         id_buffer.shm_id(), id_buffer.offset());
     WaitForCmd();
-    memcpy(ids, id_buffer.address(), sizeof(*ids) * id_buffer.num_elements());
-    n -= id_buffer.num_elements();
-    ids += id_buffer.num_elements();
+    memcpy(dst, id_buffer.address(), sizeof(*dst) * id_buffer.num_elements());
+    num -= id_buffer.num_elements();
+    dst += id_buffer.num_elements();
   }
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
+      GPU_CLIENT_LOG("  " << i << ": " << namespace_id << ", " << ids[i]);
     }
   });
 }
@@ -1181,7 +1183,7 @@ void GLES2Implementation::DeleteSharedIdsCHROMIUM(
       << static_cast<const void*>(ids) << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
+      GPU_CLIENT_LOG("  " << i << ": " << namespace_id << ", "  << ids[i]);
     }
   });
   TRACE_EVENT0("gpu", "GLES2::DeleteSharedIdsCHROMIUM");
@@ -1207,7 +1209,7 @@ void GLES2Implementation::RegisterSharedIdsCHROMIUM(
      << static_cast<const void*>(ids) << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << ids[i]);
+      GPU_CLIENT_LOG("  " << i << ": "  << namespace_id << ", " << ids[i]);
     }
   });
   TRACE_EVENT0("gpu", "GLES2::RegisterSharedIdsCHROMIUM");
