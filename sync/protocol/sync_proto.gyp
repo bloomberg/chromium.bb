@@ -18,6 +18,7 @@
         'bookmark_specifics.proto',
         'client_commands.proto',
         'client_debug_info.proto',
+        'get_updates_caller_info.proto',
         'encryption.proto',
         'extension_setting_specifics.proto',
         'extension_specifics.proto',

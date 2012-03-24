@@ -11,6 +11,8 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "get_updates_caller_info.proto";
+
 // The additional info here is from SyncerStatus. They get sent when the event
 // SYNC_CYCLE_COMPLETED  is sent.
 message SyncCycleCompletedEventInfo {
@@ -31,6 +33,11 @@ message SyncCycleCompletedEventInfo {
   optional int32 num_hierarchy_conflicts = 5;
   optional int32 num_simple_conflicts = 6;
   optional int32 num_server_conflicts = 7;
+
+  // Counts to track the effective usefulness of our GetUpdate requests.
+  optional int32 num_updates_downloaded = 8;
+  optional int32 num_reflected_updates_downloaded = 9;
+  optional GetUpdatesCallerInfo caller_info = 10;
 }
 
 message DebugEventInfo {

@@ -49,11 +49,12 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
   status.num_successful_bookmark_commits = 10;
   status.num_updates_downloaded_total = 100;
   status.num_tombstone_updates_downloaded_total = 200;
+  status.num_reflected_updates_downloaded_total = 50;
   status.num_local_overwrites = 15;
   status.num_server_overwrites = 18;
 
   scoped_ptr<DictionaryValue> value(status.ToValue());
-  EXPECT_EQ(7u, value->size());
+  EXPECT_EQ(8u, value->size());
   ExpectDictBooleanValue(status.invalid_store, *value, "invalidStore");
   ExpectDictIntegerValue(status.num_successful_commits,
                          *value, "numSuccessfulCommits");
@@ -63,6 +64,8 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
                          *value, "numUpdatesDownloadedTotal");
   ExpectDictIntegerValue(status.num_tombstone_updates_downloaded_total,
                          *value, "numTombstoneUpdatesDownloadedTotal");
+  ExpectDictIntegerValue(status.num_reflected_updates_downloaded_total,
+                         *value, "numReflectedUpdatesDownloadedTotal");
   ExpectDictIntegerValue(status.num_local_overwrites,
                          *value, "numLocalOverwrites");
   ExpectDictIntegerValue(status.num_server_overwrites,
@@ -141,11 +144,12 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kNumServerConflicts,
                                kDidCommitItems,
                                source,
+                               false,
                                0,
                                base::Time::Now(),
                                false);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(15u, value->size());
+  EXPECT_EQ(16u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,
                             "syncerStatus");
   ExpectDictIntegerValue(kNumServerChangesRemaining, *value,
@@ -169,6 +173,7 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   ExpectDictBooleanValue(kDidCommitItems, *value,
                          "didCommitItems");
   ExpectDictDictionaryValue(*expected_source_value, *value, "source");
+  ExpectDictBooleanValue(false, *value, "notificationsEnabled");
 }
 
 }  // namespace

@@ -22,6 +22,54 @@ using syncable::WriteTransaction;
 using syncable::GET_BY_ID;
 using syncable::SYNCER;
 
+namespace {
+
+// This function attempts to determine whether or not this update is genuinely
+// new, or if it is a reflection of one of our own commits.
+//
+// There is a known inaccuracy in its implementation.  If this update ends up
+// being applied to a local item with a different ID, we will count the change
+// as being a non-reflection update.  Fortunately, the server usually updates
+// our IDs correctly in its commit response, so a new ID during GetUpdate should
+// be rare.
+//
+// The only secnarios I can think of where this might happen are:
+// - We commit a  new item to the server, but we don't persist the
+// server-returned new ID to the database before we shut down.  On the GetUpdate
+// following the next restart, we will receive an update from the server that
+// updates its local ID.
+// - When two attempts to create an item with identical UNIQUE_CLIENT_TAG values
+// collide at the server.  I have seen this in testing.  When it happens, the
+// test server will send one of the clients a response to upate its local ID so
+// that both clients will refer to the item using the same ID going forward.  In
+// this case, we're right to assume that the update is not a reflection.
+//
+// For more information, see SyncerUtil::FindLocalIdToUpdate().
+bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
+                              const SyncEntity &update) {
+  int64 existing_version = -1; // The server always sends positive versions.
+  syncable::Entry existing_entry(trans, GET_BY_ID, update.id());
+  if (existing_entry.good())
+    existing_version = existing_entry.Get(syncable::BASE_VERSION);
+
+  return existing_version < update.version();
+}
+
+// In the event that IDs match, but tags differ AttemptReuniteClient tag
+// will have refused to unify the update.
+// We should not attempt to apply it at all since it violates consistency
+// rules.
+VerifyResult VerifyTagConsistency(const SyncEntity& entry,
+                                  const syncable::MutableEntry& same_id) {
+  if (entry.has_client_defined_unique_tag() &&
+      entry.client_defined_unique_tag() !=
+          same_id.Get(syncable::UNIQUE_CLIENT_TAG)) {
+    return VERIFY_FAIL;
+  }
+  return VERIFY_UNDECIDED;
+}
+}  // namespace
+
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
@@ -62,28 +110,14 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
                                              session->routing_info());
     status->mutable_update_progress()->AddVerifyResult(result.value, update);
     status->increment_num_updates_downloaded_by(1);
+    if (!UpdateContainsNewVersion(&trans, update))
+      status->increment_num_reflected_updates_downloaded_by(1);
     if (update.deleted())
       status->increment_num_tombstone_updates_downloaded_by(1);
   }
 
   return SYNCER_OK;
 }
-
-namespace {
-// In the event that IDs match, but tags differ AttemptReuniteClient tag
-// will have refused to unify the update.
-// We should not attempt to apply it at all since it violates consistency
-// rules.
-VerifyResult VerifyTagConsistency(const SyncEntity& entry,
-                                  const syncable::MutableEntry& same_id) {
-  if (entry.has_client_defined_unique_tag() &&
-      entry.client_defined_unique_tag() !=
-          same_id.Get(syncable::UNIQUE_CLIENT_TAG)) {
-    return VERIFY_FAIL;
-  }
-  return VERIFY_UNDECIDED;
-}
-}  // namespace
 
 VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
     syncable::WriteTransaction* trans, const SyncEntity& entry,

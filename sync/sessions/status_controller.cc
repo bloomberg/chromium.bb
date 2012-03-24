@@ -116,6 +116,12 @@ void StatusController::increment_num_tombstone_updates_downloaded_by(
       value;
 }
 
+void StatusController::increment_num_reflected_updates_downloaded_by(
+    int value) {
+  shared_.syncer_status.mutate()->num_reflected_updates_downloaded_total +=
+      value;
+}
+
 void StatusController::set_num_server_changes_remaining(
     int64 changes_remaining) {
   if (shared_.num_server_changes_remaining.value() != changes_remaining)

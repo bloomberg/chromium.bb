@@ -50,6 +50,7 @@ SyncerStatus::SyncerStatus()
       num_successful_bookmark_commits(0),
       num_updates_downloaded_total(0),
       num_tombstone_updates_downloaded_total(0),
+      num_reflected_updates_downloaded_total(0),
       num_local_overwrites(0),
       num_server_overwrites(0) {
 }
@@ -67,6 +68,8 @@ DictionaryValue* SyncerStatus::ToValue() const {
                 num_updates_downloaded_total);
   value->SetInteger("numTombstoneUpdatesDownloadedTotal",
                 num_tombstone_updates_downloaded_total);
+  value->SetInteger("numReflectedUpdatesDownloadedTotal",
+                num_reflected_updates_downloaded_total);
   value->SetInteger("numLocalOverwrites", num_local_overwrites);
   value->SetInteger("numServerOverwrites", num_server_overwrites);
   return value;
@@ -113,6 +116,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     int num_server_conflicts,
     bool did_commit_items,
     const SyncSourceInfo& source,
+    bool notifications_enabled,
     size_t num_entries,
     base::Time sync_start_time,
     bool retry_scheduled)
@@ -131,6 +135,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       num_server_conflicts(num_server_conflicts),
       did_commit_items(did_commit_items),
       source(source),
+      notifications_enabled(notifications_enabled),
       num_entries(num_entries),
       sync_start_time(sync_start_time),
       retry_scheduled(retry_scheduled) {
@@ -170,6 +175,7 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetBoolean("didCommitItems", did_commit_items);
   value->SetInteger("numEntries", num_entries);
   value->Set("source", source.ToValue());
+  value->SetBoolean("notificationsEnabled", notifications_enabled);
   return value;
 }
 

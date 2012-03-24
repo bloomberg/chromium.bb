@@ -128,6 +128,8 @@ class SyncManager {
     int64 updates_available;
     // Total updates received by the syncer since browser start.
     int updates_received;
+    // Total updates received that are echoes of our own changes.
+    int reflected_updates_received;
 
     // Of updates_received, how many were tombstones.
     int tombstone_updates_received;

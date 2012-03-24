@@ -88,6 +88,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
                                          7,
                                          false,
                                          sessions::SyncSourceInfo(),
+                                         false,
                                          0,
                                          base::Time::Now(),
                                          false);

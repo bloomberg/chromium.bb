@@ -165,6 +165,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       status_controller_->TotalNumServerConflictingItems(),
       status_controller_->did_commit_items(),
       source_,
+      context_->notifications_enabled(),
       dir->GetEntriesCount(),
       status_controller_->sync_start_time(),
       !Succeeded());

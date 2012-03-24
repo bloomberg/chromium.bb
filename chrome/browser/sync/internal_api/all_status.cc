@@ -71,6 +71,8 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
         snapshot->syncer_status.num_updates_downloaded_total;
     status.tombstone_updates_received +=
         snapshot->syncer_status.num_tombstone_updates_downloaded_total;
+    status.reflected_updates_received +=
+        snapshot->syncer_status.num_reflected_updates_downloaded_total;
     status.num_local_overwrites_total +=
         snapshot->syncer_status.num_local_overwrites;
     status.num_server_overwrites_total +=

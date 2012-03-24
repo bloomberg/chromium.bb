@@ -23,6 +23,7 @@ import app_setting_specifics_pb2
 import app_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
+import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
 import nigori_specifics_pb2
@@ -216,8 +217,9 @@ def SyncTypeToString(data_type):
 
 def CallerInfoToString(caller_info_source):
   """Formats a GetUpdatesSource enum value to a readable string."""
-  return sync_pb2.GetUpdatesCallerInfo.DESCRIPTOR.enum_types_by_name[
-      'GetUpdatesSource'].values_by_number[caller_info_source].name
+  return get_updates_caller_info_pb2.GetUpdatesCallerInfo \
+      .DESCRIPTOR.enum_types_by_name['GetUpdatesSource'] \
+      .values_by_number[caller_info_source].name
 
 
 def ShortDatatypeListSummary(data_types):

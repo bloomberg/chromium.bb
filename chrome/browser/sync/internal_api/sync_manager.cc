@@ -706,6 +706,7 @@ SyncManager::Status::Status()
       initial_sync_ended(false),
       updates_available(0),
       updates_received(0),
+      reflected_updates_received(0),
       tombstone_updates_received(0),
       num_local_overwrites_total(0),
       num_server_overwrites_total(0),

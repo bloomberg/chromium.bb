@@ -72,6 +72,7 @@ struct SyncerStatus {
   // Download event counters.
   int num_updates_downloaded_total;
   int num_tombstone_updates_downloaded_total;
+  int num_reflected_updates_downloaded_total;
 
   // If the syncer encountered a MIGRATION_DONE code, these are the types that
   // the client must now "migrate", by purging and re-downloading all updates.
@@ -121,6 +122,7 @@ struct SyncSessionSnapshot {
       int num_server_conflicts,
       bool did_commit_items,
       const SyncSourceInfo& source,
+      bool notifications_enabled,
       size_t num_entries,
       base::Time sync_start_time,
       bool retry_scheduled);
@@ -146,6 +148,7 @@ struct SyncSessionSnapshot {
   const int num_server_conflicts;
   const bool did_commit_items;
   const SyncSourceInfo source;
+  const bool notifications_enabled;
   const size_t num_entries;
   base::Time sync_start_time;
   const bool retry_scheduled;

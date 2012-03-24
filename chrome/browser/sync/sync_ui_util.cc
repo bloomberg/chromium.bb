@@ -570,6 +570,9 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Updates Downloaded (Tombstones)",
                                    full_status.tombstone_updates_received);
     sync_ui_util::AddIntSyncDetail(details,
+                                   "Updates Downloaded (Reflections)",
+                                   full_status.reflected_updates_received);
+    sync_ui_util::AddIntSyncDetail(details,
                                    "Empty GetUpdates",
                                    full_status.empty_get_updates);
     sync_ui_util::AddIntSyncDetail(details,

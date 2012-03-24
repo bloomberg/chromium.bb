@@ -53,7 +53,7 @@ void SyncBackendHostForProfileSyncTest::
   HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
-      false, SyncSourceInfo(), 0, base::Time::Now(), false));
+      false, SyncSourceInfo(), false, 0, base::Time::Now(), false));
 }
 
 namespace {
@@ -96,7 +96,7 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
     HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
         sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
-        false, SyncSourceInfo(), 0, base::Time::Now(), false));
+        false, SyncSourceInfo(), false, 0, base::Time::Now(), false));
   }
 }
 
