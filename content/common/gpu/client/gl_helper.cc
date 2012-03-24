@@ -191,6 +191,7 @@ class GLHelper::CopyTextureToImpl {
 
   void InitBuffer();
   void InitProgram();
+  void Detach();
 
   bool CopyTextureTo(WebKit::WebGLId src_texture,
                      const gfx::Size& src_size,
@@ -277,6 +278,11 @@ void GLHelper::CopyTextureToImpl::InitProgram() {
   texture_location_ = context_->getUniformLocation(program_, "s_texture");
 }
 
+void GLHelper::CopyTextureToImpl::Detach() {
+  program_.Detach();
+  vertex_attributes_buffer_.Detach();
+}
+
 bool GLHelper::CopyTextureToImpl::CopyTextureTo(WebKit::WebGLId src_texture,
                                                 const gfx::Size& src_size,
                                                 const gfx::Size& dst_size,
@@ -354,6 +360,10 @@ GLHelper::~GLHelper() {
 
 WebKit::WebGraphicsContext3D* GLHelper::context() const {
   return context_;
+}
+
+void GLHelper::Detach() {
+  copy_texture_to_impl_->Detach();
 }
 
 bool GLHelper::CopyTextureTo(WebKit::WebGLId src_texture,

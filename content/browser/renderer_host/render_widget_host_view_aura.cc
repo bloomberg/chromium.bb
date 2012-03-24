@@ -1113,6 +1113,9 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
   host_->ScheduleComposite();
 
   if (gl_helper_.get()) {
+    // Detach the resources to avoid deleting them using the invalid context.
+    // They've been released anyway when the GPU process died.
+    gl_helper_->Detach();
     gl_helper_.reset(
         new content::GLHelper(factory->GetSharedContext(compositor)));
   }
