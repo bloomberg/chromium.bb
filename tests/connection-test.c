@@ -402,3 +402,25 @@ TEST(connection_marshal_demarshal)
 
 	release_marshal_data(&data);
 }
+
+TEST(connection_marshal_alot)
+{
+	struct marshal_data data;
+	char f[64];
+	int i;
+
+	setup_marshal_data(&data);
+	
+	/* We iterate enough to make sure we wrap the circular buffers
+	 * for both regular data an fds. */
+
+	for (i = 0; i < 2000; i++) {
+		strcpy(f, "/tmp/weston-tests-XXXXXX");
+		data.value.h = mkstemp(f);
+		assert(data.value.h >= 0);
+		marshal_demarshal(&data, (void *) validate_demarshal_h,
+				  8, "h", data.value.h);
+	}
+
+	release_marshal_data(&data);
+}
