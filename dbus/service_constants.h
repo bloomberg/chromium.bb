@@ -191,6 +191,8 @@ const char kStateOverrideCancel[] = "StateOverrideCancel";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
+const int  kBrightnessTransitionGradual = 1;
+const int  kBrightnessTransitionInstant = 2;
 // DEPRECATED
 const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
