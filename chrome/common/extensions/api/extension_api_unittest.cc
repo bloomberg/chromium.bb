@@ -71,6 +71,7 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
   DictionaryValue manifest;
   manifest.SetString("name", "extension");
   manifest.SetString("version", "1.0");
+  manifest.SetInteger("manifest_version", 2);
   {
     scoped_ptr<ListValue> permissions_list(new ListValue());
     for (std::set<std::string>::const_iterator i = permissions.begin();

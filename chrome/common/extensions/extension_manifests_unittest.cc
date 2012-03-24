@@ -1125,3 +1125,42 @@ TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
   LoadAndExpectError("page_action_manifest_version_2b.json",
                      errors::kInvalidPageActionPopup);
 }
+
+TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
+  DictionaryValue base_manifest;
+  {
+    base_manifest.SetString(keys::kName, "test");
+    base_manifest.SetString(keys::kVersion, "0.1");
+    ListValue* permissions = new ListValue();
+    permissions->Append(Value::CreateStringValue("storage"));
+    base_manifest.Set(keys::kPermissions, permissions);
+  }
+
+  std::string kManifestVersionError("Requires manifest version of at least 2.");
+
+  // Extension with no manifest version cannot use storage API.
+  {
+    Manifest manifest(base_manifest.DeepCopy(), "test");
+    LoadAndExpectError(manifest, kManifestVersionError);
+  }
+
+  // Extension with manifest version 1 cannot use storage API.
+  {
+    DictionaryValue manifest_with_version;
+    manifest_with_version.SetInteger(keys::kManifestVersion, 1);
+    manifest_with_version.MergeDictionary(&base_manifest);
+
+    Manifest manifest(manifest_with_version.DeepCopy(), "test");
+    LoadAndExpectError(manifest, kManifestVersionError);
+  }
+
+  // Extension with manifest version 2 *can* use storage API.
+  {
+    DictionaryValue manifest_with_version;
+    manifest_with_version.SetInteger(keys::kManifestVersion, 2);
+    manifest_with_version.MergeDictionary(&base_manifest);
+
+    Manifest manifest(manifest_with_version.DeepCopy(), "test");
+    LoadAndExpectSuccess(manifest);
+  }
+}

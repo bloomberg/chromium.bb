@@ -1365,7 +1365,6 @@ bool Extension::LoadSharedFeatures(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
   if (!LoadDescription(error) ||
-      !LoadManifestVersion(error) ||
       !LoadHomepageURL(error) ||
       !LoadUpdateURL(error) ||
       !LoadIcons(error) ||
@@ -2888,6 +2887,11 @@ bool Extension::InitFromValue(int flags, string16* error) {
 
   creation_flags_ = flags;
 
+  // Important to load manifest version first because many other features
+  // depend on its value.
+  if (!LoadManifestVersion(error))
+    return false;
+
   // Validate minimum Chrome version. We don't need to store this, since the
   // extension is not valid if it is incorrect
   if (!CheckMinimumChromeVersion(error))
@@ -2932,7 +2936,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
 
   if (!LoadSharedFeatures(api_permissions, error))
     return false;
-
 
   if (!LoadExtensionFeatures(api_permissions, error))
     return false;
