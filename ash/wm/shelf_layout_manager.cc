@@ -103,6 +103,9 @@ ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
+      forced_visibility_state_(VISIBLE),
+      normal_visibility_state_(VISIBLE),
+      is_visibility_state_forced_(false),
       shelf_height_(status->GetWindowScreenBounds().height()),
       launcher_(NULL),
       status_(status),
@@ -160,7 +163,10 @@ void ShelfLayoutManager::LayoutShelf() {
 
 void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   State state;
-  state.visibility_state = visibility_state;
+  if (!is_visibility_state_forced_)
+    state.visibility_state = visibility_state;
+  else
+    state.visibility_state = forced_visibility_state_;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
 
   if (state_.Equals(state))
@@ -210,6 +216,20 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
       target_bounds.work_area_insets);
   UpdateShelfBackground(change_type);
 }
+
+void ShelfLayoutManager::SetForcedState(
+    VisibilityState forced_visibility_state) {
+  is_visibility_state_forced_ = true;
+  forced_visibility_state_ = forced_visibility_state;
+  normal_visibility_state_ = state_.visibility_state;
+  SetState(forced_visibility_state_);
+}
+
+void ShelfLayoutManager::ClearForcedState() {
+  is_visibility_state_forced_ = false;
+  SetState(normal_visibility_state_);
+}
+
 
 void ShelfLayoutManager::UpdateAutoHideState() {
   if (CalculateAutoHideState(state_.visibility_state) !=

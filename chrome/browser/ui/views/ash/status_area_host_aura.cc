@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
@@ -195,12 +196,24 @@ void StatusAreaHostAura::OnBrowserSetLastActive(const Browser* browser) {
 void StatusAreaHostAura::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
+#if defined(OS_CHROMEOS)
+  bool is_screen_locked = false;
+  ash::internal::ShelfLayoutManager* shelf = NULL;
+#endif
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       UpdateAppearance();
       break;
 #if defined(OS_CHROMEOS)
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED:
+      // TODO(sadrul): Move this logic to SystemTray when its capable of
+      // receiving lock state notifications.
+      is_screen_locked = *content::Details<bool>(details).ptr();
+      shelf = ash::Shell::GetInstance()->shelf();
+      if (is_screen_locked)
+        shelf->SetForcedState(ash::internal::ShelfLayoutManager::VISIBLE);
+      else
+        shelf->ClearForcedState();
       UpdateAppearance();
       break;
 #endif

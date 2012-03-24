@@ -89,6 +89,12 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   VisibilityState visibility_state() const { return state_.visibility_state; }
   AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
+  // Forces the visibility to |forced_visibility_state|. Any calls to SetState
+  // are ignored after this until ClearForcedState is called.
+  // TODO: clean this up!
+  void SetForcedState(VisibilityState forced_visibility_state);
+  void ClearForcedState();
+
   // Invoked by the shelf/launcher when the auto-hide state may have changed.
   void UpdateAutoHideState();
 
@@ -159,6 +165,12 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
 
   // Current state.
   State state_;
+
+  // Variables to keep track of the visibility state when we need to force the
+  // visibility to a particular value.
+  VisibilityState forced_visibility_state_;
+  VisibilityState normal_visibility_state_;
+  bool is_visibility_state_forced_;
 
   // Height of the shelf (max of launcher and status).
   int shelf_height_;
