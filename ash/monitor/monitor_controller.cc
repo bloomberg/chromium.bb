@@ -58,6 +58,11 @@ void MonitorController::OnMonitorBoundsChanged(const aura::Monitor* monitor) {
 }
 
 void MonitorController::OnMonitorAdded(aura::Monitor* monitor) {
+  if (root_windows_.empty()) {
+    root_windows_[monitor] = Shell::GetRootWindow();
+    Shell::GetRootWindow()->SetHostBounds(monitor->bounds());
+    return;
+  }
   aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
       CreateRootWindowForMonitor(monitor);
   root_windows_[monitor] = root;
@@ -66,8 +71,15 @@ void MonitorController::OnMonitorAdded(aura::Monitor* monitor) {
 
 void MonitorController::OnMonitorRemoved(const aura::Monitor* monitor) {
   aura::RootWindow* root = root_windows_[monitor];
-  root_windows_.erase(monitor);
-  delete root;
+  DCHECK(root);
+  // Primary monitor should never be removed by MonitorManager.
+  DCHECK(root != Shell::GetRootWindow());
+  // Monitor for root window will be deleted when the Primary RootWindow
+  // is deleted by the Shell.
+  if (root != Shell::GetRootWindow()) {
+    root_windows_.erase(monitor);
+    delete root;
+  }
 }
 
 void MonitorController::Init() {

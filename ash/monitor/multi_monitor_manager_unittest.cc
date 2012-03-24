@@ -13,6 +13,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 namespace test {
@@ -38,16 +39,22 @@ vector<const aura::Monitor*> CreateMonitorsFromString(
 }  // namespace
 
 class MultiMonitorManagerTest : public test::AshTestBase,
-                                public aura::MonitorObserver {
+                                public aura::MonitorObserver,
+                                public aura::WindowObserver {
  public:
-  MultiMonitorManagerTest() : removed_count_(0U) {}
+  MultiMonitorManagerTest()
+      : removed_count_(0U),
+        root_window_destroyed_(false) {
+  }
   virtual ~MultiMonitorManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     monitor_manager()->AddObserver(this);
+    Shell::GetRootWindow()->AddObserver(this);
   }
   virtual void TearDown() OVERRIDE {
+    Shell::GetRootWindow()->RemoveObserver(this);
     monitor_manager()->RemoveObserver(this);
     AshTestBase::TearDown();
   }
@@ -67,6 +74,11 @@ class MultiMonitorManagerTest : public test::AshTestBase,
     changed_.clear();
     added_.clear();
     removed_count_ = 0U;
+    root_window_destroyed_ = false;
+  }
+
+  bool root_window_destroyed() const {
+    return root_window_destroyed_;
   }
 
   // aura::MonitorObserver overrides:
@@ -80,6 +92,12 @@ class MultiMonitorManagerTest : public test::AshTestBase,
     ++removed_count_;
   }
 
+  // aura::WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) {
+    ASSERT_EQ(Shell::GetRootWindow(), window);
+    root_window_destroyed_ = true;
+  }
+
   void UpdateMonitor(const std::string str) {
     vector<const aura::Monitor*> monitors = CreateMonitorsFromString(str);
     monitor_manager()->OnNativeMonitorsChanged(monitors);
@@ -90,6 +108,7 @@ class MultiMonitorManagerTest : public test::AshTestBase,
   vector<const Monitor*> changed_;
   vector<const Monitor*> added_;
   size_t removed_count_;
+  bool root_window_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiMonitorManagerTest);
 };
@@ -135,6 +154,41 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ("1 0 1", GetCountSummary());
   EXPECT_EQ(monitor_manager()->GetMonitorAt(0), changed()[0]);
   EXPECT_EQ("0,0 800x300", changed()[0]->bounds().ToString());
+  reset();
+
+  // # of monitor can go to zero when screen is off.
+  const vector<const Monitor*> empty;
+  monitor_manager()->OnNativeMonitorsChanged(empty);
+  EXPECT_EQ(1U, monitor_manager()->GetNumMonitors());
+  EXPECT_EQ("0 0 0", GetCountSummary());
+  EXPECT_FALSE(root_window_destroyed());
+  // Monitor configuration stays the same
+  EXPECT_EQ("0,0 800x300",
+            monitor_manager()->GetMonitorAt(0)->bounds().ToString());
+  reset();
+
+  // Connect to monitor again
+  UpdateMonitor("100+100-500x400");
+  EXPECT_EQ(1U, monitor_manager()->GetNumMonitors());
+  EXPECT_EQ("1 0 0", GetCountSummary());
+  EXPECT_FALSE(root_window_destroyed());
+  EXPECT_EQ("100,100 500x400", changed()[0]->bounds().ToString());
+  reset();
+
+  // Go back to zero and wake up with multiple monitors.
+  monitor_manager()->OnNativeMonitorsChanged(empty);
+  EXPECT_EQ(1U, monitor_manager()->GetNumMonitors());
+  EXPECT_FALSE(root_window_destroyed());
+  reset();
+
+  // Add secondary.
+  UpdateMonitor("0+0-1000x600,1000+0-600x400");
+  EXPECT_EQ(2U, monitor_manager()->GetNumMonitors());
+  EXPECT_EQ("0,0 1000x600",
+            monitor_manager()->GetMonitorAt(0)->bounds().ToString());
+  EXPECT_EQ("1000,0 600x400",
+            monitor_manager()->GetMonitorAt(1)->bounds().ToString());
+  reset();
 
   aura::MonitorManager::set_use_fullscreen_host_window(false);
 }
