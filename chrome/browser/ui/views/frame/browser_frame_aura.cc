@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_aura.h"
 
-#include "ash/wm/frame_painter.h"
-#include "ash/wm/window_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
@@ -37,15 +35,6 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
                                        intptr_t old) OVERRIDE {
     if (key != aura::client::kShowStateKey)
       return;
-
-    // Maximized windows don't want resize handles overlapping the content area,
-    // because when the user moves the cursor to the right screen edge we want
-    // them to be able to hit the scroll bar.
-    window->SetHitTestBoundsOverride(
-        ash::FramePainter::kResizeOutsideBoundsSize,
-        ash::wm::IsWindowMaximized(window) ?
-            0 :
-            ash::FramePainter::kResizeInsideBoundsSize);
 
     // Allow the frame to be replaced when maximizing an app.
     if (browser_frame_->non_client_view() &&

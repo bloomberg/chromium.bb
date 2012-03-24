@@ -4,6 +4,7 @@
 
 #include "ash/wm/frame_painter.h"
 
+#include "ash/wm/window_util.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -11,6 +12,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,6 +31,12 @@ const int kBorderThickness = 0;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
+// Ash windows do not have a traditional visible window frame.  Window content
+// extends to the edge of the window.  We consider a small region outside the
+// window bounds and an even smaller region overlapping the window to be the
+// "non-client" area and use it for resizing.
+const int kResizeOutsideBoundsSize = 6;
+const int kResizeInsideBoundsSize = 1;
 // Space between left edge of window and popup window icon.
 const int kIconOffsetX = 4;
 // Space between top of window and popup window icon.
@@ -44,7 +52,7 @@ const int kTitleNoIconOffsetX = 8;
 // Space between title text and top of window.
 const int kTitleOffsetY = 7;
 // Color for the title text.
-const SkColor kTitleColor = SkColorSetRGB(40, 40, 40);
+const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
 // Size of header/content separator line below the header image.
 const int kHeaderContentSeparatorSize = 1;
 // Color of header bottom edge line.
@@ -96,15 +104,11 @@ void TileRoundRect(gfx::Canvas* canvas,
   canvas->sk_canvas()->translate(SkIntToScalar(-bitmap_offset_x), 0);
   canvas->sk_canvas()->drawPath(path, paint);
   canvas->sk_canvas()->translate(SkIntToScalar(bitmap_offset_x), 0);
-
 }
+
 }  // namespace
 
 namespace ash {
-
-// static
-const int FramePainter::kResizeOutsideBoundsSize = 6;
-const int FramePainter::kResizeInsideBoundsSize = 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // FramePainter, public:
@@ -156,6 +160,10 @@ void FramePainter::Init(views::Widget* frame,
   // Ensure we get resize cursors for a few pixels outside our bounds.
   frame_->GetNativeWindow()->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
                                                       kResizeInsideBoundsSize);
+
+  // Watch for maximize/restore state changes.  Observer removes itself in
+  // OnWindowDestroying() below.
+  frame_->GetNativeWindow()->AddObserver(this);
 }
 
 gfx::Rect FramePainter::GetBoundsForClientView(
@@ -327,7 +335,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
         title_font.GetHeight());
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
-                          kTitleColor,
+                          kTitleTextColor,
                           view->GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
@@ -376,6 +384,29 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
   if (window_icon_)
     window_icon_->SetBoundsRect(
         gfx::Rect(kIconOffsetX, kIconOffsetY, kIconSize, kIconSize));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
+
+void FramePainter::OnWindowPropertyChanged(aura::Window* window,
+                                           const void* key,
+                                           intptr_t old) {
+  if (key != aura::client::kShowStateKey)
+    return;
+
+  // Maximized windows don't want resize handles overlapping the content area,
+  // because when the user moves the cursor to the right screen edge we want
+  // them to be able to hit the scroll bar.
+  bool maximized = ash::wm::IsWindowMaximized(window);
+  window->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
+                                   maximized ? 0 : kResizeInsideBoundsSize);
+}
+
+void FramePainter::OnWindowDestroying(aura::Window* window) {
+  // Must be removed here and not in the destructor, as the aura::Window is
+  // already destroyed when our destructor runs.
+  window->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
