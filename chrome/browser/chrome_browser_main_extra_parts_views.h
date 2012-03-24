@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,9 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   ChromeBrowserMainExtraPartsViews();
 
   virtual void ToolkitInitialized() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_VIEWS_H_

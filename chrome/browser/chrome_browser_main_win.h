@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,6 +52,9 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   // allow the user level Chrome to run. So we notify the user and uninstall
   // user level Chrome.
   static bool CheckMachineLevelInstall();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ class ChromeBrowserMainExtraPartsGtk : public ChromeBrowserMainExtraParts {
 
  private:
   void DetectRunningAsRoot();
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsGtk);
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_MAIN_EXTRA_PARTS_GTK_H_

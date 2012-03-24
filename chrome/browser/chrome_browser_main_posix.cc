@@ -27,6 +27,7 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
+#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #endif
 
@@ -270,5 +271,24 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
 #if defined(TOOLKIT_USES_GTK)
   printing::PrintingContextGtk::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
+#endif
+}
+
+void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();  // Should not ever happen on ChromeOS.
+#elif defined(OS_ANDROID)
+  // TODO(port) Update this as needed.
+  // Probably should not ever happen on Android, but at the time of this
+  // writing, Android isn't even using ChromeBrowserMainPartsPosix yet.
+  NOTREACHED();
+#elif defined(OS_MACOSX)
+  // Not called on Mac because we load the locale files differently.
+  NOTREACHED();
+#elif defined(TOOLKIT_USES_GTK)
+  ChromeBrowserMainExtraPartsGtk::ShowMessageBox(
+      chrome_browser::kMissingLocaleDataMessage);
+#else
+#error "Need MessageBox implementation."
 #endif
 }

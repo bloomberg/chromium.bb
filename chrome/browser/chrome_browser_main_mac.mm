@@ -114,11 +114,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
 }
 
-void ChromeBrowserMainPartsMac::ShowMissingLocaleMessageBox() {
-  // Not called on Mac because we load the locale files differently.
-  NOTREACHED();
-}
-
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];
   [appController didEndMainMessageLoop];
