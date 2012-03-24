@@ -30,6 +30,7 @@ function FileManager(dialogDom) {
 
   this.butterTimer_ = null;
   this.currentButter_ = null;
+  this.butterLastShowTime_ = 0;
 
   this.watchedDirectoryUrl_ = null;
 
@@ -91,6 +92,13 @@ FileManager.prototype = {
    * thumbnail in the bottom panel (in pixels).
    */
   const IMAGE_HOVER_PREVIEW_SIZE = 200;
+
+  /**
+   * The minimum about of time to display the butter bar for, in ms.
+   * Justification is 1000ms for minimum display time plus 300ms for transition
+   * duration.
+   */
+  const MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
 
   /**
    * Translated strings.
@@ -626,6 +634,7 @@ FileManager.prototype = {
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     this.spinner_ = this.dialogDom_.querySelector('.spinner');
     this.showSpinner_(false);
+    this.butter_ = this.dialogDom_.querySelector('.butter-bar');
 
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
@@ -951,11 +960,12 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.showButter = function(message, opt_options) {
-    var butter =
-        this.dialogDom_.querySelector('.butter-bar').cloneNode(true);
+    var butter = this.butter_;
     if (opt_options) {
       if ('actions' in opt_options) {
         var actions = butter.querySelector('.actions');
+        while (actions.childNodes.length)
+          actions.removeChild(actions.firstChild);
         for (var label in opt_options.actions) {
           var link = this.document_.createElement('a');
           link.setAttribute('href', 'javascript://' + label);
@@ -972,17 +982,13 @@ FileManager.prototype = {
             .classList.remove('hide-in-butter');
       }
     }
-    this.dialogDom_.appendChild(butter);
 
     var self = this;
 
     setTimeout(function () {
-      if (self.currentButter_)
-        self.hideButter();
-
       self.currentButter_ = butter;
-
       self.updateButter(message, opt_options);
+      self.butterLastShowTime_ = new Date();
     });
 
     return butter;
@@ -1033,12 +1039,22 @@ FileManager.prototype = {
 
   FileManager.prototype.hideButter = function() {
     if (this.currentButter_) {
-      this.currentButter_.classList.add('after-show');
+      var delay = Math.max(MINIMUM_BUTTER_DISPLAY_TIME_MS -
+          (new Date() - this.butterLastShowTime_), 0);
 
       var butter = this.currentButter_;
+
       setTimeout(function() {
-          butter.parentNode.removeChild(butter);
-      }, 1000);
+        butter.classList.add('after-show');
+      }, delay);
+
+      setTimeout(function() {
+          butter.classList.remove('error');
+          butter.classList.remove('after-show');
+          butter.classList.add('before-show');
+          butter.querySelector('.actions').classList.add('hide-in-butter');
+          butter.querySelector('.progress-bar').classList.add('hide-in-butter');
+      }, delay + 1000);
 
       this.currentButter_ = null;
     }
