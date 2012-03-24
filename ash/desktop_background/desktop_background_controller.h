@@ -18,8 +18,11 @@ class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
-  // Gets the index of user selected wallpaper
+  // Gets the index of user selected wallpaper.
   virtual const int GetUserWallpaperIndex() = 0;
+
+  // Open the set wallpaper page in the browser.
+  virtual void OpenSetWallpaperPage() = 0;
 };
 
 // A class to listen for login and desktop background change events and set the

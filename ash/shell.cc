@@ -232,14 +232,17 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
 
 // This dummy class is used for shell unit tests. We dont have chrome delegate
 // in these tests.
-class DummyUserWallpaperDelegate: public UserWallpaperDelegate {
+class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
  public:
   DummyUserWallpaperDelegate() {}
 
   virtual ~DummyUserWallpaperDelegate() {}
 
-  const int GetUserWallpaperIndex() {
+  virtual const int GetUserWallpaperIndex() OVERRIDE {
     return 0;
+  }
+
+  virtual void OpenSetWallpaperPage() OVERRIDE {
   }
 
  private:

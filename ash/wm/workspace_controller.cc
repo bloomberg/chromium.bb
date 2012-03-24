@@ -4,15 +4,19 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
@@ -60,6 +64,8 @@ void WorkspaceController::ShowMenu(views::Widget* widget,
   // the strings are localized.
   menu_model.AddCheckItem(MENU_SNAP_TO_GRID,
                           ASCIIToUTF16("Snap to grid"));
+  menu_model.AddItem(MENU_CHANGE_WALLPAPER,
+                     l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
   views::MenuModelAdapter menu_model_adapter(&menu_model);
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   if (menu_runner_->RunMenuAt(
@@ -111,6 +117,11 @@ void WorkspaceController::ExecuteCommand(int command_id) {
                                 window->GetTargetBounds()));
         }
       }
+      break;
+    }
+    case MENU_CHANGE_WALLPAPER: {
+      Shell::GetInstance()->user_wallpaper_delegate()->
+          OpenSetWallpaperPage();
       break;
     }
   }

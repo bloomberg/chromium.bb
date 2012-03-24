@@ -75,6 +75,7 @@ class ASH_EXPORT WorkspaceController :
 
   enum MenuItem {
     MENU_SNAP_TO_GRID,
+    MENU_CHANGE_WALLPAPER,
   };
 
   aura::Window* viewport_;
