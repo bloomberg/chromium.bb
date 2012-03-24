@@ -240,7 +240,7 @@ class CCGenerator(object):
             c.Sblock('if (%s.get())' % prop.unix_name)
         c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
             prop.name,
-            self._CreateValueFromProperty(prop, prop.unix_name)))
+            self._CreateValueFromProperty(prop, 'this->' + prop.unix_name)))
         if prop.optional:
           c.Eblock();
     (c.Append()
