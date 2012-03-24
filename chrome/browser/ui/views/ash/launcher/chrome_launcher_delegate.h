@@ -138,6 +138,9 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // a new launcher item is created with |app_type| and pinned.
   void PinAppWithID(const std::string& app_id, AppType app_type);
 
+  // Modifies an app shortcut to open with the new |app_type|.
+  void SetAppType(ash::LauncherID id, AppType app_type);
+
   // Unpins any app items whose id is |app_id|.
   void UnpinAppsWithID(const std::string& app_id);
 

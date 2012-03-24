@@ -25,11 +25,12 @@ class ChromeLauncherDelegate;
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  LauncherContextMenu(ChromeLauncherDelegate* delegate, ash::LauncherID id);
+  LauncherContextMenu(ChromeLauncherDelegate* delegate,
+                      const ash::LauncherItem& item);
   virtual ~LauncherContextMenu();
 
   // ID of the item we're showing the context menu for.
-  ash::LauncherID id() const { return id_; }
+  ash::LauncherID id() const { return item_.id; }
 
   // ui::SimpleMenuModel::Delegate overrides:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -42,12 +43,14 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
  private:
   enum MenuItem {
     MENU_OPEN,
+    MENU_CLOSE,
     MENU_PIN,
-    MENU_CLOSE
+    LAUNCH_TYPE_REGULAR_TAB,
+    LAUNCH_TYPE_WINDOW,
   };
 
   ChromeLauncherDelegate* delegate_;
-  const ash::LauncherID id_;
+  ash::LauncherItem item_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

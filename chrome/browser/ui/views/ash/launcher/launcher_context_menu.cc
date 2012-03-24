@@ -9,22 +9,29 @@
 #include "ui/base/l10n/l10n_util.h"
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
-                                         ash::LauncherID id)
+                                         const ash::LauncherItem& item)
     : ui::SimpleMenuModel(NULL),
       delegate_(delegate),
-      id_(id) {
+      item_(item) {
   set_delegate(this);
-  ash::LauncherItem item;
-  item.id = id;
-  AddItem(MENU_OPEN,
-          delegate->GetTitle(item));
-  AddItem(MENU_PIN,
-          delegate->IsPinned(id) ?
-              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN) :
-              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_PIN));
-  if (delegate->IsOpen(id)) {
-    AddItem(MENU_CLOSE,
-            l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+
+  if (item_.type == ash::TYPE_APP_SHORTCUT) {
+    DCHECK(delegate->IsPinned(item_.id));
+    AddItem(
+        MENU_PIN,
+        l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
+    AddCheckItemWithStringId(
+        LAUNCH_TYPE_REGULAR_TAB,
+        IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+    AddCheckItemWithStringId(
+        LAUNCH_TYPE_WINDOW,
+        IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+  } else {
+    AddItem(MENU_OPEN, delegate->GetTitle(item));
+    if (delegate->IsOpen(item_.id)) {
+      AddItem(MENU_CLOSE,
+              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+    }
   }
 }
 
@@ -32,19 +39,20 @@ LauncherContextMenu::~LauncherContextMenu() {
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
-  return false;
+  switch (command_id) {
+    case LAUNCH_TYPE_REGULAR_TAB:
+      return delegate_->GetAppType(item_.id) ==
+          ChromeLauncherDelegate::APP_TYPE_TAB;
+    case LAUNCH_TYPE_WINDOW:
+      return delegate_->GetAppType(item_.id) ==
+          ChromeLauncherDelegate::APP_TYPE_WINDOW;
+    default:
+      return false;
+  }
 }
 
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_OPEN:
-      return true;
-    case MENU_CLOSE:
-      return true;
-    case MENU_PIN:
-      return delegate_->IsPinnable(id_);
-  }
-  return false;
+  return true;
 }
 
 bool LauncherContextMenu::GetAcceleratorForCommandId(
@@ -56,13 +64,21 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
 void LauncherContextMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN:
-      delegate_->Open(id_);
+      delegate_->Open(item_.id);
       break;
     case MENU_CLOSE:
-      delegate_->Close(id_);
+      delegate_->Close(item_.id);
       break;
     case MENU_PIN:
-      delegate_->TogglePinned(id_);
+      delegate_->TogglePinned(item_.id);
+      break;
+    case LAUNCH_TYPE_REGULAR_TAB:
+      delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_TAB);
+      break;
+    case LAUNCH_TYPE_WINDOW:
+      delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_WINDOW);
+      break;
+    default:
       break;
   }
 }

@@ -312,6 +312,13 @@ void ChromeLauncherDelegate::PinAppWithID(const std::string& app_id,
   PersistPinnedState();
 }
 
+void ChromeLauncherDelegate::SetAppType(ash::LauncherID id, AppType app_type) {
+  if (id_to_item_map_.find(id) == id_to_item_map_.end())
+    return;
+
+  id_to_item_map_[id].app_type = app_type;
+}
+
 void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
   for (IDToItemMap::iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ) {
@@ -363,7 +370,7 @@ string16 ChromeLauncherDelegate::GetTitle(const ash::LauncherItem& item) {
 
 ui::MenuModel* ChromeLauncherDelegate::CreateContextMenu(
     const ash::LauncherItem& item) {
-  return new LauncherContextMenu(this, item.id);
+  return new LauncherContextMenu(this, item);
 }
 
 ash::LauncherID ChromeLauncherDelegate::GetIDByWindow(
