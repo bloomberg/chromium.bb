@@ -2928,8 +2928,6 @@
         'browser/ui/gtk/gtk_tree.h',
         'browser/ui/gtk/gtk_util.cc',
         'browser/ui/gtk/gtk_util.h',
-        'browser/ui/gtk/g_object_weak_ref.cc',
-        'browser/ui/gtk/g_object_weak_ref.h',
         'browser/ui/gtk/hover_controller_gtk.cc',
         'browser/ui/gtk/hover_controller_gtk.h',
         'browser/ui/gtk/html_dialog_gtk.cc',
