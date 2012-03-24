@@ -211,6 +211,8 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
                      random_string);
   GURL url(url_string);
 
+  // Because the importer is started as the result of a user action which
+  // explicitly requires authentication, sending cookies here is reasonable.
   token_fetcher_ = content::URLFetcher::Create(
       url, content::URLFetcher::GET, this);
   token_fetcher_->SetRequestContext(request_context_getter_.get());
@@ -246,6 +248,8 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
                       token);
   GURL url(conn_string);
 
+  // Because the importer is started as the result of a user action which
+  // explicitly requires authentication, sending cookies here is reasonable.
   data_fetcher_ = content::URLFetcher::Create(
       url, content::URLFetcher::GET, this);
   data_fetcher_->SetRequestContext(request_context_getter_.get());
