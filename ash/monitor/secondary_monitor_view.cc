@@ -22,8 +22,7 @@ namespace {
 
 // Colors for the background, the message text and the shortcut text.
 const SkColor kBackgroundColor = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kMessageColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
-const SkColor kShortcutColor = SkColorSetRGB(0x8f, 0x8f, 0x8f);
+const SkColor kTextColor = SkColorSetRGB(127, 127, 127);
 
 // A view to be displayed on secondary monitor.
 class SecondaryMonitorView : public views::WidgetDelegateView {
@@ -43,7 +42,7 @@ class SecondaryMonitorView : public views::WidgetDelegateView {
     message_->SetAutoColorReadabilityEnabled(false);
     message_->SetFont(rb.GetFont(ui::ResourceBundle::LargeFont));
     message_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-    message_->SetEnabledColor(kMessageColor);
+    message_->SetEnabledColor(kTextColor);
     AddChildView(message_);
 
     shortcut_text_ = new views::Label(
@@ -51,7 +50,7 @@ class SecondaryMonitorView : public views::WidgetDelegateView {
     shortcut_text_->SetAutoColorReadabilityEnabled(false);
     shortcut_text_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
     shortcut_text_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-    shortcut_text_->SetEnabledColor(kShortcutColor);
+    shortcut_text_->SetEnabledColor(kTextColor);
     AddChildView(shortcut_text_);
 
     shortcut_image_ = new views::ImageView();
