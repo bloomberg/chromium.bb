@@ -243,15 +243,24 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
     return;
   }
 
+  // Directories in the Dock's plist are given with trailing slashes. Since
+  // installed_path and dmg_app_path both refer to application bundles,
+  // they're directories and will show up with trailing slashes. This is an
+  // artifact of the Dock's internal use of CFURL. Look for paths that match,
+  // and when adding an item to the Dock's plist, keep it in the form that the
+  // Dock likes.
+  NSString* installed_path_dock = [installed_path stringByAppendingString:@"/"];
+  NSString* dmg_app_path_dock = [dmg_app_path stringByAppendingString:@"/"];
+
   NSUInteger already_installed_app_index = NSNotFound;
   NSUInteger app_index = NSNotFound;
   for (NSUInteger index = 0; index < [persistent_apps count]; ++index) {
     NSString* app_path = [persistent_app_paths objectAtIndex:index];
-    if ([app_path isEqualToString:installed_path]) {
+    if ([app_path isEqualToString:installed_path_dock]) {
       // If the Dock already contains a reference to the newly installed
       // application, don't add another one.
       already_installed_app_index = index;
-    } else if ([app_path isEqualToString:dmg_app_path]) {
+    } else if ([app_path isEqualToString:dmg_app_path_dock]) {
       // If the Dock contains a reference to the application on the disk
       // image, replace it with a reference to the newly installed
       // application. However, if the Dock contains a reference to both the
@@ -355,7 +364,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
     }
 
     // Set up the new Dock tile.
-    NSURL* url = [NSURL fileURLWithPath:installed_path isDirectory:YES];
+    NSURL* url = [NSURL fileURLWithPath:installed_path_dock];
     NSDictionary* url_dict = NSURLCopyDictionary(url);
     if (!url_dict) {
       LOG(ERROR) << "couldn't create url_dict";
@@ -371,7 +380,7 @@ void AddIcon(NSString* installed_path, NSString* dmg_app_path) {
 
     // Add the new tile to the Dock.
     [persistent_apps insertObject:new_tile atIndex:app_index];
-    [persistent_app_paths insertObject:installed_path atIndex:app_index];
+    [persistent_app_paths insertObject:installed_path_dock atIndex:app_index];
     made_change = true;
   }
 

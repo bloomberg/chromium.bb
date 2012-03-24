@@ -211,15 +211,8 @@ void SwizzleInit() {
 // Used to determine when a Panel window can become the key window.
 @interface NSApplication (PanelsCanBecomeKey)
 - (void)_cycleWindowsReversed:(BOOL)arg1;
-- (id)_removeWindow:(NSWindow*)window;
-- (id)_setKeyWindow:(NSWindow*)window;
-@end
-
-@interface BrowserCrApplication (PrivateInternal)
-
-// This must be called under the protection of previousKeyWindowsLock_.
-- (void)removePreviousKeyWindow:(NSWindow*)window;
-
+- (id)_removeWindow:(id)window;
+- (id)_setKeyWindow:(id)window;
 @end
 
 @implementation BrowserCrApplication
@@ -234,6 +227,7 @@ void SwizzleInit() {
   SwizzleInit();
   if ((self = [super init])) {
     eventHooks_.reset([[NSMutableArray alloc] init]);
+    previousKeyWindows_.reset([[NSMutableArray alloc] init]);
   }
 
   // Sanity check to alert if overridden methods are not supported.
@@ -522,11 +516,8 @@ void SwizzleInit() {
   return cyclingWindows_;
 }
 
-- (id)_removeWindow:(NSWindow*)window {
-  {
-    base::AutoLock lock(previousKeyWindowsLock_);
-    [self removePreviousKeyWindow:window];
-  }
+- (id)_removeWindow:(id)window {
+  [previousKeyWindows_ removeObject:window];
   id result = [super _removeWindow:window];
 
   // Ensure app has a key window after a window is removed.
@@ -546,35 +537,21 @@ void SwizzleInit() {
   return result;
 }
 
-- (id)_setKeyWindow:(NSWindow*)window {
+- (id)_setKeyWindow:(id)window {
   // |window| is nil when the current key window is being closed.
   // A separate call follows with a new value when a new key window is set.
   // Closed windows are not tracked in previousKeyWindows_.
   if (window != nil) {
-    base::AutoLock lock(previousKeyWindowsLock_);
-    [self removePreviousKeyWindow:window];
+    [previousKeyWindows_ removeObject:window];
     NSWindow* currentKeyWindow = [self keyWindow];
     if (currentKeyWindow != nil && currentKeyWindow != window)
-      previousKeyWindows_.push_back(window);
+      [previousKeyWindows_ addObject:currentKeyWindow];
   }
 
   return [super _setKeyWindow:window];
 }
 
-- (NSWindow*)previousKeyWindow {
-  base::AutoLock lock(previousKeyWindowsLock_);
-  return previousKeyWindows_.empty() ? nil : previousKeyWindows_.back();
+- (id)previousKeyWindow {
+  return [previousKeyWindows_ lastObject];
 }
-
-- (void)removePreviousKeyWindow:(NSWindow*)window {
-  previousKeyWindowsLock_.AssertAcquired();
-  std::vector<NSWindow*>::iterator window_iterator =
-      std::find(previousKeyWindows_.begin(),
-                previousKeyWindows_.end(),
-                window);
-  if (window_iterator != previousKeyWindows_.end()) {
-    previousKeyWindows_.erase(window_iterator);
-  }
-}
-
 @end
