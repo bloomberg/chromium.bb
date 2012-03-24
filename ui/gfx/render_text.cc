@@ -198,6 +198,24 @@ void SkiaTextRenderer::SetTextSize(int size) {
   paint_.setTextSize(size);
 }
 
+void SkiaTextRenderer::SetFontFamilyWithStyle(const std::string& family,
+                                              int style) {
+  DCHECK(!family.empty());
+
+  SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
+  SkAutoTUnref<SkTypeface> typeface(
+      SkTypeface::CreateFromName(family.c_str(), skia_style));
+  if (typeface.get()) {
+    // |paint_| adds its own ref. So don't |release()| it from the ref ptr here.
+    SetTypeface(typeface.get());
+
+    // Enable fake bold text if bold style is needed but new typeface does not
+    // have it.
+    paint_.setFakeBoldText((skia_style & SkTypeface::kBold) &&
+                           !typeface.get()->isBold());
+  }
+}
+
 void SkiaTextRenderer::SetFontStyle(int style) {
   SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
   SkTypeface* current_typeface = paint_.getTypeface();

@@ -410,10 +410,8 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
     PangoFontDescription* native_font =
         pango_font_describe(run->item->analysis.font);
 
-    const char* family_name = pango_font_description_get_family(native_font);
-    SkAutoTUnref<SkTypeface> typeface(
-        SkTypeface::CreateFromName(family_name, SkTypeface::kNormal));
-    renderer.SetTypeface(typeface.get());
+    const std::string family_name =
+        pango_font_description_get_family(native_font);
     renderer.SetTextSize(GetPangoFontSizeInPixels(native_font));
 
     pango_font_description_free(native_font);
@@ -443,7 +441,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         //                  styles evenly over the glyph. We can do this too by
         //                  clipping and drawing the glyph several times.
         renderer.SetForegroundColor(styles[style].foreground);
-        renderer.SetFontStyle(styles[style].font_style);
+        renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
         renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
         renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
 
@@ -459,7 +457,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
 
     // Draw the remaining glyphs.
     renderer.SetForegroundColor(styles[style].foreground);
-    renderer.SetFontStyle(styles[style].font_style);
+    renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
     renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
     renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
     x = glyph_x;

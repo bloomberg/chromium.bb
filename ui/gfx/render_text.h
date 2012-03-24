@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -41,6 +42,7 @@ class SkiaTextRenderer {
   void SetTypeface(SkTypeface* typeface);
   void SetTextSize(int size);
   void SetFont(const gfx::Font& font);
+  void SetFontFamilyWithStyle(const std::string& family, int font_style);
   void SetFontStyle(int font_style);
   void SetForegroundColor(SkColor foreground);
   void SetShader(SkShader* shader);
