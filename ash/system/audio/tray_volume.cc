@@ -116,7 +116,6 @@ class VolumeView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(delegate->GetVolumeLevel());
-    slider_->set_focusable(true);
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_VOLUME));

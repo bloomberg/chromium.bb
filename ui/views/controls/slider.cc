@@ -28,9 +28,11 @@ Slider::Slider(SliderListener* listener, Orientation orientation)
     : listener_(listener),
       orientation_(orientation),
       value_(0.f),
+      keyboard_increment_(0.1f),
       animating_value_(0.f),
       value_is_valid_(false) {
   EnableCanvasFlippingForRTLUI(true);
+  set_focusable(true);
 }
 
 Slider::~Slider() {
@@ -38,6 +40,10 @@ Slider::~Slider() {
 
 void Slider::SetValue(float value) {
   SetValueInternal(value, VALUE_CHANGED_BY_API);
+}
+
+void Slider::SetKeyboardIncrement(float increment) {
+  keyboard_increment_ = increment;
 }
 
 void Slider::SetValueInternal(float value, SliderChangeReason reason) {
@@ -152,6 +158,27 @@ bool Slider::OnMouseDragged(const views::MouseEvent& event) {
                      VALUE_CHANGED_BY_USER);
   }
   return true;
+}
+
+bool Slider::OnKeyPressed(const views::KeyEvent& event) {
+  if (orientation_ == HORIZONTAL) {
+    if (event.key_code() == ui::VKEY_LEFT) {
+      SetValueInternal(value_ - keyboard_increment_, VALUE_CHANGED_BY_USER);
+      return true;
+    } else if (event.key_code() == ui::VKEY_RIGHT) {
+      SetValueInternal(value_ + keyboard_increment_, VALUE_CHANGED_BY_USER);
+      return true;
+    }
+  } else {
+    if (event.key_code() == ui::VKEY_DOWN) {
+      SetValueInternal(value_ - keyboard_increment_, VALUE_CHANGED_BY_USER);
+      return true;
+    } else if (event.key_code() == ui::VKEY_UP) {
+      SetValueInternal(value_ + keyboard_increment_, VALUE_CHANGED_BY_USER);
+      return true;
+    }
+  }
+  return false;
 }
 
 void Slider::AnimationProgressed(const ui::Animation* animation) {

@@ -55,7 +55,6 @@ class BrightnessView : public views::View,
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(initial_fraction);
-    slider_->set_focusable(true);
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BRIGHTNESS));
