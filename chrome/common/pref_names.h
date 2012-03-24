@@ -317,7 +317,6 @@ extern const char kEditBookmarksEnabled[];
 extern const char kEnableTranslate[];
 extern const char kPinnedTabs[];
 extern const char kHttpThrottlingEnabled[];
-extern const char kHttpThrottlingMayExperiment[];
 
 extern const char kDisable3DAPIs[];
 extern const char kEnableHyperlinkAuditing[];

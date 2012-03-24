@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,17 +86,4 @@ void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  // TODO(joi): This pref really means "user has not explicitly turned
-  // anti-DDoS throttling on or off". Rename it soon (2011/8/26) or
-  // remove it altogether (more likely).
-  prefs->RegisterBooleanPref(prefs::kHttpThrottlingMayExperiment,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
-
-  // For users who created their profile while throttling was off by
-  // default, but have never explicitly turned it on or off, we turn
-  // it on which is the new default.
-  if (prefs->GetBoolean(prefs::kHttpThrottlingMayExperiment)) {
-    prefs->SetBoolean(prefs::kHttpThrottlingEnabled, true);
-  }
 }
