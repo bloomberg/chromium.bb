@@ -182,6 +182,9 @@ UI_EXPORT bool GetGestureTimes(const base::NativeEvent& native_event,
                                double* start_time,
                                double* end_time);
 
+// Enable/disable natural scrolling for touchpads.
+UI_EXPORT void SetNaturalScroll(bool enabled);
+
 // Returns true if event is noop.
 UI_EXPORT bool IsNoopEvent(const base::NativeEvent& event);
 

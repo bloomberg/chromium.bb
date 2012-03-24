@@ -272,6 +272,10 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   return false;
 }
 
+void SetNaturalScroll(bool enabled) {
+  NOTIMPLEMENTED();
+}
+
 void UpdateDeviceList() {
   NOTIMPLEMENTED();
 }

@@ -88,6 +88,7 @@ class Preferences : public content::NotificationObserver {
   void UpdateAutoRepeatRate();
 
   BooleanPrefMember tap_to_click_enabled_;
+  BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember speed_factor_;

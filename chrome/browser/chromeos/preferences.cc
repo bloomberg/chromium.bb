@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/events.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {
@@ -57,6 +58,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   const bool enable_tap_to_click_default = IsLumpy();
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
                              enable_tap_to_click_default,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kNaturalScroll,
+                             true,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
@@ -246,6 +250,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
 
 void Preferences::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
+  natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
   sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
@@ -339,15 +344,23 @@ void Preferences::Observe(int type,
 
 void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
-    bool enabled = tap_to_click_enabled_.GetValue();
+    const bool enabled = tap_to_click_enabled_.GetValue();
     system::touchpad_settings::SetTapToClick(enabled);
     if (pref_name)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started", enabled);
   }
+  if (!pref_name || *pref_name == prefs::kNaturalScroll) {
+    const bool enabled = natural_scroll_.GetValue();
+    ui::SetNaturalScroll(enabled);
+    if (pref_name)
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Changed", enabled);
+    else
+      UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Started", enabled);
+  }
   if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
-    int sensitivity = sensitivity_.GetValue();
+    const int sensitivity = sensitivity_.GetValue();
     system::pointer_settings::SetSensitivity(sensitivity);
     if (pref_name) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(

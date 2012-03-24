@@ -457,8 +457,11 @@ const char kAudioVolumeDb[] = "settings.audio.volume";
 // A double pref storing the user-requested volume.
 const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 
-// A boolean pref set to true if TapToClick is being done in browser.
+// A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
+
+// A boolean pref set to true if touchpad natural scrolling is enabled.
+const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 
 // A boolean pref set to true if primary mouse button is the left button.
 const char kPrimaryMouseButtonRight[] = "settings.mouse.primary_right";
