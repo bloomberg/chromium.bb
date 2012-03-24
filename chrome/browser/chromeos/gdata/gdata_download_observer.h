@@ -10,11 +10,13 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 namespace gdata {
 
+class DocumentEntry;
 class GDataUploader;
 struct UploadFileInfo;
 
@@ -88,9 +90,11 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
 
   // Callback invoked by GDataUploader when the upload associated with
-  // |download_id| has completed. This function invokes the
-  // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
-  void OnUploadComplete(int32 download_id);
+  // |download_id| has completed. |error| indicated whether the
+  // call was successful. This function invokes the MaybeCompleteDownload()
+  // method on the DownloadItem to allow it to complete.
+  void OnUploadComplete(int32 download_id, base::PlatformFileError error,
+                        DocumentEntry* unused_entry);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.

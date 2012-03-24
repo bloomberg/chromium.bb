@@ -790,7 +790,9 @@ URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
 std::vector<std::string>
 InitiateUploadOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
-  headers.push_back(kUploadContentType + params_.content_type);
+  if (!params_.content_type.empty())
+    headers.push_back(kUploadContentType + params_.content_type);
+
   headers.push_back(
       kUploadContentLength + base::Int64ToString(params_.content_length));
   return headers;

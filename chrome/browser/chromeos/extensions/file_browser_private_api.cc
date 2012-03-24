@@ -1889,8 +1889,8 @@ TransferFileFunction::~TransferFileFunction() {}
 bool TransferFileFunction::RunImpl() {
   std::string local_file_url;
   std::string remote_file_url;
-  if (args_->GetString(0, &local_file_url) ||
-      args_->GetString(1, &remote_file_url)) {
+  if (!args_->GetString(0, &local_file_url) ||
+      !args_->GetString(1, &remote_file_url)) {
     return false;
   }
 
@@ -1908,18 +1908,20 @@ bool TransferFileFunction::RunImpl() {
 void TransferFileFunction::GetLocalPathsResponseOnUIThread(
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!files.size() != 2U) {
+  if (files.size() != 2U) {
     SendResponse(false);
     return;
   }
 
   const FilePath& local_source_file = files[0].path;
-  const FilePath& remote_destination_file = files[1].path;
+  FilePath remote_destination_file = files[1].path;
   if (gdata::util::IsUnderGDataMountPoint(local_source_file) ||
       !gdata::util::IsUnderGDataMountPoint(remote_destination_file)) {
     SendResponse(false);
     return;
   }
+  remote_destination_file =
+      gdata::util::ExtractGDataPath(remote_destination_file);
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);

@@ -26,11 +26,14 @@ namespace gdata {
 
 class DocumentEntry;
 
+// Used for file operations like removing files.
+typedef base::Callback<void(base::PlatformFileError error,
+                            DocumentEntry* entry)>
+    UploadCompletionCallback;
+
 // Structure containing current upload information of file, passed between
 // DocumentsService methods and callbacks.
 struct UploadFileInfo {
-  typedef base::Closure UploadFileCallback;
-
   UploadFileInfo();
   ~UploadFileInfo();
 
@@ -79,7 +82,7 @@ struct UploadFileInfo {
   scoped_ptr<DocumentEntry> entry;
 
   // Callback to be invoked once the upload has completed.
-  UploadFileCallback completion_callback;
+  UploadCompletionCallback completion_callback;
 };
 
 }  // namespace gdata

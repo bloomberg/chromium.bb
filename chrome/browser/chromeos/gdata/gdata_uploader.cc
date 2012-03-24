@@ -125,8 +125,10 @@ UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) const {
 
 void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
   pending_uploads_.erase(upload_file_info->upload_id);
-  if (!upload_file_info->completion_callback.is_null())
-    upload_file_info->completion_callback.Run();
+  if (!upload_file_info->completion_callback.is_null()) {
+    upload_file_info->completion_callback.Run(
+        base::PLATFORM_FILE_ERROR_ABORT, NULL);
+  }
   // The file stream is closed by the destructor asynchronously.
   delete upload_file_info->file_stream;
   delete upload_file_info;
@@ -301,7 +303,9 @@ void GDataUploader::OnResumeUploadResponseReceived(
     // Done uploading.
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
-      upload_file_info->completion_callback.Run();
+      upload_file_info->completion_callback.Run(
+          base::PLATFORM_FILE_OK,
+          upload_file_info->entry.get());
       upload_file_info->completion_callback.Reset();
     }
     return;
@@ -341,10 +345,11 @@ void GDataUploader::OnResumeUploadResponseReceived(
 }
 
 void GDataUploader::UploadComplete(UploadFileInfo* upload_file_info) {
-  DVLOG(1) << "UploadComplete " << upload_file_info->entry.get();
-  file_system_->AddDownloadedFile(upload_file_info->gdata_path.DirName(),
-                                  upload_file_info->entry.Pass(),
-                                  upload_file_info->file_path);
+  DVLOG(1) << "UploadComplete " << upload_file_info->file_path.value();
+  file_system_->AddUploadedFile(upload_file_info->gdata_path.DirName(),
+                                upload_file_info->entry.get(),
+                                upload_file_info->file_path,
+                                GDataFileSystemInterface::FILE_OPERATION_MOVE);
   RemovePendingUpload(upload_file_info);
 }
 

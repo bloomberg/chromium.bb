@@ -29,6 +29,9 @@ class GDataSystemService : public ProfileKeyedService  {
   // Returns the file system instance.
   GDataFileSystem* file_system() { return file_system_.get(); }
 
+  // Returns the uploader instance.
+  GDataUploader* uploader() { return uploader_.get(); }
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 

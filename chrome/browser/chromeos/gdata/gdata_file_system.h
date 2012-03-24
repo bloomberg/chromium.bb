@@ -33,6 +33,11 @@ class WaitableEvent;
 namespace gdata {
 
 class DocumentsServiceInterface;
+struct UploadFileInfo;
+
+// Used for file operations like removing files.
+typedef base::Callback<void(base::PlatformFileError error)>
+    FileOperationCallback;
 
 // Callback for completion of cache operation.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -55,10 +60,6 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& directory_path,
                             GDataFileBase* file)>
     FindFileCallback;
-
-// Used for file operations like removing files.
-typedef base::Callback<void(base::PlatformFileError error)>
-    FileOperationCallback;
 
 // Used to get files from the file system.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -361,9 +362,10 @@ class GDataFileSystemInterface {
 
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
-  virtual void AddDownloadedFile(const FilePath& virtual_dir_path,
-                                 scoped_ptr<DocumentEntry> entry,
-                                 const FilePath& file_content_path) = 0;
+  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+                               DocumentEntry* entry,
+                               const FilePath& file_content_path,
+                               FileOperationType cache_operation) = 0;
 };
 
 // The production implementation of GDataFileSystemInterface.
@@ -431,9 +433,10 @@ class GDataFileSystem : public GDataFileSystemInterface {
       CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddDownloadedFile(const FilePath& virtual_dir_path,
-                                 scoped_ptr<DocumentEntry> entry,
-                                 const FilePath& file_content_path) OVERRIDE;
+  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+                               DocumentEntry* entry,
+                               const FilePath& file_content_path,
+                               FileOperationType cache_operation) OVERRIDE;
 
  private:
   friend class GDataUploader;
@@ -489,6 +492,12 @@ class GDataFileSystem : public GDataFileSystemInterface {
                               const std::string& md5,
                               const CacheOperationCallback& callback)>
       CacheOperationIntermediateCallback;
+
+  // Internal intermediate callback for dealing with results of
+  // CreateUploadFileInfoOnIOThreadPool() method.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              scoped_ptr<UploadFileInfo> upload_file_info)>
+      CreateUploadFileInfoCallback;
 
   // Parameters to pass from calling thread to all cache file operations tasks
   // on IO thread pool.
@@ -800,6 +809,30 @@ class GDataFileSystem : public GDataFileSystemInterface {
   void NotifyFileUnpinned(const std::string& resource_id,
                           const std::string& md5);
   void NotifyDirectoryChanged(const FilePath& directory_path);
+
+  // Helper function that completes bookkeeping tasks related to
+  // completed file transfer.
+  void OnTransferCompleted(
+      const FilePath& local_file_path,
+      const FilePath& remote_dest_file_path,
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      const FileOperationCallback& callback,
+      base::PlatformFileError error,
+      DocumentEntry* entry);
+
+  // Kicks off file upload once it receives |upload_file_info|.
+  void StartFileUploadOnUIThread(
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      const FileOperationCallback& callback,
+      base::PlatformFileError error,
+      scoped_ptr<UploadFileInfo> upload_file_info);
+
+  // Reads properties of |local_file| and fills in values of UploadFileInfo
+  // which are returned through |callback| on UI thread.
+  static void CreateUploadFileInfoOnIOThreadPool(
+      const FilePath& local_file,
+      const FilePath& remote_dest_file,
+      const CreateUploadFileInfoCallback& callback);
 
   // Cache entry points from within GDataFileSystem.
   // The functionalities of GData blob cache include:

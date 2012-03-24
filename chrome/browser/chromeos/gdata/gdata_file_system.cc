@@ -22,10 +22,13 @@
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/mime_util.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -34,6 +37,7 @@ using content::BrowserThread;
 
 namespace {
 
+const char kApplicationOctetStream[] = "application/octet-stream";
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kFeedField[] = "feed";
 const char kWildCard[] = "*";
@@ -551,13 +555,116 @@ void GDataFileSystem::LoadFeedFromServer(
 void GDataFileSystem::TransferFile(const FilePath& local_file_path,
                                    const FilePath& remote_dest_file_path,
                                    const FileOperationCallback& callback) {
-  // TODO(zelidrag): Wire this with GDataUploader stack.
-  if (!callback.is_null()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_EMPTY));
+  base::AutoLock lock(lock_);
+  // Make sure the destination directory exists
+  GDataFileBase* dest_dir = GetGDataFileInfoFromPath(
+      remote_dest_file_path.DirName());
+  if (!dest_dir || !dest_dir->AsGDataDirectory()) {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
   }
-  return;
+
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
+                 local_file_path,
+                 remote_dest_file_path,
+                 base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
+                            ui_weak_ptr_factory_->GetWeakPtr(),
+                            base::MessageLoopProxy::current(),
+                            callback)));
 }
+
+void GDataFileSystem::StartFileUploadOnUIThread(
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<UploadFileInfo> upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  GDataSystemService* service =
+      GDataSystemServiceFactory::GetForProfile(profile_);
+
+  if (error == base::PLATFORM_FILE_OK) {
+    if (!service || !upload_file_info.get())
+      error = base::PLATFORM_FILE_ERROR_FAILED;
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+
+    return;
+  }
+
+  upload_file_info->completion_callback =
+      base::Bind(&GDataFileSystem::OnTransferCompleted,
+                 GetWeakPtrForCurrentThread(),
+                 upload_file_info->file_path,
+                 upload_file_info->gdata_path,
+                 proxy,
+                 callback);
+
+  service->uploader()->UploadFile(upload_file_info.release());
+}
+
+void GDataFileSystem::OnTransferCompleted(
+    const FilePath& local_file_path,
+    const FilePath& remote_dest_file_path,
+    scoped_refptr<base::MessageLoopProxy> proxy,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    DocumentEntry* entry) {
+  if (error == base::PLATFORM_FILE_OK && entry) {
+    AddUploadedFile(remote_dest_file_path.DirName(),
+                    entry,
+                    local_file_path,
+                    FILE_OPERATION_COPY);
+  }
+  proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+}
+
+// static.
+void GDataFileSystem::CreateUploadFileInfoOnIOThreadPool(
+    const FilePath& local_file,
+    const FilePath& remote_dest_file,
+    const CreateUploadFileInfoCallback& callback) {
+  scoped_ptr<UploadFileInfo> upload_file_info;
+
+  int64 file_size;
+  if (!file_util::GetFileSize(local_file, &file_size)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::Passed(&upload_file_info)));
+
+    return;
+  }
+
+  upload_file_info.reset(new UploadFileInfo());
+  upload_file_info->file_path = local_file;
+  upload_file_info->file_size = file_size;
+  // Extract the final path from DownloadItem.
+  upload_file_info->gdata_path = remote_dest_file;
+  // Use the file name as the title.
+  upload_file_info->title = remote_dest_file.BaseName().value();
+  upload_file_info->content_length = file_size;
+  upload_file_info->all_bytes_present = true;
+  std::string mime_type;
+  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
+                                     &upload_file_info->content_type)) {
+    upload_file_info->content_type= kApplicationOctetStream;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(callback,
+                 base::PLATFORM_FILE_OK,
+                 base::Passed(&upload_file_info)));
+}
+
 
 void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
@@ -1623,7 +1730,13 @@ void GDataFileSystem::SaveFeedOnIOThreadPool(
 
   FilePath file_name = meta_cache_path.Append(name);
   std::string json;
+#ifndef NDEBUG
+  base::JSONWriter::WriteWithOptions(feed.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
+#else
   base::JSONWriter::Write(feed.get(), &json);
+#endif
 
   int file_size = static_cast<int>(json.length());
   if (file_util::WriteFile(file_name, json.data(), file_size) != file_size) {
@@ -2077,12 +2190,13 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
   return base::PLATFORM_FILE_OK;
 }
 
-void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
-                                        scoped_ptr<gdata::DocumentEntry> entry,
-                                        const FilePath& file_content_path) {
+void GDataFileSystem::AddUploadedFile(const FilePath& virtual_dir_path,
+                                      gdata::DocumentEntry* entry,
+                                      const FilePath& file_content_path,
+                                      FileOperationType cache_operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!entry.get()) {
+  if (!entry) {
     NOTREACHED();
     return;
   }
@@ -2100,7 +2214,7 @@ void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
       return;
 
     scoped_ptr<GDataFileBase> new_file(
-        GDataFileBase::FromDocumentEntry(parent_dir, entry.get(), root_.get()));
+        GDataFileBase::FromDocumentEntry(parent_dir, entry, root_.get()));
     if (!new_file.get())
       return;
 
@@ -2111,7 +2225,8 @@ void GDataFileSystem::AddDownloadedFile(const FilePath& virtual_dir_path,
     parent_dir->AddFile(new_file.release());
   }
   NotifyDirectoryChanged(virtual_dir_path);
-  StoreToCache(resource_id, md5, file_content_path, FILE_OPERATION_MOVE,
+
+  StoreToCache(resource_id, md5, file_content_path, cache_operation,
                CacheOperationCallback());
 }
 

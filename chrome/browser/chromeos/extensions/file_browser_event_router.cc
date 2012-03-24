@@ -314,7 +314,6 @@ void FileBrowserEventRouter::HandleFileWatchNotification(
   base::AutoLock lock(lock_);
   WatcherMap::const_iterator iter = file_watchers_.find(local_path);
   if (iter == file_watchers_.end()) {
-    NOTREACHED();
     return;
   }
   DispatchFolderChangeEvent(iter->second->GetVirtualPath(), got_error,

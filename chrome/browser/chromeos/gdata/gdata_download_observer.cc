@@ -300,7 +300,9 @@ UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
   return upload_file_info;
 }
 
-void GDataDownloadObserver::OnUploadComplete(int32 download_id) {
+void GDataDownloadObserver::OnUploadComplete(int32 download_id,
+                                             base::PlatformFileError error,
+                                             DocumentEntry* unused_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
   if (iter == pending_downloads_.end())
