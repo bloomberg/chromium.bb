@@ -46,7 +46,6 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_util.h"
 #include "media/base/media_log_event.h"
-#include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/mime_util.h"
