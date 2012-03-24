@@ -152,12 +152,17 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   string16 license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_VERSION_LICENSE,
-#if !defined(OS_CHROMEOS)
       UTF8ToUTF16(google_util::StringAppendGoogleLocaleParam(
           chrome::kChromiumProjectURL)),
-#endif
       ASCIIToUTF16(chrome::kChromeUICreditsURL));
   localized_strings->SetString("productLicense", license);
+
+#if defined(OS_CHROMEOS)
+  string16 os_license = l10n_util::GetStringFUTF16(
+      IDS_ABOUT_CROS_VERSION_LICENSE,
+      ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
+  localized_strings->SetString("productOsLicense", os_license);
+#endif
 
   string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, UTF8ToUTF16(chrome::kChromeUITermsURL));
