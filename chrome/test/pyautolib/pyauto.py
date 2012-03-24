@@ -25,6 +25,7 @@ to unittest.py
 """
 
 import cStringIO
+import copy
 import functools
 import hashlib
 import inspect
@@ -92,6 +93,7 @@ _CHROME_DRIVER_FACTORY = None
 _HTTP_SERVER = None
 _REMOTE_PROXY = None
 _OPTIONS = None
+_BROWSER_PID = None
 
 
 class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
@@ -203,6 +205,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for remote in self.remotes:
       remote.CreateTarget(self)
       remote.setUp()
+
+    global _BROWSER_PID
+    _BROWSER_PID = self.GetBrowserInfo()['browser_pid']
 
   def setUp(self):
     """Override this method to launch browser differently.
@@ -938,9 +943,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if windex is None:  # Do not target any window
       windex = -1
     result = self._SendJSONRequest(windex, json.dumps(cmd_dict), timeout)
-    if len(result) == 0:
+    if not result:
+      additional_info = 'No information available.'
+      # Windows does not support os.kill until Python 2.7.
+      if not self.IsWin() and _BROWSER_PID:
+        additional_info = ('The browser process ID %d still exists. '
+                           'It is possible that it is hung.' % _BROWSER_PID)
+        try:
+          # Does not actually kill the process
+          os.kill(int(_BROWSER_PID), 0)
+        except OSError:
+          additional_info = ('The browser process ID %d no longer exists.' %
+                             _BROWSER_PID)
+      elif not _BROWSER_PID:
+        additional_info = ('The browser PID was not obtained. Does this test '
+                           'have a unique startup configuration?')
+      # Mask private data if it is in the JSON dictionary
+      cmd_dict_copy = copy.copy(cmd_dict)
+      if 'password' in cmd_dict_copy.keys():
+        cmd_dict_copy['password'] = '**********'
+      if 'username' in cmd_dict_copy.keys():
+        cmd_dict_copy['username'] = 'removed_username'
       raise JSONInterfaceError('Automation call %s received empty response.  '
-                               'Perhaps the browser crashed.' % cmd_dict)
+                               'Additional information:\n%s' % (cmd_dict_copy,
+                               additional_info))
     ret_dict = json.loads(result)
     if ret_dict.has_key('error'):
       raise JSONInterfaceError(ret_dict['error'])
