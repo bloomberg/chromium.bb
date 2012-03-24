@@ -22,7 +22,7 @@ namespace internal {
 class MonitorChangeObserverX11 : public MessageLoop::Dispatcher {
  public:
   MonitorChangeObserverX11();
-  ~MonitorChangeObserverX11();
+  virtual ~MonitorChangeObserverX11();
 
   // Overridden from Dispatcher overrides:
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
