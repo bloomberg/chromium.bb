@@ -135,6 +135,8 @@ class DownloadProtectionService {
     REASON_TRUSTED_EXECUTABLE,
     REASON_OS_NOT_SUPPORTED,
     REASON_DOWNLOAD_UNCOMMON,
+    REASON_DOWNLOAD_NOT_SUPPORTED,
+    REASON_INVALID_RESPONSE_VERDICT,
     REASON_MAX  // Always add new values before this one.
   };
 
@@ -149,6 +151,8 @@ class DownloadProtectionService {
                            CheckClientDownloadFetchFailed);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            TestDownloadRequestTimeout);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientCrxDownloadSuccess);
   static const char kDownloadRequestUrl[];
 
   // Cancels all requests in |download_requests_|, and empties it, releasing

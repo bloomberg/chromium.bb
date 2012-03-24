@@ -48,7 +48,18 @@ namespace {
 bool IsBinaryFile(const FilePath& file) {
   return (file.MatchesExtension(FILE_PATH_LITERAL(".exe")) ||
           file.MatchesExtension(FILE_PATH_LITERAL(".cab")) ||
-          file.MatchesExtension(FILE_PATH_LITERAL(".msi")));
+          file.MatchesExtension(FILE_PATH_LITERAL(".msi")) ||
+          file.MatchesExtension(FILE_PATH_LITERAL(".crx")) ||
+          file.MatchesExtension(FILE_PATH_LITERAL(".apk")));
+}
+
+ClientDownloadRequest::DownloadType GetDownloadType(const FilePath& file) {
+  DCHECK(IsBinaryFile(file));
+  if (file.MatchesExtension(FILE_PATH_LITERAL(".apk")))
+    return ClientDownloadRequest::ANDROID_APK;
+  else if (file.MatchesExtension(FILE_PATH_LITERAL(".crx")))
+    return ClientDownloadRequest::CHROME_EXTENSION;
+  return ClientDownloadRequest::WIN_EXECUTABLE;
 }
 
 // List of extensions for which we track some UMA stats.
@@ -288,51 +299,6 @@ class DownloadUrlSBClient : public DownloadSBClient {
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlSBClient);
 };
 
-class DownloadHashSBClient : public DownloadSBClient {
- public:
-  DownloadHashSBClient(
-      const DownloadProtectionService::DownloadInfo& info,
-      const DownloadProtectionService::CheckDownloadCallback& callback,
-      SafeBrowsingService* sb_service)
-      : DownloadSBClient(info, callback, sb_service,
-                         DOWNLOAD_HASH_CHECKS_TOTAL,
-                         DOWNLOAD_HASH_CHECKS_MALWARE) {}
-
-  virtual void StartCheck() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!sb_service_ ||
-        sb_service_->CheckDownloadHash(info_.sha256_hash, this)) {
-      CheckDone(SafeBrowsingService::SAFE);
-    } else {
-      AddRef();  // SafeBrowsingService takes a pointer not a scoped_refptr.
-    }
-  }
-
-  virtual bool IsDangerous(
-      SafeBrowsingService::UrlCheckResult result) const OVERRIDE {
-    // We always return false here because we don't want to warn based on
-    // a match with the digest list.  However, for UMA users, we want to
-    // report the malware URL: DownloadSBClient::CheckDone() will still report
-    // the URL even if the download is not considered dangerous.
-    return false;
-  }
-
-  virtual void OnDownloadHashCheckResult(
-      const std::string& hash,
-      SafeBrowsingService::UrlCheckResult sb_result) OVERRIDE {
-    CheckDone(sb_result);
-    UMA_HISTOGRAM_TIMES("SB2.DownloadHashCheckDuration",
-                        base::TimeTicks::Now() - start_time_);
-    Release();
-  }
-
- protected:
-  virtual ~DownloadHashSBClient() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadHashSBClient);
-};
-
 class DownloadProtectionService::CheckClientDownloadRequest
     : public base::RefCountedThreadSafe<
           DownloadProtectionService::CheckClientDownloadRequest,
@@ -351,6 +317,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         sb_service_(sb_service),
         pingback_enabled_(service_->enabled()),
         finished_(false),
+        type_(ClientDownloadRequest::WIN_EXECUTABLE),
         ALLOW_THIS_IN_INITIALIZER_LIST(timeout_weakptr_factory_(this)),
         start_time_(base::TimeTicks::Now()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -364,7 +331,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // request over and over again if a user downloads the same binary multiple
     // times.
     DownloadCheckResultReason reason = REASON_MAX;
-    if (!IsSupportedDownload(info_, &reason)) {
+    if (!IsSupportedDownload(info_, &reason, &type_)) {
       switch (reason) {
         case REASON_EMPTY_URL_CHAIN:
         case REASON_INVALID_URL:
@@ -376,10 +343,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         case REASON_HTTPS_URL:
           RecordFileExtensionType(info_.target_file);
           RecordImprovedProtectionStats(reason);
-          BrowserThread::PostTask(
-              BrowserThread::IO,
-              FROM_HERE,
-              base::Bind(&CheckClientDownloadRequest::CheckDigestList, this));
+          PostFinishTask(SAFE);
           return;
 
         default:
@@ -387,8 +351,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
           NOTREACHED();
       }
     }
-
     RecordFileExtensionType(info_.target_file);
+
     // Compute features from the file contents. Note that we record histograms
     // based on the result, so this runs regardless of whether the pingbacks
     // are enabled.  Since we do blocking I/O, this happens on the file thread.
@@ -446,6 +410,15 @@ class DownloadProtectionService::CheckClientDownloadRequest
       DCHECK(got_data);
       if (!response.ParseFromString(data)) {
         reason = REASON_INVALID_RESPONSE_PROTO;
+      } else if (response.verdict() == ClientDownloadResponse::SAFE) {
+        reason = REASON_DOWNLOAD_SAFE;
+      } else if (service_ && !service_->IsSupportedDownload(info_)) {
+        // The client of the download protection service assumes that we don't
+        // support this download so we cannot return any other verdict than
+        // SAFE even if the server says it's dangerous to download this file.
+        // Note: if service_ is NULL we already cancelled the request and
+        // returned SAFE.
+        reason = REASON_DOWNLOAD_NOT_SUPPORTED;
       } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
         reason = REASON_DOWNLOAD_DANGEROUS;
         result = DANGEROUS;
@@ -453,7 +426,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
         reason = REASON_DOWNLOAD_UNCOMMON;
         result = UNCOMMON;
       } else {
-        reason = REASON_DOWNLOAD_SAFE;
+        LOG(DFATAL) << "Unknown download response verdict: "
+                    << response.verdict();
+        reason = REASON_INVALID_RESPONSE_VERDICT;
       }
     }
     // We don't need the fetcher anymore.
@@ -465,7 +440,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   static bool IsSupportedDownload(const DownloadInfo& info,
-                                  DownloadCheckResultReason* reason) {
+                                  DownloadCheckResultReason* reason,
+                                  ClientDownloadRequest::DownloadType* type) {
     if (info.download_url_chain.empty()) {
       *reason = REASON_EMPTY_URL_CHAIN;
       return false;
@@ -480,6 +456,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
+    *type = GetDownloadType(info.target_file);
     if (final_url.SchemeIs("https")) {
       *reason = REASON_HTTPS_URL;
       return false;
@@ -513,21 +490,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
-  }
-
-  void CheckDigestList() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (!sb_service_.get() || info_.sha256_hash.empty()) {
-      PostFinishTask(SAFE);
-    } else {
-      scoped_refptr<DownloadSBClient> client(
-          new DownloadHashSBClient(
-              info_,
-              base::Bind(&CheckClientDownloadRequest::FinishRequest, this),
-              sb_service_.get()));
-      // The client will release itself once it is done.
-      client->StartCheck();
-    }
   }
 
   void CheckWhitelists() {
@@ -565,10 +527,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
     if (reason != REASON_MAX) {
       RecordImprovedProtectionStats(reason);
-      CheckDigestList();
+      PostFinishTask(SAFE);
     } else if (!pingback_enabled_) {
       RecordImprovedProtectionStats(REASON_PING_DISABLED);
-      CheckDigestList();
+      PostFinishTask(SAFE);
     } else {
       // Currently, the UI only works on Windows so we don't even bother
       // with pinging the server if we're not on Windows.  TODO(noelutz):
@@ -582,7 +544,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
           base::Bind(&CheckClientDownloadRequest::SendRequest, this));
 #else
       RecordImprovedProtectionStats(REASON_OS_NOT_SUPPORTED);
-      CheckDigestList();
+      PostFinishTask(SAFE);
 #endif
     }
   }
@@ -618,6 +580,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
       // TODO(noelutz): fill out the remote IP addresses.
     }
     request.set_user_initiated(info_.user_initiated);
+    request.set_file_basename(info_.target_file.BaseName().AsUTF8Unsafe());
+    request.set_download_type(type_);
     request.mutable_signature()->CopyFrom(signature_info_);
     std::string request_data;
     if (!request.SerializeToString(&request_data)) {
@@ -718,6 +682,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   const bool pingback_enabled_;
   scoped_ptr<content::URLFetcher> fetcher_;
   bool finished_;
+  ClientDownloadRequest::DownloadType type_;
   base::WeakPtrFactory<CheckClientDownloadRequest> timeout_weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
 
@@ -779,7 +744,12 @@ bool DownloadProtectionService::IsSupportedDownload(
   // dangerous which means we have to always return false here.
 #if defined(OS_WIN)
   DownloadCheckResultReason reason = REASON_MAX;
-  return CheckClientDownloadRequest::IsSupportedDownload(info, &reason);
+  ClientDownloadRequest::DownloadType type =
+      ClientDownloadRequest::WIN_EXECUTABLE;
+  return (CheckClientDownloadRequest::IsSupportedDownload(info,
+                                                          &reason,
+                                                          &type) &&
+          ClientDownloadRequest::WIN_EXECUTABLE == type);
 #else
   return false;
 #endif
