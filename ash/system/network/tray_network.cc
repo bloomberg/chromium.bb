@@ -238,6 +238,8 @@ class NetworkDetailedView : public views::View,
       container->AddIconAndLabel(list[i].image, list[i].name,
           list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
       networks->AddChildView(container);
+      container->set_border(views::Border::CreateEmptyBorder(0,
+          kTrayPopupDetailsIconWidth, 0, 0));
       network_map_[container] = list[i].service_path;
     }
 
