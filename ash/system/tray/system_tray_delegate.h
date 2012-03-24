@@ -24,6 +24,7 @@ struct ASH_EXPORT NetworkIconInfo {
   ~NetworkIconInfo();
 
   bool highlight;
+  bool tray_icon_visible;
   SkBitmap image;
   string16 name;
   string16 description;

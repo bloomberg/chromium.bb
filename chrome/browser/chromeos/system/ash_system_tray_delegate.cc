@@ -62,6 +62,12 @@ namespace chromeos {
 
 namespace {
 
+bool ShouldShowNetworkIconInTray(const Network* network) {
+  if (!network)
+    return true;
+  return !network->connected() || network->type() != TYPE_ETHERNET;
+}
+
 ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
                                            NetworkMenuIcon* network_icon,
                                            NetworkMenu* network_menu) {
@@ -70,6 +76,7 @@ ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
   info.image = network_icon->GetBitmap(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
   info.highlight = network_menu->ShouldHighlightNetwork(network);
+  info.tray_icon_visible = ShouldShowNetworkIconInTray(network);
   return info;
 }
 
@@ -372,8 +379,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
                                           bool dark) OVERRIDE {
+    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     info->image = !dark ? network_icon_->GetIconAndText(&info->description) :
         network_icon_dark_->GetIconAndText(&info->description);
+    info->tray_icon_visible =
+        ShouldShowNetworkIconInTray(crosnet->connected_network());
   }
 
   virtual void GetAvailableNetworks(
@@ -384,17 +394,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (crosnet->ethernet_available() && crosnet->ethernet_enabled()) {
       const EthernetNetwork* ethernet_network = crosnet->ethernet_network();
       if (ethernet_network) {
-        ash::NetworkIconInfo info;
-        info.image = network_icon_->GetBitmap(ethernet_network,
-                                              NetworkMenuIcon::COLOR_DARK);
-        if (!ethernet_network->name().empty())
-          info.name = UTF8ToUTF16(ethernet_network->name());
-        else
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(ethernet_network,
+                                                          network_icon_.get(),
+                                                          network_menu_.get());
+        if (info.name.empty())
           info.name =
               l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-        info.service_path = ethernet_network->service_path();
-        info.highlight =
-            network_menu_->ShouldHighlightNetwork(ethernet_network);
         list->push_back(info);
       }
     }
@@ -599,8 +604,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     ash::NetworkObserver* observer =
         ash::Shell::GetInstance()->tray()->network_observer();
     if (observer) {
+      NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
       ash::NetworkIconInfo info;
       info.image = network_icon_->GetIconAndText(&info.description);
+      info.tray_icon_visible =
+          ShouldShowNetworkIconInTray(crosnet->connected_network());
       observer->OnNetworkRefresh(info);
     }
   }

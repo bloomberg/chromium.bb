@@ -98,7 +98,8 @@ enum ColorTheme {
 
 class NetworkTrayView : public views::View {
  public:
-  explicit NetworkTrayView(ColorTheme size) : color_theme_(size) {
+  NetworkTrayView(ColorTheme size, bool tray_icon)
+      : color_theme_(size), tray_icon_(tray_icon) {
     SetLayoutManager(new views::FillLayout());
 
     image_view_ = color_theme_ == DARK ?
@@ -116,12 +117,15 @@ class NetworkTrayView : public views::View {
 
   void Update(const NetworkIconInfo& info) {
     image_view_->SetImage(info.image);
+    if (tray_icon_)
+      SetVisible(info.tray_icon_visible);
     SchedulePaint();
   }
 
  private:
   views::ImageView* image_view_;
   ColorTheme color_theme_;
+  bool tray_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
@@ -133,7 +137,7 @@ class NetworkDefaultView : public TrayItemMore {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
-    icon_ = new NetworkTrayView(DARK);
+    icon_ = new NetworkTrayView(DARK, false /*tray_icon*/);
     AddChildView(icon_);
 
     label_ = new views::Label();
@@ -471,7 +475,7 @@ TrayNetwork::~TrayNetwork() {
 }
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
-  tray_.reset(new tray::NetworkTrayView(tray::LIGHT));
+  tray_.reset(new tray::NetworkTrayView(tray::LIGHT, true /*tray_icon*/));
   return tray_.get();
 }
 

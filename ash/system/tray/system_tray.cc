@@ -384,7 +384,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 }  // namespace internal
 
 NetworkIconInfo::NetworkIconInfo()
-    : highlight(false) {
+    : highlight(false),
+      tray_icon_visible(true) {
 }
 
 NetworkIconInfo::~NetworkIconInfo() {
