@@ -56,6 +56,8 @@
         'shell/shell_gtk.cc',
         'shell/shell_mac.mm',
         'shell/shell_win.cc',
+        'shell/shell_application_mac.h',
+        'shell/shell_application_mac.mm',
         'shell/shell_browser_context.cc',
         'shell/shell_browser_context.h',
         'shell/shell_browser_main.cc',
