@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
-#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_path.h"

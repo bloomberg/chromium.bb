@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
+#include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -547,7 +547,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void Pkcs11IsTpmTokenReady(base::Callback<void(CallStatus call_status,
                                                          bool ready)> callback)
       OVERRIDE {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+    MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback, SUCCESS, true));
   }
 
@@ -558,9 +558,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
                           const std::string& user_pin)> callback) OVERRIDE {
     const char kStubLabel[] = "Stub TPM Token";
     const char kStubUserPin[] = "012345";
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, SUCCESS, kStubLabel, kStubUserPin));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, SUCCESS, kStubLabel, kStubUserPin));
   }
 
   // CryptohomeClient override.
@@ -615,8 +614,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
  private:
   // Posts tasks which return fake results to the UI thread.
   void ReturnAsyncMethodResult(AsyncMethodCallback callback) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
         base::Bind(&CryptohomeClientStubImpl::ReturnAsyncMethodResultInternal,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
@@ -626,8 +625,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   void ReturnAsyncMethodResultInternal(AsyncMethodCallback callback) {
     callback.Run(async_call_id_);
     if (!async_call_status_handler_.is_null()) {
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
           base::Bind(async_call_status_handler_,
                      async_call_id_,
                      true,
