@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "media/base/filter_host.h"
 
@@ -176,7 +177,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
       if (buffer && !buffer->IsEndOfStream())
         algorithm_->EnqueueBuffer(buffer);
       DCHECK(!pending_read_);
-      ResetAndRunCB(&pause_cb_);
+      base::ResetAndReturn(&pause_cb_).Run();
       return;
     case kSeeking:
       if (IsBeforeSeekTime(buffer)) {
@@ -189,7 +190,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
           return;
       }
       state_ = kPaused;
-      ResetAndRunCB(&seek_cb_, PIPELINE_OK);
+      base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
       return;
     case kPlaying:
     case kUnderflow:

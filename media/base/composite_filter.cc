@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 
@@ -290,14 +291,14 @@ void CompositeFilter::DispatchPendingCallback(PipelineStatus status) {
   DCHECK(status_cb_.is_null() ^ callback_.is_null());
 
   if (!status_cb_.is_null()) {
-    ResetAndRunCB(&status_cb_, status);
+    base::ResetAndReturn(&status_cb_).Run(status);
     return;
   }
 
   if (!callback_.is_null()) {
     if (status != PIPELINE_OK)
       SendErrorToHost(status);
-    ResetAndRunCB(&callback_);
+    base::ResetAndReturn(&callback_).Run();
   }
 }
 

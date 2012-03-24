@@ -5,6 +5,7 @@
 #include "content/renderer/media/capture_video_decoder.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
@@ -202,7 +203,7 @@ void CaptureVideoDecoder::OnStoppedOnDecoderThread(
   DVLOG(1) << "OnStoppedOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (!pending_stop_cb_.is_null())
-    media::ResetAndRunCB(&pending_stop_cb_);
+    base::ResetAndReturn(&pending_stop_cb_).Run();
   vc_manager_->RemoveDevice(video_stream_id_, this);
 }
 

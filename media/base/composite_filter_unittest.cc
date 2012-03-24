@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "media/base/composite_filter.h"
 #include "media/base/mock_callback.h"
@@ -336,7 +337,7 @@ void CompositeFilterTest::RunFilter1Callback() {
   EXPECT_TRUE(HasFilter1Callback());
 
   if (!filter_1_status_cb_.is_null()) {
-    ResetAndRunCB(&filter_1_status_cb_, filter_1_status_);
+    base::ResetAndReturn(&filter_1_status_cb_).Run(filter_1_status_);
     filter_1_status_ = PIPELINE_OK;
     return;
   }
@@ -356,7 +357,7 @@ void CompositeFilterTest::RunFilter2Callback() {
   EXPECT_TRUE(HasFilter2Callback());
 
   if (!filter_2_status_cb_.is_null()) {
-    ResetAndRunCB(&filter_2_status_cb_, filter_2_status_);
+    base::ResetAndReturn(&filter_2_status_cb_).Run(filter_2_status_);
     filter_2_status_ = PIPELINE_OK;
     return;
   }

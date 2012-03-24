@@ -45,12 +45,6 @@ class DemuxerStream;
 class Filter;
 class FilterHost;
 
-// These functions copy |*cb|, call Reset() on |*cb|, and then call Run()
-// on the copy.  This is used in the common case where you need to clear
-// a callback member variable before running the callback.
-MEDIA_EXPORT void ResetAndRunCB(PipelineStatusCB* cb, PipelineStatus status);
-MEDIA_EXPORT void ResetAndRunCB(base::Closure* cb);
-
 class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
  public:
   Filter();

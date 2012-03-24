@@ -5,6 +5,7 @@
 #include "media/filters/gpu_video_decoder.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "media/base/demuxer_stream.h"
@@ -519,7 +520,7 @@ void GpuVideoDecoder::NotifyResetDone() {
   input_buffer_time_data_.clear();
 
   if (!pending_reset_cb_.is_null())
-    ResetAndRunCB(&pending_reset_cb_);
+    base::ResetAndReturn(&pending_reset_cb_).Run();
 
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());

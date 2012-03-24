@@ -8,20 +8,6 @@
 
 namespace media {
 
-void ResetAndRunCB(PipelineStatusCB* cb, PipelineStatus status) {
-  DCHECK(!cb->is_null());
-  PipelineStatusCB tmp_cb(*cb);
-  cb->Reset();
-  tmp_cb.Run(status);
-}
-
-void ResetAndRunCB(base::Closure* cb) {
-  DCHECK(!cb->is_null());
-  base::Closure tmp_cb(*cb);
-  cb->Reset();
-  tmp_cb.Run();
-}
-
 Filter::Filter() : host_(NULL) {}
 
 Filter::~Filter() {}
