@@ -95,6 +95,7 @@ BUILD_ARCH_X8664=false
 BUILD_ARCH_ARM=false
 if [ "${BUILD_ARCH}" == "i386" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
+  BUILD_ARCH=x86_32
   BUILD_ARCH_X8632=true
 elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
   BUILD_ARCH_X8664=true
@@ -132,7 +133,7 @@ readonly HOST_ARCH_ARM
 
 if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
   if ! { ${BUILD_ARCH_X8664} && ${HOST_ARCH_X8632}; }; then
-    echo "Cross targets other than host=i686 with build=x86_64 not supported"
+    echo "Cross builds other than build=x86_64 with host=x86_32 not supported"
     exit -1
   fi
 fi
