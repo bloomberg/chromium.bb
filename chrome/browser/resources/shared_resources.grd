@@ -36,6 +36,8 @@ without changes to the corresponding grd file. -->
                file="shared/css/tabs.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_THROBBER"
                file="shared/css/throbber.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_TRASH"
+               file="shared/css/trash.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE"
                file="shared/css/tree.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE_JS"
