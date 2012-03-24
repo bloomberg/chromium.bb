@@ -28,6 +28,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../src/wayland-private.h"
 #include "test-runner.h"
@@ -150,6 +152,7 @@ struct marshal_data {
 		uint32_t u;
 		int32_t i;
 		const char *s;
+		int h;
 	} value;
 };
 
@@ -270,6 +273,21 @@ validate_demarshal_s(struct marshal_data *data,
 }
 
 static void
+validate_demarshal_h(struct marshal_data *data,
+		     struct wl_object *object, int fd)
+{
+	struct stat buf1, buf2;
+
+	assert(fd != data->value.h);
+	fstat(fd, &buf1);
+	fstat(data->value.h, &buf2);
+	assert(buf1.st_dev == buf2.st_dev);
+	assert(buf1.st_ino == buf2.st_ino);
+	close(fd);
+	close(data->value.h);
+}
+
+static void
 demarshal(struct marshal_data *data, const char *format,
 	  uint32_t *msg, void (*func)(void))
 {
@@ -361,6 +379,7 @@ marshal_demarshal(struct marshal_data *data,
 TEST(connection_marshal_demarshal)
 {
 	struct marshal_data data;
+	char f[] = "/tmp/weston-tests-XXXXXX";
 
 	setup_marshal_data(&data);
 
@@ -375,6 +394,11 @@ TEST(connection_marshal_demarshal)
 	data.value.s = "cookie robots";
 	marshal_demarshal(&data, (void *) validate_demarshal_s,
 			  28, "s", data.value.s);
+
+	data.value.h = mkstemp(f);
+	assert(data.value.h >= 0);
+	marshal_demarshal(&data, (void *) validate_demarshal_h,
+			  8, "h", data.value.h);
 
 	release_marshal_data(&data);
 }
