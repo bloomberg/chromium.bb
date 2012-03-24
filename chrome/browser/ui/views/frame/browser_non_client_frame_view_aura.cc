@@ -326,8 +326,7 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
   int split_point = kFrameShadowThickness * 2;
   int bottom_y = y + split_point;
   ui::ThemeProvider* tp = GetThemeProvider();
-  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
-  int bottom_edge_height = std::min(theme_toolbar->height(), h) - split_point;
+  int bottom_edge_height = h - split_point;
 
   canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
                    tp->GetColor(ThemeService::COLOR_TOOLBAR));
@@ -337,6 +336,7 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
   // source y position.  If you have to debug this code use an image editor
   // to paint a diagonal line through the toolbar image and ensure it lines up
   // across the tab and toolbar.
+  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(
       *theme_toolbar,
       x, bottom_y - GetHorizontalTabStripVerticalOffset(false),
