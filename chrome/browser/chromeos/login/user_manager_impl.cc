@@ -914,8 +914,8 @@ int UserManagerImpl::GetUserWallpaper(const std::string& username) {
   const DictionaryValue* user_wallpapers =
       local_state->GetDictionary(UserManager::kUserWallpapers);
   int index = ash::GetDefaultWallpaperIndex();
-  if (!user_wallpapers->GetIntegerWithoutPathExpansion(username, &index))
-    SaveWallpaperDefaultIndex(username, index);
+  user_wallpapers->GetIntegerWithoutPathExpansion(username,
+                                                  &index);
   return index;
 }
 
