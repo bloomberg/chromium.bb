@@ -9,6 +9,7 @@
 #include "ash/app_list/drop_shadow_label.h"
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/animation/throb_animation.h"
@@ -103,8 +104,7 @@ class AppListItemView::IconOperation
     : public base::RefCountedThreadSafe<AppListItemView::IconOperation> {
  public:
   IconOperation(const SkBitmap& bitmap, const gfx::Size& size)
-      : canceled_(false),
-        bitmap_(bitmap),
+      : bitmap_(bitmap),
         size_(size) {
   }
 
@@ -135,13 +135,13 @@ class AppListItemView::IconOperation
       SkIntToScalar(10),
     };
 
-    if (canceled_)
+    if (cancel_flag_.IsSet())
       return;
 
     if (size_ != gfx::Size(bitmap_.width(), bitmap_.height()))
       bitmap_ = SkBitmapOperations::CreateResizedBitmap(bitmap_, size_);
 
-    if (canceled_)
+    if (cancel_flag_.IsSet())
       return;
 
     bitmap_ = SkBitmapOperations::CreateDropShadow(
@@ -153,11 +153,7 @@ class AppListItemView::IconOperation
   }
 
   void Cancel() {
-    canceled_ = true;
-  }
-
-  bool canceled() const {
-    return canceled_;
+    cancel_flag_.Set();
   }
 
   const SkBitmap& bitmap() const {
@@ -167,13 +163,7 @@ class AppListItemView::IconOperation
  private:
   friend class base::RefCountedThreadSafe<AppListItemView::IconOperation>;
 
-  // |canceled| flag is used to skip unneeded processing. Note that "volatile"
-  // does not guarantee the flag is properly passed between threads.
-  // "base/atomicops.h" shows the correct way to do it. For our case here, the
-  // worst thing could happen is cpu is wasted on an unneeded shadow. It is
-  // better-than-nothing solution rather than a correct solution.
-  // TODO(xiyuan): Find a better way to skip unneeded processing.
-  volatile bool canceled_;
+  base::CancellationFlag cancel_flag_;
 
   SkBitmap bitmap_;
   const gfx::Size size_;
@@ -208,6 +198,7 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
 
 AppListItemView::~AppListItemView() {
   model_->RemoveObserver(this);
+  CancelPendingIconOperation();
 }
 
 // static
@@ -253,6 +244,47 @@ void AppListItemView::SetSelected(bool selected) {
 
   selected_ = selected;
   SchedulePaint();
+}
+
+void AppListItemView::UpdateIcon() {
+  // Skip if |icon_size_| has not been determined.
+  if (icon_size_.IsEmpty())
+    return;
+
+  SkBitmap icon = model_->icon();
+  // Clear icon and bail out if model icon is empty.
+  if (icon.empty()) {
+    icon_->SetImage(NULL);
+    return;
+  }
+
+  CancelPendingIconOperation();
+
+  // Schedule resize and shadow generation.
+  icon_op_ = new IconOperation(icon, icon_size_);
+  base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&IconOperation::Run, icon_op_),
+      base::Bind(&AppListItemView::ApplyShadow,
+                 apply_shadow_factory_.GetWeakPtr(),
+                 icon_op_),
+      true /* task_is_slow */);
+}
+
+void AppListItemView::CancelPendingIconOperation() {
+  // Set canceled flag of previous request to skip unneeded processing.
+  if (icon_op_.get())
+    icon_op_->Cancel();
+
+  // Cancel reply callback for previous request.
+  apply_shadow_factory_.InvalidateWeakPtrs();
+}
+
+void AppListItemView::ApplyShadow(scoped_refptr<IconOperation> op) {
+  icon_->SetImage(op->bitmap());
+
+  DCHECK(op.get() == icon_op_.get());
+  icon_op_ = NULL;
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -337,43 +369,6 @@ void AppListItemView::StateChanged() {
     list_model_view_->ClearSelectedItem(this);
     model_->SetHighlighted(false);
   }
-}
-
-void AppListItemView::UpdateIcon() {
-  // Skip if |icon_size_| has not been determined.
-  if (icon_size_.IsEmpty())
-    return;
-
-  SkBitmap icon = model_->icon();
-  // Clear icon and bail out if model icon is empty.
-  if (icon.empty()) {
-    icon_->SetImage(NULL);
-    return;
-  }
-
-  // Set canceled flag of previous request to skip unneeded processing.
-  if (icon_op_.get())
-    icon_op_->Cancel();
-
-  // Cancel reply callback for previous request.
-  apply_shadow_factory_.InvalidateWeakPtrs();
-
-  // Schedule resize and shadow generation.
-  icon_op_ = new IconOperation(icon, icon_size_);
-  base::WorkerPool::PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&IconOperation::Run, icon_op_),
-      base::Bind(&AppListItemView::ApplyShadow,
-                 apply_shadow_factory_.GetWeakPtr(),
-                 icon_op_),
-      true /* task_is_slow */);
-}
-
-void AppListItemView::ApplyShadow(scoped_refptr<IconOperation> op) {
-  icon_->SetImage(op->bitmap());
-
-  DCHECK(op.get() == icon_op_.get());
-  icon_op_ = NULL;
 }
 
 }  // namespace ash

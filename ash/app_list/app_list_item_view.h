@@ -62,6 +62,9 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   // Get icon from model and schedule background processing.
   void UpdateIcon();
 
+  // Cancel pending icon operation and reply callback.
+  void CancelPendingIconOperation();
+
   // Reply callback from background shadow generation. |op| is the finished
   // operation and holds the result image.
   void ApplyShadow(scoped_refptr<IconOperation> op);
