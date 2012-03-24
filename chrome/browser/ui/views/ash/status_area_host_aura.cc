@@ -153,9 +153,9 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
         chromeos::BaseLoginDisplayHost::default_host()) {
       gfx::NativeWindow native_window =
           chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
-      proxy_settings_dialog_.reset(new chromeos::ProxySettingsDialog(
-          NULL, native_window));
-      proxy_settings_dialog_->Show();
+      chromeos::ProxySettingsDialog* dialog =
+          new chromeos::ProxySettingsDialog(NULL, native_window);
+      dialog->Show();
     } else {
       NOTREACHED();
     }
@@ -165,10 +165,9 @@ void StatusAreaHostAura::ExecuteStatusAreaCommand(
       gfx::NativeWindow native_window =
           chromeos::ScreenLocker::default_screen_locker()->delegate()->
               GetNativeWindow();
-      proxy_settings_dialog_.reset(new chromeos::ProxySettingsDialog(
-                                   NULL,
-                                   native_window));
-      proxy_settings_dialog_->Show();
+      chromeos::ProxySettingsDialog* dialog =
+          new chromeos::ProxySettingsDialog(NULL, native_window);
+      dialog->Show();
     } else {
       NOTREACHED();
     }

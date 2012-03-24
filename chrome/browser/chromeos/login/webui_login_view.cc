@@ -222,11 +222,9 @@ content::WebUI* WebUILoginView::GetWebUI() {
 }
 
 void WebUILoginView::OpenProxySettings() {
-  if (!proxy_settings_dialog_.get()) {
-    proxy_settings_dialog_.reset(
-        new ProxySettingsDialog(NULL, GetNativeWindow()));
-  }
-  proxy_settings_dialog_->Show();
+  ProxySettingsDialog* dialog =
+      new ProxySettingsDialog(NULL, GetNativeWindow());
+  dialog->Show();
 }
 
 void WebUILoginView::SetStatusAreaEnabled(bool enable) {
@@ -249,9 +247,6 @@ void WebUILoginView::Layout() {
 }
 
 void WebUILoginView::OnLocaleChanged() {
-  // Proxy settings dialog contains localized strings.
-  proxy_settings_dialog_.reset();
-  SchedulePaint();
 }
 
 void WebUILoginView::ChildPreferredSizeChanged(View* child) {

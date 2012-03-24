@@ -75,9 +75,6 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
   StatusAreaView* status_area_view_;
 
 #if defined(OS_CHROMEOS)
-  // Proxy settings dialog that can be invoked from network menu.
-  scoped_ptr<chromeos::LoginHtmlDialog> proxy_settings_dialog_;
-
   scoped_ptr<ClockUpdater> clock_updater_;
 #endif
 

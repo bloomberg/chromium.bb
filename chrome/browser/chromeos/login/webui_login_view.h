@@ -158,9 +158,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Maps installed accelerators to OOBE webui accelerator identifiers.
   AccelMap accel_map_;
 
-  // Proxy settings dialog that can be invoked from network menu.
-  scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
-
   // Watches webui_login_'s TabContents rendering.
   scoped_ptr<TabRenderWatcher> tab_watcher_;
 

@@ -904,7 +904,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
   std::string cellular_device_path_;
   std::string active_network_path_;
-  scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
 
