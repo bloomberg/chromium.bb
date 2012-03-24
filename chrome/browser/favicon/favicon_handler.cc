@@ -125,6 +125,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   url_ = url;
 
   favicon_expired_ = got_favicon_from_history_ = false;
+  image_urls_.clear();
 
   // Request the favicon from the history service. In parallel to this the
   // renderer is going to notify us (well TabContents) when the favicon url is
