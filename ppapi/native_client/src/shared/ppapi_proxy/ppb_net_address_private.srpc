@@ -63,5 +63,26 @@
                  ['success', 'int32_t'],             # PP_Bool
                 ]
     },
+    {'name': 'PPB_NetAddress_Private_GetScopeID',
+     'inputs': [['addr', 'char[]'],                  # PP_NetAddress_Private*
+               ],
+     'outputs': [['scope_id', 'int32_t'],            # uint32_t
+                ]
+    },
+    {'name': 'PPB_NetAddress_Private_CreateFromIPv4Address',
+     'inputs': [['ip', 'char[]'],                   # uint8_t[4]
+                ['port', 'int32_t'],                # uint16_t
+               ],
+     'outputs': [['addr', 'char[]'],                 # PP_NetAddress_Private*
+                ]
+    },
+    {'name': 'PPB_NetAddress_Private_CreateFromIPv6Address',
+     'inputs': [['ip', 'char[]'],                   # uint8_t[16]
+                ['scope_id', 'int32_t'],            # uint32_t
+                ['port', 'int32_t'],                # uint16_t
+               ],
+     'outputs': [['addr', 'char[]'],                 # PP_NetAddress_Private*
+                ]
+    },
    ]
 }
