@@ -10826,7 +10826,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any mobile device. You'll also be automatically signed in to your favorite Google services.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('chromeos')">
         <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed in to your favorite Google services.
         </message>
@@ -10834,6 +10834,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
         Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
+      <if expr="pp_ifdef('chromeos')">
+	<message name="IDS_SYNC_SETUP_BUTTON_LABEL" desc="The label that appears on the sync setup button in the options dialog when sync has been disabled by the user on Chrome OS.">
+	  Set up Sync
+	</message>
+      </if>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
