@@ -35,7 +35,7 @@ namespace {
 // we observed (given a total range of [0.0, 1.0]).  It's roughly based on the
 // amount by which the power manager adjusts the brightness for each
 // brightness-up or -down request.
-const float kMinBrightnessChange = 0.05;
+const float kMinBrightnessChange = 0.05f;
 
 }  // namespace
 
