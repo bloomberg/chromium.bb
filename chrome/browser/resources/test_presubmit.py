@@ -218,6 +218,10 @@ class CssStyleGuideTest(SuperMoxTestBase):
     display: block;
     color: red;
   }
+}
+
+.rule {
+  z-index: 5;
 <if expr="not is macosx">
   background-image: url(chrome://resources/BLAH); /* TODO(dbeam): Fix this. */
   background-color: rgb(235, 239, 249);
@@ -226,6 +230,7 @@ class CssStyleGuideTest(SuperMoxTestBase):
   background-color: white;
   background-image: url(chrome://resources/BLAH2);
 </if>
+  color: black;
 }
 
 <if expr="is_macosx">
@@ -236,7 +241,10 @@ class CssStyleGuideTest(SuperMoxTestBase):
 </if>""", """
 - Alphabetize properties and list vendor specific (i.e. -webkit) above standard.
     display: block;
-    color: red;""")
+    color: red;
+
+    z-index: 5;
+    color: black;""")
 
   def testCssAlphaWithNonStandard(self):
     self.VerifyContentsProducesOutput("""
@@ -320,6 +328,9 @@ html[dir="rtl"] body,
 html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
   background: url("chrome://resources/BLAH");
   font-family: "Open Sans";
+<if expr="is_macosx">
+  blah: blee;
+</if>
 }""", """
 - Use single quotes (') instead of double quotes (") in strings.
     html[dir="rtl"] body,

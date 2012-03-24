@@ -38,7 +38,7 @@ class CSSChecker(object):
       return re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', s)
 
     def _remove_grit(s):
-      grit_reg = r'<if[^>]*>.*<\s*/\s*if[^>]*>|<include[^>]+>'
+      grit_reg = r'<if[^>]+>.*?<\s*/\s*if[^>]*>|<include[^>]+>'
       return re.sub(re.compile(grit_reg, re.DOTALL), '', s)
 
     def _rgb_from_hex(s):
