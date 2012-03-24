@@ -60,7 +60,7 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled,
 
   if (enabled) {
     string_id_ = string_id;
-    PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+    PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   } else if (detailed_.get()) {
     string_id_ = 0;
     detailed_->GetWidget()->Close();

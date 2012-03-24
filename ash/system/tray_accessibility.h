@@ -10,6 +10,7 @@
 
 namespace views {
 class ImageView;
+class View;
 }
 
 namespace ash {
@@ -18,7 +19,10 @@ class ASH_EXPORT AccessibilityObserver {
  public:
   virtual ~AccessibilityObserver() {}
 
-  virtual void OnAccessibilityModeChanged(bool enabled) = 0;
+  // Notifies when accessibilty mode changes. Also sends a string-id to display
+  // to the user.
+  virtual void OnAccessibilityModeChanged(bool enabled,
+                                          int string_id) = 0;
 };
 
 namespace internal {
@@ -32,9 +36,15 @@ class TrayAccessibility : public TrayImageItem,
  private:
   // Overridden from TrayImageItem.
   virtual bool GetInitialVisibility() OVERRIDE;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
+  virtual void DestroyDetailedView() OVERRIDE;
 
   // Overridden from AccessibilityObserver.
-  virtual void OnAccessibilityModeChanged(bool enabled) OVERRIDE;
+  virtual void OnAccessibilityModeChanged(bool enabled,
+                                          int string_id) OVERRIDE;
+
+  scoped_ptr<views::View> detailed_;
+  int string_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };
