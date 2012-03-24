@@ -200,7 +200,7 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
                               const gfx::Font& font,
                               const gfx::Rect& bounds,
                               const gfx::Rect& clip,
-                              const SkColor& text_color,
+                              SkColor text_color,
                               int flags) {
   PangoLayout* layout = pango_cairo_create_layout(cr);
   base::i18n::TextDirection text_direction =
@@ -378,7 +378,7 @@ void DrawPangoLayout(cairo_t* cr,
                      const Font& font,
                      const gfx::Rect& bounds,
                      const gfx::Rect& text_rect,
-                     const SkColor& text_color,
+                     SkColor text_color,
                      base::i18n::TextDirection text_direction,
                      int flags) {
   double r = SkColorGetR(text_color) / 255.0,

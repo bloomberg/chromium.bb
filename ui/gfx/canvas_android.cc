@@ -18,7 +18,7 @@ void Canvas::SizeStringInt(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   NOTIMPLEMENTED();

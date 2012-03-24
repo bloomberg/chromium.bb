@@ -53,7 +53,7 @@ double ConvertSRGB(double eight_bit_component) {
       (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
 }
 
-SkColor LumaInvertColor(const SkColor& color) {
+SkColor LumaInvertColor(SkColor color) {
   HSL hsl;
   SkColorToHSL(color, &hsl);
   hsl.l = 1.0 - hsl.l;

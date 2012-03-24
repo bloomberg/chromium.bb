@@ -36,7 +36,7 @@ void UI_EXPORT DrawTextOntoCairoSurface(cairo_t* cr,
                                         const gfx::Font& font,
                                         const gfx::Rect& bounds,
                                         const gfx::Rect& clip,
-                                        const SkColor& text_color,
+                                        SkColor text_color,
                                         int flags);
 
 // ----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ void DrawPangoLayout(cairo_t* cr,
                      const Font& font,
                      const gfx::Rect& bounds,
                      const gfx::Rect& text_rect,
-                     const SkColor& text_color,
+                     SkColor text_color,
                      base::i18n::TextDirection text_direction,
                      int flags);
 

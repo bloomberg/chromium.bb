@@ -231,7 +231,7 @@ void DrawTextAndClearBackground(SkCanvas* bmp_canvas,
 void DrawTextGradientPart(HDC hdc,
                           SkCanvas* bmp_canvas,
                           const string16& text,
-                          const SkColor& color,
+                          SkColor color,
                           HFONT font,
                           const gfx::Rect& text_rect,
                           const gfx::Rect& draw_rect,
@@ -324,7 +324,7 @@ void Canvas::SizeStringInt(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            HFONT font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   SkRect fclip;
@@ -371,7 +371,7 @@ void Canvas::DrawStringInt(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   DrawStringInt(text, font.GetNativeFont(), color, x, y, w, h, flags);
@@ -406,11 +406,11 @@ static bool pixelShouldGetHalo(const SkBitmap& bitmap,
 }
 
 void Canvas::DrawStringWithHalo(const string16& text,
-                                    const gfx::Font& font,
-                                    const SkColor& text_color,
-                                    const SkColor& halo_color_in,
-                                    int x, int y, int w, int h,
-                                    int flags) {
+                                const gfx::Font& font,
+                                SkColor text_color,
+                                SkColor halo_color_in,
+                                int x, int y, int w, int h,
+                                int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
   // (since the resulting image can have 1-bit transparency only).
   SkColor halo_color = SkColorSetA(halo_color_in, 0xFF);
@@ -455,12 +455,12 @@ void Canvas::DrawStringWithHalo(const string16& text,
 }
 
 void Canvas::DrawFadeTruncatingString(
-      const string16& text,
-      TruncateFadeMode truncate_mode,
-      size_t desired_characters_to_truncate_from_head,
-      const gfx::Font& font,
-      const SkColor& color,
-      const gfx::Rect& display_rect) {
+    const string16& text,
+    TruncateFadeMode truncate_mode,
+    size_t desired_characters_to_truncate_from_head,
+    const gfx::Font& font,
+    SkColor color,
+    const gfx::Rect& display_rect) {
   int flags = NO_ELLIPSIS;
 
   // If the whole string fits in the destination then just draw it directly.
@@ -477,7 +477,6 @@ void Canvas::DrawFadeTruncatingString(
 
   int average_character_width = font.GetAverageCharacterWidth();
   int clipped_string_width = total_string_width - display_rect.width();
-
   // Clip the string by drawing it to the left by |offset_x|.
   int offset_x = 0;
   switch (truncate_mode) {

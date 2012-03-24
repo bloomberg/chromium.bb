@@ -231,7 +231,7 @@ void Canvas::SizeStringInt(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
@@ -309,8 +309,8 @@ void Canvas::DrawStringInt(const string16& text,
 
 void Canvas::DrawStringWithHalo(const string16& text,
                                 const gfx::Font& font,
-                                const SkColor& text_color,
-                                const SkColor& halo_color_in,
+                                SkColor text_color,
+                                SkColor halo_color_in,
                                 int x, int y, int w, int h,
                                 int flags) {
   // Some callers will have semitransparent halo colors, which we don't handle
@@ -358,7 +358,7 @@ void Canvas::DrawFadeTruncatingString(
       TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const gfx::Font& font,
-      const SkColor& color,
+      SkColor color,
       const gfx::Rect& display_rect) {
   int flags = NO_ELLIPSIS;
 

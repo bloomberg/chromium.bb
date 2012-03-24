@@ -17,9 +17,6 @@
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/canvas.h"
-
-using std::max;
 
 namespace {
 
@@ -44,8 +41,8 @@ class DrawStringContext {
                     int flags);
   ~DrawStringContext();
 
-  void Draw(const SkColor& text_color);
-  void DrawWithHalo(const SkColor& text_color, const SkColor& halo_color);
+  void Draw(SkColor text_color);
+  void DrawWithHalo(SkColor text_color, SkColor halo_color);
 
  private:
   // Draw an underline under the text using |cr|, which must already be
@@ -107,13 +104,13 @@ DrawStringContext::~DrawStringContext() {
   // NOTE: BeginPlatformPaint returned its surface, we shouldn't destroy it.
 }
 
-void DrawStringContext::Draw(const SkColor& text_color) {
+void DrawStringContext::Draw(SkColor text_color) {
   DrawPangoLayout(cr_, layout_, font_, bounds_, text_rect_, text_color,
                   text_direction_, flags_);
 }
 
-void DrawStringContext::DrawWithHalo(const SkColor& text_color,
-                                     const SkColor& halo_color) {
+void DrawStringContext::DrawWithHalo(SkColor text_color,
+                                     SkColor halo_color) {
   gfx::Size size(bounds_.width() + 2, bounds_.height() + 2);
   gfx::Canvas text_canvas(size, false);
   text_canvas.FillRect(gfx::Rect(size), static_cast<SkColor>(0));
@@ -200,8 +197,8 @@ void Canvas::SizeStringInt(const string16& text,
   if (font.GetStyle() & gfx::Font::UNDERLINED) {
     gfx::PlatformFontPango* platform_font =
         static_cast<gfx::PlatformFontPango*>(font.platform_font());
-    *height += max(platform_font->underline_position() +
-                   platform_font->underline_thickness(), 0.0);
+    *height += std::max(platform_font->underline_position() +
+                        platform_font->underline_thickness(), 0.0);
   }
 
   // TODO: If the text is being drawn with a halo, we should also pad each of
@@ -234,8 +231,8 @@ void Canvas::SizeStringInt(const string16& text,
 
 void Canvas::DrawStringWithHalo(const string16& text,
                                 const gfx::Font& font,
-                                const SkColor& text_color,
-                                const SkColor& halo_color,
+                                SkColor text_color,
+                                SkColor halo_color,
                                 int x, int y, int w, int h,
                                 int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
@@ -249,7 +246,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))

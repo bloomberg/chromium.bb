@@ -142,8 +142,8 @@ class UI_EXPORT Canvas {
   //   that when ready.  http::/crbug.com/109946
   void DrawStringWithHalo(const string16& text,
                           const gfx::Font& font,
-                          const SkColor& text_color,
-                          const SkColor& halo_color,
+                          SkColor text_color,
+                          SkColor halo_color,
                           int x, int y, int w, int h,
                           int flags);
 
@@ -177,34 +177,28 @@ class UI_EXPORT Canvas {
 
   // Fills |rect| with |color| using a transfer mode of
   // SkXfermode::kSrcOver_Mode.
-  void FillRect(const gfx::Rect& rect, const SkColor& color);
+  void FillRect(const gfx::Rect& rect, SkColor color);
 
   // Fills |rect| with the specified |color| and |mode|.
-  void FillRect(const gfx::Rect& rect,
-                const SkColor& color,
-                SkXfermode::Mode mode);
+  void FillRect(const gfx::Rect& rect, SkColor color, SkXfermode::Mode mode);
 
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
   // NOTE: if you need a single pixel line, use DrawLine.
-  void DrawRect(const gfx::Rect& rect, const SkColor& color);
+  void DrawRect(const gfx::Rect& rect, SkColor color);
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
   //
   // NOTE: if you need a single pixel line, use DrawLine.
-  void DrawRect(const gfx::Rect& rect,
-                const SkColor& color,
-                SkXfermode::Mode mode);
+  void DrawRect(const gfx::Rect& rect, SkColor color, SkXfermode::Mode mode);
 
   // Draws the given rectangle with the given paint's parameters.
   void DrawRect(const gfx::Rect& rect, const SkPaint& paint);
 
   // Draws a single pixel line with the specified color.
-  void DrawLine(const gfx::Point& p1,
-                const gfx::Point& p2,
-                const SkColor& color);
+  void DrawLine(const gfx::Point& p1, const gfx::Point& p2, SkColor color);
 
   // Draws a bitmap with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
@@ -244,11 +238,11 @@ class UI_EXPORT Canvas {
   // text is too big, it is truncated and '...' is added to the end.
   void DrawStringInt(const string16& text,
                      const gfx::Font& font,
-                     const SkColor& color,
+                     SkColor color,
                      int x, int y, int w, int h);
   void DrawStringInt(const string16& text,
                      const gfx::Font& font,
-                     const SkColor& color,
+                     SkColor color,
                      const gfx::Rect& display_rect);
 
   // Draws text with the specified color, font and location. The last argument
@@ -256,7 +250,7 @@ class UI_EXPORT Canvas {
   // TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT or TEXT_ALIGN_LEFT.
   void DrawStringInt(const string16& text,
                      const gfx::Font& font,
-                     const SkColor& color,
+                     SkColor color,
                      int x, int y, int w, int h,
                      int flags);
 
@@ -291,7 +285,7 @@ class UI_EXPORT Canvas {
       TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const gfx::Font& font,
-      const SkColor& color,
+      SkColor color,
       const gfx::Rect& display_rect);
 #endif
 
@@ -308,7 +302,7 @@ class UI_EXPORT Canvas {
   // text is too big, it is truncated and '...' is added to the end.
   void DrawStringInt(const string16& text,
                      HFONT font,
-                     const SkColor& color,
+                     SkColor color,
                      int x, int y, int w, int h,
                      int flags);
 #endif

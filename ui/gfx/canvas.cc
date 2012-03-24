@@ -155,12 +155,12 @@ void Canvas::Scale(int x_scale, int y_scale) {
   canvas_->scale(SkIntToScalar(x_scale), SkIntToScalar(y_scale));
 }
 
-void Canvas::FillRect(const gfx::Rect& rect, const SkColor& color) {
+void Canvas::FillRect(const gfx::Rect& rect, SkColor color) {
   FillRect(rect, color, SkXfermode::kSrcOver_Mode);
 }
 
 void Canvas::FillRect(const gfx::Rect& rect,
-                      const SkColor& color,
+                      SkColor color,
                       SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
@@ -169,12 +169,12 @@ void Canvas::FillRect(const gfx::Rect& rect,
   DrawRect(rect, paint);
 }
 
-void Canvas::DrawRect(const gfx::Rect& rect, const SkColor& color) {
+void Canvas::DrawRect(const gfx::Rect& rect, SkColor color) {
   DrawRect(rect, color, SkXfermode::kSrcOver_Mode);
 }
 
 void Canvas::DrawRect(const gfx::Rect& rect,
-                      const SkColor& color,
+                      SkColor color,
                       SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
@@ -194,7 +194,7 @@ void Canvas::DrawRect(const gfx::Rect& rect, const SkPaint& paint) {
 
 void Canvas::DrawLine(const gfx::Point& p1,
                       const gfx::Point& p2,
-                      const SkColor& color) {
+                      SkColor color) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
@@ -280,14 +280,14 @@ void Canvas::DrawBitmapInt(const SkBitmap& bitmap,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h) {
   DrawStringInt(text, font, color, x, y, w, h, DefaultCanvasTextAlignment());
 }
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            const gfx::Rect& display_rect) {
   DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
                 display_rect.width(), display_rect.height());

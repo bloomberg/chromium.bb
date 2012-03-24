@@ -52,7 +52,7 @@ void Canvas::SizeStringInt(const string16& text,
 
 void Canvas::DrawStringInt(const string16& text,
                            const gfx::Font& font,
-                           const SkColor& color,
+                           SkColor color,
                            int x, int y, int w, int h,
                            int flags) {
   SkTypeface* typeface = SkTypeface::CreateFromName(font.GetFontName().c_str(),
@@ -70,8 +70,8 @@ void Canvas::DrawStringInt(const string16& text,
 
 void Canvas::DrawStringWithHalo(const string16& text,
                                 const gfx::Font& font,
-                                const SkColor& text_color,
-                                const SkColor& halo_color,
+                                SkColor text_color,
+                                SkColor halo_color,
                                 int x, int y, int w, int h,
                                 int flags) {
 }
