@@ -47,7 +47,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
+#if defined(OS_WIN)
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
+  void OnDebugExceptionHandlerLaunchedByBroker();
+#endif
 
  private:
   // Internal class that holds the nacl::Handle objecs so that

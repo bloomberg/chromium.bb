@@ -33,6 +33,17 @@ IPC_MESSAGE_CONTROL2(NaClProcessMsg_LoaderLaunched,
                      std::wstring,  /* channel ID for the loader */
                      base::ProcessHandle /* loader process handle */)
 
+// Tells the NaCl broker to attach a debug exception handler to the
+// given NaCl loader process.
+IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchDebugExceptionHandler,
+                     int32 /* pid */)
+
+// Notify the browser process that the broker process finished
+// attaching a debug exception handler to the given NaCl loader
+// process.
+IPC_MESSAGE_CONTROL1(NaClProcessMsg_DebugExceptionHandlerLaunched,
+                     int32 /* pid */)
+
 // Notify the broker that all loader processes have been terminated and it
 // should shutdown.
 IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)

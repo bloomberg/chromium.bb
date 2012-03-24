@@ -65,6 +65,25 @@ void NaClBrokerService::OnLoaderDied() {
   }
 }
 
+bool NaClBrokerService::LaunchDebugExceptionHandler(
+    NaClProcessHost* nacl_process_host, int32 pid) {
+  pending_debuggers_[pid] = nacl_process_host;
+  NaClBrokerHost* broker_host = GetBrokerHost();
+  if (!broker_host)
+    return false;
+  return broker_host->LaunchDebugExceptionHandler(pid);
+}
+
+void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid) {
+  PendingDebugExceptionHandlersMap::iterator it = pending_debuggers_.find(pid);
+  if (pending_debuggers_.end() == it)
+    NOTREACHED();
+
+  NaClProcessHost* client = it->second;
+  client->OnDebugExceptionHandlerLaunchedByBroker();
+  pending_debuggers_.erase(it);
+}
+
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
   BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_BROKER);
   if (iter.Done())

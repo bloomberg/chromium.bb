@@ -258,9 +258,7 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
       getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
     enable_exception_handling_ = true;
 #if defined(OS_WIN)
-    if (!RunningOnWOW64()) {
-      debug_context_ = new DebugContext();
-    }
+    debug_context_ = new DebugContext();
 #endif
   }
 }
@@ -505,13 +503,17 @@ bool NaClProcessHost::LaunchSelLdr() {
   return true;
 }
 
-void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
 #if defined(OS_WIN)
+void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   process_launched_by_broker_ = true;
-#endif
   process_->SetHandle(handle);
   OnProcessLaunched();
 }
+
+void NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker() {
+  debug_context_->AllowAndSendStartMessage();
+}
+#endif
 
 void NaClProcessHost::OnProcessCrashed(int exit_code) {
   std::string message = base::StringPrintf(
@@ -646,38 +648,45 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   if (debug_context_ == NULL) {
     return;
   }
-  // Start new thread for debug loop
   debug_context_->SetChildProcessHost(process_->GetHost());
-  // We can't use process_->GetData().handle because it doesn't have necessary
-  // access rights.
-  base::ProcessHandle process;
-  if (!base::OpenProcessHandleWithAccess(
-           peer_pid,
-           base::kProcessAccessQueryInformation |
-           base::kProcessAccessSuspendResume |
-           base::kProcessAccessTerminate |
-           base::kProcessAccessVMOperation |
-           base::kProcessAccessVMRead |
-           base::kProcessAccessVMWrite |
-           base::kProcessAccessWaitForTermination,
-           &process)) {
-    LOG(ERROR) << "Failed to open the process";
-    debug_context_->AllowAndSendStartMessage();
-    return;
+  if (RunningOnWOW64()) {
+    if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
+             this, peer_pid)) {
+      debug_context_->AllowAndSendStartMessage();
+    }
+  } else {
+    // Start new thread for debug loop
+    // We can't use process_->GetData().handle because it doesn't have necessary
+    // access rights.
+    base::ProcessHandle process;
+    if (!base::OpenProcessHandleWithAccess(
+             peer_pid,
+             base::kProcessAccessQueryInformation |
+             base::kProcessAccessSuspendResume |
+             base::kProcessAccessTerminate |
+             base::kProcessAccessVMOperation |
+             base::kProcessAccessVMRead |
+             base::kProcessAccessVMWrite |
+             base::kProcessAccessWaitForTermination,
+             &process)) {
+      LOG(ERROR) << "Failed to open the process";
+      debug_context_->AllowAndSendStartMessage();
+      return;
+    }
+    base::Thread* dbg_thread = new base::Thread("Debug thread");
+    if (!dbg_thread->Start()) {
+      LOG(ERROR) << "Debug thread not started";
+      debug_context_->AllowAndSendStartMessage();
+      base::CloseProcessHandle(process);
+      return;
+    }
+    debug_context_->SetDebugThread(dbg_thread);
+    // System can not reallocate pid until we close process handle. So using
+    // pid in different thread is fine.
+    dbg_thread->message_loop()->PostTask(FROM_HERE,
+        base::Bind(&NaClProcessHost::DebugContext::AttachDebugger,
+                   debug_context_, peer_pid, process));
   }
-  base::Thread* dbg_thread = new base::Thread("Debug thread");
-  if (!dbg_thread->Start()) {
-    LOG(ERROR) << "Debug thread not started";
-    debug_context_->AllowAndSendStartMessage();
-    base::CloseProcessHandle(process);
-    return;
-  }
-  debug_context_->SetDebugThread(dbg_thread);
-  // System can not reallocate pid until we close process handle. So using
-  // pid in different thread is fine.
-  dbg_thread->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&NaClProcessHost::DebugContext::AttachDebugger,
-                 debug_context_, peer_pid, process));
 }
 #else
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {

@@ -54,6 +54,8 @@ bool NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClBrokerHost, msg)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_LoaderLaunched, OnLoaderLaunched)
+    IPC_MESSAGE_HANDLER(NaClProcessMsg_DebugExceptionHandlerLaunched,
+                        OnDebugExceptionHandlerLaunched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -68,6 +70,14 @@ bool NaClBrokerHost::LaunchLoader(
 void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
                                       base::ProcessHandle handle) {
   NaClBrokerService::GetInstance()->OnLoaderLaunched(loader_channel_id, handle);
+}
+
+bool NaClBrokerHost::LaunchDebugExceptionHandler(int32 pid) {
+  return process_->Send(new NaClProcessMsg_LaunchDebugExceptionHandler(pid));
+}
+
+void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid) {
+  NaClBrokerService::GetInstance()->OnDebugExceptionHandlerLaunched(pid);
 }
 
 void NaClBrokerHost::StopBroker() {

@@ -27,6 +27,7 @@ class NaClBrokerListener : public IPC::Channel::Listener {
 
  private:
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
+  void OnLaunchDebugExceptionHandler(int32 pid);
   void OnStopBroker();
 
   base::ProcessHandle browser_handle_;

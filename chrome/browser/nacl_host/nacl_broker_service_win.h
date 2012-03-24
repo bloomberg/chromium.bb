@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,15 @@ class NaClBrokerService {
   // Called by NaClProcessHost when a loader process is terminated
   void OnLoaderDied();
 
+  bool LaunchDebugExceptionHandler(NaClProcessHost* client, int32 pid);
+
+  // Called by NaClBrokerHost to notify the service that a debug
+  // exception handler was started.
+  void OnDebugExceptionHandlerLaunched(int32 pid);
+
  private:
-  typedef std::map<std::wstring, NaClProcessHost*>
-      PendingLaunchesMap;
+  typedef std::map<std::wstring, NaClProcessHost*> PendingLaunchesMap;
+  typedef std::map<int, NaClProcessHost*> PendingDebugExceptionHandlersMap;
 
   friend struct DefaultSingletonTraits<NaClBrokerService>;
 
@@ -47,6 +53,7 @@ class NaClBrokerService {
 
   int loaders_running_;
   PendingLaunchesMap pending_launches_;
+  PendingDebugExceptionHandlersMap pending_debuggers_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerService);
 };
