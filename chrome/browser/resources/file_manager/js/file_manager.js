@@ -1347,13 +1347,6 @@ FileManager.prototype = {
                         callback, ex);
         }
       }
-      // TODO(benchan): Currently, there is no FileWatcher emulation for
-      // GDataFileSystem, so we need to manually trigger the directory rescan
-      // after paste operations complete. Remove this once we emulate file
-      // watching functionalities in GDataFileSystem.
-      if (this.isOnGData()) {
-        this.directoryModel_.rescanLater();
-      }
     } else if (event.reason == 'ERROR') {
       clearTimeout(this.butterTimeout_);
       switch (event.error.reason) {
@@ -1380,6 +1373,16 @@ FileManager.prototype = {
       console.log('Unknown event reason: ' + event.reason);
     }
 
+    // TODO(benchan): Currently, there is no FileWatcher emulation for
+    // GDataFileSystem, so we need to manually trigger the directory rescan
+    // after paste operations complete. Remove this once we emulate file
+    // watching functionalities in GDataFileSystem.
+    if (this.isOnGData()) {
+      if (event.reason == 'SUCCESS' || event.reason == 'ERROR' ||
+          event.reason == 'CANCELLED') {
+        this.directoryModel_.rescanLater();
+      }
+    }
   };
 
   FileManager.prototype.updateColumnModel_ = function() {
@@ -3075,9 +3078,10 @@ FileManager.prototype = {
       }
 
       event.clipboardData.setData('fs/isCut', isCut.toString());
+      event.clipboardData.setData('fs/isOnGData',
+                                  this.isOnGData().toString());
       event.clipboardData.setData('fs/sourceDir',
                                   this.directoryModel_.currentEntry.fullPath);
-      event.clipboardData.setData('fs/sourceOnGData', this.isOnGData());
       event.clipboardData.setData('fs/directories', directories);
       event.clipboardData.setData('fs/files', files);
   }
@@ -3112,18 +3116,15 @@ FileManager.prototype = {
 
     var clipboard = {
       isCut: event.clipboardData.getData('fs/isCut'),
+      isOnGData: event.clipboardData.getData('fs/isOnGData'),
       sourceDir: event.clipboardData.getData('fs/sourceDir'),
-      sourceOnGData: event.clipboardData.getData('fs/sourceOnGData'),
       directories: event.clipboardData.getData('fs/directories'),
       files: event.clipboardData.getData('fs/files')
     };
 
-    // If both source and target are on GData, FileCopyManager uses
-    // FileEntry.copyTo() / FileEntry.moveTo() to copy / move files.
-    var sourceAndTargetOnGData = clipboard.sourceOnGData && this.isOnGData();
     this.copyManager_.paste(clipboard,
                             this.directoryModel_.currentEntry,
-                            sourceAndTargetOnGData,
+                            this.isOnGData(),
                             this.filesystem_.root);
 
     var clearClipboard = function (event) {

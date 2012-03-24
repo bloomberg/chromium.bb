@@ -33,7 +33,8 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.completedBytes = 0;
 
   this.deleteAfterCopy = false;
-  this.sourceAndTargetOnGData = false;
+  this.sourceOnGData = false;
+  this.targetOnGData = false;
 
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
@@ -56,7 +57,8 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   this.originalEntries = entries;
   // When moving directories, FileEntry.moveTo() is used if both source
   // and target are on GData. There is no need to recurse into directories.
-  var recurse = !(this.deleteAfterCopy && this.sourceAndTargetOnGData);
+  var recurse = !(this.deleteAfterCopy &&
+                  this.sourceOnGData && this.targetOnGData);
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 }
 
@@ -245,12 +247,13 @@ FileCopyManager.prototype.maybeCancel_ = function() {
  * Convert string in clipboard to entries and kick off pasting.
  */
 FileCopyManager.prototype.paste = function(clipboard, targetEntry,
-                                           sourceAndTargetOnGData, root) {
+                                           targetOnGData, root) {
   var self = this;
   var results = {
     sourceDirEntry: null,
     entries: [],
-    isCut: false
+    isCut: false,
+    isOnGData: false
   };
 
   function onPathError(err) {
@@ -264,7 +267,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry,
             targetEntry,
             results.entries,
             results.isCut,
-            sourceAndTargetOnGData);
+            results.isOnGData,
+            targetOnGData);
     }
 
     function onEntryFound(entry) {
@@ -295,6 +299,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry,
     var added = 0;
 
     results.isCut = (clipboard.isCut == 'true');
+    results.isOnGData = (clipboard.isOnGData == 'true');
 
     util.getDirectories(root, {create: false}, directories, onEntryFound,
                         onPathError);
@@ -314,11 +319,13 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
                                                targetDirEntry,
                                                entries,
                                                deleteAfterCopy,
-                                               sourceAndTargetOnGData) {
+                                               sourceOnGData,
+                                               targetOnGData) {
   var self = this;
   var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
   copyTask.deleteAfterCopy = deleteAfterCopy;
-  copyTask.sourceAndTargetOnGData = sourceAndTargetOnGData;
+  copyTask.sourceOnGData = sourceOnGData;
+  copyTask.targetOnGData = targetOnGData;
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
     if (self.copyTasks_.length == 1) {
@@ -412,7 +419,8 @@ FileCopyManager.prototype.serviceNextTask_ = function(
       // All done with the entries in this task.
       // If files are moved within GData, FileEntry.moveTo() is used and
       // there is no need to delete the original files.
-      if (task.deleteAfterCopy && !task.sourceAndTargetOnGData) {
+      var sourceAndTargetOnGData = task.sourceOnGData && task.targetOnGData;
+      if (task.deleteAfterCopy && !sourceAndTargetOnGData) {
         deleteOriginals();
       } else {
         onTaskComplete();
@@ -569,7 +577,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     if (err.code != FileError.NOT_FOUND_ERR)
       return onError('FILESYSTEM_ERROR', err);
 
-    if (task.sourceAndTargetOnGData) {
+    if (task.sourceOnGData && task.targetOnGData) {
       if (task.deleteAfterCopy) {
         resolveDirAndBaseName(
             targetDirEntry, targetRelativePath,
@@ -594,6 +602,26 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           return;
         }
       }
+    }
+
+    // TODO(benchan): Until GDataFileSystem supports FileWriter, we use
+    // the transferFile API to copy file from a non-gdata file system to a
+    // gdata file system.
+    if (sourceEntry.isFile && task.targetOnGData) {
+      var sourceFileUrl = sourceEntry.toURL();
+      var targetFileUrl = targetDirEntry.toURL() + '/' + targetRelativePath;
+      chrome.fileBrowserPrivate.transferFile(
+        sourceFileUrl, targetFileUrl,
+        function() {
+          if (chrome.extension.lastError) {
+            util.flog('Error copying ' + sourceFileUrl + ' to ' +
+                      targetFileUrl, onFilesystemError);
+
+          } else {
+            onFilesystemCopyComplete(sourceEntry);
+          }
+        });
+      return;
     }
 
     if (sourceEntry.isDirectory) {
