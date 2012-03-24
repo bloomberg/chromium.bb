@@ -588,7 +588,7 @@ int GetDefaultWallpaperIndex() {
 #endif
 }
 
-int GetIncognitoWallpaperIndex() {
+int GetGuestWallpaperIndex() {
   DCHECK(kIcognitoWallpaperIndex < kDefaultWallpaperCount);
   return std::min(kIcognitoWallpaperIndex, kDefaultWallpaperCount - 1);
 }
