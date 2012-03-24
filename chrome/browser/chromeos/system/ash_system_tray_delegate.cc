@@ -37,9 +37,11 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -108,7 +110,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
                            public BluetoothAdapter::Observer,
-                           public SystemKeyEventListener::CapsLockObserver {
+                           public SystemKeyEventListener::CapsLockObserver,
+                           public MessageBubbleLinkListener {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
       : tray_(tray),
@@ -117,7 +120,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         network_icon_dark_(ALLOW_THIS_IN_INITIALIZER_LIST(
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
-        clock_type_(base::k24HourClock) {
+        clock_type_(base::k24HourClock),
+        data_promo_notification_(new DataPromoNotification()) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
@@ -700,8 +704,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void OnNetworkManagerChanged(NetworkLibrary* crosnet) OVERRIDE {
     RefreshNetworkObserver(crosnet);
     RefreshNetworkDeviceObserver(crosnet);
-
-    // TODO: ShowOptionalMobileDataPromoNotification?
+    data_promo_notification_->ShowOptionalMobileDataPromoNotification(crosnet,
+        tray_, this);
 
     NotifyRefreshNetwork();
   }
@@ -849,6 +853,41 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnCapsLockChanged(enabled, id);
   }
 
+  // Overridden from MessageBubbleLinkListener
+  virtual void OnLinkActivated(size_t index) OVERRIDE {
+    // If we have deal info URL defined that means that there're
+    // 2 links in bubble. Let the user close it manually then thus giving
+    // ability to navigate to second link.
+    // mobile_data_bubble_ will be set to NULL in BubbleClosing callback.
+    std::string deal_info_url = data_promo_notification_->deal_info_url();
+    std::string deal_topup_url = data_promo_notification_->deal_topup_url();
+    if (deal_info_url.empty())
+      data_promo_notification_->CloseNotification();
+
+    std::string deal_url_to_open;
+    if (index == 0) {
+      if (!deal_topup_url.empty()) {
+        deal_url_to_open = deal_topup_url;
+      } else {
+        const Network* cellular =
+            CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+        if (!cellular)
+          return;
+        network_menu_->ShowTabbedNetworkSettings(cellular);
+        return;
+      }
+    } else if (index == 1) {
+      deal_url_to_open = deal_info_url;
+    }
+
+    if (!deal_url_to_open.empty()) {
+      Browser* browser = GetAppropriateBrowser();
+      if (!browser)
+        return;
+      browser->ShowSingletonTab(GURL(deal_url_to_open));
+    }
+  }
+
   ash::SystemTray* tray_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
   scoped_ptr<NetworkMenuIcon> network_icon_dark_;
@@ -865,6 +904,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   BooleanPrefMember accessibility_enabled_;
   IntegerPrefMember remap_search_key_to_;
+
+  scoped_ptr<DataPromoNotification> data_promo_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };

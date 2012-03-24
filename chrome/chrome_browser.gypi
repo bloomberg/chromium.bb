@@ -828,6 +828,8 @@
         'browser/chromeos/status/clock_menu_button.h',
         'browser/chromeos/status/clock_updater.cc',
         'browser/chromeos/status/clock_updater.h',
+        'browser/chromeos/status/data_promo_notification.cc',
+        'browser/chromeos/status/data_promo_notification.h',
         'browser/chromeos/status/input_method_menu.cc',
         'browser/chromeos/status/input_method_menu.h',
         'browser/chromeos/status/input_method_menu_button.cc',
