@@ -156,12 +156,12 @@ html[touch-optimized] body {
 }
 
 .managed-prefs-text {
-  background-image: url('chrome://theme/IDR_WARNING');
-  background-position: 3px center;
+  background-image: url('chrome://theme/IDR_MANAGED');
+  background-position: 5px center;
   background-repeat: no-repeat;
   display: block;
-  line-height: 25px;
-  padding-left: 31px;
+  line-height: 24px;
+  padding-left: 26px;
 }
 
 .managed-prefs-banner.clickable:active .managed-prefs-text {
