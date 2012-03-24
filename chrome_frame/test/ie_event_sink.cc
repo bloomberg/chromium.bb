@@ -266,7 +266,7 @@ void IEEventSink::Uninitialize() {
       web_browser2_.Release();
 
       if (!process.IsValid()) {
-        DLOG_IF(WARNING, !process.IsValid())
+        LOG_IF(WARNING, !process.IsValid())
             << base::StringPrintf("OpenProcess failed: %i", ::GetLastError());
         return;
       }
@@ -562,7 +562,7 @@ STDMETHODIMP_(void) IEEventSink::OnDownloadBegin() {
 
 STDMETHODIMP_(void) IEEventSink::OnNewWindow2(IDispatch** dispatch,
                                               VARIANT_BOOL* s) {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
 
   EXPECT_TRUE(dispatch);
   if (!dispatch)
@@ -589,7 +589,7 @@ STDMETHODIMP_(void) IEEventSink::OnNewWindow2(IDispatch** dispatch,
 
 STDMETHODIMP_(void) IEEventSink::OnNavigateError(IDispatch* dispatch,
     VARIANT* url, VARIANT* frame_name, VARIANT* status_code, VARIANT* cancel) {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
   if (listener_)
     listener_->OnNavigateError(dispatch, url, frame_name, status_code, cancel);
 }
@@ -598,8 +598,8 @@ STDMETHODIMP IEEventSink::OnBeforeNavigate2(
     IDispatch* dispatch, VARIANT* url, VARIANT* flags,
     VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
     VARIANT_BOOL* cancel) {
-  DVLOG(1) << __FUNCTION__
-           << base::StringPrintf("%ls - 0x%08X", url->bstrVal, this);
+  VLOG(1) << __FUNCTION__ << " "
+          << base::StringPrintf("%ls - 0x%08X", url->bstrVal, this);
   // Reset any existing reference to chrome frame since this is a new
   // navigation.
   DisconnectFromChromeFrame();
@@ -611,7 +611,7 @@ STDMETHODIMP IEEventSink::OnBeforeNavigate2(
 
 STDMETHODIMP_(void) IEEventSink::OnNavigateComplete2(
     IDispatch* dispatch, VARIANT* url) {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
   ConnectToChromeFrame();
   if (listener_)
     listener_->OnNavigateComplete2(dispatch, url);
@@ -619,7 +619,7 @@ STDMETHODIMP_(void) IEEventSink::OnNavigateComplete2(
 
 STDMETHODIMP_(void) IEEventSink::OnDocumentComplete(
     IDispatch* dispatch, VARIANT* url) {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
   EXPECT_TRUE(url);
   if (!url)
     return;
@@ -629,8 +629,8 @@ STDMETHODIMP_(void) IEEventSink::OnDocumentComplete(
 
 STDMETHODIMP_(void) IEEventSink::OnFileDownload(
     VARIANT_BOOL active_doc, VARIANT_BOOL* cancel) {
-  DVLOG(1) << __FUNCTION__
-           << base::StringPrintf(" 0x%08X ad=%i", this, active_doc);
+  VLOG(1) << __FUNCTION__ << " "
+          << base::StringPrintf(" 0x%08X ad=%i", this, active_doc);
   if (listener_) {
     listener_->OnFileDownload(active_doc, cancel);
   } else {
@@ -641,7 +641,7 @@ STDMETHODIMP_(void) IEEventSink::OnFileDownload(
 STDMETHODIMP_(void) IEEventSink::OnNewWindow3(
     IDispatch** dispatch, VARIANT_BOOL* cancel, DWORD flags, BSTR url_context,
     BSTR url) {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
   EXPECT_TRUE(dispatch);
   if (!dispatch)
     return;
@@ -666,7 +666,7 @@ STDMETHODIMP_(void) IEEventSink::OnNewWindow3(
 }
 
 STDMETHODIMP_(void) IEEventSink::OnQuit() {
-  DVLOG(1) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__;
 
   did_receive_on_quit_ = true;
 
@@ -687,32 +687,32 @@ STDMETHODIMP IEEventSink::Invoke(DISPID dispid, REFIID riid, LCID lcid,
 }
 
 HRESULT IEEventSink::OnLoad(const VARIANT* param) {
-  DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
+  VLOG(1) << __FUNCTION__ << " " << param->bstrVal;
   base::win::ScopedVariant stack_object(*param);
   if (chrome_frame_) {
     if (listener_)
       listener_->OnLoad(param->bstrVal);
   } else {
-    DLOG(WARNING) << "Invalid chrome frame pointer";
+    LOG(WARNING) << "Invalid chrome frame pointer";
   }
   return S_OK;
 }
 
 HRESULT IEEventSink::OnLoadError(const VARIANT* param) {
-  DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
+  VLOG(1) << __FUNCTION__ << " " << param->bstrVal;
   if (chrome_frame_) {
     if (listener_)
       listener_->OnLoadError(param->bstrVal);
   } else {
-    DLOG(WARNING) << "Invalid chrome frame pointer";
+    LOG(WARNING) << "Invalid chrome frame pointer";
   }
   return S_OK;
 }
 
 HRESULT IEEventSink::OnMessage(const VARIANT* param) {
-  DVLOG(1) << __FUNCTION__ << " " << param;
+  VLOG(1) << __FUNCTION__ << " " << param;
   if (!chrome_frame_.get()) {
-    DLOG(WARNING) << "Invalid chrome frame pointer";
+    LOG(WARNING) << "Invalid chrome frame pointer";
     return S_OK;
   }
 

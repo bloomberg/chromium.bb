@@ -32,7 +32,7 @@ void MockIEEventSink::OnDocumentComplete(IDispatch* dispatch, VARIANT* url) {
                        renderer_window,
                        OBJID_CLIENT, 0L);
     } else {
-      DVLOG(1) << "Browser does not have renderer window";
+      VLOG(1) << "Browser does not have renderer window";
     }
     OnLoad(IN_IE, V_BSTR(url));
   }
@@ -60,7 +60,7 @@ ExpectationSet MockIEEventSink::ExpectNavigationCardinality(
   // TODO(kkania): Consider avoiding this problem by creating a mock without
   // the OnFileDownload call or by removing the dependency of some tests on
   // InSequence.
-  DLOG_IF(WARNING, complete_cardinality.ConservativeUpperBound() > 1000)
+  LOG_IF(WARNING, complete_cardinality.ConservativeUpperBound() > 1000)
       << "Cardinality upper bound may be too great to be split up into single "
          "expect statements. If you do not require this navigation to be in "
          "sequence, do not call this method.";

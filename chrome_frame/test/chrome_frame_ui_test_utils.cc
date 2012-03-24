@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,15 +186,14 @@ bool AccObject::GetRoleText(std::wstring* role_text) {
         *role_text = role_text_array;
         return true;
       } else {
-        DLOG(ERROR) << "GetRoleText failed for role: "
-                    << V_I4(&role_variant);
+        LOG(ERROR) << "GetRoleText failed for role: " << V_I4(&role_variant);
       }
     } else if (role_variant.type() == VT_BSTR) {
       *role_text = V_BSTR(&role_variant);
       return true;
     } else {
-      DLOG(ERROR) << "Role was unexpected variant type: "
-                  << role_variant.type();
+      LOG(ERROR) << "Role was unexpected variant type: "
+                 << role_variant.type();
     }
   }
   return false;
@@ -242,8 +241,9 @@ bool AccObject::GetLocationInClient(gfx::Rect* client_location) {
     return false;
   POINT offset = {0, 0};
   if (!::ScreenToClient(container_window, &offset)) {
-    DLOG(ERROR) << "Could not convert from screen to client coordinates for "
-        << "window containing accessibility object: " << GetDescription();
+    LOG(ERROR) << "Could not convert from screen to client coordinates for "
+                  "window containing accessibility object: "
+               << GetDescription();
     return false;
   }
   location.Offset(offset.x, offset.y);
@@ -525,8 +525,8 @@ AccObject* AccObject::CreateFromVariant(AccObject* object,
 bool AccObject::PostMouseClickAtCenter(int button_down, int button_up) {
    std::wstring class_name;
   if (!GetWindowClassName(&class_name)) {
-    DLOG(ERROR) << "Could not get class name of window for accessibility "
-                << "object: " << GetDescription();
+    LOG(ERROR) << "Could not get class name of window for accessibility "
+               << "object: " << GetDescription();
     return false;
   }
   gfx::Rect location;

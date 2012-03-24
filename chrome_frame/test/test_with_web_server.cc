@@ -179,10 +179,10 @@ void ChromeFrameTestWithWebServer::CloseBrowser() {
     if (wait == WAIT_OBJECT_0) {
       browser_handle_.Close();
     } else {
-      DLOG(ERROR) << "WaitForSingleObject returned " << wait;
+      LOG(ERROR) << "WaitForSingleObject returned " << wait;
     }
   } else {
-    DLOG(ERROR) << "No attempts to close browser windows";
+    LOG(ERROR) << "No attempts to close browser windows";
   }
 
   if (browser_handle_.IsValid()) {
@@ -214,9 +214,9 @@ const wchar_t kPostedResultSubstring[] = L"/writefile/";
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
     BrowserKind browser, const wchar_t* page, const char* result) {
-  ASSERT_TRUE(LaunchBrowser(browser, page));
   server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                            kPostedResultSubstring);
+  ASSERT_TRUE(LaunchBrowser(browser, page));
   WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
   ASSERT_EQ(result, server_mock_.posted_result());
 }
@@ -261,9 +261,9 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
 
   EXPECT_TRUE(version_info);
   EXPECT_FALSE(version.empty());
-  EXPECT_TRUE(LaunchBrowser(browser, page));
   server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
                                            kPostedResultSubstring);
+  EXPECT_TRUE(LaunchBrowser(browser, page));
   WaitForTestToComplete(TestTimeouts::action_max_timeout_ms());
   ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
 }
@@ -350,8 +350,8 @@ void MockWebServer::SendResponseHelper(
                                                              headers);
     } else {
       EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
-      DVLOG(1) << "Going to send file (" << WideToUTF8(file_path.value())
-               << ") with content type (" << content_type << ")";
+      VLOG(1) << "Going to send file (" << WideToUTF8(file_path.value())
+              << ") with content type (" << content_type << ")";
       headers = CreateHttpHeaders(invocation, add_no_cache_header,
                                   content_type);
     }
@@ -366,8 +366,8 @@ void MockWebServer::SendResponseHelper(
           << "meta tag to HTML file.";
     }
   } else {
-    DVLOG(1) << "Going to send 404 for non-existent file ("
-             << WideToUTF8(file_path.value()) << ")";
+    VLOG(1) << "Going to send 404 for non-existent file ("
+            << WideToUTF8(file_path.value()) << ")";
     headers = "HTTP/1.1 404 Not Found";
     body = "";
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,7 +101,7 @@ bool EnsureProcessInForeground(base::ProcessId process_id) {
   PidAndWindow paw = { process_id };
   EnumWindows(FindWindowInProcessCallback, reinterpret_cast<LPARAM>(&paw));
   if (!IsWindow(paw.hwnd)) {
-    DLOG(ERROR) << "failed to find process window";
+    LOG(ERROR) << "failed to find process window";
     return false;
   }
 
@@ -259,4 +259,3 @@ void SendStringA(const std::string& s) {
 }
 
 }  // namespace simulate_input
-

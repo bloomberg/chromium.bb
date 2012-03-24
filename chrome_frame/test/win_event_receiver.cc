@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ bool WinEventReceiver::InitializeHook(DWORD event_min, DWORD event_max) {
   hook_ = SetWinEventHook(event_min, event_max, NULL,
                           reinterpret_cast<WINEVENTPROC>(hook_stub_->code()), 0,
                           0, WINEVENT_OUTOFCONTEXT);
-  DLOG_IF(ERROR, hook_ == NULL) << "Unable to SetWinEvent hook";
+  LOG_IF(ERROR, hook_ == NULL) << "Unable to SetWinEvent hook";
   return hook_ != NULL;
 }
 

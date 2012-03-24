@@ -45,7 +45,7 @@ class MockIEEventSink : public IEEventListener {
   ~MockIEEventSink() {
     Detach();
     int reference_count = event_sink_->reference_count();
-    DLOG_IF(ERROR, reference_count != 1)
+    LOG_IF(ERROR, reference_count != 1)
         << "Event sink is still referenced externally: ref count = "
         << reference_count;
     event_sink_->Release();
@@ -167,7 +167,7 @@ class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
   ~MockPropertyNotifySinkListener() {
     Detach();
     sink_->set_listener(NULL);
-    DLOG_IF(ERROR, sink_->m_dwRef != 1)
+    LOG_IF(ERROR, sink_->m_dwRef != 1)
         << "Event sink is still referenced externally: ref count = "
         << sink_->m_dwRef;
     sink_->Release();

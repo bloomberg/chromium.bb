@@ -323,8 +323,8 @@ void ConfigurableConnection::SendChunk() {
   int bytes_to_send = std::min(options_.chunk_size_, size - cur_pos_);
 
   socket_->Send(chunk_ptr, bytes_to_send);
-  DVLOG(1) << "Sent(" << cur_pos_ << "," << bytes_to_send << "): "
-           << base::StringPiece(chunk_ptr, bytes_to_send);
+  VLOG(1) << "Sent(" << cur_pos_ << "," << bytes_to_send << "): "
+          << base::StringPiece(chunk_ptr, bytes_to_send);
 
   cur_pos_ += bytes_to_send;
   if (cur_pos_ < size) {
@@ -366,7 +366,7 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
   if (options_.speed_ == SendOptions::IMMEDIATE_HEADERS_DELAYED_CONTENT) {
     socket_->Send(headers);
     socket_->Send(content_length_header, true);
-    DVLOG(1) << "Headers sent: " << headers << content_length_header;
+    VLOG(1) << "Headers sent: " << headers << content_length_header;
     data_.append(content);
   }
 
