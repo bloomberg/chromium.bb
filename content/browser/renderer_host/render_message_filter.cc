@@ -269,7 +269,8 @@ RenderMessageFilter::RenderMessageFilter(
     PluginServiceImpl* plugin_service,
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
-    RenderWidgetHelper* render_widget_helper)
+    RenderWidgetHelper* render_widget_helper,
+    content::MediaObserver* media_observer)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       browser_context_(browser_context),
@@ -280,7 +281,8 @@ RenderMessageFilter::RenderMessageFilter(
       dom_storage_context_(static_cast<DOMStorageContextImpl*>(
           BrowserContext::GetDOMStorageContext(browser_context))),
       render_process_id_(render_process_id),
-      cpu_usage_(0) {
+      cpu_usage_(0),
+      media_observer_(media_observer) {
   DCHECK(request_context_);
 
   render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
@@ -881,10 +883,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
-  if (!resource_context_->GetMediaObserver())
-    return;
-  resource_context_->GetMediaObserver()->OnMediaEvent(
-      render_process_id_, event);
+  if (media_observer_)
+    media_observer_->OnMediaEvent(render_process_id_, event);
 }
 
 void RenderMessageFilter::CheckPolicyForCookies(

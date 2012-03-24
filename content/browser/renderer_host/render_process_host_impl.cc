@@ -448,13 +448,16 @@ bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {
+  content::MediaObserver* media_observer =
+      content::GetContentClient()->browser()->GetMediaObserver();
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(),
           PluginServiceImpl::GetInstance(),
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
-          widget_helper_));
+          widget_helper_,
+          media_observer));
   channel_->AddFilter(render_message_filter);
   content::BrowserContext* browser_context = GetBrowserContext();
   content::ResourceContext* resource_context =
@@ -471,7 +474,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AudioManager* audio_manager = content::BrowserMainLoop::GetAudioManager();
   channel_->AddFilter(new AudioInputRendererHost(
       resource_context, audio_manager));
-  channel_->AddFilter(new AudioRendererHost(resource_context, audio_manager));
+  channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));
   channel_->AddFilter(new VideoCaptureHost(resource_context, audio_manager));
 #endif
   channel_->AddFilter(new AppCacheDispatcherHost(

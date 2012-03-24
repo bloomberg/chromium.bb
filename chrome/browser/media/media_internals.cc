@@ -13,6 +13,10 @@
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
+MediaInternals* MediaInternals::GetInstance() {
+  return Singleton<MediaInternals>::get();
+}
+
 MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {

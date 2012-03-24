@@ -38,6 +38,7 @@ struct WebScreenInfo;
 
 namespace content {
 class BrowserContext;
+class MediaObserver;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
 }
@@ -73,7 +74,8 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
                       PluginServiceImpl * plugin_service,
                       content::BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
-                      RenderWidgetHelper* render_widget_helper);
+                      RenderWidgetHelper* render_widget_helper,
+                      content::MediaObserver* media_observer);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
@@ -265,6 +267,8 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   int cpu_usage_;
   // Used for sampling CPU usage of the renderer process.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
+
+  content::MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

@@ -21,7 +21,6 @@
 
 class ChromeNetLog;
 class ExtensionEventRouterForwarder;
-class MediaInternals;
 class PrefProxyConfigTrackerImpl;
 class PrefService;
 class SystemURLRequestContextGetter;
@@ -57,13 +56,6 @@ class IOThread : public content::BrowserThreadDelegate {
   struct Globals {
     Globals();
     ~Globals();
-
-    struct MediaGlobals {
-      MediaGlobals();
-      ~MediaGlobals();
-      // MediaInternals singleton used to aggregate media information.
-      scoped_ptr<MediaInternals> media_internals;
-    } media;
 
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     scoped_ptr<net::NetworkDelegate> system_network_delegate;
