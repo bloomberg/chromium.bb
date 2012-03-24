@@ -120,5 +120,5 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
     // Dialog is top level if we don't have a web_contents associated with us.
     parent_window = NULL;
   }
-  browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
+  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 }

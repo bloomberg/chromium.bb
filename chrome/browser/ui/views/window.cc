@@ -27,12 +27,6 @@
 
 namespace browser {
 
-views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
-                                 views::WidgetDelegate* delegate,
-                                 DialogStyle style) {
-  return views::Widget::CreateWindowWithParent(delegate, parent);
-}
-
 views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
                                           views::WidgetDelegate* delegate) {
   return CreateFramelessWindowWithParentAndBounds(delegate,

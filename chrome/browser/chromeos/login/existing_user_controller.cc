@@ -19,9 +19,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
@@ -635,9 +635,8 @@ void ExistingUserController::OnPasswordChangeDetected() {
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
   PasswordChangedView* view = new PasswordChangedView(this, false);
-  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(),
-                                                     view,
-                                                     STYLE_GENERIC);
+  views::Widget* window = views::Widget::CreateWindowWithParent(
+      view, GetNativeWindow());
   window->SetAlwaysOnTop(true);
   window->Show();
 

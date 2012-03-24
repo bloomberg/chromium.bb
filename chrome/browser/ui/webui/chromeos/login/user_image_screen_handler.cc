@@ -186,11 +186,8 @@ void UserImageScreenHandler::OnPhotoAccepted(const SkBitmap& photo) {
 
 void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
   DCHECK(args && args->empty());
-  TakePhotoDialog* take_photo_dialog = new TakePhotoDialog(this);
-  views::Widget* window = browser::CreateViewsWindow(
-      GetNativeWindow(),
-      take_photo_dialog,
-      STYLE_GENERIC);
+  views::Widget* window = views::Widget::CreateWindowWithParent(
+      new TakePhotoDialog(this), GetNativeWindow());
   window->SetAlwaysOnTop(true);
   window->Show();
 }

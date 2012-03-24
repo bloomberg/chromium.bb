@@ -18,11 +18,6 @@ class WidgetDelegate;
 
 namespace browser {
 
-// Create a window for given |delegate| using default frame view.
-views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
-                                 views::WidgetDelegate* delegate,
-                                 DialogStyle style);
-
 // Create a frameless window for given |delegate|.
 views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
                                           views::WidgetDelegate* delegate);

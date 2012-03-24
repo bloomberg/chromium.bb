@@ -32,15 +32,14 @@ void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
     browser = BrowserList::FindTabbedBrowser(browser->profile(), true);
   }
   if (browser) {
-    views::Widget* window = browser::CreateViewsWindow(
-        browser->window()->GetNativeHandle(), view, STYLE_GENERIC);
+    views::Widget* window = views::Widget::CreateWindowWithParent(
+        view, browser->window()->GetNativeHandle());
     window->SetAlwaysOnTop(true);
     window->Show();
   } else {
     // Browser not found, so we should be in login/oobe screen.
-    views::Widget* window = browser::CreateViewsWindow(
-        BaseLoginDisplayHost::default_host()->GetNativeWindow(),
-        view, STYLE_GENERIC);
+    views::Widget* window = views::Widget::CreateWindowWithParent(
+        view, BaseLoginDisplayHost::default_host()->GetNativeWindow());
     window->SetAlwaysOnTop(true);
     window->Show();
   }

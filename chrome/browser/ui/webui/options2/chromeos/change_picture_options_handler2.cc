@@ -152,10 +152,8 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
 
 void ChangePictureOptionsHandler::HandleTakePhoto(const ListValue* args) {
   DCHECK(args && args->empty());
-  views::Widget* window = browser::CreateViewsWindow(
-      GetBrowserWindow(),
-      new TakePhotoDialog(this),
-      STYLE_GENERIC);
+  views::Widget* window = views::Widget::CreateWindowWithParent(
+      new TakePhotoDialog(this), GetBrowserWindow());
   window->SetAlwaysOnTop(true);
   window->Show();
 }

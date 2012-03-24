@@ -140,7 +140,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
       views::MessageBoxView::NO_OPTIONS,
       message,
       string16());
-  browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
+  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 
   // Add reference to be released in DeleteDelegate().
   AddRef();

@@ -38,7 +38,7 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style) {
   HtmlDialogView* html_view = new HtmlDialogView(profile, browser, delegate);
-  browser::CreateViewsWindow(parent, html_view, style);
+  views::Widget::CreateWindowWithParent(html_view, parent);
   html_view->InitDialog();
   html_view->GetWidget()->Show();
   return html_view->GetWidget()->GetNativeWindow();

@@ -1068,8 +1068,8 @@ void NetworkMenu::DoConnect(Network* network) {
     if (vpn->NeedMoreInfoToConnect()) {
       // Show the connection UI if info for a field is missing.
       NetworkConfigView* view = new NetworkConfigView(vpn);
-      views::Widget* window = browser::CreateViewsWindow(
-          delegate()->GetNativeWindow(), view, STYLE_GENERIC);
+      views::Widget* window = views::Widget::CreateWindowWithParent(
+          view, delegate()->GetNativeWindow());
       window->SetAlwaysOnTop(true);
       window->Show();
     } else {
@@ -1083,8 +1083,8 @@ void NetworkMenu::DoConnect(Network* network) {
     if (wifi->IsPassphraseRequired()) {
       // Show the connection UI if we require a passphrase.
       NetworkConfigView* view = new NetworkConfigView(wifi);
-      views::Widget* window = browser::CreateViewsWindow(
-          delegate()->GetNativeWindow(), view, STYLE_GENERIC);
+      views::Widget* window = views::Widget::CreateWindowWithParent(
+          view, delegate()->GetNativeWindow());
       window->SetAlwaysOnTop(true);
       window->Show();
     } else {
@@ -1117,8 +1117,8 @@ void NetworkMenu::ToggleCellular() {
 
 void NetworkMenu::ShowOtherWifi() {
   NetworkConfigView* view = new NetworkConfigView(TYPE_WIFI);
-  views::Widget* window = browser::CreateViewsWindow(
-      delegate_->GetNativeWindow(), view, STYLE_GENERIC);
+  views::Widget* window = views::Widget::CreateWindowWithParent(
+      view, delegate_->GetNativeWindow());
   window->SetAlwaysOnTop(true);
   window->Show();
 }

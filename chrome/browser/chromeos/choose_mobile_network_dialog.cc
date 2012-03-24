@@ -41,7 +41,7 @@ void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   HtmlDialogView* html_view =
       new HtmlDialogView(profile, browser, new ChooseMobileNetworkDialog);
   html_view->InitDialog();
-  browser::CreateViewsWindow(owning_window, html_view, STYLE_FLUSH);
+  views::Widget::CreateWindowWithParent(html_view, owning_window);
   html_view->GetWidget()->Show();
 }
 

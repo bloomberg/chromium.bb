@@ -1158,7 +1158,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView* view =
       new DownloadInProgressDialogView(browser_.get());
-  browser::CreateViewsWindow(GetNativeHandle(), view, STYLE_GENERIC)->Show();
+  views::Widget::CreateWindowWithParent(view, GetNativeHandle())->Show();
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(

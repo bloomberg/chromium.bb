@@ -102,7 +102,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
       l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name),
       string16(),
       kDialogWidth);
-  browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
+  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

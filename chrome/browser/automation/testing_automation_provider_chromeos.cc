@@ -1185,8 +1185,8 @@ void TestingAutomationProvider::CaptureProfilePhoto(
   take_photo_dialog->AddObserver(new PhotoCaptureObserver(
       this, reply_message));
 
-  views::Widget* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(), take_photo_dialog, STYLE_GENERIC);
+  views::Widget* window = views::Widget::CreateWindowWithParent(
+      take_photo_dialog, browser->window()->GetNativeHandle());
   window->SetAlwaysOnTop(true);
   window->Show();
 }

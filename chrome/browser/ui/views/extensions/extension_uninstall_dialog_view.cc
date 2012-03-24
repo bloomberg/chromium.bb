@@ -122,9 +122,8 @@ void ExtensionUninstallDialogViews::Show() {
   }
 
   view_ = new ExtensionUninstallDialogDelegateView(this, extension_, &icon_);
-  browser::CreateViewsWindow(window->GetNativeHandle(),
-                             view_,
-                             STYLE_GENERIC)->Show();
+  views::Widget::CreateWindowWithParent(
+      view_, window->GetNativeHandle())->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {

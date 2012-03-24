@@ -137,15 +137,10 @@ views::View* OneClickSigninDialogView::GetContentsView() {
 
 }  // namespace
 
-
-void ShowOneClickSigninDialog(
-    gfx::NativeWindow parent_window,
-    const OneClickAcceptCallback& accept_callback) {
+void ShowOneClickSigninDialog(gfx::NativeWindow parent_window,
+                              const OneClickAcceptCallback& accept_callback) {
   OneClickSigninDialogView* dialog =
       new OneClickSigninDialogView(accept_callback);
 
-  views::Widget* window = browser::CreateViewsWindow(
-      parent_window, dialog, STYLE_GENERIC);
-
-  window->Show();
+  views::Widget::CreateWindowWithParent(dialog, parent_window)->Show();
 }

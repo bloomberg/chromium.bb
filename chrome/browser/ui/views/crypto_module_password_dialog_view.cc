@@ -11,8 +11,8 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -167,8 +167,7 @@ void ShowCryptoModulePasswordDialog(
   CryptoModulePasswordDialogView* dialog =
       new CryptoModulePasswordDialogView(
           slot_name, reason, server, callback);
-  views::Widget* widget = CreateViewsWindow(NULL, dialog, STYLE_GENERIC);
-  widget->Show();
+  views::Widget::CreateWindowWithParent(dialog, NULL)->Show();
 }
 
 }  // namespace browser

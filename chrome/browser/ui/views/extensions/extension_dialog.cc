@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
-#include "chrome/browser/ui/views/window.h"  // CreateViewsWindow
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -154,12 +154,7 @@ void ExtensionDialog::InitWindowFullscreen() {
 
 void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
   gfx::NativeWindow parent = browser->window()->GetNativeHandle();
-#if defined(OS_CHROMEOS)
-  DialogStyle style = STYLE_FLUSH;
-#else
-  DialogStyle style = STYLE_GENERIC;
-#endif
-  window_ = browser::CreateViewsWindow(parent, this, style);
+  window_ = views::Widget::CreateWindowWithParent(this, parent);
 
   // Center the window over the browser.
   gfx::Point center = browser->window()->GetBounds().CenterPoint();
