@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -104,21 +106,33 @@ FilePath GetPepperFlashBaseDirectory() {
 
 // Pepper Flash plugins have the version encoded in the path itself
 // so we need to enumerate the directories to find the full path.
-// On success it returns something like:
+// On success, |latest_dir| returns something like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\10.3.44.555\.
-bool GetLatestPepperFlashDirectory(FilePath* result, Version* latest) {
-  *result = GetPepperFlashBaseDirectory();
+// |latest_version| returns the corresponding version number. |older_dirs|
+// returns directories of all older versions.
+bool GetPepperFlashDirectory(FilePath* latest_dir,
+                             Version* latest_version,
+                             std::vector<FilePath>* older_dirs) {
+  FilePath base_dir = GetPepperFlashBaseDirectory();
   bool found = false;
   file_util::FileEnumerator
-      file_enumerator(*result, false, file_util::FileEnumerator::DIRECTORIES);
+      file_enumerator(base_dir, false, file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
       continue;
-    if (version.CompareTo(*latest) > 0) {
-      *latest = version;
-      *result = path;
+    if (found) {
+      if (version.CompareTo(*latest_version) > 0) {
+        older_dirs->push_back(*latest_dir);
+        *latest_dir = path;
+        *latest_version = version;
+      } else {
+        older_dirs->push_back(path);
+      }
+    } else {
+      *latest_dir = path;
+      *latest_version = version;
       found = true;
     }
   }
@@ -339,7 +353,8 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   }
 
   Version version(kNullVersion);
-  if (GetLatestPepperFlashDirectory(&path, &version)) {
+  std::vector<FilePath> older_dirs;
+  if (GetPepperFlashDirectory(&path, &version, &older_dirs)) {
     path = path.Append(chrome::kPepperFlashPluginFilename);
     if (file_util::PathExists(path)) {
       BrowserThread::PostTask(
@@ -353,6 +368,12 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FinishPepperFlashUpdateRegistration, cus, version));
+
+  // Remove older versions of Pepper Flash.
+  for (std::vector<FilePath>::iterator iter = older_dirs.begin();
+       iter != older_dirs.end(); ++iter) {
+    file_util::Delete(*iter, true);
+  }
 }
 
 }  // namespace
