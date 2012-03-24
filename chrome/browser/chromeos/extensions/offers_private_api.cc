@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -30,6 +31,30 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+// For a given coupon type, returns the coupon code value from the underlying
+// system.
+std::string GetValueForCouponType(std::string& type) {
+  // Possible ECHO code type and corresponding key name in StatisticsProvider.
+  const std::string kCouponType = "COUPON_CODE";
+  const std::string kCouponCodeKey = "ubind_attribute";
+  const std::string kGroupType = "GROUP_CODE";
+  const std::string kGroupCodeKey = "gbind_attribute";
+
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  std::string result;
+  if (type == kCouponType)
+    provider->GetMachineStatistic(kCouponCodeKey, &result);
+  else if (type == kGroupType)
+    provider->GetMachineStatistic(kGroupCodeKey, &result);
+  return result;
+}
+
+}  // namespace
+
+
 GetCouponCodeFunction::GetCouponCodeFunction() {
 }
 
@@ -37,18 +62,9 @@ GetCouponCodeFunction::~GetCouponCodeFunction() {
 }
 
 bool GetCouponCodeFunction::RunImpl() {
-  // TODO(gauravsh): Stub code to return until underlying code look up is
-  //                 hooked up on Chrome OS.
-  const std::string stub_code = "deadbeef";
-  const std::string kCouponType = "COUPON_CODE";
-  const std::string kGroupType = "GROUP_CODE";
-
   std::string type;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &type));
-  if (type == kCouponType || type == kGroupType)
-    result_.reset(Value::CreateStringValue(stub_code));
-  else
-    result_.reset(Value::CreateStringValue(""));
+  result_.reset(Value::CreateStringValue(GetValueForCouponType(type)));
   return true;
 }
 
