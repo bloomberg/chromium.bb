@@ -9,6 +9,9 @@
 #include "base/basictypes.h"
 #include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+// The above is to include the ENABLE_NEW_DOM_STORAGE_BACKEND flag
+// in all consumers.
 
 class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  public:
@@ -24,10 +27,6 @@ class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   virtual void close();
 
  private:
-  // Used during lazy initialization of namespace_id_.
-  const DOMStorageType storage_type_;
-
-  // Our namespace ID.
   int64 namespace_id_;
 };
 

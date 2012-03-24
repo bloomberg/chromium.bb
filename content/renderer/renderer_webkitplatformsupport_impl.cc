@@ -311,21 +311,29 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
 WebStorageNamespace*
 RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebString& path, unsigned quota) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
+#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createLocalStorageNamespace(path, quota);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
+#endif
 }
 
 void RendererWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
     const WebKit::WebURL& url, bool is_local_storage) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  NOTREACHED();
+#else
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   // Inefficient, but only used in single process mode.
   scoped_ptr<WebStorageEventDispatcher> event_dispatcher(
       WebStorageEventDispatcher::create());
   event_dispatcher->dispatchStorageEvent(key, old_value, new_value, origin,
                                          url, is_local_storage);
+#endif
 }
 
 //------------------------------------------------------------------------------

@@ -1560,11 +1560,17 @@ RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
     unsigned quota) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
+                                             session_storage_namespace_id_);
+#else
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace(quota);
   CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
                                              session_storage_namespace_id_);
+#endif
 }
 
 WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(

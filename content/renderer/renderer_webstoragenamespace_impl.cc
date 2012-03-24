@@ -13,15 +13,13 @@ using WebKit::WebString;
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type)
-    : storage_type_(storage_type),
-      namespace_id_(kLocalStorageNamespaceId) {
+    : namespace_id_(kLocalStorageNamespaceId) {
   DCHECK(storage_type == DOM_STORAGE_LOCAL);
 }
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type, int64 namespace_id)
-    : storage_type_(storage_type),
-      namespace_id_(namespace_id) {
+    : namespace_id_(namespace_id) {
   DCHECK(storage_type == DOM_STORAGE_SESSION);
 }
 
