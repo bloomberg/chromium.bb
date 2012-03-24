@@ -1140,7 +1140,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
 
   // Extension with no manifest version cannot use storage API.
   {
-    Manifest manifest(base_manifest.DeepCopy(), "test");
+    Manifest manifest(&base_manifest, "test");
     LoadAndExpectError(manifest, kManifestVersionError);
   }
 
@@ -1150,7 +1150,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.SetInteger(keys::kManifestVersion, 1);
     manifest_with_version.MergeDictionary(&base_manifest);
 
-    Manifest manifest(manifest_with_version.DeepCopy(), "test");
+    Manifest manifest(&manifest_with_version, "test");
     LoadAndExpectError(manifest, kManifestVersionError);
   }
 
@@ -1160,7 +1160,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.SetInteger(keys::kManifestVersion, 2);
     manifest_with_version.MergeDictionary(&base_manifest);
 
-    Manifest manifest(manifest_with_version.DeepCopy(), "test");
+    Manifest manifest(&manifest_with_version, "test");
     LoadAndExpectSuccess(manifest);
   }
 }
