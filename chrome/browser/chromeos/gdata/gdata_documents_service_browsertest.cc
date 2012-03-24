@@ -34,6 +34,10 @@ class GDataTest : public InProcessBrowserTest {
         net::TestServer::kGDataAuthToken);
   }
 
+  virtual void CleanUpOnMainThread() {
+    service_.reset();
+  }
+
  protected:
   FilePath GetTestCachedFilePath(const FilePath& file_name) {
     return browser()->profile()->GetPath().Append(file_name);
