@@ -328,7 +328,7 @@ deps = {
     "/trunk/deps/third_party/undoview@119694",
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@123141",
+    "/trunk/tools/deps2git@128331",
 }
 
 
