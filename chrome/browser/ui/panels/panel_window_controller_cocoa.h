@@ -43,6 +43,7 @@ class PanelBrowserWindowCocoa;
   BOOL playingMinimizeAnimation_;
   float animationStopToShowTitlebarOnly_;
   BOOL canBecomeKeyWindow_;
+  scoped_nsobject<NSView> overlayView_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

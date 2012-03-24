@@ -137,6 +137,11 @@ enum {
    Panel* panel_;
    NSPoint startMouseLocationScreen_;
    PanelDragState dragState_;
+   scoped_nsobject<NSCursor> dragCursor_;
+   scoped_nsobject<NSCursor> eastWestCursor_;
+   scoped_nsobject<NSCursor> northSouthCursor_;
+   scoped_nsobject<NSCursor> northEastSouthWestCursor_;
+   scoped_nsobject<NSCursor> northWestSouthEastCursor_;
 }
 @end
 
@@ -144,6 +149,26 @@ enum {
 - (PanelResizeByMouseOverlay*)initWithFrame:(NSRect)frame panel:(Panel*)panel {
   if ((self = [super initWithFrame:frame])) {
     panel_ = panel;
+    // Initialize resize cursors, they are very likely to be needed so it's
+    // better to pre-init them then stutter the mouse later when it hovers over
+    // a resize edge. We use WebKit cursors that look similar to what OSX Lion
+    // uses. NSCursor class does not yet have support for those new cursors.
+    NSImage* image = gfx::GetCachedImageWithName(@"eastWestResizeCursor.png");
+    DCHECK(image);
+    eastWestCursor_.reset(
+        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
+    image = gfx::GetCachedImageWithName(@"northSouthResizeCursor.png");
+    DCHECK(image);
+    northSouthCursor_.reset(
+        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
+    image = gfx::GetCachedImageWithName(@"northEastSouthWestResizeCursor.png");
+    DCHECK(image);
+    northEastSouthWestCursor_.reset(
+        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
+    image = gfx::GetCachedImageWithName(@"northWestSouthEastResizeCursor.png");
+    DCHECK(image);
+    northWestSouthEastCursor_.reset(
+        [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(8,8)]);
   }
   return self;
 }
@@ -160,7 +185,7 @@ enum {
   // |point| is in coordinate system of the parent view.
 - (NSView*)hitTest:(NSPoint)point {
   // If panel is not resizable, let the mouse events fall through.
-  if (!panel_->panel_strip()->CanResizePanel(panel_))
+  if (!panel_->CanResizeByMouse())
     return nil;
 
   // Grab the view which coordinate system is used for hit-testing.
@@ -182,22 +207,16 @@ enum {
 - (void)mouseDown:(NSEvent*)event {
   // If the panel is not resizable, hitTest should have failed and no mouse
   // events should have came here.
-  DCHECK(panel_->panel_strip()->CanResizePanel(panel_));
-  dragState_ = PANEL_DRAG_CAN_START;
-  startMouseLocationScreen_ =
-    [[event window] convertBaseToScreen:[event locationInWindow]];
+  DCHECK(panel_->CanResizeByMouse());
+  [self prepareForDrag:event];
 }
 
 - (void)mouseUp:(NSEvent*)event {
-  // The mouseUp while in resize should be processed by nested message loop
+  // The mouseUp while in drag should be processed by nested message loop
   // in mouseDragged: method.
   DCHECK(dragState_ != PANEL_DRAG_IN_PROGRESS);
-}
-
-- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
-  float deltaX = fabs(startMouseLocationScreen_.x - mouseLocation.x);
-  float deltaY = fabs(startMouseLocationScreen_.y - mouseLocation.y);
-  return deltaX > kDragThreshold || deltaY > kDragThreshold;
+  // Cleanup in case the actual drag was not started (because of threshold).
+  [self cleanupAfterDrag];
 }
 
 - (void)mouseDragged:(NSEvent*)event {
@@ -210,34 +229,36 @@ enum {
   const NSUInteger mask =
       NSLeftMouseUpMask | NSLeftMouseDraggedMask | NSKeyUpMask |
       NSRightMouseDownMask | NSKeyDownMask ;
-  BOOL keepGoing = YES;
 
-  while (keepGoing) {
+  while (true) {
     base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    NSEvent* event = [NSApp nextEventMatchingMask:mask
-                                        untilDate:[NSDate distantFuture]
-                                           inMode:NSDefaultRunLoopMode
-                                          dequeue:YES];
+    BOOL keepGoing = YES;
 
     switch ([event type]) {
       case NSLeftMouseDragged: {
+        // Set the resize cursor on every mouse drag event in case the mouse
+        // wandered outside the window and was switched to another one.
+        // This does not produce flicker, seems the real cursor is updated after
+        // mouseDrag is processed.
+        [dragCursor_ set];
+
+        // If drag didn't start yet, see if mouse moved far enough to start it.
+        if (dragState_ == PANEL_DRAG_CAN_START && ![self tryStartDrag:event])
+          return;
+
+        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
         // Get current mouse location in Cocoa's screen coordinates.
         NSPoint mouseLocation =
             [[event window] convertBaseToScreen:[event locationInWindow]];
-        if (dragState_ == PANEL_DRAG_CAN_START) {
-          if (![self exceedsDragThreshold:mouseLocation])
-            return;  // Don't start real drag yet.
-          [self startResize:mouseLocation];
-        }
-        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-        [self resize:mouseLocation];
+        [self resizeByMouse:mouseLocation];
         break;
       }
 
       case NSKeyUp:
         if ([event keyCode] == kVK_Escape) {
-          [self endResize:YES];
+          // The drag might not be started yet because of threshold, so check.
+          if (dragState_ == PANEL_DRAG_IN_PROGRESS)
+            [self endResize:YES];
           keepGoing = NO;
         }
         break;
@@ -259,13 +280,66 @@ enum {
         // at once when the drag ends.
         break;
     }
+
+    if (!keepGoing)
+      break;
+
+    autorelease_pool.Recycle();
+
+    event = [NSApp nextEventMatchingMask:mask
+                               untilDate:[NSDate distantFuture]
+                                  inMode:NSDefaultRunLoopMode
+                                 dequeue:YES];
+
   }
+  [self cleanupAfterDrag];
+}
+
+- (void)prepareForDrag:(NSEvent*)initialMouseDownEvent {
+  dragState_ = PANEL_DRAG_CAN_START;
+  NSWindow* window = [initialMouseDownEvent window];
+  startMouseLocationScreen_ =
+    [window convertBaseToScreen:[initialMouseDownEvent locationInWindow]];
+
+  // Make sure the cursor stays the same during whole resize operation.
+  // The cursor rects normally do not guarantee the same cursor, since the
+  // mouse may temporarily leave the cursor rect area (or even the window) so
+  // the cursor will flicker. Disable cursor rects and grab the current cursor
+  // so we can set it on mouseDragged: events to avoid flicker.
+  [[self window] disableCursorRects];
+  dragCursor_.reset([NSCursor currentCursor], scoped_policy::RETAIN);
+}
+
+-(void)cleanupAfterDrag {
+  dragState_ = PANEL_DRAG_SUPPRESSED;
+  [[self window] enableCursorRects];
+  dragCursor_.reset();
+  startMouseLocationScreen_ = NSZeroPoint;
+}
+
+- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
+  float deltaX = fabs(startMouseLocationScreen_.x - mouseLocation.x);
+  float deltaY = fabs(startMouseLocationScreen_.y - mouseLocation.y);
+  return deltaX > kDragThreshold || deltaY > kDragThreshold;
+}
+
+- (BOOL)tryStartDrag:(NSEvent*)event {
+  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
+  NSPoint mouseLocation =
+      [[event window] convertBaseToScreen:[event locationInWindow]];
+
+  if (![self exceedsDragThreshold:mouseLocation])
+    return NO;
+
+  // Mouse moved over threshold, start drag.
+  dragState_ = PANEL_DRAG_IN_PROGRESS;
+  [self startResize:startMouseLocationScreen_];
+  return YES;
 }
 
 // |initialMouseLocation| is in screen coordinates.
 - (void)startResize:(NSPoint)initialMouseLocation {
-  DCHECK(dragState_ == PANEL_DRAG_CAN_START);
-  dragState_ = PANEL_DRAG_IN_PROGRESS;
+  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
 
   // TODO(dimich): move IsMouseNearFrameSide helper here and make sure it uses
   // correct methods to detect edges, to avoid 1-px errors on the boundaries.
@@ -283,18 +357,65 @@ enum {
       side);
 }
 
-- (void)endResize:(BOOL)cancelled {
-  if (dragState_ == PANEL_DRAG_IN_PROGRESS)
-    panel_->manager()->EndResizingByMouse(cancelled);
-  dragState_ = PANEL_DRAG_SUPPRESSED;
-}
-
 // |initialMouseLocation| is in screen coordinates.
-- (void)resize:(NSPoint)mouseLocation {
-  if (dragState_ != PANEL_DRAG_IN_PROGRESS)
-    return;
+- (void)resizeByMouse:(NSPoint)mouseLocation {
+  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
   panel_->manager()->ResizeByMouse(
       cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocation));
+}
+
+- (void)endResize:(BOOL)cancelled {
+  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+  panel_->manager()->EndResizingByMouse(cancelled);
+}
+
+-(void)resetCursorRects
+{
+  if(!panel_->CanResizeByMouse())
+    return;
+
+  NSRect bounds = [self bounds];
+
+  // Left vertical edge.
+  NSRect rect = NSMakeRect(NSMinX(bounds),
+                           NSMinY(bounds) + kWidthOfMouseResizeArea,
+                           kWidthOfMouseResizeArea,
+                           NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
+  [self addCursorRect:rect cursor:eastWestCursor_];
+
+  // Right vertical edge.
+  rect.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+  [self addCursorRect:rect cursor:eastWestCursor_];
+
+  // Top horizontal edge.
+  rect = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
+                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                    NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
+                    kWidthOfMouseResizeArea);
+  [self addCursorRect:rect cursor:northSouthCursor_];
+
+  // Bottom horizontal edge.
+  rect.origin.y = NSMinY(bounds);
+  [self addCursorRect:rect cursor:northSouthCursor_];
+
+  // Top left corner.
+  rect = NSMakeRect(NSMinX(bounds),
+                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                    kWidthOfMouseResizeArea,
+                    NSMaxY(bounds));
+  [self addCursorRect:rect cursor:northWestSouthEastCursor_];
+
+  // Top right corner.
+  rect.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+  [self addCursorRect:rect cursor:northEastSouthWestCursor_];
+
+  // Bottom right corner.
+  rect.origin.y = NSMinY(bounds);
+  [self addCursorRect:rect cursor:northWestSouthEastCursor_];
+
+  // Bottom left corner.
+  rect.origin.x = NSMinX(bounds);
+  [self addCursorRect:rect cursor:northEastSouthWestCursor_];
 }
 @end
 
@@ -369,12 +490,12 @@ enum {
   // events - for example, user-resizing.
   NSView* superview = [[window contentView] superview];
   NSRect bounds = [superview bounds];
-  scoped_nsobject<PanelResizeByMouseOverlay> overlay(
+  overlayView_.reset(
       [[PanelResizeByMouseOverlay alloc] initWithFrame:bounds
                                                  panel:windowShim_->panel()]);
     // Set autoresizing behavior: glued to edges.
-  [overlay setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
-  [superview addSubview:overlay positioned:NSWindowAbove relativeTo:nil];
+  [overlayView_ setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
+  [superview addSubview:overlayView_ positioned:NSWindowAbove relativeTo:nil];
 }
 
 - (void)mouseEntered:(NSEvent*)event {
@@ -923,7 +1044,9 @@ enum {
 }
 
 - (void)enableResizeByMouse:(BOOL)enable {
-  // TODO(dimich): enable/disable the cursor rects here.
+  if (![self isWindowLoaded])
+    return;
+  [[self window] invalidateCursorRectsForView:overlayView_];
 }
 
 @end
