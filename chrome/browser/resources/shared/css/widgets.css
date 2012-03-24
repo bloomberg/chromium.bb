@@ -101,6 +101,10 @@ input:not([type]) {
   height: 2em;
   margin: 0;
   padding: 3px;
+<if expr="is_win">
+  /* For better alignment between adjacent buttons and inputs. */
+  padding-bottom: 4px;
+</if>
 <if expr="pp_ifdef('chromeos')">
   /* For better alignment between adjacent buttons and inputs. */
   padding-bottom: 2px;

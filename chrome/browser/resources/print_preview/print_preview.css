@@ -256,9 +256,10 @@ label {
 
 #increment,
 #decrement {
-  -webkit-padding-end: 8px;
-  -webkit-padding-start: 8px;
+  -webkit-padding-end: 0;
+  -webkit-padding-start: 0;
   font-weight: 600;
+  margin: 0;
   min-width: 0;
   position: relative;
   width: 2em;
