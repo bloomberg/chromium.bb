@@ -295,13 +295,8 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RVH swap or unload handler.
     SetSwappedOut(false);
-#if defined(OS_CHROMEOS)
-    // crosbug.com/26646.
-    bool sent = Send(nav_message);
-    LOG(ERROR) << "Navigation url=" << params.url << ", sent=" << sent;
-#else
+
     Send(nav_message);
-#endif
   }
 
   // Force the throbber to start. We do this because WebKit's "started

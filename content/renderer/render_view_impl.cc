@@ -555,10 +555,6 @@ RenderViewImpl::RenderViewImpl(
       webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  LOG(ERROR) << "RenderViewImpl created";
-#endif
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -855,13 +851,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  LOG(ERROR) << "OnNavigate: url=" << params.url
-             << ", webview=" << webview()
-             << ", reload=" << IsReload(params)
-             << ", paerams.state.empty=" << params.state.empty();
-#endif
   MaybeHandleDebugURL(params.url);
   if (!webview())
     return;
