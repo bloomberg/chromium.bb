@@ -8,6 +8,7 @@
 
 #include <queue>
 #include <string>
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -62,24 +63,23 @@ class GDataSyncClient : public GDataSyncClientInterface {
                               const std::string& md5) OVERRIDE;
 
   // Starts scanning the pinned directory in the cache to collect
-  // pinned-but-not-fetched files.
+  // pinned-but-not-fetched files. |closure| is run on the calling thread
+  // once the initial scan is complete.
   //
   // TODO(satorux): This function isn't used yet in the production code.
   // We should get notified about completion of the cache initialization, and
   // call this function.
-  void StartInitialScan();
-
-  // Runs all pending operations on the background thread, and blocks until
-  // they are complete. Used only for testing.
-  void FlushForTesting();
+  void StartInitialScan(const base::Closure& closure);
 
   // Returns the contents of |queue_|. Used only for testing.
   std::vector<std::string> GetResourceIdInQueueForTesting();
 
  private:
   // Called when the initial scan is complete. Receives the resource IDs of
-  // pinned-but-not-fetched files as |resource_ids|.
-  void OnInitialScanComplete(std::vector<std::string>* resource_ids);
+  // pinned-but-not-fetched files as |resource_ids|. |closure| is run at the
+  // end.
+  void OnInitialScanComplete(const base::Closure& closure,
+                             std::vector<std::string>* resource_ids);
 
   GDataFileSystemInterface* file_system_;
 

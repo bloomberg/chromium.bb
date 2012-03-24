@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,7 +23,7 @@ using ::testing::_;
 namespace gdata {
 
 class GDataSyncClientTest : public testing::Test {
- protected:
+ public:
   GDataSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         mock_file_system_(new MockGDataFileSystem),
@@ -43,6 +44,12 @@ class GDataSyncClientTest : public testing::Test {
     sync_client_->Initialize();
   }
 
+  // Called when StartInitialScan() is complete.
+  void OnInitialScanComplete() {
+    message_loop_.Quit();
+  }
+
+ protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   ScopedTempDir temp_dir_;
@@ -68,9 +75,11 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
           test_file_path,
           temp_dir_.path().Append("resource_id_fetched")));
 
-  sync_client_->StartInitialScan();
-  sync_client_->FlushForTesting();
-  message_loop_.RunAllPending();
+  sync_client_->StartInitialScan(
+      base::Bind(&GDataSyncClientTest::OnInitialScanComplete,
+                 base::Unretained(this)));
+  // Wait until the initial scan is complete.
+  message_loop_.Run();
 
   // Check the contents of the queue.
   std::vector<std::string> resource_ids =

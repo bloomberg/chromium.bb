@@ -83,8 +83,9 @@ void GDataSyncClient::Initialize() {
   file_system_->AddObserver(this);
 }
 
-void GDataSyncClient::StartInitialScan() {
+void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!closure.is_null());
 
   // Start scanning the pinned directory in the cache.
   std::vector<std::string>* resource_ids = new std::vector<std::string>;
@@ -96,12 +97,9 @@ void GDataSyncClient::StartInitialScan() {
                      resource_ids),
           base::Bind(&GDataSyncClient::OnInitialScanComplete,
                      weak_ptr_factory_.GetWeakPtr(),
+                     closure,
                      base::Owned(resource_ids)));
   DCHECK(posted);
-}
-
-void GDataSyncClient::FlushForTesting() {
-  BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 std::vector<std::string> GDataSyncClient::GetResourceIdInQueueForTesting() {
@@ -137,6 +135,7 @@ void GDataSyncClient::OnFileUnpinned(const std::string& resource_id,
 }
 
 void GDataSyncClient::OnInitialScanComplete(
+    const base::Closure& closure,
     std::vector<std::string>* resource_ids) {
   DCHECK(resource_ids);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -146,6 +145,8 @@ void GDataSyncClient::OnInitialScanComplete(
     DVLOG(1) << "Queuing " << resource_id;
     queue_.push(resource_id);
   }
+
+  closure.Run();
 }
 
 }  // namespace gdata
