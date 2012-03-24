@@ -2289,6 +2289,125 @@ are declared in build/common.gypi.
                desc="The download experienced an error and was interrupted, size downloaded/total.">
         <ph name="DOWNLOAD_RECEIVED">$1<ex>54kB</ex></ph>/<ph name="DOWNLOAD_TOTAL">$2<ex>154MB</ex></ph>, Interrupted
       </message>
+      <!-- Download Error Messages-->
+      <!-- *_STATUS_*: Short message in the download on the shelf.-->
+      <!-- *_DESCRIPTION_*: Corresponding more descriptive message on the download page.-->
+      <message name="IDS_DOWNLOAD_RECEIVED_SIZE"
+               desc="The size downloaded/total.">
+        <ph name="DOWNLOAD_RECEIVED">$1<ex>54kB</ex></ph>/<ph name="DOWNLOAD_TOTAL">$2<ex>154MB</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS"
+               desc="The download experienced an error and was interrupted, size downloaded/total.">
+        Download Error
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION"
+               desc="Download page message: Generic.">
+        Oh no! Something broke while Chrome was downloading the file.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED"
+               desc="Cannot write to the directory/file due to insufficient permissions. Please select another directory.">
+        Insufficient Permissions
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED"
+               desc="Download page message: Access Denied.">
+        Cannot save due to insufficient permissions. Please save to another location.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_PATH_TOO_LONG"
+               desc="The file path name is too long.  Please select another location or name.">
+        Path Too Long
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_PATH_TOO_LONG"
+               desc="Download page message: Path Too Long.">
+        The file path or name is too long.  Please save with a shorter name or to another location.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_DISK_FULL"
+               desc="There is not enough room on the disk to download this file.  Please choose another disk or delete files to make more room.">
+        Disk Full
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_DISK_FULL"
+               desc="Download page message: Disk Full.">
+        Your hard disk is full.  Please save to another location or make more room on the hard disk.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_LARGE"
+               desc="The file is too large for the file system.">
+        File Too Large
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_LARGE"
+               desc="Download page message: File too large.">
+        The file is too large for your computer to handle. Sorry.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_TEMPORARY_PROBLEM"
+               desc="There was a problem saving the file.  Please try again later.">
+        System Busy
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_TEMPORARY_PROBLEM"
+               desc="Download page message: Temporary problem.">
+        Your computer is doing too many things right now.  Try again later.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_VIRUS"
+               desc="This file contains a virus.  We recommend not downloading it.">
+        Virus Detected
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_VIRUS"
+               desc="Download page message: Virus.">
+        This file was blocked by anti-virus software.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
+               desc="Network Timeout.">
+        Network Timeout
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_TIMEOUT"
+               desc="Download page message: Network Timeout.">
+        The download was taking too long and was stopped by the network.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_DISCONNECTED"
+               desc="Network Disconnected.">
+        Network Disconnected
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_DISCONNECTED"
+               desc="Download page message: Network Disconnected.">
+        Internet disconnected. Please check your internet connection and try again.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_DOWN"
+               desc="The server is down.">
+        Server Unavailable
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_DOWN"
+               desc="Download page message: The server is down.">
+        Server unavailable.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR"
+               desc="Network error.">
+        Network Error
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR"
+               desc="Download page message: Network error.">
+        Unknown network error.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NO_FILE"
+               desc="File not found on server.">
+        No File
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NO_FILE"
+               desc="Download page message: File not found on server.">
+        The server could not find the file.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_PROBLEM"
+               desc="Server problem.">
+        Server Problem
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_PROBLEM"
+               desc="Download page message: Server problem.">
+        Unknown server error. Please try again, or contact the server administrator.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_SHUTDOWN"
+               desc="Shutdown.">
+        Shutdown
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SHUTDOWN"
+               desc="Download page message: Shutdown.">
+        The browser was shut down before the download completed.
+      </message>
 
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_STARTING"
