@@ -210,6 +210,7 @@ Gallery.prototype.initDom_ = function() {
 
   this.errorWrapper_ = this.document_.createElement('div');
   this.errorWrapper_.className = 'prompt-wrapper';
+  this.errorWrapper_.setAttribute('pos', 'center');
   this.container_.appendChild(this.errorWrapper_);
 
   this.errorBanner_ = this.document_.createElement('div');
@@ -547,7 +548,7 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
 
     self.showSpinner_(false);
     if (loadType == ImageView.LOAD_TYPE_ERROR) {
-      self.showErrorBanner_('IMAGE_ERROR');
+      self.showErrorBanner_(video? 'VIDEO_ERROR' : 'IMAGE_ERROR');
     }
 
     if (video) {

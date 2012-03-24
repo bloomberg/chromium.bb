@@ -186,11 +186,20 @@ ImageView.prototype.load = function(
     var video = this.document_.createElement('video');
     if (metadata.thumbnailURL) {
       video.setAttribute('poster', metadata.thumbnailURL);
+      this.replace(video, slide); // Show the poster immediately.
     }
+    video.addEventListener('loadedmetadata', onVideoLoad);
+    video.addEventListener('error', onVideoLoad);
+
     video.src = metadata.contentURL || source;
     video.load();
-    displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, slide,
-        false /* no preview */, video);
+
+    function onVideoLoad() {
+      video.removeEventListener('loadedmetadata', onVideoLoad);
+      video.removeEventListener('error', onVideoLoad);
+      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, slide,
+          !!metadata.thumbnailURL /* preview shown */, video);
+    }
     return;
   }
   var readyContent = this.getReadyContent(id, source);
@@ -279,12 +288,19 @@ ImageView.prototype.load = function(
   }
 
   function displayMainImage(loadType, slide, previewShown, content) {
-    if (!loadingVideo && content.width == 0) {
+    if ((!loadingVideo && !content.width) ||
+        (loadingVideo && !content.duration)) {
       loadType = ImageView.LOAD_TYPE_ERROR;
     }
 
-    // If there is no main image we keep the preview displayed.
-    if (loadType != ImageView.LOAD_TYPE_ERROR || !previewShown) {
+    // If we already displayed the preview we should not replace the content if:
+    //   1. The full content failed to load.
+    //     or
+    //   2. We are loading a video (because the full video is displayed in the
+    //      same HTML element as the preview).
+    if (!(previewShown &&
+        (loadType == ImageView.LOAD_TYPE_ERROR ||
+         loadType == ImageView.LOAD_TYPE_VIDEO_FILE))) {
       self.replace(content, slide);
     }
 
