@@ -1004,7 +1004,6 @@ TEST_F(ExtensionManifestTest, FileBrowserHandlers) {
 
   scoped_refptr<Extension> extension(
       LoadAndExpectSuccess("filebrowser_valid.json"));
-  ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->file_browser_handlers() != NULL);
   ASSERT_EQ(extension->file_browser_handlers()->size(), 1U);
   const FileBrowserHandler* action =

@@ -19,9 +19,9 @@
 
 namespace fileapi {
 
-const char kPersistentDir[] = "/persistent";
-const char kTemporaryDir[] = "/temporary";
-const char kExternalDir[] = "/external";
+const char kPersistentDir[] = "/persistent/";
+const char kTemporaryDir[] = "/temporary/";
+const char kExternalDir[] = "/external/";
 
 const char kPersistentName[] = "Persistent";
 const char kTemporaryName[] = "Temporary";
@@ -32,45 +32,62 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
   GURL origin;
   FileSystemType file_system_type;
 
-  if (!url.is_valid() || !url.SchemeIsFileSystem())
+  if (url.scheme() != "filesystem")
     return false;
-  DCHECK(url.inner_url());
 
-  std::string inner_path = url.inner_url()->path();
-  if (inner_path.compare(
-      0, arraysize(kPersistentDir) - 1, kPersistentDir) == 0) {
+  std::string temp = url.path();
+  // TODO(ericu): This should probably be done elsewhere after the stackable
+  // layers are properly in.  We're supposed to reject any paths that contain
+  // '..' segments, but the GURL constructor is helpfully resolving them for us.
+  // Make sure there aren't any before we call it.
+  size_t pos = temp.find("..");
+  for (; pos != std::string::npos; pos = temp.find("..", pos + 1)) {
+    if ((pos == 0 || temp[pos - 1] == '/') &&
+        (pos == temp.length() - 2 || temp[pos + 2] == '/'))
+      return false;
+  }
+
+  // bare_url will look something like:
+  //    http://example.com/temporary/dir/file.txt.
+  GURL bare_url(temp);
+
+  // The input URL was malformed, bail out early.
+  if (bare_url.path().empty())
+    return false;
+
+  origin = bare_url.GetOrigin();
+
+  // The input URL was malformed, bail out early.
+  if (origin.is_empty())
+    return false;
+
+  std::string path = net::UnescapeURLComponent(bare_url.path(),
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
+      net::UnescapeRule::CONTROL_CHARS);
+  if (path.compare(0, strlen(kPersistentDir), kPersistentDir) == 0) {
     file_system_type = kFileSystemTypePersistent;
-  } else if (inner_path.compare(
-             0, arraysize(kTemporaryDir) - 1, kTemporaryDir) == 0) {
+    path = path.substr(strlen(kPersistentDir));
+  } else if (path.compare(0, strlen(kTemporaryDir), kTemporaryDir) == 0) {
     file_system_type = kFileSystemTypeTemporary;
-  } else if (inner_path.compare(
-             0, arraysize(kExternalDir) - 1, kExternalDir) == 0) {
+    path = path.substr(strlen(kTemporaryDir));
+  } else if (path.compare(0, strlen(kExternalDir), kExternalDir) == 0) {
     file_system_type = kFileSystemTypeExternal;
+    path = path.substr(strlen(kExternalDir));
   } else {
     return false;
   }
-
-  std::string path = net::UnescapeURLComponent(url.path(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
-      net::UnescapeRule::CONTROL_CHARS);
 
   // Ensure the path is relative.
   while (!path.empty() && path[0] == '/')
     path.erase(0, 1);
 
-  FilePath converted_path = FilePath::FromUTF8Unsafe(path);
-
-  // All parent references should have been resolved in the renderer.
-  if (converted_path.ReferencesParent())
-    return false;
-
   if (origin_url)
-    *origin_url = url.GetOrigin();
+    *origin_url = origin;
   if (type)
     *type = file_system_type;
   if (file_path)
-    *file_path = converted_path.NormalizePathSeparators().
-        StripTrailingSeparators();
+    *file_path = FilePath::FromUTF8Unsafe(path).
+        NormalizePathSeparators().StripTrailingSeparators();
 
   return true;
 }
@@ -121,28 +138,23 @@ void VirtualPath::GetComponents(
 }
 
 GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
-  // origin_url is based on a security origin, so http://foo.com or file:///
-  // instead of the corresponding filesystem URL.
-  DCHECK(!origin_url.SchemeIsFileSystem());
-
-  std::string url = "filesystem:" + origin_url.GetWithEmptyPath().spec();
+  std::string path("filesystem:");
+  path += origin_url.spec();
   switch (type) {
   case kFileSystemTypeTemporary:
-    url += (kTemporaryDir + 1);  // We don't want the leading slash.
+    path += (kTemporaryDir + 1);  // We don't want the leading slash.
     break;
   case kFileSystemTypePersistent:
-    url += (kPersistentDir + 1);  // We don't want the leading slash.
+    path += (kPersistentDir + 1);  // We don't want the leading slash.
     break;
   case kFileSystemTypeExternal:
-    url += (kExternalDir + 1);  // We don't want the leading slash.
+    path += (kExternalDir + 1);  // We don't want the leading slash.
     break;
   default:
     NOTREACHED();
     return GURL();
   }
-  url += "/";
-
-  return GURL(url);
+  return GURL(path);
 }
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {

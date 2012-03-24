@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,12 @@ BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
 }
 
 BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
+
+bool BrowsingDataDatabaseHelper::DatabaseInfo::IsFileSchemeData() {
+  return StartsWithASCII(origin_identifier,
+                         std::string(chrome::kFileScheme),
+                         true);
+}
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
     : is_fetching_(false),
