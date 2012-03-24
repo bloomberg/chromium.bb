@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,7 +35,6 @@ class TestPackage(object):
                performance_test, cleanup_test_files, tool, dump_debug_info):
     self.adb = adb
     self.device = device
-    self.test_suite_full = test_suite
     self.test_suite = os.path.splitext(test_suite)[0]
     self.test_suite_basename = os.path.basename(self.test_suite)
     self.test_suite_dirname = os.path.dirname(self.test_suite)

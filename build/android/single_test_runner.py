@@ -9,7 +9,6 @@ import sys
 from base_test_runner import BaseTestRunner
 import debug_info
 import run_tests_helper
-from test_package_apk import TestPackageApk
 from test_package_executable import TestPackageExecutable
 from test_result import TestResults
 
@@ -47,15 +46,7 @@ class SingleTestRunner(BaseTestRunner):
       self.dump_debug_info = None
     self.fast_and_loose = fast_and_loose
 
-    if os.path.splitext(test_suite)[1] == '.apk':
-      self.test_package = TestPackageApk(self.adb, device,
-          test_suite, timeout, rebaseline, performance_test, cleanup_test_files,
-          tool, self.dump_debug_info)
-    else:
-      android_product_out = '.' # os.environ['ANDROID_PRODUCT_OUT']
-      symbols_dir = os.path.join(android_product_out, 'symbols', 'data',
-                                 'local')
-      self.test_package = TestPackageExecutable(self.adb, device,
+    self.test_package = TestPackageExecutable(self.adb, device,
         test_suite, timeout, rebaseline, performance_test, cleanup_test_files,
         tool, self.dump_debug_info)
 
