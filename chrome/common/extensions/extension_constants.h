@@ -89,6 +89,9 @@ namespace extension_misc {
   // The extension id of the HTerm dev app for ChromeOS.
   extern const char kHTermDevAppId[];
 
+  // The extension id of the Crosh component app for ChromeOS.
+  extern const char kCroshBuiltinAppId[];
+
   // The extension id of the Web Store component application.
   extern const char kWebStoreAppId[];
 

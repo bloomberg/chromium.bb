@@ -282,6 +282,9 @@ void ComponentLoader::AddDefaultComponentExtensions() {
     Add(IDR_MOBILE_MANIFEST,
         FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
+    Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
+        "/usr/share/chromeos-assets/crosh_builtin")));
+
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
       FilePath auth_extension_path =

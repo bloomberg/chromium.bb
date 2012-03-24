@@ -13,13 +13,16 @@ namespace {
 const char kCroshExtensionEntryPoint[] = "/html/crosh.html";
 
 const Extension* GetTerminalExtension(Profile* profile) {
+  // Search order for terminal extensions.
+  // We prefer hterm-dev, then hterm, then the builtin crosh extension.
   static const char* kPossibleAppIds[] = {
+    extension_misc::kHTermDevAppId,
     extension_misc::kHTermAppId,
-    extension_misc::kHTermDevAppId
+    extension_misc::kCroshBuiltinAppId,
   };
 
-  // The production app should be first in the list.
-  DCHECK_EQ(kPossibleAppIds[0], extension_misc::kHTermAppId);
+  // The hterm-dev should be first in the list.
+  DCHECK_EQ(kPossibleAppIds[0], extension_misc::kHTermDevAppId);
 
   ExtensionService* service = profile->GetExtensionService();
   for (size_t x = 0; x < arraysize(kPossibleAppIds); ++x) {
