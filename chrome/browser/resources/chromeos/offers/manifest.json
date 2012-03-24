@@ -5,6 +5,15 @@
   "version": "0.0.1",
   "description": "Offers Component Extension",
   "permissions": [
-      "offersPrivate"
-   ]
+      "offersPrivate",
+      "https://*.google.com/*"
+   ],
+  "intents": {
+    "https://crosoffers.com/checkOfferEligibility": {
+      "type" : ["application/vnd.chromeos.offers"],
+      "title" : "Redeem Chrome OS Offer",
+      "path" : "/main.html",
+      "disposition" : "window"
+    }
+  }
 }
