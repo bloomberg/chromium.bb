@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -394,6 +395,17 @@ content::MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   EnsureInitialized();
   return media_observer_;
+}
+
+// static
+std::string ProfileIOData::GetSSLSessionCacheShard() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // The SSL session cache is partitioned by setting a string. This returns a
+  // unique string to partition the SSL session cache. Each time we create a
+  // new profile, we'll get a fresh SSL session cache which is separate from
+  // the other profiles.
+  static unsigned ssl_session_cache_instance = 0;
+  return StringPrintf("profile/%u", ssl_session_cache_instance++);
 }
 
 void ProfileIOData::LazyInitialize() const {

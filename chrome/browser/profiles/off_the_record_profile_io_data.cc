@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -148,18 +147,6 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true) {}
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
-
-unsigned OffTheRecordProfileIOData::ssl_session_cache_instance_ = 0;
-
-// static
-std::string OffTheRecordProfileIOData::GetSSLSessionCacheShard() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // The SSL session cache is partitioned by setting a string. This returns a
-  // unique string to partition the SSL session cache. Each time we create a
-  // new Incognito profile, we'll get a fresh SSL session cache which is also
-  // separate from the non-incognito ones.
-  return StringPrintf("incognito/%u", ssl_session_cache_instance_++);
-}
 
 void OffTheRecordProfileIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {

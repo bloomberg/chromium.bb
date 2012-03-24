@@ -158,6 +158,8 @@ class ProfileIOData {
 
   explicit ProfileIOData(bool is_incognito);
 
+  static std::string GetSSLSessionCacheShard();
+
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(ChromeURLRequestContext* context) const;
 
