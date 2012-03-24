@@ -127,7 +127,6 @@ void RegisterLocalState(PrefService* local_state) {
   ProfileManager::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
-  UpgradeDetector::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -147,6 +146,7 @@ void RegisterLocalState(PrefService* local_state) {
   NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
+  UpgradeDetector::RegisterPrefs(local_state);
 #endif
 
 #if defined(OS_CHROMEOS)

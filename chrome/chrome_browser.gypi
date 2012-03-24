@@ -4412,6 +4412,10 @@
             'browser/ui/window_sizer.h',
             'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
+            'browser/upgrade_detector.cc',
+            'browser/upgrade_detector.h',
+            'browser/upgrade_detector_impl.cc',
+            'browser/upgrade_detector_impl.h',
           ],
           'sources/': [
             ['exclude', '^browser/chrome_to_mobile'],
