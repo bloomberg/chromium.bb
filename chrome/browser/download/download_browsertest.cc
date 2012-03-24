@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
+#include "base/test/thread_test_helper.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -45,6 +46,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
@@ -312,6 +314,12 @@ class DownloadTest : public InProcessBrowserTest {
   // Location of the file source (the place from which it is downloaded).
   FilePath OriginFile(FilePath file) {
     return test_dir_.Append(file);
+  }
+
+  GURL OriginFileUrl(FilePath file) {
+    std::string file_str = test_dir_.Append(file).MaybeAsASCII();
+    DCHECK(!file_str.empty());          // We only expect ASCII paths in tests.
+    return GURL("file://" + file_str);
   }
 
   // Location of the file destination (place to which it is downloaded).
@@ -2457,4 +2465,70 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
 
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, TestFileDataBlocker) {
+  ASSERT_TRUE(InitialSetup(false));
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  GURL urls[] = {
+    // file: URL
+    OriginFileUrl(file),
+
+    // data: URL
+    GURL("data:application/octet-stream,abcdefghijklmnop%01%02%03l")
+  };
+
+  for (size_t i = 0; i < arraysize(urls); i++) {
+    // Navigate & block until navigation is done.
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), urls[i], CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+    // Do a round trip to the IO thread to increase chances of any download
+    // showing up on the UI thread.
+    // Using DownloadTestFlushObserver is overkill, but it'll do the job.
+    scoped_refptr<DownloadTestFlushObserver> flush_observer(
+        new DownloadTestFlushObserver(
+            DownloadManagerForBrowser(browser())));
+    flush_observer->WaitForFlush();
+
+    // Confirm no downloads
+    std::vector<DownloadItem*> downloads;
+    GetDownloads(browser(), &downloads);
+    EXPECT_EQ(0u, downloads.size());
+
+    DownloadManagerForBrowser(browser())->RemoveAllDownloads();
+
+    // Try the same thing with a direct download.  Also check that the
+    // callback gives the right error.
+    WebContents* web_contents = browser()->GetSelectedWebContents();
+    ASSERT_TRUE(web_contents);
+    scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
+        new DownloadTestItemCreationObserver);
+    // Only for cleanup if a download is actually created.
+    DownloadTestObserverTerminal backup_observer(
+        DownloadManagerForBrowser(browser()),
+        1,
+        false,
+        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+
+    DownloadManagerForBrowser(browser())->DownloadUrl(
+        urls[i], GURL(), "", false, -1, content::DownloadSaveInfo(),
+        web_contents, creation_observer->callback());
+
+    creation_observer->WaitForDownloadItemCreation();
+
+    EXPECT_FALSE(creation_observer->succeeded());
+    EXPECT_EQ(net::ERR_DISALLOWED_URL_SCHEME, creation_observer->error());
+    EXPECT_EQ(content::DownloadId::Invalid(), creation_observer->download_id());
+    downloads.clear();
+    GetDownloads(browser(), &downloads);
+    EXPECT_EQ(0u, downloads.size());
+
+    if (creation_observer->succeeded()) {
+      // Wait until the download is done.  We don't care how it's finished.
+      backup_observer.WaitForFinished();
+    }
+    DownloadManagerForBrowser(browser())->RemoveAllDownloads();
+  }
 }

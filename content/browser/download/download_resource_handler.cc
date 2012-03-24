@@ -98,6 +98,12 @@ bool DownloadResourceHandler::OnResponseStarted(
            << " request_id = " << request_id;
   download_start_time_ = base::TimeTicks::Now();
 
+  if (request_->url().scheme() == "file" ||
+      request_->url().scheme() == "data") {
+    CallStartedCB(download_id_, net::ERR_DISALLOWED_URL_SCHEME);
+    return false;
+  }
+
   // If it's a download, we don't want to poison the cache with it.
   request_->StopCaching();
 

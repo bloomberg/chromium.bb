@@ -702,26 +702,18 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
-    function downloadAllowDataURLs() {
-      // Valid data URLs are valid URLs.
-      var downloadId = getNextId();
-      console.debug(downloadId);
+    function downloadDontAllowDataURLs() {
+      // We block downloading from data URLs.
       downloads.download(
           {'url': 'data:text/plain,hello'},
-          chrome.test.callback(function(id) {
-            chrome.test.assertEq(downloadId, id);
-          }));
+          chrome.test.callbackFail("net::ERR_DISALLOWED_URL_SCHEME"));
     },
 
-    function downloadAllowFileURLs() {
-      // Valid file URLs are valid URLs.
-      var downloadId = getNextId();
-      console.debug(downloadId);
+    function downloadDontAllowFileURLs() {
+      // We block downloading from file URLs.
       downloads.download(
           {'url': 'file:///'},
-          chrome.test.callback(function(id) {
-            chrome.test.assertEq(downloadId, id);
-          }));
+          chrome.test.callbackFail("net::ERR_DISALLOWED_URL_SCHEME"));
     },
 
     // TODO(benjhayden): Set up a test ftp server.
