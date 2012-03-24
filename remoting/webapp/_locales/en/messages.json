@@ -50,7 +50,7 @@
     "description": "Label for the connect button. Clicking this button will start the Chromoting session if the access code is correct."
   },
   "CONFIRM_HOST_DELETE": {
-    "message": "You are about to disable remote connections to $hostname$. If you change your mind, you will need to visit that computer to re-enable this feature. Are you sure you want to disable remote connections?",
+    "message": "Are you sure you want to disable remote connections to $hostname$? If you change your mind, you'll need to visit that computer to re-enable connections.",
     "description": "Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list.",
     "placeholders": {
       "hostname": {
@@ -101,6 +101,10 @@
         "example": "<a href=http://g.co/remote>g.co/remote</a>"
       }
     }
+  },
+  "DISABLE_HOST": {
+    "message": "Disable",
+    "description": "Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host."
   },
   "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX": {
     "message": "Disconnect (Ctrl+Alt+Esc)",
@@ -264,10 +268,6 @@
     "message": "My Computers",
     "description": "Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing."
   },
-  "NO": {
-    "message": "No",
-    "description": "Label for general-purpose 'No' buttons."
-  },
   "OK": {
     "message": "OK",
     "description": "Label for general-purpose OK buttons."
@@ -353,9 +353,5 @@
   "WARNING_NAT_DISABLED": {
     "message": "NOTE: Policy settings permit connections only between computers within your network.",
     "description": "Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work."
-  },
-  "YES": {
-    "message": "Yes",
-    "description": "Label for general-purpose 'Yes' buttons."
   }
 }
