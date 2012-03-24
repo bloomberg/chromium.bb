@@ -4,7 +4,9 @@
 
 chrome.test.runTests([
   function getCouponCodeTest() {
-    var expected_code = "deadbeef";
+    var expected_code = "";
+    // TODO(gauravsh): Mock out StatisticsProvider to make getCouponCode()
+    // return a well known value for brower_tests.
     chrome.offersPrivate.getCouponCode("COUPON_CODE",
         chrome.test.callbackPass(function(result) {
       chrome.test.assertTrue(result == expected_code);
