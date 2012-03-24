@@ -44,6 +44,9 @@ TrayDate::~TrayDate() {
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(tray::DateView::TIME));
   SetupLabelForTray(date_tray_->label());
+  gfx::Font font = date_tray_->label()->font();
+  date_tray_->label()->SetFont(
+      font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
   return date_tray_.get();
 }
 
