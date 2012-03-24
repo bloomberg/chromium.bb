@@ -11,10 +11,13 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,10 +25,11 @@
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -331,9 +335,11 @@ void NaClProcessHost::EarlyStartup() {
 void NaClProcessHost::Launch(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     int socket_count,
-    IPC::Message* reply_msg) {
+    IPC::Message* reply_msg,
+    scoped_refptr<ExtensionInfoMap> extension_info_map) {
   chrome_render_message_filter_ = chrome_render_message_filter;
   reply_msg_ = reply_msg;
+  extension_info_map_ = extension_info_map;
 
   // Place an arbitrary limit on the number of sockets to limit
   // exposure in case the renderer is compromised.  We can increase
@@ -380,13 +386,20 @@ void NaClProcessHost::Launch(
 }
 
 scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(
-    const FilePath& nacl_gdb, CommandLine* line) {
+    const FilePath& nacl_gdb,
+    CommandLine* line,
+    const FilePath& manifest_path) {
   CommandLine* cmd_line = new CommandLine(nacl_gdb);
   // We can't use PrependWrapper because our parameters contain spaces.
   cmd_line->AppendArg("--eval-command");
   const FilePath::StringType& irt_path =
       NaClBrowser::GetInstance()->GetIrtFilePath().value();
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
+  if (!manifest_path.empty()) {
+    cmd_line->AppendArg("--eval-command");
+    cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
+                              manifest_path.value());
+  }
   cmd_line->AppendArg("--args");
   const CommandLine::StringVector& argv = line->argv();
   for (size_t i = 0; i < argv.size(); i++) {
@@ -452,9 +465,18 @@ bool NaClProcessHost::LaunchSelLdr() {
   FilePath nacl_gdb = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kNaClGdb);
   if (!nacl_gdb.empty()) {
+    GURL manifest_url = GURL(process_->GetData().name);
+    FilePath manifest_path;
+    const Extension* extension = extension_info_map_->extensions().
+        GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
+    if (extension != NULL && manifest_url.SchemeIs(chrome::kExtensionScheme)) {
+      std::string path = manifest_url.path();
+      TrimString(path, "/", &path);  // Remove first slash
+      manifest_path = extension->path().AppendASCII(path);
+    }
     cmd_line->AppendSwitch(switches::kNoSandbox);
     scoped_ptr<CommandLine> gdb_cmd_line(
-        LaunchWithNaClGdb(nacl_gdb, cmd_line.get()));
+        LaunchWithNaClGdb(nacl_gdb, cmd_line.get(), manifest_path));
     // We can't use process_->Launch() because OnProcessLaunched will be called
     // with process_->GetData().handle filled by handle of gdb process. This
     // handle will be used to duplicate handles for NaCl process and as

@@ -18,6 +18,7 @@
 
 class ChromeRenderMessageFilter;
 class CommandLine;
+class ExtensionInfoMap;
 
 namespace content {
 class BrowserChildProcessHost;
@@ -41,7 +42,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // message reply_msg.
   void Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
               int socket_count,
-              IPC::Message* reply_msg);
+              IPC::Message* reply_msg,
+              scoped_refptr<ExtensionInfoMap> extension_info_map);
 
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
@@ -56,7 +58,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Create command line for launching loader under nacl-gdb.
   scoped_ptr<CommandLine> LaunchWithNaClGdb(const FilePath& nacl_gdb,
-                                            CommandLine* line);
+                                            CommandLine* line,
+                                            const FilePath& manifest_path);
   bool LaunchSelLdr();
 
   // BrowserChildProcessHostDelegate implementation:
@@ -85,6 +88,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // sub-process either succeeds or fails to unblock the renderer waiting for
   // the reply. NULL when there is no reply to send.
   IPC::Message* reply_msg_;
+
+  // Set of extensions for (NaCl) manifest auto-detection. The file path to
+  // manifest is passed to nacl-gdb when it is used to debug the NaCl loader.
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   // Socket pairs for the NaCl process and renderer.
   scoped_ptr<NaClInternal> internal_;
