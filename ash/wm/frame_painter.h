@@ -100,6 +100,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver {
   views::View* window_icon_;  // May be NULL.
   views::ImageButton* maximize_button_;
   views::ImageButton* close_button_;
+  aura::Window* window_;
 
   // Window frame header/caption parts.
   const SkBitmap* button_separator_;

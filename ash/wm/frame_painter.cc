@@ -118,6 +118,7 @@ FramePainter::FramePainter()
       window_icon_(NULL),
       maximize_button_(NULL),
       close_button_(NULL),
+      window_(NULL),
       button_separator_(NULL),
       top_left_corner_(NULL),
       top_edge_(NULL),
@@ -127,6 +128,9 @@ FramePainter::FramePainter()
 }
 
 FramePainter::~FramePainter() {
+  if (window_)
+    window_->RemoveObserver(this);
+
 }
 
 void FramePainter::Init(views::Widget* frame,
@@ -157,13 +161,15 @@ void FramePainter::Init(views::Widget* frame,
   header_right_edge_ =
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToSkBitmap();
 
+  window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  frame_->GetNativeWindow()->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
+  window_->SetHitTestBoundsOverride(kResizeOutsideBoundsSize,
                                                       kResizeInsideBoundsSize);
 
   // Watch for maximize/restore state changes.  Observer removes itself in
-  // OnWindowDestroying() below.
-  frame_->GetNativeWindow()->AddObserver(this);
+  // OnWindowDestroying() below, or in the destructor if we go away before the
+  // window.
+  window_->AddObserver(this);
 }
 
 gfx::Rect FramePainter::GetBoundsForClientView(
@@ -404,9 +410,11 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void FramePainter::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window_, window);
   // Must be removed here and not in the destructor, as the aura::Window is
   // already destroyed when our destructor runs.
-  window->RemoveObserver(this);
+  window_->RemoveObserver(this);
+  window_ = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
