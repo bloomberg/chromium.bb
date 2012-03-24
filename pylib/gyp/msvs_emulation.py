@@ -231,7 +231,7 @@ class MsvsSettings(object):
 
   def GetLdflags(self, config, product_dir, gyp_to_build_path):
     """Returns the flags that need to be added to link commands."""
-    ldflags = []
+    ldflags = ['/DYNAMICBASE'] # Default to on, may be overridden later.
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
