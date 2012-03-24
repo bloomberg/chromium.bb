@@ -1094,7 +1094,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   // Wrapper around BrowserThread::PostBlockingPoolTask to post
   // RunTaskOnIOThreadPool task on IO thread pool.
-  bool PostBlockingPoolSequencedTask(
+  void PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
       const base::Closure& task);
@@ -1106,6 +1106,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   scoped_ptr<GDataRootDirectory> root_;
 
+  // This guards regular states.
   base::Lock lock_;
 
   // The profile hosts the GDataFileSystem via GDataSystemService.
@@ -1127,7 +1128,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // we only want to initialize cache once.
   bool cache_initialization_started_;
 
-  bool in_shutdown_;  // True if GDatafileSystem is shutting down.
+  // Number of pending tasks on the worker thread pool.
+  int num_pending_tasks_;
+  base::Lock num_pending_tasks_lock_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;

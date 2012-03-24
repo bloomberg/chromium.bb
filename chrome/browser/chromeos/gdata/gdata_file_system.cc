@@ -401,7 +401,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       on_io_completed_(new base::WaitableEvent(
           true /* manual reset */, false /* initially not signaled */)),
       cache_initialization_started_(false),
-      in_shutdown_(false),
+      num_pending_tasks_(0),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataFileSystem>(this))),
       ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()) {
@@ -454,23 +454,14 @@ void GDataFileSystem::ShutdownOnUIThread() {
   // In case an IO task is in progress, wait for its completion before
   // destructing because it accesses data members.
   bool need_to_wait = false;
-  {  // Lock to update in_shutdown_ and access cache_initialization_started_,
-     // but need to release before waiting for |on_io_completed_| signal so that
-     // IO tasks won't deadlock waiting to lock to update data members and
-     // signal on_io_completed_.
-    base::AutoLock lock(lock_);
-
-    // |in_shutdown_| flag is used to cancel in-flight operations on the
-    // sequenced IO thread pool.  We'll need to wait for the first operation to
-    // complete (there is no way to cancel this one if it's already running),
-    // but subsequent operations are canceled if this flag is set to true.
-    in_shutdown_ = true;
-
-    // Cache initialization is the very first IO task that's posted to the
-    // sequenced IO thread pool, so as long as |cache_initialization_started_|
-    // is set, there could be one IO task running and we need to wait for its
-    // completion.
-    need_to_wait = cache_initialization_started_;
+  {
+    // We should wait if there is any pending tasks posted to the worker
+    // thread pool.
+    base::AutoLock lock(num_pending_tasks_lock_);
+    need_to_wait = (num_pending_tasks_ > 0);
+    // Note that by the time need_to_wait is checked outside the block below,
+    // it's possible that num_pending_tasks_ is decreased to 0, but Signal()
+    // is called anyway so it's fine.
   }
 
   if (need_to_wait)
@@ -1608,7 +1599,9 @@ void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
 
 void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
                                const FilePath& name) {
-  BrowserThread::PostBlockingPoolSequencedTask(kGDataFileSystemToken, FROM_HERE,
+  PostBlockingPoolSequencedTask(
+      kGDataFileSystemToken,
+      FROM_HERE,
       base::Bind(&GDataFileSystem::SaveFeedOnIOThreadPool,
                  cache_paths_[GDataRootDirectory::CACHE_TYPE_META],
                  base::Passed(&feed),
@@ -2300,7 +2293,7 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
 }
 
 void GDataFileSystem::InitializeCacheIfNecessary() {
-  // Lock to access cache_initialized_started_;
+  // Lock to access cache_initialization_started_;
   base::AutoLock lock(lock_);
   UnsafeInitializeCacheIfNecessary();
 }
@@ -3185,35 +3178,39 @@ void GDataFileSystem::GetFromCacheInternal(
 }
 
 void GDataFileSystem::RunTaskOnIOThreadPool(const base::Closure& task) {
-  {
-    // Lock to access |in_shutdown_| but release it before running task as
-    // task will decide its own locking necessity and timing.
-    base::AutoLock lock(lock_);
-
-    // If we're shutting down, just exit.
-    if (in_shutdown_)
-      return;
-  }
-
-  // Reset event to indicate start of IO task.
-  on_io_completed_->Reset();
-
   task.Run();
 
-  // Signal event to indicate completion of IO task.
-  on_io_completed_->Signal();
+  {
+    base::AutoLock lock(num_pending_tasks_lock_);
+    --num_pending_tasks_;
+    // Signal when the last task is completed.
+    if (num_pending_tasks_ == 0)
+      on_io_completed_->Signal();
+  }
 }
 
-bool GDataFileSystem::PostBlockingPoolSequencedTask(
+void GDataFileSystem::PostBlockingPoolSequencedTask(
     const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  return BrowserThread::PostBlockingPoolSequencedTask(
+  // Initiate the sequenced task. We should Reset() here rather than on the
+  // worker thread pool, as Reset() will cause a deadlock if it's called
+  // while Wait() is being called in the destructor.
+  on_io_completed_->Reset();
+
+  {
+    // Note that we cannot use |lock_| as lock_ can be held before this
+    // function is called (i.e. InitializeCacheIfNecessary does).
+    base::AutoLock lock(num_pending_tasks_lock_);
+    ++num_pending_tasks_;
+  }
+  const bool posted = BrowserThread::PostBlockingPoolSequencedTask(
       sequence_token_name,
       from_here,
       base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
                  base::Unretained(this),
                  task));
+  DCHECK(posted);
 }
 
 }  // namespace gdata

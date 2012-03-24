@@ -1312,8 +1312,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_TRUE(FindFile(dest_file_path) == NULL);
 }
 
-// Race in shutdown. http://crbug.com/119712
-TEST_F(GDataFileSystemTest, DISABLED_RemoveFiles) {
+TEST_F(GDataFileSystemTest, RemoveFiles) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -1366,7 +1365,8 @@ TEST_F(GDataFileSystemTest, DISABLED_RemoveFiles) {
   // Try removing root file element.
   EXPECT_FALSE(RemoveFile(FilePath(FILE_PATH_LITERAL("gdata"))));
 
-  message_loop_.RunAllPending();  // Wait to get our result.
+  // Need this to ensure OnDirectoryChanged() is run.
+  RunAllPendingForCache();
 }
 
 TEST_F(GDataFileSystemTest, CreateDirectory) {
