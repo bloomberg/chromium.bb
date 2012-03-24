@@ -6,8 +6,31 @@
     "types": [],
     "functions": [
       {
-        "name": "confirmEligibility",
-        "description": "Confirm eligiblility for a Chrome OS offer.",
+        "name": "getCouponCode",
+        "description": "Get the group or coupon code from underlying storage.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Type of coupon code requested to be read (coupon or group)."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string",
+                "description" : "The coupon code."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getUserConsent",
+        "description": "Get user's consent by displaying an InfoBar.",
         "type": "function",
         "parameters": [
           {
@@ -17,7 +40,7 @@
               {
                 "name": "result",
                 "type": "boolean",
-                "description" : "A boolean result code."
+                "description" : "Consent result."
               }
             ]
           }

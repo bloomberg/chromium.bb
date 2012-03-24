@@ -12203,6 +12203,21 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_ALT" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
+	wants to confirm you are browsing on a Chrome OS device by requesting Google to verify your coupon code.
+        </message>
+      <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL" desc="Butter bar text when prompting user for sending coupon code. Prefixed with the site name.">
+	wants to confirm you are browsing on a Chrome OS device.
+        </message>
+      <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link on the offer butter bar.">
+	Learn More
+        </message>
+      <message name="IDS_OFFERS_CONSENT_INFOBAR_ENABLE_BUTTON" desc="Enable button label.">
+	Allow
+	</message>
+      <message name="IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON" desc="Disable button label.">
+	Deny
+	</message>
       <message name="IDS_NETWORK_CONFIG_LOADING_ERROR" desc="Error message for loading network configuration file.">
         Error loading network configuration file: <ph name="error">$1<ex>Unknown error</ex></ph>
       </message>

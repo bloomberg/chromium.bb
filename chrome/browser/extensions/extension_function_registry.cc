@@ -378,7 +378,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetInputMethodFunction>();
 
   // Offers
-  RegisterFunction<ConfirmOfferEligibilityFunction>();
+  RegisterFunction<GetCouponCodeFunction>();
+  RegisterFunction<GetUserConsentFunction>();
 
   // Terminal
   RegisterFunction<OpenTerminalProcessFunction>();
