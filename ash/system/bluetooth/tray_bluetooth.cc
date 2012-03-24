@@ -67,8 +67,9 @@ class BluetoothDefaultView : public TrayItemMore {
 class BluetoothDetailedView : public views::View,
                               public ViewClickListener {
  public:
-  BluetoothDetailedView()
-      : header_(NULL),
+  explicit BluetoothDetailedView(user::LoginStatus login)
+      : login_(login),
+        header_(NULL),
         add_device_(NULL),
         toggle_bluetooth_(NULL) {
     SetLayoutManager(new views::BoxLayout(
@@ -126,7 +127,13 @@ class BluetoothDetailedView : public views::View,
     AddChildView(scroller);
   }
 
+  // Add settings entries.
   void AppendSettingsEntries() {
+    // If screen is locked, hide all settings entries as user should not be able
+    // to modify state.
+    if (login_ == user::LOGGED_IN_LOCKED)
+      return;
+
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     HoverHighlightView* container = new HoverHighlightView(this);
@@ -138,11 +145,15 @@ class BluetoothDetailedView : public views::View,
     AddChildView(container);
     toggle_bluetooth_ = container;
 
-    container = new HoverHighlightView(this);
-    container->AddLabel(rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
-    AddChildView(container);
-    add_device_ = container;
+    // Add bluetooth device requires a browser window, hide it for non logged in
+    // user.
+    if (login_ != user::LOGGED_IN_NONE) {
+      container = new HoverHighlightView(this);
+      container->AddLabel(rb.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
+      AddChildView(container);
+      add_device_ = container;
+    }
   }
 
   // Overridden from ViewClickListener.
@@ -164,6 +175,8 @@ class BluetoothDetailedView : public views::View,
       }
     }
   }
+
+  user::LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
   views::View* header_;
@@ -199,7 +212,7 @@ views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
 views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
   if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
     return NULL;
-  detailed_.reset(new tray::BluetoothDetailedView);
+  detailed_.reset(new tray::BluetoothDetailedView(status));
   return detailed_.get();
 }
 

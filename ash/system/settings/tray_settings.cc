@@ -90,7 +90,7 @@ views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
-  if (status == user::LOGGED_IN_NONE)
+  if (status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED)
     return NULL;
 
   return new SettingsView;

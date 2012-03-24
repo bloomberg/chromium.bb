@@ -9,6 +9,7 @@ namespace ash {
 namespace user {
 
 enum LoginStatus {
+  LOGGED_IN_LOCKED, // A user has locked the screen.
   LOGGED_IN_USER,   // A normal user is logged in.
   LOGGED_IN_OWNER,  // The owner of the device is logged in.
   LOGGED_IN_GUEST,  // A guest is logged in (i.e. incognito)

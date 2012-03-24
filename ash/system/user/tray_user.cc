@@ -105,22 +105,41 @@ namespace tray {
 class UserView : public views::View,
                  public views::ButtonListener {
  public:
-  explicit UserView(ash::user::LoginStatus status)
-      : username_(NULL),
+  explicit UserView(ash::user::LoginStatus login)
+      : login_(login),
+        username_(NULL),
         email_(NULL),
         update_(NULL),
         shutdown_(NULL),
         signout_(NULL),
         lock_(NULL) {
-    CHECK(status != ash::user::LOGGED_IN_NONE);
+    CHECK(login_ != ash::user::LOGGED_IN_NONE);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 0));
     set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
 
-    bool guest = status == ash::user::LOGGED_IN_GUEST;
-    bool kiosk = status == ash::user::LOGGED_IN_KIOSK;
+    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
+    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
+    bool locked = login_ == ash::user::LOGGED_IN_LOCKED;
+
     if (!guest && !kiosk)
       AddUserInfo();
+
+    if (!guest && !kiosk && !locked)
+      RefreshForUpdate();
+
+    // A user should not be able to modify logged in state when screen is
+    // locked.
+    if (!locked)
+      AddButtonContainer();
+  }
+
+  virtual ~UserView() {}
+
+  // Create container for buttons.
+  void AddButtonContainer() {
+    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
+    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
 
     views::View* button_container = new views::View;
     views::BoxLayout *layout = new
@@ -163,8 +182,6 @@ class UserView : public views::View,
 
     AddChildView(button_container);
   }
-
-  virtual ~UserView() {}
 
   // Shows update notification if available.
   void RefreshForUpdate() {
@@ -229,8 +246,6 @@ class UserView : public views::View,
 
     user_info_->AddChildView(user);
     AddChildView(user_info_);
-
-    RefreshForUpdate();
   }
 
   // Overridden from views::ButtonListener.
@@ -258,6 +273,8 @@ class UserView : public views::View,
     bounds.set_size(update_->GetPreferredSize());
     update_->SetBoundsRect(bounds);
   }
+
+  user::LoginStatus login_;
 
   views::View* user_info_;
   views::Label* username_;

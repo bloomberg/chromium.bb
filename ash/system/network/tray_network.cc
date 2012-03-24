@@ -209,9 +209,12 @@ class NetworkDetailedView : public views::View,
 
     AppendHeaderEntry();
     AppendNetworkEntries();
-    AppendNetworkExtra();
-    AppendNetworkToggles();
-    AppendSettingsEntry();
+
+    if (login_ != user::LOGGED_IN_LOCKED) {
+      AppendNetworkExtra();
+      AppendNetworkToggles();
+      AppendSettingsEntry();
+   }
 
     Layout();
   }
@@ -417,9 +420,14 @@ class NetworkDetailedView : public views::View,
       info_bubble_->GetWidget()->Close();
       info_bubble_ = NULL;
     }
-    if (sender == header_) {
+
+    if (sender == header_)
       Shell::GetInstance()->tray()->ShowDefaultView();
-    } else if (sender == settings_) {
+
+    if (login_ == user::LOGGED_IN_LOCKED)
+      return;
+
+    if (sender == settings_) {
       delegate->ShowNetworkSettings();
     } else if (sender == proxy_settings_) {
       delegate->ChangeProxySettings();

@@ -66,9 +66,9 @@ class IMEDefaultView : public TrayItemMore {
 class IMEDetailedView : public views::View,
                         public ViewClickListener {
  public:
-  IMEDetailedView(SystemTrayItem* owner, user::LoginStatus status)
-      : header_(NULL),
-        status_(status) {
+  IMEDetailedView(SystemTrayItem* owner, user::LoginStatus login)
+      : login_(login),
+        header_(NULL) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 1, 1, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -92,7 +92,7 @@ class IMEDetailedView : public views::View,
     AppendIMEList(list);
     if (!property_list.empty())
       AppendIMEProperties(property_list);
-    if (status_ != user::LOGGED_IN_NONE)
+    if (login_ != user::LOGGED_IN_NONE && login_ != user::LOGGED_IN_LOCKED)
       AppendSettings();
 
     Layout();
@@ -172,11 +172,12 @@ class IMEDetailedView : public views::View,
     }
   }
 
+  user::LoginStatus login_;
+
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
   views::View* header_;
   views::View* settings_;
-  user::LoginStatus status_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
 };

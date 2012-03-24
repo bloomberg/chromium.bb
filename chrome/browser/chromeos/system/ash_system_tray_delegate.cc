@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -205,8 +206,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     UserManager* manager = UserManager::Get();
+    const chromeos::ScreenLocker* locker =
+        chromeos::ScreenLocker::default_screen_locker();
     if (!manager->IsUserLoggedIn())
       return ash::user::LOGGED_IN_NONE;
+    if (locker && locker->locked())
+      return ash::user::LOGGED_IN_LOCKED;
     if (manager->IsCurrentUserOwner())
       return ash::user::LOGGED_IN_OWNER;
     if (manager->IsLoggedInAsGuest())
@@ -673,9 +678,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void LockScreen() OVERRIDE {
+    tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
   virtual void UnlockScreen() OVERRIDE {
+    tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
   }
 
   virtual void UnlockScreenFailed() OVERRIDE {
