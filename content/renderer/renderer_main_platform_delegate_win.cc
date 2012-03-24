@@ -1,12 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/renderer_main_platform_delegate.h"
 
+#include <signal.h>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/win_util.h"
 #include "content/common/injection_test_dll.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -69,6 +72,28 @@ void SkiaPreCacheFont(LOGFONT logfont) {
   }
 }
 
+void __cdecl ForceCrashOnSigAbort(int) {
+  *((int*)0) = 0x1337;
+}
+
+void InitExitInterceptions() {
+  // If code subsequently tries to exit using exit(), _exit(), abort(), or
+  // ExitProcess(), force a crash (since otherwise these would be silent
+  // terminations and fly under the radar).
+  base::win::SetShouldCrashOnProcessDetach(true);
+
+  // Prevent CRT's abort code from prompting a dialog or trying to "report" it.
+  // Disabling the _CALL_REPORTFAULT behavior is important since otherwise it
+  // has the sideffect of clearing our exception filter, which means we
+  // don't get any crash.
+  _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+
+  // Set a SIGABRT handler for good measure. We will crash even if the default
+  // is left in place, however this allows us to crash earlier. And it also
+  // lets us crash in response to code which might directly call raise(SIGABRT)
+  signal(SIGABRT, ForceCrashOnSigAbort);
+}
+
 }  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
@@ -81,6 +106,8 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
+  InitExitInterceptions();
+
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.
   const CommandLine& command_line = parameters_.command_line;
@@ -100,6 +127,9 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
+  // At this point we are shutting down in a normal code path, so undo our
+  // hack to crash on exit.
+  base::win::SetShouldCrashOnProcessDetach(false);
 }
 
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {

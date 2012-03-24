@@ -544,7 +544,8 @@ bool WrapMessageBoxWithSEH(const wchar_t* text, const wchar_t* caption,
     *exit_now = (IDOK != ::MessageBoxW(NULL, text, caption, flags));
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Its not safe to continue executing, exit silently here.
-    ::ExitProcess(chrome::RESULT_CODE_RESPAWN_FAILED);
+    ::TerminateProcess(::GetCurrentProcess(),
+                       chrome::RESULT_CODE_RESPAWN_FAILED);
   }
 
   return true;
@@ -594,7 +595,7 @@ extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
     g_breakpad->WriteMinidumpForException(info);
-    ::ExitProcess(content::RESULT_CODE_KILLED);
+    ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
