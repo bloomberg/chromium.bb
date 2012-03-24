@@ -107,26 +107,22 @@ class HttpServerPropertiesManager
   virtual const net::AlternateProtocolMap&
       alternate_protocol_map() const OVERRIDE;
 
-  // Gets a reference to the SpdySettings stored for a host.
-  // If no settings are stored, returns an empty set of settings.
-  virtual const net::SpdySettings& GetSpdySettings(
+  // Gets a reference to the SettingsMap stored for a host.
+  // If no settings are stored, returns an empty SettingsMap.
+  virtual const net::SettingsMap& GetSpdySettings(
       const net::HostPortPair& host_port_pair) const OVERRIDE;
 
-  // Saves settings for a host. Returns true if SpdySettings are persisted.
-  virtual bool SetSpdySettings(
-      const net::HostPortPair& host_port_pair,
-      const net::SpdySettings& settings) OVERRIDE;
+  // Saves an individual SPDY setting for a host. Returns true if SPDY setting
+  // is to be persisted.
+  virtual bool SetSpdySetting(const net::HostPortPair& host_port_pair,
+                              net::SpdySettingsIds id,
+                              net::SpdySettingsFlags flags,
+                              uint32 value) OVERRIDE;
 
-  // Saves an individual setting for a host. Returns true if SpdySetting is
-  // persisted.
-  virtual bool SetSpdySetting(
-      const net::HostPortPair& host_port_pair,
-      const net::SpdySetting& setting) OVERRIDE;
-
-  // Clears all spdy_settings.
+  // Clears all SPDY settings.
   virtual void ClearSpdySettings() OVERRIDE;
 
-  // Returns all SpdySettings mappings.
+  // Returns all SPDY persistent settings.
   virtual const net::SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
   virtual net::HttpPipelinedHostCapability GetPipelineCapability(

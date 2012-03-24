@@ -140,31 +140,21 @@ HttpServerPropertiesManager::alternate_protocol_map() const {
   return http_server_properties_impl_->alternate_protocol_map();
 }
 
-const net::SpdySettings&
+const net::SettingsMap&
 HttpServerPropertiesManager::GetSpdySettings(
     const net::HostPortPair& host_port_pair) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return http_server_properties_impl_->GetSpdySettings(host_port_pair);
 }
 
-// Saves settings for a host.
-bool HttpServerPropertiesManager::SetSpdySettings(
-    const net::HostPortPair& host_port_pair,
-    const net::SpdySettings& settings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool persist = http_server_properties_impl_->SetSpdySettings(
-      host_port_pair, settings);
-  if (persist)
-    ScheduleUpdatePrefsOnIO();
-  return persist;
-}
-
 bool HttpServerPropertiesManager::SetSpdySetting(
     const net::HostPortPair& host_port_pair,
-    const net::SpdySetting& setting) {
+    net::SpdySettingsIds id,
+    net::SpdySettingsFlags flags,
+    uint32 value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool persist = http_server_properties_impl_->SetSpdySetting(
-      host_port_pair, setting);
+      host_port_pair, id, flags, value);
   if (persist)
     ScheduleUpdatePrefsOnIO();
   return persist;
@@ -278,8 +268,48 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
       spdy_servers->push_back(server_str);
     }
 
-    // TODO(rtenneti): Implement reading of SpdySettings.
+    // Get SpdySettings.
     DCHECK(!ContainsKey(*spdy_settings_map, server));
+    base::ListValue* spdy_settings_list = NULL;
+    if (server_pref_dict->GetListWithoutPathExpansion(
+        "settings", &spdy_settings_list)) {
+      net::SettingsMap settings_map;
+
+      for (base::ListValue::const_iterator list_it =
+           spdy_settings_list->begin();
+           list_it != spdy_settings_list->end(); ++list_it) {
+        if ((*list_it)->GetType() != Value::TYPE_DICTIONARY) {
+          DVLOG(1) << "Malformed SpdySettingsList for server: " << server_str;
+          NOTREACHED();
+          continue;
+        }
+
+        const base::DictionaryValue* spdy_setting_dict =
+            static_cast<const base::DictionaryValue*>(*list_it);
+
+        int id = 0;
+        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("id", &id)) {
+          DVLOG(1) << "Malformed id in SpdySettings for server: " << server_str;
+          NOTREACHED();
+          continue;
+        }
+
+        int value = 0;
+        if (!spdy_setting_dict->GetIntegerWithoutPathExpansion("value",
+                                                               &value)) {
+          DVLOG(1) << "Malformed value in SpdySettings for server: " <<
+              server_str;
+          NOTREACHED();
+          continue;
+        }
+
+        net::SettingsFlagsAndValue flags_and_value(
+            net::SETTINGS_FLAG_PERSISTED, value);
+        settings_map[static_cast<net::SpdySettingsIds>(id)] = flags_and_value;
+      }
+
+      (*spdy_settings_map)[server] = settings_map;
+    }
 
     int pipeline_capability = net::PIPELINE_UNKNOWN;
     if ((server_pref_dict->GetInteger(
@@ -423,20 +453,20 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnIO() {
 struct ServerPref {
   ServerPref()
       : supports_spdy(false),
-        settings(NULL),
+        settings_map(NULL),
         alternate_protocol(NULL),
         pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   ServerPref(bool supports_spdy,
-             const net::SpdySettings* settings,
+             const net::SettingsMap* settings_map,
              const net::PortAlternateProtocolPair* alternate_protocol)
       : supports_spdy(supports_spdy),
-        settings(settings),
+        settings_map(settings_map),
         alternate_protocol(alternate_protocol),
         pipeline_capability(net::PIPELINE_UNKNOWN) {
   }
   bool supports_spdy;
-  const net::SpdySettings* settings;
+  const net::SettingsMap* settings_map;
   const net::PortAlternateProtocolPair* alternate_protocol;
   net::HttpPipelinedHostCapability pipeline_capability;
 };
@@ -480,7 +510,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
       ServerPref server_pref(false, &map_it->second, NULL);
       server_pref_map[server] = server_pref;
     } else {
-      it->second.settings = &map_it->second;
+      it->second.settings_map = &map_it->second;
     }
   }
 
@@ -535,7 +565,21 @@ void HttpServerPropertiesManager::UpdatePrefsOnUI(
     // Save supports_spdy.
     server_pref_dict->SetBoolean("supports_spdy", server_pref.supports_spdy);
 
-    // TODO(rtenneti): Implement save SpdySettings.
+    // Save SPDY settings.
+    if (server_pref.settings_map) {
+      base::ListValue* spdy_settings_list = new ListValue();
+      for (net::SettingsMap::const_iterator it =
+           server_pref.settings_map->begin();
+           it != server_pref.settings_map->end(); ++it) {
+        net::SpdySettingsIds id = it->first;
+        uint32 value = it->second.second;
+        base::DictionaryValue* spdy_setting_dict = new base::DictionaryValue;
+        spdy_setting_dict->SetInteger("id", id);
+        spdy_setting_dict->SetInteger("value", value);
+        spdy_settings_list->Append(spdy_setting_dict);
+      }
+      server_pref_dict->Set("settings", spdy_settings_list);
+    }
 
     // Save alternate_protocol.
     if (server_pref.alternate_protocol) {
