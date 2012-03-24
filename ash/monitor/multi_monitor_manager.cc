@@ -90,10 +90,8 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
       NotifyMonitorAdded(monitor);
     }
   } else {
-    // Monitors are removed. We keep the monitor for the primary
-    // monitor (at index 0) because it needs the monitor information
-    // even if it doesn't exit.
-    while (monitors_.size() > new_monitors.size() && monitors_.size() > 1) {
+    // Monitors are removed.
+    while (monitors_.size() > new_monitors.size()) {
       Monitor* monitor = monitors_.back();
       // Monitor object is deleted in OnWindowDestroying.
       NotifyMonitorRemoved(monitor);
