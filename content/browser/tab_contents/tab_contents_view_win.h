@@ -27,8 +27,7 @@ class WebContentsViewDelegate;
 class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
                                           public ui::WindowImpl {
  public:
-  // TODO(jam): make this take a TabContents once it's created from content.
-  TabContentsViewWin(content::WebContents* web_contents,
+  TabContentsViewWin(TabContents* tab_contents,
                      content::WebContentsViewDelegate* delegate);
   virtual ~TabContentsViewWin();
 

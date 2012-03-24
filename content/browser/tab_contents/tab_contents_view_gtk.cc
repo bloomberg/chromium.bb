@@ -79,9 +79,9 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 namespace content {
 
 TabContentsViewGtk::TabContentsViewGtk(
-    content::WebContents* web_contents,
+    TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate)
-    : tab_contents_(static_cast<TabContents*>(web_contents)),
+    : tab_contents_(tab_contents),
       expanded_(gtk_expanded_container_new()),
       delegate_(delegate) {
   gtk_widget_set_name(expanded_.get(), "chrome-tab-contents-view");
@@ -91,7 +91,7 @@ TabContentsViewGtk::TabContentsViewGtk(
                    G_CALLBACK(OnChildSizeRequestThunk), this);
 
   gtk_widget_show(expanded_.get());
-  drag_source_.reset(new content::WebDragSourceGtk(web_contents));
+  drag_source_.reset(new content::WebDragSourceGtk(tab_contents));
 
   if (delegate_.get())
     delegate_->Initialize(expanded_.get(), &focus_store_);

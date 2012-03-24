@@ -52,8 +52,7 @@ class WebContentsViewMac : public content::WebContentsView {
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  // TODO(jam): make this take a WebContents once it's created from content.
-  WebContentsViewMac(content::WebContents* web_contents,
+  WebContentsViewMac(TabContents* tab_contents,
                      content::WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewMac();
 
@@ -150,7 +149,7 @@ class WebContentsViewDelegate;
 namespace web_contents_view_mac {
 // Creates a WebContentsViewMac. Takes ownership of |delegate|.
 CONTENT_EXPORT content::WebContentsView* CreateWebContentsView(
-    content::WebContents* web_contents,
+    TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate);
 }
 

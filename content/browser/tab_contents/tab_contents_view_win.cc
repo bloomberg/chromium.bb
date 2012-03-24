@@ -56,9 +56,9 @@ class TempParent : public ui::WindowImpl {
 
 }  // namespace namespace
 
-TabContentsViewWin::TabContentsViewWin(WebContents* web_contents,
+TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents,
                                        WebContentsViewDelegate* delegate)
-    : tab_contents_(static_cast<TabContents*>(web_contents)),
+    : tab_contents_(tab_contents),
       view_(NULL),
       delegate_(delegate),
       close_tab_after_drag_ends_(false) {

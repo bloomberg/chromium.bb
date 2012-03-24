@@ -58,16 +58,16 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 namespace web_contents_view_mac {
 content::WebContentsView* CreateWebContentsView(
-    WebContents* web_contents,
+    TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate) {
-  return new WebContentsViewMac(web_contents, delegate);
+  return new WebContentsViewMac(tab_contents, delegate);
 }
 }
 
 WebContentsViewMac::WebContentsViewMac(
-    WebContents* web_contents,
+    TabContents* tab_contents,
     content::WebContentsViewDelegate* delegate)
-    : tab_contents_(static_cast<TabContents*>(web_contents)),
+    : tab_contents_(tab_contents),
       delegate_(delegate) {
 }
 
