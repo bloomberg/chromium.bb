@@ -104,6 +104,16 @@ cr.define('options', function() {
         }
       }
 
+      if (cr.isChromeOS) {
+        $('language-options-ui-restart-button').onclick =
+            chrome.send.bind(chrome, 'uiLanguageRestart');
+      }
+
+      var spellCheckLanguageButton =
+          getRequiredElement('language-options-spell-check-language-button');
+      spellCheckLanguageButton.addEventListener('click',
+          this.handleSpellCheckLanguageButtonClick_.bind(this));
+
       $('language-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
 
@@ -193,7 +203,7 @@ cr.define('options', function() {
         e.preventDefault();
         chrome.send('inputMethodOptionsOpen', [inputMethodId]);
         OptionsPage.navigateToPage(pageName);
-      }
+      };
       return button;
     },
 
@@ -234,6 +244,13 @@ cr.define('options', function() {
       if (cr.isChromeOS)
         this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();
+    },
+
+    /**
+     * Happens when a user changes back to the language they're currently using.
+     */
+    currentLocaleWasReselected: function() {
+      this.updateUiLanguageButton_(templateData.currentUiLanguageCode);
     },
 
     /**
@@ -348,47 +365,42 @@ cr.define('options', function() {
      */
     updateUiLanguageButton_: function(languageCode) {
       var uiLanguageButton = $('language-options-ui-language-button');
-      // Check if the language code matches the current UI language.
-      if (languageCode == templateData.currentUiLanguageCode) {
-        // If it matches, the button just says that the UI language is
-        // currently in use.
-        uiLanguageButton.textContent =
+      var uiLanguageMessage = $('language-options-ui-language-message');
+      var uiLanguageNotification = $('language-options-ui-notification-bar');
+
+      // Remove the event listener and add it back if useful.
+      uiLanguageButton.onclick = null;
+
+      // Unhide the language button every time, as it could've been previously
+      // hidden by a language change.
+      uiLanguageButton.hidden = false;
+
+      if (languageCode == templateData.prospectiveUiLanguageCode) {
+        uiLanguageMessage.textContent =
             localStrings.getString('is_displayed_in_this_language');
-        // Make it look like a text label.
-        uiLanguageButton.className = 'text-button';
-        // Remove the event listner.
-        uiLanguageButton.onclick = undefined;
+        showMutuallyExclusiveNodes(
+            [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 1);
       } else if (languageCode in templateData.uiLanguageCodeSet) {
-        // If the language is supported as UI language, users can click on
-        // the button to change the UI language.
         if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
           // In the guest mode for ChromeOS, changing UI language does not make
           // sense because it does not take effect after browser restart.
           uiLanguageButton.hidden = true;
+          uiLanguageMessage.hidden = true;
         } else {
           uiLanguageButton.textContent =
               localStrings.getString('display_in_this_language');
-          uiLanguageButton.className = '';
-          // Send the change request to Chrome.
+          showMutuallyExclusiveNodes(
+              [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 0);
           uiLanguageButton.onclick = function(e) {
             chrome.send('uiLanguageChange', [languageCode]);
-          }
-        }
-        if (cr.isChromeOS) {
-          $('language-options-ui-restart-button').onclick = function(e) {
-            chrome.send('uiLanguageRestart');
-          }
+          };
         }
       } else {
-        // If the language is not supported as UI language, the button
-        // just says that Chromium OS cannot be displayed in this language.
-        uiLanguageButton.textContent =
+        uiLanguageMessage.textContent =
             localStrings.getString('cannot_be_displayed_in_this_language');
-        uiLanguageButton.className = 'text-button';
-        uiLanguageButton.onclick = undefined;
+        showMutuallyExclusiveNodes(
+            [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 1);
       }
-      uiLanguageButton.style.display = 'block';
-      $('language-options-ui-notification-bar').style.display = 'none';
     },
 
     /**
@@ -397,42 +409,31 @@ cr.define('options', function() {
      * @private
      */
     updateSpellCheckLanguageButton_: function(languageCode) {
-      var display = 'block';
-      var spellCheckLanguageButton = $(
-          'language-options-spell-check-language-button');
-      // Check if the language code matches the current spell check language.
+      var spellCheckLanguageButton =
+          $('language-options-spell-check-language-button');
+      var spellCheckLanguageMessage =
+          $('language-options-spell-check-language-message');
+
       if (languageCode == this.spellCheckDictionary_) {
-        // If it matches, the button just says that the spell check language is
-        // currently in use.
-        spellCheckLanguageButton.textContent =
+        spellCheckLanguageMessage.textContent =
             localStrings.getString('is_used_for_spell_checking');
-        // Make it look like a text label.
-        spellCheckLanguageButton.className = 'text-button';
-        // Remove the event listner.
-        spellCheckLanguageButton.onclick = undefined;
+        showMutuallyExclusiveNodes(
+            [spellCheckLanguageButton, spellCheckLanguageMessage], 1);
       } else if (languageCode in templateData.spellCheckLanguageCodeSet) {
-        // If the language is supported as spell check language, users can
-        // click on the button to change the spell check language.
         spellCheckLanguageButton.textContent =
             localStrings.getString('use_this_for_spell_checking');
-        spellCheckLanguageButton.className = '';
+        showMutuallyExclusiveNodes(
+            [spellCheckLanguageButton, spellCheckLanguageMessage], 0);
         spellCheckLanguageButton.languageCode = languageCode;
-        // Add an event listner to the click event.
-        spellCheckLanguageButton.addEventListener('click',
-            this.handleSpellCheckLanguageButtonClick_.bind(this));
       } else if (!languageCode) {
-        display = 'none';
+        spellCheckLanguageButton.hidden = true;
+        spellCheckLanguageMessage.hidden = true;
       } else {
-        // If the language is not supported as spell check language, the
-        // button just says that this language cannot be used for spell
-        // checking.
-        spellCheckLanguageButton.textContent =
+        spellCheckLanguageMessage.textContent =
             localStrings.getString('cannot_be_used_for_spell_checking');
-        spellCheckLanguageButton.className = 'text-button';
-        spellCheckLanguageButton.onclick = undefined;
+        showMutuallyExclusiveNodes(
+            [spellCheckLanguageButton, spellCheckLanguageMessage], 1);
       }
-      spellCheckLanguageButton.style.display = display;
-      $('language-options-ui-notification-bar').style.display = 'none';
     },
 
     /**
@@ -583,7 +584,7 @@ cr.define('options', function() {
      */
     languageIsDeletable: function(languageCode) {
       // Don't allow removing the language if it's as UI language.
-      if (languageCode == templateData.currentUiLanguageCode)
+      if (languageCode == templateData.prospectiveUiLanguageCode)
         return false;
       return (!cr.isChromeOS ||
               this.canDeleteLanguage_(languageCode));
@@ -809,11 +810,41 @@ cr.define('options', function() {
   };
 
   /**
-   * Chrome callback for when the UI language preference is saved.
+   * Shows the node at |index| in |nodes|, hides all others.
+   * @param {Array<HTMLElement>} nodes The nodes to be shown or hidden.
+   * @param {number} index The index of |nodes| to show.
    */
-  LanguageOptions.uiLanguageSaved = function() {
-    $('language-options-ui-language-button').style.display = 'none';
-    $('language-options-ui-notification-bar').style.display = 'block';
+  function showMutuallyExclusiveNodes(nodes, index) {
+    assert(index >= 0 && index < nodes.length);
+    for (var i = 0; i < nodes.length; ++i) {
+      assert(nodes[i] instanceof HTMLElement);  // TODO(dbeam): Ignore null?
+      nodes[i].hidden = i != index;
+    }
+  }
+
+  /**
+   * Chrome callback for when the UI language preference is saved.
+   * @param {string} languageCode The newly selected language to use.
+   */
+  LanguageOptions.uiLanguageSaved = function(languageCode) {
+    templateData.prospectiveUiLanguageCode = languageCode;
+
+    // If the user is no longer on the same language code, ignore.
+    if ($('language-options-list').getSelectedLanguageCode() != languageCode)
+      return;
+
+    // Special case for when a user changes to a different language, and changes
+    // back to the same language without having restarted Chrome or logged
+    // in/out of ChromeOS.
+    if (languageCode == templateData.currentUiLanguageCode) {
+      LanguageOptions.getInstance().currentLocaleWasReselected();
+      return;
+    }
+
+    // Otherwise, show a notification telling the user that their changes will
+    // only take effect after restart.
+    showMutuallyExclusiveNodes([$('language-options-ui-language-button'),
+                                $('language-options-ui-notification-bar')], 1);
   };
 
   // Export

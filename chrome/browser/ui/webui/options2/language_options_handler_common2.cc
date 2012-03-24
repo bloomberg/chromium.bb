@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "content/public/browser/user_metrics.h"
@@ -96,8 +97,12 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON));
 
   // The following are resources, rather than local strings.
-  localized_strings->SetString("currentUiLanguageCode",
-                               g_browser_process->GetApplicationLocale());
+  std::string application_locale = g_browser_process->GetApplicationLocale();
+  localized_strings->SetString("currentUiLanguageCode", application_locale);
+  std::string prospective_locale =
+      g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+  localized_strings->SetString("prospectiveUiLanguageCode",
+      !prospective_locale.empty() ? prospective_locale : application_locale);
   localized_strings->Set("spellCheckLanguageCodeSet",
                          GetSpellCheckLanguageCodeSet());
   localized_strings->Set("uiLanguageCodeSet", GetUILanguageCodeSet());
@@ -157,7 +162,9 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);
   SetApplicationLocale(language_code);
-    web_ui()->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved");
+  StringValue language_value(language_code);
+  web_ui()->CallJavascriptFunction("options.LanguageOptions.uiLanguageSaved",
+                                   language_value);
 }
 
 void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(

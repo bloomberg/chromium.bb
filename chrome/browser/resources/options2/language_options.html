@@ -26,18 +26,27 @@
         <h3 id="language-options-language-name"></h3>
 <if expr="os == 'win32' or pp_ifdef('chromeos')">
         <div class="language-options-contents">
-          <button id="language-options-ui-language-button"></button>
+          <button id="language-options-ui-language-button"
+              i18n-content="display_in_this_language">
+          </button>
+          <span id="language-options-ui-language-message" hidden></span>
         </div>
 </if>
         <div class="language-options-contents">
-          <button id="language-options-spell-check-language-button"></button>
+          <button id="language-options-spell-check-language-button"
+              i18n-content="use_this_for_spell_checking">
+          </button>
+          <span id="language-options-spell-check-language-message"
+              hidden>
+          </span>
         </div>
         <div id="language-options-ui-notification-bar"
-             class="language-options-notification">
+             class="language-options-notification" hidden>
           <div i18n-content="restart_required"></div>
 <if expr="pp_ifdef('chromeos')">
           <button id="language-options-ui-restart-button"
-                  i18n-content="restart_button"></button>
+                  i18n-content="restart_button">
+          </button>
 </if>
         </div>
 <if expr="pp_ifdef('chromeos')">
