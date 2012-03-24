@@ -159,7 +159,11 @@ void PpbHostResolverPrivateRpcServer::PPB_HostResolver_Private_GetNetAddress(
     nacl_abi_size_t* addr_bytes, char* addr,
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (*addr_bytes !=
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private)))
+    return;
 
   PP_Bool pp_success =
       PPBHostResolverPrivateInterface()->GetNetAddress(
@@ -170,4 +174,6 @@ void PpbHostResolverPrivateRpcServer::PPB_HostResolver_Private_GetNetAddress(
 
   DebugPrintf("PPB_HostResolver_Private::GetNetAddress: " \
               "success=%d\n", *success);
+
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
