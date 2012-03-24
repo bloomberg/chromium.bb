@@ -1389,7 +1389,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   base::Value* created_entry = NULL;
   if (data.get() && data->GetAsDictionary(&dict_value) && dict_value)
     dict_value->Get("entry", &created_entry);
-  error = AddNewDirectory(params.created_directory_path, created_entry);
+  error = AddNewDirectory(params.created_directory_path.DirName(),
+                          created_entry);
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null())
