@@ -45,8 +45,8 @@ MultiMonitorManager::MultiMonitorManager() {
 }
 
 MultiMonitorManager::~MultiMonitorManager() {
-  // All monitors must have been deleted when monitor manager is deleted.
-  CHECK(!monitors_.size());
+  // All monitors must have been deleted when root windows are deleted.
+  DCHECK(!monitors_.size());
 }
 
 // static

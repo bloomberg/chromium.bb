@@ -23,16 +23,7 @@ Env* Env::instance_ = NULL;
 
 Env::Env()
     : mouse_button_flags_(0),
-      stacking_client_(NULL),
-      monitor_manager_(new internal::SingleMonitorManager)
-#if defined(USE_X11)
-    , monitor_change_observer_(new MonitorChangeObserverX11())
-#endif
-{
-#if !defined(OS_MACOSX)
-  dispatcher_.reset(CreateDispatcher());
-#endif
-  ui::Compositor::Initialize(false);
+      stacking_client_(NULL) {
 }
 
 Env::~Env() {
@@ -41,8 +32,10 @@ Env::~Env() {
 
 // static
 Env* Env::GetInstance() {
-  if (!instance_)
+  if (!instance_) {
     instance_ = new Env;
+    instance_->Init();
+  }
   return instance_;
 }
 
@@ -62,6 +55,10 @@ void Env::RemoveObserver(EnvObserver* observer) {
 
 void Env::SetMonitorManager(MonitorManager* monitor_manager) {
   monitor_manager_.reset(monitor_manager);
+#if defined(USE_X11)
+  // Update the monitor manager with latest info.
+  monitor_change_observer_->NotifyMonitorChange();
+#endif
 }
 
 #if !defined(OS_MACOSX)
@@ -72,6 +69,17 @@ MessageLoop::Dispatcher* Env::GetDispatcher() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
+
+void Env::Init() {
+#if !defined(OS_MACOSX)
+  dispatcher_.reset(CreateDispatcher());
+#endif
+#if defined(USE_X11)
+  monitor_change_observer_.reset(new internal::MonitorChangeObserverX11);
+#endif
+  SetMonitorManager(new internal::SingleMonitorManager);
+  ui::Compositor::Initialize(false);
+}
 
 void Env::NotifyWindowInitialized(Window* window) {
   FOR_EACH_OBSERVER(EnvObserver, observers_, OnWindowInitialized(window));

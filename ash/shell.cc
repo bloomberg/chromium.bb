@@ -91,10 +91,6 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/aura/monitor_change_observer_x11.h"
-#endif
-
 namespace ash {
 
 namespace {
@@ -579,9 +575,6 @@ Shell* Shell::CreateInstance(ShellDelegate* delegate) {
   CHECK(!instance_);
   aura::Env::GetInstance()->SetMonitorManager(
       new internal::MultiMonitorManager());
-#if defined(USE_X11)
-  aura::Env::GetInstance()->monitor_change_observer()->NotifyMonitorChange();
-#endif
   instance_ = new Shell(delegate);
   instance_->Init();
   return instance_;

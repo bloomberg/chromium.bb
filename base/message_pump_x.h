@@ -30,14 +30,12 @@ class MessagePumpDispatcher {
     EVENT_QUIT        // The event was processed and the message-loop should
                       // terminate.
   };
+  virtual ~MessagePumpDispatcher() {}
 
   // Dispatches the event. EVENT_IGNORED is returned if the event was ignored
   // (i.e. not processed). EVENT_PROCESSED is returned if the event was
   // processed. The nested loop exits immediately if EVENT_QUIT is returned.
   virtual DispatchStatus Dispatch(XEvent* xevent) = 0;
-
- protected:
-  virtual ~MessagePumpDispatcher() {}
 };
 
 // This class implements a message-pump for dispatching X events.

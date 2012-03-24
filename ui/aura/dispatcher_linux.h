@@ -14,32 +14,28 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "ui/aura/env.h"
 
 namespace aura {
 
-class RootWindowHostLinux;
-
-class DispatcherLinux : public Dispatcher {
+class DispatcherLinux : public MessageLoop::Dispatcher {
  public:
   DispatcherLinux();
   virtual ~DispatcherLinux();
 
-  void RootWindowHostCreated(::Window window,
-                             ::Window root,
-                             RootWindowHostLinux* host);
-  void RootWindowHostDestroying(::Window window, ::Window root);
+  void WindowDispatcherCreated(::Window window,
+                               MessageLoop::Dispatcher* dispatcher);
+  void WindowDispatcherDestroying(::Window window);
 
   // Overridden from MessageLoop::Dispatcher:
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       XEvent* xev) OVERRIDE;
 
  private:
-  typedef std::map< ::Window, RootWindowHostLinux* > HostsMap;
+  typedef std::map< ::Window, MessageLoop::Dispatcher* > DispatchersMap;
 
-  RootWindowHostLinux* GetRootWindowHostForXEvent(XEvent* xev) const;
+  MessageLoop::Dispatcher* GetDispatcherForXEvent(XEvent* xev) const;
 
-  HostsMap hosts_;
+  DispatchersMap dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(DispatcherLinux);
 };

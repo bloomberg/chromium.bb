@@ -14,10 +14,13 @@
 #include "base/message_pump_x.h"
 #include "base/stl_util.h"
 #include "ui/aura/env.h"
+#include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 
 namespace aura {
+namespace internal {
+
 namespace {
 XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
   for (int m = 0; m < screen_resources->nmode; m++) {
@@ -32,7 +35,7 @@ bool CompareMonitorY(const Monitor* lhs, const Monitor* rhs) {
   return lhs->bounds().y() < rhs->bounds().y();
 }
 
-}  // namespace internal
+}  // namespace
 
 MonitorChangeObserverX11::MonitorChangeObserverX11()
     : xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
@@ -41,17 +44,24 @@ MonitorChangeObserverX11::MonitorChangeObserverX11()
   XRRSelectInput(xdisplay_, x_root_window_, RRScreenChangeNotifyMask);
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
+  static_cast<DispatcherLinux*>(
+      Env::GetInstance()->GetDispatcher())->
+      WindowDispatcherCreated(x_root_window_, this);
 }
 
 MonitorChangeObserverX11::~MonitorChangeObserverX11() {
+  static_cast<DispatcherLinux*>(
+      Env::GetInstance()->GetDispatcher())->
+      WindowDispatcherDestroying(x_root_window_);
 }
 
-bool MonitorChangeObserverX11::Dispatch(const XEvent* event) {
+base::MessagePumpDispatcher::DispatchStatus
+MonitorChangeObserverX11::Dispatch(XEvent* event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     NotifyMonitorChange();
-    return true;
+    return base::MessagePumpDispatcher::EVENT_PROCESSED;
   }
-  return false;
+  return base::MessagePumpDispatcher::EVENT_IGNORED;
 }
 
 void MonitorChangeObserverX11::NotifyMonitorChange() {
@@ -108,9 +118,10 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
   // PowerManager lays out the outputs vertically. Sort them by Y
   // coordinates.
   std::sort(monitors.begin(), monitors.end(), CompareMonitorY);
-  aura::Env::GetInstance()->monitor_manager()
+  Env::GetInstance()->monitor_manager()
       ->OnNativeMonitorsChanged(monitors);
   STLDeleteContainerPointers(monitors.begin(), monitors.end());
 }
 
+}  // namespace internal
 }  // namespace aura

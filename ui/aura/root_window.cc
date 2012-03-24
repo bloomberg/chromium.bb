@@ -388,8 +388,6 @@ void RootWindow::SetCapture(Window* window) {
   } else {
     // When capture is lost, we must reset the event handlers.
     mouse_moved_handler_ = NULL;
-
-    host_->UnConfineCursor();
   }
   mouse_pressed_handler_ = NULL;
 }

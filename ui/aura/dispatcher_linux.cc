@@ -6,7 +6,6 @@
 
 #include <X11/extensions/XInput2.h>
 
-#include "ui/aura/root_window_host_linux.h"
 #include "ui/base/events.h"
 
 namespace aura {
@@ -19,19 +18,14 @@ DispatcherLinux::~DispatcherLinux() {
   base::MessagePumpX::SetDefaultDispatcher(NULL);
 }
 
-void DispatcherLinux::RootWindowHostCreated(::Window window,
-                                            ::Window root,
-                                            RootWindowHostLinux* host) {
-  hosts_.insert(std::make_pair(window, host));
-  // Only the 1st root window listens to the root window.
-  if (hosts_.find(root) == hosts_.end())
-    hosts_.insert(std::make_pair(root, host));
+void DispatcherLinux::WindowDispatcherCreated(
+    ::Window window,
+    MessageLoop::Dispatcher* dispatcher) {
+  dispatchers_.insert(std::make_pair(window, dispatcher));
 }
 
-void DispatcherLinux::RootWindowHostDestroying(::Window window, ::Window root) {
-  if (hosts_[window] == hosts_[root])
-    hosts_.erase(root);
-  hosts_.erase(window);
+void DispatcherLinux::WindowDispatcherDestroying(::Window window) {
+  dispatchers_.erase(window);
 }
 
 base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
@@ -43,22 +37,22 @@ base::MessagePumpDispatcher::DispatchStatus DispatcherLinux::Dispatch(
     ui::UpdateDeviceList();
     return EVENT_PROCESSED;
   }
-  RootWindowHostLinux* host = GetRootWindowHostForXEvent(xev);
-  return host ? host->Dispatch(xev) : EVENT_IGNORED;
+  MessageLoop::Dispatcher* dispatcher = GetDispatcherForXEvent(xev);
+  return dispatcher ? dispatcher->Dispatch(xev) : EVENT_IGNORED;
 }
 
-RootWindowHostLinux* DispatcherLinux::GetRootWindowHostForXEvent(
+MessageLoop::Dispatcher* DispatcherLinux::GetDispatcherForXEvent(
     XEvent* xev) const {
   ::Window window = xev->xany.window;
   if (xev->type == GenericEvent) {
     XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
     window = xievent->event;
   }
-  HostsMap::const_iterator it = hosts_.find(window);
-  return it != hosts_.end() ? it->second : NULL;
+  DispatchersMap::const_iterator it = dispatchers_.find(window);
+  return it != dispatchers_.end() ? it->second : NULL;
 }
 
-Dispatcher* CreateDispatcher() {
+MessageLoop::Dispatcher* CreateDispatcher() {
   return new DispatcherLinux;
 }
 

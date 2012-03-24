@@ -8,6 +8,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/monitor.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/rect.h"
 
@@ -44,7 +45,11 @@ Monitor* MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
 // static
 RootWindow* MonitorManager::CreateRootWindowForPrimaryMonitor() {
   MonitorManager* manager = aura::Env::GetInstance()->monitor_manager();
-  return manager->CreateRootWindowForMonitor(manager->GetMonitorAt(0));
+  RootWindow* root =
+      manager->CreateRootWindowForMonitor(manager->GetMonitorAt(0));
+  if (use_fullscreen_host_window_)
+    root->ConfineCursorToWindow();
+  return root;
 }
 
 MonitorManager::MonitorManager() {

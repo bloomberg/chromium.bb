@@ -11,19 +11,22 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
 
-class RootWindowHostLinux : public RootWindowHost {
+class RootWindowHostLinux : public RootWindowHost,
+                            public MessageLoop::Dispatcher {
  public:
   explicit RootWindowHostLinux(const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
 
-  // Handles an event targeted at this host's window.
-  base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
+  // Overridden from Dispatcher overrides:
+  virtual base::MessagePumpDispatcher::DispatchStatus
+      Dispatch(XEvent* xev) OVERRIDE;
 
  private:
   // RootWindowHost Overrides.
@@ -77,6 +80,8 @@ class RootWindowHostLinux : public RootWindowHost {
 
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
+
+  scoped_array<XID> pointer_barriers_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };
