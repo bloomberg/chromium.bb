@@ -137,7 +137,6 @@
 #include "chrome/browser/ui/webui/options2/content_settings_handler2.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -975,9 +974,10 @@ void Browser::OpenOptionsWindow(Profile* profile) {
 }
 
 // static
-void Browser::OpenSyncSetupWindow(Profile* profile) {
+void Browser::OpenSyncSetupWindow(Profile* profile,
+                                  SyncPromoUI::Source source) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowSyncSetup();
+  browser->ShowSyncSetup(source);
   browser->window()->Show();
 }
 
@@ -3222,7 +3222,8 @@ void Browser::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
     case IDC_NEW_CROSH_TAB:         OpenCrosh();                    break;
 #endif
-    case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup();                  break;
+    case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
+                                    break;
     case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
 
     default:
@@ -5655,7 +5656,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   window_->BookmarkBarStateChanged(animate_type);
 }
 
-void Browser::ShowSyncSetup() {
+void Browser::ShowSyncSetup(SyncPromoUI::Source source) {
   // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
   // Android build.
 #if !defined(OS_ANDROID)
@@ -5669,7 +5670,7 @@ void Browser::ShowSyncSetup() {
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile()) &&
              login_service->current_login_ui() == NULL) {
     // There is no currently active login UI, so display a new promo page.
-    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), false, std::string()));
+    GURL url(SyncPromoUI::GetSyncPromoURL(GURL(), source));
     browser::NavigateParams params(GetSingletonTabNavigateParams(GURL(url)));
     params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
     ShowSingletonTabOverwritingNTP(params);

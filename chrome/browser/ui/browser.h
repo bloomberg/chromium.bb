@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -355,7 +356,8 @@ class Browser : public TabHandlerDelegate,
   static void OpenDownloadsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
   static void OpenOptionsWindow(Profile* profile);
-  static void OpenSyncSetupWindow(Profile* profile);
+  static void OpenSyncSetupWindow(Profile* profile,
+                                  SyncPromoUI::Source source);
   static void OpenClearBrowsingDataDialogWindow(Profile* profile);
   static void OpenImportSettingsDialogWindow(Profile* profile);
   static void OpenInstantConfirmDialogWindow(Profile* profile);
@@ -694,7 +696,7 @@ class Browser : public TabHandlerDelegate,
   void OpenCrosh();
 #endif
   void OpenPluginsTabAndActivate();
-  void ShowSyncSetup();
+  void ShowSyncSetup(SyncPromoUI::Source source);
   void ToggleSpeechInput();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);

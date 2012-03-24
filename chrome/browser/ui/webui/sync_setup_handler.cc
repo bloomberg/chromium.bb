@@ -229,11 +229,14 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
                       ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
                           chrome::kSyncGoogleDashboardURL))));
-
-  bool is_launch_page = web_ui && SyncPromoUI::GetIsLaunchPageForSyncPromoURL(
-      web_ui->GetWebContents()->GetURL());
-  int title_id = is_launch_page ? IDS_SYNC_PROMO_TITLE_SHORT :
-                                  IDS_SYNC_PROMO_TITLE_EXISTING_USER;
+  bool is_start_page = false;
+  if (web_ui) {
+    SyncPromoUI::Source source = SyncPromoUI::GetSourceForSyncPromoURL(
+        web_ui->GetWebContents()->GetURL());
+    is_start_page = source == SyncPromoUI::SOURCE_START_PAGE;
+  }
+  int title_id = is_start_page ? IDS_SYNC_PROMO_TITLE_SHORT :
+                                 IDS_SYNC_PROMO_TITLE_EXISTING_USER;
   string16 short_product_name(GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   localized_strings->SetString(
       "promoTitle", GetStringFUTF16(title_id, short_product_name));

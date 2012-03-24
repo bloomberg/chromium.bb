@@ -133,7 +133,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
 #if !defined(OS_ANDROID)
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      browser->ShowSyncSetup();
+      browser->ShowSyncSetup(SyncPromoUI::SOURCE_NTP_LINK);
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
 #endif
@@ -183,7 +183,7 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
   Browser* browser =
       BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
-    browser->ShowSyncSetup();
+    browser->ShowSyncSetup(SyncPromoUI::SOURCE_NTP_LINK);
 }
 
 void NTPLoginHandler::UpdateLogin() {

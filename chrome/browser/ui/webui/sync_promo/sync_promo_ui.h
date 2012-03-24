@@ -14,6 +14,13 @@ class PrefService;
 // The Web UI handler for chrome://signin.
 class SyncPromoUI : public content::WebUIController {
  public:
+  enum Source {
+    SOURCE_START_PAGE = 0, // This must be first.
+    SOURCE_NTP_LINK,
+    SOURCE_MENU,
+    SOURCE_UNKNOWN, // This must be last.
+  };
+
   // Constructs a SyncPromoUI.
   explicit SyncPromoUI(content::WebUI* web_ui);
 
@@ -44,22 +51,16 @@ class SyncPromoUI : public content::WebUIController {
   // Returns the sync promo URL wth the given arguments in the query.
   // |next_page| is the URL to navigate to when the user completes or skips the
   // promo. If an empty URL is given then the promo will navigate to the NTP.
-  // If |show_title| is true then the promo title is made visible.
-  // |source| is a string that identifies from where the sync promo is being
-  // called, and is used to record sync promo UMA stats in the context of the
-  // source.
-  static GURL GetSyncPromoURL(const GURL& next_page,
-                              bool show_title,
-                              const std::string& source);
-
-  // Gets the is launch page value from the query portion of the sync promo URL.
-  static bool GetIsLaunchPageForSyncPromoURL(const GURL& url);
+  // |source| identifies from where the sync promo is being called, and is used
+  // to record sync promo UMA stats in the context of the source.
+  static GURL GetSyncPromoURL(const GURL& next_page, Source source);
 
   // Gets the next page URL from the query portion of the sync promo URL.
   static GURL GetNextPageURLForSyncPromoURL(const GURL& url);
 
   // Gets the source from the query portion of the sync promo URL.
-  static std::string GetSourceForSyncPromoURL(const GURL& url);
+  // The source identifies from where the sync promo was opened.
+  static Source GetSourceForSyncPromoURL(const GURL& url);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);

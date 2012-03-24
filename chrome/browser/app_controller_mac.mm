@@ -912,9 +912,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowSyncSetup();
+        browser->ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
       else
-        Browser::OpenSyncSetupWindow(lastProfile);
+        Browser::OpenSyncSetupWindow(lastProfile, SyncPromoUI::SOURCE_MENU);
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));

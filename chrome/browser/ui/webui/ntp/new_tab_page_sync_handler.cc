@@ -126,7 +126,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
       BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || browser->IsAttemptingToCloseBrowser())
     return;
-  browser->ShowSyncSetup();
+  browser->ShowSyncSetup(SyncPromoUI::SOURCE_NTP_LINK);
 
   if (sync_service_->HasSyncSetupCompleted()) {
     string16 user = UTF8ToUTF16(SigninManagerFactory::GetForProfile(

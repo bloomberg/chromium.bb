@@ -65,12 +65,9 @@ static bool IsValidUserFlowAction(int action) {
 
 }  // namespace
 
-SyncPromoHandler::SyncPromoHandler(const std::string& source,
-                                   ProfileManager* profile_manager)
+SyncPromoHandler::SyncPromoHandler(ProfileManager* profile_manager)
     : SyncSetupHandler(profile_manager),
       window_already_closed_(false) {
-  if (!source.empty())
-    histogram_name_ = "SyncPromo." + source + ".UserFlow";
 }
 
 SyncPromoHandler::~SyncPromoHandler() {
@@ -269,14 +266,4 @@ void SyncPromoHandler::RecordUserFlowAction(int action) {
   // Send an enumeration to our single user flow histogram.
   UMA_HISTOGRAM_ENUMERATION("SyncPromo.UserFlow", action,
                             SYNC_PROMO_BUCKET_BOUNDARY);
-
-  // The following call does not use the standard UMA macro because the
-  // histogram name is only known at runtime.  The standard macros declare
-  // static variables that won't work if the name changes on differnt calls.
-  if (!histogram_name_.empty()) {
-    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-        histogram_name_, 1, SYNC_PROMO_BUCKET_BOUNDARY,
-        SYNC_PROMO_BUCKET_BOUNDARY + 1, base::Histogram::kNoFlags);
-    histogram->Add(action);
-  }
 }

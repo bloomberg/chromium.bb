@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -39,7 +40,6 @@ namespace {
 const char kStringsJsFile[] = "strings.js";
 const char kSyncPromoJsFile[] = "sync_promo.js";
 
-const char kSyncPromoQueryKeyIsLaunchPage[] = "is_launch_page";
 const char kSyncPromoQueryKeyNextPage[] = "next_page";
 const char kSyncPromoQueryKeySource[] = "source";
 
@@ -112,7 +112,6 @@ bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
 
 SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   SyncPromoHandler* handler = new SyncPromoHandler(
-      GetSourceForSyncPromoURL(web_ui->GetWebContents()->GetURL()),
       g_browser_process->profile_manager());
   web_ui->AddMessageHandler(handler);
 
@@ -233,14 +232,12 @@ void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
 }
 
 // static
-GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
-                                  bool show_title,
-                                  const std::string& source) {
+GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, Source source) {
+  DCHECK_NE(SOURCE_UNKNOWN, source);
+
   std::stringstream stream;
   stream << chrome::kChromeUISyncPromoURL << "?"
-         << kSyncPromoQueryKeyIsLaunchPage << "="
-         << (show_title ? "true" : "false") << "&"
-         << kSyncPromoQueryKeySource << "=" << source;
+         << kSyncPromoQueryKeySource << "=" << static_cast<int>(source);
 
   if (!next_page.spec().empty()) {
     url_canon::RawCanonOutputT<char> output;
@@ -251,16 +248,6 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
   }
 
   return GURL(stream.str());
-}
-
-// static
-bool SyncPromoUI::GetIsLaunchPageForSyncPromoURL(const GURL& url) {
-  std::string value;
-  // Show the title if the promo is currently the Chrome launch page (and not
-  // the page accessed through the NTP).
-  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyIsLaunchPage, &value))
-    return value == "true";
-  return false;
 }
 
 // static
@@ -277,8 +264,14 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
 }
 
 // static
-std::string SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
+SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
   std::string value;
-  return GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value) ?
-      value : std::string();
+  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value)) {
+    int source = 0;
+    if (base::StringToInt(value, &source) && source >= SOURCE_START_PAGE &&
+        source < SOURCE_UNKNOWN) {
+      return static_cast<Source>(source);
+    }
+  }
+  return SOURCE_UNKNOWN;
 }

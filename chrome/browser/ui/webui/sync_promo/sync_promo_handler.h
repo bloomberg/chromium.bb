@@ -13,8 +13,7 @@ class PrefService;
 // The handler for JavaScript messages related to the "sync promo" page.
 class SyncPromoHandler : public SyncSetupHandler {
  public:
-  explicit SyncPromoHandler(const std::string& source,
-                            ProfileManager* profile_manager);
+  explicit SyncPromoHandler(ProfileManager* profile_manager);
   virtual ~SyncPromoHandler();
 
   // Called to register our preferences before we use them (so there will be a
@@ -87,10 +86,6 @@ class SyncPromoHandler : public SyncSetupHandler {
   // tab as well, so this bool acts as a small mutex to only report the close
   // method once.
   bool window_already_closed_;
-
-  // Extra UMA histogram name to log stats to, based on the source for showing
-  // the sync promo page.
-  std::string histogram_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPromoHandler);
 };
