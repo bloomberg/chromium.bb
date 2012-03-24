@@ -29,7 +29,6 @@ void InputMethodBridge::Init(Widget* widget) {
 }
 
 void InputMethodBridge::OnFocus() {
-  DCHECK(!widget_focused());
   InputMethodBase::OnFocus();
 
   // Ask the system-wide IME to send all TextInputClient messages to |this|

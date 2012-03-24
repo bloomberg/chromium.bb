@@ -51,6 +51,7 @@
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "base/command_line.h"
+#include "ui/aura/window.h"
 #endif
 
 using base::TimeDelta;
@@ -617,6 +618,9 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
       widget_delegate()->GetInitiallyFocusedView()) {
     widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
+#if defined(USE_ASH)
+  GetNativeView()->Focus();
+#endif
 }
 
 gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {

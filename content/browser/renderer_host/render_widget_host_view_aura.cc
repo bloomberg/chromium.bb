@@ -865,6 +865,12 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void RenderWidgetHostViewAura::OnFocus() {
+  // We need to honor input bypass if the associated tab is does not want input.
+  // This gives the current focused window a chance to be the text input
+  // client and handle events.
+  if (host_->ignore_input_events())
+    return;
+
   host_->GotFocus();
   host_->SetActive(true);
 

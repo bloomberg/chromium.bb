@@ -484,7 +484,7 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     // SetInitialFoucs() has to be called so that the dialog can get focus.
     // This also matches NativeWidgetWin which invokes SetInitialFocus
     // regardless of show state.
-    GetWidget()->SetInitialFocus();
+    SetInitialFocus();
   }
 }
 
@@ -595,9 +595,8 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 
 void NativeWidgetAura::ClearNativeFocus() {
   if (window_ && window_->GetFocusManager() &&
-      window_->Contains(window_->GetFocusManager()->GetFocusedWindow())) {
+      window_->Contains(window_->GetFocusManager()->GetFocusedWindow()))
     window_->GetFocusManager()->SetFocusedWindow(window_, NULL);
-  }
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
@@ -664,20 +663,16 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void NativeWidgetAura::OnFocus() {
-  Widget* widget = GetWidget();
-  if (widget->is_top_level()) {
-    InputMethod* input_method = widget->GetInputMethod();
-    input_method->OnFocus();
-  }
+  // In aura, it is possible for child native widgets to take input and focus,
+  // this differs from the behavior on windows.
+  GetWidget()->GetInputMethod()->OnFocus();
   delegate_->OnNativeFocus(window_);
 }
 
 void NativeWidgetAura::OnBlur() {
-  Widget* widget = GetWidget();
-  if (widget->is_top_level()) {
-    InputMethod* input_method = widget->GetInputMethod();
-    input_method->OnBlur();
-  }
+  // Not only top level native widget can take input and focus, child
+  // widgets are allowed also.
+  GetWidget()->GetInputMethod()->OnBlur();
   delegate_->OnNativeBlur(window_->GetFocusManager()->GetFocusedWindow());
 }
 
@@ -820,6 +815,15 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, private:
+
+void NativeWidgetAura::SetInitialFocus() {
+  // The window does not get keyboard messages unless we focus it.
+  if (!GetWidget()->SetInitialFocus())
+    window_->Focus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
