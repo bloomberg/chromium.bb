@@ -19,6 +19,7 @@
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -567,6 +568,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     pref_registrar_->Init(profile->GetPrefs());
     pref_registrar_->Add(prefs::kUse24HourClock, this);
     UpdateClockType(profile->GetPrefs());
+
+    remap_search_key_to_.Init(prefs::kLanguageXkbRemapSearchKeyTo,
+                              profile->GetPrefs(), this);
   }
 
   void UpdateClockType(PrefService* service) {
@@ -833,10 +837,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from SystemKeyEventListener::CapsLockObserver.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
+    int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
+    if (!base::chromeos::IsRunningOnChromeOS() ||
+        remap_search_key_to_.GetValue() == input_method::kCapsLockKey)
+      id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
+
     ash::CapsLockObserver* observer =
       ash::Shell::GetInstance()->tray()->caps_lock_observer();
     if (observer)
-      observer->OnCapsLockChanged(enabled);
+      observer->OnCapsLockChanged(enabled, id);
   }
 
   ash::SystemTray* tray_;
@@ -854,6 +863,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
 
   BooleanPrefMember accessibility_enabled_;
+  IntegerPrefMember remap_search_key_to_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };
