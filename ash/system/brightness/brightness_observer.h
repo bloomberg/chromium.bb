@@ -13,7 +13,8 @@ class ASH_EXPORT BrightnessObserver {
  public:
   virtual ~BrightnessObserver() {}
 
-  virtual void OnBrightnessChanged(float percent, bool user_initiated) = 0;
+  // |fraction| is in the range [0.0, 1.0].
+  virtual void OnBrightnessChanged(float fraction, bool user_initiated) = 0;
 };
 
 }  // namespace ash

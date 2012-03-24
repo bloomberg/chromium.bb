@@ -28,10 +28,22 @@ namespace internal {
 
 namespace tray {
 
+namespace {
+
+// Avoid asking for the screen brightness to be updated until the slider has
+// been moved by more than this much from the last actual brightness level that
+// we observed (given a total range of [0.0, 1.0]).  It's roughly based on the
+// amount by which the power manager adjusts the brightness for each
+// brightness-up or -down request.
+const float kMinBrightnessChange = 0.05;
+
+}  // namespace
+
 class BrightnessView : public views::View,
                        public views::SliderListener {
  public:
-  BrightnessView() {
+  explicit BrightnessView(float initial_fraction)
+      : last_fraction_(initial_fraction) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
@@ -42,10 +54,7 @@ class BrightnessView : public views::View,
     AddChildView(icon);
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
-    // TODO(sad|davemoore):  There is currently no way to get the brightness
-    // level of the system. So start with a random value.
-    // http://crosbug.com/26935
-    slider_->SetValue(0.8f);
+    slider_->SetValue(initial_fraction);
     slider_->set_focusable(true);
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
@@ -55,8 +64,10 @@ class BrightnessView : public views::View,
 
   virtual ~BrightnessView() {}
 
-  void SetBrightnessLevel(float percent) {
-    slider_->SetValue(percent);
+  // |fraction| is in the range [0.0, 1.0].
+  void SetBrightnessFraction(float fraction) {
+    last_fraction_ = fraction;
+    slider_->SetValue(fraction);
   }
 
  private:
@@ -73,16 +84,16 @@ class BrightnessView : public views::View,
                                   views::SliderChangeReason reason) OVERRIDE {
     if (reason != views::VALUE_CHANGED_BY_USER)
       return;
-    // TODO(sad|davemoore): This isn't correct, since we are unable to pass on
-    // the amount the brightness should be increased/decreased.
-    // http://crosbug.com/26935
+    // TODO(derat): This isn't correct, since we are unable to pass the level to
+    // which the brightness should be set.
+    // http://crbug.com/119743
 #if !defined(OS_MACOSX)
     AcceleratorController* ac = Shell::GetInstance()->accelerator_controller();
     if (ac->brightness_control_delegate()) {
       BrightnessControlDelegate* delegate = ac->brightness_control_delegate();
-      if (value < old_value)
+      if (value <= last_fraction_ - kMinBrightnessChange || value < 0.001)
         delegate->HandleBrightnessDown(ui::Accelerator());
-      else
+      else if (value >= last_fraction_ + kMinBrightnessChange || value > 0.999)
         delegate->HandleBrightnessUp(ui::Accelerator());
     }
 #endif  // OS_MACOSX
@@ -90,12 +101,17 @@ class BrightnessView : public views::View,
 
   views::Slider* slider_;
 
+  // Last brightness level that we observed, in the range [0.0, 1.0].
+  float last_fraction_;
+
   DISALLOW_COPY_AND_ASSIGN(BrightnessView);
 };
 
 }  // namespace tray
 
-TrayBrightness::TrayBrightness() {}
+// TODO(derat):  There is currently no way to get the brightness level of the
+// system, so start with a random value.  http://crosbug.com/26935
+TrayBrightness::TrayBrightness() : current_fraction_(0.8f) {}
 
 TrayBrightness::~TrayBrightness() {}
 
@@ -104,12 +120,12 @@ views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
-  brightness_view_.reset(new tray::BrightnessView);
+  brightness_view_.reset(new tray::BrightnessView(current_fraction_));
   return brightness_view_.get();
 }
 
 views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
-  brightness_view_.reset(new tray::BrightnessView);
+  brightness_view_.reset(new tray::BrightnessView(current_fraction_));
   return brightness_view_.get();
 }
 
@@ -124,9 +140,10 @@ void TrayBrightness::DestroyDetailedView() {
   brightness_view_.reset();
 }
 
-void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
+void TrayBrightness::OnBrightnessChanged(float fraction, bool user_initiated) {
+  current_fraction_ = fraction;
   if (brightness_view_.get())
-    brightness_view_->SetBrightnessLevel(percent);
+    brightness_view_->SetBrightnessFraction(fraction);
   if (!user_initiated)
     return;
 

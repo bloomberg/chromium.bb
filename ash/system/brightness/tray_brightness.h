@@ -33,10 +33,14 @@ class TrayBrightness : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
 
   // Overridden from BrightnessObserver.
-  virtual void OnBrightnessChanged(float percent,
+  virtual void OnBrightnessChanged(float fraction,
                                    bool user_initiated) OVERRIDE;
 
   scoped_ptr<tray::BrightnessView> brightness_view_;
+
+  // Brightness level in the range [0.0, 1.0] that we've heard about most
+  // recently.
+  float current_fraction_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBrightness);
 };
