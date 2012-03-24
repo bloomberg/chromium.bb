@@ -29,7 +29,7 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
     // If at login screen or logged in as a guest/incognito user, then use the
     // default wallpaper.
     if (user_manager->IsLoggedInAsGuest() || !user_manager->IsUserLoggedIn())
-      return ash::GetDefaultWallpaperIndex();
+      return ash::GetIncognitoWallpaperIndex();
 
     const chromeos::User& user = user_manager->GetLoggedInUser();
     DCHECK(!user.email().empty());

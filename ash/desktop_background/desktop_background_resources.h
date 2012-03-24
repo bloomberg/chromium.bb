@@ -29,6 +29,7 @@ struct ASH_EXPORT WallpaperInfo {
 };
 
 ASH_EXPORT int GetDefaultWallpaperIndex();
+ASH_EXPORT int GetIncognitoWallpaperIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const SkBitmap& GetWallpaper(int index);
 ASH_EXPORT const SkBitmap& GetWallpaperThumbnail(int index);

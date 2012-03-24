@@ -564,10 +564,14 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
 
 const int kDefaultWallpaperCount = arraysize(kDefaultWallpapers);
 
+// TODO(saintlou): These hardcoded indexes, although checked against the size
+// of the array are really hacky.
 #if defined(GOOGLE_CHROME_BUILD)
 const int kLastRandomWallpaperIndex = 12;
+const int kIcognitoWallpaperIndex = 0;
 #else
 const int kDefaultWallpaperIndex = 0;
+const int kIcognitoWallpaperIndex = kDefaultWallpaperIndex;
 #endif
 
 }  // namespace
@@ -582,6 +586,11 @@ int GetDefaultWallpaperIndex() {
 #else
   return kDefaultWallpaperIndex;
 #endif
+}
+
+int GetIncognitoWallpaperIndex() {
+  DCHECK(kIcognitoWallpaperIndex < kDefaultWallpaperCount);
+  return std::min(kIcognitoWallpaperIndex, kDefaultWallpaperCount - 1);
 }
 
 int GetWallpaperCount() {
