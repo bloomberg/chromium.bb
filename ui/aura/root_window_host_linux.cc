@@ -587,19 +587,32 @@ bool RootWindowHostLinux::ConfineCursorToRootWindow() {
   DCHECK(!pointer_barriers_.get());
   if (pointer_barriers_.get())
     return false;
-  // Monitors are vertically laid out, so just create barriers at the top and
-  // the bottom.
-  pointer_barriers_.reset(new XID[2]);
+  // Pointer barriers extend all the way across the screen to
+  // avoid leaks at the corners.
+  gfx::Size screen_size = RootWindowHost::GetNativeScreenSize();
+  pointer_barriers_.reset(new XID[4]);
+  // Horizontal barriers.
   pointer_barriers_[0] = XFixesCreatePointerBarrier(
-      xdisplay_, xwindow_,
-      0, 0, bounds_.width(), 0,  // barrier line
+      xdisplay_, x_root_window_,
+      0, bounds_.y(), screen_size.width(), bounds_.y(),
       BarrierPositiveY,
-      0, NULL);  // defult device
+      0, NULL);  // default device
   pointer_barriers_[1] = XFixesCreatePointerBarrier(
-      xdisplay_, xwindow_,
-      0, bounds_.height(), bounds_.width(),  bounds_.height(),  // barrier line
+      xdisplay_, x_root_window_,
+      0, bounds_.bottom(), screen_size.width(),  bounds_.bottom(),
       BarrierNegativeY,
-      0, NULL);  // defult device
+      0, NULL);  // default device
+  // Vertical barriers.
+  pointer_barriers_[2] = XFixesCreatePointerBarrier(
+      xdisplay_, x_root_window_,
+      bounds_.x(), 0, bounds_.x(), screen_size.height(),
+      BarrierPositiveX,
+      0, NULL);  // default device
+  pointer_barriers_[3] = XFixesCreatePointerBarrier(
+      xdisplay_, x_root_window_,
+      bounds_.right(), 0, bounds_.right(), screen_size.height(),
+      BarrierNegativeX,
+      0, NULL);  // default device
 #endif
   return true;
 }
@@ -609,6 +622,8 @@ void RootWindowHostLinux::UnConfineCursor() {
   if (pointer_barriers_.get()) {
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[0]);
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[1]);
+    XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[2]);
+    XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[3]);
     pointer_barriers_.reset();
   }
 #endif
