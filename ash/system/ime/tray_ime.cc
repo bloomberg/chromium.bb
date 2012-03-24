@@ -54,6 +54,7 @@ class IMEDefaultView : public TrayItemMore {
 
   void UpdateLabel(const IMEInfo& info) {
     label_->SetText(info.name);
+    SetAccessibleName(info.name);
   }
 
  private:
