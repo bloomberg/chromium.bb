@@ -250,9 +250,16 @@
         <include name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2_2x.png" type="BINDATA" />
       </if>
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting_2x.png" type="BINDATA" />
-      <include name="IDR_TOOLS" file="tools_2x.png" type="BINDATA" />
-      <include name="IDR_TOOLS_H" file="tools_h_2x.png" type="BINDATA" />
-      <include name="IDR_TOOLS_P" file="tools_p_2x.png" type="BINDATA" />
+      <if expr="pp_ifdef('use_ash')">
+        <include name="IDR_TOOLS" file="ash/browser_tools_normal.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="ash/browser_tools_hot.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="ash/browser_tools_pressed.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('use_ash')">
+        <include name="IDR_TOOLS" file="tools_2x.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="tools_h_2x.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="tools_p_2x.png" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

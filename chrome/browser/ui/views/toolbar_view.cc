@@ -71,9 +71,11 @@ const int ToolbarView::kVertSpacing = 5;
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
 // our spacing to make it still appear to be 4 px.
 #if defined(USE_ASH)
-static const int kEdgeSpacing = 4;
+static const int kLeftEdgeSpacing = 3;
+static const int kRightEdgeSpacing = 2;
 #else
-static const int kEdgeSpacing = 3;
+static const int kLeftEdgeSpacing = 3;
+static const int kRightEdgeSpacing = 3;
 #endif
 
 // The buttons to the left of the omnibox are close together.
@@ -90,13 +92,6 @@ const int kContentShadowHeight = 2;
 #else
 const int kContentShadowHeight = 0;
 #endif
-
-// The length of time to run the upgrade notification animation (the time it
-// takes one pulse to run its course and go back to its original brightness).
-static const int kPulseDuration = 2000;
-
-// How long to wait between pulsating the upgrade notifier.
-static const int kPulsateEveryMs = 8000;
 
 static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
@@ -506,7 +501,7 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 
 gfx::Size ToolbarView::GetPreferredSize() {
   if (IsDisplayModeNormal()) {
-    int min_width = kEdgeSpacing +
+    int min_width = kLeftEdgeSpacing +
         back_->GetPreferredSize().width() + kButtonSpacing +
         forward_->GetPreferredSize().width() + kButtonSpacing +
         reload_->GetPreferredSize().width() + kStandardSpacing +
@@ -514,7 +509,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
             (home_->GetPreferredSize().width() + kButtonSpacing) : 0) +
         location_bar_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
-        app_menu_->GetPreferredSize().width() + kEdgeSpacing;
+        app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
 
     CR_DEFINE_STATIC_LOCAL(SkBitmap, normal_background, ());
     if (normal_background.isNull()) {
@@ -561,9 +556,9 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   int back_width = back_->GetPreferredSize().width();
   if (maximized)
-    back_->SetBounds(0, child_y, back_width + kEdgeSpacing, child_height);
+    back_->SetBounds(0, child_y, back_width + kLeftEdgeSpacing, child_height);
   else
-    back_->SetBounds(kEdgeSpacing, child_y, back_width, child_height);
+    back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
 
   forward_->SetBounds(back_->x() + back_->width() + kButtonSpacing,
       child_y, forward_->GetPreferredSize().width(), child_height);
@@ -583,7 +578,7 @@ void ToolbarView::Layout() {
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int location_x = home_->x() + home_->width() + kStandardSpacing;
-  int available_width = width() - kEdgeSpacing - app_menu_width -
+  int available_width = width() - kRightEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
   int location_y = child_y;
   int location_bar_height = child_height;
@@ -605,7 +600,7 @@ void ToolbarView::Layout() {
   // Extend the app menu to the screen's right edge in maximized mode just like
   // we extend the back button to the left edge.
   if (maximized)
-    app_menu_width += kEdgeSpacing;
+    app_menu_width += kRightEdgeSpacing;
   app_menu_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
                        app_menu_width, child_height);
 }
