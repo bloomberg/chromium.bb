@@ -24,8 +24,10 @@
 
 #if !defined(MAC_OS_X_VERSION_10_6) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+typedef unsigned long long NSEventMask;
+
 @interface NSEvent (SnowLeopardDeclarations)
-+ (id)addLocalMonitorForEventsMatchingMask:(NSUInteger)mask
++ (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
                                    handler:(NSEvent* (^)(NSEvent*))block;
 + (void)removeMonitor:(id)eventMonitor;
 @end
@@ -238,7 +240,7 @@ class Bridge : public content::NotificationObserver {
   eventTap_ = [NSEvent
       addLocalMonitorForEventsMatchingMask:NSLeftMouseDownMask
       handler:^NSEvent* (NSEvent* event) {
-          if (event.window != window){
+          if (event.window != window) {
             // Call via the runloop because this block is called in the
             // middle of event dispatch.
             [self performSelector:@selector(windowDidResignKey:)
