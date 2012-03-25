@@ -144,14 +144,14 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   ShowWindow(window_, SW_SHOW);
 
-  PlatformSizeTo(width, height);
+  SizeTo(width, height);
 }
 
 void Shell::PlatformSetContents() {
   SetParent(tab_contents_->GetView()->GetNativeView(), window_);
 }
 
-void Shell::PlatformSizeTo(int width, int height) {
+void Shell::SizeTo(int width, int height) {
   RECT rc, rw;
   GetClientRect(window_, &rc);
   GetWindowRect(window_, &rw);

@@ -210,14 +210,6 @@ void Shell::PlatformSetContents() {
   [web_view setNeedsDisplay:YES];
 }
 
-void Shell::PlatformSizeTo(int width, int height) {
-  // Resizing the window to the preferred size of the page is an incredibly bad
-  // idea. Not only is it creepy UI as windows resize themselves, it leads to
-  // cycles where the user resizing the window leads to a new preferred size for
-  // the window, and the window fighting back. That's unacceptable in a user
-  // interface.
-}
-
 void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }

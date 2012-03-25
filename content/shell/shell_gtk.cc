@@ -143,7 +143,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   gtk_container_add(GTK_CONTAINER(window_), vbox_);
   gtk_widget_show_all(GTK_WIDGET(window_));
 
-  PlatformSizeTo(width, height);
+  SizeTo(width, height);
 }
 
 void Shell::PlatformSetContents() {
@@ -166,7 +166,7 @@ void Shell::PlatformSetContents() {
   prefs->inactive_selection_fg_color = SkColorSetRGB(50, 50, 50);
 }
 
-void Shell::PlatformSizeTo(int width, int height) {
+void Shell::SizeTo(int width, int height) {
   content_width_ = width;
   content_height_ = height;
   if (tab_contents_.get()) {
@@ -175,7 +175,7 @@ void Shell::PlatformSizeTo(int width, int height) {
 }
 
 void Shell::PlatformResizeSubViews() {
-  PlatformSizeTo(content_width_, content_height_);
+  SizeTo(content_width_, content_height_);
 }
 
 void Shell::OnBackButtonClicked(GtkWidget* widget) {

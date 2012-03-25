@@ -141,11 +141,6 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {
   PlatformSetAddressBarURL(tab->GetURL());
 }
 
-void Shell::UpdatePreferredSize(WebContents* source,
-                                const gfx::Size& pref_size) {
-  PlatformSizeTo(pref_size.width(), pref_size.height());
-}
-
 void Shell::DidFinishLoad(int64 frame_id,
                           const GURL& validated_url,
                           bool is_main_frame) {

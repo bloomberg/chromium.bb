@@ -92,8 +92,6 @@ class Shell : public WebContentsDelegate,
   void PlatformCreateWindow(int width, int height);
   // Links the TabContents into the newly created window.
   void PlatformSetContents();
-  // Resizes the main window to the given dimensions.
-  void PlatformSizeTo(int width, int height);
   // Resize the content area and GUI.
   void PlatformResizeSubViews();
   // Enable/disable a button.
@@ -102,6 +100,11 @@ class Shell : public WebContentsDelegate,
   void PlatformSetAddressBarURL(const GURL& url);
   // Sets whether the spinner is spinning.
   void PlatformSetIsLoading(bool loading);
+
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // Resizes the main window to the given dimensions.
+  void SizeTo(int width, int height);
+#endif
 
   gfx::NativeView GetContentView();
 
@@ -112,8 +115,6 @@ class Shell : public WebContentsDelegate,
                                   const GURL& target_url,
                                   WebContents* new_contents) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
-  virtual void UpdatePreferredSize(WebContents* source,
-                                   const gfx::Size& pref_size) OVERRIDE;
 
   // content::WebContentsObserver
   virtual void DidFinishLoad(int64 frame_id,
