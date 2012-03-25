@@ -683,22 +683,58 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   float small_dx = MinMag(dx1, dx2);
   float small_dy = MinMag(dy1, dy2);
 
+  bool dampened_zone_occupied = false;
+  // movements of the finger in the dampened zone. If there are multiple
+  // fingers in the dampened zone, dx is min(dx_1, dx_2), dy is min(dy_1, dy_2).
+  float damp_dx = INFINITY;
+  float damp_dy = INFINITY;
+  float non_damp_dx = 0.0;
+  float non_damp_dy = 0.0;
+  if (FingerInDampenedZone(finger1)) {
+    dampened_zone_occupied = true;
+    damp_dx = dx1;
+    damp_dy = dy1;
+    non_damp_dx = dx2;
+    non_damp_dy = dy2;
+  }
+  if (FingerInDampenedZone(finger2)) {
+    dampened_zone_occupied = true;
+    damp_dx = MinMag(damp_dx, dx2);
+    damp_dy = MinMag(damp_dy, dy2);
+    non_damp_dx = MaxMag(non_damp_dx, dx1);
+    non_damp_dy = MaxMag(non_damp_dy, dy1);
+  }
+
   if (fabsf(large_dx) > fabsf(large_dy)) {
     // consider horizontal scroll
     if (fabsf(large_dx) < two_finger_scroll_distance_thresh_.val_)
       return kGestureTypeNull;
     if (fabsf(small_dx) < scroll_stationary_finger_max_distance_.val_)
       small_dx = 0.0;
-    return ((large_dx * small_dx) >= 0.0) ?  // same direction
-        kGestureTypeScroll : kGestureTypeNull;
+    if (large_dx * small_dx < 0.0)
+      return kGestureTypeMove;  // not same direction
+    if (dampened_zone_occupied) {
+      // Require damp to move at least 50% as much as non-damp
+      if (fabsf(damp_dx) < 0.5 * fabsf(non_damp_dx)) {
+        return kGestureTypeMove;
+      }
+    }
+    return kGestureTypeScroll;
   } else {
     // consider vertical scroll
     if (fabsf(large_dy) < two_finger_scroll_distance_thresh_.val_)
       return kGestureTypeNull;
     if (fabsf(small_dy) < scroll_stationary_finger_max_distance_.val_)
       small_dy = 0.0;
-    return ((large_dy * small_dy) >= 0.0) ?  // same direction
-        kGestureTypeScroll : kGestureTypeNull;
+    if (large_dy * small_dy < 0.0)
+      return kGestureTypeMove;
+    if (dampened_zone_occupied) {
+      // Require damp to move at least 50% as much as non-damp
+      if (fabsf(damp_dy) < 0.5 * fabsf(non_damp_dy)) {
+        return kGestureTypeMove;
+      }
+    }
+    return kGestureTypeScroll;
   }
 }
 
@@ -1266,7 +1302,6 @@ void ImmediateInterpreter::FillResultGesture(
   }
   if (current_gesture_type_ != kGestureTypeScroll)
     prev_scroll_fingers_.clear();
-  current_gesture_type_ = kGestureTypeNull;
 }
 
 void ImmediateInterpreter::IntWasWritten(IntProperty* prop) {

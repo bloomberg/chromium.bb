@@ -439,6 +439,70 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, RestingFingerTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  const float kX = 7;
+  float dx = 5;
+  const float kRestY = hwprops.bottom - 7;
+  const float kMoveY = kRestY - 10;
+
+  const float kTO = 1.0;  // time to wait for change timeout
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+
+    // Resting finger in lower left
+    {0, 0, 0, 0, 50, 0, kX, kRestY, 1, 0},
+    // Moving finger
+    {0, 0, 0, 0, 50, 0, kX, kMoveY, 2, 0},
+  };
+
+  // Left to right movement, then right to left
+  for (size_t direction = 0; direction < 2; direction++) {
+    if (direction == 1)
+      dx *= -1.0;
+    ii.reset(new ImmediateInterpreter(NULL));
+    ii->SetHardwareProperties(hwprops);
+    for (size_t i = 0; i < 4; i++) {
+      HardwareState hs = { kTO + 0.01 * i, 0, 2, 2, finger_states };
+      if (i == 0) {
+        hs.timestamp -= kTO;
+        Gesture* gs = ii->SyncInterpret(&hs, NULL);
+        EXPECT_EQ(static_cast<Gesture*>(NULL), gs);
+        hs.timestamp += kTO;
+        gs = ii->SyncInterpret(&hs, NULL);
+        if (gs && gs->type == kGestureTypeMove) {
+          EXPECT_FLOAT_EQ(0.0, gs->details.move.dx);
+          EXPECT_FLOAT_EQ(0.0, gs->details.move.dy);
+        }
+      } else {
+        Gesture* gs = ii->SyncInterpret(&hs, NULL);
+        ASSERT_NE(static_cast<Gesture*>(NULL), gs);
+        EXPECT_EQ(kGestureTypeMove, gs->type);
+        EXPECT_FLOAT_EQ(dx, gs->details.move.dx);
+        EXPECT_FLOAT_EQ(0.0, gs->details.move.dy);
+      }
+      finger_states[1].position_x += dx;
+    }
+  }
+}
+
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
