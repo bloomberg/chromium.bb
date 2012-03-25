@@ -1614,9 +1614,49 @@ void GDataFileSystem::OnGetDocuments(
   // Add the current feed to the list of collected feeds for this directory.
   feed_list->Append(data.release());
 
-  // Check if we need to collect more data to complete the directory list.
-  if (current_feed->GetNextFeedURL(&next_feed_url) &&
-      !next_feed_url.is_empty()) {
+  bool initial_read = false;
+  {
+    base::AutoLock lock(lock_);
+    initial_read = root_->origin() == UNINITIALIZED;
+  }
+
+  bool has_more_data = current_feed->GetNextFeedURL(&next_feed_url) &&
+                       !next_feed_url.is_empty();
+
+  // If we are completely done with feed content fetching or if this is initial
+  // batch of content feed so that we can show the initial set of files to
+  // the user as soon as the first chunk arrives, rather than waiting for all
+  // chunk to arrive.
+  if (initial_read || !has_more_data) {
+    error = UpdateDirectoryWithDocumentFeed(feed_list.get(),
+                                            FROM_SERVER);
+    if (error != base::PLATFORM_FILE_OK) {
+      if (!callback.is_null()) {
+        proxy->PostTask(FROM_HERE,
+             base::Bind(callback, error, FilePath(),
+                 reinterpret_cast<GDataFileBase*>(NULL)));
+      }
+
+      return;
+    }
+
+    // If we had someone to report this too, then this retrieval was done in a
+    // context of search... so continue search.
+    if (!callback.is_null()) {
+      proxy->PostTask(FROM_HERE,
+          base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+                     GetWeakPtrForCurrentThread(),
+                     search_file_path,
+                     callback));
+    }
+  }
+
+  if (has_more_data) {
+    // Don't report to initial callback if we were fetching the first chunk of
+    // uninitialized root feed, because we already reported. Instead, just
+    // continue with entire feed fetch in backgorund.
+    const FindFileCallback continue_callback =
+        initial_read ? FindFileCallback() : callback;
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
@@ -1625,32 +1665,11 @@ void GDataFileSystem::OnGetDocuments(
                    search_file_path,
                    base::Passed(&feed_list),
                    proxy,
-                   callback));
-    return;
-  }
-
-  error = UpdateDirectoryWithDocumentFeed(feed_list.get(), FROM_SERVER);
-  if (error != base::PLATFORM_FILE_OK) {
-    if (!callback.is_null()) {
-      proxy->PostTask(FROM_HERE,
-           base::Bind(callback, error, FilePath(),
-               reinterpret_cast<GDataFileBase*>(NULL)));
-    }
-
-    return;
-  }
-
-  scoped_ptr<base::Value> feed_list_value(feed_list.release());
-  SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
-
-  // If we had someone to report this too, then this retrieval was done in a
-  // context of search... so continue search.
-  if (!callback.is_null()) {
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
-                               GetWeakPtrForCurrentThread(),
-                               search_file_path,
-                               callback));
+                   continue_callback));
+  } else {
+    // Save completed feed in meta cache.
+    scoped_ptr<base::Value> feed_list_value(feed_list.release());
+    SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
   }
 }
 
@@ -2117,6 +2136,11 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
       // An entry with the same self link may already exist, so we need to
       // release the existing GDataFileBase instance before overwriting the
       // entry with another GDataFileBase instance.
+      if (map_entry.first) {
+        LOG(WARNING) << "Found duplicate file "
+                     << map_entry.first->file_name();
+      }
+
       delete map_entry.first;
       map_entry.first = file;
       map_entry.second = parent_url;
@@ -2134,29 +2158,31 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     return error;
   }
 
+  scoped_ptr<GDataRootDirectory> orphaned_files(new GDataRootDirectory(NULL));
   for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
        it != file_by_url.end(); ++it) {
     scoped_ptr<GDataFileBase> file(it->second.first);
     GURL parent_url = it->second.second;
     GDataDirectory* dir = root_.get();
     if (!parent_url.is_empty()) {
-      UrlToFileAndParentMap::iterator find_iter = file_by_url.find(parent_url);
+      UrlToFileAndParentMap::const_iterator find_iter =
+          file_by_url.find(parent_url);
       if (find_iter == file_by_url.end()) {
-        LOG(WARNING) << "Found orphaned file '" << file->file_name()
-                     << "' with non-existing parent folder of "
-                     << parent_url.spec();
+        DVLOG(1) << "Found orphaned file '" << file->file_name()
+                 << "' with non-existing parent folder of "
+                 << parent_url.spec();
+        dir = orphaned_files.get();
       } else {
-        dir = find_iter->second.first->AsGDataDirectory();
+        dir = find_iter->second.first ?
+              find_iter->second.first->AsGDataDirectory() : NULL;
         if (!dir) {
-          LOG(WARNING) << "Found orphaned file '" << file->file_name()
-                       << "' pointing to non directory parent "
-                       << parent_url.spec();
-          dir = root_.get();
+          DVLOG(1) << "Found orphaned file '" << file->file_name()
+                   << "' pointing to non directory parent "
+                   << parent_url.spec();
+          dir = orphaned_files.get();
         }
       }
     }
-    DCHECK(dir);
-
     dir->AddFile(file.release());
   }
 

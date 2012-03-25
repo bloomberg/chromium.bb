@@ -156,7 +156,8 @@ UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
       // MessageLoopProxy is used to run |callback| on the origin thread.
       relay_proxy_(base::MessageLoopProxy::current()),
       re_authenticate_count_(0),
-      save_temp_file_(false) {
+      save_temp_file_(false),
+      started_(false) {
 }
 
 UrlFetchOperationBase::UrlFetchOperationBase(
@@ -218,6 +219,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   NotifyStart();
 
   url_fetcher_->Start();
+  started_ = true;
 }
 
 void UrlFetchOperationBase::SetReAuthenticateCallback(
@@ -269,6 +271,11 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 
 void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
   RunCallbackOnPrematureFailure(code);
+  // Check if this failed before we even started fetching. If so, register
+  // for start so we can properly unregister with finish.
+  if (!started_)
+    NotifyStart();
+
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
 }
 

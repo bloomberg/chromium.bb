@@ -177,6 +177,15 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
 }
 #endif  // defined(OS_CHROMEOS)
 
+
+// Gives the extension renderer |host| file |permissions| for the given |path|.
+void GrantFilePermissionsToHost(content::RenderViewHost* host,
+                                const FilePath& path,
+                                int permissions) {
+  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+      host->GetProcess()->GetID(), path, permissions);
+}
+
 // Given a file url, find the virtual FilePath associated with it.
 FilePath GetVirtualPathFromURL(const GURL& file_url) {
   FilePath virtual_path;
@@ -347,12 +356,56 @@ bool RequestLocalFileSystemFunction::RunImpl() {
 void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
     const std::string& name, const GURL& root_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Add gdata mount point immediately when we kick of first instance of file
+  // manager. The actual mount event will be sent to UI only when we perform
+  // proper authentication.
+  AddGDataMountPoint();
   result_.reset(new DictionaryValue());
   DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
   dict->SetString("name", name);
   dict->SetString("path", root_path.spec());
   dict->SetInteger("error", base::PLATFORM_FILE_OK);
   SendResponse(true);
+}
+
+void RequestLocalFileSystemFunction::AddGDataMountPoint() {
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      BrowserContext::GetFileSystemContext(profile_)->external_provider();
+  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  if (!provider || provider->HasMountPoint(mount_point))
+    return;
+
+  // Grant R/W permissions to gdata 'folder'. File API layer still
+  // expects this to be satisfied.
+  GrantFilePermissionsToHost(render_view_host(),
+                             mount_point,
+                             file_handler_util::GetReadWritePermissions());
+
+  // Grant R/W permission for tmp and pinned cache folder.
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DCHECK(system_service);
+  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
+
+  // We check permissions for raw cache file paths only for read-only
+  // operations (when fileEntry.file() is called), so read only permissions
+  // should be sufficient for all cache paths. For the rest of supported
+  // operations the file access check is done for gdata/ paths.
+  GrantFilePermissionsToHost(render_view_host(),
+                             gdata_file_system->GetGDataCacheTmpDirectory(),
+                             file_handler_util::GetReadOnlyPermissions());
+  GrantFilePermissionsToHost(
+      render_view_host(),
+      gdata_file_system->GetGDataCachePersistentDirectory(),
+      file_handler_util::GetReadOnlyPermissions());
+
+  provider->AddRemoteMountPoint(
+      mount_point,
+      new gdata::GDataFileSystemProxy(gdata_file_system));
+
+  FilePath mount_point_virtual;
+  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
+    provider->GrantFileAccessToExtension(extension_id(), mount_point_virtual);
 }
 
 void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
@@ -907,49 +960,6 @@ bool AddMountFunction::RunImpl() {
   return true;
 }
 
-void AddMountFunction::GrantFilePermissionsToHost(const FilePath& path,
-                                                  int permissions) {
-  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      render_view_host()->GetProcess()->GetID(), path, permissions);
-}
-
-void AddMountFunction::AddGDataMountPoint() {
-  fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile_)->external_provider();
-  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
-  if (!provider || provider->HasMountPoint(mount_point))
-    return;
-
-  // Grant R/W permissions to gdata 'folder'. File API layer still
-  // expects this to be satisfied.
-  GrantFilePermissionsToHost(mount_point,
-                             file_handler_util::GetReadWritePermissions());
-
-  // Grant R/W permission for tmp and pinned cache folder.
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  DCHECK(system_service);
-  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
-
-  // We check permissions for raw cache file paths only for read-only
-  // operations (when fileEntry.file() is called), so read only permissions
-  // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for gdata/ paths.
-  GrantFilePermissionsToHost(gdata_file_system->GetGDataCacheTmpDirectory(),
-                             file_handler_util::GetReadOnlyPermissions());
-  GrantFilePermissionsToHost(
-      gdata_file_system->GetGDataCachePersistentDirectory(),
-      file_handler_util::GetReadOnlyPermissions());
-
-  provider->AddRemoteMountPoint(
-      mount_point,
-      new gdata::GDataFileSystemProxy(gdata_file_system));
-
-  FilePath mount_point_virtual;
-  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
-    provider->GrantFileAccessToExtension(extension_id(), mount_point_virtual);
-}
-
 void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
   chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
       chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
@@ -965,9 +975,6 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
 
 void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
                                              const std::string& token) {
-  if (error == gdata::HTTP_SUCCESS)
-    AddGDataMountPoint();
-
   RaiseGDataMountEvent(error);
   SendResponse(true);
 }
@@ -1443,8 +1450,9 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, GDOC_DOCUMENT_FILE_TYPE);
   SET_STRING(IDS_FILE_BROWSER, GSHEET_DOCUMENT_FILE_TYPE);
   SET_STRING(IDS_FILE_BROWSER, GSLIDES_DOCUMENT_FILE_TYPE);
-  SET_STRING(IDS_FILE_BROWSER, GSLIDES_DOCUMENT_FILE_TYPE);
+  SET_STRING(IDS_FILE_BROWSER, GDRAW_DOCUMENT_FILE_TYPE);
   SET_STRING(IDS_FILE_BROWSER, GTABLE_DOCUMENT_FILE_TYPE);
+
 
   SET_STRING(IDS_FILE_BROWSER, AUDIO_PLAYER_TITLE);
 #undef SET_STRING

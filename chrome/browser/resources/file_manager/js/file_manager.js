@@ -3470,11 +3470,7 @@ FileManager.prototype = {
       this.watchedDirectoryUrl_ = null;
     }
 
-    if (event.newDirEntry.fullPath != '/' &&
-        DirectoryModel.getRootType(event.newDirEntry.fullPath) !=
-            DirectoryModel.GDATA_DIRECTORY) {
-      // Currently file watchers do not work on GData. When they start working
-      // we should be careful not to watch GData before it is mounted.
+    if (event.newDirEntry.fullPath != '/') {
       this.watchedDirectoryUrl_ = event.newDirEntry.toURL();
       chrome.fileBrowserPrivate.addFileWatch(this.watchedDirectoryUrl_,
         function(result) {

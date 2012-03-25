@@ -353,7 +353,6 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 GDataRootDirectory::GDataRootDirectory(GDataFileSystem* file_system)
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
       file_system_(file_system) {
-  DCHECK(file_system_);
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
@@ -493,7 +492,8 @@ void GDataRootDirectory::GetCacheState(
     const std::string& resource_id,
     const std::string& md5,
     const GetCacheStateCallback& callback) {
-  file_system_->GetCacheState(resource_id, md5, callback);
+  if (file_system_)
+    file_system_->GetCacheState(resource_id, md5, callback);
 }
 
 }  // namespace gdata

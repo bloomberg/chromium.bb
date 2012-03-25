@@ -190,6 +190,14 @@ class GDataFileSystemTest : public testing::Test {
     return search_delegate.file();
   }
 
+  GDataFileBase* FindFileElementByResourceId(const std::string& resource_id) {
+    ReadOnlyFindFileDelegate search_delegate;
+    file_system_->FindFileByPathSync(FilePath(FILE_PATH_LITERAL("gdata")),
+                                     &search_delegate);
+    return search_delegate.file()->AsGDataRootDirectory()->GetFileByResourceId(
+        resource_id);
+  }
+
   void FindAndTestFilePath(const FilePath& file_path) {
     GDataFileBase* file = FindFile(file_path);
     ASSERT_TRUE(file) << "File can't be found " << file_path.value();
@@ -929,6 +937,14 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   FindAndTestFilePath(
       FilePath(FILE_PATH_LITERAL(
           "gdata/Directory 1/Sub Directory Folder/Feed 2 Directory")));
+
+  // Make sure orphaned files didn't make into the file system.
+  ASSERT_FALSE(FindFileElementByResourceId(
+      "file:orphan_file_resource_id"));
+  ASSERT_FALSE(FindFileElementByResourceId(
+      "folder:orphan_feed_folder_resouce_id"));
+  ASSERT_FALSE(FindFileElementByResourceId(
+      "file:orphan_subfolder_file_resource_id"));
 }
 
 TEST_F(GDataFileSystemTest, CopyNotExistingFile) {

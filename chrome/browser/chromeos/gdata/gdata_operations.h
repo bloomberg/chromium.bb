@@ -140,6 +140,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   bool save_temp_file_;
   FilePath output_file_path_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
+  bool started_;
 };
 
 //============================ EntryActionOperation ============================
