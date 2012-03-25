@@ -106,9 +106,14 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   const std::deque<std::string>& resource_ids =
       sync_client_->GetResourceIdsForTesting();
   ASSERT_EQ(3U, resource_ids.size());
-  EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[0]);
-  EXPECT_EQ("resource_id_not_fetched_bar", resource_ids[1]);
-  EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[2]);
+  // Since these are the list of file names read from the disk, the order is
+  // not guaranteed
+  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
+                        "resource_id_not_fetched_foo") != resource_ids.end());
+  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
+                        "resource_id_not_fetched_bar") != resource_ids.end());
+  EXPECT_TRUE(std::find(resource_ids.begin(), resource_ids.end(),
+                        "resource_id_not_fetched_baz") != resource_ids.end());
   // resource_id_fetched is not collected in the queue.
 }
 
