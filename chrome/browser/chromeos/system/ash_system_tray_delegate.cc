@@ -129,6 +129,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
         clock_type_(base::k24HourClock),
+        search_key_mapped_to_(input_method::kCapsLockKey),
         data_promo_notification_(new DataPromoNotification()) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -581,10 +582,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     pref_registrar_.reset(new PrefChangeRegistrar);
     pref_registrar_->Init(profile->GetPrefs());
     pref_registrar_->Add(prefs::kUse24HourClock, this);
+    pref_registrar_->Add(prefs::kLanguageXkbRemapSearchKeyTo, this);
     UpdateClockType(profile->GetPrefs());
-
-    remap_search_key_to_.Init(prefs::kLanguageXkbRemapSearchKeyTo,
-                              profile->GetPrefs(), this);
+    search_key_mapped_to_ =
+        profile->GetPrefs()->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
   }
 
   void UpdateClockType(PrefService* service) {
@@ -592,8 +593,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::k24HourClock : base::k12HourClock;
     ash::ClockObserver* observer =
         ash::Shell::GetInstance()->tray()->clock_observer();
-    clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
-        base::k24HourClock : base::k12HourClock;
     if (observer)
       observer->OnDateFormatChanged();
   }
@@ -768,6 +767,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         PrefService* service = content::Source<PrefService>(source).ptr();
         if (pref == prefs::kUse24HourClock) {
           UpdateClockType(service);
+        } else if (pref == prefs::kLanguageXkbRemapSearchKeyTo) {
+          search_key_mapped_to_ =
+              service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
         } else if (pref == prefs::kSpokenFeedbackEnabled) {
           ash::AccessibilityObserver* observer =
               ash::Shell::GetInstance()->tray()->accessibility_observer();
@@ -859,7 +861,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
     int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
     if (!base::chromeos::IsRunningOnChromeOS() ||
-        remap_search_key_to_.GetValue() == input_method::kCapsLockKey)
+        GetUserLoginStatus() == ash::user::LOGGED_IN_NONE ||
+        search_key_mapped_to_ == input_method::kCapsLockKey)
       id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
 
     ash::CapsLockObserver* observer =
@@ -913,11 +916,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string active_network_path_;
   PowerSupplyStatus power_supply_status_;
   base::HourClockType clock_type_;
+  int search_key_mapped_to_;
 
   scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
 
   BooleanPrefMember accessibility_enabled_;
-  IntegerPrefMember remap_search_key_to_;
 
   scoped_ptr<DataPromoNotification> data_promo_notification_;
 
