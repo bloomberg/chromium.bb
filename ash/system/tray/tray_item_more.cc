@@ -6,38 +6,58 @@
 
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 
 namespace ash {
 namespace internal {
 
 TrayItemMore::TrayItemMore(SystemTrayItem* owner)
-    : owner_(owner),
-      more_(NULL) {
+    : owner_(owner) {
   set_focusable(true);
-}
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+      kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
 
-TrayItemMore::~TrayItemMore() {
-}
+  icon_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
+  AddChildView(icon_);
 
-void TrayItemMore::AddMore() {
+  label_ = new views::Label;
+  AddChildView(label_);
+
   more_ = new views::ImageView;
   more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_AURA_UBER_TRAY_MORE).ToSkBitmap());
   AddChildView(more_);
 }
 
+TrayItemMore::~TrayItemMore() {
+}
+
+void TrayItemMore::SetLabel(const string16& label) {
+  label_->SetText(label);
+  Layout();
+  SchedulePaint();
+}
+
+void TrayItemMore::SetImage(const SkBitmap* bitmap) {
+  icon_->SetImage(bitmap);
+  SchedulePaint();
+}
+
 void TrayItemMore::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
-void TrayItemMore::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = accessible_name_;
+void TrayItemMore::ReplaceIcon(views::View* view) {
+  delete icon_;
+  icon_ = NULL;
+  AddChildViewAt(view, 0);
 }
 
 void TrayItemMore::Layout() {
@@ -45,9 +65,17 @@ void TrayItemMore::Layout() {
   // align.
   views::View::Layout();
 
-  gfx::Rect bounds = more_->bounds();
-  bounds.set_x(width() - more_->width() - kTrayPopupPaddingBetweenItems);
+  // Make sure the chevron always has the full size.
+  gfx::Size size = more_->GetPreferredSize();
+  gfx::Rect bounds(size);
+  bounds.set_x(width() - size.width() - kTrayPopupPaddingBetweenItems);
+  bounds.set_y((height() - size.height()) / 2);
   more_->SetBoundsRect(bounds);
+
+  // Adjust the label's bounds in case it got cut off by |more_|.
+  if (label_->bounds().Intersects(more_->bounds())) {
+    label_->SetBoundsRect(label_->bounds().Subtract(more_->bounds()));
+  }
 }
 
 bool TrayItemMore::OnKeyPressed(const views::KeyEvent& event) {
@@ -62,6 +90,11 @@ bool TrayItemMore::OnKeyPressed(const views::KeyEvent& event) {
 bool TrayItemMore::OnMousePressed(const views::MouseEvent& event) {
   owner_->PopupDetailedView(0, true);
   return true;
+}
+
+void TrayItemMore::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = accessible_name_;
 }
 
 }  // namespace internal

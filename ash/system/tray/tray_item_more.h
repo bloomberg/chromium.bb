@@ -10,6 +10,8 @@
 
 namespace views {
 class ImageView;
+class Label;
+class View;
 }
 
 namespace ash {
@@ -25,20 +27,26 @@ class TrayItemMore : public views::View {
   explicit TrayItemMore(SystemTrayItem* owner);
   virtual ~TrayItemMore();
 
-  void AddMore();
-
+  void SetLabel(const string16& label);
+  void SetImage(const SkBitmap* bitmap);
   void SetAccessibleName(const string16& name);
 
-  // Overridden from View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+ protected:
+  // Replaces the default icon (on the left of the label), and allows a custom
+  // view to be palced there. Once the default icon is replaced, |SetImage|
+  // should never be called.
+  void ReplaceIcon(views::View* view);
 
  private:
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   SystemTrayItem* owner_;
+  views::ImageView* icon_;
+  views::Label* label_;
   views::ImageView* more_;
   string16 accessible_name_;
 

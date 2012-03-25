@@ -31,20 +31,9 @@ class BluetoothDefaultView : public TrayItemMore {
  public:
   explicit BluetoothDefaultView(SystemTrayItem* owner)
       : TrayItemMore(owner) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
-    views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
-    icon->SetImage(bundle.GetImageNamed(
-        IDR_AURA_UBER_TRAY_BLUETOOTH).ToSkBitmap());
-    AddChildView(icon);
-
-    label_ = new views::Label;
-    AddChildView(label_);
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToSkBitmap());
     UpdateLabel();
-
-    AddMore();
   }
 
   virtual ~BluetoothDefaultView() {}
@@ -53,14 +42,12 @@ class BluetoothDefaultView : public TrayItemMore {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    label_->SetText(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
+    SetLabel(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
         IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED :
         IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
   }
 
  private:
-  views::Label* label_;
-
   DISALLOW_COPY_AND_ASSIGN(BluetoothDefaultView);
 };
 

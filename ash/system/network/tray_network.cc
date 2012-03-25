@@ -134,17 +134,8 @@ class NetworkDefaultView : public TrayItemMore {
  public:
   explicit NetworkDefaultView(SystemTrayItem* owner)
       : TrayItemMore(owner) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
-
-    icon_ = new NetworkTrayView(DARK, false /*tray_icon*/);
-    AddChildView(icon_);
-
-    label_ = new views::Label();
-    AddChildView(label_);
-
-    AddMore();
-
+    icon_ = new NetworkTrayView(DARK, false /* tray_icon */);
+    ReplaceIcon(icon_);
     Update();
   }
 
@@ -155,14 +146,12 @@ class NetworkDefaultView : public TrayItemMore {
     Shell::GetInstance()->tray_delegate()->
         GetMostRelevantNetworkIcon(&info, true);
     icon_->Update(info);
-    label_->SetText(info.description);
-    label_->parent()->Layout();
+    SetLabel(info.description);
     SetAccessibleName(info.description);
   }
 
  private:
   NetworkTrayView* icon_;
-  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
 };

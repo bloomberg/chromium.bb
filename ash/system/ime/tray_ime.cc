@@ -31,35 +31,24 @@ class IMEDefaultView : public TrayItemMore {
  public:
   explicit IMEDefaultView(SystemTrayItem* owner)
       : TrayItemMore(owner) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingBetweenItems));
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
-    icon->SetImage(bundle.GetImageNamed(
+    SetImage(bundle.GetImageNamed(
         IDR_AURA_UBER_TRAY_IME).ToSkBitmap());
-    AddChildView(icon);
-
-    label_ = new views::Label;
-    AddChildView(label_);
 
     IMEInfo info;
     Shell::GetInstance()->tray_delegate()->GetCurrentIME(&info);
     UpdateLabel(info);
-
-    AddMore();
   }
 
   virtual ~IMEDefaultView() {}
 
   void UpdateLabel(const IMEInfo& info) {
-    label_->SetText(info.name);
+    SetLabel(info.name);
     SetAccessibleName(info.name);
   }
 
  private:
-  views::Label* label_;
-
   DISALLOW_COPY_AND_ASSIGN(IMEDefaultView);
 };
 
