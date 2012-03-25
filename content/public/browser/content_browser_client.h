@@ -63,11 +63,10 @@ class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
-class MediaObserver;
-class QuotaPermissionContext;
 class RenderProcessHost;
-class RenderViewHost;
+class QuotaPermissionContext;
 class ResourceContext;
+class RenderViewHost;
 class SiteInstance;
 class SpeechInputManagerDelegate;
 class WebContents;
@@ -292,10 +291,6 @@ class ContentBrowserClient {
       net::X509Certificate* cert,
       int render_process_id,
       int render_view_id) = 0;
-
-  // Returns a a class to get notifications about media event. The embedder can
-  // return NULL if they're not interested.
-  virtual MediaObserver* GetMediaObserver() = 0;
 
   // Asks permission to use the camera and/or microphone. If permission is
   // granted, a call should be made to |callback| with the devices. If the

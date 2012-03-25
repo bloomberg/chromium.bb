@@ -211,10 +211,6 @@ void MockContentBrowserClient::RequestMediaAccessPermission(
     const MediaResponseCallback& callback) {
 }
 
-MediaObserver* MockContentBrowserClient::GetMediaObserver() {
-  return NULL;
-}
-
 void MockContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,

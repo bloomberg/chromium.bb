@@ -113,7 +113,6 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual void RequestMediaAccessPermission(
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) OVERRIDE;
-  virtual MediaObserver* GetMediaObserver() OVERRIDE;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,
       int callback_context,

@@ -23,4 +23,8 @@ net::URLRequestContext* ShellResourceContext::GetRequestContext() {
   return getter_->GetURLRequestContext();
 }
 
+MediaObserver* ShellResourceContext::GetMediaObserver() {
+  return NULL;
+}
+
 }  // namespace content

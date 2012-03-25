@@ -12,8 +12,8 @@ struct MediaLogEvent;
 
 namespace content {
 
-// An embedder may implement MediaObserver and return it from
-// ContentBrowserClient to receive callbacks as media events occur.
+// A class may implement MediaObserver and register itself with ResourceContext
+// to receive callbacks as media events occur.
 class MediaObserver {
  public:
   // Called when an audio stream is deleted.

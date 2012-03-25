@@ -23,12 +23,18 @@ class MockResourceContext : public ResourceContext {
     test_request_context_ = context;
   }
 
+  void set_media_observer(MediaObserver* observer) {
+    media_observer_ = observer;
+  }
+
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+  virtual MediaObserver* GetMediaObserver() OVERRIDE;
 
  private:
   scoped_refptr<net::URLRequestContext> test_request_context_;
+  MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceContext);
 };

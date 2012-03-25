@@ -19,6 +19,8 @@ class URLRequestContext;
 
 namespace content {
 
+class MediaObserver;
+
 // ResourceContext contains the relevant context information required for
 // resource loading. It lives on the IO thread, although it is constructed on
 // the UI thread.
@@ -30,6 +32,7 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   virtual ~ResourceContext() {}
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;
+  virtual MediaObserver* GetMediaObserver() = 0;
 };
 
 }  // namespace content

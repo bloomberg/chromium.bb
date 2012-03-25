@@ -219,12 +219,15 @@ class ProfileIOData {
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+    virtual content::MediaObserver* GetMediaObserver() OVERRIDE;
+
     void EnsureInitialized();
 
     ProfileIOData* const io_data_;
 
     net::HostResolver* host_resolver_;
     net::URLRequestContext* request_context_;
+    content::MediaObserver* media_observer_;
   };
 
   typedef base::hash_map<std::string, scoped_refptr<ChromeURLRequestContext> >

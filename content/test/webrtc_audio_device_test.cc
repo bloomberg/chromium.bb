@@ -170,6 +170,7 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   test_request_context_ = new TestURLRequestContext();
   resource_context_->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
+  resource_context_->set_media_observer(media_observer_.get());
 
   // Create an IPC channel that handles incoming messages on the IO thread.
   CreateChannel(thread_name);
@@ -186,7 +187,7 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
 void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   audio_render_host_ = new AudioRendererHost(
-      audio_manager_.get(), media_observer_.get());
+      resource_context_.get(), audio_manager_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(
