@@ -489,8 +489,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
-    return NaClBrokerService::GetInstance()->LaunchLoader(
-        this, ASCIIToWide(channel_id));
+    return NaClBrokerService::GetInstance()->LaunchLoader(this, channel_id);
   } else {
     process_->Launch(FilePath(), cmd_line.release());
   }

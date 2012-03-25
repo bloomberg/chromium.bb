@@ -27,7 +27,7 @@ bool NaClBrokerService::StartBroker() {
 }
 
 bool NaClBrokerService::LaunchLoader(NaClProcessHost* nacl_process_host,
-                                     const std::wstring& loader_channel_id) {
+                                     const std::string& loader_channel_id) {
   // Add task to the list
   pending_launches_[loader_channel_id] = nacl_process_host;
   NaClBrokerHost* broker_host = GetBrokerHost();
@@ -42,7 +42,7 @@ bool NaClBrokerService::LaunchLoader(NaClProcessHost* nacl_process_host,
   return true;
 }
 
-void NaClBrokerService::OnLoaderLaunched(const std::wstring& channel_id,
+void NaClBrokerService::OnLoaderLaunched(const std::string& channel_id,
                                          base::ProcessHandle handle) {
   NaClProcessHost* client;
   PendingLaunchesMap::iterator it = pending_launches_.find(channel_id);

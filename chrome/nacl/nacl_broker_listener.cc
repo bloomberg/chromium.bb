@@ -125,7 +125,7 @@ void NaClBrokerListener::OnChannelError() {
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
-    const std::wstring& loader_channel_id) {
+    const std::string& loader_channel_id) {
   base::ProcessHandle loader_process = 0;
   base::ProcessHandle loader_handle_in_browser = 0;
 
@@ -140,9 +140,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kNaClLoaderProcess);
 
-    // TODO(evanm): remove needless usage of wstring for channel id.
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                                WideToASCII(loader_channel_id));
+                                loader_channel_id);
 
     loader_process = sandbox::StartProcessWithAccess(cmd_line, FilePath());
     if (loader_process) {

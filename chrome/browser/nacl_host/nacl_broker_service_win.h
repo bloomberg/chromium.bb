@@ -25,10 +25,10 @@ class NaClBrokerService {
   // Send a message to the broker process, causing it to launch
   // a Native Client loader process.
   bool LaunchLoader(NaClProcessHost* client,
-                    const std::wstring& loader_channel_id);
+                    const std::string& loader_channel_id);
 
   // Called by NaClBrokerHost to notify the service that a loader was launched.
-  void OnLoaderLaunched(const std::wstring& channel_id,
+  void OnLoaderLaunched(const std::string& channel_id,
                         base::ProcessHandle handle);
 
   // Called by NaClProcessHost when a loader process is terminated
@@ -41,7 +41,7 @@ class NaClBrokerService {
   void OnDebugExceptionHandlerLaunched(int32 pid);
 
  private:
-  typedef std::map<std::wstring, NaClProcessHost*> PendingLaunchesMap;
+  typedef std::map<std::string, NaClProcessHost*> PendingLaunchesMap;
   typedef std::map<int, NaClProcessHost*> PendingDebugExceptionHandlersMap;
 
   friend struct DefaultSingletonTraits<NaClBrokerService>;

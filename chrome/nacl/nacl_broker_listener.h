@@ -26,7 +26,7 @@ class NaClBrokerListener : public IPC::Channel::Listener {
   virtual void OnChannelError() OVERRIDE;
 
  private:
-  void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
+  void OnLaunchLoaderThroughBroker(const std::string& loader_channel_id);
   void OnLaunchDebugExceptionHandler(int32 pid);
   void OnStopBroker();
 

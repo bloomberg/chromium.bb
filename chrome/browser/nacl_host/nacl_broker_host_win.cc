@@ -61,13 +61,12 @@ bool NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool NaClBrokerHost::LaunchLoader(
-    const std::wstring& loader_channel_id) {
+bool NaClBrokerHost::LaunchLoader(const std::string& loader_channel_id) {
   return process_->Send(
       new NaClProcessMsg_LaunchLoaderThroughBroker(loader_channel_id));
 }
 
-void NaClBrokerHost::OnLoaderLaunched(const std::wstring& loader_channel_id,
+void NaClBrokerHost::OnLoaderLaunched(const std::string& loader_channel_id,
                                       base::ProcessHandle handle) {
   NaClBrokerService::GetInstance()->OnLoaderLaunched(loader_channel_id, handle);
 }

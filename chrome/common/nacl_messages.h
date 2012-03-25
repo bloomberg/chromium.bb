@@ -26,11 +26,11 @@ IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
 
 // Tells the NaCl broker to launch a NaCl loader process.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,
-                     std::wstring /* channel ID for the loader */)
+                     std::string /* channel ID for the loader */)
 
 // Notify the browser process that the loader was launched successfully.
 IPC_MESSAGE_CONTROL2(NaClProcessMsg_LoaderLaunched,
-                     std::wstring,  /* channel ID for the loader */
+                     std::string,  /* channel ID for the loader */
                      base::ProcessHandle /* loader process handle */)
 
 // Tells the NaCl broker to attach a debug exception handler to the

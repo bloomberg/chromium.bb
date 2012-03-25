@@ -26,7 +26,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
 
   // Send a message to the broker process, causing it to launch
   // a Native Client loader process.
-  bool LaunchLoader(const std::wstring& loader_channel_id);
+  bool LaunchLoader(const std::string& loader_channel_id);
 
   bool LaunchDebugExceptionHandler(int32 pid);
 
@@ -35,7 +35,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
 
  private:
   // Handler for NaClProcessMsg_LoaderLaunched message
-  void OnLoaderLaunched(const std::wstring& loader_channel_id,
+  void OnLoaderLaunched(const std::string& loader_channel_id,
                         base::ProcessHandle handle);
   // Handler for NaClProcessMsg_DebugExceptionHandlerLaunched message
   void OnDebugExceptionHandlerLaunched(int32 pid);
