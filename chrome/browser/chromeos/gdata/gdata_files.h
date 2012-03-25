@@ -316,7 +316,7 @@ class GDataRootDirectory : public GDataDirectory {
   void RemoveFilesFromResourceMap(const GDataFileCollection& children);
 
   // Returns the GDataFileBase* with the corresponding |resource_id|.
-  GDataFileBase* GetFileByResource(const std::string& resource_id);
+  GDataFileBase* GetFileByResourceId(const std::string& resource_id);
 
   // Set |cache_map_| data member to formal parameter |new_cache_map|.
   void SetCacheMap(const CacheMap& new_cache_map);

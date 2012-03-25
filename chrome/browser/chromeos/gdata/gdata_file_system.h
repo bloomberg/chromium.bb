@@ -295,6 +295,14 @@ class GDataFileSystemInterface {
   virtual void GetFile(const FilePath& file_path,
                        const GetFileCallback& callback) = 0;
 
+  // Gets a file for the given |resource_id| from the gdata server. Used for
+  // fetching pinned-but-not-fetched files.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void GetFileForResourceId(
+      const std::string& resource_id,
+      const GetFileCallback& callback) = 0;
+
   // Gets absolute path of cache file corresponding to |gdata_file_path|.
   // Upon completion, |callback| is invoked on the same thread where this method
   // was called, with path if it exists and is accessible or empty FilePath
@@ -407,6 +415,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFile(const FilePath& file_path,
                        const GetFileCallback& callback) OVERRIDE;
+  virtual void GetFileForResourceId(
+      const std::string& resource_id,
+      const GetFileCallback& callback) OVERRIDE;
   virtual void GetFromCacheForPath(
       const FilePath& gdata_file_path,
       const GetFromCacheCallback& callback) OVERRIDE;
@@ -1163,7 +1174,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // we only want to initialize cache once.
   bool cache_initialization_started_;
 
-  // Number of pending tasks on the worker thread pool.
+  // Number of pending tasks on the blocking thread pool.
   int num_pending_tasks_;
   base::Lock num_pending_tasks_lock_;
 

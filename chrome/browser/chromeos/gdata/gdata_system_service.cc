@@ -52,12 +52,12 @@ void GDataSystemService::Initialize() {
 }
 
 void GDataSystemService::Shutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // These should shut down here as they depend on |file_system_|.
   sync_client_.reset();
   download_observer_.reset();
   uploader_.reset();
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->ShutdownOnUIThread();
   // Delete file_system_ on IO thread, because file_system_ owns a weak

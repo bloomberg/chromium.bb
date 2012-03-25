@@ -1053,6 +1053,51 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
                                           callback)));
 }
 
+void GDataFileSystem::GetFileForResourceId(
+    const std::string& resource_id,
+    const GetFileCallback& callback) {
+  base::AutoLock lock(lock_);  // To access the cache map.
+
+  GDataFile* file = NULL;
+  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
+  if (file_base)
+    file = file_base->AsGDataFile();
+
+  // Report an error immediately if the file for the resource ID is not
+  // found.
+  if (!file) {
+    if (!callback.is_null()) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback,
+                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                     FilePath(),
+                     REGULAR_FILE));
+    }
+    return;
+  }
+
+  const FilePath local_tmp_path = GetCacheFilePath(
+      resource_id,
+      file->file_md5(),
+      GDataRootDirectory::CACHE_TYPE_TMP,
+      CACHED_FILE_FROM_SERVER);
+
+  documents_service_->DownloadFile(
+      file->GetFilePath(),
+      local_tmp_path,
+      file->content_url(),
+      base::Bind(&GDataFileSystem::OnFileDownloaded,
+                 GetWeakPtrForCurrentThread(),
+                 GetFileFromCacheParams(file->GetFilePath(),
+                                        local_tmp_path,
+                                        file->content_url(),
+                                        resource_id,
+                                        file->file_md5(),
+                                        base::MessageLoopProxy::current(),
+                                        callback)));
+}
+
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                                          base::PlatformFileError error,
                                          const std::string& resource_id,
@@ -2484,7 +2529,7 @@ void GDataFileSystem::GetCacheStateOnIOThreadPool(
   int cache_state = GDataFile::CACHE_STATE_NONE;
 
   // Get file object for |resource_id|.
-  GDataFileBase* file_base = root_->GetFileByResource(resource_id);
+  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
   GDataFile* file = NULL;
   if (!file_base || !file_base->AsGDataFile()) {
     error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3304,7 +3349,7 @@ void GDataFileSystem::PostBlockingPoolSequencedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   // Initiate the sequenced task. We should Reset() here rather than on the
-  // worker thread pool, as Reset() will cause a deadlock if it's called
+  // blocking thread pool, as Reset() will cause a deadlock if it's called
   // while Wait() is being called in the destructor.
   on_io_completed_->Reset();
 

@@ -397,7 +397,7 @@ void GDataRootDirectory::RemoveFilesFromResourceMap(
   }
 }
 
-GDataFileBase* GDataRootDirectory::GetFileByResource(
+GDataFileBase* GDataRootDirectory::GetFileByResourceId(
     const std::string& resource) {
   // GDataFileSystem has already locked.
   ResourceMap::const_iterator iter = resource_map_.find(resource);
