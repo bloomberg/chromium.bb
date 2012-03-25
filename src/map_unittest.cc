@@ -104,4 +104,11 @@ TEST(MapTest, IteratorTest) {
   EXPECT_EQ(14, found);
 }
 
+TEST(MapTest, ConstAccessTest) {
+  map<int, int, 3> mp;
+  mp[1] = 2;
+  const map<int, int, 3>& const_mp = mp;
+  EXPECT_EQ(2, const_mp[1]);
+}
+
 }  // namespace gestures

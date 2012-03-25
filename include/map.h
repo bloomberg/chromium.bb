@@ -121,6 +121,10 @@ class map {
     return (*it).second;
   }
 
+  const Data& operator[](const Key& key) const {
+    return (*const_cast<map<Key, Data, kMaxSize>*>(this))[key];
+  }
+
  private:
   set<SetElt, kMaxSize> set_;
 };
