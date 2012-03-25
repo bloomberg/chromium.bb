@@ -349,6 +349,10 @@ class GDataFileSystemInterface {
   // <user_profile_dir>/GCache/v1/tmp/downloads/
   virtual FilePath GetGDataTempDownloadFolderPath() const = 0;
 
+  // Returns the tmp documents sub-directory under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1/tmp/documents/
+  virtual FilePath GetGDataTempDocumentFolderPath() const = 0;
+
   // Returns the pinned sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/pinned
   virtual FilePath GetGDataCachePinnedDirectory() const = 0;
@@ -435,6 +439,7 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                    GDataFileProperties* properties) OVERRIDE;
   virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
   virtual FilePath GetGDataTempDownloadFolderPath() const OVERRIDE;
+  virtual FilePath GetGDataTempDocumentFolderPath() const OVERRIDE;
   virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
   virtual FilePath GetGDataCachePersistentDirectory() const OVERRIDE;
   virtual FilePath GetCacheFilePath(
@@ -598,10 +603,11 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                  base::PlatformFileError *error);
 
   // Creates a temporary JSON file representing a document with |edit_url|
-  // and |resource_id| on IO thread pool. Upon completion it will invoke
-  // |callback| with the path of the created temporary file on thread
-  // represented by |relay_proxy|.
+  // and |resource_id| under |document_dir| on IO thread pool. Upon completion
+  // it will invoke |callback| with the path of the created temporary file on
+  // thread represented by |relay_proxy|.
   static void CreateDocumentJsonFileOnIOThreadPool(
+      const FilePath& document_dir,
       const GURL& edit_url,
       const std::string& resource_id,
       const GetFileCallback& callback,

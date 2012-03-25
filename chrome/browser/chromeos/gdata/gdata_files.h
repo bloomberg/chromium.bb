@@ -274,6 +274,7 @@ class GDataRootDirectory : public GDataDirectory {
     CACHE_TYPE_TMP,            // Files that don't meet criteria to be in
                                // persistent dir, and hence evictable.
     CACHE_TYPE_TMP_DOWNLOADS,  // Downloaded files.
+    CACHE_TYPE_TMP_DOCUMENTS,  // Temporary JSON files for hosted documents.
   };
 
   // Structure to store information of an existing cache file.

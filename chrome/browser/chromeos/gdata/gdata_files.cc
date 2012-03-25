@@ -31,6 +31,8 @@ std::string CacheSubDirectoryTypeToString(
     case gdata::GDataRootDirectory::CACHE_TYPE_TMP: return "tmp";
     case gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS:
       return "tmp_downloads";
+    case gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS:
+      return "tmp_documents";
   }
   NOTREACHED();
   return "unknown subdir";

@@ -66,6 +66,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                          GDataFileProperties* properties));
   MOCK_CONST_METHOD0(GetGDataCacheTmpDirectory, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDownloadFolderPath, FilePath());
+  MOCK_CONST_METHOD0(GetGDataTempDocumentFolderPath, FilePath());
   MOCK_CONST_METHOD0(GetGDataCachePinnedDirectory, FilePath());
   MOCK_CONST_METHOD0(GetGDataCachePersistentDirectory, FilePath());
   MOCK_CONST_METHOD4(GetCacheFilePath, FilePath(

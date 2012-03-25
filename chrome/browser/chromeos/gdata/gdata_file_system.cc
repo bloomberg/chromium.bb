@@ -53,6 +53,8 @@ const FilePath::CharType kGDataCachePersistentDir[] =
 const FilePath::CharType kGDataCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
 const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
+const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
+    FILE_PATH_LITERAL("tmp/documents");
 const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
@@ -426,6 +428,7 @@ void GDataFileSystem::Initialize() {
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePersistentDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDir));
   cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDocumentsDir));
 
   documents_service_->Initialize(profile_);
 
@@ -979,6 +982,7 @@ void GDataFileSystem::CreateDirectory(
 
 // static
 void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
+    const FilePath& document_dir,
     const GURL& edit_url,
     const std::string& resource_id,
     const GetFileCallback& callback,
@@ -986,7 +990,7 @@ void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
   FilePath temp_file;
 
-  if (file_util::CreateTemporaryFile(&temp_file)) {
+  if (file_util::CreateTemporaryFileInDir(document_dir, &temp_file)) {
     std::string document_content = base::StringPrintf(
         "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
         edit_url.spec().c_str(), resource_id.c_str());
@@ -1026,8 +1030,13 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
   if (file_properties.is_hosted_document) {
-    BrowserThread::PostBlockingPoolTask(FROM_HERE,
+    InitializeCacheIfNecessary();
+
+    PostBlockingPoolSequencedTask(
+        kGDataFileSystemToken,
+        FROM_HERE,
         base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
+                   GetGDataTempDocumentFolderPath(),
                    file_properties.edit_url,
                    file_properties.resource_id,
                    callback,
@@ -1274,6 +1283,10 @@ FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
 
 FilePath GDataFileSystem::GetGDataTempDownloadFolderPath() const {
   return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS];
+}
+
+FilePath GDataFileSystem::GetGDataTempDocumentFolderPath() const {
+  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS];
 }
 
 FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
