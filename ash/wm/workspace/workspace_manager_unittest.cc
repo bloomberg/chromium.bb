@@ -17,6 +17,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -444,6 +445,12 @@ TEST_F(WorkspaceManagerTest, MinimizeMaximizedWindow) {
 // Verifies ShelfLayoutManager's visibility/auto-hide state is correctly
 // updated.
 TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
   // Two windows, w1 normal, w2 maximized.
   scoped_ptr<Window> w1(CreateTestWindow());
   w1->SetBounds(gfx::Rect(0, 1, 101, 102));

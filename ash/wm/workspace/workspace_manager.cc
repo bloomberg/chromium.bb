@@ -158,18 +158,17 @@ gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
 }
 
 void WorkspaceManager::UpdateShelfVisibility() {
-  if (!shelf_ || !active_workspace_) {
-    shelf_->SetState(ShelfLayoutManager::VISIBLE);
-    shelf_->SetWindowOverlapsShelf(false);
-    return;
-  }
+  shelf_->UpdateVisibilityState();
+}
+
+WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
+  if (!shelf_ || !active_workspace_)
+    return WINDOW_STATE_DEFAULT;
 
   // TODO: this code needs to be made multi-monitor aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(contents_view_));
   bounds.set_height(bounds.height() - shelf_->shelf_height());
   const aura::Window::Windows& windows(contents_view_->children());
-  bool has_full_screen_window = false;
-  bool has_max_window = false;
   bool window_overlaps_launcher = false;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
@@ -178,26 +177,16 @@ void WorkspaceManager::UpdateShelfVisibility() {
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;
-    if (wm::IsWindowMaximized(*i)) {
-      has_max_window = true;
-      break;
-    }
-    if (wm::IsWindowFullscreen(*i)) {
-      has_full_screen_window = true;
-      break;
-    }
+    if (wm::IsWindowMaximized(*i))
+      return WINDOW_STATE_MAXIMIZED;
+    if (wm::IsWindowFullscreen(*i))
+      return WINDOW_STATE_FULL_SCREEN;
     if (!window_overlaps_launcher && (*i)->bounds().bottom() > bounds.bottom())
       window_overlaps_launcher = true;
   }
 
-  ShelfLayoutManager::VisibilityState visibility_state =
-      ShelfLayoutManager::VISIBLE;
-  if (has_full_screen_window)
-    visibility_state = ShelfLayoutManager::HIDDEN;
-  else if (has_max_window)
-    visibility_state = ShelfLayoutManager::AUTO_HIDE;
-  shelf_->SetState(visibility_state);
-  shelf_->SetWindowOverlapsShelf(window_overlaps_launcher);
+  return window_overlaps_launcher ? WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
+      WINDOW_STATE_DEFAULT;
 }
 
 void WorkspaceManager::ShowStateChanged(aura::Window* window) {

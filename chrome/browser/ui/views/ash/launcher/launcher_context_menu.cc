@@ -4,35 +4,44 @@
 
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
 
+#include "ash/shell.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
-                                         const ash::LauncherItem& item)
+                                         const ash::LauncherItem* item)
     : ui::SimpleMenuModel(NULL),
       delegate_(delegate),
-      item_(item) {
+      item_(item ? *item : ash::LauncherItem()) {
   set_delegate(this);
 
-  if (item_.type == ash::TYPE_APP_SHORTCUT) {
-    DCHECK(delegate->IsPinned(item_.id));
-    AddItem(
-        MENU_PIN,
-        l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
-    AddCheckItemWithStringId(
-        LAUNCH_TYPE_REGULAR_TAB,
-        IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-    AddCheckItemWithStringId(
-        LAUNCH_TYPE_WINDOW,
-        IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-  } else {
-    AddItem(MENU_OPEN, delegate->GetTitle(item));
-    if (delegate->IsOpen(item_.id)) {
-      AddItem(MENU_CLOSE,
-              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+  if (is_valid_item()) {
+    if (item_.type == ash::TYPE_APP_SHORTCUT) {
+      DCHECK(delegate->IsPinned(item_.id));
+      AddItem(
+          MENU_PIN,
+          l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
+      AddCheckItemWithStringId(
+          LAUNCH_TYPE_REGULAR_TAB,
+          IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+      AddCheckItemWithStringId(
+          LAUNCH_TYPE_WINDOW,
+          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+    } else {
+      AddItem(MENU_OPEN, delegate->GetTitle(item_));
+      if (delegate->IsOpen(item_.id)) {
+        AddItem(MENU_CLOSE,
+                l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+      }
     }
+    AddSeparator();
   }
+  AddCheckItemWithStringId(MENU_AUTO_HIDE,
+                           IDS_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_SHELF);
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -40,6 +49,8 @@ LauncherContextMenu::~LauncherContextMenu() {
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
+    case MENU_AUTO_HIDE:
+      return ash::Shell::GetInstance()->GetShelfAlwaysAutoHide();
     case LAUNCH_TYPE_REGULAR_TAB:
       return delegate_->GetAppType(item_.id) ==
           ChromeLauncherDelegate::APP_TYPE_TAB;
@@ -78,7 +89,12 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
     case LAUNCH_TYPE_WINDOW:
       delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_WINDOW);
       break;
-    default:
+    case MENU_AUTO_HIDE:
+      ash::Shell::GetInstance()->SetShelfAlwaysAutoHide(
+          !ash::Shell::GetInstance()->GetShelfAlwaysAutoHide());
+      delegate_->profile()->GetPrefs()->SetBoolean(
+          prefs::kAlwaysAutoHideShelf,
+          ash::Shell::GetInstance()->GetShelfAlwaysAutoHide());
       break;
   }
 }

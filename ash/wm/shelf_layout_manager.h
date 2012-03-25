@@ -22,6 +22,9 @@ class Widget;
 namespace ash {
 namespace internal {
 
+class ShelfLayoutManagerTest;
+class WorkspaceManager;
+
 // ShelfLayoutManager is the layout manager responsible for the launcher and
 // status widgets. The launcher is given the total available width and told the
 // width of the status area. This allows the launcher to draw the background and
@@ -60,6 +63,14 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
 
+  // Sets whether the shelf always auto-hides. Default is false.
+  void SetAlwaysAutoHide(bool value);
+  bool always_auto_hide() const { return always_auto_hide_; }
+
+  void set_workspace_manager(WorkspaceManager* manager) {
+    workspace_manager_ = manager;
+  }
+
   views::Widget* launcher_widget() {
     return launcher_ ? launcher_->widget() : NULL;
   }
@@ -84,19 +95,14 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // widgets.
   void LayoutShelf();
 
-  // Sets the visibility of the shelf to |state|.
-  void SetState(VisibilityState visibility_state);
-  VisibilityState visibility_state() const { return state_.visibility_state; }
-  AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
-
-  // Forces the visibility to |forced_visibility_state|. Any calls to SetState
-  // are ignored after this until ClearForcedState is called.
-  // TODO: clean this up!
-  void SetForcedState(VisibilityState forced_visibility_state);
-  void ClearForcedState();
+  // Updates the visibility state.
+  void UpdateVisibilityState();
 
   // Invoked by the shelf/launcher when the auto-hide state may have changed.
   void UpdateAutoHideState();
+
+  VisibilityState visibility_state() const { return state_.visibility_state; }
+  AutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
@@ -113,6 +119,7 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
 
  private:
   class AutoHideEventFilter;
+  friend class ShelfLayoutManagerTest;
 
   struct TargetBounds {
     TargetBounds() : opacity(0.0f) {}
@@ -139,6 +146,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
     AutoHideState auto_hide_state;
   };
 
+  // Sets the visibility of the shelf to |state|.
+  void SetState(VisibilityState visibility_state);
+
   // Stops any animations.
   void StopAnimating();
 
@@ -163,20 +173,19 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager {
   // again from SetChildBounds().
   bool in_layout_;
 
+  // See description above setter.
+  bool always_auto_hide_;
+
   // Current state.
   State state_;
-
-  // Variables to keep track of the visibility state when we need to force the
-  // visibility to a particular value.
-  VisibilityState forced_visibility_state_;
-  VisibilityState normal_visibility_state_;
-  bool is_visibility_state_forced_;
 
   // Height of the shelf (max of launcher and status).
   int shelf_height_;
 
   Launcher* launcher_;
   views::Widget* status_;
+
+  WorkspaceManager* workspace_manager_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;

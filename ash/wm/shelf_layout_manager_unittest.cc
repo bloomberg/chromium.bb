@@ -7,6 +7,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/env.h"
@@ -41,7 +42,18 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 
 }  // namespace
 
-typedef ash::test::AshTestBase ShelfLayoutManagerTest;
+class ShelfLayoutManagerTest : public ash::test::AshTestBase {
+ public:
+  ShelfLayoutManagerTest() {}
+
+  void SetState(ShelfLayoutManager* shelf,
+                ShelfLayoutManager::VisibilityState state) {
+    shelf->SetState(state);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
+};
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
 #if defined(OS_MACOSX)
@@ -66,7 +78,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             monitor->work_area_insets().bottom());
 
   // Hide the shelf.
-  shelf->SetState(ShelfLayoutManager::HIDDEN);
+  SetState(shelf, ShelfLayoutManager::HIDDEN);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
@@ -80,7 +92,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             gfx::Screen::GetPrimaryMonitorBounds().bottom());
 
   // And show it again.
-  shelf->SetState(ShelfLayoutManager::VISIBLE);
+  SetState(shelf, ShelfLayoutManager::VISIBLE);
   // Run the animation to completion.
   StepWidgetLayerAnimatorToEnd(shelf->launcher_widget());
   StepWidgetLayerAnimatorToEnd(shelf->status());
@@ -114,7 +126,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
       manager->GetMonitorNearestWindow(Shell::GetRootWindow());
 
   // Hide the shelf.
-  shelf->SetState(ShelfLayoutManager::HIDDEN);
+  SetState(shelf, ShelfLayoutManager::HIDDEN);
   shelf->LayoutShelf();
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   EXPECT_EQ(0, monitor->work_area_insets().bottom());
@@ -186,7 +198,7 @@ TEST_F(ShelfLayoutManagerTest, DISABLED_AutoHide) {
   generator.MoveMouseTo(gfx::Point(0, root->bounds().bottom() - 1));
 
   // Shelf should be shown again.
-  shelf->SetState(ShelfLayoutManager::AUTO_HIDE);
+  SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - shelf->shelf_height(),
@@ -194,11 +206,79 @@ TEST_F(ShelfLayoutManagerTest, DISABLED_AutoHide) {
 
   // Move mouse back up.
   generator.MoveMouseTo(gfx::Point(0, 0));
-  shelf->SetState(ShelfLayoutManager::AUTO_HIDE);
+  SetState(shelf, ShelfLayoutManager::AUTO_HIDE);
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
             shelf->launcher_widget()->GetWindowScreenBounds().y());
+}
+
+// Assertions around the lock screen showing.
+TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
+  // Since ShelfLayoutManager queries for mouse location, move the mouse so
+  // it isn't over the shelf.
+  aura::test::EventGenerator generator(
+      Shell::GetInstance()->GetRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Maximize();
+  widget->Show();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  aura::RootWindow* root = Shell::GetRootWindow();
+  // LayoutShelf() forces the animation to completion, at which point the
+  // launcher should go off the screen.
+  shelf->LayoutShelf();
+  EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
+            shelf->launcher_widget()->GetWindowScreenBounds().y());
+
+  aura::Window* lock_container = Shell::GetInstance()->GetContainer(
+      internal::kShellWindowId_LockScreenContainer);
+
+  views::Widget* lock_widget = new views::Widget;
+  views::Widget::InitParams lock_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  lock_params.bounds = gfx::Rect(0, 0, 200, 200);
+  lock_params.parent = lock_container;
+  // Widget is now owned by the parent window.
+  lock_widget->Init(lock_params);
+  lock_widget->Maximize();
+  lock_widget->Show();
+
+  // Lock the screen.
+  Shell::GetInstance()->delegate()->LockScreen();
+  shelf->UpdateVisibilityState();
+  // Showing a widget in the lock screen should force the shelf to be visibile.
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+
+  Shell::GetInstance()->delegate()->UnlockScreen();
+  shelf->UpdateVisibilityState();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+}
+
+// Assertions around SetAlwaysAutoHide.
+TEST_F(ShelfLayoutManagerTest, SetAlwaysAutoHide) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  // Widget is now owned by the parent window.
+  widget->Init(params);
+  widget->Show();
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+
+  shelf->SetAlwaysAutoHide(true);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+
+  shelf->SetAlwaysAutoHide(FALSE);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 }
 
 }  // namespace internal

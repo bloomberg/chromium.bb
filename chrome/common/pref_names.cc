@@ -1792,6 +1792,9 @@ const char kRestoreSessionStateDialogShown[] =
 const char kWebIntentsEnabled[] = "webintents.enabled";
 
 #if defined(USE_AURA)
+// Boolean value indicating whether the shelf always hides.
+const char kAlwaysAutoHideShelf[] = "auto_hide_shelf";
+
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
 
 const char kMaximumSecondsBetweenDoubleClick[] =

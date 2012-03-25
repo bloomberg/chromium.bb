@@ -113,6 +113,11 @@ void ChromeLauncherDelegate::Init() {
       }
     }
   }
+  // TODO(sky): update unit test so that this test isn't necessary.
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->SetShelfAlwaysAutoHide(
+        profile_->GetPrefs()->GetBoolean(prefs::kAlwaysAutoHideShelf));
+  }
 }
 
 // static
@@ -121,6 +126,8 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
   // pushed to local state and we'll need to track profile per item.
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
                                PrefService::SYNCABLE_PREF);
+  user_prefs->RegisterBooleanPref(prefs::kAlwaysAutoHideShelf,
+                                  false, PrefService::SYNCABLE_PREF);
 }
 
 ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
@@ -371,7 +378,11 @@ string16 ChromeLauncherDelegate::GetTitle(const ash::LauncherItem& item) {
 
 ui::MenuModel* ChromeLauncherDelegate::CreateContextMenu(
     const ash::LauncherItem& item) {
-  return new LauncherContextMenu(this, item);
+  return new LauncherContextMenu(this, &item);
+}
+
+ui::MenuModel* ChromeLauncherDelegate::CreateContextMenuForLauncher() {
+  return new LauncherContextMenu(this, NULL);
 }
 
 ash::LauncherID ChromeLauncherDelegate::GetIDByWindow(

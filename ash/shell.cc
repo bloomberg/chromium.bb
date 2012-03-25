@@ -845,6 +845,18 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void Shell::UpdateShelfVisibility() {
+  shelf_->UpdateVisibilityState();
+}
+
+void Shell::SetShelfAlwaysAutoHide(bool value) {
+  shelf_->SetAlwaysAutoHide(value);
+}
+
+bool Shell::GetShelfAlwaysAutoHide() const {
+  return shelf_->always_auto_hide();
+}
+
 int Shell::GetGridSize() const {
   return workspace_controller_->workspace_manager()->grid_size();
 }
@@ -873,6 +885,8 @@ void Shell::InitLayoutManagers() {
   workspace_controller_.reset(
       new internal::WorkspaceController(default_container));
   workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
+  shelf_layout_manager->set_workspace_manager(
+      workspace_controller_->workspace_manager());
 
   // Create desktop background widget.
   // TODO(bshe): We should be able to use OnDesktopBackgroundChanged function

@@ -32,6 +32,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item) OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
 
  private:

@@ -7,7 +7,10 @@
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/wm/workspace/workspace_manager.h"
 #include "base/auto_reset.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -103,16 +106,22 @@ ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : in_layout_(false),
-      forced_visibility_state_(VISIBLE),
-      normal_visibility_state_(VISIBLE),
-      is_visibility_state_forced_(false),
+      always_auto_hide_(false),
       shelf_height_(status->GetWindowScreenBounds().height()),
       launcher_(NULL),
       status_(status),
+      workspace_manager_(NULL),
       window_overlaps_shelf_(false) {
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
+}
+
+void ShelfLayoutManager::SetAlwaysAutoHide(bool value) {
+  if (always_auto_hide_ == value)
+    return;
+  always_auto_hide_ = value;
+  UpdateVisibilityState();
 }
 
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
@@ -161,12 +170,81 @@ void ShelfLayoutManager::LayoutShelf() {
       target_bounds.work_area_insets);
 }
 
+void ShelfLayoutManager::UpdateVisibilityState() {
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
+  if (delegate && delegate->IsScreenLocked()) {
+    SetState(VISIBLE);
+  } else {
+    WorkspaceManager::WindowState window_state(
+        workspace_manager_->GetWindowState());
+    switch (window_state) {
+      case WorkspaceManager::WINDOW_STATE_FULL_SCREEN:
+        SetState(HIDDEN);
+        break;
+
+      case WorkspaceManager::WINDOW_STATE_MAXIMIZED:
+        SetState(AUTO_HIDE);
+        break;
+
+      case WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
+      case WorkspaceManager::WINDOW_STATE_DEFAULT:
+        SetState(always_auto_hide_ ? AUTO_HIDE : VISIBLE);
+        SetWindowOverlapsShelf(window_state ==
+            WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
+    }
+  }
+}
+
+void ShelfLayoutManager::UpdateAutoHideState() {
+  if (CalculateAutoHideState(state_.visibility_state) !=
+      state_.auto_hide_state) {
+    // Don't change state immediately. Instead delay for a bit.
+    if (!auto_hide_timer_.IsRunning()) {
+      auto_hide_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
+          this, &ShelfLayoutManager::UpdateAutoHideStateNow);
+    }
+  } else {
+    auto_hide_timer_.Stop();
+  }
+}
+
+void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
+  window_overlaps_shelf_ = value;
+  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, aura::LayoutManager implementation:
+
+void ShelfLayoutManager::OnWindowResized() {
+  LayoutShelf();
+}
+
+void ShelfLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+}
+
+void ShelfLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
+}
+
+void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
+                                                        bool visible) {
+}
+
+void ShelfLayoutManager::SetChildBounds(aura::Window* child,
+                                        const gfx::Rect& requested_bounds) {
+  SetChildBoundsDirect(child, requested_bounds);
+  if (!in_layout_)
+    LayoutShelf();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, private:
+
 void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   State state;
-  if (!is_visibility_state_forced_)
-    state.visibility_state = visibility_state;
-  else
-    state.visibility_state = forced_visibility_state_;
+  state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
 
   if (state_.Equals(state))
@@ -216,67 +294,6 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
       target_bounds.work_area_insets);
   UpdateShelfBackground(change_type);
 }
-
-void ShelfLayoutManager::SetForcedState(
-    VisibilityState forced_visibility_state) {
-  is_visibility_state_forced_ = true;
-  forced_visibility_state_ = forced_visibility_state;
-  normal_visibility_state_ = state_.visibility_state;
-  SetState(forced_visibility_state_);
-}
-
-void ShelfLayoutManager::ClearForcedState() {
-  is_visibility_state_forced_ = false;
-  SetState(normal_visibility_state_);
-}
-
-
-void ShelfLayoutManager::UpdateAutoHideState() {
-  if (CalculateAutoHideState(state_.visibility_state) !=
-      state_.auto_hide_state) {
-    // Don't change state immediately. Instead delay for a bit.
-    if (!auto_hide_timer_.IsRunning()) {
-      auto_hide_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
-          this, &ShelfLayoutManager::UpdateAutoHideStateNow);
-    }
-  } else {
-    auto_hide_timer_.Stop();
-  }
-}
-
-void ShelfLayoutManager::SetWindowOverlapsShelf(bool value) {
-  window_overlaps_shelf_ = value;
-  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, aura::LayoutManager implementation:
-
-void ShelfLayoutManager::OnWindowResized() {
-  LayoutShelf();
-}
-
-void ShelfLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-}
-
-void ShelfLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
-}
-
-void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                        bool visible) {
-}
-
-void ShelfLayoutManager::SetChildBounds(aura::Window* child,
-                                        const gfx::Rect& requested_bounds) {
-  SetChildBoundsDirect(child, requested_bounds);
-  if (!in_layout_)
-    LayoutShelf();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, private:
 
 void ShelfLayoutManager::StopAnimating() {
   if (launcher_widget())

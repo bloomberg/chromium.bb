@@ -222,6 +222,7 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
       context_menu_id_(0) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
+  set_context_menu_controller(this);
 }
 
 LauncherView::~LauncherView() {
@@ -253,6 +254,7 @@ void LauncherView::Init() {
       rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToSkBitmap());
   overflow_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AURA_LAUNCHER_OVERFLOW_NAME));
+  overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
 
@@ -349,7 +351,6 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
                   TabbedLauncherButton::STATE_INCOGNITO :
                   TabbedLauncherButton::STATE_NOT_INCOGNITO);
       button->SetTabImage(item.image);
-      button->set_context_menu_controller(this);
       ReflectItemStatus(item, button);
       view = button;
       break;
@@ -360,7 +361,6 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
-      button->set_context_menu_controller(this);
       break;
     }
 
@@ -395,6 +395,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
     default:
       break;
   }
+  view->set_context_menu_controller(this);
 
   DCHECK(view);
   ConfigureChildView(view);
@@ -723,18 +724,24 @@ void LauncherView::ButtonPressed(views::Button* sender,
 
 void LauncherView::ShowContextMenuForView(views::View* source,
                                           const gfx::Point& point) {
-  int view_index = view_model_->GetIndexOfView(source);
-  // May be -1 while in the process of animating closed.
-  if (view_index == -1 || !delegate_)
+  if (!delegate_)
     return;
 
+  int view_index = view_model_->GetIndexOfView(source);
+  if (model_->items()[view_index].type == TYPE_BROWSER_SHORTCUT ||
+      model_->items()[view_index].type == TYPE_APP_LIST) {
+    view_index = -1;
+  }
 #if !defined(OS_MACOSX)
   scoped_ptr<ui::MenuModel> menu_model(
-      delegate_->CreateContextMenu(model_->items()[view_index]));
+      view_index == -1 ?
+          delegate_->CreateContextMenuForLauncher() :
+          delegate_->CreateContextMenu(model_->items()[view_index]));
   if (!menu_model.get())
     return;
-  AutoReset<LauncherID> reseter(&context_menu_id_,
-                                model_->items()[view_index].id);
+  AutoReset<LauncherID> reseter(
+      &context_menu_id_,
+      view_index == -1 ? 0 : model_->items()[view_index].id);
   views::MenuModelAdapter menu_model_adapter(menu_model.get());
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter.CreateMenu()));

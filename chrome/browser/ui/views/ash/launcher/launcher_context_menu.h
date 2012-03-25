@@ -25,8 +25,10 @@ class ChromeLauncherDelegate;
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
+  // |item| is NULL if the context menu is for the launcher (the user right
+  // |clicked on an area with no icons).
   LauncherContextMenu(ChromeLauncherDelegate* delegate,
-                      const ash::LauncherItem& item);
+                      const ash::LauncherItem* item);
   virtual ~LauncherContextMenu();
 
   // ID of the item we're showing the context menu for.
@@ -47,7 +49,12 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_PIN,
     LAUNCH_TYPE_REGULAR_TAB,
     LAUNCH_TYPE_WINDOW,
+    MENU_AUTO_HIDE,
   };
+
+  // Does |item_| represent a valid item? See description of constructor for
+  // details on why it may not be valid.
+  bool is_valid_item() const { return item_.id != 0; }
 
   ChromeLauncherDelegate* delegate_;
   ash::LauncherItem item_;

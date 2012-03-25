@@ -58,12 +58,12 @@ void WorkspaceController::ToggleOverview() {
 
 void WorkspaceController::ShowMenu(views::Widget* widget,
                                    const gfx::Point& location) {
+  // TODO(sky): move this. Since this menu is now specific to the background it
+  // doesn't make sense to be here.
 #if !defined(OS_MACOSX)
   ui::SimpleMenuModel menu_model(this);
   // This is just for testing and will be ripped out before we ship, so none of
   // the strings are localized.
-  menu_model.AddCheckItem(MENU_SNAP_TO_GRID,
-                          ASCIIToUTF16("Snap to grid"));
   menu_model.AddItem(MENU_CHANGE_WALLPAPER,
                      l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
   views::MenuModelAdapter menu_model_adapter(&menu_model);
@@ -89,13 +89,6 @@ void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,
 }
 
 bool WorkspaceController::IsCommandIdChecked(int command_id) const {
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_SNAP_TO_GRID:
-      return workspace_manager_->grid_size() != 0;
-
-    default:
-      break;
-  }
   return false;
 }
 
@@ -105,20 +98,6 @@ bool WorkspaceController::IsCommandIdEnabled(int command_id) const {
 
 void WorkspaceController::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
-    case MENU_SNAP_TO_GRID: {
-      int size = workspace_manager_->grid_size() == 0 ? kGridSize : 0;
-      SetGridSize(size);
-      if (!size)
-        return;
-      for (size_t i = 0; i < viewport_->children().size(); ++i) {
-        aura::Window* window = viewport_->children()[i];
-        if (!wm::IsWindowMaximized(window) && !wm::IsWindowFullscreen(window)) {
-          window->SetBounds(workspace_manager_->AlignBoundsToGrid(
-                                window->GetTargetBounds()));
-        }
-      }
-      break;
-    }
     case MENU_CHANGE_WALLPAPER: {
       Shell::GetInstance()->user_wallpaper_delegate()->
           OpenSetWallpaperPage();

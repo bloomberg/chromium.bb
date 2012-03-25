@@ -74,7 +74,6 @@ class ASH_EXPORT WorkspaceController :
   friend class WorkspaceControllerTestHelper;
 
   enum MenuItem {
-    MENU_SNAP_TO_GRID,
     MENU_CHANGE_WALLPAPER,
   };
 

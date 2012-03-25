@@ -206,6 +206,14 @@ class ASH_EXPORT Shell {
 
   const ScreenAsh* screen() { return screen_; }
 
+  // Force the shelf to query for it's current visibility state.
+  void UpdateShelfVisibility();
+
+  // Sets/gets whether the shelf always auto-hides.
+  void SetShelfAlwaysAutoHide(bool value);
+  bool GetShelfAlwaysAutoHide() const;
+
+  // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 
   SystemTray* tray() const { return tray_.get(); }

@@ -46,6 +46,10 @@ ui::MenuModel* LauncherDelegateImpl::CreateContextMenu(
   return NULL;
 }
 
+ui::MenuModel* LauncherDelegateImpl::CreateContextMenuForLauncher() {
+  return NULL;
+}
+
 ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {
   return watcher_->GetIDByWindow(window);
 }

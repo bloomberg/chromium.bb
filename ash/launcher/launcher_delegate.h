@@ -40,6 +40,10 @@ class ASH_EXPORT LauncherDelegate {
   // model.
   virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item) = 0;
 
+  // Returns the context menumodel for the launcher. Return NULL if there should
+  // be no context menu. The caller takes ownership of the returned model.
+  virtual ui::MenuModel* CreateContextMenuForLauncher() = 0;
+
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) = 0;

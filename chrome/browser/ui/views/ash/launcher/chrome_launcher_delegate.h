@@ -147,6 +147,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   ash::LauncherModel* model() { return model_; }
 
+  Profile* profile() { return profile_; }
+
   // ash::LauncherDelegate overrides:
   virtual void CreateNewTab() OVERRIDE;
   virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE;
@@ -154,6 +156,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
       const ash::LauncherItem& item) OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:

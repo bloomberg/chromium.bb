@@ -41,10 +41,12 @@ bool ShellDelegateImpl::IsUserLoggedIn() {
 void ShellDelegateImpl::LockScreen() {
   ash::shell::CreateLockScreen();
   locked_ = true;
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
 }
 
 void ShellDelegateImpl::UnlockScreen() {
   locked_ = false;
+  ash::Shell::GetInstance()->UpdateShelfVisibility();
 }
 
 bool ShellDelegateImpl::IsScreenLocked() const {
