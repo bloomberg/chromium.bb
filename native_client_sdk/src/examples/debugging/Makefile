@@ -25,6 +25,9 @@ CHROME_PATH?=Undefined
 # information (-g) for correctness and ease of debugging.
 WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic 
 CFLAGS:=-pthread -O0 -g $(WARNINGS) -fno-omit-frame-pointer
+LDFLAGS:=-pthread -lppapi
+CC_SOURCES:=hello_world.c untrusted_crash_dump.c string_stream.c
+PROJECT:=hello_world
 
 #
 # Compute path to compiler
@@ -58,13 +61,21 @@ export CYGWIN
 # Default target is everything
 all : hello_world_x86_32.nexe hello_world_x86_64.nexe
 
-# Define compile and link rule for 32 bit (-m32) nexe
-hello_world_x86_32.nexe : hello_world.c untrusted_crash_dump.c string_stream.c
-	$(CC) -o $@ $^ -m32 -O0 -g $(CFLAGS) -lppapi
+# Define 32 bit compile and link rules for C sources
+x86_32_OBJS:=$(patsubst %.c,%_32.o,$(CC_SOURCES))
+$(x86_32_OBJS) : %_32.o : %.c $(THIS_MAKE)
+	$(CC) -o $@ -c $< -m32 -O0 -g $(CCFLAGS)
 
-# Define compile and link rule for 64 bit (-m64) nexe
-hello_world_x86_64.nexe : hello_world.c untrusted_crash_dump.c string_stream.c
-	$(CC) -o $@ $^ -m64 -O0 -g $(CFLAGS) -lppapi
+$(PROJECT)_x86_32.nexe : $(x86_32_OBJS)
+	$(CC) -o $@ $^ -m32 -O0 -g $(CCFLAGS) $(LDFLAGS)
+
+# Define 64 bit compile and link rules for C sources
+x86_64_OBJS:=$(patsubst %.c,%_64.o,$(CC_SOURCES))
+$(x86_64_OBJS) : %_64.o : %.c $(THIS_MAKE)
+	$(CC) -o $@ -c $< -m64 -O0 -g $(CCFLAGS)
+
+$(PROJECT)_x86_64.nexe : $(x86_64_OBJS)
+	$(CC) -o $@ $^ -m64 -O0 -g $(CCFLAGS) $(LDFLAGS)
 
 # Define a phony rule so it always runs, to build nexe and start up server.
 .PHONY: RUN 
@@ -76,7 +87,7 @@ RUN: all
 # Setup environment to use SDK's version of the NaCl plugin, instead of the
 # one built into Chrome.  This requries launching Chrome which means we must
 # be able to find it.  It also means that we must determine which versions
-# of the plugin, loader, irt, and any helps we must use.
+# of the plugin, loader, irt, and any other helpers we must use.
 #
 HELPER_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --helper)
 IRTBIN_PATH:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py --irtbin)

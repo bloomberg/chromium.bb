@@ -87,36 +87,43 @@
   </form>
 </head>
 <body onload="pageDidLoad()">
-<h1>Native Client Getting Started: Debugging.</h1>
-<p>This example shows how to trap an untrusted exception, and then send that
-information to the webserver to generate a stack trace.  This can only be used
+<h1>Native Client Debugging Example: Generating a Stack Trace.</h1>
+<h2>How the example works</h2>
+<p>This example shows how to trap an untrusted exception (such as a illegal 
+memory reference in the NEXE).  This debugging technique can only be used
 for development since it requires several command-line switches, environment
-variables and a special version of the plugin.  The test works, by loading the
-module and communicating with it through PostMessage.  Messages from the module
-are sent to the status line and/or the log window.  Four seconds after loading,
-the script will send a 'BOOM' message to the module which will cause it to 
-dereference an illegal location in memory.</p>
+variables, and a special version of the Native Client plugin.  The test works
+by loading the module and communicating with it through PostMessage.  Messages
+from the module are sent to the Status line and/or the Log window in the page.
+Four seconds after the module is loaded, the JavaScript on this page sends a
+'BOOM' message to the module that causes the module to  dereference an illegal
+location in memory.</p>
 
-<p>If Chrome is launched correctly with the appropriate command-line arguments
-and environment variables, the Log will show the crash dump facilities were 
-turn on and when the crash data arrives, it will be forwarded to the http server
-which will drive the decoder and send a stack trace back to the web page.</p>
+<p>If your setup is correct (you launched Chrome with the appropriate
+command-line arguments and environment variables), the Log window bellow should
+show the that the crash dump facilities are turn on. When the crash data
+arrives from the module, the data is forwarded to the HTTP server, which drives
+a decoder and sends back a stack trace to the web page.</p>
 
-<p>If setup incorrectly, the page may or may not load.  If it does, it will
-send a "LOADED" message to the log and eventual will crash.  The script will
-detect this crash by detecting a missed heartbeat the the running application
-would normal send, and then print the current module status. 
+<p>If setup incorrectly, the NaCl module may or may not load.  If the module 
+loads, it sends a "LOADED" message to the log and crash after four seconds.
+Since the stack trace facilities are not enables, the script will determine that
+the module has crashed by detecting a missed heartbeat which the application
+would normally send. 
 </p> 
 
 <h2>Running the example</h2>
-In one console window, to start the server:
+In one terminal window, to start the server:
 <ul>
-<li>Set CHROME_PATH to the fully qualified path.</li>
+<li>Set the CHROME_PATH environment variable to the fully qualified path of your
+cChrome executable.</li>
 <li>From the example directory type: <b>make RUN</b></li>
 </ul>
-In another console window, to start Chrome:
+In another terminal window, to automatically start Chrome with the correct
+environment variables and command-line switches:
 <ul>
-<li>Set CHROME_PATH to the fully qualified path.</li>
+<li>Set the CHROME_PATH environment variable to the fully qualified path of your
+cChrome executable.</li>
 <li>From the example directory type: <b>make TRACE</b></li>
 </ul>
 
@@ -132,6 +139,7 @@ In another console window, to start Chrome:
          src="hello_world.nmf"
          type="application/x-nacl" />
 </div>
+<hr>
 <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <form name="Logging">
     <h2>Log</h2>
