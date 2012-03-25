@@ -67,32 +67,15 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Utility function which asks the C++ to show a platform-specific file
-     * select dialog, and fire |callback| with the |filePath| that resulted.
-     * |selectType| can be either 'file' or 'folder'. |operation| can be 'load',
-     * 'packRoot', or 'pem' which are signals to the C++ to do some
-     * operation-specific configuration.
-     * @private
-     */
-    showFileDialog_: function(selectType, operation, callback) {
-      handleFilePathSelected = function(filePath) {
-        callback(filePath);
-        handleFilePathSelected = function() {};
-      };
-
-      chrome.send('extensionSettingsSelectFilePath', [selectType, operation]);
-    },
-
-    /**
      * Handles the Load Unpacked Extension button.
      * @param {Event} e Change event.
      * @private
      */
     handleLoadUnpackedExtension_: function(e) {
-      this.showFileDialog_('folder', 'pem', function(filePath) {
-        chrome.send('extensionSettingsLoad', [String(filePath)]);
-      });
+      chrome.send('extensionSettingsLoadUnpackedExtension');
 
+      // TODO(jhawkins): Refactor metrics support out of options and use it
+      // in extensions.html.
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_LoadUnpackedExtension']);
     },

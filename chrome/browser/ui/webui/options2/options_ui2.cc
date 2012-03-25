@@ -86,13 +86,15 @@
 #endif
 
 using content::RenderViewHost;
-using content::WebContents;
-using content::WebUIMessageHandler;
+
+namespace {
+
+const char kLocalizedStringsFile[] = "strings.js";
+const char kOptionsBundleJsFile[]  = "options_bundle.js";
+
+}  // namespace
 
 namespace options2 {
-
-static const char kLocalizedStringsFile[] = "strings.js";
-static const char kOptionsBundleJsFile[]  = "options_bundle.js";
 
 ////////////////////////////////////////////////////////////////////////////////
 //

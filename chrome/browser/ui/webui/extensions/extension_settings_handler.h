@@ -69,10 +69,28 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
       bool enabled,
       bool terminated);
 
-  // ContentScript JSON Struct for page. (static for ease of testing).
-  static base::DictionaryValue* CreateContentScriptDetailValue(
-      const UserScript& script,
-      const FilePath& extension_path);
+  void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
+ private:
+  // WebUIMessageHandler implementation.
+  virtual void RegisterMessages() OVERRIDE;
+
+  // SelectFileDialog::Listener implementation.
+  virtual void FileSelected(const FilePath& path,
+                            int index, void* params) OVERRIDE;
+  virtual void MultiFilesSelected(
+      const std::vector<FilePath>& files, void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionUninstallDialog::Delegate implementation, used for receiving
+  // notification about uninstall confirmation dialog selections.
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);
@@ -104,20 +122,14 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Callback for "showButton" message.
   void HandleShowButtonMessage(const base::ListValue* args);
 
-  // Callback for "load" message.
-  void HandleLoadMessage(const base::ListValue* args);
-
-  // Callback for "pack" message.
-  void HandlePackMessage(const base::ListValue* args);
-
   // Callback for "autoupdate" message.
   void HandleAutoUpdateMessage(const base::ListValue* args);
 
-  // Utility for calling javascript window.alert in the page.
-  void ShowAlert(const std::string& message);
+  // Callback for "loadUnpackedExtension" message.
+  void HandleLoadUnpackedExtensionMessage(const base::ListValue* args);
 
-  // Callback for "selectFilePath" message.
-  void HandleSelectFilePathMessage(const base::ListValue* args);
+  // Utility for calling JavaScript window.alert in the page.
+  void ShowAlert(const std::string& message);
 
   // Utility for callbacks that get an extension ID as the sole argument.
   const Extension* GetExtension(const base::ListValue* args);
@@ -128,29 +140,6 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Register for notifications that we need to reload the page.
   void MaybeRegisterForNotifications();
 
-  // SelectFileDialog::Listener
-  virtual void FileSelected(const FilePath& path,
-                            int index, void* params) OVERRIDE;
-  virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
-
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
-
-  void GetLocalizedValues(base::DictionaryValue* localized_strings);
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // ExtensionUninstallDialog::Delegate implementation, used for receiving
-  // notification about uninstall confirmation dialog selections.
-  virtual void ExtensionUninstallAccepted() OVERRIDE;
-  virtual void ExtensionUninstallCanceled() OVERRIDE;
-
- private:
   // Helper that lists the current active html pages for an extension.
   std::vector<ExtensionPage> GetActivePagesForExtension(
       const Extension* extension);
@@ -187,7 +176,7 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   content::RenderViewHost* deleting_rvh_;
 
   // We want to register for notifications only after we've responded at least
-  // once to the page, otherwise we'd be calling javacsript functions on objects
+  // once to the page, otherwise we'd be calling JavaScript functions on objects
   // that don't exist yet when notifications come in. This variable makes sure
   // we do so only once.
   bool registered_for_notifications_;

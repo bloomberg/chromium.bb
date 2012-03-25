@@ -51,20 +51,20 @@ cr.define('extensions', function() {
     },
 
     /**
-    * Utility function which asks the C++ to show a platform-specific file
-    * select dialog, and fire |callback| with the |filePath| that resulted.
-    * |selectType| can be either 'file' or 'folder'. |operation| can be 'load',
-    * 'packRoot', or 'pem' which are signals to the C++ to do some
-    * operation-specific configuration.
-    * @private
-    */
+     * Utility function which asks the C++ to show a platform-specific file
+     * select dialog, and fire |callback| with the |filePath| that resulted.
+     * |selectType| can be either 'file' or 'folder'. |operation| can be 'load'
+     * or 'pem' which are signals to the C++ to do some operation-specific
+     * configuration.
+     * @private
+     */
     showFileDialog_: function(selectType, operation, callback) {
       handleFilePathSelected = function(filePath) {
         callback(filePath);
         handleFilePathSelected = function() {};
       };
 
-      chrome.send('extensionSettingsSelectFilePath', [selectType, operation]);
+      chrome.send('packExtensionSelectFilePath', [selectType, operation]);
     },
 
     /**
@@ -84,7 +84,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleBrowsePrivateKey_: function(e) {
-      this.showFileDialog_('file', 'load', function(filePath) {
+      this.showFileDialog_('file', 'pem', function(filePath) {
         $('extensionPrivateKey').value = filePath;
       });
     },

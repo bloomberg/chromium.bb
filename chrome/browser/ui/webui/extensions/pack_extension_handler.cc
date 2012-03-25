@@ -7,6 +7,8 @@
 #include "chrome/browser/extensions/extension_creator.h"
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,6 +17,11 @@ PackExtensionHandler::PackExtensionHandler() {
 }
 
 PackExtensionHandler::~PackExtensionHandler() {
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (load_extension_dialog_)
+    load_extension_dialog_->ListenerDestroyed();
+
   if (pack_job_.get())
     pack_job_->ClearClient();
 }
@@ -47,9 +54,13 @@ void PackExtensionHandler::GetLocalizedValues(
 }
 
 void PackExtensionHandler::RegisterMessages() {
-  // Setup handlers specific to this panel.
-  web_ui()->RegisterMessageCallback("pack",
+  web_ui()->RegisterMessageCallback(
+      "pack",
       base::Bind(&PackExtensionHandler::HandlePackMessage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "packExtensionSelectFilePath",
+      base::Bind(&PackExtensionHandler::HandleSelectFilePathMessage,
                  base::Unretained(this)));
 }
 
@@ -79,14 +90,30 @@ void PackExtensionHandler::OnPackFailure(const std::string& error,
   }
 }
 
+void PackExtensionHandler::FileSelected(const FilePath& path, int index,
+                                        void* params) {
+  ListValue results;
+  results.Append(Value::CreateStringValue(path.value()));
+  web_ui()->CallJavascriptFunction("window.handleFilePathSelected", results);
+}
+
+void PackExtensionHandler::MultiFilesSelected(
+    const std::vector<FilePath>& files, void* params) {
+  NOTREACHED();
+}
+
 void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 
-  CHECK_EQ(3U, args->GetSize());
-  CHECK(args->GetString(0, &extension_path_));
-  CHECK(args->GetString(1, &private_key_path_));
+  DCHECK_EQ(3U, args->GetSize());
+
+  if (!args->GetString(0, &extension_path_) ||
+      !args->GetString(1, &private_key_path_))
+    NOTREACHED();
 
   double flags_double = 0.0;
-  CHECK(args->GetDouble(2, &flags_double));
+  if (!args->GetDouble(2, &flags_double))
+    NOTREACHED();
+
   int run_flags = static_cast<int>(flags_double);
 
   FilePath root_directory =
@@ -113,6 +140,48 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 
   pack_job_ = new PackExtensionJob(this, root_directory, key_file, run_flags);
   pack_job_->Start();
+}
+
+void PackExtensionHandler::HandleSelectFilePathMessage(
+    const ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
+
+  std::string select_type;
+  if (!args->GetString(0, &select_type))
+    NOTREACHED();
+
+  std::string operation;
+  if (!args->GetString(1, &operation))
+    NOTREACHED();
+
+  SelectFileDialog::Type type = SelectFileDialog::SELECT_FOLDER;
+  SelectFileDialog::FileTypeInfo info;
+  int file_type_index = 0;
+  if (select_type == "file")
+    type = SelectFileDialog::SELECT_OPEN_FILE;
+
+  string16 select_title;
+  if (operation == "load") {
+    select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
+  } else if (operation == "pem") {
+    select_title = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
+    info.extensions.push_back(std::vector<FilePath::StringType>());
+        info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
+        info.extension_description_overrides.push_back(
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION));
+        info.include_all_files = true;
+    file_type_index = 1;
+  } else {
+    NOTREACHED();
+  }
+
+  load_extension_dialog_ = SelectFileDialog::Create(this);
+  load_extension_dialog_->SelectFile(
+      type, select_title, FilePath(), &info, file_type_index,
+      FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
 void PackExtensionHandler::ShowAlert(const std::string& message) {

@@ -119,7 +119,7 @@ class SelectFileDialog
   // |default_path| is the default path and suggested file name to be shown in
   //   the dialog. This only works for SELECT_SAVEAS_FILE and SELECT_OPEN_FILE.
   //   Can be an empty string to indicate the platform default.
-  // |file_types| holds the infomation about the file types allowed. Pass NULL
+  // |file_types| holds the information about the file types allowed. Pass NULL
   //   to get no special behavior
   // |file_type_index| is the 1-based index into the file type list in
   //   |file_types|. Specify 0 if you don't need to specify extension behavior.
