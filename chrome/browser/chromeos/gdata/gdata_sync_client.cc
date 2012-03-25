@@ -102,36 +102,49 @@ void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
   DCHECK(posted);
 }
 
-std::vector<std::string> GDataSyncClient::GetResourceIdInQueueForTesting() {
-  std::queue<std::string> copied_queue = queue_;
-  std::vector<std::string> output;
-  while (!copied_queue.empty()) {
-    output.push_back(copied_queue.front());
-    copied_queue.pop();
-  }
-  return output;
+void GDataSyncClient::DoFetchLoop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (queue_.empty())
+    return;
+
+  const std::string resource_id = queue_.front();
+  queue_.pop_front();
+
+  DVLOG(1) << "Fetching " << resource_id;
+  file_system_->GetFileForResourceId(
+      resource_id,
+      base::Bind(&GDataSyncClient::OnFetchFileComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 resource_id));
 }
 
 void GDataSyncClient::OnCacheInitialized() {
-  // TODO(satorux): We should initiate the initial scan. I'm too lazy to do
-  // this now.
-  LOG(WARNING) << "Not implemented";
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartInitialScan(base::Bind(&GDataSyncClient::DoFetchLoop,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataSyncClient::OnFilePinned(const std::string& resource_id,
                                    const std::string& md5) {
-  // TODO(satorux): As of now, "available offline" column in the file browser
-  // is not clickable and the user action is not propagated to the
-  // GDataFileSystem.  crosbug.com/27961
-  LOG(WARNING) << "Not implemented";
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Add it to the queue, kick off the loop.
+  queue_.push_back(resource_id);
+  DoFetchLoop();
 }
 
 void GDataSyncClient::OnFileUnpinned(const std::string& resource_id,
                                      const std::string& md5) {
-  // TODO(satorux): As of now, "available offline" column in the file browser
-  // is not clickable and the user action is not propagated to the
-  // GDataFileSystem.  crosbug.com/27961
-  LOG(WARNING) << "Not implemented";
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Remove the resource_id if it's in the queue. This can happen if the user
+  // cancels pinning before the file is fetched.
+  std::deque<std::string>::iterator iter =
+      std::find(queue_.begin(), queue_.end(), resource_id);
+  if (iter != queue_.end())
+    queue_.erase(iter);
 }
 
 void GDataSyncClient::OnInitialScanComplete(
@@ -143,10 +156,26 @@ void GDataSyncClient::OnInitialScanComplete(
   for (size_t i = 0; i < resource_ids->size(); ++i) {
     const std::string& resource_id = (*resource_ids)[i];
     DVLOG(1) << "Queuing " << resource_id;
-    queue_.push(resource_id);
+    queue_.push_back(resource_id);
   }
 
   closure.Run();
+}
+
+void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
+                                          base::PlatformFileError error,
+                                          const FilePath& local_path,
+                                          GDataFileType file_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    DVLOG(1) << "Fetched " << resource_id << ": " << local_path.value();
+  } else {
+    // TODO(satorux): We should re-queue if the error is recoverable.
+    LOG(WARNING) << "Failed to fetch " << resource_id;
+  }
+
+  DoFetchLoop();
 }
 
 }  // namespace gdata

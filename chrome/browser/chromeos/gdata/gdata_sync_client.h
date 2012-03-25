@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
 #pragma once
 
-#include <queue>
+#include <deque>
 #include <string>
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -65,14 +65,22 @@ class GDataSyncClient : public GDataSyncClientInterface {
   // Starts scanning the pinned directory in the cache to collect
   // pinned-but-not-fetched files. |closure| is run on the calling thread
   // once the initial scan is complete.
-  //
-  // TODO(satorux): This function isn't used yet in the production code.
-  // We should get notified about completion of the cache initialization, and
-  // call this function.
   void StartInitialScan(const base::Closure& closure);
 
+  // Runs the fetch loop that fetches files in |queue_|. One file is fetched
+  // at a time, rather than in parallel. The loop ends when the queue becomes
+  // empty.
+  void DoFetchLoop();
+
   // Returns the contents of |queue_|. Used only for testing.
-  std::vector<std::string> GetResourceIdInQueueForTesting();
+  const std::deque<std::string>& GetResourceIdsForTesting() const {
+    return queue_;
+  }
+
+  // Adds the resource ID to the queue. Used only for testing.
+  void AddResourceIdForTesting(const std::string& resource_id) {
+    queue_.push_back(resource_id);
+  }
 
  private:
   // Called when the initial scan is complete. Receives the resource IDs of
@@ -81,11 +89,20 @@ class GDataSyncClient : public GDataSyncClientInterface {
   void OnInitialScanComplete(const base::Closure& closure,
                              std::vector<std::string>* resource_ids);
 
+  // Called when the file for |resource_id| is fetched.
+  // Calls DoFetchLoop() to go back to the fetch loop.
+  void OnFetchFileComplete(const std::string& resource_id,
+                           base::PlatformFileError error,
+                           const FilePath& local_path,
+                           GDataFileType file_type);
+
+
   GDataFileSystemInterface* file_system_;
 
   // The queue of resource IDs used to fetch pinned-but-not-fetched files in
-  // the background thread.
-  std::queue<std::string> queue_;
+  // the background thread. Note that this class does not use a lock to
+  // protect |queue_| as all methods touching |queue_| run on the UI thread.
+  std::deque<std::string> queue_;
 
   base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
 
