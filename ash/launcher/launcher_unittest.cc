@@ -30,43 +30,6 @@ TEST_F(LauncherTest, SetStatusWidth) {
   EXPECT_EQ(total_width - total_width / 2, launcher_view->width());
 }
 
-// Confirm that launching an app gets the appropriate state reflected in
-// its button.
-TEST_F(LauncherTest, LaunchApp) {
-  Launcher* launcher = Shell::GetInstance()->launcher();
-  ASSERT_TRUE(launcher);
-  LauncherView* launcher_view = launcher->GetLauncherViewForTest();
-  LauncherView::TestAPI test(launcher_view);
-  LauncherModel* model = launcher->model();
-
-  // Initially we have the app list and chrome icon.
-  int button_count = test.GetButtonCount();
-
-  // Add closed app.
-  LauncherItem item;
-  item.type = TYPE_APP;
-  int index = model->Add(item);
-  ASSERT_EQ(++button_count, test.GetButtonCount());
-  LauncherButton* button = test.GetButton(index);
-  EXPECT_EQ(LauncherButton::STATE_NORMAL, button->state());
-
-  // Open it.
-  item = model->items()[index];
-  item.status = STATUS_RUNNING;
-  model->Set(index, item);
-  EXPECT_EQ(LauncherButton::STATE_RUNNING, button->state());
-
-  // Close it.
-  item = model->items()[index];
-  item.status = STATUS_CLOSED;
-  model->Set(index, item);
-  EXPECT_EQ(LauncherButton::STATE_NORMAL, button->state());
-
-  // Remove it.
-  model->RemoveItemAt(index);
-  ASSERT_EQ(--button_count, test.GetButtonCount());
-}
-
 // Confirm that launching a browser gets the appropriate state reflected in
 // its button.
 TEST_F(LauncherTest, OpenBrowser) {

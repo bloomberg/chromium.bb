@@ -29,9 +29,6 @@ enum ASH_EXPORT LauncherItemType {
   TYPE_TABBED,
 
   // Represents an app window.
-  TYPE_APP,
-
-  // Represents an app window.
   TYPE_APP_SHORTCUT,
 
   // Toggles visiblity of the app list.

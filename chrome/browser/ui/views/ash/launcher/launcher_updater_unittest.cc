@@ -120,8 +120,8 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
       window.Init(ui::LAYER_NOT_DRAWN);
       launcher_test->root_window()->AddChild(&window);
       launcher_test->activation_client_->ActivateWindow(&window);
-      updater.Init();
       aura::client::SetActivationDelegate(&window, this);
+      updater.Init();
     }
 
     ash::LauncherItem GetUpdaterItem() {
@@ -226,47 +226,6 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
   }
 }
 
-// Verifies a new launcher item is added for TYPE_APP.
-TEST_F(LauncherUpdaterTest, AppSetup) {
-  size_t initial_size = launcher_model_->items().size();
-  {
-    State state(this, std::string(), LauncherUpdater::TYPE_APP);
-    // There should be one more item.
-    ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    // New item should be added at the end.
-    EXPECT_EQ(ash::TYPE_APP, state.GetUpdaterItem().type);
-  }
-  // Deleting the LauncherUpdater should have removed the item.
-  ASSERT_EQ(initial_size, launcher_model_->items().size());
-}
-
-// Verifies AppIconLoader is queried appropriately.
-TEST_F(LauncherUpdaterTest, QueryAppIconLoader) {
-  size_t initial_size = launcher_model_->items().size();
-  {
-    TabContentsWrapper initial_tab(CreateTestWebContents());
-    State state(this, std::string(), LauncherUpdater::TYPE_APP);
-    // AppIconLoader should have been queried.
-    EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
-  }
-  // Deleting the LauncherUpdater should have removed the item.
-  ASSERT_EQ(initial_size, launcher_model_->items().size());
-}
-
-// Verifies SetAppImage works.
-TEST_F(LauncherUpdaterTest, SetAppImage) {
-  size_t initial_size = launcher_model_->items().size();
-  TabContentsWrapper initial_tab(CreateTestWebContents());
-  State state(this, "1", LauncherUpdater::TYPE_APP);
-  SkBitmap image;
-  image.setConfig(SkBitmap::kARGB_8888_Config, 2, 3);
-  image.allocPixels();
-  launcher_delegate_->SetAppImage("1", &image);
-  ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-  EXPECT_EQ(2, state.GetUpdaterItem().image.width());
-  EXPECT_EQ(3, state.GetUpdaterItem().image.height());
-}
-
 // Verifies Panels items work.
 TEST_F(LauncherUpdaterTest, PanelItem) {
   size_t initial_size = launcher_model_->items().size();
@@ -283,7 +242,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
                             LauncherUpdater::TYPE_APP_PANEL, std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_APP, GetItem(&updater).type);
+    EXPECT_EQ(ash::TYPE_TABBED, GetItem(&updater).type);
     ash::LauncherID id = GetItem(&updater).id;
     EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_APP_PANEL,
               launcher_delegate_->GetAppType(id));
@@ -303,7 +262,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
                             std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_APP, GetItem(&updater).type);
+    EXPECT_EQ(ash::TYPE_TABBED, GetItem(&updater).type);
     ash::LauncherID id = GetItem(&updater).id;
     EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL,
               launcher_delegate_->GetAppType(id));
@@ -349,13 +308,13 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
 TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
   State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
 
-  // First browser is running.
-  EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
+  // First browser is active.
+  EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
 
   {
     // Both running.
     State state2(this, std::string(), LauncherUpdater::TYPE_TABBED);
-    EXPECT_EQ(ash::STATUS_RUNNING, state2.GetUpdaterItem().status);
+    EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
     EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
 
     // Make first browser active again.
@@ -373,41 +332,13 @@ TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
   EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
 }
 
-// Confirm that applications  handle activation correctly.
-TEST_F(LauncherUpdaterTest, ActivateApps) {
-  State state1(this, "1", LauncherUpdater::TYPE_APP);
-
-  // First app is active.
-  EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
-
-  {
-    // Second app is active and first is inactive.
-    State state2(this, "2", LauncherUpdater::TYPE_APP);
-    EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
-    EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
-
-    // Make first app active again.
-    activation_client_->ActivateWindow(&state1.window);
-    EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
-    EXPECT_EQ(ash::STATUS_RUNNING, state2.GetUpdaterItem().status);
-
-    // And back to second.
-    activation_client_->ActivateWindow(&state2.window);
-    EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
-    EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
-  }
-
-  // First app should be active again after second is closed.
-  EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
-}
-
 // Confirm that window activation works through the model.
 TEST_F(LauncherUpdaterTest, SwitchDirectlyToApp) {
-  State state1(this, "1", LauncherUpdater::TYPE_APP);
+  State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
   int index1 = launcher_model_->ItemIndexByID(state1.GetUpdaterItem().id);
 
   // Second app is active and first is inactive.
-  State state2(this, "2", LauncherUpdater::TYPE_APP);
+  State state2(this, std::string(), LauncherUpdater::TYPE_TABBED);
   int index2 = launcher_model_->ItemIndexByID(state2.GetUpdaterItem().id);
 
   EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);

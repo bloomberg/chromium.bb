@@ -49,7 +49,6 @@ class LauncherUpdater : public TabStripModelObserver,
   };
 
   enum Type {
-    TYPE_APP,
     TYPE_APP_PANEL,
     TYPE_EXTENSION_PANEL,
     TYPE_TABBED

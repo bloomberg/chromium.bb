@@ -26,8 +26,6 @@ namespace {
 
 ChromeLauncherDelegate::AppType GetDelegateType(LauncherUpdater::Type type) {
   switch (type) {
-    case LauncherUpdater::TYPE_APP:
-      return ChromeLauncherDelegate::APP_TYPE_WINDOW;
     case LauncherUpdater::TYPE_APP_PANEL:
       return ChromeLauncherDelegate::APP_TYPE_APP_PANEL;
     case LauncherUpdater::TYPE_EXTENSION_PANEL:
@@ -63,18 +61,19 @@ LauncherUpdater::~LauncherUpdater() {
 
 void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
+  ash::LauncherItemStatus app_status =
+      ash::wm::IsActiveWindow(window_) ?
+          ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   if (type_ != TYPE_TABBED) {
     ChromeLauncherDelegate::AppType app_type = GetDelegateType(type_);
-    ash::LauncherItemStatus app_status =
-        ash::wm::IsActiveWindow(window_) ?
-            ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
         this, app_id_, app_type, app_status);
   } else {
     item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
         this,
         is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
-                       ChromeLauncherDelegate::STATE_NOT_INCOGNITO);
+                       ChromeLauncherDelegate::STATE_NOT_INCOGNITO,
+        app_status);
   }
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->GetActiveTabContents())
@@ -94,7 +93,7 @@ LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
       else
         type = TYPE_APP_PANEL;
     } else {
-      type = TYPE_APP;
+      type = TYPE_TABBED;
     }
     app_id = web_app::GetExtensionIdFromApplicationName(browser->app_name());
   } else {
@@ -153,9 +152,6 @@ void LauncherUpdater::FaviconUpdated() {
 void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
-
-  if (type_ == TYPE_APP)
-    return;  // TYPE_APP is entirely maintained by ChromeLauncherDelegate.
 
   int item_index = launcher_model()->ItemIndexByID(item_id_);
   if (item_index == -1)

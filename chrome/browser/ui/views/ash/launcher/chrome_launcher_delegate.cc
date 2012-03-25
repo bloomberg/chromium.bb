@@ -125,12 +125,13 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
 
 ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
     LauncherUpdater* updater,
-    IncognitoState is_incognito) {
+    IncognitoState is_incognito,
+    ash::LauncherItemStatus status) {
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   item.is_incognito = (is_incognito == STATE_INCOGNITO);
-  item.status = ash::STATUS_RUNNING;
+  item.status = status;
   model_->Add(item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
@@ -145,7 +146,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
     ash::LauncherItemStatus status) {
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item;
-  item.type = !updater ? ash::TYPE_APP_SHORTCUT : ash::TYPE_APP;
+  item.type = !updater ? ash::TYPE_APP_SHORTCUT : ash::TYPE_TABBED;
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
   item.status = status;

@@ -104,17 +104,17 @@ TEST(LauncherModel, BasicAssertions) {
   EXPECT_EQ("removed=1", observer.StateStringAndClear());
 
   // Add an app item.
-  item.type = TYPE_APP;
+  item.type = TYPE_APP_SHORTCUT;
   index = model.Add(item);
   observer.StateStringAndClear();
 
   // Change everything.
   model.Set(index, item);
   EXPECT_EQ("changed=1", observer.StateStringAndClear());
-  EXPECT_EQ(TYPE_APP, model.items()[index].type);
+  EXPECT_EQ(TYPE_APP_SHORTCUT, model.items()[index].type);
 
   // Add another item.
-  item.type = TYPE_APP;
+  item.type = TYPE_APP_SHORTCUT;
   model.Add(item);
   observer.StateStringAndClear();
 
@@ -155,10 +155,6 @@ TEST(LauncherModel, AddIndices) {
   int app_shortcut_index2 = model.Add(item);
   EXPECT_EQ(2, app_shortcut_index2);
 
-  // Apps should go with tabbed items.
-  item.type = TYPE_APP;
-  int app_index1 = model.Add(item);
-  EXPECT_EQ(5, app_index1);
 
   EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[0].type);
   EXPECT_EQ(TYPE_APP_LIST, model.items()[model.item_count() - 1].type);

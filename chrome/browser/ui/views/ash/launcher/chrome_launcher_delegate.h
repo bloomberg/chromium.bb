@@ -83,7 +83,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Creates a new tabbed item on the launcher for |updater|.
   ash::LauncherID CreateTabbedLauncherItem(LauncherUpdater* updater,
-                                           IncognitoState is_incognito);
+                                           IncognitoState is_incognito,
+                                           ash::LauncherItemStatus status);
 
   // Creates a new app item on the launcher for |updater|. If there is an
   // existing pinned app that isn't running on the launcher, its id is returned.
