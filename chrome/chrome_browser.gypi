@@ -491,6 +491,8 @@
         'browser/chromeos/dbus/image_burner_client.h',
         'browser/chromeos/dbus/introspectable_client.cc',
         'browser/chromeos/dbus/introspectable_client.h',
+        'browser/chromeos/dbus/introspect_util.cc',
+        'browser/chromeos/dbus/introspect_util.h',
         'browser/chromeos/dbus/power_manager_client.cc',
         'browser/chromeos/dbus/power_manager_client.h',
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',

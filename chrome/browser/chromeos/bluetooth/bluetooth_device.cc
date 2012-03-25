@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_input_client.h"
 #include "chrome/browser/chromeos/dbus/introspectable_client.h"
+#include "chrome/browser/chromeos/dbus/introspect_util.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
@@ -281,7 +282,7 @@ void BluetoothDevice::OnIntrospect(ErrorCallback error_callback,
   // device. Send appropraite Connect calls for each of those interfaces
   // to connect all of the application protocols for this device.
   std::vector<std::string> interfaces =
-      IntrospectableClient::GetInterfacesFromXmlData(xml_data);
+      GetInterfacesFromIntrospectResult(xml_data);
 
   for (std::vector<std::string>::iterator iter = interfaces.begin();
        iter != interfaces.end(); ++iter) {

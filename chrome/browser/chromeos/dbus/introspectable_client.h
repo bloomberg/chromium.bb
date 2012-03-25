@@ -40,11 +40,6 @@ class IntrospectableClient {
                           const dbus::ObjectPath& object_path,
                           const IntrospectCallback& callback) = 0;
 
-  // Parses XML-formatted introspection data, as passed to IntrospectCallback,
-  // and returns the list of interface names declared within.
-  static std::vector<std::string> GetInterfacesFromXmlData(
-      const std::string&xml_data);
-
   // Creates the instance
   static IntrospectableClient* Create(dbus::Bus* bus);
 

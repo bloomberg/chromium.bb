@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/chromeos/chromeos_version.h"
-#include "chrome/common/libxml_utils.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -21,10 +20,6 @@ namespace {
 // D-Bus specification constants.
 const char kIntrospectableInterface[] = "org.freedesktop.DBus.Introspectable";
 const char kIntrospect[] = "Introspect";
-
-// String constants used for parsing D-Bus Introspection XML data.
-const char kInterfaceNode[] = "interface";
-const char kInterfaceNameAttribute[] = "name";
 
 }  // namespace
 
@@ -108,38 +103,6 @@ IntrospectableClient::IntrospectableClient() {
 }
 
 IntrospectableClient::~IntrospectableClient() {
-}
-
-// static
-std::vector<std::string> IntrospectableClient::GetInterfacesFromXmlData(
-    const std::string&xml_data) {
-  std::vector<std::string> interfaces;
-
-  XmlReader reader;
-  if (!reader.Load(xml_data))
-    return interfaces;
-
-  do {
-    // Skip to the next open tag, exit when done.
-    while (!reader.SkipToElement()) {
-      if (!reader.Read()) {
-        return interfaces;
-      }
-    }
-
-    // Only look at interface nodes.
-    if (reader.NodeName() != kInterfaceNode)
-      continue;
-
-    // Skip if missing the interface name.
-    std::string interface_name;
-    if (!reader.NodeAttribute(kInterfaceNameAttribute, &interface_name))
-      continue;
-
-    interfaces.push_back(interface_name);
-  } while (reader.Read());
-
-  return interfaces;
 }
 
 // static
