@@ -29,8 +29,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/user_script.h"
@@ -41,6 +39,11 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
@@ -160,10 +163,16 @@ FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
 
 WebContents* ChromeDownloadManagerDelegate::
     GetAlternativeWebContentsToNotifyForDownload() {
+#if defined(OS_ANDROID)
+  // Android does not implement BrowserList or any other way to get an
+  // alternate web contents.
+  return NULL;
+#else
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
   Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
   return last_active ? last_active->GetSelectedWebContents() : NULL;
+#endif
 }
 
 
