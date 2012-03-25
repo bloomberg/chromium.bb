@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/api/dns/dns_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/mock_host_resolver.h"
@@ -21,19 +19,13 @@ using extension_function_test_utils::RunFunctionAndReturnResult;
 
 namespace {
 
-class DnsApiTest : public ExtensionApiTest {
+class DnsApiTest : public PlatformAppApiTest {
  public:
   static const std::string kHostname;
   static const std::string kAddress;
 
   DnsApiTest() : resolver_event_(true, false),
                  mock_host_resolver_(NULL) {
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-    command_line->AppendSwitch(switches::kEnablePlatformApps);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -104,6 +96,10 @@ const std::string DnsApiTest::kHostname = "www.sowbug.org";
 const std::string DnsApiTest::kAddress = "9.8.7.6";
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(DnsApiTest, VerifyPermissions) {
+  VerifyPermissions(test_data_dir_.AppendASCII("dns/api"));
+}
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_refptr<extensions::DnsResolveFunction> resolve_function(

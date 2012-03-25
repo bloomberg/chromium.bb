@@ -168,4 +168,21 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   scoped_ptr<ui_test_utils::TestWebSocketServer> websocket_server_;
 };
 
+// PlatformAppApiTest sets up the command-line flags necessary for platform
+// apps (if any), and provides a convenience method for confirming that your
+// API requires those flags.
+class PlatformAppApiTest : public ExtensionApiTest {
+ public:
+  PlatformAppApiTest();
+  virtual ~PlatformAppApiTest();
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
+ protected:
+  void VerifyPermissions(const FilePath& extension_path);
+
+ private:
+  CommandLine previous_command_line_;
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

@@ -28,14 +28,12 @@ class IdentityInterceptor : public OAuth2MintTokenFlow::InterceptorForTests {
 
 }  // namespace
 
-class ExperimentalApiTest : public ExtensionApiTest {
- public:
-  void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePlatformApps);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
+class ExperimentalApiTest : public PlatformAppApiTest {
 };
+
+IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, VerifyPermissions) {
+  VerifyPermissions(test_data_dir_.AppendASCII("identity"));
+}
 
 IN_PROC_BROWSER_TEST_F(ExperimentalApiTest, Identity) {
   IdentityInterceptor interceptor;

@@ -23,7 +23,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "crypto/sha2.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/extensions/simple_feature_provider.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
+#include "crypto/sha2.h"
 #include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -377,6 +377,13 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
   scoped_refptr<Extension> extension = new Extension(path, manifest.Pass());
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = UTF16ToUTF8(error);
+    return NULL;
+  }
+
+  if (extension->is_platform_app() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePlatformApps)) {
+    *utf8_error = errors::kPlatformAppFlagRequired;
     return NULL;
   }
 
