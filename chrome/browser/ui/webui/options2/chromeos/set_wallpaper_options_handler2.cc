@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler2.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
@@ -86,11 +88,7 @@ void SetWallpaperOptionsHandler::HandlePageInitialized(
 
 void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  const chromeos::User& user = user_manager->GetLoggedInUser();
-  DCHECK(!user.email().empty());
-  int index = user_manager->GetUserWallpaper(user.email());
-  DCHECK(index >=0 && index < ash::GetWallpaperCount());
+  int index = chromeos::UserManager::Get()->GetUserWallpaperIndex();
   base::FundamentalValue index_value(index);
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
                                    index_value);
@@ -106,10 +104,9 @@ void SetWallpaperOptionsHandler::HandleSelectImage(const ListValue* args) {
       image_index < 0 || image_index >= ash::GetWallpaperCount())
     NOTREACHED();
 
-  UserManager* user_manager = UserManager::Get();
-  const User& user = user_manager->GetLoggedInUser();
-  DCHECK(!user.email().empty());
-  user_manager->SaveWallpaperDefaultIndex(user.email(), image_index);
+  UserManager::Get()->SaveUserWallpaperIndex(image_index);
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      OnDesktopBackgroundChanged();
 }
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
