@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer.h"
 
 namespace ash {
 namespace internal {
@@ -141,8 +142,15 @@ bool ActivationController::OnWillFocusWindow(aura::Window* window,
 
 void ActivationController::OnWindowVisibilityChanged(aura::Window* window,
                                                      bool visible) {
-  if (!visible)
-    ActivateNextWindow(window);
+  if (!visible) {
+    aura::Window* next_window = ActivateNextWindow(window);
+    if (next_window && next_window->parent() == window->parent()) {
+      // Despite the activation change, we need to keep the window being hidden
+      // stacked above the new window so it stays on top as it animates away.
+      window->layer()->parent()->StackAbove(window->layer(),
+                                            next_window->layer());
+    }
+  }
 }
 
 void ActivationController::OnWindowDestroying(aura::Window* window) {
@@ -222,9 +230,13 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   }
 }
 
-void ActivationController::ActivateNextWindow(aura::Window* window) {
-  if (wm::IsActiveWindow(window))
-    ActivateWindow(GetTopmostWindowToActivate(window));
+aura::Window* ActivationController::ActivateNextWindow(aura::Window* window) {
+  aura::Window* next_window = NULL;
+  if (wm::IsActiveWindow(window)) {
+    next_window = GetTopmostWindowToActivate(window);
+    ActivateWindow(next_window);
+  }
+  return next_window;
 }
 
 aura::Window* ActivationController::GetTopmostWindowToActivate(

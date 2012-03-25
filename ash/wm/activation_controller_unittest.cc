@@ -14,6 +14,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/gfx/compositor/layer.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -347,6 +348,27 @@ TEST_F(ActivationControllerTest, PreventFocusToNonActivatableWindow) {
   EXPECT_FALSE(w21->HasFocus());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->HasFocus());
+}
+
+// Verifies code in ActivationController::OnWindowVisibilityChanged() that keeps
+// hiding windows layers stacked above the newly active window while they
+// animate away.
+TEST_F(ActivationControllerTest, AnimateHideMaintainsStacking) {
+  aura::test::TestWindowDelegate wd;
+  scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
+    &wd, -1, gfx::Rect(50, 50, 50, 50), NULL));
+  scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
+      &wd, -2, gfx::Rect(75, 75, 50, 50), NULL));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+  w2->Hide();
+  typedef std::vector<ui::Layer*> Layers;
+  const Layers& children = w1->parent()->layer()->children();
+  Layers::const_iterator w1_iter =
+      std::find(children.begin(), children.end(), w1->layer());
+  Layers::const_iterator w2_iter =
+      std::find(children.begin(), children.end(), w2->layer());
+  EXPECT_TRUE(w2_iter > w1_iter);
 }
 
 }  // namespace test
