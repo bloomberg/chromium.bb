@@ -142,6 +142,7 @@ void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
 
   pad.axesLength = 0;
   pad.buttonsLength = 0;
+  pad.timestamp = 0;
   memset(pad.axes, 0, sizeof(pad.axes));
   memset(pad.buttons, 0, sizeof(pad.buttons));
 
@@ -273,6 +274,7 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   for (size_t i = 0; i < pad.buttonsLength; ++i) {
     if (associated.button_elements[i] == element) {
       pad.buttons[i] = IOHIDValueGetIntegerValue(value) ? 1.f : 0.f;
+      pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
       return;
     }
   }
@@ -283,6 +285,7 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
       pad.axes[i] = NormalizeAxis(IOHIDValueGetIntegerValue(value),
                                   associated.axis_minimums[i],
                                   associated.axis_maximums[i]);
+      pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
       return;
     }
   }
