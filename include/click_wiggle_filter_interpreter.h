@@ -57,6 +57,10 @@ class ClickWiggleFilterInterpreter : public Interpreter {
   scoped_ptr<Interpreter> next_;
 
   map<short, ClickWiggleRec, kMaxFingers> wiggle_recs_;
+
+  // When a physical button down last occurred
+  stime_t button_down_occurred_;
+
   map<short, float, kMaxFingers> prev_pressure_;
 
   int prev_buttons_;
@@ -67,6 +71,9 @@ class ClickWiggleFilterInterpreter : public Interpreter {
   DoubleProperty wiggle_suppress_timeout_;
   // Wiggles after physical button going down are suppressed for this time
   DoubleProperty wiggle_button_down_timeout_;
+  // Time [s] to block single-finger movement after a single finger clicks
+  // the physical button down.
+  DoubleProperty one_finger_click_wiggle_timeout_;
 };
 
 }  // namespace gestures

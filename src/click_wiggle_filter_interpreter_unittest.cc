@@ -115,5 +115,46 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
     interpreter.SyncInterpret(&hardware_state[i], NULL);
 }
 
+TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
+  ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
+      new ClickWiggleFilterInterpreterTestInterpreter;
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    92,  // right edge
+    61,  // bottom edge
+    1,  // x pixels/TP width
+    1,  // y pixels/TP height
+    26,  // x screen DPI
+    26,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    0  // is button pad
+  };
+  EXPECT_FALSE(base_interpreter->set_hwprops_called_);
+  interpreter.SetHardwareProperties(hwprops);
+  EXPECT_TRUE(base_interpreter->set_hwprops_called_);
+
+  // These values come from a recording of my finger
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 38, 0, 43, 45, 1, 0},
+    {0, 0, 0, 0, 37, 0, 43, 48, 1, 0},
+    {0, 0, 0, 0, 38, 0, 43, 49, 1, 0},
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.0, 1, 1, 1, &finger_states[0] },
+    { 1.1, 1, 1, 1, &finger_states[1] },
+    { 1.11, 1, 1, 1, &finger_states[2] },
+  };
+
+  for (size_t i = 0; i < arraysize(hardware_state); ++i)
+    // Assertions happen in the base interpreter
+    interpreter.SyncInterpret(&hardware_state[i], NULL);
+}
 
 }  // namespace gestures

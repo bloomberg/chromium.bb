@@ -13,12 +13,16 @@ namespace gestures {
 // Takes ownership of |next|:
 ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : prev_buttons_(0),
+    : button_down_occurred_(0.0),
+      prev_buttons_(0),
       wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 4.0),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
       wiggle_button_down_timeout_(prop_reg,
                                   "Wiggle Button Down Timeout",
-                                  0.75) {
+                                  0.75),
+      one_finger_click_wiggle_timeout_(prop_reg,
+                                       "One Finger Click Wiggle Timeout",
+                                       0.2) {
   next_.reset(next);
 }
 
@@ -47,6 +51,9 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
   const bool prev_button_down = prev_buttons_ & GESTURES_BUTTON_LEFT;
   const bool button_down_edge = button_down && !prev_button_down;
   const bool button_up_edge = !button_down && prev_button_down;
+
+  if (button_down_edge)
+    button_down_occurred_ = hwstate.timestamp;
 
   // Update wiggle_recs_ for each current finger
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
@@ -109,6 +116,15 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
 }
 
 void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
+  if (button_down_occurred_ != 0.0 &&
+      button_down_occurred_ + one_finger_click_wiggle_timeout_.val_ >
+      hwstate->timestamp && hwstate->finger_cnt == 1) {
+    hwstate->fingers[0].flags |=
+        (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
+    // May as well return b/c already set warp on the only finger there is.
+    return;
+  }
+
   for (size_t i = 0; i < hwstate->finger_cnt; i++) {
     FingerState* fs = &hwstate->fingers[i];
     if (!MapContainsKey(wiggle_recs_, fs->tracking_id)) {
@@ -120,7 +136,6 @@ void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
       fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
   }
 }
-
 
 Gesture* ClickWiggleFilterInterpreter::HandleTimer(stime_t now,
                                                    stime_t* timeout) {
