@@ -386,20 +386,41 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   GetGDataFilePropertiesFunction();
 
  protected:
+  void GetNextFileProperties();
+  void CompleteGetFileProperties();
+
   virtual ~GetGDataFilePropertiesFunction();
 
   // Virtual function that can be overridden to do operations on each virtual
-  // file path before fetching the properties.  Return false to stop iterating
-  // over the files.
-  virtual bool DoOperation(const FilePath& file);
+  // file path and update its the properties.
+  virtual void DoOperation(const FilePath& file,
+                           base::DictionaryValue* properties);
+
+  void OnOperationComplete(const FilePath& file,
+                           base::DictionaryValue* properties,
+                           base::PlatformFileError error);
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // Returns the number of expected args for this function.
-  virtual size_t NumExpectedArgs() const;
+  // Builds list of file properies. Calls DoOperation for each file.
+  void PrepareResults();
 
  private:
+  void OnFileProperties(base::DictionaryValue* property_dict,
+                        base::PlatformFileError error,
+                        const FilePath& directory_path,
+                        gdata::GDataFileBase* file);
+
+  void CacheStateReceived(base::DictionaryValue* property_dict,
+                          base::PlatformFileError error,
+                          gdata::GDataFile* file,
+                          int cache_state);
+
+  size_t current_index_;
+  base::ListValue* path_list_;
+  scoped_ptr<base::ListValue> file_properties_;
+
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
 };
 
@@ -419,12 +440,18 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // SetGDataFilePinnedFunction overrides
-  virtual size_t NumExpectedArgs() const OVERRIDE;
-
  private:
   // Actually do the pinning/unpinning of each file.
-  virtual bool DoOperation(const FilePath& path) OVERRIDE;
+  virtual void DoOperation(const FilePath& path,
+                           base::DictionaryValue* properties) OVERRIDE;
+
+  // Callback for SetPinState. Updates properties with error.
+  void OnPinStateSet(const FilePath& path,
+                     base::DictionaryValue* properties,
+                     base::PlatformFileError error);
+
+  // True for pin, false for unpin.
+  bool set_pin_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");
 };

@@ -3225,7 +3225,7 @@ FileManager.prototype = {
     }
 
     chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()],
-                                           !checkbox.checked, callback);
+                                           checkbox.checked, callback);
     event.preventDefault();
   };
 

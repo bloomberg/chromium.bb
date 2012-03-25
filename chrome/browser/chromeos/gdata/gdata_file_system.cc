@@ -1384,6 +1384,47 @@ void GDataFileSystem::GetAvailableSpace(
                  callback));
 }
 
+void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
+                                  const FileOperationCallback& callback) {
+  std::string resource_id, md5;
+  {
+    base::AutoLock lock(lock_);
+    GDataFileBase* file_base = GetGDataFileInfoFromPath(file_path);
+    GDataFile* file = file_base ? file_base->AsGDataFile() : NULL;
+
+    if (!file) {
+      if (!callback.is_null()) {
+        MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback,
+            base::PLATFORM_FILE_ERROR_NOT_FOUND));
+      }
+      return;
+    }
+    resource_id = file->resource_id();
+    md5 = file->file_md5();
+  }
+
+  CacheOperationCallback cache_callback;
+
+  if (!callback.is_null()) {
+    cache_callback = base::Bind(&GDataFileSystem::OnSetPinStateCompleted,
+                                GetWeakPtrForCurrentThread(),
+                                callback);
+  }
+
+  if (to_pin)
+    Pin(resource_id, md5, cache_callback);
+  else
+    Unpin(resource_id, md5, cache_callback);
+}
+
+void GDataFileSystem::OnSetPinStateCompleted(
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    const std::string& resource_id,
+    const std::string& md5) {
+  callback.Run(error);
+}
+
 void GDataFileSystem::OnGetAvailableSpace(
     const GetAvailableSpaceCallback& callback,
     GDataErrorCode status,

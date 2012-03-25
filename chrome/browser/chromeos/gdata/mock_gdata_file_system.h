@@ -76,6 +76,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
       CachedFileOrigin));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
+  MOCK_METHOD3(SetPinState, void(const FilePath&,
+                                 bool,
+                                 const FileOperationCallback& callback));
   MOCK_METHOD4(AddUploadedFile, void(const FilePath& file,
                                      DocumentEntry* entry,
                                      const FilePath& file_content_path,

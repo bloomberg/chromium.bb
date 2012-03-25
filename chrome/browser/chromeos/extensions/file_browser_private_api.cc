@@ -190,141 +190,30 @@ FilePath GetVirtualPathFromURL(const GURL& file_url) {
   return virtual_path;
 }
 
+// gdata::GDataFileBase* parameter is safe to be used since it's
+// run directly from FindFileDelegate::OnDone()
+typedef base::Callback<void(base::PlatformFileError,
+                            const FilePath&,
+                            gdata::GDataFileBase*)>
+    FilePropertiesCallback;
+
 // Delegate used to find file properties.
 class FilePropertiesDelegate : public gdata::FindFileDelegate {
  public:
-  FilePropertiesDelegate();
-  virtual ~FilePropertiesDelegate();
-
-  // Builds a dictionary from the GDataFile file property information
-  void CopyProperties(base::DictionaryValue* property_dict);
-
-  base::PlatformFileError error() const { return error_; }
+  explicit FilePropertiesDelegate(FilePropertiesCallback const& callback) :
+      callback_(callback) {}
+  virtual ~FilePropertiesDelegate() {}
 
  private:
-  // Callback for GDataFile::GetCacheState.
-  void OnCacheStateReceived(base::PlatformFileError error,
-                            gdata::GDataFile* file,
-                            int cache_state);
-
   // GDataFileSystem::FindFileDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
-                      gdata::GDataFileBase* file) OVERRIDE;
+                      gdata::GDataFileBase* file) OVERRIDE {
+    callback_.Run(error, directory_path, file);
+  }
 
-  GURL thumbnail_url_;
-  GURL edit_url_;
-  GURL content_url_;
-  int cache_state_;
-  bool is_hosted_document_;
-  base::PlatformFileError error_;
-  base::WeakPtrFactory<FilePropertiesDelegate> weak_ptr_factory_;
+  FilePropertiesCallback callback_;
 };
-
-// FilePropertiesDelegate class implementation.
-
-FilePropertiesDelegate::FilePropertiesDelegate()
-  : cache_state_(0),
-    is_hosted_document_(false),
-    error_(base::PLATFORM_FILE_OK),
-    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-}
-
-FilePropertiesDelegate::~FilePropertiesDelegate() { }
-
-void FilePropertiesDelegate::CopyProperties(
-    base::DictionaryValue* property_dict) {
-  DCHECK(property_dict);
-  DCHECK(!property_dict->HasKey("thumbnailUrl"));
-  DCHECK(!property_dict->HasKey("editUrl"));
-  DCHECK(!property_dict->HasKey("contentUrl"));
-  DCHECK(!property_dict->HasKey("isPinned"));
-  DCHECK(!property_dict->HasKey("isPresent"));
-  DCHECK(!property_dict->HasKey("isDirty"));
-  DCHECK(!property_dict->HasKey("isHosted"));
-  DCHECK(!property_dict->HasKey("errorCode"));
-
-  if (error_ != base::PLATFORM_FILE_OK) {
-    property_dict->SetInteger("errorCode", error_);
-    return;
-  }
-
-  property_dict->SetString("thumbnailUrl", thumbnail_url_.spec());
-  if (!edit_url_.is_empty())
-    property_dict->SetString("editUrl", edit_url_.spec());
-
-  if (!content_url_.is_empty())
-    property_dict->SetString("contentUrl", content_url_.spec());
-
-  property_dict->SetBoolean(
-      "isPinned",
-      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_PINNED));
-
-  property_dict->SetBoolean(
-      "isPresent",
-      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_PRESENT));
-
-  property_dict->SetBoolean(
-      "isDirty",
-      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_DIRTY));
-
-  property_dict->SetBoolean("isHosted", is_hosted_document_);
-}
-
-void FilePropertiesDelegate::OnCacheStateReceived(
-    base::PlatformFileError error,
-    gdata::GDataFile* file,
-    int cache_state) {
-  // TODO(gspencer) : Wire this up with UI.
-  cache_state_ = cache_state;
-
-#if defined(_DEBUG)
-  std::string state;
-  if (cache_state == gdata::GDataFile::CACHE_STATE_NONE) {
-    state = "none";
-  } else {
-    if (cache_state & gdata::GDataFile::CACHE_STATE_PRESENT)
-      state = "present";
-    if (cache_state & gdata::GDataFile::CACHE_STATE_PINNED) {
-      if (!state.empty())
-        state += ",";
-      state += "pinned";
-    }
-    if (cache_state & gdata::GDataFile::CACHE_STATE_DIRTY) {
-      if (!state.empty())
-       state += ",";
-      state += "dirty";
-    }
-  }
-
-  DVLOG(1) << "got OnCacheStateReceived: err=" << error
-           << ", file_id=" << file->id()
-           << ", cache_state=" << state;
-#endif // #if defined(_DEBUG)
-}
-
-void FilePropertiesDelegate::OnDone(base::PlatformFileError error,
-                                    const FilePath& directory_path,
-                                    gdata::GDataFileBase* entity) {
-  if (error != base::PLATFORM_FILE_OK) {
-    error_ = error;
-    return;
-  }
-
-  gdata::GDataFile* file = entity->AsGDataFile();
-  if (!file) {
-    LOG(WARNING) << "Reading properties of a non-file at "
-                 << directory_path.value();
-    return;
-  }
-
-  thumbnail_url_ = file->thumbnail_url();
-  edit_url_ = file->edit_url();
-  content_url_ = file->content_url();
-  file->GetCacheState(base::Bind(&FilePropertiesDelegate::OnCacheStateReceived,
-                                 weak_ptr_factory_.GetWeakPtr()));
-  is_hosted_document_ = file->is_hosted_document();
-}
 
 }  // namespace
 
@@ -1578,63 +1467,129 @@ GetGDataFilePropertiesFunction::GetGDataFilePropertiesFunction() {
 GetGDataFilePropertiesFunction::~GetGDataFilePropertiesFunction() {
 }
 
-bool GetGDataFilePropertiesFunction::DoOperation(const FilePath& /*path*/) {
-  return false;  // Terminate loop early by default.
+void GetGDataFilePropertiesFunction::DoOperation(
+    const FilePath& path, base::DictionaryValue* property_dict) {
+  OnOperationComplete(path, property_dict, base::PLATFORM_FILE_OK);
 }
 
 bool GetGDataFilePropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (args_->GetSize() != NumExpectedArgs())
+  if (args_->GetSize() != 1)
     return false;
 
-  ListValue* path_list = NULL;
-  args_->GetList(0, &path_list);
-  DCHECK(path_list);
-  std::vector<GURL> file_urls;
-  std::vector<FilePath> file_paths;
-
-  size_t len = path_list->GetSize();
-  file_paths.reserve(len);
-  file_urls.reserve(len);
-  std::string file_str;
-  GURL file_url;
-  for (size_t i = 0; i < len; ++i) {
-    path_list->GetString(i, &file_str);
-    file_url = GURL(file_str);
-    file_urls.push_back(file_url);
-    file_paths.push_back(GetVirtualPathFromURL(file_url));
-  }
-
-  for (std::vector<FilePath>::iterator iter = file_paths.begin();
-      iter != file_paths.end(); ++iter) {
-    if (!DoOperation(*iter))
-      break;
-  }
-
-  base::ListValue* file_properties = new base::ListValue;
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  DCHECK(system_service);
-  for (std::vector<FilePath>::size_type i = 0; i < file_paths.size(); ++i) {
-    FilePropertiesDelegate property_delegate;
-    system_service->file_system()->FindFileByPathSync(file_paths[i],
-                                                      &property_delegate);
-    base::DictionaryValue* property_dict = new base::DictionaryValue;
-    property_delegate.CopyProperties(property_dict);
-    property_dict->SetString("fileUrl", file_urls[i].spec());
-    file_properties->Append(property_dict);
-  }
-
-  result_.reset(file_properties);
-
-  SendResponse(true);
+  PrepareResults();
   return true;
 }
 
-size_t GetGDataFilePropertiesFunction::NumExpectedArgs() const {
-  return 1u;
+void GetGDataFilePropertiesFunction::PrepareResults() {
+  args_->GetList(0, &path_list_);
+  DCHECK(path_list_);
+
+  file_properties_.reset(new base::ListValue);
+
+  current_index_ = 0;
+  GetNextFileProperties();
 }
 
+void GetGDataFilePropertiesFunction::GetNextFileProperties() {
+  if (current_index_ >= path_list_->GetSize()) {
+    // Exit of asynchronous look and return the result.
+    result_.reset(file_properties_.release());
+    SendResponse(true);
+    return;
+  }
+
+  std::string file_str;
+  path_list_->GetString(current_index_, &file_str);
+  GURL file_url = GURL(file_str);
+  FilePath file_path = GetVirtualPathFromURL(file_url);
+
+  base::DictionaryValue* property_dict = new base::DictionaryValue;
+  property_dict->SetString("fileUrl", file_url.spec());
+  DoOperation(file_path, property_dict);
+  file_properties_->Append(property_dict);
+}
+
+void GetGDataFilePropertiesFunction::CompleteGetFileProperties() {
+  current_index_++;
+
+  // Could be called from callback. Let finish operation.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      Bind(&GetGDataFilePropertiesFunction::GetNextFileProperties, this));
+}
+
+void GetGDataFilePropertiesFunction::OnOperationComplete(
+    const FilePath& path,
+    base::DictionaryValue* property_dict,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    property_dict->SetInteger("errorCode", error);
+    CompleteGetFileProperties();
+    return;
+  }
+
+  FilePropertiesDelegate property_delegate(base::Bind(
+      &GetGDataFilePropertiesFunction::OnFileProperties,
+      this,
+      property_dict));
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  system_service->file_system()->FindFileByPathSync(path,
+                                                    &property_delegate);
+}
+
+void GetGDataFilePropertiesFunction::OnFileProperties(
+    base::DictionaryValue* property_dict,
+    base::PlatformFileError error,
+    const FilePath& directory_path,
+    gdata::GDataFileBase* file_base) {
+  if (error != base::PLATFORM_FILE_OK) {
+    property_dict->SetInteger("errorCode", error);
+    CompleteGetFileProperties();
+    return;
+  }
+
+  gdata::GDataFile* file = file_base->AsGDataFile();
+  if (!file) {
+    LOG(WARNING) << "Reading properties of a non-file at "
+                 << directory_path.value();
+    CompleteGetFileProperties();
+    return;
+  }
+
+  property_dict->SetString("thumbnailUrl", file->thumbnail_url().spec());
+  if (!file->edit_url().is_empty())
+    property_dict->SetString("editUrl", file->edit_url().spec());
+
+  if (!file->content_url().is_empty())
+    property_dict->SetString("contentUrl", file->content_url().spec());
+
+  property_dict->SetBoolean("isHosted", file->is_hosted_document());
+
+  file->GetCacheState(base::Bind(
+      &GetGDataFilePropertiesFunction::CacheStateReceived,
+      this, property_dict));
+}
+
+void GetGDataFilePropertiesFunction::CacheStateReceived(
+    base::DictionaryValue* property_dict,
+    base::PlatformFileError error,
+    gdata::GDataFile* file,
+    int cache_state) {
+  property_dict->SetBoolean(
+      "isPinned",
+      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_PINNED));
+
+  property_dict->SetBoolean(
+      "isPresent",
+      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_PRESENT));
+
+  property_dict->SetBoolean(
+      "isDirty",
+      static_cast<bool>(cache_state & gdata::GDataFile::CACHE_STATE_DIRTY));
+  CompleteGetFileProperties();
+}
 
 PinGDataFileFunction::PinGDataFileFunction() {
 }
@@ -1644,21 +1599,30 @@ PinGDataFileFunction::~PinGDataFileFunction() {
 
 bool PinGDataFileFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (args_->GetSize() != NumExpectedArgs())
+  if (args_->GetSize() != 2 || !args_->GetBoolean(1, &set_pin_))
     return false;
-  // TODO(gspencer): use 'args_->GetBoolean(1, &set_pin_)' to get
-  // whether or not we are pinning or unpinning.  (and set_pin_ should be
-  // a bool member variable.)
-  return GetGDataFilePropertiesFunction::RunImpl();
-}
 
-size_t PinGDataFileFunction::NumExpectedArgs() const {
-  return 2u;
-}
+  PrepareResults();
 
-bool PinGDataFileFunction::DoOperation(const FilePath& /*path*/) {
-  // TODO(gspencer): Actually pin/unpin the file here, depending on set_pin_.
   return true;
+}
+
+void PinGDataFileFunction::DoOperation(const FilePath& path,
+                                       base::DictionaryValue* properties) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  system_service->file_system()->SetPinState(path, set_pin_, base::Bind(
+      &PinGDataFileFunction::OnPinStateSet, this, path, properties));
+}
+
+void PinGDataFileFunction::OnPinStateSet(const FilePath& path,
+                                         base::DictionaryValue* properties,
+                                         base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  MessageLoop::current()->PostTask(FROM_HERE,
+      Bind(&PinGDataFileFunction::OnOperationComplete,
+           this, path, properties, error));
 }
 
 GetFileLocationsFunction::GetFileLocationsFunction() {

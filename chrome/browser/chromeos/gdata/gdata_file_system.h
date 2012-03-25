@@ -372,6 +372,10 @@ class GDataFileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
+  // Pin or unpin file.
+  virtual void SetPinState(const FilePath& file_path, bool to_pin,
+                           const FileOperationCallback& callback) = 0;
+
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
   virtual void AddUploadedFile(const FilePath& virtual_dir_path,
@@ -449,6 +453,9 @@ class GDataFileSystem : public GDataFileSystemInterface {
       CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
+  // Calls private Pin or Unpin methods with |callback|.
+  virtual void SetPinState(const FilePath& file_path, bool pin,
+                           const FileOperationCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(const FilePath& virtual_dir_path,
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
@@ -1155,6 +1162,11 @@ class GDataFileSystem : public GDataFileSystemInterface {
   // FindFileByPath() request.
   void FindFileByPathOnCallingThread(const FilePath& search_file_path,
                                      const FindFileCallback& callback);
+
+  void OnSetPinStateCompleted(const FileOperationCallback& callback,
+                              base::PlatformFileError error,
+                              const std::string& resource_id,
+                              const std::string& md5);
 
   scoped_ptr<GDataRootDirectory> root_;
 
