@@ -132,6 +132,9 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual bool cellular_busy() const OVERRIDE;
   virtual bool wifi_scanning() const OVERRIDE;
   virtual bool offline_mode() const OVERRIDE;
+  virtual std::string GetCheckPortalList() const OVERRIDE;
+  // virtual SetCheckPortalList implemented in derived classes.
+  // virtual SetDefaultCheckPortalList implemented in derived classes.
   virtual const std::string& IPAddress() const OVERRIDE;
 
   virtual const NetworkDevice* FindNetworkDeviceByPath(
@@ -430,6 +433,9 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // Currently not implemented. TODO(stevenjb): implement or eliminate.
   bool offline_mode_;
+
+  // List of interfaces for which portal check is enabled.
+  std::string check_portal_list_;
 
   // True if access network library is locked.
   bool is_locked_;

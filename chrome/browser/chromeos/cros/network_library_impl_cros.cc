@@ -26,6 +26,9 @@ const char* kAlwaysInRoamingOperators[] = {
   "CUBIC"
 };
 
+// List of interfaces that have portal check enabled by default.
+const char kDefaultCheckPortalList[] = "ethernet,wifi,cellular";
+
 // Safe string constructor since we can't rely on non NULL pointers
 // for string values from libcros.
 std::string SafeString(const char* s) {
@@ -495,6 +498,17 @@ void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
 //////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary implementation.
 
+void NetworkLibraryImplCros::SetCheckPortalList(
+    const std::string& check_portal_list) {
+  scoped_ptr<GValue> gvalue(ConvertStringToGValue(check_portal_list));
+  CrosSetNetworkManagerPropertyGValue(flimflam::kCheckPortalListProperty,
+                                      gvalue.get());
+}
+
+void NetworkLibraryImplCros::SetDefaultCheckPortalList() {
+  SetCheckPortalList(kDefaultCheckPortalList);
+}
+
 void NetworkLibraryImplCros::ChangePin(const std::string& old_pin,
                                        const std::string& new_pin) {
   const NetworkDevice* cellular = FindCellularDevice();
@@ -922,10 +936,14 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       UpdateNetworkDeviceList(vlist);
       break;
     }
+    case PROPERTY_INDEX_CHECK_PORTAL_LIST: {
+      DCHECK_EQ(value->GetType(), Value::TYPE_STRING);
+      value->GetAsString(&check_portal_list_);
+      break;
+    }
     case PROPERTY_INDEX_PORTAL_URL:
-    case PROPERTY_INDEX_CHECK_PORTAL_LIST:
     case PROPERTY_INDEX_ARP_GATEWAY:
-      // Currently we ignore PortalURL, CheckPortalList and ArpGateway.
+      // Currently we ignore PortalURL and ArpGateway.
       break;
     default:
       LOG(WARNING) << "Manager: Unhandled key: " << key;

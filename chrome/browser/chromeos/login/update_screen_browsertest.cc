@@ -62,6 +62,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .WillOnce(Invoke(RequestUpdateCheckSuccess));
 
     mock_network_library_ = cros_mock_->mock_network_library();
+    EXPECT_CALL(*mock_network_library_, SetDefaultCheckPortalList())
+        .Times(1);
     EXPECT_CALL(*mock_network_library_, Connected())
         .Times(1)  // also called by NetworkMenu::InitMenuItems()
         .WillRepeatedly((Return(false)))

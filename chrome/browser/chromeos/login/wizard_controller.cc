@@ -484,6 +484,10 @@ void WizardController::OnOOBECompleted() {
 }
 
 void WizardController::InitiateOOBEUpdate() {
+  // Now that EULA has been accepted (for official builds), enable portal check.
+  // ChromiumOS builds would go though this code path too.
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+      SetDefaultCheckPortalList();
   host_->CheckForAutoEnrollment();
   GetUpdateScreen()->StartUpdate();
   SetCurrentScreenSmooth(GetUpdateScreen(), true);

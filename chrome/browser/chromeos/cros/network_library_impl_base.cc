@@ -386,6 +386,10 @@ bool NetworkLibraryImplBase::wifi_scanning() const {
 
 bool NetworkLibraryImplBase::offline_mode() const { return offline_mode_; }
 
+std::string NetworkLibraryImplBase::GetCheckPortalList() const {
+  return check_portal_list_;
+}
+
 // Returns the IP address for the active network.
 // TODO(stevenjb): Fix this for VPNs. See chromium-os:13972.
 const std::string& NetworkLibraryImplBase::IPAddress() const {

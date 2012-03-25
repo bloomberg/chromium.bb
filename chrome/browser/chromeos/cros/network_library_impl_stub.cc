@@ -19,6 +19,8 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
       pin_entered_(false),
       connect_delay_ms_(0),
       network_priority_order_(0) {
+  // Emulate default setting of the CheckPortalList when OOBE is done.
+  check_portal_list_ = "ethernet,wifi,cellular";
 }
 
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
@@ -505,6 +507,15 @@ void NetworkLibraryImplStub::CallRemoveNetwork(const Network* network) {}
 
 /////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary implementation.
+
+void NetworkLibraryImplStub::SetCheckPortalList(const
+    std::string& check_portal_list) {
+  check_portal_list_ = check_portal_list;
+}
+
+void NetworkLibraryImplStub::SetDefaultCheckPortalList() {
+  SetCheckPortalList("ethernet,wifi,cellular");
+}
 
 void NetworkLibraryImplStub::ChangePin(const std::string& old_pin,
                                        const std::string& new_pin) {

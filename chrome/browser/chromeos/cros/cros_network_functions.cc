@@ -33,6 +33,11 @@ void CrosSetNetworkIPConfigPropertyGValue(const char* ipconfig_path,
   chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property, gvalue);
 }
 
+void CrosSetNetworkManagerPropertyGValue(const char* property,
+                                         const GValue* gvalue) {
+  chromeos::SetNetworkManagerPropertyGValue(property, gvalue);
+}
+
 void CrosDeleteServiceFromProfile(const char* profile_path,
                                   const char* service_path) {
   chromeos::DeleteServiceFromProfile(profile_path, service_path);

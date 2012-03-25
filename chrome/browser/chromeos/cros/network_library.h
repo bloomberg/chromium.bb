@@ -1742,6 +1742,19 @@ class NetworkLibrary {
 
   virtual bool offline_mode() const = 0;
 
+  // Returns list of technologies for which captive portal checking is enabled.
+  // This is a comma-separated string; e.g. "ethernet,wifi,cellular".
+  // See kDefaultCheckPortalList in portal_detector.cc.
+  virtual std::string GetCheckPortalList() const = 0;
+
+  // Sets comma-separated list of interfaces that have portal check enabled.
+  // Setting to empty string would disable portal check.
+  virtual void SetCheckPortalList(const std::string& check_portal_list) = 0;
+
+  // Enables portal checking on a default set of interfaces:
+  // "ethernet,wifi,cellular".
+  virtual void SetDefaultCheckPortalList() = 0;
+
   // Returns the current IP address if connected. If not, returns empty string.
   virtual const std::string& IPAddress() const = 0;
 

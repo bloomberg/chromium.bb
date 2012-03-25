@@ -28,7 +28,7 @@ void CrosSetNetworkServicePropertyGValue(const char* service_path,
                                          const char* property,
                                          const GValue* gvalue);
 
-// Clears a property of a service
+// Clears a property of a service.
 void CrosClearNetworkServiceProperty(const char* service_path,
                                      const char* property);
 
@@ -43,6 +43,11 @@ void CrosSetNetworkDevicePropertyGValue(const char* device_path,
 void CrosSetNetworkIPConfigPropertyGValue(const char* ipconfig_path,
                                           const char* property,
                                           const GValue* gvalue);
+
+// Sets a property of a manager to the provided value.
+// Success is indicated by the receipt of a matching PropertyChanged signal.
+void CrosSetNetworkManagerPropertyGValue(const char* property,
+                                         const GValue* gvalue);
 
 // Deletes a remembered service from a profile.
 void CrosDeleteServiceFromProfile(const char* profile_path,

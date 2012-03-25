@@ -43,6 +43,9 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   //////////////////////////////////////////////////////////////////////////////
   // NetworkLibrary implementation.
 
+  virtual void SetCheckPortalList(
+      const std::string& check_portal_list) OVERRIDE;
+  virtual void SetDefaultCheckPortalList() OVERRIDE;
   virtual void ChangePin(const std::string& old_pin,
                          const std::string& new_pin) OVERRIDE;
   virtual void ChangeRequirePin(bool require_pin,

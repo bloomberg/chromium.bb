@@ -59,6 +59,9 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(Connected, bool(void));
   MOCK_CONST_METHOD0(Connecting, bool(void));
 
+  MOCK_CONST_METHOD0(GetCheckPortalList, std::string(void));
+  MOCK_METHOD1(SetCheckPortalList, void(const std::string&));
+  MOCK_METHOD0(SetDefaultCheckPortalList, void(void));
   MOCK_CONST_METHOD0(IPAddress, const std::string&(void));
   MOCK_CONST_METHOD0(wifi_networks, const WifiNetworkVector&(void));
   MOCK_CONST_METHOD0(remembered_wifi_networks, const WifiNetworkVector&(void));
