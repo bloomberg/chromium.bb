@@ -43,6 +43,8 @@ TrayDate::~TrayDate() {
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(tray::DateView::TIME));
+  date_tray_->set_border(
+      views::Border::CreateEmptyBorder(0, 10, 0, 7));
   SetupLabelForTray(date_tray_->label());
   gfx::Font font = date_tray_->label()->font();
   date_tray_->label()->SetFont(

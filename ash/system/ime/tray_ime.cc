@@ -187,6 +187,8 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   tray_label_.reset(new views::Label);
   SetupLabelForTray(tray_label_.get());
+  tray_label_->set_border(
+      views::Border::CreateEmptyBorder(0, 2, 0, 2));
   return tray_label_.get();
 }
 

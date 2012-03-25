@@ -56,4 +56,3 @@ class DateView : public views::View {
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_DATE_VIEW_H_
-

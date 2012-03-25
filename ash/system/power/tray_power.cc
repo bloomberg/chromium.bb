@@ -82,10 +82,12 @@ class PowerTrayView : public views::ImageView {
         std::max(std::min(image_index, kNumPowerImages - 2), 0);
     }
 
+    // TODO(mbolohan): Remove the 2px offset when the assets are centered. See
+    // crbug.com/119832.
     SkIRect region = SkIRect::MakeXYWH(
-        supply_status_.line_power_on ? kBatteryImageWidth : 0,
+        (supply_status_.line_power_on ? kBatteryImageWidth : 0) + 2,
         image_index * kBatteryImageHeight,
-        kBatteryImageWidth, kBatteryImageHeight);
+        kBatteryImageWidth - 2, kBatteryImageHeight);
     all.ToSkBitmap()->extractSubset(&image, region);
 
     SetImage(image);

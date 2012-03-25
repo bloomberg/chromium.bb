@@ -314,12 +314,14 @@ class RoundedImageView : public views::View {
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return image_size_;
+    return gfx::Size(image_size_.width() + GetInsets().width(),
+                     image_size_.height() + GetInsets().height());
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     View::OnPaint(canvas);
-    gfx::Rect image_bounds(image_size_);
+    gfx::Rect image_bounds(GetPreferredSize());
+    image_bounds.Inset(GetInsets());
     const SkScalar kRadius = SkIntToScalar(corner_radius_);
     SkPath path;
     path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
@@ -328,6 +330,11 @@ class RoundedImageView : public views::View {
     SkShader* shader = SkShader::CreateBitmapShader(resized_,
                                                     SkShader::kRepeat_TileMode,
                                                     SkShader::kRepeat_TileMode);
+    SkMatrix shader_matrix;
+    shader_matrix.setTranslate(SkIntToScalar(image_bounds.x()),
+                               SkIntToScalar(image_bounds.y()));
+    shader->setLocalMatrix(shader_matrix);
+
     paint.setShader(shader);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     shader->unref();
@@ -360,6 +367,7 @@ views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   } else {
     avatar_->SetVisible(false);
   }
+  avatar_->set_border(views::Border::CreateEmptyBorder(0, 6, 0, 0));
   return avatar_.get();
 }
 

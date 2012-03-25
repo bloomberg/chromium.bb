@@ -436,10 +436,10 @@ SystemTray::SystemTray()
           0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
   container_ = new views::View;
   container_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
+      views::BoxLayout::kHorizontal, 0, 0, 0));
   container_->set_background(background_);
   container_->set_border(
-      views::Border::CreateEmptyBorder(1, kTrayPaddingBetweenItems, 1, 1));
+      views::Border::CreateEmptyBorder(1, 1, 1, 1));
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);

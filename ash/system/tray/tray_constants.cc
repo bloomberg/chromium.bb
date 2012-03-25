@@ -8,7 +8,6 @@
 
 namespace ash {
 
-const int kTrayPaddingBetweenItems = 8;
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;

@@ -8,7 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/time.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
 
@@ -53,7 +53,9 @@ DateView::DateView(TimeType type)
           GetHourClockType()),
       type_(type),
       actionable_(false) {
-  SetLayoutManager(new views::FillLayout());
+  // TODO(flackr): Investigate respecting the view's border in FillLayout.
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, 0));
   label_ = new views::Label;
   label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
@@ -138,7 +140,6 @@ void DateView::OnMouseExited(const views::MouseEvent& event) {
 void DateView::OnLocaleChanged() {
   UpdateText();
 }
-
 
 }  // namespace tray
 }  // namespace internal

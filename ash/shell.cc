@@ -701,9 +701,9 @@ void Shell::Init() {
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
-    tray_->AddTrayItem(tray_date);
     tray_->AddTrayItem(tray_accessibility);
     tray_->AddTrayItem(tray_caps_lock);
+    tray_->AddTrayItem(tray_date);
 
     tray_->SetVisible(tray_delegate_->GetTrayVisibilityOnStartup());
   }
