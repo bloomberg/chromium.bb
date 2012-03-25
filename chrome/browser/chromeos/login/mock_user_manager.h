@@ -33,8 +33,8 @@ class MockUserManager : public UserManager {
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD1(GetUserWallpaper, int(const std::string&));
-  MOCK_METHOD2(SaveWallpaperDefaultIndex, void(const std::string&, int));
+  MOCK_METHOD0(GetUserWallpaperIndex, int(void));
+  MOCK_METHOD1(SaveUserWallpaperIndex, void(int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
   MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
   MOCK_METHOD2(SaveUserImage, void(const std::string&, const SkBitmap&));

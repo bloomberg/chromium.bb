@@ -136,16 +136,14 @@ class UserManager {
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
 
-  // Returns the index of the default wallpapers saved in local state for user
-  // |username| if it is known (was previousely set by
-  // |SaveWallpaperToLocalState| call).
-  // Otherwise, returns default wallpaper index.
-  virtual int GetUserWallpaper(const std::string& username) = 0;
+  // Returns the index of the default wallpapers saved in local state for login
+  // user if it is known (was previousely set by |SaveWallpaperToLocalState|
+  // call). Otherwise, returns a randomly generated index.
+  virtual int GetUserWallpaperIndex() = 0;
 
-  // Sets user wallpaper to the default wallpaper with index |wallpaper_index|,
-  // updates Local State.
-  virtual void SaveWallpaperDefaultIndex(const std::string& username,
-                                         int wallpaper_index) = 0;
+  // Save the index |wallpaper_index| of the default wallpapers selected by
+  // current user to Local State.
+  virtual void SaveUserWallpaperIndex(int wallpaper_index) = 0;
 
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.

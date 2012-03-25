@@ -63,9 +63,8 @@ class UserManagerImpl : public UserManager,
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
-  virtual int GetUserWallpaper(const std::string& username) OVERRIDE;
-  virtual void SaveWallpaperDefaultIndex(const std::string& username,
-                                         int wallpaper_index) OVERRIDE;
+  virtual int GetUserWallpaperIndex() OVERRIDE;
+  virtual void SaveUserWallpaperIndex(int wallpaper_index) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(const std::string& username,
                                          int image_index) OVERRIDE;
   virtual void SaveUserImage(const std::string& username,
