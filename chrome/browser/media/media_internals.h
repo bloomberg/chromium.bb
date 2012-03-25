@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "content/public/browser/media_observer.h"
 
@@ -19,11 +19,13 @@ struct MediaLogEvent;
 }
 
 // This class stores information about currently active media.
-// All of its methods are called on the IO thread.
-class MediaInternals : public content::MediaObserver,
-                       public base::NonThreadSafe {
+// It's constructed on the UI thread but all of its methods are called on the IO
+// thread.
+class MediaInternals : public content::MediaObserver {
  public:
   virtual ~MediaInternals();
+
+  static MediaInternals* GetInstance();
 
   // Overridden from content::MediaObserver:
   virtual void OnDeleteAudioStream(void* host, int stream_id) OVERRIDE;
@@ -47,8 +49,8 @@ class MediaInternals : public content::MediaObserver,
   void SendEverything();
 
  private:
-  friend class IOThread;
   friend class MediaInternalsTest;
+  friend struct DefaultSingletonTraits<MediaInternals>;
 
   MediaInternals();
 

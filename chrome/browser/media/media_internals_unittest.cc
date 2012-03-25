@@ -5,7 +5,9 @@
 #include "chrome/browser/media/media_internals.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/media/media_internals_observer.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,6 +18,7 @@ class MockMediaInternalsObserver : public MediaInternalsObserver {
 
 class MediaInternalsTest : public testing::Test {
  public:
+  MediaInternalsTest() : io_thread_(content::BrowserThread::IO, &loop_) {}
   DictionaryValue* data() {
     return &internals_->data_;
   }
@@ -37,6 +40,9 @@ class MediaInternalsTest : public testing::Test {
   virtual void SetUp() {
     internals_.reset(new MediaInternals());
   }
+
+  MessageLoop loop_;
+  content::TestBrowserThread io_thread_;
   scoped_ptr<MediaInternals> internals_;
 };
 

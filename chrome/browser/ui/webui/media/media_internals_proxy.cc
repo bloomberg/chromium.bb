@@ -126,20 +126,20 @@ Value* MediaInternalsProxy::GetConstants() {
 
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_thread_->globals()->media.media_internals->AddObserver(this);
+  MediaInternals::GetInstance()->AddObserver(this);
   io_thread_->net_log()->AddThreadSafeObserver(this,
                                                net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_thread_->globals()->media.media_internals->RemoveObserver(this);
+  MediaInternals::GetInstance()->RemoveObserver(this);
   io_thread_->net_log()->RemoveThreadSafeObserver(this);
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_thread_->globals()->media.media_internals->SendEverything();
+  MediaInternals::GetInstance()->SendEverything();
 }
 
 void MediaInternalsProxy::UpdateUIOnUIThread(const string16& update) {

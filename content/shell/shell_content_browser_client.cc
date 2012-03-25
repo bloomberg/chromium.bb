@@ -230,6 +230,10 @@ void ShellContentBrowserClient::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
 }
 
+MediaObserver* ShellContentBrowserClient::GetMediaObserver() {
+  return NULL;
+}
+
 void ShellContentBrowserClient::RequestDesktopNotificationPermission(
     const GURL& source_origin,
     int callback_context,

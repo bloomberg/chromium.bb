@@ -36,6 +36,7 @@
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -1160,6 +1161,10 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
 
   callback.Run(devices);
 #endif  // TOOLKIT_VIEWS || OS_LINUX
+}
+
+content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
+  return MediaInternals::GetInstance();
 }
 
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(

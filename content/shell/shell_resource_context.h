@@ -23,7 +23,6 @@ class ShellResourceContext : public content::ResourceContext {
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-  virtual MediaObserver* GetMediaObserver() OVERRIDE;
 
   scoped_refptr<ShellURLRequestContextGetter> getter_;
 

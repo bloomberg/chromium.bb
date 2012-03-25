@@ -10,13 +10,11 @@
 namespace content {
 
 MockResourceContext::MockResourceContext()
-    : test_request_context_(new TestURLRequestContext),
-      media_observer_(NULL) {
+    : test_request_context_(new TestURLRequestContext) {
 }
 
 MockResourceContext::MockResourceContext(net::URLRequestContext* context)
-    : test_request_context_(context),
-      media_observer_(NULL) {
+    : test_request_context_(context) {
 }
 
 MockResourceContext::~MockResourceContext() {}
@@ -27,10 +25,6 @@ net::HostResolver* MockResourceContext::GetHostResolver()  {
 
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {
   return test_request_context_;
-}
-
-MediaObserver* MockResourceContext::GetMediaObserver()  {
-  return media_observer_;
 }
 
 }  // namespace content

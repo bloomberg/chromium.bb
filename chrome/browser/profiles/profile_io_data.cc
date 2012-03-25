@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -391,12 +390,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   return request_context_;
 }
 
-content::MediaObserver* ProfileIOData::ResourceContext::GetMediaObserver()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  EnsureInitialized();
-  return media_observer_;
-}
-
 // static
 std::string ProfileIOData::GetSSLSessionCacheShard() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -495,8 +488,6 @@ void ProfileIOData::LazyInitialize() const {
 
   resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_.request_context_ = main_request_context_;
-  resource_context_.media_observer_ =
-      io_thread_globals->media.media_internals.get();
 
   LazyInitializeInternal(profile_params_.get());
 

@@ -13,10 +13,16 @@
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
+using content::BrowserThread;
+
+MediaInternals* MediaInternals::GetInstance() {
+  return Singleton<MediaInternals>::get();
+}
+
 MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::string stream = base::StringPrintf("audio_streams.%p:%d",
                                           host, stream_id);
   DeleteItem(stream);
@@ -24,28 +30,28 @@ void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
 
 void MediaInternals::OnSetAudioStreamPlaying(
     void* host, int stream_id, bool playing) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UpdateAudioStream(host, stream_id,
                     "playing", Value::CreateBooleanValue(playing));
 }
 
 void MediaInternals::OnSetAudioStreamStatus(
     void* host, int stream_id, const std::string& status) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UpdateAudioStream(host, stream_id,
                     "status", Value::CreateStringValue(status));
 }
 
 void MediaInternals::OnSetAudioStreamVolume(
     void* host, int stream_id, double volume) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UpdateAudioStream(host, stream_id,
                     "volume", Value::CreateDoubleValue(volume));
 }
 
 void MediaInternals::OnMediaEvent(
     int render_process_id, const media::MediaLogEvent& event) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Notify observers that |event| has occured.
   DictionaryValue dict;
@@ -58,17 +64,17 @@ void MediaInternals::OnMediaEvent(
 }
 
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);
 }
 
 void MediaInternals::RemoveObserver(MediaInternalsObserver* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.RemoveObserver(observer);
 }
 
 void MediaInternals::SendEverything() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   SendUpdate("media.onReceiveEverything", &data_);
 }
 
