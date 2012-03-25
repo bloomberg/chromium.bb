@@ -341,14 +341,20 @@ void ChromeLauncherDelegate::CreateNewTab() {
   Browser *last_browser = BrowserList::FindTabbedBrowser(
       GetProfileForNewWindows(), true);
 
-  if (last_browser) {
-    last_browser->NewTab();
-    aura::Window* window = last_browser->window()->GetNativeHandle();
-    window->Show();
-    ash::wm::ActivateWindow(window);
-  } else {
-    Browser::NewEmptyWindow(GetProfileForNewWindows());
+  if (!last_browser) {
+    CreateNewWindow();
+    return;
   }
+
+  last_browser->NewTab();
+  aura::Window* window = last_browser->window()->GetNativeHandle();
+  window->Show();
+  ash::wm::ActivateWindow(window);
+}
+
+void ChromeLauncherDelegate::CreateNewWindow() {
+  printf("ChromeLauncherDelegate::CreateNewWindow\n");
+  Browser::NewEmptyWindow(GetProfileForNewWindows());
 }
 
 void ChromeLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {

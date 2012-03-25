@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
 using ui::Animation;
@@ -692,7 +693,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
       return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
 
     case TYPE_BROWSER_SHORTCUT:
-      return l10n_util::GetStringUTF16(IDS_AURA_CYCLER_TITLE);
+      return l10n_util::GetStringUTF16(IDS_AURA_NEW_TAB);
 
   }
   return string16();
@@ -725,7 +726,10 @@ void LauncherView::ButtonPressed(views::Button* sender,
       break;
 
     case TYPE_BROWSER_SHORTCUT:
-      delegate_->CreateNewTab();
+      if (event.flags() & ui::EF_CONTROL_DOWN)
+        delegate_->CreateNewWindow();
+      else
+        delegate_->CreateNewTab();
       break;
   }
 }

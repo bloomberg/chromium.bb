@@ -167,8 +167,8 @@ This file contains the strings for ash.
       <message name="IDS_AURA_APP_LIST_TITLE" desc="The title used for the Aura app list in the launcher">
         Applications
       </message>
-      <message name="IDS_AURA_CYCLER_TITLE" desc="The title used for the Aura window cycler in the launcher">
-        Window Cycler
+      <message name="IDS_AURA_NEW_TAB" desc="The text label of the New Tab menu item">
+        New tab
       </message>
       <message name="IDS_AURA_LAUNCHER_OVERFLOW_NAME" desc="The title used for the Aura overflow button in the launcher">
         Overflow Button
