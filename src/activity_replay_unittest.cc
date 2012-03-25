@@ -39,7 +39,8 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
 
   ActivityReplay replay(prop_reg);
   vector<string> honor_props;
-  base::SplitString(cl->GetSwitchValueASCII("only_honor"), ',', &honor_props);
+  if (cl->GetSwitchValueASCII("only_honor")[0])
+    base::SplitString(cl->GetSwitchValueASCII("only_honor"), ',', &honor_props);
   std::set<string> honor_props_set(honor_props.begin(), honor_props.end());
   replay.Parse(log_contents, honor_props_set);
   replay.Replay(interpreter);
