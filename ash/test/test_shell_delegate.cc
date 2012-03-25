@@ -25,7 +25,7 @@ views::Widget* TestShellDelegate::CreateStatusArea() {
   return NULL;
 }
 
-bool TestShellDelegate::CanCreateLauncher() {
+bool TestShellDelegate::IsUserLoggedIn() {
   return true;
 }
 

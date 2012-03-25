@@ -34,7 +34,7 @@ views::Widget* ShellDelegateImpl::CreateStatusArea() {
   return NULL;
 }
 
-bool ShellDelegateImpl::CanCreateLauncher() {
+bool ShellDelegateImpl::IsUserLoggedIn() {
   return true;
 }
 

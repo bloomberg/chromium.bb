@@ -70,11 +70,11 @@ extern const AcceleratorData kAcceleratorData[];
 // The number of elements in kAcceleratorData.
 extern const size_t kAcceleratorDataLength;
 
-// Actions allowed while screen is locked.
-extern const AcceleratorAction kActionsAllowedWhileLocked[];
+// Actions allowed while user is not signed in or screen is locked.
+extern const AcceleratorAction kActionsAllowedAtLoginScreen[];
 
-// The number of elements in kActionsAllowedWhileLocked.
-extern const size_t kActionsAllowedWhileLockedLength;
+// The number of elements in kActionsAllowedAtLoginScreen.
+extern const size_t kActionsAllowedAtLoginScreenLength;
 
 }  // namespace ash
 

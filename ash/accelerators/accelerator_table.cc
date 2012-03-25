@@ -116,7 +116,7 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
-const AcceleratorAction kActionsAllowedWhileLocked[] = {
+const AcceleratorAction kActionsAllowedAtLoginScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
   EXIT,
@@ -136,7 +136,7 @@ const AcceleratorAction kActionsAllowedWhileLocked[] = {
 #endif
 };
 
-const size_t kActionsAllowedWhileLockedLength =
-    arraysize(kActionsAllowedWhileLocked);
+const size_t kActionsAllowedAtLoginScreenLength =
+    arraysize(kActionsAllowedAtLoginScreen);
 
 }  // namespace ash

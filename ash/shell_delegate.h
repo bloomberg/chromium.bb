@@ -50,9 +50,8 @@ class ASH_EXPORT ShellDelegate {
   // Invoked to create a new status area. Can return NULL.
   virtual views::Widget* CreateStatusArea() = 0;
 
-  // Can we create the launcher yet?  In some cases, we may need to defer it
-  // until e.g. a user has logged in and their profile has been loaded.
-  virtual bool CanCreateLauncher() = 0;
+  // Returns true if user has logged in.
+  virtual bool IsUserLoggedIn() = 0;
 
   // Invoked when a user locks the screen.
   virtual void LockScreen() = 0;

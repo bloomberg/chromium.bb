@@ -78,7 +78,7 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
   return status_area_widget;
 }
 
-bool ChromeShellDelegate::CanCreateLauncher() {
+bool ChromeShellDelegate::IsUserLoggedIn() {
 #if defined(OS_CHROMEOS)
   // When running a Chrome OS build outside of a device (i.e. on a developer's
   // workstation), pretend like we're always logged in.

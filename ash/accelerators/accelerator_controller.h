@@ -94,8 +94,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // the implementation.
   std::map<ui::Accelerator, int> accelerators_;
 
-  // Actions allowed when the screen is locked.
-  std::set<int> actions_allowed_while_locked_;
+  // Actions allowed when the user is not signed in or screen is locked
+  std::set<int> actions_allowed_at_login_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorController);
 };

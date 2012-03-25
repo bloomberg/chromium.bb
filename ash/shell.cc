@@ -727,7 +727,7 @@ void Shell::Init() {
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_widget_);
 
-  if (!delegate_.get() || delegate_->CanCreateLauncher())
+  if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();
 
   // Force a layout.

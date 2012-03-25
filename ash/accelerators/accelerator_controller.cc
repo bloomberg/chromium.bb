@@ -232,9 +232,9 @@ AcceleratorController::~AcceleratorController() {
 }
 
 void AcceleratorController::Init() {
-  for (size_t i = 0; i < kActionsAllowedWhileLockedLength; ++i) {
-    CHECK(actions_allowed_while_locked_.insert(
-        kActionsAllowedWhileLocked[i]).second);
+  for (size_t i = 0; i < kActionsAllowedAtLoginScreenLength; ++i) {
+    CHECK(actions_allowed_at_login_screen_.insert(
+        kActionsAllowedAtLoginScreen[i]).second);
   }
 
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
@@ -304,13 +304,21 @@ bool AcceleratorController::AcceleratorPressed(
   DCHECK(it != accelerators_.end());
   AcceleratorAction action = static_cast<AcceleratorAction>(it->second);
 
-  if (ash::Shell::GetInstance()->IsScreenLocked() &&
-      actions_allowed_while_locked_.find(action) ==
-      actions_allowed_while_locked_.end()) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+#if defined(OS_CHROMEOS)
+  bool at_login_screen = shell->IsScreenLocked() ||
+      (shell->delegate() && !shell->delegate()->IsUserLoggedIn());
+#else
+  bool at_login_screen = shell->IsScreenLocked();
+#endif //  OS_CHROMEOS
+
+  if (at_login_screen &&
+      actions_allowed_at_login_screen_.find(action) ==
+      actions_allowed_at_login_screen_.end()) {
     return false;
   }
 
-  switch (static_cast<AcceleratorAction>(it->second)) {
+  switch (action) {
     case CYCLE_BACKWARD_MRU:
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
