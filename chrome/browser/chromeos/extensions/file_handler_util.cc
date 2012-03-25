@@ -271,6 +271,12 @@ bool GetDefaultTask(
   return true;
 }
 
+FileTaskExecutor::FileDefinition::FileDefinition() {
+}
+
+FileTaskExecutor::FileDefinition::~FileDefinition() {
+}
+
 class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
  public:
   static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
@@ -301,8 +307,7 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
          ++iter) {
       // Set up file permission access.
       FileTaskExecutor::FileDefinition file;
-      if (!SetupFileAccessPermissions(*iter, &file.target_file_url,
-                                      &file.virtual_path, &file.is_directory)) {
+      if (!SetupFileAccessPermissions(*iter, &file)) {
         continue;
       }
       file_list.push_back(file);
@@ -323,7 +328,8 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
             executor_,
             file_system_name,
             file_system_root,
-            file_list));
+            file_list,
+            handler_pid_));
   }
 
   void DidFail(base::PlatformFileError error_code) {
@@ -354,7 +360,7 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
   bool SetupFileAccessPermissions(const GURL& origin_file_url,
-      GURL* target_file_url, FilePath* file_path, bool* is_directory) {
+                                  FileDefinition* file) {
     if (!handler_extension_.get())
       return false;
 
@@ -422,11 +428,6 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
         final_file_path,
         GetReadWritePermissions());
 
-    if (is_gdata_file) {
-      gdata::util::SetPermissionsForGDataCacheFiles(profile_, handler_pid_,
-          final_file_path);
-    }
-
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
@@ -438,10 +439,11 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
         handler_extension_->id()));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
-    *target_file_url = GURL(base_url.spec() + virtual_path.value());
+    file->target_file_url = GURL(base_url.spec() + virtual_path.value());
     FilePath root(FILE_PATH_LITERAL("/"));
-    *file_path = root.Append(virtual_path);
-    *is_directory = file_info.is_directory;
+    file->virtual_path = root.Append(virtual_path);
+    file->is_directory = file_info.is_directory;
+    file->absolute_path = final_file_path;
     return true;
   }
 
@@ -517,11 +519,26 @@ void FileTaskExecutor::ExecuteFailedOnUIThread() {
   Done(false);
 }
 
+void FileTaskExecutor::SetupFileAccessPermissionsForGDataCache(
+    const FileDefinitionList& file_list,
+    int handler_pid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (FileDefinitionList::const_iterator iter = file_list.begin();
+       iter != file_list.end();
+       ++iter) {
+    if (!gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
+      continue;
+    gdata::util::SetPermissionsForGDataCacheFiles(profile_, handler_pid,
+        iter->absolute_path);
+  }
+}
 
 void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     const std::string& file_system_name,
     const GURL& file_system_root,
-    const FileDefinitionList& file_list) {
+    const FileDefinitionList& file_list,
+    int handler_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ExtensionService* service = profile_->GetExtensionService();
@@ -541,6 +558,8 @@ void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     Done(false);
     return;
   }
+
+  SetupFileAccessPermissionsForGDataCache(file_list, handler_pid);
 
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(Value::CreateStringValue(action_id_));

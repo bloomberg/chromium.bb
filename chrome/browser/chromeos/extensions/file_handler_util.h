@@ -81,8 +81,12 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
  private:
   struct FileDefinition {
+    FileDefinition();
+    ~FileDefinition();
+
     GURL target_file_url;
     FilePath virtual_path;
+    FilePath absolute_path;
     bool is_directory;
   };
   typedef std::vector<FileDefinition> FileDefinitionList;
@@ -92,10 +96,14 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
       const scoped_refptr<const Extension>& handler,
       int handler_pid,
       const std::vector<GURL>& file_urls);
+  void SetupFileAccessPermissionsForGDataCache(
+      const FileDefinitionList& file_list,
+      int handler_pid);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);
   void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
                                     const GURL& file_system_root,
-                                    const FileDefinitionList& file_list);
+                                    const FileDefinitionList& file_list,
+                                    int handler_id);
   void ExecuteFailedOnUIThread();
 
   Profile* profile_;
