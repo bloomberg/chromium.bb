@@ -58,37 +58,6 @@ SystemKeyEventListener::SystemKeyEventListener()
   xkeyboard->GetLockedModifiers(&caps_lock_is_on_, &num_lock_is_on_);
 
   Display* display = ui::GetXDisplay();
-  key_brightness_down_ = XKeysymToKeycode(display,
-                                          XF86XK_MonBrightnessDown);
-  key_brightness_up_ = XKeysymToKeycode(display, XF86XK_MonBrightnessUp);
-  key_volume_mute_ = XKeysymToKeycode(display, XF86XK_AudioMute);
-  key_volume_down_ = XKeysymToKeycode(display, XF86XK_AudioLowerVolume);
-  key_volume_up_ = XKeysymToKeycode(display, XF86XK_AudioRaiseVolume);
-  key_f6_ = XKeysymToKeycode(display, XK_F6);
-  key_f7_ = XKeysymToKeycode(display, XK_F7);
-  key_f8_ = XKeysymToKeycode(display, XK_F8);
-  key_f9_ = XKeysymToKeycode(display, XK_F9);
-  key_f10_ = XKeysymToKeycode(display, XK_F10);
-
-  // TODO(yusukes): For Aura, the X11 API calls for grabbing keys should be
-  // moved to the aura::RootWindowHostLinux class or volume_controller.cc in
-  // chrome/browser/ui/views/ash/.
-  if (key_brightness_down_)
-    GrabKey(key_brightness_down_, 0);
-  if (key_brightness_up_)
-    GrabKey(key_brightness_up_, 0);
-  if (key_volume_mute_)
-    GrabKey(key_volume_mute_, 0);
-  if (key_volume_down_)
-    GrabKey(key_volume_down_, 0);
-  if (key_volume_up_)
-    GrabKey(key_volume_up_, 0);
-  GrabKey(key_f6_, 0);
-  GrabKey(key_f7_, 0);
-  GrabKey(key_f8_, 0);
-  GrabKey(key_f9_, 0);
-  GrabKey(key_f10_, 0);
-
   int xkb_major_version = XkbMajorVersion;
   int xkb_minor_version = XkbMinorVersion;
   if (!XkbQueryExtension(display,
@@ -135,19 +104,6 @@ base::EventStatus SystemKeyEventListener::WillProcessEvent(
 }
 
 void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
-}
-
-void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
-  uint32 caps_lock_mask = LockMask;
-  Display* display = ui::GetXDisplay();
-  Window root = DefaultRootWindow(display);
-  XGrabKey(display, key, mask, root, True, GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, key, mask | caps_lock_mask, root, True,
-           GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, key, mask | num_lock_mask_, root, True,
-           GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, key, mask | caps_lock_mask | num_lock_mask_, root,
-           True, GrabModeAsync, GrabModeAsync);
 }
 
 void SystemKeyEventListener::OnCapsLock(bool enabled) {

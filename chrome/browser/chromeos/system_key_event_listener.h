@@ -13,10 +13,6 @@ typedef union _XEvent XEvent;
 
 namespace chromeos {
 
-// SystemKeyEventListener listens for volume related key presses from GDK, then
-// tells the AudioHandler to adjust volume accordingly.  Start by just calling
-// instance() to get it going.
-
 class SystemKeyEventListener : public MessageLoopForUI::Observer {
  public:
   class CapsLockObserver {
@@ -52,25 +48,10 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
-  // Tell X we are interested in the specified key/mask combination.
-  // CapsLock and Numlock are always ignored.
-  void GrabKey(int32 key, uint32 mask);
-
   void OnCapsLock(bool enabled);
 
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
-
-  int32 key_brightness_down_;
-  int32 key_brightness_up_;
-  int32 key_volume_mute_;
-  int32 key_volume_down_;
-  int32 key_volume_up_;
-  int32 key_f6_;
-  int32 key_f7_;
-  int32 key_f8_;
-  int32 key_f9_;
-  int32 key_f10_;
 
   bool stopped_;
 
