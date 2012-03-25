@@ -429,10 +429,11 @@ SystemTray::SystemTray()
       user_observer_(NULL),
       bubble_(NULL),
       popup_(NULL),
-      mouse_in_tray_(false),
       background_(new internal::SystemTrayBackground),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          background_animator_(this, 0, kTrayBackgroundAlpha)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(this,
+          0, kTrayBackgroundAlpha)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(this,
+          0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
   container_ = new views::View;
   container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kTrayPaddingBetweenItems));
@@ -446,8 +447,10 @@ SystemTray::SystemTray()
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(container_);
 
-  // Initially we want to paint the background.
+  // Initially we want to paint the background, but without the hover effect.
   SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
+  hover_background_animator_.SetPaintsBackground(false,
+      internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 }
 
 SystemTray::~SystemTray() {
@@ -534,7 +537,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 void SystemTray::SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type) {
-  background_animator_.SetPaintsBackground(value, change_type);
+  hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
 void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
@@ -588,13 +591,13 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
-  mouse_in_tray_ = true;
-  UpdateBackground(background_animator_.alpha());
+  hover_background_animator_.SetPaintsBackground(true,
+      internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void SystemTray::OnMouseExited(const views::MouseEvent& event) {
-  mouse_in_tray_ = false;
-  UpdateBackground(background_animator_.alpha());
+  hover_background_animator_.SetPaintsBackground(false,
+      internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -623,9 +626,8 @@ void SystemTray::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void SystemTray::UpdateBackground(int alpha) {
-  if (mouse_in_tray_)
-    alpha += kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha;
-  background_->set_alpha(alpha);
+  background_->set_alpha(hide_background_animator_.alpha() +
+                         hover_background_animator_.alpha());
   SchedulePaint();
 }
 

@@ -163,13 +163,11 @@ class ASH_EXPORT SystemTray : public views::View,
   internal::SystemTrayBubble* bubble_;
   views::Widget* popup_;
 
-  // Is the mouse in the tray?
-  bool mouse_in_tray_;
-
   // Owned by the view it's installed on.
   internal::SystemTrayBackground* background_;
 
-  internal::BackgroundAnimator background_animator_;
+  internal::BackgroundAnimator hide_background_animator_;
+  internal::BackgroundAnimator hover_background_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
