@@ -6,17 +6,15 @@
 Repository module to handle different types of repositories the Builders use.
 """
 
-import collections
 import constants
 import filecmp
-import itertools
 import logging
 import os
 import re
 import shutil
 import tempfile
 
-from chromite.buildbot import portage_utilities, configure_repo
+from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import rewrite_git_alternates
 
@@ -60,30 +58,6 @@ def IsARepoRoot(root):
   # checkout- either way it isn't usable.
   repo_dir = os.path.join(root, '.repo', 'repo')
   return os.path.isdir(repo_dir)
-
-
-def RepoSyncUsingSSH(git_repo, detach=False):
-  """Fetch the latest code for the given directory using repo sync over ssh.
-
-  Args:
-    git_repo: Git repository to sync.
-  """
-  cros_lib.RunCommand(['git',
-                       'config',
-                       'url.%s.insteadof' % constants.GERRIT_SSH_URL,
-                       constants.GIT_HTTP_URL], cwd=git_repo)
-  try:
-    if detach:
-      cros_lib.RunCommand(['repo', 'sync', '-d', '.'], cwd=git_repo)
-    else:
-      cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
-  finally:
-    cros_lib.RunCommand(['git',
-                         'config',
-                         '--unset',
-                         'url.%s.insteadof' % constants.GERRIT_SSH_URL],
-                         cwd=git_repo)
-
 
 
 def CloneGitRepo(working_dir, repo_url):
@@ -278,8 +252,8 @@ class RepoRepository(object):
                                          '--jobs', str(jobs)],
                                      cwd=self.directory)
 
-      # Fixup any new mirroring configurations.
-      configure_repo.FixExternalRepoPushUrls(self.directory)
+      # Setup gerrit remote for any new repositories.
+      configure_repo.SetupGerritRemote(self.directory)
 
       # We do a second run to fix any new repositories created by repo to
       # use relative object pathways.  Note that cros_sdk also triggers the

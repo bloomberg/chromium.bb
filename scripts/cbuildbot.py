@@ -84,18 +84,18 @@ def _GetConfig(config_name):
 
 
 def _GetChromiteTrackingBranch():
-  """Returns the current Chromite tracking_branch.
-
-  If Chromite is on a detached HEAD, we assume it's the manifest branch.
-  """
+  """Returns the remote branch associated with chromite."""
   cwd = os.path.dirname(os.path.realpath(__file__))
-  current_branch = cros_lib.GetCurrentBranch(cwd)
-  if current_branch:
-    (_, tracking_branch) = cros_lib.GetPushBranch(current_branch, cwd)
-  else:
-    tracking_branch = cros_lib.GetManifestDefaultBranch(cwd)
-
-  return tracking_branch
+  branch = cros_lib.GetCurrentBranch(cwd)
+  if branch:
+    tracking_branch = cros_lib.GetTrackingBranch(branch, cwd)[1]
+    if tracking_branch.startswith('refs/heads/'):
+      return tracking_branch.replace('refs/heads/', '')
+  # If we are not on a branch, or if the tracking branch is a revision,
+  # use the default manifest branch. This only works if we are in a
+  # repo repository. TODO(davidjames): Fix this to work if we're not in a repo
+  # repository.
+  return cros_lib.GetManifestDefaultBranch(cwd)
 
 
 def _CheckBuildRootBranch(buildroot, tracking_branch):

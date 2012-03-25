@@ -242,7 +242,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               latest, chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
-        manifest_version.CreatePushBranch(self.manifest_dir)
+        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                  self.manifest_dir, sync=False)
         version = self.GetNextVersion(version_info)
         self.PublishManifest(new_manifest, version)
         self.current_version = version
@@ -289,7 +290,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           logging.info('Starting build spec: %s', version_to_build)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                        version_to_build)
-          manifest_version.CreatePushBranch(self.manifest_dir)
+          cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                    self.manifest_dir, sync=False)
           self.SetInFlight(version_to_build)
           self.PushSpecChanges(commit_message)
           self.current_version = version_to_build
@@ -360,7 +362,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         if attempt > 0:
           self.RefreshManifestCheckout()
-        manifest_version.CreatePushBranch(self.manifest_dir)
+        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                  self.manifest_dir, sync=False)
         manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
         cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
                             cwd=self.manifest_dir)

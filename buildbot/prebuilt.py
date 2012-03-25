@@ -152,24 +152,18 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   cwd = os.path.abspath(os.path.dirname(filename))
   commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
                                      redirect_stdout=True).output.rstrip()
-
-  # We want to push our changes to this file to tip of tree, thus force
-  # remotes to update; repo start always starts from HEAD of the manifest
-  # defined branch thus no need to do a reset.
-  _RetryRun(['git', 'remote', 'update'], cwd=cwd)
-  cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
-
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
+
   try:
+    cros_build_lib.CreatePushBranch(prebuilt_branch, cwd)
     UpdateLocalFile(filename, value, key)
     cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
     cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd, dryrun=dryrun)
+    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd, dryrun=dryrun,
+                                    retries=retries)
   finally:
     cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)
-    cros_build_lib.RunCommand(['repo', 'abandon', 'prebuilt_branch', '.'],
-                              cwd=cwd)
 
 
 def GetVersion():

@@ -28,7 +28,6 @@ class CBuildBotTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(configure_repo, 'FixExternalRepoPushUrls')
     self._test_repos = [['kernel', 'third_party/kernel/files'],
                         ['login_manager', 'platform/login_manager']
                        ]

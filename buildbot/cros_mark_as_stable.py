@@ -15,7 +15,7 @@ import constants
 if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
-from chromite.buildbot import portage_utilities, repository
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
 
@@ -119,11 +119,13 @@ def _SimpleRunCommand(command):
 # ======================= End Global Helper Functions ========================
 
 
-def PushChange(stable_branch, tracking_branch, dryrun):
+def PushChange(stable_branch, tracking_branch, dryrun, cwd='.'):
   """Pushes commits in the stable_branch to the remote git repository.
 
   Pushes local commits from calls to CommitChange to the remote git
-  repository specified by current working directory.
+  repository specified by current working directory. If changes are
+  found to commit, they will be merged to the merge branch and pushed.
+  In that case, the local repository will be left on the merge branch.
 
   Args:
     stable_branch: The local branch with commits we want to push.
@@ -132,30 +134,30 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   Raises:
       OSError: Error occurred while pushing.
   """
-  # For the commit queue, our local branch may contain commits that were just
-  # tested and pushed during the CommitQueueCompletion stage. After syncing,
-  # our local branch should be rebased so that these changes are no longer
-  # present.
-  repository.RepoSyncUsingSSH('.')
-
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch):
     cros_build_lib.Info('No work found to push.  Exiting')
+    return
+
+  # For the commit queue, our local branch may contain commits that were
+  # just tested and pushed during the CommitQueueCompletion stage. Sync
+  # and rebase our local branch on top of the remote commits.
+  remote, push_branch = cros_build_lib.GetPushBranch(cwd)
+  cros_build_lib.SyncPushBranch(cwd, remote, push_branch)
+
+  # Check whether any local changes remain after the sync.
+  if not _DoWeHaveLocalCommits(stable_branch, '%s/%s' % (remote, push_branch)):
+    cros_build_lib.Info('All changes already pushed. Exiting')
     return
 
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('Using description %s' % description)
-  merge_branch = GitBranch(constants.MERGE_BRANCH, tracking_branch)
-  if merge_branch.Exists():
-    merge_branch.Delete()
-  merge_branch.CreateBranch()
-  if not merge_branch.Exists():
-    cros_build_lib.Die('Unable to create merge branch.')
+  cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
   _SimpleRunCommand('git merge --squash %s' % stable_branch)
   cros_build_lib.RunCommand(['git', 'commit', '-m', description])
   _SimpleRunCommand('git config push.default tracking')
-  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd='.',
+  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd=cwd,
                                   dryrun=dryrun)
 
 

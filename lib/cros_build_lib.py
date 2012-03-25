@@ -22,6 +22,7 @@ STRICT_SUDO = False
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 YES = 'yes'
 NO = 'no'
+GERRIT_SSH_REMOTE = 'gerrit'
 
 class DebugLevel(object):
   """Object that controls the verbosity of program output.
@@ -920,30 +921,76 @@ def GetTrackingBranch(branch, cwd):
   return info['remote'], info['merge']
 
 
-def GetPushBranch(branch, cwd):
-  """Gets the appropriate push branch for the specified branch / directory.
+def GetPushBranch(cwd):
+  """Gets the appropriate push branch for the specified directory.
 
-  If branch has a valid tracking branch, we should push to that branch. If
-  the tracking branch is a revision, we can't push to that, so we should look
-  at the default branch from the manifest.
+  This function works on both repo projects and regular git checkouts.
+
+  Assumptions:
+   1. For repo checkouts, we assume that the gerrit remote is already set up.
+      For cbuildbot checkouts, the sync stage sets up the gerrit remote.
+   2. For non-repo checkouts, we assume that you have checked out from
+      origin/master.
+
+  If your repo checkout is tracking a revision-locked manifest, this command
+  will fail and throw an exception.
 
   Args:
-    branch: Branch to examine for tracking branch.
     cwd: Directory to look in.
   """
-  (remote, merge) = GetTrackingBranch(branch, cwd)
-  if not merge.startswith('refs/heads/'):
-    # If tracking branch is a revision, use the default manifest branch.
-    # This won't work for projects like kernel that override the default
-    # manifest branch.  But we are not pushing to them, so things are
-    # good for now.
-    merge = 'refs/heads/' + GetManifestDefaultBranch(cwd)
+  try:
+    # For valid repo projects, we push to the 'gerrit' remote which uses SSH.
+    output = RunCommand(['repo', 'forall', '.', '-c', 'echo $REPO_RREV'],
+                        print_cmd=False, redirect_stdout=True,
+                        redirect_stderr=True, cwd=cwd).output
+  except RunCommandError:
+    # For other repositories, we push to origin/master.
+    return 'origin', 'master'
 
-  return remote, merge.replace('refs/heads/', '')
+  if not output.startswith('refs/heads/'):
+    raise Exception('Could not find push branch. Got %s' % output)
+  remote_branch = output.rstrip().replace('refs/heads/', '')
+  return GERRIT_SSH_REMOTE, remote_branch
+
+
+def CreatePushBranch(branch, cwd, sync=True):
+  """Create a local branch for pushing changes inside a repo repository.
+
+    Args:
+      branch: Local branch to create.
+      cwd: Directory to create the branch in.
+      sync: Update remote before creating push branch.
+  """
+  remote, push_branch = GetPushBranch(cwd)
+  if sync:
+    RunCommand(['git', 'remote', 'update', remote], cwd=cwd)
+  RunCommand(['git', 'checkout', '-B', branch, '-t',
+              '%s/%s' % (remote, push_branch)], cwd=cwd)
+
+
+def SyncPushBranch(cwd, remote, push_branch):
+  """Sync a push branch to the latest remote version.
+
+    Args:
+      cwd: Directory to rebase in.
+      remote: The remote returned by GetPushBranch()
+      push_branch: The branch name returned by GetPushBranch().
+  """
+  RunCommand(['git', 'remote', 'update', remote], cwd=cwd)
+  try:
+    RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
+  except RunCommandError:
+    # Looks like our change conflicts with upstream. Cleanup our failed
+    # rebase.
+    RunCommand(['git', 'rebase', '--abort'], error_ok=True, cwd=cwd)
+    raise
 
 
 def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
   """General method to push local git changes.
+
+    This method only works with branches created via the CreatePushBranch
+    function.
 
     Args:
       branch: Local branch to push.  Branch should have already been created
@@ -956,21 +1003,13 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
     Raises:
       GitPushFailed if push was unsuccessful after retries
   """
-  remote, push_branch = GetPushBranch(branch, cwd)
+  remote, push_branch = GetPushBranch(cwd)
   for retry in range(1, retries + 1):
+    SyncPushBranch(cwd, remote, push_branch)
+    push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]
+    if dryrun:
+      push_command.append('--dry-run')
     try:
-      RunCommand(['git', 'remote', 'update'], cwd=cwd)
-      try:
-        RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
-      except RunCommandError:
-        # Looks like our change conflicts with upstream. Cleanup our failed
-        # rebase.
-        RunCommand(['git', 'rebase', '--abort'], error_ok=True, cwd=cwd)
-        raise
-      push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]
-      if dryrun:
-        push_command.append('--dry-run')
-
       RunCommand(push_command, cwd=cwd)
       break
     except RunCommandError:

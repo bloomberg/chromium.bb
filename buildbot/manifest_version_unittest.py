@@ -76,32 +76,13 @@ class HelperMethodsTest(unittest.TestCase):
     manifest_version._RemoveDirs(otherdir1)
     self.assertFalse(os.path.exists(otherdir1), 'Failed to rmdirs.')
 
-  def testPushGitChanges(self):
-    """Tests if we can append to an authors file and push it using dryrun."""
-
-    repo = repository.RepoRepository(constants.MANIFEST_URL, self.tmpdir,
-                                     referenced_repo=constants.SOURCE_ROOT,
-                                     manifest='minilayout.xml', depth=1)
-    repo.Sync()
-
-    git_dir = os.path.join(self.tmpdir, GIT_TEST_PATH)
-    manifest_version.CreatePushBranch(git_dir)
-
-    # Change something.
-    cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
-                        input='TEST USER <test_user@chromium.org>')
-
-    # Push the change with dryrun.
-    manifest_version._PushGitChanges(git_dir, 'Test appending user.',
-                                     dry_run=True)
-
   def testPushGitChangesWithRealPrep(self):
     """Another push test that tests push but on non-repo does it on a branch."""
     manifest_versions_url = cbuildbot_config.GetManifestVersionsRepoUrl(
         internal_build=False, read_only=False)
     git_dir = os.path.join(constants.SOURCE_ROOT, 'manifest-versions')
     manifest_version.RefreshManifestCheckout(git_dir, manifest_versions_url)
-    manifest_version.CreatePushBranch(git_dir)
+    cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, git_dir, sync=False)
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
                         input='TEST USER <test_user@chromium.org>')
     manifest_version._PushGitChanges(git_dir, 'Test appending user.',
@@ -141,17 +122,17 @@ class VersionInfoTest(mox.MoxTestBase):
   def CommonTestIncrementVersion(self, incr_type, version):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    self.mox.StubOutWithMock(cros_lib, 'CreatePushBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
     self.mox.StubOutWithMock(manifest_version, '_GitCleanAndCheckoutOrigin')
 
-    manifest_version.CreatePushBranch(self.tmpdir)
+    cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir, version)
 
     manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
-    manifest_version._GitCleanAndCheckoutOrigin(self.tmpdir, sync=True)
+    manifest_version._GitCleanAndCheckoutOrigin(self.tmpdir)
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)

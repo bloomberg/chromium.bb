@@ -4,7 +4,6 @@
 
 """Adjust a repo checkout's configuration, fixing/extending as needed"""
 
-import os
 import constants
 
 from chromite.lib import cros_build_lib
@@ -29,3 +28,28 @@ def FixBrokenExistingRepos(buildroot):
       ['repo', '--time', 'forall', '-c',
       'git config --remove-section "url.%s" 2> /dev/null' %
       constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
+
+
+def SetupGerritRemote(buildroot):
+  """Set up gerrit remote with SSH push.
+
+  This is used by buildbots. If a pushurl is present on the cros remote is
+  present, it will be removed, for ensuring that all consumers in the buildbot
+  have moved to use the cros remote.
+  """
+
+  urls = dict(gerrit_url=constants.GERRIT_SSH_URL,
+              gerrit_int_url=constants.GERRIT_INT_SSH_URL)
+  shell_code = """
+if ! git config remote.gerrit.url > /dev/null; then
+  if [ "${REPO_REMOTE}" = "cros" ]; then
+    git config --unset-all "remote.${REPO_REMOTE}.pushurl" || exit 1
+    git remote add gerrit "%(gerrit_url)s/${REPO_PROJECT}" || exit 1
+  else
+    git remote add gerrit "%(gerrit_int_url)s/${REPO_PROJECT}" || exit 1
+  fi
+fi
+""" % urls
+
+  cros_build_lib.RunCommand(['repo', '--time', 'forall', '-c', shell_code],
+                            cwd=buildroot)

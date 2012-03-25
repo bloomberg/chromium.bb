@@ -77,7 +77,8 @@ class RemoteTryJob(object):
 
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.SSH_URL)
-    manifest_version.CreatePushBranch(self.tryjob_repo)
+    push_branch = manifest_version.PUSH_BRANCH
+    cros_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False)
 
     file_name = '%s.%s' % (self.user,
                            current_time)
@@ -101,8 +102,7 @@ class RemoteTryJob(object):
                         cwd=self.tryjob_repo, extra_env=extra_env)
 
     try:
-      cros_lib.GitPushWithRetry(manifest_version.PUSH_BRANCH, self.tryjob_repo,
-                                dryrun=dryrun)
+      cros_lib.GitPushWithRetry(push_branch, self.tryjob_repo, dryrun=dryrun)
     except cros_lib.GitPushFailed:
       cros_lib.Error('Failed to submit tryjob.  This could be due to too many '
                      'submission requests by users.  Please try again.')

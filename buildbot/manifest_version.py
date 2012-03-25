@@ -14,8 +14,7 @@ import shutil
 import tempfile
 import time
 
-from chromite.buildbot import constants
-from chromite.buildbot import repository
+from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib as cros_lib
 
 logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
@@ -40,47 +39,21 @@ class GenerateBuildSpecException(Exception):
   pass
 
 
-def _GitCleanAndCheckoutOrigin(git_repo, sync=False):
-  """Remove all local changes and checkout the origin.
+def _GitCleanAndCheckoutOrigin(git_repo):
+  """Remove all local changes and checkout the latest origin.
 
   All local changes in the supplied repo will be removed. The branch will
-  also be switched to a detached head pointing at the origin.
+  also be switched to a detached head pointing at the latest origin.
 
   Args:
     git_repo: Directory of git repository.
-    sync: Update origin before checking it out. In this case, if we have
-      pushed changes via ssh, we must also sync via ssh to ensure any
-      changes that have pushed will be sync'd.
   """
+  remote, push_branch = cros_lib.GetPushBranch(git_repo)
+  cros_lib.RunCommand(['git', 'remote', 'update', remote], cwd=git_repo)
   cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=git_repo)
   cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=git_repo)
-  if repository.InARepoRepository(git_repo, require_project=True):
-    if sync:
-      repository.RepoSyncUsingSSH(git_repo, detach=True)
-    else:
-      cros_lib.RunCommand(['repo', 'sync', '-d', '-l', '.'], cwd=git_repo)
-  else:
-    if sync:
-      cros_lib.RunCommand(['git', 'remote', 'update'], cwd=git_repo)
-    cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=git_repo)
-
-
-def CreatePushBranch(git_repo):
-  """Set up a clean push branch in the specified git repo.
-
-  Before calling this function, you should clean the directory of any stale
-  commits using _GitCleanAndCheckoutOrigin(...) or RefreshManifestCheckout(...).
-
-  Args:
-    git_repo: Directory of git repository.
-  """
-  if repository.InARepoRepository(git_repo, require_project=True):
-    cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
-                        cwd=git_repo, error_code_ok=True)
-    cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
-  else:
-    cros_lib.RunCommand(['git', 'checkout', '-B', PUSH_BRANCH, '-t',
-                         'origin/master'], cwd=git_repo)
+  cros_lib.RunCommand(['git', 'checkout', '%s/%s' % (remote, push_branch)],
+                      cwd=git_repo)
 
 
 def RefreshManifestCheckout(manifest_dir, manifest_repo):
@@ -98,7 +71,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
       try:
-        _GitCleanAndCheckoutOrigin(manifest_dir, sync=True)
+        _GitCleanAndCheckoutOrigin(manifest_dir)
       except cros_lib.RunCommandError:
         logging.warning('Could not update manifest-versions checkout.')
       else:
@@ -118,7 +91,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     message: Commit message
     dry_run: If true, don't actually push changes to the server
   """
-  remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
+  remote, push_branch = cros_lib.GetPushBranch(git_repo)
   cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
 
   # It's possible that while we are running on dry_run, someone has already
@@ -309,7 +282,7 @@ class VersionInfo(object):
     repo_dir = os.path.dirname(self.version_file)
 
     try:
-      CreatePushBranch(repo_dir)
+      cros_lib.CreatePushBranch(PUSH_BRANCH, repo_dir)
 
       shutil.copyfile(temp_file, self.version_file)
       os.unlink(temp_file)
@@ -318,7 +291,7 @@ class VersionInfo(object):
     finally:
       # Update to the remote version that contains our changes. This is needed
       # to ensure that we don't build a release using a local commit.
-      _GitCleanAndCheckoutOrigin(repo_dir, sync=True)
+      _GitCleanAndCheckoutOrigin(repo_dir)
 
     return self.VersionString()
 
@@ -599,7 +572,7 @@ class BuildSpecsManager(object):
         if self.HasCheckoutBeenBuilt():
           return None
 
-        CreatePushBranch(self.manifest_dir)
+        cros_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
         if not self.latest_unprocessed:
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
@@ -662,7 +635,7 @@ class BuildSpecsManager(object):
     for index in range(0, retries + 1):
       try:
         self.RefreshManifestCheckout()
-        CreatePushBranch(self.manifest_dir)
+        cros_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (status,

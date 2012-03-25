@@ -6,11 +6,7 @@
 
 """Unit tests for cros_mark_as_stable.py."""
 
-import filecmp
-import fileinput
 import mox
-import os
-import re
 import sys
 import unittest
 
@@ -20,7 +16,6 @@ if __name__ == '__main__':
 
 from chromite.lib import cros_build_lib
 from chromite.buildbot import cros_mark_as_stable
-from chromite.buildbot import portage_utilities
 
 
 # pylint: disable=W0212,R0904
@@ -39,26 +34,21 @@ class NonClassTests(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'CreateBranch')
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'Exists')
     self.mox.StubOutWithMock(cros_build_lib, 'GitPushWithRetry')
+    self.mox.StubOutWithMock(cros_build_lib, 'GetPushBranch')
+    self.mox.StubOutWithMock(cros_build_lib, 'SyncPushBranch')
+    self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
 
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, self._tracking_branch).AndReturn(True)
-    cros_mark_as_stable.GitBranch.Exists().AndReturn(False)
-    cros_mark_as_stable.GitBranch.CreateBranch()
-    cros_mark_as_stable.GitBranch.Exists().AndReturn(True)
+    cros_build_lib.GetPushBranch('.').AndReturn(['gerrit', 'master'])
+    cros_build_lib.SyncPushBranch('.', 'gerrit', 'master')
+    cros_mark_as_stable._DoWeHaveLocalCommits(
+        self._branch, 'gerrit/master').AndReturn(True)
     cros_mark_as_stable._SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                           self._tracking_branch + '..').AndReturn(git_log)
+    cros_build_lib.CreatePushBranch('merge_branch', '.')
     cros_mark_as_stable._SimpleRunCommand('git merge --squash %s' %
                                           self._branch)
-    cros_build_lib.RunCommand(['git',
-                               'config',
-                               'url.%s.insteadof' % constants.GERRIT_SSH_URL,
-                               constants.GIT_HTTP_URL], cwd='.')
-    cros_build_lib.RunCommand(['repo', 'sync', '.'], cwd='.')
-    cros_build_lib.RunCommand(['git',
-                               'config',
-                               '--unset',
-                               'url.%s.insteadof' % constants.GERRIT_SSH_URL],
-                               cwd='.')
     cros_build_lib.RunCommand(['git', 'commit', '-m', fake_description])
     cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
     cros_build_lib.GitPushWithRetry('merge_branch', cwd='.', dryrun=False)

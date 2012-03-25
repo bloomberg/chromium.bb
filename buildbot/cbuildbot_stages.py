@@ -17,6 +17,7 @@ from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import configure_repo
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
@@ -203,6 +204,11 @@ class SyncStage(bs.BuilderStage):
     self.Initialize()
     self.ManifestCheckout(self.GetNextManifest())
 
+  def HandleSkip(self):
+    super(SyncStage, self).HandleSkip()
+    # Ensure the gerrit remote is present for backwards compatibility.
+    # TODO(davidjames): Remove this.
+    configure_repo.SetupGerritRemote(self._build_root)
 
 class LKGMSyncStage(SyncStage):
   """Stage that syncs to the last known good manifest blessed by builders."""
@@ -232,6 +238,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def HandleSkip(self):
     """Initializes a manifest manager to the specified version if skipped."""
+    super(ManifestVersionedSyncStage, self).HandleSkip()
     if self._options.force_version:
       self.Initialize()
       self._ForceVersion(self._options.force_version)
@@ -1299,6 +1306,10 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     private_bucket = overlay_config in ('private', 'both')
     binhosts = []
     extra_args = []
+
+    # TODO(davidjames): Implement --git_sync for lkgm builders.
+    if self._build_config['use_lkgm'] or self._options.lkgm:
+      git_sync = False
 
     # Check if we are uploading dev_installer prebuilts.
     use_binhost_package_file = False

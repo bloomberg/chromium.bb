@@ -18,6 +18,7 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
+from chromite.buildbot import cbuildbot_stages as stages
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib as test_lib
 from chromite.scripts import cbuildbot
@@ -63,6 +64,8 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
     self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
     cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
+    self.mox.StubOutWithMock(stages.SyncStage, 'HandleSkip')
+    stages.SyncStage.HandleSkip()
 
   def tearDown(self):
     if os.path.exists(self.buildroot):

@@ -93,6 +93,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(cros_lib, 'CreatePushBranch')
 
     self.tmpdir = tempfile.mkdtemp()
     self.source_repo = 'ssh://source/repo'
@@ -137,7 +138,6 @@ class LKGMManagerTest(mox.MoxTestBase):
                              'HasCheckoutBeenBuilt')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
-    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -152,7 +152,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    manifest_version.CreatePushBranch(mox.IgnoreArg())
+    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
@@ -201,7 +201,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
-    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -209,7 +208,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    manifest_version.CreatePushBranch(mox.IgnoreArg())
+    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
@@ -236,7 +235,6 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
-    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
@@ -244,12 +242,12 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    manifest_version.CreatePushBranch(mox.IgnoreArg())
+    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    manifest_version.CreatePushBranch(mox.IgnoreArg())
+    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
