@@ -298,27 +298,35 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
 
   bounds->overflow_bounds.set_size(gfx::Size(kButtonWidth, kButtonHeight));
   int last_visible_index = DetermineLastVisibleIndex(
-      available_width - kLeadingInset - bounds->overflow_bounds.width());
+      available_width - kLeadingInset - bounds->overflow_bounds.width() -
+      kButtonSpacing - kButtonWidth);
   bool show_overflow =
       (last_visible_index + 1 != view_model_->view_size());
+  int app_list_index = view_model_->view_size() - 1;
   if (overflow_button_->visible() != show_overflow) {
     // Only change visibility of the views if the visibility of the overflow
     // button changes. Otherwise we'll effect the insertion animation, which
     // changes the visibility.
     for (int i = 0; i <= last_visible_index; ++i)
       view_model_->view_at(i)->SetVisible(true);
-    for (int i = last_visible_index + 1; i < view_model_->view_size(); ++i)
-      view_model_->view_at(i)->SetVisible(false);
+    for (int i = last_visible_index + 1; i < view_model_->view_size(); ++i) {
+      if (i != app_list_index)
+        view_model_->view_at(i)->SetVisible(false);
+    }
   }
   overflow_button_->SetVisible(show_overflow);
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
+    // We always want the app list visible.
+    gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
     x = last_visible_index == -1 ?
         kLeadingInset : view_model_->ideal_bounds(last_visible_index).right();
+    app_list_bounds.set_x(x);
+    view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
+    x = app_list_bounds.right() + kButtonSpacing;
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(
         (kLauncherPreferredHeight - bounds->overflow_bounds.height()) / 2);
-    x = bounds->overflow_bounds.right();
   }
 }
 
@@ -464,7 +472,7 @@ void LauncherView::GetOverflowItems(std::vector<LauncherItem>* items) {
   }
   while (index < view_model_->view_size()) {
     const LauncherItem& item = model_->items()[index];
-    if (item.type == TYPE_TABBED)
+    if (item.type == TYPE_TABBED || item.type == TYPE_APP_SHORTCUT)
       items->push_back(item);
     index++;
   }
