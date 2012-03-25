@@ -2200,6 +2200,8 @@ TEST_F(GDataFileSystemTest, GetFileForHostedDocument) {
 }
 
 TEST_F(GDataFileSystemTest, GetAvailableSpace) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   GetAvailableSpaceCallback callback =
       base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
                  callback_helper_.get());
