@@ -118,7 +118,7 @@ void MockDocumentsService::DownloadDocumentStub(
 }
 
 void MockDocumentsService::CopyDocumentStub(
-    const GURL& document_url,
+    const std::string& resource_id,
     const FilePath::StringType& new_name,
     const GetDataCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

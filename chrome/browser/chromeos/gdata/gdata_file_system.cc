@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
@@ -569,13 +570,61 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
   }
 
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetDocumentResourceIdOnIOThreadPool,
                  local_file_path,
-                 remote_dest_file_path,
-                 base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
+                 base::Bind(&GDataFileSystem::TransferFileForResourceId,
                             ui_weak_ptr_factory_->GetWeakPtr(),
-                            base::MessageLoopProxy::current(),
-                            callback)));
+                            local_file_path,
+                            remote_dest_file_path,
+                            callback),
+                 base::MessageLoopProxy::current()));
+}
+
+void GDataFileSystem::TransferFileForResourceId(
+    const FilePath& local_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback,
+    const std::string& resource_id) {
+  if (resource_id.empty()) {
+    // If |resource_id| is empty, upload the local file as a regular file.
+    BrowserThread::PostBlockingPoolTask(FROM_HERE,
+        base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
+                   local_file_path,
+                   remote_dest_file_path,
+                   base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
+                              ui_weak_ptr_factory_->GetWeakPtr(),
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    return;
+  }
+
+  // Otherwise, copy the document on the server side and add the new copy
+  // to the destination directory (collection).
+  CopyDocumentToDirectory(
+      remote_dest_file_path.DirName(),
+      resource_id,
+      // Drop the document extension, which should not be
+      // in the document title.
+      remote_dest_file_path.BaseName().RemoveExtension().value(),
+      callback);
+}
+
+// static
+void GDataFileSystem::GetDocumentResourceIdOnIOThreadPool(
+    const FilePath& local_file_path,
+    const GetDocumentResourceIdCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
+  std::string resource_id;
+  if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
+    std::string error;
+    DictionaryValue* dict_value = NULL;
+    JSONFileValueSerializer serializer(local_file_path);
+    scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
+    if (value.get() && value->GetAsDictionary(&dict_value))
+      dict_value->GetString("resource_id", &resource_id);
+  }
+
+  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, resource_id));
 }
 
 void GDataFileSystem::StartFileUploadOnUIThread(
@@ -700,16 +749,26 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
     return;
   }
 
+  CopyDocumentToDirectory(dest_parent_path,
+                          src_file->resource_id(),
+                          // Drop the document extension, which should not be
+                          // in the document title.
+                          dest_file_path.BaseName().RemoveExtension().value(),
+                          callback);
+}
+
+void GDataFileSystem::CopyDocumentToDirectory(
+    const FilePath& dir_path,
+    const std::string& resource_id,
+    const FilePath::StringType& new_name,
+    const FileOperationCallback& callback) {
   FilePathUpdateCallback add_file_to_directory_callback =
       base::Bind(&GDataFileSystem::AddFileToDirectory,
                  GetWeakPtrForCurrentThread(),
-                 dest_parent_path,
+                 dir_path,
                  callback);
 
-  documents_service_->CopyDocument(
-      src_file->self_url(),
-      // Drop the document extension, which should not be in the document title.
-      dest_file_path.BaseName().RemoveExtension().value(),
+  documents_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
                  GetWeakPtrForCurrentThread(),
                  add_file_to_directory_callback));

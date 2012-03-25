@@ -102,14 +102,14 @@ class DocumentsServiceInterface {
                                 DocumentExportFormat format,
                                 const DownloadActionCallback& callback) = 0;
 
-  // Makes a copy of a document identified by its 'self' link |document_url|.
+  // Makes a copy of a document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any
   // collection. Use AddResourceToDirectory() to add the copy to a collection
   // when needed. Upon completion, invokes |callback| with results on the
   // calling thread.
   //
   // Can be called on any thread.
-  virtual void CopyDocument(const GURL& document_url,
+  virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
                             const GetDataCallback& callback) = 0;
 
@@ -206,7 +206,7 @@ class DocumentsService
                             const FilePath& local_cache_path,
                             const GURL& content_url,
                             const DownloadActionCallback& callback) OVERRIDE;
-  virtual void CopyDocument(const GURL& document_url,
+  virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
                             const GetDataCallback& callback) OVERRIDE;
   virtual void RenameResource(const GURL& document_url,

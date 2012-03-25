@@ -2167,6 +2167,8 @@ TEST_F(GDataFileSystemTest, GetFile_FromCache) {
 }
 
 TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =

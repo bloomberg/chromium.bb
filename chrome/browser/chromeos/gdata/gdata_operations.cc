@@ -189,7 +189,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   if (save_temp_file_) {
     url_fetcher_->SaveResponseToTemporaryFile(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  } else if (!output_file_path_.empty()){
+  } else if (!output_file_path_.empty()) {
     url_fetcher_->SaveResponseToFileAtPath(output_file_path_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
@@ -568,10 +568,10 @@ CopyDocumentOperation::CopyDocumentOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
     const GetDataCallback& callback,
-    const GURL& document_url,
+    const std::string& resource_id,
     const FilePath::StringType& new_name)
     : GetDataOperation(registry, profile, callback),
-      document_url_(document_url),
+      resource_id_(resource_id),
       new_name_(new_name) {
 }
 
@@ -593,7 +593,7 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
   xml_writer.StartElement("entry");
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
 
-  xml_writer.WriteElement("id", document_url_.spec());
+  xml_writer.WriteElement("id", resource_id_);
   xml_writer.WriteElement("title", new_name_);
 
   xml_writer.EndElement();  // Ends "entry" element.

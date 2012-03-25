@@ -79,10 +79,14 @@ typedef base::Callback<void(base::PlatformFileError error,
     GetAvailableSpaceCallback;
 
 // Callback type for DocumentServiceInterface::ResumeUpload.
-typedef base::Callback<void(
-    const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> entry)> ResumeFileUploadCallback;
+typedef base::Callback<void(const ResumeUploadResponse& response,
+                            scoped_ptr<DocumentEntry> entry)>
+    ResumeFileUploadCallback;
 
+// Used by GDataFileSystem::GetDocumentResourceIdOnIOThreadPool to return
+// the resource ID read from a document JSON file on the local file system.
+typedef base::Callback<void(const std::string& resource_id)>
+    GetDocumentResourceIdCallback;
 
 // Delegate class used to deal with results synchronous read-only search
 // over virtual file system.
@@ -609,6 +613,16 @@ class GDataFileSystem : public GDataFileSystemInterface {
                                  base::Value* data,
                                  base::PlatformFileError *error);
 
+  // Checks if a local file at |local_file_path| is a JSON file referencing a
+  // hosted document on IO thread poll, and if so, gets the resource ID of the
+  // document. Upon completion, invokes |callback| with the document resource
+  // ID or, if the file is not a valid document JSON, an empty string on the
+  // thread represented by |relay_proxy|.
+  static void GetDocumentResourceIdOnIOThreadPool(
+      const FilePath& local_file_path,
+      const GetDocumentResourceIdCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
   // Creates a temporary JSON file representing a document with |edit_url|
   // and |resource_id| under |document_dir| on IO thread pool. Upon completion
   // it will invoke |callback| with the path of the created temporary file on
@@ -620,12 +634,38 @@ class GDataFileSystem : public GDataFileSystemInterface {
       const GetFileCallback& callback,
       scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
+  // Initiates transfer of |local_file_path| with |resource_id| to
+  // |remote_dest_file_path|. |local_file_path| must be a file from the local
+  // file system, |remote_dest_file_path| is the virtual destination path within
+  // gdata file system. If |resource_id| is a non-empty string, the transfer is
+  // handled by CopyDocumentToDirectory. Otherwise, the transfer is performed as
+  // a regular file upload.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void TransferFileForResourceId(const FilePath& local_file_path,
+                                 const FilePath& remote_dest_file_path,
+                                 const FileOperationCallback& callback,
+                                 const std::string& resource_id);
+
+  // Copies a document with |resource_id| to the directory at |dir_path|
+  // and names the copied document as |new_name|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void CopyDocumentToDirectory(const FilePath& dir_path,
+                               const std::string& resource_id,
+                               const FilePath::StringType& new_name,
+                               const FileOperationCallback& callback);
+
   // Renames a file or directory at |file_path| to |new_name|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void Rename(const FilePath& file_path,
               const FilePath::StringType& new_name,
               const FilePathUpdateCallback& callback);
 
   // Adds a file or directory at |file_path| to the directory at |dir_path|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void AddFileToDirectory(const FilePath& dir_path,
                           const FileOperationCallback& callback,
                           base::PlatformFileError error,
@@ -633,6 +673,8 @@ class GDataFileSystem : public GDataFileSystemInterface {
 
   // Removes a file or directory at |file_path| from the directory at
   // |dir_path| and moves it to the root directory.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   void RemoveFileFromDirectory(const FilePath& dir_path,
                                const FilePathUpdateCallback& callback,
                                base::PlatformFileError error,

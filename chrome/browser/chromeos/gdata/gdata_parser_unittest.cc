@@ -18,12 +18,8 @@
 using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
-using gdata::DocumentEntry;
-using gdata::DocumentFeed;
-using gdata::AccountMetadataFeed;
-using gdata::FeedLink;
-using gdata::GDataEntry;
-using gdata::Link;
+
+namespace gdata {
 
 class GDataParserTest : public testing::Test {
  protected:
@@ -100,13 +96,13 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
 
   // Check links.
   ASSERT_EQ(feed->links().size(), 6U);
-  const Link* self_link = feed->GetLinkByType(gdata::Link::SELF);
+  const Link* self_link = feed->GetLinkByType(Link::SELF);
   ASSERT_TRUE(self_link);
   EXPECT_EQ("https://self_link/", self_link->href().spec());
   EXPECT_EQ("application/atom+xml", self_link->mime_type());
 
   const Link* resumable_link =
-      feed->GetLinkByType(gdata::Link::RESUMABLE_CREATE_MEDIA);
+      feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   ASSERT_TRUE(resumable_link);
   EXPECT_EQ("https://resumable_create_media_link/",
             resumable_link->href().spec());
@@ -118,7 +114,7 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   // Check a folder entry.
   const DocumentEntry* folder_entry = feed->entries()[0];
   ASSERT_TRUE(folder_entry);
-  EXPECT_EQ(gdata::DocumentEntry::FOLDER, folder_entry->kind());
+  EXPECT_EQ(DocumentEntry::FOLDER, folder_entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", folder_entry->etag());
   EXPECT_EQ("folder:1_folder_resouce_id", folder_entry->resource_id());
   EXPECT_EQ("https://1_folder_id", folder_entry->id());
@@ -143,17 +139,16 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   ASSERT_EQ(1U, folder_entry->feed_links().size());
   const FeedLink* feed_link = folder_entry->feed_links()[0];
   ASSERT_TRUE(feed_link);
-  ASSERT_EQ(gdata::FeedLink::ACL, feed_link->type());
+  ASSERT_EQ(FeedLink::ACL, feed_link->type());
 
   const Link* entry1_alternate_link =
-      folder_entry->GetLinkByType(gdata::Link::ALTERNATE);
+      folder_entry->GetLinkByType(Link::ALTERNATE);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://1_folder_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link =
-      folder_entry->GetLinkByType(gdata::Link::EDIT);
+  const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::EDIT);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
@@ -161,14 +156,13 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   // Check a file entry.
   const DocumentEntry* file_entry = feed->entries()[1];
   ASSERT_TRUE(file_entry);
-  EXPECT_EQ(gdata::DocumentEntry::FILE, file_entry->kind());
+  EXPECT_EQ(DocumentEntry::FILE, file_entry->kind());
   EXPECT_EQ(ASCIIToUTF16("filename.m4a"), file_entry->filename());
   EXPECT_EQ(ASCIIToUTF16("sugg_file_name.m4a"),
             file_entry->suggested_filename());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
   EXPECT_EQ(892721, file_entry->file_size());
-  const Link* file_parent_link =
-      file_entry->GetLinkByType(gdata::Link::PARENT);
+  const Link* file_parent_link = file_entry->GetLinkByType(Link::PARENT);
   ASSERT_TRUE(file_parent_link);
   EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
   EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
@@ -177,7 +171,7 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   // Check a file entry.
   const DocumentEntry* document_entry = feed->entries()[2];
   ASSERT_TRUE(document_entry);
-  EXPECT_EQ(gdata::DocumentEntry::DOCUMENT, document_entry->kind());
+  EXPECT_EQ(DocumentEntry::DOCUMENT, document_entry->kind());
 }
 
 
@@ -186,7 +180,7 @@ TEST_F(GDataParserTest, DocumentEntryXmlParser) {
   scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("entry.xml"));
   ASSERT_TRUE(entry.get());
 
-  EXPECT_EQ(gdata::DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ(DocumentEntry::FILE, entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", entry->etag());
   EXPECT_EQ("file:xml_file_resouce_id", entry->resource_id());
   EXPECT_EQ("https://xml_file_id", entry->id());
@@ -212,36 +206,33 @@ TEST_F(GDataParserTest, DocumentEntryXmlParser) {
   ASSERT_EQ(2U, entry->feed_links().size());
   const FeedLink* feed_link_1 = entry->feed_links()[0];
   ASSERT_TRUE(feed_link_1);
-  ASSERT_EQ(gdata::FeedLink::ACL, feed_link_1->type());
+  ASSERT_EQ(FeedLink::ACL, feed_link_1->type());
   const FeedLink* feed_link_2 = entry->feed_links()[1];
   ASSERT_TRUE(feed_link_2);
-  ASSERT_EQ(gdata::FeedLink::REVISIONS, feed_link_2->type());
+  ASSERT_EQ(FeedLink::REVISIONS, feed_link_2->type());
 
   // Check links.
   ASSERT_EQ(7U, entry->links().size());
-  const Link* entry1_alternate_link =
-      entry->GetLinkByType(gdata::Link::ALTERNATE);
+  const Link* entry1_alternate_link = entry->GetLinkByType(Link::ALTERNATE);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link =
-      entry->GetLinkByType(gdata::Link::EDIT_MEDIA);
+  const Link* entry1_edit_link = entry->GetLinkByType(Link::EDIT_MEDIA);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
             entry1_edit_link->href().spec());
   EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
 
-  const Link* entry1_self_link =
-      entry->GetLinkByType(gdata::Link::SELF);
+  const Link* entry1_self_link = entry->GetLinkByType(Link::SELF);
   ASSERT_TRUE(entry1_self_link);
   EXPECT_EQ("https://xml_file_entry_id_self_link/",
             entry1_self_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
 
   // Check a file properties.
-  EXPECT_EQ(gdata::DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ(DocumentEntry::FILE, entry->kind());
   EXPECT_EQ(ASCIIToUTF16("Xml Entry File Name.tar"), entry->filename());
   EXPECT_EQ(ASCIIToUTF16("Xml Entry Suggested File Name.tar"),
             entry->suggested_filename());
@@ -264,3 +255,27 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   EXPECT_EQ(1234, feed->quota_bytes_used());
   EXPECT_EQ(12345, feed->quota_bytes_total());
 }
+
+// Test file extension checking in DocumentEntry::HasDocumentExtension().
+TEST_F(GDataParserTest, DocumentEntryHasDocumentExtension) {
+  EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
+  EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.gsheet"))));
+  EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.gslides"))));
+  EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.gdraw"))));
+  EXPECT_TRUE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.gtable"))));
+  EXPECT_FALSE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.tar.gz"))));
+  EXPECT_FALSE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test.txt"))));
+  EXPECT_FALSE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL("Test"))));
+  EXPECT_FALSE(DocumentEntry::HasHostedDocumentExtension(
+      FilePath(FILE_PATH_LITERAL(""))));
+}
+
+}  // namespace gdata

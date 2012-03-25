@@ -41,7 +41,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
                                       const GURL& content_url,
                                       DocumentExportFormat format,
                                       const DownloadActionCallback& callback));
-  MOCK_METHOD3(CopyDocument, void(const GURL& document_url,
+  MOCK_METHOD3(CopyDocument, void(const std::string& resource_id,
                                   const FilePath::StringType& new_name,
                                   const GetDataCallback& callback));
   MOCK_METHOD3(RenameResource, void(const GURL& resource_url,
@@ -100,7 +100,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS and the current value of
   // |document_data_|.
-  void CopyDocumentStub(const GURL& document_url,
+  void CopyDocumentStub(const std::string& resource_id,
                         const FilePath::StringType& new_name,
                         const GetDataCallback& callback);
 

@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
+class FilePath;
 class Profile;
 class XmlReader;
 
@@ -29,7 +30,7 @@ template <class NestedType>
 class RepeatedMessageConverter;
 }  // namespace internal
 
-} // namespace base
+}  // namespace base
 
 // Defines data elements of Google Documents API as described in
 // http://code.google.com/apis/documents/.
@@ -352,6 +353,9 @@ class DocumentEntry : public GDataEntry {
   static void RegisterJSONConverter(
       base::JSONValueConverter<DocumentEntry>* converter);
 
+  // Returns true if |file| has one of the hosted document extensions.
+  static bool HasHostedDocumentExtension(const FilePath& file);
+
   // Document entry resource id.
   const std::string& resource_id() const { return resource_id_; }
 
@@ -517,7 +521,7 @@ class DocumentFeed : public GDataEntry {
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
- bool Parse(base::Value* value);
+  bool Parse(base::Value* value);
 
   ScopedVector<DocumentEntry> entries_;
   int start_index_;

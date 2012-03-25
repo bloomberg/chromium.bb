@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/json/json_value_converter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -532,6 +533,17 @@ std::string DocumentEntry::GetHostedDocumentExtension() const {
     }
   }
   return std::string();
+}
+
+// static
+bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
+  FilePath::StringType file_extension = file.Extension();
+  for (size_t i = 0; i < arraysize(kEntryKindMap); ++i) {
+    const char* document_extension = kEntryKindMap[i].extension;
+    if (document_extension && file_extension == document_extension)
+      return true;
+  }
+  return false;
 }
 
 // static

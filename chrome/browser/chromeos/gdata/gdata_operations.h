@@ -324,7 +324,7 @@ class CopyDocumentOperation : public GetDataOperation {
   CopyDocumentOperation(GDataOperationRegistry* registry,
                         Profile* profile,
                         const GetDataCallback& callback,
-                        const GURL& document_url,
+                        const std::string& resource_id,
                         const FilePath::StringType& new_name);
   virtual ~CopyDocumentOperation();
 
@@ -338,7 +338,7 @@ class CopyDocumentOperation : public GetDataOperation {
                               std::string* upload_content) OVERRIDE;
 
  private:
-  GURL document_url_;
+  std::string resource_id_;
   FilePath::StringType new_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyDocumentOperation);

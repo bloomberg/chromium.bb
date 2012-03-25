@@ -153,12 +153,12 @@ void DocumentsService::CreateDirectory(
                                    directory_name));
 }
 
-void DocumentsService::CopyDocument(const GURL& document_url,
+void DocumentsService::CopyDocument(const std::string& resource_id,
                                     const FilePath::StringType& new_name,
                                     const GetDataCallback& callback) {
   StartOperationOnUIThread(
       new CopyDocumentOperation(operation_registry_.get(), profile_, callback,
-                                document_url, new_name));
+                                resource_id, new_name));
 }
 
 void DocumentsService::RenameResource(const GURL& resource_url,
