@@ -3335,7 +3335,8 @@ void GDataFileSystem::OnFilePinned(base::PlatformFileError error,
   if (!callback.is_null())
     callback.Run(error, resource_id, md5);
 
-  NotifyFilePinned(resource_id, md5);
+  if (error == base::PLATFORM_FILE_OK)
+    NotifyFilePinned(resource_id, md5);
 }
 
 void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
@@ -3345,7 +3346,8 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError error,
   if (!callback.is_null())
     callback.Run(error, resource_id, md5);
 
-  NotifyFileUnpinned(resource_id, md5);
+  if (error == base::PLATFORM_FILE_OK)
+    NotifyFileUnpinned(resource_id, md5);
 }
 
 //============= GDataFileSystem: internal helper functions =====================

@@ -1607,7 +1607,8 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
   resource_id = "not-in-cache:1a2b";
-  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(1);
+  // Because unpinning will fail, OnFileUnpinned() won't be run.
+  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(0);
 
   num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
