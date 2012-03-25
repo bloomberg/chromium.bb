@@ -21,10 +21,7 @@ if sys.platform == 'win32':
   test.build('function-level-linking.gyp', test.ALL, chdir=CHDIR)
 
   def CheckForSectionString(binary, search_for, should_exist):
-    proc = subprocess.Popen(['dumpbin', '/headers', binary],
-        stdout=subprocess.PIPE)
-    output = proc.communicate()[0]
-    assert not proc.returncode
+    output = test.run_dumpbin('/headers', binary)
     if should_exist and search_for not in output:
       print 'Did not find "%s" in %s' % (search_for, binary)
       test.fail_test()

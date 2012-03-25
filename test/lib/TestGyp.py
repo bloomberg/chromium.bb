@@ -10,6 +10,7 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 
@@ -460,8 +461,34 @@ def FindVisualStudioInstallation():
   print 'Error: could not find devenv'
   sys.exit(1)
 
+class TestGypOnMSToolchain(TestGypBase):
+  """
+  Common subclass for testing generators that target the Microsoft Visual
+  Studio toolchain (cl, link, dumpbin, etc.)
+  """
+  @staticmethod
+  def _ComputeVsvarsPath(devenv_path):
+    devenv_dir = os.path.split(devenv_path)[0]
+    vsvars_path = os.path.join(devenv_path, '../../Tools/vsvars32.bat')
+    return vsvars_path
 
-class TestGypNinja(TestGypBase):
+  def initialize_build_tool(self):
+    super(TestGypOnMSToolchain, self).initialize_build_tool()
+    self.devenv_path, self.uses_msbuild = FindVisualStudioInstallation()
+    self.vsvars_path = TestGypOnMSToolchain._ComputeVsvarsPath(self.devenv_path)
+
+  def run_dumpbin(self, *dumpbin_args):
+    """Run the dumpbin tool with the specified arguments, and capturing and
+    returning stdout."""
+    cmd = os.environ.get('COMSPEC', 'cmd.exe')
+    arguments = [cmd, '/c', self.vsvars_path, '&&', 'dumpbin']
+    arguments.extend(dumpbin_args)
+    proc = subprocess.Popen(arguments, stdout=subprocess.PIPE)
+    output = proc.communicate()[0]
+    assert not proc.returncode
+    return output
+
+class TestGypNinja(TestGypOnMSToolchain):
   """
   Subclass for testing the GYP Ninja generator.
   """
@@ -475,12 +502,8 @@ class TestGypNinja(TestGypBase):
     if sys.platform == 'win32':
       # Compiler and linker aren't in the path by default on Windows, so we
       # make our "build tool" be set up + run ninja.
-      devenv_path, _ = FindVisualStudioInstallation()
-      devenv_dir = os.path.split(devenv_path)[0]
-      vsvars_path = os.path.join(devenv_path, '../../Tools/vsvars32.bat')
-      vsvars_path = os.path.normpath(vsvars_path)
       self.build_tool = os.environ.get('COMSPEC', 'cmd.exe')
-      self.helper_args = ['/c', vsvars_path, '&&', 'ninja']
+      self.helper_args = ['/c', self.vsvars_path, '&&', 'ninja']
 
   def run_gyp(self, gyp_file, *args, **kw):
     TestGypBase.run_gyp(self, gyp_file, *args, **kw)
@@ -541,7 +564,7 @@ class TestGypNinja(TestGypBase):
     return result
 
 
-class TestGypMSVS(TestGypBase):
+class TestGypMSVS(TestGypOnMSToolchain):
   """
   Subclass for testing the GYP Visual Studio generator.
   """
@@ -559,7 +582,8 @@ class TestGypMSVS(TestGypBase):
 
   def initialize_build_tool(self):
     super(TestGypMSVS, self).initialize_build_tool()
-    self.build_tool, self.uses_msbuild = FindVisualStudioInstallation()
+    self.build_tool = self.devenv_path
+
   def build(self, gyp_file, target=None, rebuild=False, **kw):
     """
     Runs a Visual Studio build using the configuration generated

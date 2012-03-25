@@ -23,9 +23,7 @@ if sys.platform == 'win32':
 
   def HasDynamicBase(exe):
     full_path = test.built_file_path(exe, chdir=CHDIR)
-    proc = subprocess.Popen(['dumpbin', '/headers', full_path],
-        stdout=subprocess.PIPE)
-    output = proc.communicate()[0]
+    output = test.run_dumpbin('/headers', full_path)
     return '                   Dynamic base' in output
 
   # Default is to be on.
