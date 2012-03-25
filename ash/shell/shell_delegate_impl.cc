@@ -6,6 +6,7 @@
 
 #include "ash/shell/example_factory.h"
 #include "ash/shell/launcher_delegate_impl.h"
+#include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "base/message_loop.h"
@@ -52,6 +53,13 @@ bool ShellDelegateImpl::IsScreenLocked() const {
 
 void ShellDelegateImpl::Exit() {
   MessageLoopForUI::current()->Quit();
+}
+
+void ShellDelegateImpl::NewWindow(bool incognito) {
+  ash::shell::ToplevelWindow::CreateParams create_params;
+  create_params.can_resize = true;
+  create_params.can_maximize = true;
+  ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
 ash::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {

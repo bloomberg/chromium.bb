@@ -28,6 +28,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void Exit() OVERRIDE;
+  virtual void NewWindow(bool incognito) OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source) const OVERRIDE;

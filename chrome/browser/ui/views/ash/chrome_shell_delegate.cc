@@ -10,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
@@ -116,6 +117,12 @@ bool ChromeShellDelegate::IsScreenLocked() const {
 
 void ChromeShellDelegate::Exit() {
   BrowserList::AttemptUserExit();
+}
+
+void ChromeShellDelegate::NewWindow(bool is_incognito) {
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Browser::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile() :
+      profile);
 }
 
 ash::AppListViewDelegate*

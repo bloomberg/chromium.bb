@@ -66,6 +66,9 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when a user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
+  // Invoked when a user uses Ctrl-N or Ctrl-Shift-N to open a new window.
+  virtual void NewWindow(bool incognito) = 0;
+
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;

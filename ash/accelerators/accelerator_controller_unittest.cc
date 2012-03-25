@@ -641,12 +641,20 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // ToggleDesktopFullScreen (not implemented yet on Linux)
   EXPECT_TRUE(GetController()->Process(
       PostImeAccelerator(ui::VKEY_F11, false, true, false)));
-#endif
+#endif //  OS_LINUX
+#endif //  !NDEBUG
 
   // Exit
   EXPECT_TRUE(GetController()->Process(
       PostImeAccelerator(ui::VKEY_Q, true, true ,false)));
-#endif
+
+  // New incognito window
+  EXPECT_TRUE(GetController()->Process(
+      PostImeAccelerator(ui::VKEY_N, true, true, false)));
+
+  // New window
+  EXPECT_TRUE(GetController()->Process(
+      PostImeAccelerator(ui::VKEY_N, false, true, false)));
 
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(GetController()->Process(

@@ -124,6 +124,14 @@ bool HandleExit() {
   return true;
 }
 
+bool HandleNewWindow(bool is_incognito) {
+  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+  if (!delegate)
+    return false;
+  delegate->NewWindow(is_incognito);
+  return true;
+}
+
 // Rotates the default window container.
 bool HandleRotateWindows() {
   aura::Window* target = ash::Shell::GetInstance()->GetContainer(
@@ -321,6 +329,10 @@ bool AcceleratorController::AcceleratorPressed(
 #endif
     case EXIT:
       return HandleExit();
+    case NEW_INCOGNITO_WINDOW:
+      return HandleNewWindow(true /* is_incognito */);
+    case NEW_WINDOW:
+      return HandleNewWindow(false /* is_incognito */);
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
         aura::RootWindow* root_window = Shell::GetRootWindow();

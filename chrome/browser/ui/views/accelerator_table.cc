@@ -98,9 +98,13 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F12,            false, false, false, IDC_DEV_TOOLS },
   { ui::VKEY_J,              true,  true,  false, IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C,              true,  true,  false, IDC_DEV_TOOLS_INSPECT },
+#if !defined(USE_ASH)
   { ui::VKEY_N,              true,  true,  false, IDC_NEW_INCOGNITO_WINDOW },
+#endif
   { ui::VKEY_T,              false, true,  false, IDC_NEW_TAB },
+#if !defined(USE_ASH)
   { ui::VKEY_N,              false, true,  false, IDC_NEW_WINDOW },
+#endif
   { ui::VKEY_O,              false, true,  false, IDC_OPEN_FILE },
   { ui::VKEY_P,              false, true,  false, IDC_PRINT},
   { ui::VKEY_P,              true,  true,  false, IDC_ADVANCED_PRINT},

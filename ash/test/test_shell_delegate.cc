@@ -44,6 +44,9 @@ bool TestShellDelegate::IsScreenLocked() const {
 void TestShellDelegate::Exit() {
 }
 
+void TestShellDelegate::NewWindow(bool incognito) {
+}
+
 AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }

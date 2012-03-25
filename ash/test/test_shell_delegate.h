@@ -24,6 +24,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
   virtual void Exit() OVERRIDE;
+  virtual void NewWindow(bool incognito) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source) const OVERRIDE;

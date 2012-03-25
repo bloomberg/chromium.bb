@@ -18,6 +18,8 @@ enum AcceleratorAction {
   CYCLE_BACKWARD_LINEAR,
   CYCLE_FORWARD_LINEAR,
   EXIT,
+  NEW_INCOGNITO_WINDOW,
+  NEW_WINDOW,
   NEXT_IME,
   PREVIOUS_IME,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
