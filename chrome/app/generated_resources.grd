@@ -10241,6 +10241,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_FILENAME_LABEL" desc="Filename text area label.">
         File name
       </message>
+      <message name="IDS_FILE_BROWSER_PREPARING_LABEL" desc="Label informing about preparing the file.">
+        Preparing
+      </message>
 
       <message name="IDS_FILE_BROWSER_DIMENSIONS_LABEL" desc="Image dimensions label.">
         Dimensions
@@ -10511,11 +10514,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google docs product name." translateable="false">
         Google Docs
       </message>
+      <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Options that determines if we will allow Google Docs content sync over mobile conntections.">
+        Do not use mobile data for sync
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_SHOW_HOSTED_FILES_OPTION" desc="Options that determines if we will show hosted Google Docs files in file browser.">
+        Show Google Docs files
+      </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
         You have run out of space
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER_SERVER" desc="Message informing the user that there is not enough space on server side to store a new file.">
-        You have run out of space in <ph name="PRODUCT_NAME">'$1'<ex>'Google Docs'</ex></ph>
+        You have run out of space in <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Docs.">
+        Loading <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_CANNOT_REACH" desc="Message informing the user Google Docs can not be reached at this moment.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph> cannot be reached at this time.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_RETRY" desc="Button label for Google Docs content load retry.">
+        Retry
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
         To save this file offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;</ph>
@@ -10523,7 +10541,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="MARKUP_4">&lt;ul&gt;&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;</ph>
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_ON_SERVER" desc="Message informing the user how to make more space available on Google Docs server side.">
-        You do not have enough space in <ph name="PRODUCT_NAME">'$1'<ex>'Google Docs'</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
+        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
 	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
