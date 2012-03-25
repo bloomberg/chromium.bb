@@ -129,7 +129,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_menu_(ALLOW_THIS_IN_INITIALIZER_LIST(new NetworkMenu(this))),
         clock_type_(base::k24HourClock),
-        search_key_mapped_to_(input_method::kCapsLockKey),
+        search_key_mapped_to_(input_method::kSearchKey),
         data_promo_notification_(new DataPromoNotification()) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -861,7 +861,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
     int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
     if (!base::chromeos::IsRunningOnChromeOS() ||
-        GetUserLoginStatus() == ash::user::LOGGED_IN_NONE ||
         search_key_mapped_to_ == input_method::kCapsLockKey)
       id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
 
