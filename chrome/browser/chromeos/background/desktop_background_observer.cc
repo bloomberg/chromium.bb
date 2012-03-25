@@ -28,7 +28,17 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual const int GetUserWallpaperIndex() OVERRIDE {
-    return chromeos::UserManager::Get()->GetUserWallpaperIndex();
+    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+    // If at login screen or logged in as a guest/incognito user, then use the
+    // default wallpaper.
+    if (user_manager->IsLoggedInAsGuest() || !user_manager->IsUserLoggedIn())
+      return ash::GetGuestWallpaperIndex();
+
+    const chromeos::User& user = user_manager->GetLoggedInUser();
+    DCHECK(!user.email().empty());
+    int index = user_manager->GetUserWallpaper(user.email());
+    DCHECK(index >=0 && index < ash::GetWallpaperCount());
+    return index;
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {

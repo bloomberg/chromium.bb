@@ -907,46 +907,29 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
   SaveUserDefaultImageIndex(username, image_id);
 }
 
-int UserManagerImpl::GetUserWallpaperIndex() {
+int UserManagerImpl::GetUserWallpaper(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If at login screen or logged in as a guest/incognito user, then use the
-  // randomly generated wallpaper.
-  if (IsLoggedInAsGuest() || !IsUserLoggedIn())
-    return ash::GetGuestWallpaperIndex();
-
-  const chromeos::User& user = GetLoggedInUser();
-  std::string username = user.email();
-  DCHECK(!username.empty());
 
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* user_wallpapers =
       local_state->GetDictionary(UserManager::kUserWallpapers);
   int index = ash::GetDefaultWallpaperIndex();
-  if (!user_wallpapers->GetIntegerWithoutPathExpansion(username, &index))
-    SaveUserWallpaperIndex(index);
-
-  DCHECK(index >=0 && index < ash::GetWallpaperCount());
+  user_wallpapers->GetIntegerWithoutPathExpansion(username,
+                                                  &index);
   return index;
 }
 
-void UserManagerImpl::SaveUserWallpaperIndex(int wallpaper_index) {
+void UserManagerImpl::SaveWallpaperDefaultIndex(const std::string& username,
+                                                int wallpaper_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If at login screen or logged in as a guest/incognito user, then return.
-  // Guest/incognito user can not change wallpaper according to chromium-os
-  // issue 26900.
-  if (IsLoggedInAsGuest() || !IsUserLoggedIn())
-    return;
-
-  const chromeos::User& user = GetLoggedInUser();
-  std::string username = user.email();
-  DCHECK(!username.empty());
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate wallpapers_update(local_state,
                                          UserManager::kUserWallpapers);
   wallpapers_update->SetWithoutPathExpansion(username,
       new base::FundamentalValue(wallpaper_index));
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      OnDesktopBackgroundChanged();
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
