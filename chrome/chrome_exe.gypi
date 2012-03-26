@@ -13,8 +13,6 @@
         'enable_wexit_time_destructors': 1,
       },
       'sources': [
-        'app/breakpad_field_trial_win.cc',
-        'app/breakpad_field_trial_win.h',
         'app/breakpad_win.cc',
         'app/breakpad_win.h',
         'app/chrome_exe_main_aura.cc',

@@ -48,15 +48,6 @@ typedef void (__cdecl *MainSetNumberOfViews)(int);
 //   void __declspec(dllexport) __cdecl SetCommandLine
 typedef void (__cdecl *MainSetCommandLine)(const CommandLine*);
 
-// exported in breakpad_field_trial_win.cc:
-//   void __declspec(dllexport) __cdecl InitExperimentList
-typedef void (__cdecl *MainInitExperimentList)(const std::string&);
-
-// exported in breakpad_field_trial_win.cc:
-//   void __declspec(dllexport) __cdecl AddFieldTrialGroup
-typedef void (__cdecl *MainAddFieldTrialGroup)(const std::string&,
-                                               const std::string&);
-
 void SetActiveURL(const GURL& url) {
   static MainSetActiveURL set_active_url = NULL;
   // note: benign race condition on set_active_url.
@@ -189,35 +180,6 @@ void SetCommandLine(const CommandLine* command_line) {
       return;
   }
   (set_command_line)(command_line);
-}
-
-void InitExperimentList(const std::string& state) {
-  static MainInitExperimentList init_experiment_list = NULL;
-  if (!init_experiment_list) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    init_experiment_list = reinterpret_cast<MainInitExperimentList>(
-        GetProcAddress(exe_module, "InitExperimentList"));
-    if (!init_experiment_list)
-      return;
-  }
-  (init_experiment_list)(state);
-}
-
-void AddFieldTrialGroup(const std::string& field_trial_name,
-                        const std::string& group_name) {
-  static MainAddFieldTrialGroup add_field_trial_group = NULL;
-  if (!add_field_trial_group) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    add_field_trial_group = reinterpret_cast<MainAddFieldTrialGroup>(
-        GetProcAddress(exe_module, "AddFieldTrialGroup"));
-    if (!add_field_trial_group)
-      return;
-  }
-  (add_field_trial_group)(field_trial_name, group_name);
 }
 
 void SetNumberOfViews(int number_of_views) {

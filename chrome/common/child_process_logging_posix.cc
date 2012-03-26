@@ -143,15 +143,6 @@ void SetCommandLine(const CommandLine* command_line) {
   g_switches[kMaxSwitchesSize - 1] = '\0';
 }
 
-void InitExperimentList(const std::string& state) {
-  // TODO(mad): Implement this.
-}
-
-void AddFieldTrialGroup(const std::string& field_trial_name,
-                        const std::string& group_name) {
-  // TODO(mad): Implement this.
-}
-
 void SetChannel(const std::string& channel) {
   strncpy(g_channel, channel.c_str(), kChannelSize - 1);
   g_channel[kChannelSize - 1] = '\0';
