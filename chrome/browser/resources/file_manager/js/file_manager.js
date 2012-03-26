@@ -3143,7 +3143,8 @@ FileManager.prototype = {
   }
 
   FileManager.prototype.onCopy_ = function(event) {
-    if (!this.selection || this.selection.totalCount == 0)
+    if (!this.selection || this.selection.totalCount == 0 ||
+        this.document_.activeElement.tagName == 'INPUT')
       return;
 
     event.preventDefault();
@@ -3154,7 +3155,8 @@ FileManager.prototype = {
 
   FileManager.prototype.onCut_ = function(event) {
     if (!this.selection || this.selection.totalCount == 0 ||
-        this.commands_['cut'].disabled)
+        this.commands_['cut'].disabled ||
+        this.document_.activeElement.tagName == 'INPUT')
       return;
 
     event.preventDefault();
@@ -3165,7 +3167,8 @@ FileManager.prototype = {
 
   FileManager.prototype.onPaste_ = function(event) {
     // Check that the data copied by ourselves.
-    if (!event.clipboardData.getData('fs/isCut'))
+    if (!event.clipboardData.getData('fs/isCut') ||
+        this.document_.activeElement.tagName == 'INPUT')
       return;
     event.preventDefault();
     this.pasteFromClipboard_(event.clipboardData);
