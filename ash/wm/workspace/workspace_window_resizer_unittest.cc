@@ -567,6 +567,20 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   EXPECT_EQ("96,0 320x160", window_->bounds().ToString());
   // No need to test dragging < 0 as we force that to 0.
 }
+
+// Verifies a window taller than work area height doesn't snap above the top of
+// the work area.
+TEST_F(WorkspaceWindowResizerTest, TallWindow) {
+  aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
+  Shell::GetInstance()->SetMonitorWorkAreaInsets(
+      root, gfx::Insets(0, 0, 50, 0));
+  window_->SetBounds(gfx::Rect(0, 0, 320, 560));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, 16, empty_windows()));
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 9));
+  EXPECT_EQ("0,9 320x560", window_->bounds().ToString());
+}
+
 #endif
 
 }  // namespace

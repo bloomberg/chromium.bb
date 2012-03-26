@@ -315,15 +315,21 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
   int top_edge = AlignToGridRoundUp(work_area.y(), details_.grid_size);
   int bottom_edge = AlignToGridRoundDown(work_area.bottom(),
                                          details_.grid_size);
-  if (ShouldSnapToEdge(bounds->x() - left_edge, details_.grid_size))
+  if (ShouldSnapToEdge(bounds->x() - left_edge, details_.grid_size)) {
     bounds->set_x(left_edge);
-  else if (ShouldSnapToEdge(right_edge - bounds->right(), details_.grid_size))
+  } else if (ShouldSnapToEdge(right_edge - bounds->right(),
+                              details_.grid_size)) {
     bounds->set_x(right_edge - bounds->width());
-  if (ShouldSnapToEdge(bounds->y() - top_edge, details_.grid_size))
+  } if (ShouldSnapToEdge(bounds->y() - top_edge, details_.grid_size)) {
     bounds->set_y(top_edge);
-  else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(),
-                            details_.grid_size))
+  } else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(),
+                            details_.grid_size) &&
+             bounds->height() < (bottom_edge - top_edge)) {
+    // Only snap to the bottom if the window is smaller than the work area.
+    // Doing otherwise can lead to window snapping in weird ways as it bounces
+    // between snapping to top then bottom.
     bounds->set_y(bottom_edge - bounds->height());
+  }
 }
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
