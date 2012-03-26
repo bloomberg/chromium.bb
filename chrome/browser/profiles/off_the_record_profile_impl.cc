@@ -135,7 +135,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     pref_proxy_config_tracker_->DetachFromPrefService();
 
   ExtensionService* extension_service = GetExtensionService();
-  if (extension_service) {
+  if (extension_service && extension_service->extensions_enabled()) {
     ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
     extension_prefs->ClearIncognitoSessionOnlyContentSettings();
   }
