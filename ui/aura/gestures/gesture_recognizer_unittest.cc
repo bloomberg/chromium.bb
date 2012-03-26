@@ -246,8 +246,10 @@ class TestOneShotGestureSequenceTimer
     : public base::OneShotTimer<GestureSequence> {
  public:
   void ForceTimeout() {
-    if (delayed_task_)
-      delayed_task_->Run();
+    if (IsRunning()) {
+      user_task().Run();
+      Stop();
+    }
   }
 };
 

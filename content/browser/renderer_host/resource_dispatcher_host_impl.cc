@@ -338,6 +338,9 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&appcache::AppCacheInterceptor::EnsureRegistered));
+
+  update_load_states_timer_.reset(
+      new base::RepeatingTimer<ResourceDispatcherHostImpl>());
 }
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
@@ -605,7 +608,7 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   // Make sure we shutdown the timer now, otherwise by the time our destructor
   // runs if the timer is still running the Task is deleted twice (once by
   // the MessageLoop and the second time by RepeatingTimer).
-  update_load_states_timer_.Stop();
+  update_load_states_timer_.reset();
 
   // Clear blocked requests if any left.
   // Note that we have to do this in 2 passes as we cannot call
@@ -1368,8 +1371,8 @@ void ResourceDispatcherHostImpl::RemovePendingRequest(
   pending_requests_.erase(iter);
 
   // If we have no more pending requests, then stop the load state monitor
-  if (pending_requests_.empty())
-    update_load_states_timer_.Stop();
+  if (pending_requests_.empty() && update_load_states_timer_.get())
+    update_load_states_timer_->Stop();
 }
 
 // net::URLRequest::Delegate ---------------------------------------------------
@@ -1731,8 +1734,8 @@ void ResourceDispatcherHostImpl::StartRequest(net::URLRequest* request) {
   request->Start();
 
   // Make sure we have the load state monitor running
-  if (!update_load_states_timer_.IsRunning()) {
-    update_load_states_timer_.Start(FROM_HERE,
+  if (!update_load_states_timer_->IsRunning()) {
+    update_load_states_timer_->Start(FROM_HERE,
         TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHostImpl::UpdateLoadStates);
   }
