@@ -231,7 +231,7 @@ class MsvsSettings(object):
 
   def GetLdflags(self, config, product_dir, gyp_to_build_path):
     """Returns the flags that need to be added to link commands."""
-    ldflags = ['/DYNAMICBASE'] # Default to on, may be overridden later.
+    ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
                           'VCLinkerTool', append=ldflags)
     ld('GenerateDebugInformation', map={'true': '/DEBUG'})
@@ -255,6 +255,13 @@ class MsvsSettings(object):
     ldflags.extend(('kernel32.lib', 'user32.lib', 'gdi32.lib', 'winspool.lib',
         'comdlg32.lib', 'advapi32.lib', 'shell32.lib', 'ole32.lib',
         'oleaut32.lib', 'uuid.lib', 'odbc32.lib', 'DelayImp.lib'))
+
+    # If the base address is not specifically controlled, DYNAMICBASE should
+    # be on by default.
+    base_flags = filter(lambda x: 'DYNAMICBASE' in x or x == '/FIXED',
+                        ldflags)
+    if not base_flags:
+      ldflags.append('/DYNAMICBASE')
     return ldflags
 
 
