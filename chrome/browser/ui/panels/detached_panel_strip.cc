@@ -171,6 +171,7 @@ bool DetachedPanelStrip::CanResizePanel(const Panel* panel) const {
 void DetachedPanelStrip::SetPanelBounds(Panel* panel,
                                         const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
+  panel->set_restored_size(new_bounds.size());
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 

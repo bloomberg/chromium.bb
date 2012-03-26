@@ -876,20 +876,24 @@ enum {
       progress, playingMinimizeAnimation_, animationStopToShowTitlebarOnly_);
 }
 
-- (void)animationDidEnd:(NSAnimation*)animation {
+- (void)cleanupAfterAnimation {
+  playingMinimizeAnimation_ = NO;
   Panel* panel = windowShim_->panel();
-  PanelStrip* panelStrip = panel->panel_strip();
-  if (panelStrip) {
-    playingMinimizeAnimation_ = NO;
-    if (panelStrip->type() == PanelStrip::DOCKED &&
-        panel->expansion_state() == Panel::EXPANDED)
-      [self enableTabContentsViewAutosizing];
-  }
+  if (!panel->IsMinimized())
+    [self enableTabContentsViewAutosizing];
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self cleanupAfterAnimation];
+}
+
+- (void)animationDidStop:(NSAnimation*)animation {
+  [self cleanupAfterAnimation];
 }
 
 - (void)terminateBoundsAnimation {
