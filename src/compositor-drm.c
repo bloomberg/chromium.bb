@@ -442,7 +442,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (surface_is_primary(ec, es))
 		return -1;
 
-	if (!es->buffer)
+	if (es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
 	if (!drm_surface_transform_supported(es))
