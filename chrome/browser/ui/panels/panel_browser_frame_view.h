@@ -78,6 +78,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
@@ -150,6 +151,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Custom draw the frame.
   void PaintFrameBorder(gfx::Canvas* canvas);
+  void PaintClientEdge(gfx::Canvas* canvas);
 
   // Called by MouseWatcher to notify if the mouse enters or leaves the window.
   void OnMouseEnterOrLeaveWindow(bool mouse_entered);
@@ -158,6 +160,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   SkColor GetDefaultTitleColor(PaintState paint_state) const;
   SkColor GetTitleColor(PaintState paint_state) const;
   const SkPaint& GetDefaultFrameTheme(PaintState paint_state) const;
+  SkColor GetFrameColor(PaintState paint_state) const;
   SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
   // Make settings button visible if either of the conditions is met:
@@ -172,6 +175,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   bool EnsureSettingsMenuCreated();
 
   string16 GetTitleText() const;
+
+  bool CanResize() const;
 
 #ifdef UNIT_TEST
   PanelSettingsMenuModel* settings_menu_model() const {

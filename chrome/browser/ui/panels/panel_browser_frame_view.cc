@@ -53,13 +53,24 @@ const int kTitlebarHeight = 24;
 // The thickness in pixels of the border.
 #if defined(USE_AURA)
 // No border inside the window frame; see comment in PaintFrameBorder().
-const int kBorderThickness = 0;
+const int kResizableBorderThickness = 0;
+const int kNonResizableBorderThickness = 0;
 #else
-const int kBorderThickness = 1;
+const int kResizableBorderThickness = 4;
+const int kNonResizableBorderThickness = 1;
 #endif
 
-// No client edge is present.
-const int kPanelClientEdgeThickness = 0;
+// Client edge is only present on thick border when the panel is resizable.
+const int kResizableClientEdgeThickness = 1;
+const int kNonResizableClientEdgeThickness = 0;
+
+// In the window corners, the resize areas don't actually expand bigger, but the
+// 16 px at the end of each edge triggers diagonal resizing.
+const int kResizeAreaCornerSize = 16;
+
+// Colors used to draw client edges. These are experimental values.
+const SkColor kClientEdgeColor = SkColorSetRGB(210, 225, 246);
+const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
 
 // The spacing in pixels between the icon and the left border.
 const int kIconAndBorderSpacing = 4;
@@ -203,6 +214,18 @@ const EdgeResources& GetFrameEdges() {
   return *edges;
 }
 
+const EdgeResources& GetClientEdges() {
+  static EdgeResources* edges = NULL;
+  if (!edges) {
+    edges = new EdgeResources(
+        IDR_APP_TOP_LEFT, IDR_APP_TOP_CENTER,
+        IDR_APP_TOP_RIGHT, IDR_CONTENT_RIGHT_SIDE,
+        IDR_CONTENT_BOTTOM_RIGHT_CORNER, IDR_CONTENT_BOTTOM_CENTER,
+        IDR_CONTENT_BOTTOM_LEFT_CORNER, IDR_CONTENT_LEFT_SIDE);
+  }
+  return *edges;
+}
+
 const gfx::Font& GetTitleFont() {
   static gfx::Font* font = NULL;
   if (!font) {
@@ -237,6 +260,12 @@ const SkPaint& GetAttentionBackgroundDefaultPaint() {
                                 kAttentionBackgroundDefaultColorEnd);
   }
   return *paint;
+}
+
+bool IsHitTestValueForResizing(int hc) {
+  return hc == HTLEFT || hc == HTRIGHT || hc == HTTOP || hc == HTBOTTOM ||
+         hc == HTTOPLEFT || hc == HTTOPRIGHT || hc == HTBOTTOMLEFT ||
+         hc == HTBOTTOMRIGHT;
 }
 
 }  // namespace
@@ -438,8 +467,8 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
-      0, 0,
-      frame()->widget_delegate()->CanResize());
+      kResizeAreaCornerSize, kResizeAreaCornerSize,
+      CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -482,16 +511,18 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
   UpdateControlStyles(paint_state);
   PaintFrameBorder(canvas);
+  PaintClientEdge(canvas);
 }
 
 void PanelBrowserFrameView::OnThemeChanged() {
 }
 
 gfx::Size PanelBrowserFrameView::GetMinimumSize() {
-  // This makes the panel be able to shrink to very small, like 4-pixel lines.
-  // Since the panel cannot be resized by the user, we do not need to enforce
-  // the minimum size.
-  return gfx::Size();
+  return panel_browser_view_->panel()->min_size();
+}
+
+gfx::Size PanelBrowserFrameView::GetMaximumSize() {
+  return panel_browser_view_->panel()->max_size();
 }
 
 void PanelBrowserFrameView::Layout() {
@@ -533,7 +564,7 @@ void PanelBrowserFrameView::Layout() {
   if (show_close_button) {
     gfx::Size close_button_size = close_button_->GetPreferredSize();
     close_button_->SetBounds(
-        width() - kBorderThickness - kCloseButtonAndBorderSpacing -
+        width() - NonClientBorderThickness() - kCloseButtonAndBorderSpacing -
             close_button_size.width(),
         (NonClientTopBorderHeight() - close_button_size.height()) / 2,
         close_button_size.width(),
@@ -566,7 +597,7 @@ void PanelBrowserFrameView::Layout() {
   // Layout the icon.
   int icon_y = (NonClientTopBorderHeight() - kIconSize) / 2;
   title_icon_->SetBounds(
-      kBorderThickness + kIconAndBorderSpacing,
+      NonClientBorderThickness() + kIconAndBorderSpacing,
       icon_y,
       kIconSize,
       kIconSize);
@@ -597,9 +628,14 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
+  gfx::Point mouse_location = event.location();
+
+  if (CanResize() &&
+      IsHitTestValueForResizing(NonClientHitTest(mouse_location)))
+    return BrowserNonClientFrameView::OnMousePressed(event);
+
   // |event.location| is in the view's coordinate system. Convert it to the
   // screen coordinate system.
-  gfx::Point mouse_location = event.location();
   views::View::ConvertPointToScreen(this, &mouse_location);
 
   if (event.IsOnlyLeftMouseButton() &&
@@ -692,11 +728,14 @@ void PanelBrowserFrameView::AnimationCanceled(const ui::Animation* animation) {
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
-  return kBorderThickness + kPanelClientEdgeThickness;
+  if (CanResize())
+    return kResizableBorderThickness + kResizableClientEdgeThickness;
+  else
+    return kNonResizableBorderThickness + kNonResizableClientEdgeThickness;
 }
 
 int PanelBrowserFrameView::NonClientTopBorderHeight() const {
-  return kBorderThickness + kTitlebarHeight + kPanelClientEdgeThickness;
+  return NonClientBorderThickness() + kTitlebarHeight;
 }
 
 gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
@@ -705,7 +744,7 @@ gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
 }
 
 int PanelBrowserFrameView::IconOnlyWidth() const {
-  return kBorderThickness * 2 + kIconAndBorderSpacing * 2 + kIconSize;
+  return NonClientBorderThickness() * 2 + kIconAndBorderSpacing * 2 + kIconSize;
 }
 
 gfx::Size PanelBrowserFrameView::IconOnlySize() const {
@@ -764,6 +803,25 @@ const SkPaint& PanelBrowserFrameView::GetDefaultFrameTheme(
   }
 }
 
+SkColor PanelBrowserFrameView::GetFrameColor(PaintState paint_state) const {
+  bool use_default_color = UsingDefaultTheme();
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE: {
+      return use_default_color ? kInactiveBackgroundDefaultColorEnd :
+          theme_provider->GetColor(ThemeService::COLOR_FRAME_INACTIVE);
+    } case PAINT_AS_ACTIVE: {
+      return use_default_color ? kActiveBackgroundDefaultColorEnd :
+          theme_provider->GetColor(ThemeService::COLOR_FRAME);
+    } case PAINT_FOR_ATTENTION: {
+      return kAttentionBackgroundDefaultColorEnd;
+    } default: {
+      NOTREACHED();
+      return SkColor();
+    }
+  }
+}
+
 SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
@@ -796,13 +854,18 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
 }
 
 void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
-  // Paint the background.
+  // Fill with the frame color first so we have a constant background for
+  // areas not covered by the theme image.
+  canvas->FillRect(gfx::Rect(0, 0, width(), height()),
+                   GetFrameColor(paint_state_));
+
+  // Paint the background using the theme.
   if (paint_state_ == PAINT_FOR_ATTENTION || UsingDefaultTheme()) {
     const SkPaint& paint = GetDefaultFrameTheme(paint_state_);
     canvas->DrawRect(gfx::Rect(0, 0, width(), kTitlebarHeight), paint);
   } else {
     SkBitmap* bitmap = GetFrameTheme(paint_state_);
-    canvas->TileImageInt(*bitmap, 0, 0, width(), kTitlebarHeight);
+    canvas->TileImageInt(*bitmap, 0, 0, width(), bitmap->height());
   }
 
 #if defined(USE_AURA)
@@ -855,11 +918,29 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
           frame_edges.bottom_left->height());
 
   // Draw the divider between the titlebar and the client area.
-  if (height() > kTitlebarHeight) {
-    canvas->DrawRect(gfx::Rect(kBorderThickness, kTitlebarHeight,
-                               width() - 1 - 2 * kBorderThickness,
-                               kBorderThickness), kDividerColor);
+  if (height() > kTitlebarHeight && !CanResize()) {
+    canvas->DrawRect(gfx::Rect(NonClientBorderThickness(), kTitlebarHeight,
+                               width() - 1 - 2 * NonClientBorderThickness(),
+                               NonClientBorderThickness()), kDividerColor);
   }
+#endif  // !defined(USE_AURA)
+}
+
+void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
+#if !defined(USE_AURA)
+  // No need to draw client edges when a non-resizable panel that has thin
+  // border.
+  if (!CanResize())
+    return;
+
+  gfx::Rect client_edge_bounds(client_view_bounds_);
+  client_edge_bounds.Inset(-kResizableClientEdgeThickness,
+                           -kResizableClientEdgeThickness);
+  gfx::Rect frame_shadow_bounds(client_edge_bounds);
+  frame_shadow_bounds.Inset(-kFrameShadowThickness, -kFrameShadowThickness);
+
+  canvas->FillRect(frame_shadow_bounds, kContentsBorderShadow);
+  canvas->FillRect(client_edge_bounds, kClientEdgeColor);
 #endif  // !defined(USE_AURA)
 }
 
@@ -941,4 +1022,8 @@ bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
   settings_menu_adapter_->BuildMenu(settings_menu_);
   settings_menu_runner_.reset(new views::MenuRunner(settings_menu_));
   return true;
+}
+
+bool PanelBrowserFrameView::CanResize() const {
+  return panel_browser_view_->panel()->CanResizeByMouse();
 }

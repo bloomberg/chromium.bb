@@ -118,7 +118,7 @@ void PanelBrowserView::Deactivate() {
 }
 
 bool PanelBrowserView::CanResize() const {
-  return false;
+  return true;
 }
 
 bool PanelBrowserView::CanMaximize() const {
@@ -271,6 +271,10 @@ void PanelBrowserView::OnWorkAreaChanged() {
 
 bool PanelBrowserView::WillProcessWorkAreaChange() const {
   return true;
+}
+
+void PanelBrowserView::OnWindowEndUserBoundsChange() {
+  bounds_ = GetBounds();
 }
 
 void PanelBrowserView::ShowPanel() {
@@ -588,6 +592,8 @@ void PanelBrowserView::SetPanelAppIconVisibility(bool visible) {
 
 void PanelBrowserView::SetPanelAlwaysOnTop(bool on_top) {
   GetWidget()->SetAlwaysOnTop(on_top);
+  GetWidget()->non_client_view()->Layout();
+  GetWidget()->client_view()->Layout();
 }
 
 bool PanelBrowserView::IsAnimatingBounds() const {

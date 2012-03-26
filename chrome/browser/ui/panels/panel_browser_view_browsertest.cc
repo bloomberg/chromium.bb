@@ -404,7 +404,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelActive) {
   LONG styles = ::GetWindowLong(native_window, GWL_STYLE);
   EXPECT_EQ(0, styles & WS_MAXIMIZEBOX);
   EXPECT_EQ(0, styles & WS_MINIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_THICKFRAME);
 
   LONG ext_styles = ::GetWindowLong(native_window, GWL_EXSTYLE);
   EXPECT_EQ(WS_EX_TOPMOST, ext_styles & WS_EX_TOPMOST);
@@ -429,7 +428,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelInactive) {
   LONG styles = ::GetWindowLong(native_window, GWL_STYLE);
   EXPECT_EQ(0, styles & WS_MAXIMIZEBOX);
   EXPECT_EQ(0, styles & WS_MINIMIZEBOX);
-  EXPECT_EQ(0, styles & WS_THICKFRAME);
 
   LONG ext_styles = ::GetWindowLong(native_window, GWL_EXSTYLE);
   EXPECT_EQ(WS_EX_TOPMOST, ext_styles & WS_EX_TOPMOST);
