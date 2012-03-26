@@ -37,14 +37,6 @@ class Font;
 class Image;
 }
 
-#if defined(OS_MACOSX)
-#ifdef __OBJC__
-@class NSImage;
-#else
-class NSImage;
-#endif  // __OBJC__
-#endif  // defined(OS_MACOSX)
-
 #if defined(USE_X11)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
